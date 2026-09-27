@@ -166,15 +166,15 @@ export interface GetAssetClassCodeVersionResponse {
 }
 
 export const subjects = {
-    list_asset_class_codes_request: "refdata.v1.asset_class_codes.list",
-    get_asset_class_code_request: "refdata.v1.asset_class_codes.get",
-    get_many_asset_class_codes_request: "refdata.v1.asset_class_codes.get_many",
-    put_asset_class_code_request: "refdata.v1.asset_class_codes.put",
-    put_many_asset_class_codes_request: "refdata.v1.asset_class_codes.put_many",
-    delete_asset_class_code_request: "refdata.v1.asset_class_codes.delete",
-    delete_many_asset_class_codes_request: "refdata.v1.asset_class_codes.delete_many",
-    list_asset_class_code_versions_request: "refdata.v1.asset_class_codes_versions.list",
-    get_asset_class_code_version_request: "refdata.v1.asset_class_codes_versions.get",
+    list_asset_class_codes_request: 'refdata.v1.asset_class_codes.list',
+    get_asset_class_code_request: 'refdata.v1.asset_class_codes.get',
+    get_many_asset_class_codes_request: 'refdata.v1.asset_class_codes.get_many',
+    put_asset_class_code_request: 'refdata.v1.asset_class_codes.put',
+    put_many_asset_class_codes_request: 'refdata.v1.asset_class_codes.put_many',
+    delete_asset_class_code_request: 'refdata.v1.asset_class_codes.delete',
+    delete_many_asset_class_codes_request: 'refdata.v1.asset_class_codes.delete_many',
+    list_asset_class_code_versions_request: 'refdata.v1.asset_class_codes_versions.list',
+    get_asset_class_code_version_request: 'refdata.v1.asset_class_codes_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.asset_class_codes_events.created",
-    updated: "refdata.v1.asset_class_codes_events.updated",
-    deleted: "refdata.v1.asset_class_codes_events.deleted",
+    created: 'refdata.v1.asset_class_codes_events.created',
+    updated: 'refdata.v1.asset_class_codes_events.updated',
+    deleted: 'refdata.v1.asset_class_codes_events.deleted',
 } as const;

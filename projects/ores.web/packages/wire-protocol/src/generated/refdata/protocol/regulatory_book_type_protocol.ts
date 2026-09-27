@@ -167,15 +167,15 @@ export interface GetRegulatoryBookTypeVersionResponse {
 }
 
 export const subjects = {
-    list_regulatory_book_types_request: "refdata.v1.regulatory_book_types.list",
-    get_regulatory_book_type_request: "refdata.v1.regulatory_book_types.get",
-    get_many_regulatory_book_types_request: "refdata.v1.regulatory_book_types.get_many",
-    put_regulatory_book_type_request: "refdata.v1.regulatory_book_types.put",
-    put_many_regulatory_book_types_request: "refdata.v1.regulatory_book_types.put_many",
-    delete_regulatory_book_type_request: "refdata.v1.regulatory_book_types.delete",
-    delete_many_regulatory_book_types_request: "refdata.v1.regulatory_book_types.delete_many",
-    list_regulatory_book_type_versions_request: "refdata.v1.regulatory_book_types_versions.list",
-    get_regulatory_book_type_version_request: "refdata.v1.regulatory_book_types_versions.get",
+    list_regulatory_book_types_request: 'refdata.v1.regulatory_book_types.list',
+    get_regulatory_book_type_request: 'refdata.v1.regulatory_book_types.get',
+    get_many_regulatory_book_types_request: 'refdata.v1.regulatory_book_types.get_many',
+    put_regulatory_book_type_request: 'refdata.v1.regulatory_book_types.put',
+    put_many_regulatory_book_types_request: 'refdata.v1.regulatory_book_types.put_many',
+    delete_regulatory_book_type_request: 'refdata.v1.regulatory_book_types.delete',
+    delete_many_regulatory_book_types_request: 'refdata.v1.regulatory_book_types.delete_many',
+    list_regulatory_book_type_versions_request: 'refdata.v1.regulatory_book_types_versions.list',
+    get_regulatory_book_type_version_request: 'refdata.v1.regulatory_book_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.regulatory_book_types_events.created",
-    updated: "refdata.v1.regulatory_book_types_events.updated",
-    deleted: "refdata.v1.regulatory_book_types_events.deleted",
+    created: 'refdata.v1.regulatory_book_types_events.created',
+    updated: 'refdata.v1.regulatory_book_types_events.updated',
+    deleted: 'refdata.v1.regulatory_book_types_events.deleted',
 } as const;

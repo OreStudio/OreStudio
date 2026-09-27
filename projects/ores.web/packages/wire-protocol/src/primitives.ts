@@ -47,15 +47,15 @@ const WIRE_TIMESTAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})
  * @throws {TypeError} when the input is not a canonical lowercase UUID.
  */
 export function uuid(value: string): Uuid {
-  if (!UUID_PATTERN.test(value)) {
-    throw new TypeError(`Not a canonical UUID: ${JSON.stringify(value)}`);
-  }
-  return value as Uuid;
+    if (!UUID_PATTERN.test(value)) {
+        throw new TypeError(`Not a canonical UUID: ${JSON.stringify(value)}`);
+    }
+    return value as Uuid;
 }
 
 /** Narrows an arbitrary string to {@link Uuid} without throwing. */
 export function isUuid(value: string): value is Uuid {
-  return UUID_PATTERN.test(value);
+    return UUID_PATTERN.test(value);
 }
 
 /**
@@ -68,34 +68,34 @@ export function isUuid(value: string): value is Uuid {
  * @throws {TypeError} when the input is not a well-formed wire timestamp.
  */
 export function wireTimestamp(value: string): WireTimestamp {
-  const match = WIRE_TIMESTAMP_PATTERN.exec(value);
-  if (match === null) {
-    throw new TypeError(`Not a wire timestamp: ${JSON.stringify(value)}`);
-  }
-  const [, year, month, day, hour, minute, second] = match;
-  const parts = [year, month, day, hour, minute, second].map(Number);
-  const [y, m, d, hh, mm, ss] = parts as [number, number, number, number, number, number];
-  const roundTrips =
-    Date.UTC(y, m - 1, d, hh, mm, ss) === Date.UTC(y, m - 1, d, hh, mm, ss) &&
-    new Date(Date.UTC(y, m - 1, d, hh, mm, ss)).getUTCDate() === d &&
-    new Date(Date.UTC(y, m - 1, d, hh, mm, ss)).getUTCMonth() === m - 1 &&
-    hh <= 23 &&
-    mm <= 59 &&
-    ss <= 59;
-  if (!roundTrips) {
-    throw new TypeError(`Impossible calendar value: ${JSON.stringify(value)}`);
-  }
-  return value as WireTimestamp;
+    const match = WIRE_TIMESTAMP_PATTERN.exec(value);
+    if (match === null) {
+        throw new TypeError(`Not a wire timestamp: ${JSON.stringify(value)}`);
+    }
+    const [, year, month, day, hour, minute, second] = match;
+    const parts = [year, month, day, hour, minute, second].map(Number);
+    const [y, m, d, hh, mm, ss] = parts as [number, number, number, number, number, number];
+    const roundTrips =
+        Date.UTC(y, m - 1, d, hh, mm, ss) === Date.UTC(y, m - 1, d, hh, mm, ss) &&
+        new Date(Date.UTC(y, m - 1, d, hh, mm, ss)).getUTCDate() === d &&
+        new Date(Date.UTC(y, m - 1, d, hh, mm, ss)).getUTCMonth() === m - 1 &&
+        hh <= 23 &&
+        mm <= 59 &&
+        ss <= 59;
+    if (!roundTrips) {
+        throw new TypeError(`Impossible calendar value: ${JSON.stringify(value)}`);
+    }
+    return value as WireTimestamp;
 }
 
 /** Narrows an arbitrary string to {@link WireTimestamp} without throwing. */
 export function isWireTimestamp(value: string): value is WireTimestamp {
-  try {
-    wireTimestamp(value);
-    return true;
-  } catch {
-    return false;
-  }
+    try {
+        wireTimestamp(value);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /**
@@ -105,27 +105,27 @@ export function isWireTimestamp(value: string): value is WireTimestamp {
  * seconds only.
  */
 export function toWireTimestamp(instant: Date): WireTimestamp {
-  const iso = instant.toISOString();
-  return wireTimestamp(`${iso.slice(0, 10)} ${iso.slice(11, 19)}Z`);
+    const iso = instant.toISOString();
+    return wireTimestamp(`${iso.slice(0, 10)} ${iso.slice(11, 19)}Z`);
 }
 
 /** Converts a wire timestamp to a `Date` for presentation. */
 export function fromWireTimestamp(value: WireTimestamp): Date {
-  const match = WIRE_TIMESTAMP_PATTERN.exec(value);
-  if (match === null) {
-    throw new TypeError(`Not a wire timestamp: ${JSON.stringify(value)}`);
-  }
-  const [, year, month, day, hour, minute, second] = match;
-  return new Date(
-    Date.UTC(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-      Number(hour),
-      Number(minute),
-      Number(second),
-    ),
-  );
+    const match = WIRE_TIMESTAMP_PATTERN.exec(value);
+    if (match === null) {
+        throw new TypeError(`Not a wire timestamp: ${JSON.stringify(value)}`);
+    }
+    const [, year, month, day, hour, minute, second] = match;
+    return new Date(
+        Date.UTC(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second),
+        ),
+    );
 }
 
 /** The system tenant, {@code ffffffff-ffff-ffff-ffff-ffffffffffff}. */

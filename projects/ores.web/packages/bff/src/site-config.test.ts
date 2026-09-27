@@ -35,75 +35,75 @@ let directory: string;
 let configPath: string;
 
 beforeAll(() => {
-  directory = mkdtempSync(join(tmpdir(), 'ores-site-config-'));
-  configPath = join(directory, 'environments.json');
-  writeFileSync(
-    configPath,
-    JSON.stringify({
-      active: 'bright_faraday',
-      environments: [
-        {
-          id: 'eager_maxwell',
-          displayName: 'Eager Maxwell',
-          host: 'localhost',
-          port: 21405,
-          subjectPrefix: 'ores.dev.eager_maxwell',
-        },
-        {
-          id: 'bright_faraday',
-          displayName: 'Bright Faraday',
-          host: 'localhost',
-          port: 20605,
-          subjectPrefix: 'ores.dev.bright_faraday',
-        },
-      ],
-      tls: { ca: 'ca', cert: 'cert', key: 'key' },
-      developerTools: false,
-      developerAccounts: [],
-    }),
-  );
+    directory = mkdtempSync(join(tmpdir(), 'ores-site-config-'));
+    configPath = join(directory, 'environments.json');
+    writeFileSync(
+        configPath,
+        JSON.stringify({
+            active: 'bright_faraday',
+            environments: [
+                {
+                    id: 'eager_maxwell',
+                    displayName: 'Eager Maxwell',
+                    host: 'localhost',
+                    port: 21405,
+                    subjectPrefix: 'ores.dev.eager_maxwell',
+                },
+                {
+                    id: 'bright_faraday',
+                    displayName: 'Bright Faraday',
+                    host: 'localhost',
+                    port: 20605,
+                    subjectPrefix: 'ores.dev.bright_faraday',
+                },
+            ],
+            tls: { ca: 'ca', cert: 'cert', key: 'key' },
+            developerTools: false,
+            developerAccounts: [],
+        }),
+    );
 });
 
 afterAll(() => {
-  rmSync(directory, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
 });
 
 function load(
-  environment: NodeJS.ProcessEnv,
-  environmentId?: string,
+    environment: NodeJS.ProcessEnv,
+    environmentId?: string,
 ): ReturnType<typeof loadSiteConfiguration> {
-  return loadSiteConfiguration({
-    environment: { ORES_WEB_SITE_CONFIG: configPath, ...environment },
-    ...(environmentId === undefined ? {} : { environmentId }),
-  });
+    return loadSiteConfiguration({
+        environment: { ORES_WEB_SITE_CONFIG: configPath, ...environment },
+        ...(environmentId === undefined ? {} : { environmentId }),
+    });
 }
 
 describe('loadSiteConfiguration environment precedence', () => {
-  it('serves the checkout environment when nothing else names one', () => {
-    // The checkout's name uses dashes and the file's ids use underscores.
-    const site = load({ ORES_ENV_NAME: 'eager-maxwell' });
-    expect(site.environment.id).toBe('eager_maxwell');
-  });
+    it('serves the checkout environment when nothing else names one', () => {
+        // The checkout's name uses dashes and the file's ids use underscores.
+        const site = load({ ORES_ENV_NAME: 'eager-maxwell' });
+        expect(site.environment.id).toBe('eager_maxwell');
+    });
 
-  it('prefers ORES_WEB_ENV to the checkout name', () => {
-    const site = load({ ORES_ENV_NAME: 'eager-maxwell', ORES_WEB_ENV: 'bright_faraday' });
-    expect(site.environment.id).toBe('bright_faraday');
-  });
+    it('prefers ORES_WEB_ENV to the checkout name', () => {
+        const site = load({ ORES_ENV_NAME: 'eager-maxwell', ORES_WEB_ENV: 'bright_faraday' });
+        expect(site.environment.id).toBe('bright_faraday');
+    });
 
-  it('prefers --env to both variables', () => {
-    const site = load(
-      { ORES_ENV_NAME: 'bright_faraday', ORES_WEB_ENV: 'bright_faraday' },
-      'eager_maxwell',
-    );
-    expect(site.environment.id).toBe('eager_maxwell');
-  });
+    it('prefers --env to both variables', () => {
+        const site = load(
+            { ORES_ENV_NAME: 'bright_faraday', ORES_WEB_ENV: 'bright_faraday' },
+            'eager_maxwell',
+        );
+        expect(site.environment.id).toBe('eager_maxwell');
+    });
 
-  it('falls back to the file active field when nothing is named', () => {
-    const site = load({});
-    expect(site.environment.id).toBe('bright_faraday');
-  });
+    it('falls back to the file active field when nothing is named', () => {
+        const site = load({});
+        expect(site.environment.id).toBe('bright_faraday');
+    });
 
-  it('rejects a checkout name the file does not define', () => {
-    expect(() => load({ ORES_ENV_NAME: 'missing_environment' })).toThrow(ConfigurationError);
-  });
+    it('rejects a checkout name the file does not define', () => {
+        expect(() => load({ ORES_ENV_NAME: 'missing_environment' })).toThrow(ConfigurationError);
+    });
 });

@@ -166,15 +166,18 @@ export interface GetTenorResolutionAlgorithmVersionResponse {
 }
 
 export const subjects = {
-    list_tenor_resolution_algorithms_request: "refdata.v1.tenor_resolution_algorithms.list",
-    get_tenor_resolution_algorithm_request: "refdata.v1.tenor_resolution_algorithms.get",
-    get_many_tenor_resolution_algorithms_request: "refdata.v1.tenor_resolution_algorithms.get_many",
-    put_tenor_resolution_algorithm_request: "refdata.v1.tenor_resolution_algorithms.put",
-    put_many_tenor_resolution_algorithms_request: "refdata.v1.tenor_resolution_algorithms.put_many",
-    delete_tenor_resolution_algorithm_request: "refdata.v1.tenor_resolution_algorithms.delete",
-    delete_many_tenor_resolution_algorithms_request: "refdata.v1.tenor_resolution_algorithms.delete_many",
-    list_tenor_resolution_algorithm_versions_request: "refdata.v1.tenor_resolution_algorithms_versions.list",
-    get_tenor_resolution_algorithm_version_request: "refdata.v1.tenor_resolution_algorithms_versions.get",
+    list_tenor_resolution_algorithms_request: 'refdata.v1.tenor_resolution_algorithms.list',
+    get_tenor_resolution_algorithm_request: 'refdata.v1.tenor_resolution_algorithms.get',
+    get_many_tenor_resolution_algorithms_request: 'refdata.v1.tenor_resolution_algorithms.get_many',
+    put_tenor_resolution_algorithm_request: 'refdata.v1.tenor_resolution_algorithms.put',
+    put_many_tenor_resolution_algorithms_request: 'refdata.v1.tenor_resolution_algorithms.put_many',
+    delete_tenor_resolution_algorithm_request: 'refdata.v1.tenor_resolution_algorithms.delete',
+    delete_many_tenor_resolution_algorithms_request:
+        'refdata.v1.tenor_resolution_algorithms.delete_many',
+    list_tenor_resolution_algorithm_versions_request:
+        'refdata.v1.tenor_resolution_algorithms_versions.list',
+    get_tenor_resolution_algorithm_version_request:
+        'refdata.v1.tenor_resolution_algorithms_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +202,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.tenor_resolution_algorithms_events.created",
-    updated: "refdata.v1.tenor_resolution_algorithms_events.updated",
-    deleted: "refdata.v1.tenor_resolution_algorithms_events.deleted",
+    created: 'refdata.v1.tenor_resolution_algorithms_events.created',
+    updated: 'refdata.v1.tenor_resolution_algorithms_events.updated',
+    deleted: 'refdata.v1.tenor_resolution_algorithms_events.deleted',
 } as const;

@@ -169,15 +169,18 @@ export interface GetCurrencyPairConventionVersionResponse {
 }
 
 export const subjects = {
-    list_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.list",
-    get_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.get",
-    get_many_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.get_many",
-    put_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.put",
-    put_many_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.put_many",
-    delete_currency_pair_convention_request: "refdata.v1.currency_pair_conventions.delete",
-    delete_many_currency_pair_conventions_request: "refdata.v1.currency_pair_conventions.delete_many",
-    list_currency_pair_convention_versions_request: "refdata.v1.currency_pair_conventions_versions.list",
-    get_currency_pair_convention_version_request: "refdata.v1.currency_pair_conventions_versions.get",
+    list_currency_pair_conventions_request: 'refdata.v1.currency_pair_conventions.list',
+    get_currency_pair_convention_request: 'refdata.v1.currency_pair_conventions.get',
+    get_many_currency_pair_conventions_request: 'refdata.v1.currency_pair_conventions.get_many',
+    put_currency_pair_convention_request: 'refdata.v1.currency_pair_conventions.put',
+    put_many_currency_pair_conventions_request: 'refdata.v1.currency_pair_conventions.put_many',
+    delete_currency_pair_convention_request: 'refdata.v1.currency_pair_conventions.delete',
+    delete_many_currency_pair_conventions_request:
+        'refdata.v1.currency_pair_conventions.delete_many',
+    list_currency_pair_convention_versions_request:
+        'refdata.v1.currency_pair_conventions_versions.list',
+    get_currency_pair_convention_version_request:
+        'refdata.v1.currency_pair_conventions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.currency_pair_conventions_events.created",
-    updated: "refdata.v1.currency_pair_conventions_events.updated",
-    deleted: "refdata.v1.currency_pair_conventions_events.deleted",
+    created: 'refdata.v1.currency_pair_conventions_events.created',
+    updated: 'refdata.v1.currency_pair_conventions_events.updated',
+    deleted: 'refdata.v1.currency_pair_conventions_events.deleted',
 } as const;

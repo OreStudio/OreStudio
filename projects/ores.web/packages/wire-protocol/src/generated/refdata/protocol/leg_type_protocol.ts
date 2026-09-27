@@ -164,15 +164,15 @@ export interface GetLegTypeVersionResponse {
 }
 
 export const subjects = {
-    list_leg_types_request: "refdata.v1.leg_types.list",
-    get_leg_type_request: "refdata.v1.leg_types.get",
-    get_many_leg_types_request: "refdata.v1.leg_types.get_many",
-    put_leg_type_request: "refdata.v1.leg_types.put",
-    put_many_leg_types_request: "refdata.v1.leg_types.put_many",
-    delete_leg_type_request: "refdata.v1.leg_types.delete",
-    delete_many_leg_types_request: "refdata.v1.leg_types.delete_many",
-    list_leg_type_versions_request: "refdata.v1.leg_types_versions.list",
-    get_leg_type_version_request: "refdata.v1.leg_types_versions.get",
+    list_leg_types_request: 'refdata.v1.leg_types.list',
+    get_leg_type_request: 'refdata.v1.leg_types.get',
+    get_many_leg_types_request: 'refdata.v1.leg_types.get_many',
+    put_leg_type_request: 'refdata.v1.leg_types.put',
+    put_many_leg_types_request: 'refdata.v1.leg_types.put_many',
+    delete_leg_type_request: 'refdata.v1.leg_types.delete',
+    delete_many_leg_types_request: 'refdata.v1.leg_types.delete_many',
+    list_leg_type_versions_request: 'refdata.v1.leg_types_versions.list',
+    get_leg_type_version_request: 'refdata.v1.leg_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -197,7 +197,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.leg_types_events.created",
-    updated: "refdata.v1.leg_types_events.updated",
-    deleted: "refdata.v1.leg_types_events.deleted",
+    created: 'refdata.v1.leg_types_events.created',
+    updated: 'refdata.v1.leg_types_events.updated',
+    deleted: 'refdata.v1.leg_types_events.deleted',
 } as const;

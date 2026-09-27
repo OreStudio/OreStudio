@@ -31,19 +31,19 @@ export const GZIP_ENCODING = 'gzip';
 export type WireFormat = 'msgpack' | 'json';
 
 const MSGPACK_ENCODE_OPTIONS: EncoderOptions = {
-  /**
-   * `false` keeps plain numbers as numbers. The server encodes integers with
-   * msgpack-c's smallest-fit rule, and decoding to `bigint` would make every
-   * id and count awkward to compare.
-   */
-  useBigInt64: false,
-  /** Omit `undefined` keys, matching how C++ drops an empty `std::optional`. */
-  ignoreUndefined: true,
-  sortKeys: false,
+    /**
+     * `false` keeps plain numbers as numbers. The server encodes integers with
+     * msgpack-c's smallest-fit rule, and decoding to `bigint` would make every
+     * id and count awkward to compare.
+     */
+    useBigInt64: false,
+    /** Omit `undefined` keys, matching how C++ drops an empty `std::optional`. */
+    ignoreUndefined: true,
+    sortKeys: false,
 };
 
 const MSGPACK_DECODE_OPTIONS: DecoderOptions = {
-  useBigInt64: false,
+    useBigInt64: false,
 };
 
 /**
@@ -54,53 +54,53 @@ const MSGPACK_DECODE_OPTIONS: DecoderOptions = {
  * construction. msgpack is the deployment default.
  */
 export class WireCodec {
-  readonly #format: WireFormat;
+    readonly #format: WireFormat;
 
-  constructor(format: WireFormat) {
-    this.#format = format;
-  }
-
-  get format(): WireFormat {
-    return this.#format;
-  }
-
-  encode(value: unknown): Uint8Array {
-    switch (this.#format) {
-      case 'msgpack':
-        return encode(value, MSGPACK_ENCODE_OPTIONS);
-      case 'json':
-        return new TextEncoder().encode(JSON.stringify(value));
+    constructor(format: WireFormat) {
+        this.#format = format;
     }
-  }
 
-  /**
-   * Decodes a body into an unvalidated value.
-   *
-   * The result is `unknown` on purpose: callers parse it with a schema before
-   * any field is trusted.
-   */
-  decode(body: Uint8Array): unknown {
-    try {
-      switch (this.#format) {
-        case 'msgpack':
-          return decode(body, MSGPACK_DECODE_OPTIONS);
-        case 'json':
-          return JSON.parse(new TextDecoder().decode(body)) as unknown;
-      }
-    } catch (cause) {
-      throw new MalformedResponseError(`Body is not valid ${this.#format}`, { cause });
+    get format(): WireFormat {
+        return this.#format;
     }
-  }
 
-  /** Decodes and validates in one step. */
-  decodeAs<Schema extends z.ZodType>(body: Uint8Array, schema: Schema): z.infer<Schema> {
-    const parsed = schema.safeParse(this.decode(body));
-    if (!parsed.success) {
-      throw new MalformedResponseError(
-        `Body does not match the expected shape: ${z.prettifyError(parsed.error)}`,
-        { cause: parsed.error },
-      );
+    encode(value: unknown): Uint8Array {
+        switch (this.#format) {
+            case 'msgpack':
+                return encode(value, MSGPACK_ENCODE_OPTIONS);
+            case 'json':
+                return new TextEncoder().encode(JSON.stringify(value));
+        }
     }
-    return parsed.data;
-  }
+
+    /**
+     * Decodes a body into an unvalidated value.
+     *
+     * The result is `unknown` on purpose: callers parse it with a schema before
+     * any field is trusted.
+     */
+    decode(body: Uint8Array): unknown {
+        try {
+            switch (this.#format) {
+                case 'msgpack':
+                    return decode(body, MSGPACK_DECODE_OPTIONS);
+                case 'json':
+                    return JSON.parse(new TextDecoder().decode(body)) as unknown;
+            }
+        } catch (cause) {
+            throw new MalformedResponseError(`Body is not valid ${this.#format}`, { cause });
+        }
+    }
+
+    /** Decodes and validates in one step. */
+    decodeAs<Schema extends z.ZodType>(body: Uint8Array, schema: Schema): z.infer<Schema> {
+        const parsed = schema.safeParse(this.decode(body));
+        if (!parsed.success) {
+            throw new MalformedResponseError(
+                `Body does not match the expected shape: ${z.prettifyError(parsed.error)}`,
+                { cause: parsed.error },
+            );
+        }
+        return parsed.data;
+    }
 }

@@ -24,8 +24,7 @@
  */
 import type { Result } from '../../../utility/protocol.js';
 
-export interface ClearBootstrapModeRequest {
-}
+export interface ClearBootstrapModeRequest {}
 
 export interface ClearBootstrapModeResponse {
     result: Result;
@@ -43,8 +42,8 @@ export interface CompletePartyOnboardingResponse {
 }
 
 export const subjects = {
-    clear_bootstrap_mode_request: "variability.v1.ops.clear_bootstrap_mode",
-    complete_party_onboarding_request: "variability.v1.ops.complete_party_onboarding",
+    clear_bootstrap_mode_request: 'variability.v1.ops.clear_bootstrap_mode',
+    complete_party_onboarding_request: 'variability.v1.ops.complete_party_onboarding',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

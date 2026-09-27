@@ -75,9 +75,9 @@ export interface GetManyReportDefinitionsResponse {
 }
 
 export const subjects = {
-    list_report_definitions_request: "dq.v1.report_definitions.list",
-    get_report_definition_request: "dq.v1.report_definitions.get",
-    get_many_report_definitions_request: "dq.v1.report_definitions.get_many",
+    list_report_definitions_request: 'dq.v1.report_definitions.list',
+    get_report_definition_request: 'dq.v1.report_definitions.get',
+    get_many_report_definitions_request: 'dq.v1.report_definitions.get_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -96,7 +96,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.report_definitions_events.created",
-    updated: "dq.v1.report_definitions_events.updated",
-    deleted: "dq.v1.report_definitions_events.deleted",
+    created: 'dq.v1.report_definitions_events.created',
+    updated: 'dq.v1.report_definitions_events.updated',
+    deleted: 'dq.v1.report_definitions_events.deleted',
 } as const;

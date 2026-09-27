@@ -38,8 +38,7 @@ export interface SessionView {
     username: string;
 }
 
-export interface GetActiveSessionsRequest {
-}
+export interface GetActiveSessionsRequest {}
 
 export interface GetActiveSessionsResponse {
     sessions: Session[];
@@ -48,7 +47,7 @@ export interface GetActiveSessionsResponse {
 }
 
 export const subjects = {
-    get_active_sessions_request: "iam.v1.sessions.active",
+    get_active_sessions_request: 'iam.v1.sessions.active',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

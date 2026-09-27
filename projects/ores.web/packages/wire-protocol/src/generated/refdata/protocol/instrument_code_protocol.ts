@@ -169,15 +169,15 @@ export interface GetInstrumentCodeVersionResponse {
 }
 
 export const subjects = {
-    list_instrument_codes_request: "refdata.v1.instrument_codes.list",
-    get_instrument_code_request: "refdata.v1.instrument_codes.get",
-    get_many_instrument_codes_request: "refdata.v1.instrument_codes.get_many",
-    put_instrument_code_request: "refdata.v1.instrument_codes.put",
-    put_many_instrument_codes_request: "refdata.v1.instrument_codes.put_many",
-    delete_instrument_code_request: "refdata.v1.instrument_codes.delete",
-    delete_many_instrument_codes_request: "refdata.v1.instrument_codes.delete_many",
-    list_instrument_code_versions_request: "refdata.v1.instrument_codes_versions.list",
-    get_instrument_code_version_request: "refdata.v1.instrument_codes_versions.get",
+    list_instrument_codes_request: 'refdata.v1.instrument_codes.list',
+    get_instrument_code_request: 'refdata.v1.instrument_codes.get',
+    get_many_instrument_codes_request: 'refdata.v1.instrument_codes.get_many',
+    put_instrument_code_request: 'refdata.v1.instrument_codes.put',
+    put_many_instrument_codes_request: 'refdata.v1.instrument_codes.put_many',
+    delete_instrument_code_request: 'refdata.v1.instrument_codes.delete',
+    delete_many_instrument_codes_request: 'refdata.v1.instrument_codes.delete_many',
+    list_instrument_code_versions_request: 'refdata.v1.instrument_codes_versions.list',
+    get_instrument_code_version_request: 'refdata.v1.instrument_codes_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +202,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.instrument_codes_events.created",
-    updated: "refdata.v1.instrument_codes_events.updated",
-    deleted: "refdata.v1.instrument_codes_events.deleted",
+    created: 'refdata.v1.instrument_codes_events.created',
+    updated: 'refdata.v1.instrument_codes_events.updated',
+    deleted: 'refdata.v1.instrument_codes_events.deleted',
 } as const;

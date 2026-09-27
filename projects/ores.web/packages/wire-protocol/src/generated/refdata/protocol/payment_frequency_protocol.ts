@@ -168,15 +168,15 @@ export interface GetPaymentFrequencyVersionResponse {
 }
 
 export const subjects = {
-    list_payment_frequencies_request: "refdata.v1.payment_frequencies.list",
-    get_payment_frequency_request: "refdata.v1.payment_frequencies.get",
-    get_many_payment_frequencies_request: "refdata.v1.payment_frequencies.get_many",
-    put_payment_frequency_request: "refdata.v1.payment_frequencies.put",
-    put_many_payment_frequencies_request: "refdata.v1.payment_frequencies.put_many",
-    delete_payment_frequency_request: "refdata.v1.payment_frequencies.delete",
-    delete_many_payment_frequencies_request: "refdata.v1.payment_frequencies.delete_many",
-    list_payment_frequency_versions_request: "refdata.v1.payment_frequencies_versions.list",
-    get_payment_frequency_version_request: "refdata.v1.payment_frequencies_versions.get",
+    list_payment_frequencies_request: 'refdata.v1.payment_frequencies.list',
+    get_payment_frequency_request: 'refdata.v1.payment_frequencies.get',
+    get_many_payment_frequencies_request: 'refdata.v1.payment_frequencies.get_many',
+    put_payment_frequency_request: 'refdata.v1.payment_frequencies.put',
+    put_many_payment_frequencies_request: 'refdata.v1.payment_frequencies.put_many',
+    delete_payment_frequency_request: 'refdata.v1.payment_frequencies.delete',
+    delete_many_payment_frequencies_request: 'refdata.v1.payment_frequencies.delete_many',
+    list_payment_frequency_versions_request: 'refdata.v1.payment_frequencies_versions.list',
+    get_payment_frequency_version_request: 'refdata.v1.payment_frequencies_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.payment_frequencies_events.created",
-    updated: "refdata.v1.payment_frequencies_events.updated",
-    deleted: "refdata.v1.payment_frequencies_events.deleted",
+    created: 'refdata.v1.payment_frequencies_events.created',
+    updated: 'refdata.v1.payment_frequencies_events.updated',
+    deleted: 'refdata.v1.payment_frequencies_events.deleted',
 } as const;

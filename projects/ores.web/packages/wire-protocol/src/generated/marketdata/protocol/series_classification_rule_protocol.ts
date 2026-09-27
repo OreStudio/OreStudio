@@ -169,15 +169,20 @@ export interface GetSeriesClassificationRuleVersionResponse {
 }
 
 export const subjects = {
-    list_series_classification_rules_request: "marketdata.v1.series_classification_rules.list",
-    get_series_classification_rule_request: "marketdata.v1.series_classification_rules.get",
-    get_many_series_classification_rules_request: "marketdata.v1.series_classification_rules.get_many",
-    put_series_classification_rule_request: "marketdata.v1.series_classification_rules.put",
-    put_many_series_classification_rules_request: "marketdata.v1.series_classification_rules.put_many",
-    delete_series_classification_rule_request: "marketdata.v1.series_classification_rules.delete",
-    delete_many_series_classification_rules_request: "marketdata.v1.series_classification_rules.delete_many",
-    list_series_classification_rule_versions_request: "marketdata.v1.series_classification_rules_versions.list",
-    get_series_classification_rule_version_request: "marketdata.v1.series_classification_rules_versions.get",
+    list_series_classification_rules_request: 'marketdata.v1.series_classification_rules.list',
+    get_series_classification_rule_request: 'marketdata.v1.series_classification_rules.get',
+    get_many_series_classification_rules_request:
+        'marketdata.v1.series_classification_rules.get_many',
+    put_series_classification_rule_request: 'marketdata.v1.series_classification_rules.put',
+    put_many_series_classification_rules_request:
+        'marketdata.v1.series_classification_rules.put_many',
+    delete_series_classification_rule_request: 'marketdata.v1.series_classification_rules.delete',
+    delete_many_series_classification_rules_request:
+        'marketdata.v1.series_classification_rules.delete_many',
+    list_series_classification_rule_versions_request:
+        'marketdata.v1.series_classification_rules_versions.list',
+    get_series_classification_rule_version_request:
+        'marketdata.v1.series_classification_rules_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +207,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "marketdata.v1.series_classification_rules_events.created",
-    updated: "marketdata.v1.series_classification_rules_events.updated",
-    deleted: "marketdata.v1.series_classification_rules_events.deleted",
+    created: 'marketdata.v1.series_classification_rules_events.created',
+    updated: 'marketdata.v1.series_classification_rules_events.updated',
+    deleted: 'marketdata.v1.series_classification_rules_events.deleted',
 } as const;

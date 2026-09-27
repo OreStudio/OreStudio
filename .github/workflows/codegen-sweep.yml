@@ -69,14 +69,24 @@ jobs:
       - name: Install codegen dependencies
         run: |
           pip install --quiet -r projects/ores.codegen/requirements.txt
-      # The renderer runs clang-format over its C++ output, and the sweep
-      # compares bytes, so the formatter has to be present or every generated
-      # C++ file reads as drifted. The distro package is deliberate: it is the
-      # same clang-format the other codegen jobs use.
+      # The renderer runs clang-format over its C++ output and prettier over
+      # its TypeScript output, and the sweep compares bytes, so both have to be
+      # present or every generated file reads as drifted. The clang-format
+      # package is deliberate: it is the same one the other codegen jobs use.
+      # Prettier's version is read from the workspace rather than repeated
+      # here, because a different prettier formats differently.
       - name: Install clang-format
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install prettier
+        run: |
+          version=$(node -p "require('./projects/ores.web/package.json').devDependencies.prettier")
+          npm install --global "prettier@${version}"
       - name: Sweep every catalogue component for drift this branch caused
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --sweep

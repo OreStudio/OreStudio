@@ -36,184 +36,186 @@ import type { ActiveSession, OresClient, PartySummary } from '@ores/wire-protoco
  */
 
 interface SessionRecord {
-  readonly client: OresClient;
-  username: string;
-  email: string;
-  accountId: string;
-  tenantId: string;
-  tenantName: string;
-  /** Absent until a party has been chosen. */
-  party: PartySummary | undefined;
-  availableParties: readonly PartySummary[];
-  accessLifetimeSeconds: number;
-  passwordResetRequired: boolean;
-  /** Carried so a pending party selection can complete on a later request. */
-  sessionId: string;
-  expiresAt: number;
+    readonly client: OresClient;
+    username: string;
+    email: string;
+    accountId: string;
+    tenantId: string;
+    tenantName: string;
+    /** Absent until a party has been chosen. */
+    party: PartySummary | undefined;
+    availableParties: readonly PartySummary[];
+    accessLifetimeSeconds: number;
+    passwordResetRequired: boolean;
+    /** Carried so a pending party selection can complete on a later request. */
+    sessionId: string;
+    expiresAt: number;
 }
 
 /** A session as the rest of the BFF reads it. */
 export interface LiveSession {
-  readonly id: string;
-  readonly client: OresClient;
-  readonly username: string;
-  readonly email: string;
-  readonly accountId: string;
-  readonly tenantId: string;
-  readonly tenantName: string;
-  /** Absent only while a login is waiting on party selection. */
-  readonly party: PartySummary | undefined;
-  readonly availableParties: readonly PartySummary[];
-  readonly accessLifetimeSeconds: number;
-  readonly passwordResetRequired: boolean;
-  /** The IAM session id, forwarded as `Nats-Session-Id`. */
-  readonly sessionId: string;
-}
-
-export interface SessionStore {
-  /**
-   * Registers a freshly authenticated client.
-   *
-   * Pass `session` as null when the login still needs a party. The client
-   * already holds the token and the IAM session id, so only the display
-   * fields and the `sessionId` matter until `activate` runs.
-   */
-  create(input: {
+    readonly id: string;
     readonly client: OresClient;
-    readonly session: ActiveSession | null;
     readonly username: string;
     readonly email: string;
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** Absent only while a login is waiting on party selection. */
+    readonly party: PartySummary | undefined;
     readonly availableParties: readonly PartySummary[];
     readonly accessLifetimeSeconds: number;
     readonly passwordResetRequired: boolean;
+    /** The IAM session id, forwarded as `Nats-Session-Id`. */
     readonly sessionId: string;
-  }): LiveSession;
-  get(id: string): LiveSession | undefined;
-  /** Records the party chosen after a pending login. */
-  activate(id: string, session: ActiveSession): LiveSession | undefined;
-  /** Records a re-issued token and its new lifetime after a refresh. */
-  refresh(id: string, accessLifetimeSeconds: number): void;
-  /** Closes the connection and forgets the session. */
-  destroy(id: string): Promise<void>;
-  destroyAll(): Promise<void>;
-  readonly size: number;
+}
+
+export interface SessionStore {
+    /**
+     * Registers a freshly authenticated client.
+     *
+     * Pass `session` as null when the login still needs a party. The client
+     * already holds the token and the IAM session id, so only the display
+     * fields and the `sessionId` matter until `activate` runs.
+     */
+    create(input: {
+        readonly client: OresClient;
+        readonly session: ActiveSession | null;
+        readonly username: string;
+        readonly email: string;
+        readonly accountId: string;
+        readonly tenantId: string;
+        readonly tenantName: string;
+        readonly availableParties: readonly PartySummary[];
+        readonly accessLifetimeSeconds: number;
+        readonly passwordResetRequired: boolean;
+        readonly sessionId: string;
+    }): LiveSession;
+    get(id: string): LiveSession | undefined;
+    /** Records the party chosen after a pending login. */
+    activate(id: string, session: ActiveSession): LiveSession | undefined;
+    /** Records a re-issued token and its new lifetime after a refresh. */
+    refresh(id: string, accessLifetimeSeconds: number): void;
+    /** Closes the connection and forgets the session. */
+    destroy(id: string): Promise<void>;
+    destroyAll(): Promise<void>;
+    readonly size: number;
 }
 
 export interface SessionStoreOptions {
-  readonly ttlSeconds: number;
-  /** Injected so tests can control expiry. */
-  readonly now?: () => number;
+    readonly ttlSeconds: number;
+    /** Injected so tests can control expiry. */
+    readonly now?: () => number;
 }
 
 export function createSessionStore(options: SessionStoreOptions): SessionStore {
-  const sessions = new Map<string, SessionRecord>();
-  const now = options.now ?? (() => Date.now());
-  const ttlMs = options.ttlSeconds * 1000;
+    const sessions = new Map<string, SessionRecord>();
+    const now = options.now ?? (() => Date.now());
+    const ttlMs = options.ttlSeconds * 1000;
 
-  function hash(id: string): string {
-    return createHash('sha256').update(id).digest('hex');
-  }
+    function hash(id: string): string {
+        return createHash('sha256').update(id).digest('hex');
+    }
 
-  function toLive(id: string, record: SessionRecord): LiveSession {
+    function toLive(id: string, record: SessionRecord): LiveSession {
+        return {
+            id,
+            client: record.client,
+            username: record.username,
+            email: record.email,
+            accountId: record.accountId,
+            tenantId: record.tenantId,
+            tenantName: record.tenantName,
+            party: record.party,
+            availableParties: record.availableParties,
+            accessLifetimeSeconds: record.accessLifetimeSeconds,
+            passwordResetRequired: record.passwordResetRequired,
+            sessionId: record.sessionId,
+        };
+    }
+
+    function create(input: Parameters<SessionStore['create']>[0]): LiveSession {
+        const id = randomBytes(32).toString('base64url');
+        const session = input.session;
+
+        const record: SessionRecord = {
+            client: input.client,
+            username: input.username,
+            email: input.email,
+            accountId: input.accountId,
+            tenantId: input.tenantId,
+            tenantName: input.tenantName,
+            party: session?.party,
+            availableParties: input.availableParties,
+            accessLifetimeSeconds: input.accessLifetimeSeconds,
+            passwordResetRequired: input.passwordResetRequired,
+            sessionId: input.sessionId,
+            expiresAt: now() + ttlMs,
+        };
+        sessions.set(hash(id), record);
+        return toLive(id, record);
+    }
+
+    function get(id: string): LiveSession | undefined {
+        const record = sessions.get(hash(id));
+        if (record === undefined) {
+            return undefined;
+        }
+        if (record.expiresAt <= now()) {
+            void closeAndRemove(id, record);
+            return undefined;
+        }
+        // Sliding expiry: an active browser keeps its session.
+        record.expiresAt = now() + ttlMs;
+        return toLive(id, record);
+    }
+
+    async function closeAndRemove(id: string, record: SessionRecord): Promise<void> {
+        sessions.delete(hash(id));
+        await record.client.close().catch(() => undefined);
+    }
+
     return {
-      id,
-      client: record.client,
-      username: record.username,
-      email: record.email,
-      accountId: record.accountId,
-      tenantId: record.tenantId,
-      tenantName: record.tenantName,
-      party: record.party,
-      availableParties: record.availableParties,
-      accessLifetimeSeconds: record.accessLifetimeSeconds,
-      passwordResetRequired: record.passwordResetRequired,
-      sessionId: record.sessionId,
+        create,
+
+        get,
+
+        activate(id, session) {
+            const record = sessions.get(hash(id));
+            if (record === undefined) {
+                return undefined;
+            }
+            record.party = session.party;
+            record.accessLifetimeSeconds = session.accessLifetimeSeconds;
+            record.passwordResetRequired = session.passwordResetRequired;
+            record.expiresAt = now() + ttlMs;
+            return toLive(id, record);
+        },
+
+        refresh(id, accessLifetimeSeconds) {
+            const record = sessions.get(hash(id));
+            if (record !== undefined) {
+                record.accessLifetimeSeconds = accessLifetimeSeconds;
+            }
+        },
+
+        async destroy(id) {
+            const record = sessions.get(hash(id));
+            if (record !== undefined) {
+                await closeAndRemove(id, record);
+            }
+        },
+
+        async destroyAll() {
+            const entries = [...sessions.entries()];
+            sessions.clear();
+            await Promise.all(
+                entries.map(([, record]) => record.client.close().catch(() => undefined)),
+            );
+        },
+
+        get size() {
+            return sessions.size;
+        },
     };
-  }
-
-  function create(input: Parameters<SessionStore['create']>[0]): LiveSession {
-    const id = randomBytes(32).toString('base64url');
-    const session = input.session;
-
-    const record: SessionRecord = {
-      client: input.client,
-      username: input.username,
-      email: input.email,
-      accountId: input.accountId,
-      tenantId: input.tenantId,
-      tenantName: input.tenantName,
-      party: session?.party,
-      availableParties: input.availableParties,
-      accessLifetimeSeconds: input.accessLifetimeSeconds,
-      passwordResetRequired: input.passwordResetRequired,
-      sessionId: input.sessionId,
-      expiresAt: now() + ttlMs,
-    };
-    sessions.set(hash(id), record);
-    return toLive(id, record);
-  }
-
-  function get(id: string): LiveSession | undefined {
-    const record = sessions.get(hash(id));
-    if (record === undefined) {
-      return undefined;
-    }
-    if (record.expiresAt <= now()) {
-      void closeAndRemove(id, record);
-      return undefined;
-    }
-    // Sliding expiry: an active browser keeps its session.
-    record.expiresAt = now() + ttlMs;
-    return toLive(id, record);
-  }
-
-  async function closeAndRemove(id: string, record: SessionRecord): Promise<void> {
-    sessions.delete(hash(id));
-    await record.client.close().catch(() => undefined);
-  }
-
-  return {
-    create,
-
-    get,
-
-    activate(id, session) {
-      const record = sessions.get(hash(id));
-      if (record === undefined) {
-        return undefined;
-      }
-      record.party = session.party;
-      record.accessLifetimeSeconds = session.accessLifetimeSeconds;
-      record.passwordResetRequired = session.passwordResetRequired;
-      record.expiresAt = now() + ttlMs;
-      return toLive(id, record);
-    },
-
-    refresh(id, accessLifetimeSeconds) {
-      const record = sessions.get(hash(id));
-      if (record !== undefined) {
-        record.accessLifetimeSeconds = accessLifetimeSeconds;
-      }
-    },
-
-    async destroy(id) {
-      const record = sessions.get(hash(id));
-      if (record !== undefined) {
-        await closeAndRemove(id, record);
-      }
-    },
-
-    async destroyAll() {
-      const entries = [...sessions.entries()];
-      sessions.clear();
-      await Promise.all(entries.map(([, record]) => record.client.close().catch(() => undefined)));
-    },
-
-    get size() {
-      return sessions.size;
-    },
-  };
 }

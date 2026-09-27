@@ -1,0 +1,11 @@
+# npm owns the lockfile. Reformatting it adds noise to every dependency change,
+# and the next `npm install` can undo it.
+package-lock.json
+
+# refdata's generated wire projection is drifted: the current templates disagree
+# with the committed tree about 18 of these files (the write shapes gain
+# party_id, and the junction event interfaces go). Formatting a file the drift
+# sweep then finds changed fails that gate, and regenerating refdata is its own
+# story — the clean-refdata branch renders 499 files across the component, C++
+# included. The exclusion goes when that lands.
+packages/wire-protocol/src/generated/refdata/protocol/

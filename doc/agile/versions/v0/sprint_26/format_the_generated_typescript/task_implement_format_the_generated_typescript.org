@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :format_the_generated_typescript:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-format-the-generated-typescript
+#+pr: 2294
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -26,11 +26,11 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:753E0E14-FDCE-46B5-86AD-0F4AF6721CA3][Format the generated TypeScript with prettier]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | The review round on the change. |
+| Next          | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -44,9 +44,49 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three units, in one commit.
+
+** Unit 1 — state the style
+
+=.prettierrc.yaml= at the repository root, so an invocation from anywhere
+resolves one configuration: 100 columns, four spaces, single quotes, and an
+override that keeps JSON, Markdown and CSS at two. =.prettierignore= in the
+workspace names what the check must not touch and why.
+
+** Unit 2 — format inside the render
+
+=prettier_format_files= in =generate.py=, called immediately beside
+=clang_format_files=, so =generate=, =regenerate= and the drift check all
+format. It passes the repository configuration explicitly, because the drift
+check renders into a temporary directory where a configuration discovered by
+walking up from the file does not exist. It prefers the workspace's prettier,
+whose version =package.json= declares, and warns when the one it runs differs:
+a different prettier formats differently, and the drift gate would then read
+every generated file as drifted.
+
+** Unit 3 — format the tree once and gate it
+
+=prettier --write= over the workspace: 216 files, 148 of them generated. One
+generated file is deleted rather than formatted, because no model and facet
+produce it and no C++ twin or importer exists. The TypeScript workflow gains a
+=Format check= step, and the codegen-drift workflow installs the declared
+prettier in both jobs that render.
+
+** What the render exposed
+
+=compass codegen regenerate --all --address ores.ts= — the command the README
+documents — generates the projection for every component in the catalogue, not
+for the components that project. It added five trees the repository has never
+carried, and the added =trading= tree does not typecheck. The generated tree
+was reverted and formatted in place instead; the command's hazard is filed as
+a capture.
+
+The drift sweep then reported what the formatting touched: 18 files of
+refdata's generated protocol directory, whose content the templates no longer
+produce. Regenerating refdata renders 499 files across the component, C++
+included, which is its own story and another branch's work, so those files are
+excluded from the check by name of directory and with the reason written
+beside the pattern.
 
 * Measurements
 
@@ -60,9 +100,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The format gate | green | =npm run format:check= | =0df6665001= |
+| Files the format touched | 216: 148 generated, 68 hand-written | =git diff --diff-filter=M --name-only= | =0df6665001= |
+| Generated files the render no longer produces | 1, deleted | =git diff --diff-filter=D --name-only= | =0df6665001= |
+| The codegen suite | 927 cases, 5 of them new | =python3 -m pytest projects/ores.codegen/tests -q= | =0df6665001= |
+| The workspace suite | 100 cases in 13 files | =npm test= | =0df6665001= |
+| The drift sweep | clean | =check_component_drift.py --sweep --base origin/main= | =0df6665001= |
 
 * Notes
+
+- *The documented regenerate-all command is unsafe.* It writes the TypeScript
+  projection for components that do not project, and the tree it adds for
+  trading does not typecheck. Filed as
+  [[id:F973EA48-4D2D-4EBB-9D5D-3EDECE772C9C][a capture]]. This task formats the
+  committed tree in place instead of regenerating it.
+- *One orphan generated file.* =market_series_asset_class_protocol.ts= is
+  produced by no model and facet at either address, has no C++ twin and is
+  imported by nothing. It was deleted rather than formatted: TS-R02 forbids
+  formatting a generated file with a tool other than the one that wrote it, and
+  no tool writes this one.
+- *refdata's generated projection is drifted.* Eighteen files disagree with the
+  render about content, and the render also disagrees with the C++ write shapes
+  about =party_id=. Filed as
+  [[id:E67AF3CA-C995-44F4-AD87-0CF9C7855551][a capture]]. Until it is fixed, the
+  directory is excluded from the check, so the format gate does not cover those
+  files.
+- *The templates still emit ragged text.* The formatter normalises it, which is
+  the point of a second step, so no template needed changing.
+- *The first audit's conclusion was read too narrowly.* It said the generated
+  tree should be the generator's business; that is compatible with the
+  generator running the formatter, and this is what it does. The standard now
+  records the correction.
 
 * Test Scenarios
 
@@ -79,7 +147,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2294][#2294]] | [web] Format the generated TypeScript in the render, and gate it |
 
 * Review
 
@@ -88,3 +156,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The TypeScript render formats its own output, the style is committed, the tree
+passes the check, and the check runs on a pull request.
+
+=prettier_format_files= sits beside =clang_format_files=, so the generator and
+the drift gate agree on what *formatted* means by construction rather than by
+convention. That is what makes the drift gate safe to keep: it compares bytes.
+The step prefers the workspace's prettier and warns when the version it runs
+differs, which is the one way that agreement can quietly break.
+
+The tree was formatted once — 216 files, 148 of them generated — and one
+generated file was deleted, because no model and facet produce it.
+
+Two findings are captures rather than fixes: the documented regenerate-all
+command generates components that do not project, and refdata's generated wire
+projection is drifted. The second is why refdata's protocol directory is
+excluded from the check, with the reason written beside the pattern.
+
+The TypeScript Clean Standard records what moved: TS-R02, TS-H01 and TS-V04 are
+met, TS-V08 is closer but still open, and the first audit's conclusion about the
+generated tree is corrected rather than left to mislead the next reader.

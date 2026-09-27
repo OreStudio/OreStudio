@@ -168,15 +168,15 @@ export interface GetFeedBindingVersionResponse {
 }
 
 export const subjects = {
-    list_feed_bindings_request: "marketdata.v1.feed_bindings.list",
-    get_feed_binding_request: "marketdata.v1.feed_bindings.get",
-    get_many_feed_bindings_request: "marketdata.v1.feed_bindings.get_many",
-    put_feed_binding_request: "marketdata.v1.feed_bindings.put",
-    put_many_feed_bindings_request: "marketdata.v1.feed_bindings.put_many",
-    delete_feed_binding_request: "marketdata.v1.feed_bindings.delete",
-    delete_many_feed_bindings_request: "marketdata.v1.feed_bindings.delete_many",
-    list_feed_binding_versions_request: "marketdata.v1.feed_bindings_versions.list",
-    get_feed_binding_version_request: "marketdata.v1.feed_bindings_versions.get",
+    list_feed_bindings_request: 'marketdata.v1.feed_bindings.list',
+    get_feed_binding_request: 'marketdata.v1.feed_bindings.get',
+    get_many_feed_bindings_request: 'marketdata.v1.feed_bindings.get_many',
+    put_feed_binding_request: 'marketdata.v1.feed_bindings.put',
+    put_many_feed_bindings_request: 'marketdata.v1.feed_bindings.put_many',
+    delete_feed_binding_request: 'marketdata.v1.feed_bindings.delete',
+    delete_many_feed_bindings_request: 'marketdata.v1.feed_bindings.delete_many',
+    list_feed_binding_versions_request: 'marketdata.v1.feed_bindings_versions.list',
+    get_feed_binding_version_request: 'marketdata.v1.feed_bindings_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "marketdata.v1.feed_bindings_events.created",
-    updated: "marketdata.v1.feed_bindings_events.updated",
-    deleted: "marketdata.v1.feed_bindings_events.deleted",
+    created: 'marketdata.v1.feed_bindings_events.created',
+    updated: 'marketdata.v1.feed_bindings_events.updated',
+    deleted: 'marketdata.v1.feed_bindings_events.deleted',
 } as const;

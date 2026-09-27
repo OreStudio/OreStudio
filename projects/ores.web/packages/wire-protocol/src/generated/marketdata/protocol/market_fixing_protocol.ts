@@ -134,13 +134,13 @@ export interface DeleteManyMarketFixingsResponse {
 }
 
 export const subjects = {
-    list_market_fixings_request: "marketdata.v1.market_fixings.list",
-    get_market_fixing_request: "marketdata.v1.market_fixings.get",
-    get_many_market_fixings_request: "marketdata.v1.market_fixings.get_many",
-    put_market_fixing_request: "marketdata.v1.market_fixings.put",
-    put_many_market_fixings_request: "marketdata.v1.market_fixings.put_many",
-    delete_market_fixing_request: "marketdata.v1.market_fixings.delete",
-    delete_many_market_fixings_request: "marketdata.v1.market_fixings.delete_many",
+    list_market_fixings_request: 'marketdata.v1.market_fixings.list',
+    get_market_fixing_request: 'marketdata.v1.market_fixings.get',
+    get_many_market_fixings_request: 'marketdata.v1.market_fixings.get_many',
+    put_market_fixing_request: 'marketdata.v1.market_fixings.put',
+    put_many_market_fixings_request: 'marketdata.v1.market_fixings.put_many',
+    delete_market_fixing_request: 'marketdata.v1.market_fixings.delete',
+    delete_many_market_fixings_request: 'marketdata.v1.market_fixings.delete_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -163,7 +163,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "marketdata.v1.market_fixings_events.created",
-    updated: "marketdata.v1.market_fixings_events.updated",
-    deleted: "marketdata.v1.market_fixings_events.deleted",
+    created: 'marketdata.v1.market_fixings_events.created',
+    updated: 'marketdata.v1.market_fixings_events.updated',
+    deleted: 'marketdata.v1.market_fixings_events.deleted',
 } as const;

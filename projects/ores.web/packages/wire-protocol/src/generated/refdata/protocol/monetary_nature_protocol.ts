@@ -166,15 +166,15 @@ export interface GetMonetaryNatureVersionResponse {
 }
 
 export const subjects = {
-    list_monetary_natures_request: "refdata.v1.monetary_natures.list",
-    get_monetary_nature_request: "refdata.v1.monetary_natures.get",
-    get_many_monetary_natures_request: "refdata.v1.monetary_natures.get_many",
-    put_monetary_nature_request: "refdata.v1.monetary_natures.put",
-    put_many_monetary_natures_request: "refdata.v1.monetary_natures.put_many",
-    delete_monetary_nature_request: "refdata.v1.monetary_natures.delete",
-    delete_many_monetary_natures_request: "refdata.v1.monetary_natures.delete_many",
-    list_monetary_nature_versions_request: "refdata.v1.monetary_natures_versions.list",
-    get_monetary_nature_version_request: "refdata.v1.monetary_natures_versions.get",
+    list_monetary_natures_request: 'refdata.v1.monetary_natures.list',
+    get_monetary_nature_request: 'refdata.v1.monetary_natures.get',
+    get_many_monetary_natures_request: 'refdata.v1.monetary_natures.get_many',
+    put_monetary_nature_request: 'refdata.v1.monetary_natures.put',
+    put_many_monetary_natures_request: 'refdata.v1.monetary_natures.put_many',
+    delete_monetary_nature_request: 'refdata.v1.monetary_natures.delete',
+    delete_many_monetary_natures_request: 'refdata.v1.monetary_natures.delete_many',
+    list_monetary_nature_versions_request: 'refdata.v1.monetary_natures_versions.list',
+    get_monetary_nature_version_request: 'refdata.v1.monetary_natures_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.monetary_natures_events.created",
-    updated: "refdata.v1.monetary_natures_events.updated",
-    deleted: "refdata.v1.monetary_natures_events.deleted",
+    created: 'refdata.v1.monetary_natures_events.created',
+    updated: 'refdata.v1.monetary_natures_events.updated',
+    deleted: 'refdata.v1.monetary_natures_events.deleted',
 } as const;

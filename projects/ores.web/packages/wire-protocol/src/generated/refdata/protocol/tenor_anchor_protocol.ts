@@ -165,15 +165,15 @@ export interface GetTenorAnchorVersionResponse {
 }
 
 export const subjects = {
-    list_tenor_anchors_request: "refdata.v1.tenor_anchors.list",
-    get_tenor_anchor_request: "refdata.v1.tenor_anchors.get",
-    get_many_tenor_anchors_request: "refdata.v1.tenor_anchors.get_many",
-    put_tenor_anchor_request: "refdata.v1.tenor_anchors.put",
-    put_many_tenor_anchors_request: "refdata.v1.tenor_anchors.put_many",
-    delete_tenor_anchor_request: "refdata.v1.tenor_anchors.delete",
-    delete_many_tenor_anchors_request: "refdata.v1.tenor_anchors.delete_many",
-    list_tenor_anchor_versions_request: "refdata.v1.tenor_anchors_versions.list",
-    get_tenor_anchor_version_request: "refdata.v1.tenor_anchors_versions.get",
+    list_tenor_anchors_request: 'refdata.v1.tenor_anchors.list',
+    get_tenor_anchor_request: 'refdata.v1.tenor_anchors.get',
+    get_many_tenor_anchors_request: 'refdata.v1.tenor_anchors.get_many',
+    put_tenor_anchor_request: 'refdata.v1.tenor_anchors.put',
+    put_many_tenor_anchors_request: 'refdata.v1.tenor_anchors.put_many',
+    delete_tenor_anchor_request: 'refdata.v1.tenor_anchors.delete',
+    delete_many_tenor_anchors_request: 'refdata.v1.tenor_anchors.delete_many',
+    list_tenor_anchor_versions_request: 'refdata.v1.tenor_anchors_versions.list',
+    get_tenor_anchor_version_request: 'refdata.v1.tenor_anchors_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.tenor_anchors_events.created",
-    updated: "refdata.v1.tenor_anchors_events.updated",
-    deleted: "refdata.v1.tenor_anchors_events.deleted",
+    created: 'refdata.v1.tenor_anchors_events.created',
+    updated: 'refdata.v1.tenor_anchors_events.updated',
+    deleted: 'refdata.v1.tenor_anchors_events.deleted',
 } as const;

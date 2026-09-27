@@ -36,21 +36,21 @@ export type Language = (typeof LANGUAGES)[number];
 export const SOURCE_LANGUAGE: Language = 'en';
 
 export interface LanguageInfo {
-  readonly code: Language;
-  /** The name in the language itself, which is how a person recognises it. */
-  readonly name: string;
-  /** The name in English, for a person who does not read the language. */
-  readonly englishName: string;
+    readonly code: Language;
+    /** The name in the language itself, which is how a person recognises it. */
+    readonly name: string;
+    /** The name in English, for a person who does not read the language. */
+    readonly englishName: string;
 }
 
 export const LANGUAGE_INFO: Readonly<Record<Language, LanguageInfo>> = {
-  en: { code: 'en', name: 'English', englishName: 'English' },
-  pt: { code: 'pt', name: 'Português', englishName: 'Portuguese' },
-  fr: { code: 'fr', name: 'Français', englishName: 'French' },
+    en: { code: 'en', name: 'English', englishName: 'English' },
+    pt: { code: 'pt', name: 'Português', englishName: 'Portuguese' },
+    fr: { code: 'fr', name: 'Français', englishName: 'French' },
 };
 
 export function isLanguage(value: string): value is Language {
-  return (LANGUAGES as readonly string[]).includes(value);
+    return (LANGUAGES as readonly string[]).includes(value);
 }
 
 /**
@@ -61,11 +61,11 @@ export function isLanguage(value: string): value is Language {
  * `pt-PT` both find `pt`.
  */
 export function detectLanguage(preferred: readonly string[]): Language {
-  for (const tag of preferred) {
-    const primary = tag.split('-')[0]?.toLowerCase();
-    if (primary !== undefined && isLanguage(primary)) {
-      return primary;
+    for (const tag of preferred) {
+        const primary = tag.split('-')[0]?.toLowerCase();
+        if (primary !== undefined && isLanguage(primary)) {
+            return primary;
+        }
     }
-  }
-  return SOURCE_LANGUAGE;
+    return SOURCE_LANGUAGE;
 }

@@ -171,15 +171,15 @@ export interface GetMarketSeriesVersionResponse {
 }
 
 export const subjects = {
-    list_market_series_request: "marketdata.v1.market_series.list",
-    get_market_series_request: "marketdata.v1.market_series.get",
-    get_many_market_series_request: "marketdata.v1.market_series.get_many",
-    put_market_series_request: "marketdata.v1.market_series.put",
-    put_many_market_series_request: "marketdata.v1.market_series.put_many",
-    delete_market_series_request: "marketdata.v1.market_series.delete",
-    delete_many_market_series_request: "marketdata.v1.market_series.delete_many",
-    list_market_series_versions_request: "marketdata.v1.market_series_versions.list",
-    get_market_series_version_request: "marketdata.v1.market_series_versions.get",
+    list_market_series_request: 'marketdata.v1.market_series.list',
+    get_market_series_request: 'marketdata.v1.market_series.get',
+    get_many_market_series_request: 'marketdata.v1.market_series.get_many',
+    put_market_series_request: 'marketdata.v1.market_series.put',
+    put_many_market_series_request: 'marketdata.v1.market_series.put_many',
+    delete_market_series_request: 'marketdata.v1.market_series.delete',
+    delete_many_market_series_request: 'marketdata.v1.market_series.delete_many',
+    list_market_series_versions_request: 'marketdata.v1.market_series_versions.list',
+    get_market_series_version_request: 'marketdata.v1.market_series_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -204,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "marketdata.v1.market_series_events.created",
-    updated: "marketdata.v1.market_series_events.updated",
-    deleted: "marketdata.v1.market_series_events.deleted",
+    created: 'marketdata.v1.market_series_events.created',
+    updated: 'marketdata.v1.market_series_events.updated',
+    deleted: 'marketdata.v1.market_series_events.deleted',
 } as const;

@@ -170,15 +170,15 @@ export interface GetReportDefinitionVersionResponse {
 }
 
 export const subjects = {
-    list_report_definitions_request: "reporting.v1.report_definitions.list",
-    get_report_definition_request: "reporting.v1.report_definitions.get",
-    get_many_report_definitions_request: "reporting.v1.report_definitions.get_many",
-    put_report_definition_request: "reporting.v1.report_definitions.put",
-    put_many_report_definitions_request: "reporting.v1.report_definitions.put_many",
-    delete_report_definition_request: "reporting.v1.report_definitions.delete",
-    delete_many_report_definitions_request: "reporting.v1.report_definitions.delete_many",
-    list_report_definition_versions_request: "reporting.v1.report_definitions_versions.list",
-    get_report_definition_version_request: "reporting.v1.report_definitions_versions.get",
+    list_report_definitions_request: 'reporting.v1.report_definitions.list',
+    get_report_definition_request: 'reporting.v1.report_definitions.get',
+    get_many_report_definitions_request: 'reporting.v1.report_definitions.get_many',
+    put_report_definition_request: 'reporting.v1.report_definitions.put',
+    put_many_report_definitions_request: 'reporting.v1.report_definitions.put_many',
+    delete_report_definition_request: 'reporting.v1.report_definitions.delete',
+    delete_many_report_definitions_request: 'reporting.v1.report_definitions.delete_many',
+    list_report_definition_versions_request: 'reporting.v1.report_definitions_versions.list',
+    get_report_definition_version_request: 'reporting.v1.report_definitions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.report_definitions_events.created",
-    updated: "reporting.v1.report_definitions_events.updated",
-    deleted: "reporting.v1.report_definitions_events.deleted",
+    created: 'reporting.v1.report_definitions_events.created',
+    updated: 'reporting.v1.report_definitions_events.updated',
+    deleted: 'reporting.v1.report_definitions_events.deleted',
 } as const;

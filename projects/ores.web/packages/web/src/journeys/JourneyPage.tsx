@@ -22,25 +22,32 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Notice, cx } from '../ui/Primitives.js';
-import { canGoBack, nextPosition, rail, stepAt, type JourneyStep, type RailState } from './runtime.js';
+import {
+    canGoBack,
+    nextPosition,
+    rail,
+    stepAt,
+    type JourneyStep,
+    type RailState,
+} from './runtime.js';
 
 /** The journey page's inputs: the step list, where the person is, and how to move. */
 export interface JourneyPageProps {
-  readonly steps: readonly JourneyStep<ReactNode>[];
-  readonly at: number;
-  readonly onMove: (index: number) => void;
+    readonly steps: readonly JourneyStep<ReactNode>[];
+    readonly at: number;
+    readonly onMove: (index: number) => void;
 }
 
 const RAIL_ENTRY: Record<RailState, string> = {
-  done: 'text-ink-muted',
-  current: 'bg-surface-hover font-medium text-ink',
-  ahead: 'text-ink-faint',
+    done: 'text-ink-muted',
+    current: 'bg-surface-hover font-medium text-ink',
+    ahead: 'text-ink-faint',
 };
 
 const RAIL_MARK: Record<RailState, string> = {
-  done: 'border-up text-up',
-  current: 'border-accent text-accent-bright',
-  ahead: 'border-line',
+    done: 'border-up text-up',
+    current: 'border-accent text-accent-bright',
+    ahead: 'border-line',
 };
 
 /**
@@ -60,96 +67,96 @@ const RAIL_MARK: Record<RailState, string> = {
  * imports it yet.
  */
 export function JourneyPage({ steps, at, onMove }: JourneyPageProps): ReactNode {
-  const { t } = useTranslation();
-  const [failure, setFailure] = useState<string>();
-  const [running, setRunning] = useState(false);
+    const { t } = useTranslation();
+    const [failure, setFailure] = useState<string>();
+    const [running, setRunning] = useState(false);
 
-  const entries = rail(steps, at);
-  const step = stepAt(steps, at);
-  const forward = nextPosition(steps, at);
-  const back = canGoBack(steps, at);
+    const entries = rail(steps, at);
+    const step = stepAt(steps, at);
+    const forward = nextPosition(steps, at);
+    const back = canGoBack(steps, at);
 
-  const advance = async (): Promise<void> => {
-    const action = step.next;
-    if (action === undefined) {
-      return;
-    }
-    setFailure(undefined);
-    if (action.run !== undefined) {
-      setRunning(true);
-      try {
-        await action.run();
-      } catch (error) {
-        setRunning(false);
-        setFailure(error instanceof Error ? error.message : String(error));
-        return;
-      }
-      setRunning(false);
-    }
-    if (forward !== undefined) {
-      onMove(forward);
-    }
-  };
+    const advance = async (): Promise<void> => {
+        const action = step.next;
+        if (action === undefined) {
+            return;
+        }
+        setFailure(undefined);
+        if (action.run !== undefined) {
+            setRunning(true);
+            try {
+                await action.run();
+            } catch (error) {
+                setRunning(false);
+                setFailure(error instanceof Error ? error.message : String(error));
+                return;
+            }
+            setRunning(false);
+        }
+        if (forward !== undefined) {
+            onMove(forward);
+        }
+    };
 
-  return (
-    <div className="grid gap-8 md:grid-cols-[14rem_1fr]">
-      <nav aria-label={t('journey.steps')}>
-        <ol className="space-y-1">
-          {entries.map((entry, index) => (
-            <li
-              key={entry.id}
-              aria-current={entry.state === 'current' ? 'step' : undefined}
-              className={cx(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm',
-                RAIL_ENTRY[entry.state],
-              )}
-            >
-              <span
-                aria-hidden
-                className={cx(
-                  'grid size-6 shrink-0 place-items-center rounded-full border text-xs',
-                  RAIL_MARK[entry.state],
+    return (
+        <div className="grid gap-8 md:grid-cols-[14rem_1fr]">
+            <nav aria-label={t('journey.steps')}>
+                <ol className="space-y-1">
+                    {entries.map((entry, index) => (
+                        <li
+                            key={entry.id}
+                            aria-current={entry.state === 'current' ? 'step' : undefined}
+                            className={cx(
+                                'flex items-center gap-3 rounded-md px-3 py-2 text-sm',
+                                RAIL_ENTRY[entry.state],
+                            )}
+                        >
+                            <span
+                                aria-hidden
+                                className={cx(
+                                    'grid size-6 shrink-0 place-items-center rounded-full border text-xs',
+                                    RAIL_MARK[entry.state],
+                                )}
+                            >
+                                {entry.state === 'done' ? '✓' : index + 1}
+                            </span>
+                            {entry.title}
+                        </li>
+                    ))}
+                </ol>
+            </nav>
+
+            <section className="card p-6">
+                <h2 className="mb-1 text-lg font-semibold">{step.title}</h2>
+                <p className="mb-5 text-sm text-ink-muted">{step.lead}</p>
+                {failure !== undefined && (
+                    <Notice tone="error">{t('journey.actionFailed', { message: failure })}</Notice>
                 )}
-              >
-                {entry.state === 'done' ? '✓' : index + 1}
-              </span>
-              {entry.title}
-            </li>
-          ))}
-        </ol>
-      </nav>
-
-      <section className="card p-6">
-        <h2 className="mb-1 text-lg font-semibold">{step.title}</h2>
-        <p className="mb-5 text-sm text-ink-muted">{step.lead}</p>
-        {failure !== undefined && (
-          <Notice tone="error">{t('journey.actionFailed', { message: failure })}</Notice>
-        )}
-        {step.body}
-        {(step.next !== undefined || back) && (
-          <div className="mt-6 flex border-t border-line pt-4">
-            <Button variant="ghost" disabled={!back} onClick={() => onMove(at - 1)}>
-              {t('common.back')}
-            </Button>
-            {step.next !== undefined && (
-              <Button
-                variant="primary"
-                className="ml-auto"
-                disabled={!step.next.enabled}
-                pending={running}
-                /*
-                 * The button's own pending state reports the
-                 * wait, and a rejection sets the failure notice
-                 * above. Nothing else can act on it.
-                 */
-                onClick={() => void advance()}
-              >
-                {step.next.label}
-              </Button>
-            )}
-          </div>
-        )}
-      </section>
-    </div>
-  );
+                {step.body}
+                {(step.next !== undefined || back) && (
+                    <div className="mt-6 flex border-t border-line pt-4">
+                        <Button variant="ghost" disabled={!back} onClick={() => onMove(at - 1)}>
+                            {t('common.back')}
+                        </Button>
+                        {step.next !== undefined && (
+                            <Button
+                                variant="primary"
+                                className="ml-auto"
+                                disabled={!step.next.enabled}
+                                pending={running}
+                                /*
+                                 * The button's own pending state reports the
+                                 * wait, and a rejection sets the failure notice
+                                 * above. Nothing else can act on it.
+                                 */
+                                onClick={() => void advance()}
+                            >
+                                {step.next.label}
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </section>
+        </div>
+    );
 }

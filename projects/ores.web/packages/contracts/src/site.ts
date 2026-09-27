@@ -36,44 +36,44 @@ import { z } from 'zod';
  */
 
 export const environmentSchema = z.object({
-  /**
-   * The identifier used on the command line.
-   *
-   * Stable and never displayed. A person refers to it in scripts and in a
-   * deployment, so it must not change when the display name does.
-   */
-  id: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  /** What the sign-in screen shows, so it must read well. */
-  displayName: z.string().min(1),
-  description: z.string().default(''),
-  /** NATS server address, without a scheme. */
-  host: z.string().min(1),
-  /** NATS client port. */
-  port: z.int().min(1).max(65535),
-  /** Subject namespace that isolates this environment on a shared broker. */
-  subjectPrefix: z.string().min(1),
-  /** The companion HTTP server, when the deployment runs one. */
-  httpBaseUrl: z.string().default(''),
-  /**
-   * Per-environment certificate overrides.
-   *
-   * Each service presents its own client certificate, and a deployment may
-   * keep them apart from the CA, so these override the shared values.
-   */
-  tls: z
-    .object({
-      ca: z.string().optional(),
-      cert: z.string().optional(),
-      key: z.string().optional(),
-    })
-    .default({}),
-  /**
-   * Marks a deployment that is not production.
-   *
-   * The interface uses it to say so permanently and unmistakably, because the
-   * cost of mistaking one environment for another is high.
-   */
-  nonProduction: z.boolean().default(true),
+    /**
+     * The identifier used on the command line.
+     *
+     * Stable and never displayed. A person refers to it in scripts and in a
+     * deployment, so it must not change when the display name does.
+     */
+    id: z.string().regex(/^[a-z][a-z0-9_]*$/),
+    /** What the sign-in screen shows, so it must read well. */
+    displayName: z.string().min(1),
+    description: z.string().default(''),
+    /** NATS server address, without a scheme. */
+    host: z.string().min(1),
+    /** NATS client port. */
+    port: z.int().min(1).max(65535),
+    /** Subject namespace that isolates this environment on a shared broker. */
+    subjectPrefix: z.string().min(1),
+    /** The companion HTTP server, when the deployment runs one. */
+    httpBaseUrl: z.string().default(''),
+    /**
+     * Per-environment certificate overrides.
+     *
+     * Each service presents its own client certificate, and a deployment may
+     * keep them apart from the CA, so these override the shared values.
+     */
+    tls: z
+        .object({
+            ca: z.string().optional(),
+            cert: z.string().optional(),
+            key: z.string().optional(),
+        })
+        .default({}),
+    /**
+     * Marks a deployment that is not production.
+     *
+     * The interface uses it to say so permanently and unmistakably, because the
+     * cost of mistaking one environment for another is high.
+     */
+    nonProduction: z.boolean().default(true),
 });
 
 export type EnvironmentDefinition = z.infer<typeof environmentSchema>;
@@ -87,73 +87,73 @@ export type EnvironmentDefinition = z.infer<typeof environmentSchema>;
  * filling in the form, nothing more.
  */
 export const developerAccountSchema = z.object({
-  username: z.string().min(1),
-  label: z.string().default(''),
-  /** What the account is useful for testing, so the list can be scanned. */
-  description: z.string().default(''),
+    username: z.string().min(1),
+    label: z.string().default(''),
+    /** What the account is useful for testing, so the list can be scanned. */
+    description: z.string().default(''),
 });
 
 export type DeveloperAccount = z.infer<typeof developerAccountSchema>;
 
 export const siteConfigurationSchema = z
-  .object({
-    /** Which environment this site serves. Must match one of `environments`. */
-    active: z.string().default(''),
-    environments: z.array(environmentSchema).min(1),
-    /**
-     * Shared certificate paths, used when an environment does not override
-     * them. They may be file paths or inline PEM.
-     */
-    tls: z.object({
-      ca: z.string().default(''),
-      cert: z.string().default(''),
-      key: z.string().default(''),
-    }),
-    /**
-     * Whether the developer surface is offered.
-     *
-     * Deployment configuration rather than a browser preference, so it is
-     * auditable and cannot be switched on by clearing storage. It only ever
-     * reveals a list of test accounts.
-     */
-    developerTools: z.boolean().default(false),
-    /** Test identities, offered only when `developerTools` is on. */
-    developerAccounts: z.array(developerAccountSchema).default([]),
-  })
-  .superRefine((value, ctx) => {
-    // A file that names an environment it does not define is a mistake worth
-    // failing on, because the alternative is a site that starts and then
-    // cannot connect to anything.
-    const ids = new Set(value.environments.map((environment) => environment.id));
-    for (const environment of value.environments) {
-      if (ids.size !== value.environments.length) {
-        const duplicates = value.environments
-          .map((item) => item.id)
-          .filter((id, index, all) => all.indexOf(id) !== index);
-        ctx.addIssue({
-          code: 'custom',
-          message: `Duplicate environment id(s): ${[...new Set(duplicates)].join(', ')}`,
-        });
-        break;
-      }
-    }
-    if (value.active.length > 0 && !ids.has(value.active)) {
-      ctx.addIssue({
-        code: 'custom',
-        message: `active environment '${value.active}' is not defined; known: ${[...ids].join(', ')}`,
-        path: ['active'],
-      });
-    }
-  });
+    .object({
+        /** Which environment this site serves. Must match one of `environments`. */
+        active: z.string().default(''),
+        environments: z.array(environmentSchema).min(1),
+        /**
+         * Shared certificate paths, used when an environment does not override
+         * them. They may be file paths or inline PEM.
+         */
+        tls: z.object({
+            ca: z.string().default(''),
+            cert: z.string().default(''),
+            key: z.string().default(''),
+        }),
+        /**
+         * Whether the developer surface is offered.
+         *
+         * Deployment configuration rather than a browser preference, so it is
+         * auditable and cannot be switched on by clearing storage. It only ever
+         * reveals a list of test accounts.
+         */
+        developerTools: z.boolean().default(false),
+        /** Test identities, offered only when `developerTools` is on. */
+        developerAccounts: z.array(developerAccountSchema).default([]),
+    })
+    .superRefine((value, ctx) => {
+        // A file that names an environment it does not define is a mistake worth
+        // failing on, because the alternative is a site that starts and then
+        // cannot connect to anything.
+        const ids = new Set(value.environments.map((environment) => environment.id));
+        for (const environment of value.environments) {
+            if (ids.size !== value.environments.length) {
+                const duplicates = value.environments
+                    .map((item) => item.id)
+                    .filter((id, index, all) => all.indexOf(id) !== index);
+                ctx.addIssue({
+                    code: 'custom',
+                    message: `Duplicate environment id(s): ${[...new Set(duplicates)].join(', ')}`,
+                });
+                break;
+            }
+        }
+        if (value.active.length > 0 && !ids.has(value.active)) {
+            ctx.addIssue({
+                code: 'custom',
+                message: `active environment '${value.active}' is not defined; known: ${[...ids].join(', ')}`,
+                path: ['active'],
+            });
+        }
+    });
 
 export type SiteConfiguration = z.infer<typeof siteConfigurationSchema>;
 
 /** What the browser is told about the environment it is signed in to. */
 export const environmentViewSchema = z.object({
-  id: z.string(),
-  displayName: z.string(),
-  description: z.string(),
-  nonProduction: z.boolean(),
+    id: z.string(),
+    displayName: z.string(),
+    description: z.string(),
+    nonProduction: z.boolean(),
 });
 export type EnvironmentView = z.infer<typeof environmentViewSchema>;
 
@@ -166,11 +166,11 @@ export type EnvironmentView = z.infer<typeof environmentViewSchema>;
  * business.
  */
 export const siteStateSchema = z.object({
-  appName: z.string(),
-  environment: environmentViewSchema,
-  developerTools: z.boolean(),
-  /** Test identities, empty unless the developer surface is on. */
-  developerAccounts: z.array(developerAccountSchema),
+    appName: z.string(),
+    environment: environmentViewSchema,
+    developerTools: z.boolean(),
+    /** Test identities, empty unless the developer surface is on. */
+    developerAccounts: z.array(developerAccountSchema),
 });
 export type SiteState = z.infer<typeof siteStateSchema>;
 
@@ -183,17 +183,17 @@ export type SiteState = z.infer<typeof siteStateSchema>;
  * developer can see what they are actually connected to.
  */
 export const deploymentViewSchema = z.object({
-  environment: environmentSchema,
-  configFile: z.string(),
-  /** Whether the environment was chosen on the command line or in the file. */
-  developerTools: z.boolean(),
-  /** Every environment the configuration declares, so the others are visible. */
-  available: z.array(
-    z.object({
-      id: z.string(),
-      displayName: z.string(),
-      nonProduction: z.boolean(),
-    }),
-  ),
+    environment: environmentSchema,
+    configFile: z.string(),
+    /** Whether the environment was chosen on the command line or in the file. */
+    developerTools: z.boolean(),
+    /** Every environment the configuration declares, so the others are visible. */
+    available: z.array(
+        z.object({
+            id: z.string(),
+            displayName: z.string(),
+            nonProduction: z.boolean(),
+        }),
+    ),
 });
 export type DeploymentView = z.infer<typeof deploymentViewSchema>;

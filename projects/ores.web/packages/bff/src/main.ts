@@ -32,62 +32,62 @@ import { loadSiteConfiguration } from './site-config.js';
  * request.
  */
 async function main(): Promise<void> {
-  const { values } = parseArgs({
-    options: {
-      env: { type: 'string', short: 'e' },
-      help: { type: 'boolean', default: false },
-    },
-    allowPositionals: true,
-  });
+    const { values } = parseArgs({
+        options: {
+            env: { type: 'string', short: 'e' },
+            help: { type: 'boolean', default: false },
+        },
+        allowPositionals: true,
+    });
 
-  if (values.help === true) {
-    process.stdout.write(
-      'Usage: ores.web.bff [--env <environment>]\n\n' +
-        '  --env, -e   Which ORE Studio environment to serve. Overrides the\n' +
-        '              site configuration. See config/environments.json.\n',
+    if (values.help === true) {
+        process.stdout.write(
+            'Usage: ores.web.bff [--env <environment>]\n\n' +
+                '  --env, -e   Which ORE Studio environment to serve. Overrides the\n' +
+                '              site configuration. See config/environments.json.\n',
+        );
+        return;
+    }
+
+    const config = loadConfig();
+    const site = loadSiteConfiguration({
+        projectRoot: process.cwd(),
+        ...(values.env === undefined ? {} : { environmentId: values.env }),
+    });
+
+    const server = buildServer({ config, site });
+
+    // Say which environment this process serves, first thing, because the worst
+    // failure mode is not knowing whether you are looking at staging or
+    // production.
+    server.log.info(
+        {
+            environment: site.environment.id,
+            displayName: site.environment.displayName,
+            nonProduction: site.environment.nonProduction,
+            developerTools: site.configuration.developerTools,
+            configFile: site.source,
+        },
+        `serving '${site.environment.displayName}' (${site.environment.id})`,
     );
-    return;
-  }
 
-  const config = loadConfig();
-  const site = loadSiteConfiguration({
-    projectRoot: process.cwd(),
-    ...(values.env === undefined ? {} : { environmentId: values.env }),
-  });
+    const shutdown = async (signal: string): Promise<void> => {
+        server.log.info({ signal }, 'shutting down');
+        await server.close();
+        process.exit(0);
+    };
+    process.on('SIGINT', () => void shutdown('SIGINT'));
+    process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
-  const server = buildServer({ config, site });
+    await server.listen({ port: config.port, host: config.host });
 
-  // Say which environment this process serves, first thing, because the worst
-  // failure mode is not knowing whether you are looking at staging or
-  // production.
-  server.log.info(
-    {
-      environment: site.environment.id,
-      displayName: site.environment.displayName,
-      nonProduction: site.environment.nonProduction,
-      developerTools: site.configuration.developerTools,
-      configFile: site.source,
-    },
-    `serving '${site.environment.displayName}' (${site.environment.id})`,
-  );
-
-  const shutdown = async (signal: string): Promise<void> => {
-    server.log.info({ signal }, 'shutting down');
-    await server.close();
-    process.exit(0);
-  };
-  process.on('SIGINT', () => void shutdown('SIGINT'));
-  process.on('SIGTERM', () => void shutdown('SIGTERM'));
-
-  await server.listen({ port: config.port, host: config.host });
-
-  // `compass services start` reads the standard output log for this exact
-  // line to decide the service is ready, so it must follow the successful
-  // bind. See render_node_unit in projects/ores.compass/src/systemd_generate.py.
-  server.log.info('Service ready');
+    // `compass services start` reads the standard output log for this exact
+    // line to decide the service is ready, so it must follow the successful
+    // bind. See render_node_unit in projects/ores.compass/src/systemd_generate.py.
+    server.log.info('Service ready');
 }
 
 main().catch((error: unknown) => {
-  console.error('failed to start:', error);
-  process.exit(1);
+    console.error('failed to start:', error);
+    process.exit(1);
 });

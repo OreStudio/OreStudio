@@ -170,15 +170,15 @@ export interface GetCountryVersionResponse {
 }
 
 export const subjects = {
-    list_countries_request: "refdata.v1.countries.list",
-    get_country_request: "refdata.v1.countries.get",
-    get_many_countries_request: "refdata.v1.countries.get_many",
-    put_country_request: "refdata.v1.countries.put",
-    put_many_countries_request: "refdata.v1.countries.put_many",
-    delete_country_request: "refdata.v1.countries.delete",
-    delete_many_countries_request: "refdata.v1.countries.delete_many",
-    list_country_versions_request: "refdata.v1.countries_versions.list",
-    get_country_version_request: "refdata.v1.countries_versions.get",
+    list_countries_request: 'refdata.v1.countries.list',
+    get_country_request: 'refdata.v1.countries.get',
+    get_many_countries_request: 'refdata.v1.countries.get_many',
+    put_country_request: 'refdata.v1.countries.put',
+    put_many_countries_request: 'refdata.v1.countries.put_many',
+    delete_country_request: 'refdata.v1.countries.delete',
+    delete_many_countries_request: 'refdata.v1.countries.delete_many',
+    list_country_versions_request: 'refdata.v1.countries_versions.list',
+    get_country_version_request: 'refdata.v1.countries_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.countries_events.created",
-    updated: "refdata.v1.countries_events.updated",
-    deleted: "refdata.v1.countries_events.deleted",
+    created: 'refdata.v1.countries_events.created',
+    updated: 'refdata.v1.countries_events.updated',
+    deleted: 'refdata.v1.countries_events.deleted',
 } as const;

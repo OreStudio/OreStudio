@@ -166,15 +166,15 @@ export interface GetPurposeTypeVersionResponse {
 }
 
 export const subjects = {
-    list_purpose_types_request: "refdata.v1.purpose_types.list",
-    get_purpose_type_request: "refdata.v1.purpose_types.get",
-    get_many_purpose_types_request: "refdata.v1.purpose_types.get_many",
-    put_purpose_type_request: "refdata.v1.purpose_types.put",
-    put_many_purpose_types_request: "refdata.v1.purpose_types.put_many",
-    delete_purpose_type_request: "refdata.v1.purpose_types.delete",
-    delete_many_purpose_types_request: "refdata.v1.purpose_types.delete_many",
-    list_purpose_type_versions_request: "refdata.v1.purpose_types_versions.list",
-    get_purpose_type_version_request: "refdata.v1.purpose_types_versions.get",
+    list_purpose_types_request: 'refdata.v1.purpose_types.list',
+    get_purpose_type_request: 'refdata.v1.purpose_types.get',
+    get_many_purpose_types_request: 'refdata.v1.purpose_types.get_many',
+    put_purpose_type_request: 'refdata.v1.purpose_types.put',
+    put_many_purpose_types_request: 'refdata.v1.purpose_types.put_many',
+    delete_purpose_type_request: 'refdata.v1.purpose_types.delete',
+    delete_many_purpose_types_request: 'refdata.v1.purpose_types.delete_many',
+    list_purpose_type_versions_request: 'refdata.v1.purpose_types_versions.list',
+    get_purpose_type_version_request: 'refdata.v1.purpose_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.purpose_types_events.created",
-    updated: "refdata.v1.purpose_types_events.updated",
-    deleted: "refdata.v1.purpose_types_events.deleted",
+    created: 'refdata.v1.purpose_types_events.created',
+    updated: 'refdata.v1.purpose_types_events.updated',
+    deleted: 'refdata.v1.purpose_types_events.deleted',
 } as const;

@@ -166,15 +166,15 @@ export interface GetAccountTypeVersionResponse {
 }
 
 export const subjects = {
-    list_account_types_request: "iam.v1.account_types.list",
-    get_account_type_request: "iam.v1.account_types.get",
-    get_many_account_types_request: "iam.v1.account_types.get_many",
-    put_account_type_request: "iam.v1.account_types.put",
-    put_many_account_types_request: "iam.v1.account_types.put_many",
-    delete_account_type_request: "iam.v1.account_types.delete",
-    delete_many_account_types_request: "iam.v1.account_types.delete_many",
-    list_account_type_versions_request: "iam.v1.account_types_versions.list",
-    get_account_type_version_request: "iam.v1.account_types_versions.get",
+    list_account_types_request: 'iam.v1.account_types.list',
+    get_account_type_request: 'iam.v1.account_types.get',
+    get_many_account_types_request: 'iam.v1.account_types.get_many',
+    put_account_type_request: 'iam.v1.account_types.put',
+    put_many_account_types_request: 'iam.v1.account_types.put_many',
+    delete_account_type_request: 'iam.v1.account_types.delete',
+    delete_many_account_types_request: 'iam.v1.account_types.delete_many',
+    list_account_type_versions_request: 'iam.v1.account_types_versions.list',
+    get_account_type_version_request: 'iam.v1.account_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.account_types_events.created",
-    updated: "iam.v1.account_types_events.updated",
-    deleted: "iam.v1.account_types_events.deleted",
+    created: 'iam.v1.account_types_events.created',
+    updated: 'iam.v1.account_types_events.updated',
+    deleted: 'iam.v1.account_types_events.deleted',
 } as const;

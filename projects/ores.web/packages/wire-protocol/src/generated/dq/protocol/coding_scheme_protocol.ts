@@ -169,15 +169,15 @@ export interface GetCodingSchemeVersionResponse {
 }
 
 export const subjects = {
-    list_coding_schemes_request: "dq.v1.coding_schemes.list",
-    get_coding_scheme_request: "dq.v1.coding_schemes.get",
-    get_many_coding_schemes_request: "dq.v1.coding_schemes.get_many",
-    put_coding_scheme_request: "dq.v1.coding_schemes.put",
-    put_many_coding_schemes_request: "dq.v1.coding_schemes.put_many",
-    delete_coding_scheme_request: "dq.v1.coding_schemes.delete",
-    delete_many_coding_schemes_request: "dq.v1.coding_schemes.delete_many",
-    list_coding_scheme_versions_request: "dq.v1.coding_schemes_versions.list",
-    get_coding_scheme_version_request: "dq.v1.coding_schemes_versions.get",
+    list_coding_schemes_request: 'dq.v1.coding_schemes.list',
+    get_coding_scheme_request: 'dq.v1.coding_schemes.get',
+    get_many_coding_schemes_request: 'dq.v1.coding_schemes.get_many',
+    put_coding_scheme_request: 'dq.v1.coding_schemes.put',
+    put_many_coding_schemes_request: 'dq.v1.coding_schemes.put_many',
+    delete_coding_scheme_request: 'dq.v1.coding_schemes.delete',
+    delete_many_coding_schemes_request: 'dq.v1.coding_schemes.delete_many',
+    list_coding_scheme_versions_request: 'dq.v1.coding_schemes_versions.list',
+    get_coding_scheme_version_request: 'dq.v1.coding_schemes_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +202,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.coding_schemes_events.created",
-    updated: "dq.v1.coding_schemes_events.updated",
-    deleted: "dq.v1.coding_schemes_events.deleted",
+    created: 'dq.v1.coding_schemes_events.created',
+    updated: 'dq.v1.coding_schemes_events.updated',
+    deleted: 'dq.v1.coding_schemes_events.deleted',
 } as const;

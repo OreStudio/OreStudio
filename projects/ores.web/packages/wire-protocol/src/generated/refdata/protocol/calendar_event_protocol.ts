@@ -206,17 +206,19 @@ export interface GetCalendarEventVersionResponse {
 }
 
 export const subjects = {
-    list_calendar_events_request: "refdata.v1.calendar_events.list",
-    get_calendar_event_request: "refdata.v1.calendar_events.get",
-    get_many_calendar_events_request: "refdata.v1.calendar_events.get_many",
-    put_calendar_event_request: "refdata.v1.calendar_events.put",
-    put_many_calendar_events_request: "refdata.v1.calendar_events.put_many",
-    delete_calendar_event_request: "refdata.v1.calendar_events.delete",
-    delete_many_calendar_events_request: "refdata.v1.calendar_events.delete_many",
-    list_by_calendar_code_calendar_events_request: "refdata.v1.calendar_events.list_by_calendar_code",
-    list_by_diary_entry_type_calendar_events_request: "refdata.v1.calendar_events.list_by_diary_entry_type",
-    list_calendar_event_versions_request: "refdata.v1.calendar_events_versions.list",
-    get_calendar_event_version_request: "refdata.v1.calendar_events_versions.get",
+    list_calendar_events_request: 'refdata.v1.calendar_events.list',
+    get_calendar_event_request: 'refdata.v1.calendar_events.get',
+    get_many_calendar_events_request: 'refdata.v1.calendar_events.get_many',
+    put_calendar_event_request: 'refdata.v1.calendar_events.put',
+    put_many_calendar_events_request: 'refdata.v1.calendar_events.put_many',
+    delete_calendar_event_request: 'refdata.v1.calendar_events.delete',
+    delete_many_calendar_events_request: 'refdata.v1.calendar_events.delete_many',
+    list_by_calendar_code_calendar_events_request:
+        'refdata.v1.calendar_events.list_by_calendar_code',
+    list_by_diary_entry_type_calendar_events_request:
+        'refdata.v1.calendar_events.list_by_diary_entry_type',
+    list_calendar_event_versions_request: 'refdata.v1.calendar_events_versions.list',
+    get_calendar_event_version_request: 'refdata.v1.calendar_events_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -243,7 +245,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.calendar_events_events.created",
-    updated: "refdata.v1.calendar_events_events.updated",
-    deleted: "refdata.v1.calendar_events_events.deleted",
+    created: 'refdata.v1.calendar_events_events.created',
+    updated: 'refdata.v1.calendar_events_events.updated',
+    deleted: 'refdata.v1.calendar_events_events.deleted',
 } as const;

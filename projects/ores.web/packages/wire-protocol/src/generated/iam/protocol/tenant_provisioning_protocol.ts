@@ -22,8 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-export interface CompleteTenantProvisioningCommand {
-}
+export interface CompleteTenantProvisioningCommand {}
 
 export interface CompleteTenantProvisioningResponse {
     success: boolean;
@@ -46,8 +45,7 @@ export interface CompleteTenantProvisioningResponse {
 // deliberately larger than that wait, so the caller keeps waiting while
 // the handler is still working. At the transport default the caller gives
 // up first and reports a timeout for a run that had not finished.
-export interface ProvisionAcmeTenantCommand {
-}
+export interface ProvisionAcmeTenantCommand {}
 
 export interface ProvisionAcmeTenantStep {
     step: string;
@@ -62,8 +60,8 @@ export interface ProvisionAcmeTenantResponse {
 }
 
 export const subjects = {
-    complete_tenant_provisioning_command: "iam.v1.tenants.complete-provisioning",
-    provision_acme_tenant_command: "iam.v1.tenants.provision-acme",
+    complete_tenant_provisioning_command: 'iam.v1.tenants.complete-provisioning',
+    provision_acme_tenant_command: 'iam.v1.tenants.provision-acme',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

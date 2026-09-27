@@ -25,6 +25,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.sql/populate/**"
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
+      - ".prettierrc.yaml"
 
   pull_request:
     branches: ["main"]
@@ -35,6 +36,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.sql/populate/**"
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
+      - ".prettierrc.yaml"
 
   workflow_dispatch:
 
@@ -75,6 +77,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
+      # Regeneration also runs prettier over its TypeScript output, so the
+      # formatter has to be present or every generated TypeScript file reads as
+      # drifted. The version is read from the workspace rather than repeated
+      # here: the drift gate compares bytes, so a prettier other than the one
+      # projects/ores.web declares would format differently and report drift
+      # that is not there.
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install prettier
+        run: |
+          version=$(node -p "require('./projects/ores.web/package.json').devDependencies.prettier")
+          npm install --global "prettier@${version}"
       - name: Check generated output matches the models
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --all
@@ -272,13 +288,21 @@ jobs:
         run: |
           pip install --quiet -r projects/ores.codegen/requirements.txt
       # Two tests drive the regeneration path, which runs clang-format over
-      # its C++ output. The formatter warns and does nothing when it is
-      # absent, so this is not strictly required, but the suite should
-      # exercise the same path the drift job does.
+      # its C++ output and prettier over its TypeScript output. Both formatters
+      # warn and do nothing when absent, so this is not strictly required, but
+      # the suite should exercise the same path the drift job does.
       - name: Install clang-format
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install prettier
+        run: |
+          version=$(node -p "require('./projects/ores.web/package.json').devDependencies.prettier")
+          npm install --global "prettier@${version}"
       - name: Run the codegen suite
         run: |
           python3 -m pytest projects/ores.codegen/tests -q

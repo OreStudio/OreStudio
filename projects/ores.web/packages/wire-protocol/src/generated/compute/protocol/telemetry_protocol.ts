@@ -28,8 +28,7 @@
  * It carries no fields, because the caller's session decides what the
  * summary covers.
  */
-export interface GetGridStatsRequest {
-}
+export interface GetGridStatsRequest {}
 
 /**
  * @brief One node's contribution to the grid summary.
@@ -197,8 +196,8 @@ export interface NodeSampleMessage {
 }
 
 export const subjects = {
-    get_grid_stats_request: "compute.v1.telemetry.get_grid_stats",
-    node_sample_message: "compute.v1.telemetry.node_samples",
+    get_grid_stats_request: 'compute.v1.telemetry.get_grid_stats',
+    node_sample_message: 'compute.v1.telemetry.node_samples',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

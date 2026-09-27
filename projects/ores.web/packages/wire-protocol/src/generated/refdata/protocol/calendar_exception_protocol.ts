@@ -188,16 +188,17 @@ export interface GetCalendarExceptionVersionResponse {
 }
 
 export const subjects = {
-    list_calendar_exceptions_request: "refdata.v1.calendar_exceptions.list",
-    get_calendar_exception_request: "refdata.v1.calendar_exceptions.get",
-    get_many_calendar_exceptions_request: "refdata.v1.calendar_exceptions.get_many",
-    put_calendar_exception_request: "refdata.v1.calendar_exceptions.put",
-    put_many_calendar_exceptions_request: "refdata.v1.calendar_exceptions.put_many",
-    delete_calendar_exception_request: "refdata.v1.calendar_exceptions.delete",
-    delete_many_calendar_exceptions_request: "refdata.v1.calendar_exceptions.delete_many",
-    list_by_calendar_code_calendar_exceptions_request: "refdata.v1.calendar_exceptions.list_by_calendar_code",
-    list_calendar_exception_versions_request: "refdata.v1.calendar_exceptions_versions.list",
-    get_calendar_exception_version_request: "refdata.v1.calendar_exceptions_versions.get",
+    list_calendar_exceptions_request: 'refdata.v1.calendar_exceptions.list',
+    get_calendar_exception_request: 'refdata.v1.calendar_exceptions.get',
+    get_many_calendar_exceptions_request: 'refdata.v1.calendar_exceptions.get_many',
+    put_calendar_exception_request: 'refdata.v1.calendar_exceptions.put',
+    put_many_calendar_exceptions_request: 'refdata.v1.calendar_exceptions.put_many',
+    delete_calendar_exception_request: 'refdata.v1.calendar_exceptions.delete',
+    delete_many_calendar_exceptions_request: 'refdata.v1.calendar_exceptions.delete_many',
+    list_by_calendar_code_calendar_exceptions_request:
+        'refdata.v1.calendar_exceptions.list_by_calendar_code',
+    list_calendar_exception_versions_request: 'refdata.v1.calendar_exceptions_versions.list',
+    get_calendar_exception_version_request: 'refdata.v1.calendar_exceptions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -223,7 +224,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.calendar_exceptions_events.created",
-    updated: "refdata.v1.calendar_exceptions_events.updated",
-    deleted: "refdata.v1.calendar_exceptions_events.deleted",
+    created: 'refdata.v1.calendar_exceptions_events.created',
+    updated: 'refdata.v1.calendar_exceptions_events.updated',
+    deleted: 'refdata.v1.calendar_exceptions_events.deleted',
 } as const;

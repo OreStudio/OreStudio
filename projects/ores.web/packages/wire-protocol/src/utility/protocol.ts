@@ -34,13 +34,7 @@
  * reported by the envelope instead, because there is no body to carry it.
  */
 export type Outcome =
-    | 'ok'
-    | 'invalid'
-    | 'denied'
-    | 'missing'
-    | 'conflict'
-    | 'unavailable'
-    | 'failed';
+    'ok' | 'invalid' | 'denied' | 'missing' | 'conflict' | 'unavailable' | 'failed';
 
 /** One field a request got wrong, named so a caller can act on it. */
 export interface FieldFailure {

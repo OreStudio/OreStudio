@@ -20,12 +20,14 @@ on:  # yamllint disable-line rule:truthy
     branches: ["main"]
     paths:
       - "projects/ores.web/**"
+      - ".prettierrc.yaml"
       - ".github/workflows/typescript.yml"
 
   pull_request:
     branches: ["main"]
     paths:
       - "projects/ores.web/**"
+      - ".prettierrc.yaml"
       - ".github/workflows/typescript.yml"
 
   workflow_dispatch:
@@ -52,6 +54,12 @@ jobs:
         working-directory: projects/ores.web
       - name: Type check
         run: npm run typecheck
+        working-directory: projects/ores.web
+      # The style is declared in the repository's .prettierrc.yaml, the codegen
+      # render applies the same configuration to the generated tree, and this
+      # step is what makes both a gate rather than an intention.
+      - name: Format check
+        run: npm run format:check
         working-directory: projects/ores.web
       - name: Unit tests
         run: npm test

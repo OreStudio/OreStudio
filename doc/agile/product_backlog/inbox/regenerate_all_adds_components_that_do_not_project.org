@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F973EA48-4D2D-4EBB-9D5D-3EDECE772C9C
+:END:
+#+title: The documented regenerate-all command generates components that do not project
+#+description: compass codegen regenerate --all --address ores.ts writes the TypeScript projection for components that never had one, and the added trading tree does not typecheck.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:typescript:gates:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=./compass.sh codegen regenerate --all --address ores.ts=, the command the
+=ores.web= README documents for regenerating all the TypeScript, generates for
+every component in the catalogue rather than for the components that project
+the wire protocol.
+
+Run on 2026-09-27 it created five trees the repository has never carried —
+=scheduler=, =synthetic=, =trading=, =workflow= and =workspace= — beside the
+fourteen that are committed. The added =trading= tree does not typecheck: about
+thirty of its generated domain files reference =InstrumentIdentity= and
+=AuditRecord= with no definition and no import, so =npm run typecheck= fails on
+a tree that was green before the command ran.
+
+* Why
+
+The projection is opt-in per component. The commit that created the generated
+tree is named "Generate the wire protocol for the components that project", and
+the fourteen directories are the components that opted in. =cmd_regenerate=
+iterates the whole catalogue and asks each model whether the address supports
+its type, which is a different question, so the opt-in is not consulted.
+
+Nothing catches it. The drift job renders the components under test only; the
+sweep renders everything but fails only on files the branch touched; and a file
+that did not exist before is not a touched file until somebody commits it. So
+the first person to follow the documented command adds a tree, and the failure
+arrives as a typecheck error in a component they were not working on.
+
+Two things would fix it, and they are not exclusive. The command can respect
+the opt-in and generate only the components that project, which makes it
+idempotent with the tree. Or a gate can report a generated file that no model
+and facet produce, which is the orphan class this same session found in the
+marketdata projection — =market_series_asset_class_protocol.ts=, whose model
+renders no protocol at either address.
+
+* References
+
+- =projects/ores.web/README.md= — "Regenerate all the TypeScript", the command that does this.
+- =projects/ores.codegen/src/codegen/generate.py= — =cmd_regenerate= iterates =all_components()=.
+- Commit =6f7a521fca= — "Generate the wire protocol for the components that project", which committed the fourteen.
+- The typecheck failure, on the branch that found it: =error TS2304: Cannot find name 'InstrumentIdentity'= in =generated/trading/domain/*.ts=.
+
+* See also
+
+- [[id:753E0E14-FDCE-46B5-86AD-0F4AF6721CA3][Format the generated TypeScript with prettier]] — the story whose render step surfaced this.
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] — where this sits until it is pulled into a sprint.

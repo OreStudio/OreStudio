@@ -41,13 +41,13 @@ export const NATS_TLS_CERT_VARIABLE = 'ORES_NATS_TLS_CERT';
 export const NATS_TLS_KEY_VARIABLE = 'ORES_NATS_TLS_KEY';
 
 export interface BrokerTarget {
-  readonly server: string;
-  readonly subjectPrefix: string;
-  readonly tls: {
-    readonly ca: string;
-    readonly cert: string;
-    readonly key: string;
-  };
+    readonly server: string;
+    readonly subjectPrefix: string;
+    readonly tls: {
+        readonly ca: string;
+        readonly cert: string;
+        readonly key: string;
+    };
 }
 
 /**
@@ -55,32 +55,33 @@ export interface BrokerTarget {
  * configuration when the process names none.
  */
 export function resolveBroker(
-  site: SiteConfiguration,
-  environment: EnvironmentDefinition,
-  processEnvironment: NodeJS.ProcessEnv = process.env,
+    site: SiteConfiguration,
+    environment: EnvironmentDefinition,
+    processEnvironment: NodeJS.ProcessEnv = process.env,
 ): BrokerTarget {
-  const url = nonEmpty(processEnvironment[NATS_URL_VARIABLE]);
-  if (url !== undefined) {
+    const url = nonEmpty(processEnvironment[NATS_URL_VARIABLE]);
+    if (url !== undefined) {
+        return {
+            server: url,
+            subjectPrefix:
+                nonEmpty(processEnvironment[NATS_SUBJECT_PREFIX_VARIABLE]) ??
+                environment.subjectPrefix,
+            tls: {
+                ca: processEnvironment[NATS_TLS_CA_VARIABLE] ?? '',
+                cert: processEnvironment[NATS_TLS_CERT_VARIABLE] ?? '',
+                key: processEnvironment[NATS_TLS_KEY_VARIABLE] ?? '',
+            },
+        };
+    }
     return {
-      server: url,
-      subjectPrefix:
-        nonEmpty(processEnvironment[NATS_SUBJECT_PREFIX_VARIABLE]) ?? environment.subjectPrefix,
-      tls: {
-        ca: processEnvironment[NATS_TLS_CA_VARIABLE] ?? '',
-        cert: processEnvironment[NATS_TLS_CERT_VARIABLE] ?? '',
-        key: processEnvironment[NATS_TLS_KEY_VARIABLE] ?? '',
-      },
+        server: `nats://${environment.host}:${environment.port}`,
+        subjectPrefix: environment.subjectPrefix,
+        tls: tlsMaterialFor(site, environment),
     };
-  }
-  return {
-    server: `nats://${environment.host}:${environment.port}`,
-    subjectPrefix: environment.subjectPrefix,
-    tls: tlsMaterialFor(site, environment),
-  };
 }
 
 /** Reads a variable, treating whitespace as absent. */
 function nonEmpty(value: string | undefined): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed !== undefined && trimmed.length > 0 ? trimmed : undefined;
+    const trimmed = value?.trim();
+    return trimmed !== undefined && trimmed.length > 0 ? trimmed : undefined;
 }

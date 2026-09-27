@@ -165,15 +165,15 @@ export interface GetNatureDimensionVersionResponse {
 }
 
 export const subjects = {
-    list_nature_dimensions_request: "dq.v1.nature_dimensions.list",
-    get_nature_dimension_request: "dq.v1.nature_dimensions.get",
-    get_many_nature_dimensions_request: "dq.v1.nature_dimensions.get_many",
-    put_nature_dimension_request: "dq.v1.nature_dimensions.put",
-    put_many_nature_dimensions_request: "dq.v1.nature_dimensions.put_many",
-    delete_nature_dimension_request: "dq.v1.nature_dimensions.delete",
-    delete_many_nature_dimensions_request: "dq.v1.nature_dimensions.delete_many",
-    list_nature_dimension_versions_request: "dq.v1.nature_dimensions_versions.list",
-    get_nature_dimension_version_request: "dq.v1.nature_dimensions_versions.get",
+    list_nature_dimensions_request: 'dq.v1.nature_dimensions.list',
+    get_nature_dimension_request: 'dq.v1.nature_dimensions.get',
+    get_many_nature_dimensions_request: 'dq.v1.nature_dimensions.get_many',
+    put_nature_dimension_request: 'dq.v1.nature_dimensions.put',
+    put_many_nature_dimensions_request: 'dq.v1.nature_dimensions.put_many',
+    delete_nature_dimension_request: 'dq.v1.nature_dimensions.delete',
+    delete_many_nature_dimensions_request: 'dq.v1.nature_dimensions.delete_many',
+    list_nature_dimension_versions_request: 'dq.v1.nature_dimensions_versions.list',
+    get_nature_dimension_version_request: 'dq.v1.nature_dimensions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.nature_dimensions_events.created",
-    updated: "dq.v1.nature_dimensions_events.updated",
-    deleted: "dq.v1.nature_dimensions_events.deleted",
+    created: 'dq.v1.nature_dimensions_events.created',
+    updated: 'dq.v1.nature_dimensions_events.updated',
+    deleted: 'dq.v1.nature_dimensions_events.deleted',
 } as const;

@@ -166,15 +166,15 @@ export interface GetCodeDomainVersionResponse {
 }
 
 export const subjects = {
-    list_code_domains_request: "dq.v1.code_domains.list",
-    get_code_domain_request: "dq.v1.code_domains.get",
-    get_many_code_domains_request: "dq.v1.code_domains.get_many",
-    put_code_domain_request: "dq.v1.code_domains.put",
-    put_many_code_domains_request: "dq.v1.code_domains.put_many",
-    delete_code_domain_request: "dq.v1.code_domains.delete",
-    delete_many_code_domains_request: "dq.v1.code_domains.delete_many",
-    list_code_domain_versions_request: "dq.v1.code_domains_versions.list",
-    get_code_domain_version_request: "dq.v1.code_domains_versions.get",
+    list_code_domains_request: 'dq.v1.code_domains.list',
+    get_code_domain_request: 'dq.v1.code_domains.get',
+    get_many_code_domains_request: 'dq.v1.code_domains.get_many',
+    put_code_domain_request: 'dq.v1.code_domains.put',
+    put_many_code_domains_request: 'dq.v1.code_domains.put_many',
+    delete_code_domain_request: 'dq.v1.code_domains.delete',
+    delete_many_code_domains_request: 'dq.v1.code_domains.delete_many',
+    list_code_domain_versions_request: 'dq.v1.code_domains_versions.list',
+    get_code_domain_version_request: 'dq.v1.code_domains_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.code_domains_events.created",
-    updated: "dq.v1.code_domains_events.updated",
-    deleted: "dq.v1.code_domains_events.deleted",
+    created: 'dq.v1.code_domains_events.created',
+    updated: 'dq.v1.code_domains_events.updated',
+    deleted: 'dq.v1.code_domains_events.deleted',
 } as const;

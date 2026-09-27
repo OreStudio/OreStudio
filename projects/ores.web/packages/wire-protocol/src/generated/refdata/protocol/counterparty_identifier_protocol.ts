@@ -188,16 +188,18 @@ export interface GetCounterpartyIdentifierVersionResponse {
 }
 
 export const subjects = {
-    list_counterparty_identifiers_request: "refdata.v1.counterparty_identifiers.list",
-    get_counterparty_identifier_request: "refdata.v1.counterparty_identifiers.get",
-    get_many_counterparty_identifiers_request: "refdata.v1.counterparty_identifiers.get_many",
-    put_counterparty_identifier_request: "refdata.v1.counterparty_identifiers.put",
-    put_many_counterparty_identifiers_request: "refdata.v1.counterparty_identifiers.put_many",
-    delete_counterparty_identifier_request: "refdata.v1.counterparty_identifiers.delete",
-    delete_many_counterparty_identifiers_request: "refdata.v1.counterparty_identifiers.delete_many",
-    list_by_counterparty_id_counterparty_identifiers_request: "refdata.v1.counterparty_identifiers.list_by_counterparty_id",
-    list_counterparty_identifier_versions_request: "refdata.v1.counterparty_identifiers_versions.list",
-    get_counterparty_identifier_version_request: "refdata.v1.counterparty_identifiers_versions.get",
+    list_counterparty_identifiers_request: 'refdata.v1.counterparty_identifiers.list',
+    get_counterparty_identifier_request: 'refdata.v1.counterparty_identifiers.get',
+    get_many_counterparty_identifiers_request: 'refdata.v1.counterparty_identifiers.get_many',
+    put_counterparty_identifier_request: 'refdata.v1.counterparty_identifiers.put',
+    put_many_counterparty_identifiers_request: 'refdata.v1.counterparty_identifiers.put_many',
+    delete_counterparty_identifier_request: 'refdata.v1.counterparty_identifiers.delete',
+    delete_many_counterparty_identifiers_request: 'refdata.v1.counterparty_identifiers.delete_many',
+    list_by_counterparty_id_counterparty_identifiers_request:
+        'refdata.v1.counterparty_identifiers.list_by_counterparty_id',
+    list_counterparty_identifier_versions_request:
+        'refdata.v1.counterparty_identifiers_versions.list',
+    get_counterparty_identifier_version_request: 'refdata.v1.counterparty_identifiers_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -223,7 +225,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.counterparty_identifiers_events.created",
-    updated: "refdata.v1.counterparty_identifiers_events.updated",
-    deleted: "refdata.v1.counterparty_identifiers_events.deleted",
+    created: 'refdata.v1.counterparty_identifiers_events.created',
+    updated: 'refdata.v1.counterparty_identifiers_events.updated',
+    deleted: 'refdata.v1.counterparty_identifiers_events.deleted',
 } as const;

@@ -165,15 +165,15 @@ export interface GetTagVersionResponse {
 }
 
 export const subjects = {
-    list_tags_request: "assets.v1.tags.list",
-    get_tag_request: "assets.v1.tags.get",
-    get_many_tags_request: "assets.v1.tags.get_many",
-    put_tag_request: "assets.v1.tags.put",
-    put_many_tags_request: "assets.v1.tags.put_many",
-    delete_tag_request: "assets.v1.tags.delete",
-    delete_many_tags_request: "assets.v1.tags.delete_many",
-    list_tag_versions_request: "assets.v1.tags_versions.list",
-    get_tag_version_request: "assets.v1.tags_versions.get",
+    list_tags_request: 'assets.v1.tags.list',
+    get_tag_request: 'assets.v1.tags.get',
+    get_many_tags_request: 'assets.v1.tags.get_many',
+    put_tag_request: 'assets.v1.tags.put',
+    put_many_tags_request: 'assets.v1.tags.put_many',
+    delete_tag_request: 'assets.v1.tags.delete',
+    delete_many_tags_request: 'assets.v1.tags.delete_many',
+    list_tag_versions_request: 'assets.v1.tags_versions.list',
+    get_tag_version_request: 'assets.v1.tags_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "assets.v1.tags_events.created",
-    updated: "assets.v1.tags_events.updated",
-    deleted: "assets.v1.tags_events.deleted",
+    created: 'assets.v1.tags_events.created',
+    updated: 'assets.v1.tags_events.updated',
+    deleted: 'assets.v1.tags_events.deleted',
 } as const;

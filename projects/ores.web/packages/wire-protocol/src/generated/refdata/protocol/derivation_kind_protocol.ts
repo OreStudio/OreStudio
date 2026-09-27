@@ -166,15 +166,15 @@ export interface GetDerivationKindVersionResponse {
 }
 
 export const subjects = {
-    list_derivation_kinds_request: "refdata.v1.derivation_kinds.list",
-    get_derivation_kind_request: "refdata.v1.derivation_kinds.get",
-    get_many_derivation_kinds_request: "refdata.v1.derivation_kinds.get_many",
-    put_derivation_kind_request: "refdata.v1.derivation_kinds.put",
-    put_many_derivation_kinds_request: "refdata.v1.derivation_kinds.put_many",
-    delete_derivation_kind_request: "refdata.v1.derivation_kinds.delete",
-    delete_many_derivation_kinds_request: "refdata.v1.derivation_kinds.delete_many",
-    list_derivation_kind_versions_request: "refdata.v1.derivation_kinds_versions.list",
-    get_derivation_kind_version_request: "refdata.v1.derivation_kinds_versions.get",
+    list_derivation_kinds_request: 'refdata.v1.derivation_kinds.list',
+    get_derivation_kind_request: 'refdata.v1.derivation_kinds.get',
+    get_many_derivation_kinds_request: 'refdata.v1.derivation_kinds.get_many',
+    put_derivation_kind_request: 'refdata.v1.derivation_kinds.put',
+    put_many_derivation_kinds_request: 'refdata.v1.derivation_kinds.put_many',
+    delete_derivation_kind_request: 'refdata.v1.derivation_kinds.delete',
+    delete_many_derivation_kinds_request: 'refdata.v1.derivation_kinds.delete_many',
+    list_derivation_kind_versions_request: 'refdata.v1.derivation_kinds_versions.list',
+    get_derivation_kind_version_request: 'refdata.v1.derivation_kinds_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.derivation_kinds_events.created",
-    updated: "refdata.v1.derivation_kinds_events.updated",
-    deleted: "refdata.v1.derivation_kinds_events.deleted",
+    created: 'refdata.v1.derivation_kinds_events.created',
+    updated: 'refdata.v1.derivation_kinds_events.updated',
+    deleted: 'refdata.v1.derivation_kinds_events.deleted',
 } as const;

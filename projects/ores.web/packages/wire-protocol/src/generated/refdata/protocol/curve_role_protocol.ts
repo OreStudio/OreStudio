@@ -166,15 +166,15 @@ export interface GetCurveRoleVersionResponse {
 }
 
 export const subjects = {
-    list_curve_roles_request: "refdata.v1.curve_roles.list",
-    get_curve_role_request: "refdata.v1.curve_roles.get",
-    get_many_curve_roles_request: "refdata.v1.curve_roles.get_many",
-    put_curve_role_request: "refdata.v1.curve_roles.put",
-    put_many_curve_roles_request: "refdata.v1.curve_roles.put_many",
-    delete_curve_role_request: "refdata.v1.curve_roles.delete",
-    delete_many_curve_roles_request: "refdata.v1.curve_roles.delete_many",
-    list_curve_role_versions_request: "refdata.v1.curve_roles_versions.list",
-    get_curve_role_version_request: "refdata.v1.curve_roles_versions.get",
+    list_curve_roles_request: 'refdata.v1.curve_roles.list',
+    get_curve_role_request: 'refdata.v1.curve_roles.get',
+    get_many_curve_roles_request: 'refdata.v1.curve_roles.get_many',
+    put_curve_role_request: 'refdata.v1.curve_roles.put',
+    put_many_curve_roles_request: 'refdata.v1.curve_roles.put_many',
+    delete_curve_role_request: 'refdata.v1.curve_roles.delete',
+    delete_many_curve_roles_request: 'refdata.v1.curve_roles.delete_many',
+    list_curve_role_versions_request: 'refdata.v1.curve_roles_versions.list',
+    get_curve_role_version_request: 'refdata.v1.curve_roles_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.curve_roles_events.created",
-    updated: "refdata.v1.curve_roles_events.updated",
-    deleted: "refdata.v1.curve_roles_events.deleted",
+    created: 'refdata.v1.curve_roles_events.created',
+    updated: 'refdata.v1.curve_roles_events.updated',
+    deleted: 'refdata.v1.curve_roles_events.deleted',
 } as const;

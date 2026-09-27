@@ -164,15 +164,15 @@ export interface GetFloatingIndexTypeVersionResponse {
 }
 
 export const subjects = {
-    list_floating_index_types_request: "refdata.v1.floating_index_types.list",
-    get_floating_index_type_request: "refdata.v1.floating_index_types.get",
-    get_many_floating_index_types_request: "refdata.v1.floating_index_types.get_many",
-    put_floating_index_type_request: "refdata.v1.floating_index_types.put",
-    put_many_floating_index_types_request: "refdata.v1.floating_index_types.put_many",
-    delete_floating_index_type_request: "refdata.v1.floating_index_types.delete",
-    delete_many_floating_index_types_request: "refdata.v1.floating_index_types.delete_many",
-    list_floating_index_type_versions_request: "refdata.v1.floating_index_types_versions.list",
-    get_floating_index_type_version_request: "refdata.v1.floating_index_types_versions.get",
+    list_floating_index_types_request: 'refdata.v1.floating_index_types.list',
+    get_floating_index_type_request: 'refdata.v1.floating_index_types.get',
+    get_many_floating_index_types_request: 'refdata.v1.floating_index_types.get_many',
+    put_floating_index_type_request: 'refdata.v1.floating_index_types.put',
+    put_many_floating_index_types_request: 'refdata.v1.floating_index_types.put_many',
+    delete_floating_index_type_request: 'refdata.v1.floating_index_types.delete',
+    delete_many_floating_index_types_request: 'refdata.v1.floating_index_types.delete_many',
+    list_floating_index_type_versions_request: 'refdata.v1.floating_index_types_versions.list',
+    get_floating_index_type_version_request: 'refdata.v1.floating_index_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -197,7 +197,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.floating_index_types_events.created",
-    updated: "refdata.v1.floating_index_types_events.updated",
-    deleted: "refdata.v1.floating_index_types_events.deleted",
+    created: 'refdata.v1.floating_index_types_events.created',
+    updated: 'refdata.v1.floating_index_types_events.updated',
+    deleted: 'refdata.v1.floating_index_types_events.deleted',
 } as const;

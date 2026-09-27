@@ -182,15 +182,15 @@ export interface GetDatasetVersionResponse {
 }
 
 export const subjects = {
-    list_datasets_request: "dq.v1.datasets.list",
-    get_dataset_request: "dq.v1.datasets.get",
-    get_many_datasets_request: "dq.v1.datasets.get_many",
-    put_dataset_request: "dq.v1.datasets.put",
-    put_many_datasets_request: "dq.v1.datasets.put_many",
-    delete_dataset_request: "dq.v1.datasets.delete",
-    delete_many_datasets_request: "dq.v1.datasets.delete_many",
-    list_dataset_versions_request: "dq.v1.datasets_versions.list",
-    get_dataset_version_request: "dq.v1.datasets_versions.get",
+    list_datasets_request: 'dq.v1.datasets.list',
+    get_dataset_request: 'dq.v1.datasets.get',
+    get_many_datasets_request: 'dq.v1.datasets.get_many',
+    put_dataset_request: 'dq.v1.datasets.put',
+    put_many_datasets_request: 'dq.v1.datasets.put_many',
+    delete_dataset_request: 'dq.v1.datasets.delete',
+    delete_many_datasets_request: 'dq.v1.datasets.delete_many',
+    list_dataset_versions_request: 'dq.v1.datasets_versions.list',
+    get_dataset_version_request: 'dq.v1.datasets_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -215,7 +215,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.datasets_events.created",
-    updated: "dq.v1.datasets_events.updated",
-    deleted: "dq.v1.datasets_events.deleted",
+    created: 'dq.v1.datasets_events.created',
+    updated: 'dq.v1.datasets_events.updated',
+    deleted: 'dq.v1.datasets_events.deleted',
 } as const;

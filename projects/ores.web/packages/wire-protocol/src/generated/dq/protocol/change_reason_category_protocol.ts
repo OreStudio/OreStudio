@@ -164,15 +164,15 @@ export interface GetChangeReasonCategoryVersionResponse {
 }
 
 export const subjects = {
-    list_change_reason_categories_request: "dq.v1.change_reason_categories.list",
-    get_change_reason_category_request: "dq.v1.change_reason_categories.get",
-    get_many_change_reason_categories_request: "dq.v1.change_reason_categories.get_many",
-    put_change_reason_category_request: "dq.v1.change_reason_categories.put",
-    put_many_change_reason_categories_request: "dq.v1.change_reason_categories.put_many",
-    delete_change_reason_category_request: "dq.v1.change_reason_categories.delete",
-    delete_many_change_reason_categories_request: "dq.v1.change_reason_categories.delete_many",
-    list_change_reason_category_versions_request: "dq.v1.change_reason_categories_versions.list",
-    get_change_reason_category_version_request: "dq.v1.change_reason_categories_versions.get",
+    list_change_reason_categories_request: 'dq.v1.change_reason_categories.list',
+    get_change_reason_category_request: 'dq.v1.change_reason_categories.get',
+    get_many_change_reason_categories_request: 'dq.v1.change_reason_categories.get_many',
+    put_change_reason_category_request: 'dq.v1.change_reason_categories.put',
+    put_many_change_reason_categories_request: 'dq.v1.change_reason_categories.put_many',
+    delete_change_reason_category_request: 'dq.v1.change_reason_categories.delete',
+    delete_many_change_reason_categories_request: 'dq.v1.change_reason_categories.delete_many',
+    list_change_reason_category_versions_request: 'dq.v1.change_reason_categories_versions.list',
+    get_change_reason_category_version_request: 'dq.v1.change_reason_categories_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -197,7 +197,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.change_reason_categories_events.created",
-    updated: "dq.v1.change_reason_categories_events.updated",
-    deleted: "dq.v1.change_reason_categories_events.deleted",
+    created: 'dq.v1.change_reason_categories_events.created',
+    updated: 'dq.v1.change_reason_categories_events.updated',
+    deleted: 'dq.v1.change_reason_categories_events.deleted',
 } as const;

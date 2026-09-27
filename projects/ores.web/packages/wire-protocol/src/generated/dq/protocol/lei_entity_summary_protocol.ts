@@ -81,7 +81,7 @@ export interface GetLeiEntitiesSummaryResponse {
 }
 
 export const subjects = {
-    get_lei_entities_summary_request: "dq.v1.lei-entities.summary",
+    get_lei_entities_summary_request: 'dq.v1.lei-entities.summary',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -40,8 +40,7 @@
   --color-down: #f85149;
   --color-warn: #d29922;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-    sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --radius-card: 0.5rem;

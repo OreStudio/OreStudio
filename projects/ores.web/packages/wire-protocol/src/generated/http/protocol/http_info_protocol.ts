@@ -29,8 +29,7 @@
  * Requires a valid session: the base URL is internal infrastructure and
  * is not exposed to unauthenticated callers.
  */
-export interface GetHttpInfoRequest {
-}
+export interface GetHttpInfoRequest {}
 
 /**
  * @brief The HTTP server's externally reachable base URL.
@@ -51,7 +50,7 @@ export interface GetHttpInfoResponse {
 }
 
 export const subjects = {
-    get_http_info_request: "http.v1.info.get",
+    get_http_info_request: 'http.v1.info.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

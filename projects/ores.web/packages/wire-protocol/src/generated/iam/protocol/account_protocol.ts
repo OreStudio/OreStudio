@@ -109,11 +109,11 @@ export interface GetAccountVersionResponse {
 }
 
 export const subjects = {
-    list_accounts_request: "iam.v1.accounts.list",
-    get_account_request: "iam.v1.accounts.get",
-    get_many_accounts_request: "iam.v1.accounts.get_many",
-    list_account_versions_request: "iam.v1.accounts_versions.list",
-    get_account_version_request: "iam.v1.accounts_versions.get",
+    list_accounts_request: 'iam.v1.accounts.list',
+    get_account_request: 'iam.v1.accounts.get',
+    get_many_accounts_request: 'iam.v1.accounts.get_many',
+    list_account_versions_request: 'iam.v1.accounts_versions.list',
+    get_account_version_request: 'iam.v1.accounts_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -134,7 +134,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.accounts_events.created",
-    updated: "iam.v1.accounts_events.updated",
-    deleted: "iam.v1.accounts_events.deleted",
+    created: 'iam.v1.accounts_events.created',
+    updated: 'iam.v1.accounts_events.updated',
+    deleted: 'iam.v1.accounts_events.deleted',
 } as const;

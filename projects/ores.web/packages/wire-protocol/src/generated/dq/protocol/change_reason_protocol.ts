@@ -170,15 +170,15 @@ export interface GetChangeReasonVersionResponse {
 }
 
 export const subjects = {
-    list_change_reasons_request: "dq.v1.change_reasons.list",
-    get_change_reason_request: "dq.v1.change_reasons.get",
-    get_many_change_reasons_request: "dq.v1.change_reasons.get_many",
-    put_change_reason_request: "dq.v1.change_reasons.put",
-    put_many_change_reasons_request: "dq.v1.change_reasons.put_many",
-    delete_change_reason_request: "dq.v1.change_reasons.delete",
-    delete_many_change_reasons_request: "dq.v1.change_reasons.delete_many",
-    list_change_reason_versions_request: "dq.v1.change_reasons_versions.list",
-    get_change_reason_version_request: "dq.v1.change_reasons_versions.get",
+    list_change_reasons_request: 'dq.v1.change_reasons.list',
+    get_change_reason_request: 'dq.v1.change_reasons.get',
+    get_many_change_reasons_request: 'dq.v1.change_reasons.get_many',
+    put_change_reason_request: 'dq.v1.change_reasons.put',
+    put_many_change_reasons_request: 'dq.v1.change_reasons.put_many',
+    delete_change_reason_request: 'dq.v1.change_reasons.delete',
+    delete_many_change_reasons_request: 'dq.v1.change_reasons.delete_many',
+    list_change_reason_versions_request: 'dq.v1.change_reasons_versions.list',
+    get_change_reason_version_request: 'dq.v1.change_reasons_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.change_reasons_events.created",
-    updated: "dq.v1.change_reasons_events.updated",
-    deleted: "dq.v1.change_reasons_events.deleted",
+    created: 'dq.v1.change_reasons_events.created',
+    updated: 'dq.v1.change_reasons_events.updated',
+    deleted: 'dq.v1.change_reasons_events.deleted',
 } as const;

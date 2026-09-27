@@ -75,9 +75,9 @@ export interface GetManyLoginInfoResponse {
 }
 
 export const subjects = {
-    list_login_info_request: "iam.v1.login_info.list",
-    get_login_info_request: "iam.v1.login_info.get",
-    get_many_login_info_request: "iam.v1.login_info.get_many",
+    list_login_info_request: 'iam.v1.login_info.list',
+    get_login_info_request: 'iam.v1.login_info.get',
+    get_many_login_info_request: 'iam.v1.login_info.get_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -96,7 +96,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.login_info_events.created",
-    updated: "iam.v1.login_info_events.updated",
-    deleted: "iam.v1.login_info_events.deleted",
+    created: 'iam.v1.login_info_events.created',
+    updated: 'iam.v1.login_info_events.updated',
+    deleted: 'iam.v1.login_info_events.deleted',
 } as const;

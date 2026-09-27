@@ -170,15 +170,15 @@ export interface GetBadgeDefinitionVersionResponse {
 }
 
 export const subjects = {
-    list_badge_definitions_request: "dq.v1.badge_definitions.list",
-    get_badge_definition_request: "dq.v1.badge_definitions.get",
-    get_many_badge_definitions_request: "dq.v1.badge_definitions.get_many",
-    put_badge_definition_request: "dq.v1.badge_definitions.put",
-    put_many_badge_definitions_request: "dq.v1.badge_definitions.put_many",
-    delete_badge_definition_request: "dq.v1.badge_definitions.delete",
-    delete_many_badge_definitions_request: "dq.v1.badge_definitions.delete_many",
-    list_badge_definition_versions_request: "dq.v1.badge_definitions_versions.list",
-    get_badge_definition_version_request: "dq.v1.badge_definitions_versions.get",
+    list_badge_definitions_request: 'dq.v1.badge_definitions.list',
+    get_badge_definition_request: 'dq.v1.badge_definitions.get',
+    get_many_badge_definitions_request: 'dq.v1.badge_definitions.get_many',
+    put_badge_definition_request: 'dq.v1.badge_definitions.put',
+    put_many_badge_definitions_request: 'dq.v1.badge_definitions.put_many',
+    delete_badge_definition_request: 'dq.v1.badge_definitions.delete',
+    delete_many_badge_definitions_request: 'dq.v1.badge_definitions.delete_many',
+    list_badge_definition_versions_request: 'dq.v1.badge_definitions_versions.list',
+    get_badge_definition_version_request: 'dq.v1.badge_definitions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.badge_definitions_events.created",
-    updated: "dq.v1.badge_definitions_events.updated",
-    deleted: "dq.v1.badge_definitions_events.deleted",
+    created: 'dq.v1.badge_definitions_events.created',
+    updated: 'dq.v1.badge_definitions_events.updated',
+    deleted: 'dq.v1.badge_definitions_events.deleted',
 } as const;

@@ -33,8 +33,8 @@ export type HeaderSource = RequestHeaders | (() => RequestHeaders);
 
 /** Reads a header source into a plain record. */
 export function resolveHeaders(source: HeaderSource | undefined): RequestHeaders {
-  if (source === undefined) {
-    return {};
-  }
-  return typeof source === 'function' ? source() : source;
+    if (source === undefined) {
+        return {};
+    }
+    return typeof source === 'function' ? source() : source;
 }

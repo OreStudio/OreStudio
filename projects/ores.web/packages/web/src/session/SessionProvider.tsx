@@ -21,13 +21,13 @@
 
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
+    createContext,
+    use,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode,
 } from 'react';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
@@ -45,128 +45,131 @@ import type { PartySummary, SessionView } from '@ores/wire-protocol/browser';
  */
 
 export type SessionState =
-  | { readonly status: 'loading' }
-  | { readonly status: 'anonymous' }
-  | { readonly status: 'authenticated'; readonly session: SessionView };
+    | { readonly status: 'loading' }
+    | { readonly status: 'anonymous' }
+    | { readonly status: 'authenticated'; readonly session: SessionView };
 
 /** A login that still needs a party, or one that completed. */
 export type SignInOutcome =
-  | { readonly outcome: 'active' }
-  | { readonly outcome: 'party-required'; readonly parties: readonly PartySummary[] };
+    | { readonly outcome: 'active' }
+    | { readonly outcome: 'party-required'; readonly parties: readonly PartySummary[] };
 
 interface SessionContextValue {
-  readonly state: SessionState;
-  readonly signIn: (credentials: { username: string; password: string }) => Promise<SignInOutcome>;
-  readonly chooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
-  readonly signOut: () => Promise<void>;
+    readonly state: SessionState;
+    readonly signIn: (credentials: {
+        username: string;
+        password: string;
+    }) => Promise<SignInOutcome>;
+    readonly chooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
+    readonly signOut: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
 
 export function useSession(): SessionContextValue {
-  const value = use(SessionContext);
-  if (value === undefined) {
-    throw new Error('useSession must be used inside SessionProvider');
-  }
-  return value;
+    const value = use(SessionContext);
+    if (value === undefined) {
+        throw new Error('useSession must be used inside SessionProvider');
+    }
+    return value;
 }
 
 export const SESSION_QUERY_KEY = ['session'] as const;
 
 export function createQueryClient(): QueryClient {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        // A 4xx is an expected answer, not a transient fault, so retrying it
-        // only delays the redirect to the sign-in screen.
-        retry: (failureCount, error) =>
-          !(error instanceof ApiFailure && error.status < 500) && failureCount < 2,
-        staleTime: 30_000,
-        refetchOnWindowFocus: true,
-      },
-    },
-  });
+    return new QueryClient({
+        defaultOptions: {
+            queries: {
+                // A 4xx is an expected answer, not a transient fault, so retrying it
+                // only delays the redirect to the sign-in screen.
+                retry: (failureCount, error) =>
+                    !(error instanceof ApiFailure && error.status < 500) && failureCount < 2,
+                staleTime: 30_000,
+                refetchOnWindowFocus: true,
+            },
+        },
+    });
 }
 
 export function AppProviders({
-  children,
-  queryClient,
+    children,
+    queryClient,
 }: {
-  readonly children: ReactNode;
-  readonly queryClient: QueryClient;
+    readonly children: ReactNode;
+    readonly queryClient: QueryClient;
 }): ReactNode {
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 
 export function SessionProvider({ children }: { readonly children: ReactNode }): ReactNode {
-  const queryClient = useQueryClient();
-  const [state, setState] = useState<SessionState>({ status: 'loading' });
+    const queryClient = useQueryClient();
+    const [state, setState] = useState<SessionState>({ status: 'loading' });
 
-  const sessionQuery = useQuery({
-    queryKey: SESSION_QUERY_KEY,
-    queryFn: api.session,
-  });
-  const { data, isPending, isError, error } = sessionQuery;
+    const sessionQuery = useQuery({
+        queryKey: SESSION_QUERY_KEY,
+        queryFn: api.session,
+    });
+    const { data, isPending, isError, error } = sessionQuery;
 
-  useEffect(() => {
-    if (isPending) {
-      return;
-    }
-    if (isError) {
-      // A failure that is not "no session" is still a failure to load. Treat
-      // it as anonymous so the user gets a sign-in screen and a clear retry
-      // rather than a blank page.
-      setState({ status: 'anonymous' });
-      return;
-    }
-    setState(
-      data === null || data === undefined
-        ? { status: 'anonymous' }
-        : { status: 'authenticated', session: data },
+    useEffect(() => {
+        if (isPending) {
+            return;
+        }
+        if (isError) {
+            // A failure that is not "no session" is still a failure to load. Treat
+            // it as anonymous so the user gets a sign-in screen and a clear retry
+            // rather than a blank page.
+            setState({ status: 'anonymous' });
+            return;
+        }
+        setState(
+            data === null || data === undefined
+                ? { status: 'anonymous' }
+                : { status: 'authenticated', session: data },
+        );
+    }, [data, isError, isPending, error]);
+
+    const signIn = useCallback<SessionContextValue['signIn']>(
+        async (credentials) => {
+            const result = await api.login(credentials);
+            if (result.outcome === 'active') {
+                queryClient.setQueryData(SESSION_QUERY_KEY, result.session);
+                setState({ status: 'authenticated', session: result.session });
+                return { outcome: 'active' };
+            }
+            // A pending selection is not a session yet, so nothing is cached. The
+            // sign-in screen renders the picker from this return value.
+            return { outcome: 'party-required', parties: result.availableParties };
+        },
+        [queryClient],
     );
-  }, [data, isError, isPending, error]);
 
-  const signIn = useCallback<SessionContextValue['signIn']>(
-    async (credentials) => {
-      const result = await api.login(credentials);
-      if (result.outcome === 'active') {
-        queryClient.setQueryData(SESSION_QUERY_KEY, result.session);
-        setState({ status: 'authenticated', session: result.session });
-        return { outcome: 'active' };
-      }
-      // A pending selection is not a session yet, so nothing is cached. The
-      // sign-in screen renders the picker from this return value.
-      return { outcome: 'party-required', parties: result.availableParties };
-    },
-    [queryClient],
-  );
+    const chooseParty = useCallback<SessionContextValue['chooseParty']>(
+        async (partyId, parties) => {
+            const session = await api.selectParty(partyId);
+            // The login reply offers fewer fields than the session view, so the
+            // party list is carried forward from the sign-in response.
+            const merged: SessionView = {
+                ...session,
+                availableParties: [...parties],
+            };
+            queryClient.setQueryData(SESSION_QUERY_KEY, merged);
+            setState({ status: 'authenticated', session: merged });
+        },
+        [queryClient],
+    );
 
-  const chooseParty = useCallback<SessionContextValue['chooseParty']>(
-    async (partyId, parties) => {
-      const session = await api.selectParty(partyId);
-      // The login reply offers fewer fields than the session view, so the
-      // party list is carried forward from the sign-in response.
-      const merged: SessionView = {
-        ...session,
-        availableParties: [...parties],
-      };
-      queryClient.setQueryData(SESSION_QUERY_KEY, merged);
-      setState({ status: 'authenticated', session: merged });
-    },
-    [queryClient],
-  );
+    const signOut = useCallback<SessionContextValue['signOut']>(async () => {
+        await api.logout();
+        queryClient.setQueryData(SESSION_QUERY_KEY, null);
+        queryClient.removeQueries({ queryKey: ['accounts'] });
+        setState({ status: 'anonymous' });
+    }, [queryClient]);
 
-  const signOut = useCallback<SessionContextValue['signOut']>(async () => {
-    await api.logout();
-    queryClient.setQueryData(SESSION_QUERY_KEY, null);
-    queryClient.removeQueries({ queryKey: ['accounts'] });
-    setState({ status: 'anonymous' });
-  }, [queryClient]);
+    const value = useMemo<SessionContextValue>(
+        () => ({ state, signIn, chooseParty, signOut }),
+        [state, signIn, chooseParty, signOut],
+    );
 
-  const value = useMemo<SessionContextValue>(
-    () => ({ state, signIn, chooseParty, signOut }),
-    [state, signIn, chooseParty, signOut],
-  );
-
-  return <SessionContext value={value}>{children}</SessionContext>;
+    return <SessionContext value={value}>{children}</SessionContext>;
 }

@@ -166,15 +166,15 @@ export interface GetCurrencyGroupVersionResponse {
 }
 
 export const subjects = {
-    list_currency_groups_request: "refdata.v1.currency_groups.list",
-    get_currency_group_request: "refdata.v1.currency_groups.get",
-    get_many_currency_groups_request: "refdata.v1.currency_groups.get_many",
-    put_currency_group_request: "refdata.v1.currency_groups.put",
-    put_many_currency_groups_request: "refdata.v1.currency_groups.put_many",
-    delete_currency_group_request: "refdata.v1.currency_groups.delete",
-    delete_many_currency_groups_request: "refdata.v1.currency_groups.delete_many",
-    list_currency_group_versions_request: "refdata.v1.currency_groups_versions.list",
-    get_currency_group_version_request: "refdata.v1.currency_groups_versions.get",
+    list_currency_groups_request: 'refdata.v1.currency_groups.list',
+    get_currency_group_request: 'refdata.v1.currency_groups.get',
+    get_many_currency_groups_request: 'refdata.v1.currency_groups.get_many',
+    put_currency_group_request: 'refdata.v1.currency_groups.put',
+    put_many_currency_groups_request: 'refdata.v1.currency_groups.put_many',
+    delete_currency_group_request: 'refdata.v1.currency_groups.delete',
+    delete_many_currency_groups_request: 'refdata.v1.currency_groups.delete_many',
+    list_currency_group_versions_request: 'refdata.v1.currency_groups_versions.list',
+    get_currency_group_version_request: 'refdata.v1.currency_groups_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.currency_groups_events.created",
-    updated: "refdata.v1.currency_groups_events.updated",
-    deleted: "refdata.v1.currency_groups_events.deleted",
+    created: 'refdata.v1.currency_groups_events.created',
+    updated: 'refdata.v1.currency_groups_events.updated',
+    deleted: 'refdata.v1.currency_groups_events.deleted',
 } as const;

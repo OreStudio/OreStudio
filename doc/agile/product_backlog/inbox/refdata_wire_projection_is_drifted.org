@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: E67AF3CA-C995-44F4-AD87-0CF9C7855551
+:END:
+#+title: refdata's generated wire projection is drifted and no gate covers it
+#+description: 18 of the generated TypeScript protocol files disagree with the templates that produce them: the write shapes gain party_id, which the C++ header does not carry, and the junction event interfaces go.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:typescript:codegen:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Eighteen generated TypeScript files under
+=projects/ores.web/packages/wire-protocol/src/generated/refdata/protocol/= do
+not match the output of the templates that produce them. Two kinds of
+difference:
+
+- The render adds =party_id= to the write shape of every party-scoped entity.
+  =BookWrite= gains it after =id=, and =portfolio=, =business_unit=,
+  =crm_driver_pair=, =party_contact_information= and the rest follow. The
+  generated C++ write struct does /not/ carry it: =book_protocol.hpp= has no
+  =party_id= anywhere, while =domain/book.hpp= has it and the TypeScript domain
+  type honours it.
+- The render drops the junction and entity =*Event= interfaces the tree still
+  carries, such as =CurrencyCalendarEvent= and =PartyCountryEvent=.
+
+The whole component is drifted, not only its TypeScript: rendering =refdata= at
+the default address reports 499 files that would change, C++ headers,
+repositories, services, shell commands and tests among them. That work is the
+clean-refdata story's, in flight on another branch.
+
+* Why
+
+Two things are wrong, and they are separate.
+
+The projection is stale, because nothing regenerated it. refdata is not in
+=COMPONENTS_UNDER_TEST=, so the drift job does not render it; the sweep renders
+every catalogue component but fails only on files the branch touched. This
+capture exists because a formatting branch touched the files, and the sweep
+then reported them — which is the gate working exactly as designed.
+
+And the two protocols disagree about =party_id=, which is a template defect
+rather than staleness. The TypeScript write shape carries a natural-key field
+the C++ write shape omits, so regenerating the TypeScript alone would make the
+browser send a field the server's parser never reads. Until that is settled,
+regenerating the TypeScript is not a safe fix.
+
+* References
+
+- =projects/ores.web/packages/wire-protocol/src/generated/refdata/protocol/book_protocol.ts= — =BookWrite=, no =party_id=.
+- =projects/ores.refdata/api/include/ores.refdata.api/messaging/book_protocol.hpp= — the C++ write struct, no =party_id=.
+- =projects/ores.refdata/api/include/ores.refdata.api/domain/book.hpp:74= and =.../generated/refdata/domain/book.ts:38= — both domains carry it.
+- =projects/ores.refdata/modeling/ores.refdata.book.org= — =party_id= is a natural-key field of the entity.
+- =check_component_drift.py --component refdata --dry-run= — 499 files would change.
+- =projects/ores.web/.prettierignore= — records the exclusion this put on the format check.
+
+* See also
+
+- [[id:F973EA48-4D2D-4EBB-9D5D-3EDECE772C9C][The documented regenerate-all command generates components that do not project]] — found in the same pass.
+- [[id:753E0E14-FDCE-46B5-86AD-0F4AF6721CA3][Format the generated TypeScript with prettier]] — the story that surfaced this.

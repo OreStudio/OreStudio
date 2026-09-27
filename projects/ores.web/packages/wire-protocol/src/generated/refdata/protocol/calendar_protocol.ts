@@ -170,15 +170,15 @@ export interface GetCalendarVersionResponse {
 }
 
 export const subjects = {
-    list_calendars_request: "refdata.v1.calendars.list",
-    get_calendar_request: "refdata.v1.calendars.get",
-    get_many_calendars_request: "refdata.v1.calendars.get_many",
-    put_calendar_request: "refdata.v1.calendars.put",
-    put_many_calendars_request: "refdata.v1.calendars.put_many",
-    delete_calendar_request: "refdata.v1.calendars.delete",
-    delete_many_calendars_request: "refdata.v1.calendars.delete_many",
-    list_calendar_versions_request: "refdata.v1.calendars_versions.list",
-    get_calendar_version_request: "refdata.v1.calendars_versions.get",
+    list_calendars_request: 'refdata.v1.calendars.list',
+    get_calendar_request: 'refdata.v1.calendars.get',
+    get_many_calendars_request: 'refdata.v1.calendars.get_many',
+    put_calendar_request: 'refdata.v1.calendars.put',
+    put_many_calendars_request: 'refdata.v1.calendars.put_many',
+    delete_calendar_request: 'refdata.v1.calendars.delete',
+    delete_many_calendars_request: 'refdata.v1.calendars.delete_many',
+    list_calendar_versions_request: 'refdata.v1.calendars_versions.list',
+    get_calendar_version_request: 'refdata.v1.calendars_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.calendars_events.created",
-    updated: "refdata.v1.calendars_events.updated",
-    deleted: "refdata.v1.calendars_events.deleted",
+    created: 'refdata.v1.calendars_events.created',
+    updated: 'refdata.v1.calendars_events.updated',
+    deleted: 'refdata.v1.calendars_events.deleted',
 } as const;

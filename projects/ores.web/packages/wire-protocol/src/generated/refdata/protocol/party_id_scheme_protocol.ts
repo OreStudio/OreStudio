@@ -168,15 +168,15 @@ export interface GetPartyIdSchemeVersionResponse {
 }
 
 export const subjects = {
-    list_party_id_schemes_request: "refdata.v1.party_id_schemes.list",
-    get_party_id_scheme_request: "refdata.v1.party_id_schemes.get",
-    get_many_party_id_schemes_request: "refdata.v1.party_id_schemes.get_many",
-    put_party_id_scheme_request: "refdata.v1.party_id_schemes.put",
-    put_many_party_id_schemes_request: "refdata.v1.party_id_schemes.put_many",
-    delete_party_id_scheme_request: "refdata.v1.party_id_schemes.delete",
-    delete_many_party_id_schemes_request: "refdata.v1.party_id_schemes.delete_many",
-    list_party_id_scheme_versions_request: "refdata.v1.party_id_schemes_versions.list",
-    get_party_id_scheme_version_request: "refdata.v1.party_id_schemes_versions.get",
+    list_party_id_schemes_request: 'refdata.v1.party_id_schemes.list',
+    get_party_id_scheme_request: 'refdata.v1.party_id_schemes.get',
+    get_many_party_id_schemes_request: 'refdata.v1.party_id_schemes.get_many',
+    put_party_id_scheme_request: 'refdata.v1.party_id_schemes.put',
+    put_many_party_id_schemes_request: 'refdata.v1.party_id_schemes.put_many',
+    delete_party_id_scheme_request: 'refdata.v1.party_id_schemes.delete',
+    delete_many_party_id_schemes_request: 'refdata.v1.party_id_schemes.delete_many',
+    list_party_id_scheme_versions_request: 'refdata.v1.party_id_schemes_versions.list',
+    get_party_id_scheme_version_request: 'refdata.v1.party_id_schemes_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.party_id_schemes_events.created",
-    updated: "refdata.v1.party_id_schemes_events.updated",
-    deleted: "refdata.v1.party_id_schemes_events.deleted",
+    created: 'refdata.v1.party_id_schemes_events.created',
+    updated: 'refdata.v1.party_id_schemes_events.updated',
+    deleted: 'refdata.v1.party_id_schemes_events.deleted',
 } as const;

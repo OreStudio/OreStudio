@@ -31,12 +31,12 @@ import { z } from 'zod';
  */
 
 export const credentialsSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().min(1),
+    username: z.string().min(1),
+    password: z.string().min(1),
 });
 export type Credentials = z.infer<typeof credentialsSchema>;
 
 export const selectPartySchema = z.object({
-  partyId: z.string().min(1),
+    partyId: z.string().min(1),
 });
 export type SelectPartyRequest = z.infer<typeof selectPartySchema>;

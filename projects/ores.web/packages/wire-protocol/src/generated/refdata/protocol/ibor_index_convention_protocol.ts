@@ -168,15 +168,15 @@ export interface GetIborIndexConventionVersionResponse {
 }
 
 export const subjects = {
-    list_ibor_index_conventions_request: "refdata.v1.ibor_index_conventions.list",
-    get_ibor_index_convention_request: "refdata.v1.ibor_index_conventions.get",
-    get_many_ibor_index_conventions_request: "refdata.v1.ibor_index_conventions.get_many",
-    put_ibor_index_convention_request: "refdata.v1.ibor_index_conventions.put",
-    put_many_ibor_index_conventions_request: "refdata.v1.ibor_index_conventions.put_many",
-    delete_ibor_index_convention_request: "refdata.v1.ibor_index_conventions.delete",
-    delete_many_ibor_index_conventions_request: "refdata.v1.ibor_index_conventions.delete_many",
-    list_ibor_index_convention_versions_request: "refdata.v1.ibor_index_conventions_versions.list",
-    get_ibor_index_convention_version_request: "refdata.v1.ibor_index_conventions_versions.get",
+    list_ibor_index_conventions_request: 'refdata.v1.ibor_index_conventions.list',
+    get_ibor_index_convention_request: 'refdata.v1.ibor_index_conventions.get',
+    get_many_ibor_index_conventions_request: 'refdata.v1.ibor_index_conventions.get_many',
+    put_ibor_index_convention_request: 'refdata.v1.ibor_index_conventions.put',
+    put_many_ibor_index_conventions_request: 'refdata.v1.ibor_index_conventions.put_many',
+    delete_ibor_index_convention_request: 'refdata.v1.ibor_index_conventions.delete',
+    delete_many_ibor_index_conventions_request: 'refdata.v1.ibor_index_conventions.delete_many',
+    list_ibor_index_convention_versions_request: 'refdata.v1.ibor_index_conventions_versions.list',
+    get_ibor_index_convention_version_request: 'refdata.v1.ibor_index_conventions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.ibor_index_conventions_events.created",
-    updated: "refdata.v1.ibor_index_conventions_events.updated",
-    deleted: "refdata.v1.ibor_index_conventions_events.deleted",
+    created: 'refdata.v1.ibor_index_conventions_events.created',
+    updated: 'refdata.v1.ibor_index_conventions_events.updated',
+    deleted: 'refdata.v1.ibor_index_conventions_events.deleted',
 } as const;

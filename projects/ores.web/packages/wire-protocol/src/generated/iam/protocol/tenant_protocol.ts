@@ -169,15 +169,15 @@ export interface GetTenantVersionResponse {
 }
 
 export const subjects = {
-    list_tenants_request: "iam.v1.tenants.list",
-    get_tenant_request: "iam.v1.tenants.get",
-    get_many_tenants_request: "iam.v1.tenants.get_many",
-    put_tenant_request: "iam.v1.tenants.put",
-    put_many_tenants_request: "iam.v1.tenants.put_many",
-    delete_tenant_request: "iam.v1.tenants.delete",
-    delete_many_tenants_request: "iam.v1.tenants.delete_many",
-    list_tenant_versions_request: "iam.v1.tenants_versions.list",
-    get_tenant_version_request: "iam.v1.tenants_versions.get",
+    list_tenants_request: 'iam.v1.tenants.list',
+    get_tenant_request: 'iam.v1.tenants.get',
+    get_many_tenants_request: 'iam.v1.tenants.get_many',
+    put_tenant_request: 'iam.v1.tenants.put',
+    put_many_tenants_request: 'iam.v1.tenants.put_many',
+    delete_tenant_request: 'iam.v1.tenants.delete',
+    delete_many_tenants_request: 'iam.v1.tenants.delete_many',
+    list_tenant_versions_request: 'iam.v1.tenants_versions.list',
+    get_tenant_version_request: 'iam.v1.tenants_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +202,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.tenants_events.created",
-    updated: "iam.v1.tenants_events.updated",
-    deleted: "iam.v1.tenants_events.deleted",
+    created: 'iam.v1.tenants_events.created',
+    updated: 'iam.v1.tenants_events.updated',
+    deleted: 'iam.v1.tenants_events.deleted',
 } as const;

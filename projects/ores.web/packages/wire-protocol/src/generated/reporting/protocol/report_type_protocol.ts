@@ -166,15 +166,15 @@ export interface GetReportTypeVersionResponse {
 }
 
 export const subjects = {
-    list_report_types_request: "reporting.v1.report_types.list",
-    get_report_type_request: "reporting.v1.report_types.get",
-    get_many_report_types_request: "reporting.v1.report_types.get_many",
-    put_report_type_request: "reporting.v1.report_types.put",
-    put_many_report_types_request: "reporting.v1.report_types.put_many",
-    delete_report_type_request: "reporting.v1.report_types.delete",
-    delete_many_report_types_request: "reporting.v1.report_types.delete_many",
-    list_report_type_versions_request: "reporting.v1.report_types_versions.list",
-    get_report_type_version_request: "reporting.v1.report_types_versions.get",
+    list_report_types_request: 'reporting.v1.report_types.list',
+    get_report_type_request: 'reporting.v1.report_types.get',
+    get_many_report_types_request: 'reporting.v1.report_types.get_many',
+    put_report_type_request: 'reporting.v1.report_types.put',
+    put_many_report_types_request: 'reporting.v1.report_types.put_many',
+    delete_report_type_request: 'reporting.v1.report_types.delete',
+    delete_many_report_types_request: 'reporting.v1.report_types.delete_many',
+    list_report_type_versions_request: 'reporting.v1.report_types_versions.list',
+    get_report_type_version_request: 'reporting.v1.report_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.report_types_events.created",
-    updated: "reporting.v1.report_types_events.updated",
-    deleted: "reporting.v1.report_types_events.deleted",
+    created: 'reporting.v1.report_types_events.created',
+    updated: 'reporting.v1.report_types_events.updated',
+    deleted: 'reporting.v1.report_types_events.deleted',
 } as const;

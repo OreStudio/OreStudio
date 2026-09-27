@@ -212,8 +212,8 @@ export interface PublishLogEntriesRequest {
 }
 
 export const subjects = {
-    get_telemetry_logs_request: "telemetry.v1.logs.list",
-    publish_log_entries_request: "telemetry.v1.logs.publish",
+    get_telemetry_logs_request: 'telemetry.v1.logs.list',
+    publish_log_entries_request: 'telemetry.v1.logs.publish',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

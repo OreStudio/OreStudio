@@ -194,16 +194,16 @@ export interface GetPartyCompositeAsOfResponse {
 }
 
 export const subjects = {
-    list_parties_request: "refdata.v1.parties.list",
-    get_party_request: "refdata.v1.parties.get",
-    get_many_parties_request: "refdata.v1.parties.get_many",
-    put_party_request: "refdata.v1.parties.put",
-    put_many_parties_request: "refdata.v1.parties.put_many",
-    delete_party_request: "refdata.v1.parties.delete",
-    delete_many_parties_request: "refdata.v1.parties.delete_many",
-    list_party_versions_request: "refdata.v1.parties_versions.list",
-    get_party_version_request: "refdata.v1.parties_versions.get",
-    get_party_composite_as_of_request: "refdata.v1.parties.composite_as_of",
+    list_parties_request: 'refdata.v1.parties.list',
+    get_party_request: 'refdata.v1.parties.get',
+    get_many_parties_request: 'refdata.v1.parties.get_many',
+    put_party_request: 'refdata.v1.parties.put',
+    put_many_parties_request: 'refdata.v1.parties.put_many',
+    delete_party_request: 'refdata.v1.parties.delete',
+    delete_many_parties_request: 'refdata.v1.parties.delete_many',
+    list_party_versions_request: 'refdata.v1.parties_versions.list',
+    get_party_version_request: 'refdata.v1.parties_versions.get',
+    get_party_composite_as_of_request: 'refdata.v1.parties.composite_as_of',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -229,7 +229,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.parties_events.created",
-    updated: "refdata.v1.parties_events.updated",
-    deleted: "refdata.v1.parties_events.deleted",
+    created: 'refdata.v1.parties_events.created',
+    updated: 'refdata.v1.parties_events.updated',
+    deleted: 'refdata.v1.parties_events.deleted',
 } as const;

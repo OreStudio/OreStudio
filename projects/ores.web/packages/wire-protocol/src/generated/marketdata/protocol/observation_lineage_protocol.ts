@@ -171,15 +171,15 @@ export interface GetObservationLineageVersionResponse {
 }
 
 export const subjects = {
-    list_observation_lineages_request: "marketdata.v1.observation_lineages.list",
-    get_observation_lineage_request: "marketdata.v1.observation_lineages.get",
-    get_many_observation_lineages_request: "marketdata.v1.observation_lineages.get_many",
-    put_observation_lineage_request: "marketdata.v1.observation_lineages.put",
-    put_many_observation_lineages_request: "marketdata.v1.observation_lineages.put_many",
-    delete_observation_lineage_request: "marketdata.v1.observation_lineages.delete",
-    delete_many_observation_lineages_request: "marketdata.v1.observation_lineages.delete_many",
-    list_observation_lineage_versions_request: "marketdata.v1.observation_lineages_versions.list",
-    get_observation_lineage_version_request: "marketdata.v1.observation_lineages_versions.get",
+    list_observation_lineages_request: 'marketdata.v1.observation_lineages.list',
+    get_observation_lineage_request: 'marketdata.v1.observation_lineages.get',
+    get_many_observation_lineages_request: 'marketdata.v1.observation_lineages.get_many',
+    put_observation_lineage_request: 'marketdata.v1.observation_lineages.put',
+    put_many_observation_lineages_request: 'marketdata.v1.observation_lineages.put_many',
+    delete_observation_lineage_request: 'marketdata.v1.observation_lineages.delete',
+    delete_many_observation_lineages_request: 'marketdata.v1.observation_lineages.delete_many',
+    list_observation_lineage_versions_request: 'marketdata.v1.observation_lineages_versions.list',
+    get_observation_lineage_version_request: 'marketdata.v1.observation_lineages_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -204,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "marketdata.v1.observation_lineages_events.created",
-    updated: "marketdata.v1.observation_lineages_events.updated",
-    deleted: "marketdata.v1.observation_lineages_events.deleted",
+    created: 'marketdata.v1.observation_lineages_events.created',
+    updated: 'marketdata.v1.observation_lineages_events.updated',
+    deleted: 'marketdata.v1.observation_lineages_events.deleted',
 } as const;

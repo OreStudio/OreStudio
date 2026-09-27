@@ -330,7 +330,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/data_domain_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/dataset_bundle_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/dataset_dependency_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/dataset_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/fsm_state_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/fsm_transition_protocol.hpp"

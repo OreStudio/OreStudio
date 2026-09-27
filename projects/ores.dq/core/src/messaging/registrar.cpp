@@ -25,7 +25,6 @@
 #include "ores.dq.api/messaging/data_domain_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
-#include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
@@ -55,7 +54,6 @@
 #include "ores.dq.core/messaging/dataset_bundle_member_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
-#include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
 #include "ores.dq.core/messaging/dataset_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_registrar.hpp"
@@ -235,27 +233,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Dataset bundles and their members moved to the standard generated
     // stack; see register_dataset_bundle_handlers below alongside the other
     // generated registrars.
-
-    // =========================================================================
-    // Dataset Dependencies
-    // =========================================================================
-
-    auto dep = std::make_shared<dataset_dependency_handler>(nats, ctx, verifier);
-
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_dependencies_request::nats_subject,
-                             queue_group,
-                             [dep](ores::nats::message msg) { dep->list(std::move(msg)); }));
-
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_dependencies_by_dataset_request::nats_subject,
-                             queue_group,
-                             [dep](ores::nats::message msg) { dep->by_dataset(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        resolve_dependencies_request::nats_subject, queue_group, [dep](ores::nats::message msg) {
-            dep->resolve(std::move(msg));
-        }));
 
     // =========================================================================
     // Publications

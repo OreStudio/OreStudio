@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB
+:END:
+#+title: Story: Close the object storage interface leftovers
+#+description: Give the shell a raw storage surface whose verbs take a bucket, a key and a local path, and make the schema setup re-runnable so a second setup_schema.sql run completes.
+#+type: story
+#+level: s2
+#+filetags: :storage:sql:shell:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two leftovers of the interface story are closed.
+
+The first is the raw shell surface. The [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]]
+target state separates raw use from wrapped use, and promises that a caller
+which only wants bytes somewhere can name a bucket, a key and a local path and
+be done. The generated =objects= menu covers the NATS protocol, so the work is
+the HTTP half: verbs that move files, and the client operations they need.
+
+The second is the schema setup. A second =setup_schema.sql= run stopped, which
+made the seed helpers' idempotency a matter of review rather than a thing
+observed. The story closes that gap and gates the class, so the next statement
+of the same kind cannot arrive unnoticed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Both tasks are implemented and verified; the PR carries them. |
+| Waiting on    | Nothing.                               |
+| Next          | Raise and merge the PR.                |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- =storage put <bucket> <key> <path>= uploads a local file, and
+  =storage get <bucket> <key> <path>= writes it back byte-identical.
+- =storage delete= and =storage list= complete the raw verb set.
+- A second =setup_schema.sql= run over the database the first run built
+  completes without error.
+- The consumer verbs that wrap storage keep working on the protocol keys.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EF8FC74D-BCD2-4C82-8ABB-E6CD8B2712FE][Scaffold story: Close the object storage interface leftovers]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8B82EA9B-0D2E-4D1D-B463-FD01C91F9717][Give the shell a raw storage surface over a local path]] | STARTED | 2026-09-27 | | A shell menu whose verbs are a bucket, a key and a local path, over the storage HTTP interface. |
+| [[id:BF1538E1-74C1-41E3-A9E4-40E475BB0C7C][Make the schema setup re-runnable]] | STARTED | 2026-09-27 | | Make the create and populate phases re-runnable, gate the class, and prove a clean second run. |
+
+* Decisions
+
+- *The raw surface speaks HTTP, not NATS.* A message bounds the value it
+  carries, and the target state already says the bulk path is HTTP. So the new
+  menu moves files and the generated =objects= menu keeps the command surface.
+  Both interfaces stay exercisable by hand, which is what the interface story
+  asked for.
+- *The populate phase declares itself a reseed.* Its scripts state version zero,
+  and the version gate refuses a create that meets a live row: 53 files stopped
+  on the second run. Opening =ores_utility_allow_version_replace_fn()= for the
+  populate transaction is the mechanism the gate documents for a reseeding
+  generator, so one change closes all 53 without touching any of them. The cost
+  is that a re-run re-asserts each seeded row at a new version instead of
+  skipping it.
+- *The class is gated, not the instance.* =check_sql_hygiene.py= now reports DDL
+  a second run cannot repeat, so the next =create trigger= without =or replace=
+  fails a check rather than a database recreation.
+- *The two transports carry one listing document.* The HTTP listing and delete
+  replies now carry the fields the protocol declares, so the shell parses either
+  interface with the protocol's own type.
+
+* Notes
+
+- The base URL had two byte-identical copies in the shell before this.
+  =ores.shell.api= holds the one definition now.
+- The route patterns compose from =storage_paths::prefix=, closing the last
+  duplicate declaration of the storage path.
+- The story began as two leftovers recorded in the interface task's Result. The
+  census that sized the second one is in that task's Plan.
+
+* Out of scope
+
+- Fixing the reporting write path. The research this story commissioned found
+  that =ores.reporting= writes its gathered blobs to the retired bucket
+  =report-data= while =ores.ore= reads them from =ores=, so the writer and the
+  reader of one object disagree. Reporting is another environment's live work, so
+  the defect is captured rather than fixed here:
+  [[id:5A66C421-B55C-408D-9897-19E1290064F6][Reporting writes the report blobs to
+  a bucket ore does not read]].
+- =HEAD= on the client. Existence stays a read, which is what the protocol
+  declares.

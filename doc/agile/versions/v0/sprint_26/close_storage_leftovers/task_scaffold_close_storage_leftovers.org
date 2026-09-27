@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: EF8FC74D-BCD2-4C82-8ABB-E6CD8B2712FE
+:END:
+#+title: Task: Scaffold story: Close the object storage interface leftovers
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :close_storage_leftovers:sprint_26:v0:
+#+owner: marco
+#+branch: feature/close-storage-leftovers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story, its tasks and its sprint wiring exist, and the branch carries them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] |
+| Now          | Scaffolding is done and rides this branch. |
+| Waiting on   | Nothing.                               |
+| Next          | Close before the story PR merges.      |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The story, its two work tasks and the sprint row exist and link to each other.
+
+* Plan
+
+Scaffold with =compass story new=, then add the second task with =compass add
+task= so both share the story branch.
+
+* Notes
+
+- Both tasks share =feature/close-storage-leftovers=. The two changes are
+  independent but small, and one PR keeps the story's review together.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story opened with its goal, acceptance and two tasks, and the sprint table
+carries its row. The two tasks share this branch, so this scaffold task closes
+with the same PR rather than a scaffold PR of its own.

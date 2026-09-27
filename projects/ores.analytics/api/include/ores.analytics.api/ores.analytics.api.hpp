@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ANALYTICS_API_HPP
 #define ORES_ANALYTICS_API_HPP
 
 /**
  * @brief Public API types for ORE Studio analytics.
  *
- * Domain types, generators, messaging protocols and eventing for the
-analytics component. Defines pricing engine types, pricing model
-configurations, products and parameters as C++ domain types exchanged
-between the analytics service and other components.
+ * Domain types and NATS protocol schemas for the analytics component.
  */
 namespace ores::analytics::api {}
 

@@ -62,6 +62,11 @@ STUB_OUTPUT_SUFFIXES = (
     "tests/stub_tests.cpp",
 )
 
+# The Catch2 main belongs to the tests target, and the component kind does not
+# say whether one exists: rendering it over a component without a tests target
+# materialises a file no target compiles.
+TEST_MAIN_SUFFIX = "tests/main.cpp"
+
 
 def _write(path: Path, body: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,6 +105,10 @@ def _units(tmp_path: Path, body: str, **kwargs):
 
 def _stub_paths(outputs):
     return [o for o in outputs if o.endswith(STUB_OUTPUT_SUFFIXES)]
+
+
+def _test_main_paths(outputs):
+    return [o for o in outputs if o.endswith(TEST_MAIN_SUFFIX)]
 
 
 def _umbrella_paths(outputs, full_name: str):
@@ -165,11 +174,26 @@ def test_service_component_emits_no_stub_test_by_default(tmp_path):
     assert _stub_paths(outputs) == []
 
 
-def test_the_component_facet_keeps_export_and_test_main(tmp_path):
-    """The library still needs its export macros and its test main."""
+def test_the_component_facet_keeps_the_export_header(tmp_path):
+    """The library still needs its export macros."""
     outputs = _units(tmp_path, FLAT_ORG.format(kind_line="#+component_kind: flat"))
 
-    assert [o for o in outputs if o.endswith(("export.hpp", "tests/main.cpp"))] != []
+    assert [o for o in outputs if o.endswith("export.hpp")] != []
+
+
+def test_the_test_main_is_scaffolding(tmp_path):
+    """The kind does not say whether the component has a tests target, so the
+    Catch2 main is emitted only where a component opts in."""
+    plain = _units(tmp_path, FLAT_ORG.format(kind_line="#+component_kind: flat"))
+
+    assert _test_main_paths(plain) == []
+
+
+def test_opting_in_emits_the_test_main(tmp_path):
+    outputs = _units(
+        tmp_path, FLAT_ORG.format(kind_line="#+component_kind: flat"), enabled=True)
+
+    assert _test_main_paths(outputs) == ["projects/ores.demo/tests/main.cpp"]
 
 
 def test_opting_in_emits_only_the_stubs(tmp_path):

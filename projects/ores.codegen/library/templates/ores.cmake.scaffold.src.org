@@ -1,16 +1,16 @@
 :PROPERTIES:
 :ID: 765067AA-65B0-43DD-8AE5-B9FFD3D506F6
 :END:
-#+title: ores.cmake.component.src
+#+title: ores.cmake.scaffold.src
 #+description: =src/CMakeLists.txt= for a plain library component (=component= profile): one shared library from all =*.cpp= under =src/=, with the database/utility/sqlgen dependency set. Output =projects/{component_full}/src/CMakeLists.txt=.
 #+type: archetype
 #+output: projects/{component_dir}/src/CMakeLists.txt
-#+facet: ores.cmake.component
+#+facet: ores.cmake.scaffold
 #+component_kind: flat
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 
 =src/CMakeLists.txt= for a plain library component (=component= profile): one shared library from all =*.cpp= under =src/=, with the database/utility/sqlgen dependency set. Output =projects/{component_full}/src/CMakeLists.txt=.  CMake target declaration for this component. Wires sources, include paths, link dependencies, and the export macro.
 
@@ -65,5 +65,5 @@ install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 * See also
 
-- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
+- Parent facet: [[id:896A1536-8BE4-414B-8338-EE51C6CDBF88][ores.cmake.scaffold]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -1,16 +1,16 @@
 :PROPERTIES:
 :ID: 61384181-B9B2-44C5-8E67-E7D71CB2BE3A
 :END:
-#+title: ores.cmake.component.tests
+#+title: ores.cmake.scaffold.tests
 #+description: =tests/CMakeLists.txt= for every component profile: a Catch2 test executable from all =*.cpp= under =tests/=, the =test_<name>= custom target wired into =run_all_tests=, and the CTest registration with XML output. (The repeated boilerplate across the 65 per-component test files is the subject of the centralise-test-target capture.) Output =projects/{component_full}/tests/CMakeLists.txt=.
 #+type: archetype
 #+output: projects/{component_dir}/tests/CMakeLists.txt
-#+facet: ores.cmake.component
+#+facet: ores.cmake.scaffold
 #+component_kind: flat api core service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 
 =tests/CMakeLists.txt= for every component profile: a Catch2 test executable from all =*.cpp= under =tests/=, the =test_<name>= custom target wired into =run_all_tests=, and the CTest registration with XML output. (The repeated boilerplate across the 65 per-component test files is the subject of the centralise-test-target capture.) Output =projects/{component_full}/tests/CMakeLists.txt=.  CMake target declaration for this component. Wires sources, include paths, link dependencies, and the export macro.
 
@@ -80,5 +80,5 @@ set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)
 
 * See also
 
-- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
+- Parent facet: [[id:896A1536-8BE4-414B-8338-EE51C6CDBF88][ores.cmake.scaffold]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

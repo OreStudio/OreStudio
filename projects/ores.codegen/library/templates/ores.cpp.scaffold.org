@@ -2,7 +2,7 @@
 :ID: 4D5A5C43-B0AE-49E0-920F-2513335E0570
 :END:
 #+title: ores.cpp.scaffold
-#+description: First-generation component scaffolding: a placeholder domain type and its test. Emitted only where a component opts in.
+#+description: First-generation component scaffolding: the Catch2 test main, a placeholder domain type and its test. Emitted only where a component opts in.
 #+type: facet
 #+model_types: component
 #+default: disabled
@@ -21,11 +21,16 @@ table to them.
 * Summary
 
 The files a component needs so its CMake targets link and its test runner
-passes *before any real code exists*: a placeholder domain type with its
-implementation, and a placeholder Catch2 test (one archetype for the flat,
-api and core kinds, and a separate one for a service, whose targets
-differ). Every one of them is deleted as the component's first real model
-lands.
+passes *before any real code exists*: the Catch2 =main= the tests target
+needs, a placeholder domain type with its implementation, and a placeholder
+Catch2 test (one archetype for the flat, api and core kinds, and a separate
+one for a service, whose targets differ). Every one of them is deleted as the
+component's first real model lands.
+
+=test_main= is here for the same reason as the CMake build files: it fires on
+the component kind, and the kind does not say whether the component has a
+tests target. Rendering it over a component without one materialises a
+=tests/main.cpp= that no target compiles.
 
 * The ores.cpp.scaffold facet
 
@@ -65,3 +70,4 @@ model.
 | [[id:1DA3FBDB-498A-47FF-9387-6F8A823CEDA3][ores.cpp.scaffold.stub_header]] | Placeholder declaration so the library target has a header. |
 | [[id:20E9E482-1401-4AE8-85CC-55813D153148][ores.cpp.scaffold.stub_impl]] | Placeholder implementation so the library target has a TU. |
 | [[id:C435328C-74BF-46A4-B649-44F99D413D46][ores.cpp.scaffold.stub_test]] | Placeholder Catch2 test so the tests target runs. |
+| [[id:06465495-818E-418D-9A1F-A617865C0ABA][ores.cpp.scaffold.test_main]] | Catch2 main with the project's logging/test-env setup. |

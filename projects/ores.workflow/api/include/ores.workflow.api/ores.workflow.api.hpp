@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKFLOW_API_HPP
 #define ORES_WORKFLOW_API_HPP
 
 /**
  * @brief Workflow public API types and helpers
  *
- * Lightweight shared types for the workflow engine: event structs,
-protocol messages, and step-completion helpers. Has minimal dependencies
-so that any domain service can participate in workflows without pulling
-in the full workflow engine.
+ * Domain types and NATS protocol schemas for the workflow component.
  */
 namespace ores::workflow::api {}
 

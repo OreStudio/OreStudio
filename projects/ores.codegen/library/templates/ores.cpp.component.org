@@ -2,7 +2,7 @@
 :ID: FFA58DE9-F839-4CC0-928F-A1BD9695AC41
 :END:
 #+title: ores.cpp.component
-#+description: Per-component C++ presence: the namespace brief, the export macros and the Catch2 test main.
+#+description: Per-component C++ presence: the namespace brief and the shared-library export macros.
 #+type: facet
 #+model_types: component
 #+level: cross
@@ -19,11 +19,11 @@ table to them.
 
 * Summary
 
-The files every component keeps for its whole life: the aggregate include
-header that documents its outermost namespace, the shared-library export
-macros (all four component profiles) and the Catch2 =test_main= (all four
-profiles). The first-generation scaffolding that used to sit beside them --
-the stub function, its implementation and its test -- moved to
+The two files every component keeps for its whole life: the aggregate
+include header that documents its outermost namespace, and the
+shared-library export macros. The first-generation scaffolding that used to
+sit beside them -- the Catch2 =test_main=, the stub function, its
+implementation and its test -- moved to
 [[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]], which is
 opt-in.
 
@@ -38,7 +38,7 @@ updates the Doxygen brief.
 The minimal C++ presence of a /component/: enough generated source that
 CMake targets build and the test runner passes, with or without real code.
 A component that has no models yet adds the opt-in scaffold facet for a
-placeholder to compile and test; once it has one, these three files are what
+placeholder to compile and test; once it has one, these two files are what
 remain.
 
 * Archetypes
@@ -46,7 +46,6 @@ remain.
 | Archetype | Description |
 |-----------+-------------|
 | [[id:D92591EC-9F4C-4194-BFE3-B4E1B0806A4E][ores.cpp.component.export]] | Per-component shared-library export/import macros. All component profiles. |
-| [[id:06465495-818E-418D-9A1F-A617865C0ABA][ores.cpp.component.test_main]] | Catch2 main with the project's logging/test-env setup. |
 | [[id:1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0][ores.cpp.component.umbrella_header]] | The aggregate include header that carries the component's Doxygen namespace brief. |
 
 * See also

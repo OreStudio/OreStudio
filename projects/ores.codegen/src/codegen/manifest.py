@@ -141,6 +141,15 @@ def discover_models(
             for org_path in (
                 list(modeling_dir.glob("*.org"))
                 + list(modeling_dir.glob("*/*.org"))
+                # A composite's parts each own a modeling directory holding
+                # their own component model. Those models belong to the
+                # composite for discovery: a part's overview states the
+                # description its umbrella header renders, so without them a
+                # part's header can never be regenerated or gated. Only the
+                # overview is taken -- a part may also hold entity models,
+                # which are discovered through the composites that own them.
+                + list(modeling_dir.parent.glob(
+                    "*/modeling/component_overview.org"))
             ):
                 if not org_path.is_file():
                     continue

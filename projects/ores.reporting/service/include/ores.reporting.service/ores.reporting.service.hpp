@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REPORTING_SERVICE_HPP
 #define ORES_REPORTING_SERVICE_HPP
 
 /**
  * @brief Reporting service
  *
- * Standalone NATS microservice hosting reporting handlers: report type definitions, report
- * definitions, report instances, and concurrency policies.
+ * NATS service entrypoint for the reporting domain.
  */
-namespace ores::reporting.service {}
+namespace ores::reporting::service {}
 
 #endif

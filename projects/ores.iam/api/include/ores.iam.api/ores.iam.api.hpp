@@ -17,17 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_ORES_IAM_API_HPP
-#define ORES_IAM_API_ORES_IAM_API_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_API_HPP
+#define ORES_IAM_API_HPP
 
 /**
- * @brief Shared IAM contract: domain types, JSON/table I/O, and NATS protocol schemas.
- *
- * Header-only library defining the shared contract for the IAM domain. It
- * provides domain types for accounts, roles, tenants, parties, and session
- * tokens, JSON and table I/O via rfl, and the NATS message protocol schemas
- * for the 0x2000-0x2FFF range consumed by ores.iam.core and the client
- * components.
+ * Domain types, JSON/table I/O, and NATS protocol schemas for the IAM component.
  */
 namespace ores::iam::api {}
 

@@ -17,21 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TELEMETRY_DATABASE_HPP
 #define ORES_TELEMETRY_DATABASE_HPP
 
 /**
- * @brief PostgreSQL persistence for the telemetry records.
- *
- * Stores the log entries, the service heartbeats and the NATS server and
- * stream samples in the component's own tables, and reads them back for the
- * query handlers.
- *
- * Its sub-namespaces:
- * - @b repository: the entities, mappers and the repository that read and
- *   write the four tables.
- * - @b log: the sink that writes a log record straight to the database,
- *   beside the Boost.Log front end the core part owns.
+ * Database persistence layer for telemetry log records.
  */
 namespace ores::telemetry::database {}
 

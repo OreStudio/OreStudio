@@ -26,6 +26,7 @@ The full template source. Edit here and re-tangle with
 :PROPERTIES:
 :ID: {{id}}
 :ores.cpp.scaffold.enabled: true
+:ores.cmake.scaffold.enabled: true
 :END:
 ,#+title: {{title}}
 ,#+description: {{description}}

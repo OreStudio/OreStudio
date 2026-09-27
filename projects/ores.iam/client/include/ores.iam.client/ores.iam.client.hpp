@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_CLIENT_ORES_IAM_CLIENT_HPP
-#define ORES_IAM_CLIENT_ORES_IAM_CLIENT_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_CLIENT_HPP
+#define ORES_IAM_CLIENT_HPP
 
 /**
- * @brief Client-side IAM session management.
- *
- * Lightweight client-side library that manages IAM session state for UI
- * components and other service consumers. It provides a service_token_provider
- * that holds an authenticated session token, handles token renewal, and
- * supplies the token to outgoing NATS requests.
+ * Client-side IAM library — session management and authentication helper for UI and service
+ * consumers.
  */
 namespace ores::iam::client {}
 

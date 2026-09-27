@@ -17,15 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_COMPUTE_SERVICE_HPP
 #define ORES_COMPUTE_SERVICE_HPP
 
 /**
- * @brief Compute service
- *
- * Standalone NATS microservice hosting compute handlers and running the in-process compute loop
- * with SQL and message queue action handlers.
+ * NATS service entrypoint for the compute domain.
  */
-namespace ores::compute.service {}
+namespace ores::compute::service {}
 
 #endif

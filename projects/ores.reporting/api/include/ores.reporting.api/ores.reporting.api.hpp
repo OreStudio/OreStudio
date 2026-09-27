@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REPORTING_API_HPP
 #define ORES_REPORTING_API_HPP
 
 /**
- * @brief Public API types for ORE Studio reporting.
- *
- * Domain types, generators, messaging protocols and eventing for the
- * reporting component. Defines report types, concurrency policies, report
- * definitions and report instances as C++ domain types exchanged between the
- * reporting service and other components.
+ * Domain types and NATS protocol schemas for the reporting component.
  */
 namespace ores::reporting::api {}
 

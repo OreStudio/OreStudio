@@ -17,16 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_SERVICE_HPP
 #define ORES_DQ_SERVICE_HPP
 
 /**
  * @brief Data quality service
  *
- * Standalone NATS microservice hosting data quality handlers: change reasons, change reason
- * categories, origin/nature/treatment dimensions, catalogs, datasets, methodologies, coding
- * schemes, data domains, and subject areas.
+ * NATS service entrypoint for the data-quality domain — wires handlers, repositories, and
+ * configuration.
  */
-namespace ores::dq.service {}
+namespace ores::dq::service {}
 
 #endif

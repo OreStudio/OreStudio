@@ -67,8 +67,12 @@ defect in the workspace feature itself.
 - The portable snapshot is tested, and the test fails on a torn read.
 - =compass db recreate= completes on this tree.
 - The site build publishes every page, the dq artefact page included.
-- Every codegen gate, the codegen test suite and the full build with
-  ctest pass.
+- Every codegen gate, the codegen test suite and the full build pass.
+- =ores.refdata.core.tests= is the one ctest target still red on this
+  tree. It fails on the condition
+  [[id:6C0DA430-B5BC-447C-8BBC-72B4DBDE9420][Five test binaries fail on main, and four of them share one …]]
+  owns, which four of its five targets have since cleared, and it needs
+  one decision about test semantics rather than a hotfix line.
 - The only build left red is the Windows one, on the =ores.shell.trading=
   translation unit. That is a separate, known defect and this story does
   not own it.
@@ -100,6 +104,11 @@ defect in the workspace feature itself.
 
 - The =ores.shell.trading= translation unit that MSVC and clang-cl cannot
   compile. Continuous Windows stays red on it, by agreement.
+- =ores.refdata.core.tests=, and the ten eventing assertions behind it.
+  The capture that already owns that condition decides between a
+  version-aware write in the tests and work on the notification chain;
+  this hotfix records the run that isolated it to one target and does not
+  pre-empt the decision.
 - The workspace model migration itself, which moves =name= into
   =* Columns= as a flagged natural key, states =party_id= the way the
   other models state it, and reconciles the generated schema with the

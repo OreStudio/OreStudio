@@ -97,7 +97,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| WIRE_001 warnings before the fix | 4, exit 1 | =projects/ores.sql/utility/validate_schemas.sh= | =b961b14561= |
+| WIRE_001 warnings after the fix | 0, exit 0, 1535 files checked | =projects/ores.sql/utility/validate_schemas.sh= | =64d4c082cc= |
+| Files the disabled facet still emits | 0 | =codegen.sh regenerate --component workspace-cpp --address ores.sql= | =64d4c082cc= |
+| Headers naming =atomic<shared_ptr>= | 0 | =grep -rn "std::atomic<std::shared_ptr" projects/= | =64d4c082cc= |
+| Platform shim tests | 4 cases, 10 assertions, all pass | =build/.../publish/bin/ores.platform.tests "[atomic_shared_ptr]"= | =64d4c082cc= |
+| Codegen suite | 922 passed | =venv/bin/python -m pytest projects/ores.codegen/tests -q= | =64d4c082cc= |
+| Codegen drift | No drift | =check_component_drift.py --all= | =64d4c082cc= |
+| Build | 0 errors, every target built | =cmake --build --preset linux-clang-debug-make -j 8= | =64d4c082cc= |
+| ctest | 86 of 87 pass; =ores.refdata.core.tests= fails | =ctest --preset linux-clang-debug-make -j 4= | =64d4c082cc= |
+| Site build | Build succeeded, every page published | =emacs -Q --script projects/ores.lisp/src/ores-build-site.el= | =64d4c082cc= |
+| Workspace table columns | 17, including =party_id= and =name= | =select string_agg(column_name, ...) from information_schema.columns= | =64d4c082cc= |
+| Storage service account | 1 row, =ores_clever_dijkstra_storage_service= | =select username from ores_iam_accounts_tbl where username like '%storage_service%'= | =64d4c082cc= |
+| Ungated stale CMake file lists | 31 files, 16 components | =regenerate_cmake_component_files.py --all --check= | =64d4c082cc= |
 
 * Notes
 
@@ -139,6 +151,23 @@ task and name that file in the Command column.
   branch did not contribute to it. Filed as
   [[id:4DC90DE5-F3A5-4E77-8999-6E1EE57BA030][Check the generated CMake file lists in CI]], because a gate nobody
   runs is a gate that cannot hold.
+- The local fleet could not start =ores.http.server= after the database
+  recreation, and the cause is an environment file rather than the tree:
+  this worktree's git-ignored =/.env= still carried
+  =ORES_HTTP_SERVER_JWT_SECRET=, which =env_init.py= stopped emitting when
+  the gateway moved to RS256 ([[id:F1E98183-5526-4A8D-82BB-7C1C033511F1][Verify session tokens at the gateway with
+  IAM's key alone]]), and the environment mapper
+  hands it to a parser that no longer has the option, so the parse fails
+  at startup. Removing the stale line from the local =/.env= fixed it and
+  the fleet came up 25 of 25. CI is unaffected, because =compass env
+  configure= writes that file from scratch.
+- =ores.refdata.core.tests= still fails on this tree, and it is not this
+  branch's doing: an earlier capture,
+  [[id:6C0DA430-B5BC-447C-8BBC-72B4DBDE9420][Five test binaries fail on main, and four of them share one …]],
+  records the same failures. This branch's run puts four of those five
+  back in the green and leaves only refdata, which the capture now
+  records. It is the one thing left between this PR and a green Linux
+  test phase.
 
 * PRs
 
@@ -153,3 +182,21 @@ task and name that file in the Command column.
 |   |                 |      |          |       |
 
 * Result
+
+The two defects that were still red on main are fixed and the two that
+were fixed before this branch started are confirmed on this tree. Every
+codegen gate, the codegen suite, =validate_docs.sh=, =compass lint=, the
+full build and the full site build are green on commit =64d4c082cc=.
+
+=validate_schemas.sh= reports 0 warnings where it reported 4; the
+workspace entity's SQL facet emits nothing; both iam handlers compile
+against a standard library with no =atomic<shared_ptr>=; =compass db
+recreate= completes and the storage service account exists; and the site
+publishes every page, the dq artefact page included.
+
+Two things are deliberately not done here. Continuous Windows stays red
+on the =ores.shell.trading= translation unit, by agreement. And
+=ores.refdata.core.tests= fails on the condition the five-binaries
+capture owns, which is 1 of 87 ctest targets and the only thing keeping
+the Linux test phase red after this branch; it needs one decision about
+test semantics across ten assertions, not a hotfix line.

@@ -35,3 +35,43 @@ Two details the run adds to the list above.
 * See also
 
 - [[id:44FA7541-D3E2-4D46-9D60-8C8517A64980][to_iso8601_utc emits a space separator]] — the fifth target, whose cause is its own.
+
+* Update 2026-09-27, later the same day
+
+Four of the five targets pass now, measured on the hotfix branch that
+cleared the continuous builds ([[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on
+main]], 87 targets, =ctest --preset linux-clang-debug-make -j 4=): 86
+pass and the only failure is =ores.refdata.core.tests=. =ores.dq.core.tests=,
+=ores.dq.api.tests=, =ores.marketdata.core.tests= and =ores.shell.api.tests=
+are green, so the four causes behind them were fixed by the work that
+landed in between.
+
+=ores.refdata.core.tests= still fails, and it fails in isolation as well
+as in the full run, at ten assertions across the eventing integration
+tests: =business_unit=, =book=, =portfolio=, =party_identifier=,
+=party_contact_information= (a write refused) and =counterparty=,
+=counterparty_identifier=, =counterparty_contact_information=, =party=,
+=crm_topology_config= (a changed event never seen).
+
+The assertions are ten, across the eventing integration tests:
+=business_unit=, =book=, =portfolio=, =party_identifier= and
+=party_contact_information= report a refused write; =counterparty=,
+=counterparty_identifier=, =counterparty_contact_information=, =party=
+and =crm_topology_config= report a changed event that never arrived.
+
+What the run establishes: the tests write one entity, poll up to ten
+seconds for its notification, and, when none arrives, re-drive the write
+with the same version-0 object. The re-drive is a create against a row
+the first write left live, which the store refuses with 'Row already
+exists: a create cannot replace it'. Before =4d36229a81= that duplicate
+replaced the row and the tests passed.
+
+What the run does not establish is which of the two is cause and which is
+effect. The capture above reads the missing event as a consequence of the
+refused write; the test's own retry comment reads the refused write as a
+consequence of a missing event, and the retry window is an order of
+magnitude longer than the chain it waits on, so a lost notification is
+not the obvious explanation either. Whoever takes this decides between
+the two, and the decision is one for all ten assertions rather than per
+file: either the tests write version-aware, or the notification chain is
+what needs the work.

@@ -56,6 +56,7 @@
 \set ore_service_pw    `echo "$ORES_ORE_SERVICE_DB_PASSWORD"`
 \set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
 \set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
+\set storage_service_pw    `echo "$ORES_STORAGE_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -204,6 +205,13 @@ select ores_iam_service_accounts_upsert_fn(
     'analytics_service@system.ores',
     'System service account for Analytics NATS domain service',
     :'analytics_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'storage_service_user',
+    'storage_service@system.ores',
+    'System service account for Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else. NATS domain service',
+    :'storage_service_pw'
 );
 
 -- Summary

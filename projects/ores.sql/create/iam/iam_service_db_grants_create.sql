@@ -111,7 +111,8 @@ grant usage, select on all sequences in schema public
     :workflow_service_user,
     :ore_service_user,
     :marketdata_service_user,
-    :analytics_service_user;
+    :analytics_service_user,
+    :storage_service_user;
 
 alter default privileges in schema public
     grant usage, select on sequences
@@ -131,7 +132,8 @@ alter default privileges in schema public
     :workflow_service_user,
     :ore_service_user,
     :marketdata_service_user,
-    :analytics_service_user;
+    :analytics_service_user,
+    :storage_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Per-service grants
@@ -237,6 +239,10 @@ select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 -- analytics_service: Analytics domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
+
+-- ---------------------------------------------------------------------------
+-- storage_service: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else. domain service
+-- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

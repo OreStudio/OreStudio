@@ -25,7 +25,7 @@
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
-#include "ores.dq.core/service/publication_service.hpp"
+#include "ores.dq.core/service/publish_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -107,7 +107,7 @@ public:
             for (const auto& id : req->dataset_ids)
                 uuids.push_back(str_gen(id));
 
-            service::publication_service svc(ctx);
+            service::publish_service svc(ctx);
             const auto entries = svc.list_publishable_datasets(uuids, req->resolve_dependencies);
 
             if (entries.empty()) {
@@ -168,7 +168,7 @@ public:
         }
 
         try {
-            service::publication_service svc(ctx);
+            service::publish_service svc(ctx);
             auto entries = svc.list_bundle_publishable_datasets(req->bundle_code);
 
             // A bundle's optional members never publish by default -- only its

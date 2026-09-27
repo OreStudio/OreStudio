@@ -29,7 +29,8 @@
 \ir ./dq_lei_parties_publish_drop.sql
 \ir ./dq_lei_counterparties_publish_drop.sql
 \ir ./dq_bundle_publication_drop.sql
-\ir ./dq_publication_drop.sql
+\ir ./dq_publications_notify_trigger_drop.sql
+\ir ./dq_publications_drop.sql
 
 -- Artefacts
 \ir ./dq_account_contact_informations_artefact_drop.sql

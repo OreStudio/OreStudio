@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include <cstdint>
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::dq::repository {
@@ -30,9 +36,9 @@ namespace ores::dq::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Database entity for the dq_dataset_publications_tbl table.
+ * @brief Represents a publication in the database.
  */
-struct publication_entity final {
+struct publication_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_dataset_publications_tbl";
 
@@ -42,12 +48,12 @@ struct publication_entity final {
     std::string dataset_code;
     std::string mode;
     std::string target_table;
-    std::int64_t records_inserted = 0;
-    std::int64_t records_updated = 0;
-    std::int64_t records_skipped = 0;
-    std::int64_t records_deleted = 0;
+    std::int64_t records_inserted;
+    std::int64_t records_updated;
+    std::int64_t records_skipped;
+    std::int64_t records_deleted;
     std::string published_by;
-    db_timestamp published_at;
+    std::string published_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const publication_entity& v);

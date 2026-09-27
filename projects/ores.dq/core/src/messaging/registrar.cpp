@@ -68,7 +68,7 @@
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
-#include "ores.dq.core/messaging/publication_handler.hpp"
+#include "ores.dq.core/messaging/publication_registrar.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/publish_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
@@ -263,12 +263,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Publications
     // =========================================================================
 
-    auto pub = std::make_shared<publication_handler>(nats, ctx, verifier);
+    // The publication run log is on the standard generated stack (see
+    // publication_handler/_registrar).
 
-    subs.push_back(nats.queue_subscribe(
-        get_publications_request::nats_subject, queue_group, [pub](ores::nats::message msg) {
-            pub->list_publications(std::move(msg));
-        }));
+    {
+        auto publication_subs = register_publication_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(publication_subs.begin()),
+                    std::make_move_iterator(publication_subs.end()));
+    }
 
     // =========================================================================
     // Publication verbs. Both resolve their datasets and dispatch the same

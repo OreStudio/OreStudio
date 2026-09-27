@@ -1,0 +1,215 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_DQ_CORE_SERVICE_PUBLISH_SERVICE_HPP
+#define ORES_DQ_CORE_SERVICE_PUBLISH_SERVICE_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/artefact_type.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include "ores.dq.api/domain/publication_result.hpp"
+#include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/artefact_type_repository.hpp"
+#include "ores.dq.core/repository/dataset_dependency_repository.hpp"
+#include "ores.dq.core/repository/dataset_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <map>
+#include <string>
+#include <vector>
+
+namespace ores::dq::service {
+
+struct bundle_publishable_dataset {
+    std::string dataset_id;
+    std::string dataset_code;
+    std::string target_subject;
+    // True only for a dataset that is a direct, opt-in ("optional") member
+    // of the bundle being published -- always false for a dependency pulled
+    // in by resolve_dependencies rather than listed in the bundle itself,
+    // since a prerequisite is never something the caller opts in or out of.
+    bool optional = false;
+};
+
+/**
+ * @brief Service for publishing datasets to production tables.
+ *
+ * This service handles the publication workflow:
+ * 1. Resolves dataset dependencies using a directed graph
+ * 2. Determines publication order (dependencies first)
+ * 3. Calls appropriate population functions for each dataset
+ * 4. Records publication history for auditing
+ *
+ * The service can be used from both the binary protocol handler
+ * and HTTP endpoints.
+ */
+class ORES_DQ_CORE_EXPORT publish_service {
+private:
+    inline static std::string_view logger_name = "ores.dq.service.publish_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a publish_service.
+     *
+     * @param ctx The database context for executing queries.
+     */
+    explicit publish_service(context ctx);
+
+    /**
+     * @brief Publishes one or more datasets to production tables.
+     *
+     * This is the main entry point for dataset publication. It:
+     * 1. Validates that all dataset IDs exist
+     * 2. Resolves dependencies and determines publication order
+     * 3. Publishes each dataset in dependency order
+     * 4. Records publication history for auditing
+     *
+     * @param dataset_ids The IDs of the datasets to publish.
+     * @param mode How to handle conflicts with existing data.
+     * @param published_by Username of the person initiating publication.
+     * @param resolve_dependencies If true, automatically include dependencies.
+     * @return Results for each dataset published.
+     */
+    std::vector<domain::publication_result>
+    publish(const std::vector<boost::uuids::uuid>& dataset_ids,
+            domain::publication_mode mode,
+            const std::string& published_by,
+            bool resolve_dependencies = true);
+
+    /**
+     * @brief Lists publishable datasets in a bundle for workflow dispatch.
+     *
+     * A thin adapter, not a second resolution path: resolves the bundle's direct member
+     * dataset codes to IDs, then delegates to list_publishable_datasets() -- the same
+     * dependency-graph-resolving core the ID-based publish path uses. This is what makes a
+     * dependency declared in ores_dq_dataset_dependencies_tbl (see
+     * dataset_dependency_repository) actually take effect for a bundle publish: previously this
+     * method only read direct bundle members (ores_dq_dataset_bundle_members_tbl) and never
+     * consulted the dependency graph at all, so bundles whose members depended on
+     * un-declared-as-members datasets (e.g. a vintage-mode synthetic config depending on the real
+     * market data it resolves against) silently omitted them unless a bundle's own membership
+     * happened to be hand-ordered to include them too.
+     *
+     * @param bundle_code The bundle to query (e.g., 'base', 'crypto').
+     * @param resolve_dependencies If true (the default), transitive dependencies of bundle
+     * members are included and ordered before their dependents. Kept as a caller-visible option,
+     * matching list_publishable_datasets(), rather than silently hardcoded, for the (currently
+     * unused) case of previewing bundle membership without its dependency closure.
+     * @return Ordered list of publishable dataset entries.
+     */
+    std::vector<bundle_publishable_dataset>
+    list_bundle_publishable_datasets(const std::string& bundle_code,
+                                     bool resolve_dependencies = true);
+
+    /**
+     * @brief Resolves a list of dataset IDs into ordered, publishable entries.
+     *
+     * Combines dependency resolution with artefact-type lookup to produce
+     * the same bundle_publishable_dataset shape used by the workflow engine.
+     * Datasets without a configured target_subject are silently skipped.
+     *
+     * @param dataset_ids The IDs requested by the caller.
+     * @param resolve_dependencies If true, transitive dependencies are included.
+     * @return Ordered entries ready for workflow dispatch.
+     */
+    std::vector<bundle_publishable_dataset>
+    list_publishable_datasets(const std::vector<boost::uuids::uuid>& dataset_ids,
+                              bool resolve_dependencies);
+
+    /**
+     * @brief Resolves the publication order for datasets.
+     *
+     * Uses boost.graph to build a dependency graph and performs
+     * topological sort to determine the correct order. Dependencies
+     * are placed before the datasets that depend on them.
+     *
+     * @param dataset_ids The IDs of the datasets to order.
+     * @return Ordered list of datasets (dependencies first).
+     */
+    std::vector<domain::dataset>
+    resolve_publication_order(const std::vector<boost::uuids::uuid>& dataset_ids);
+
+
+
+private:
+    /**
+     * @brief Builds a cache of artefact types for the given datasets.
+     *
+     * @param datasets The datasets to build cache for.
+     * @return Map from artefact type code to artefact type.
+     */
+    std::map<std::string, domain::artefact_type>
+    build_artefact_type_cache(const std::vector<domain::dataset>& datasets);
+
+    /**
+     * @brief Publishes a single dataset.
+     *
+     * Determines the artefact type and calls the appropriate
+     * dq_populate_* function.
+     *
+     * @param dataset The dataset to publish.
+     * @param mode The publication mode.
+     * @param artefact_type_cache Cache of artefact types to avoid DB queries.
+     * @return Publication result with counts.
+     */
+    domain::publication_result
+    publish_dataset(const domain::dataset& dataset,
+                    domain::publication_mode mode,
+                    const std::string& published_by,
+                    const std::map<std::string, domain::artefact_type>& artefact_type_cache);
+
+    /**
+     * @brief Records a publication in the audit table.
+     *
+     * @param result The publication result to record.
+     * @param mode The publication mode used.
+     * @param published_by The username of the publisher.
+     */
+    void record_publication(const domain::publication_result& result,
+                            domain::publication_mode mode,
+                            const std::string& published_by);
+
+    /**
+     * @brief Calls the artefact type's NATS target subject via SQL (single dataset).
+     *
+     * Used by the `publish` path (individual dataset publication).
+     */
+    domain::publication_result call_populate_function(const domain::dataset& dataset,
+                                                      const domain::artefact_type& artefact_type,
+                                                      domain::publication_mode mode,
+                                                      const std::string& published_by);
+
+    context ctx_;
+    repository::dataset_repository dataset_repo_;
+    repository::dataset_dependency_repository dependency_repo_;
+    repository::artefact_type_repository artefact_type_repo_;
+};
+
+}
+
+#endif

@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
 #include "ores.dq.core/service/data_organization_service.hpp"
-#include "ores.dq.core/service/publication_service.hpp"
+#include "ores.dq.core/service/publish_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -136,7 +136,7 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        service::publication_service svc(ctx);
+        service::publish_service svc(ctx);
         try {
             boost::uuids::string_generator gen;
             std::vector<boost::uuids::uuid> uuids;

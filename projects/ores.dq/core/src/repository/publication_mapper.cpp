@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,70 +17,76 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/publication_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include <boost/uuid/string_generator.hpp>
+#include "ores.dq.api/domain/publication_json_io.hpp" // IWYU pragma: keep.
+#include "ores.platform/time/datetime.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <format>
+#include <sstream>
 
 namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
 
-std::ostream& operator<<(std::ostream& s, const publication_entity& v) {
-    s << "publication_entity{id=" << v.id.value() << ", dataset_code=" << v.dataset_code << "}";
-    return s;
+domain::publication publication_mapper::map(const publication_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::publication r;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.dataset_id = boost::lexical_cast<boost::uuids::uuid>(v.dataset_id);
+    r.dataset_code = v.dataset_code;
+    r.mode = v.mode;
+    r.target_table = v.target_table;
+    r.records_inserted = v.records_inserted;
+    r.records_updated = v.records_updated;
+    r.records_skipped = v.records_skipped;
+    r.records_deleted = v.records_deleted;
+    r.published_by = v.published_by;
+    r.published_at = timestamp_to_timepoint(std::string_view{v.published_at});
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
 }
 
-domain::publication publication_mapper::map(const publication_entity& entity) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << entity;
+publication_entity publication_mapper::map(const domain::publication& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    domain::publication result;
+    publication_entity r;
+    r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = v.tenant_id.to_string();
+    r.dataset_id = boost::uuids::to_string(v.dataset_id);
+    r.dataset_code = v.dataset_code;
+    r.mode = v.mode;
+    r.target_table = v.target_table;
+    r.records_inserted = v.records_inserted;
+    r.records_updated = v.records_updated;
+    r.records_skipped = v.records_skipped;
+    r.records_deleted = v.records_deleted;
+    r.published_by = v.published_by;
+    r.published_at = ores::platform::time::datetime::to_iso8601_utc(v.published_at);
 
-    boost::uuids::string_generator gen;
-    result.id = gen(entity.id.value());
-    result.tenant_id = entity.tenant_id;
-    result.dataset_id = gen(entity.dataset_id);
-    result.dataset_code = entity.dataset_code;
-    result.mode = domain::publication_mode_from_string(entity.mode)
-                      .value_or(domain::publication_mode::upsert);
-    result.target_table = entity.target_table;
-    result.records_inserted = static_cast<std::uint64_t>(entity.records_inserted);
-    result.records_updated = static_cast<std::uint64_t>(entity.records_updated);
-    result.records_skipped = static_cast<std::uint64_t>(entity.records_skipped);
-    result.records_deleted = static_cast<std::uint64_t>(entity.records_deleted);
-    result.published_by = entity.published_by;
-    result.published_at = timestamp_to_timepoint(entity.published_at);
-
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
-
-    return result;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
 }
 
-std::vector<domain::publication>
-publication_mapper::map(const std::vector<publication_entity>& entities) {
+std::vector<domain::publication> publication_mapper::map(const std::vector<publication_entity>& v) {
     return map_vector<publication_entity, domain::publication>(
-        entities, [](const auto& e) { return map(e); }, lg(), "publication entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-publication_entity publication_mapper::to_entity(const domain::publication& domain) {
-    publication_entity entity;
-
-    entity.id = boost::uuids::to_string(domain.id);
-    entity.tenant_id = domain.tenant_id;
-    entity.dataset_id = boost::uuids::to_string(domain.dataset_id);
-    entity.dataset_code = domain.dataset_code;
-    entity.mode = to_string(domain.mode);
-    entity.target_table = domain.target_table;
-    entity.records_inserted = static_cast<std::int64_t>(domain.records_inserted);
-    entity.records_updated = static_cast<std::int64_t>(domain.records_updated);
-    entity.records_skipped = static_cast<std::int64_t>(domain.records_skipped);
-    entity.records_deleted = static_cast<std::int64_t>(domain.records_deleted);
-    entity.published_by = domain.published_by;
-    entity.published_at = datetime::to_db_string(domain.published_at);
-
-    return entity;
+std::vector<publication_entity> publication_mapper::map(const std::vector<domain::publication>& v) {
+    return map_vector<domain::publication, publication_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

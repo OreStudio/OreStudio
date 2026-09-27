@@ -106,6 +106,53 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part twenty: the publication run log is modelled
+
+Run on 2026-09-27. =ores_dq_dataset_publications_tbl= is modelled, so every
+table-backed entity in dq now has a model. **Seven of the twelve hand-written
+protocol headers are gone**: =publication_protocol.hpp= is generated.
+
+**The subject does not move.** The generated canonical list subject is
+=dq.v1.publications.list=, exactly the subject the hand-written protocol
+declared, and nothing in the tree sent the old one. So the endpoint keeps its
+wire identity while its protocol, handler, service, repository, mapper, entity
+and domain all become generated.
+
+**The model's one piece of vocabulary is =:current_state:=.** The log is
+append-only, so the model declares =:current_state: true= with
+=:no_audit_columns: true= and no natural key. The generated table matches the
+hand-written one column for column and check for check, with two recorded
+differences:
+
+- The primary key loses =default gen_random_uuid()= because the template drops a
+  declared default on a key column. The fix is written and held in =git stash=;
+  it is deferred because its only other effect in the whole repository is
+  =ores.marketdata.series_classification_rule.metric=, and that component's
+  generated table is already drifted for unrelated reasons. Taking the fix here
+  would pull another component's drift into this change.
+- Index names come out =publications_dataset_id_idx= rather than
+  =dataset_publications_dataset_id_idx=, because the template derives the prefix
+  from the entity rather than the table name. Nothing references index names, so
+  this is the same cosmetic difference part ten accepted for the FSM pair.
+
+**The publishing orchestration had to move, and that was the real work.** The
+entity is named =publication=, so the service facet generates
+=publication_service= -- which is exactly where the hand-written publishing
+orchestration lived: dependency resolution, the publishable-dataset reads, and
+the artefact-type cache. Those moved to a new hand-written =publish_service=,
+which =publish_handler= and =dataset_dependency_handler= now use. The
+orchestration's two run-log reads (=get_publication_history=,
+=get_recent_publications=) went with the run log, and the generated handler is
+their replacement.
+
+**Evidence.** Eight targets build and link: =ores.dq.core.lib=,
+=ores.dq.api.tests=, =ores.dq.core.tests=, =ores.dq.service.exe=,
+=ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.exe=.
+=validate_schemas.sh= reports 0 warnings and 0 hygiene problems on 1534 files;
+twin coverage, handler permissions, registry exceptions, populate references and
+the three =component_files.cmake= lists pass, as do =validate_docs.sh= and
+=compass lint=.
+
 * Step 8 part nineteen: the dataset entity is modelled and its hand-written layer is gone
 
 Run on 2026-09-27. =dataset= is the first of the two entities part eighteen

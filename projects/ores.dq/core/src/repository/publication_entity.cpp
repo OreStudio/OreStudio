@@ -19,40 +19,20 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_mapper.hpp.mustache
+ * Template: cpp_domain_type_entity.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_MAPPER_HPP
-#define ORES_DQ_CORE_REPOSITORY_PUBLICATION_MAPPER_HPP
-
-#include "ores.dq.api/domain/publication.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/publication_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::dq::repository {
 
-/**
- * @brief Maps publication domain entities to data storage layer and vice-versa.
- */
-class ORES_DQ_CORE_EXPORT publication_mapper {
-private:
-    inline static std::string_view logger_name = "ores.dq.repository.publication_mapper";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    static domain::publication map(const publication_entity& v);
-    static publication_entity map(const domain::publication& v);
-
-    static std::vector<domain::publication> map(const std::vector<publication_entity>& v);
-    static std::vector<publication_entity> map(const std::vector<domain::publication>& v);
-};
-
+std::ostream& operator<<(std::ostream& s, const publication_entity& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

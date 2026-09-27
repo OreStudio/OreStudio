@@ -19,39 +19,30 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_mapper.hpp.mustache
+ * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_MAPPER_HPP
-#define ORES_DQ_CORE_REPOSITORY_PUBLICATION_MAPPER_HPP
+#ifndef ORES_DQ_API_GENERATORS_PUBLICATION_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_PUBLICATION_GENERATOR_HPP
 
 #include "ores.dq.api/domain/publication.hpp"
-#include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/publication_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-namespace ores::dq::repository {
+namespace ores::dq::generators {
 
 /**
- * @brief Maps publication domain entities to data storage layer and vice-versa.
+ * @brief Generates a synthetic publication.
  */
-class ORES_DQ_CORE_EXPORT publication_mapper {
-private:
-    inline static std::string_view logger_name = "ores.dq.repository.publication_mapper";
+ORES_DQ_API_EXPORT domain::publication
+generate_synthetic_publication(utility::generation::generation_context& ctx);
 
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    static domain::publication map(const publication_entity& v);
-    static publication_entity map(const domain::publication& v);
-
-    static std::vector<domain::publication> map(const std::vector<publication_entity>& v);
-    static std::vector<publication_entity> map(const std::vector<domain::publication>& v);
-};
+/**
+ * @brief Generates N synthetic publications.
+ */
+ORES_DQ_API_EXPORT std::vector<domain::publication>
+generate_synthetic_publications(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

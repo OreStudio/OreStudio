@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_CORE_HPP
-#define ORES_REPORTING_CORE_HPP
+#ifndef ORES_REPORTING_API_HPP
+#define ORES_REPORTING_API_HPP
 
 /**
- * @brief Core implementation for ORE Studio reporting.
+ * @brief Public API types for ORE Studio reporting.
  *
- * Repositories, services and database access for the reporting component.
- * Manages report types, concurrency policies, report definitions, report
- * instances and risk report configurations. Depends on ores.reporting.api.
+ * Domain types, generators, messaging protocols and eventing for the
+ * reporting component. Defines report types, concurrency policies, report
+ * definitions and report instances as C++ domain types exchanged between the
+ * reporting service and other components.
  */
-namespace ores::reporting::core {}
+namespace ores::reporting::api {}
 
 #endif

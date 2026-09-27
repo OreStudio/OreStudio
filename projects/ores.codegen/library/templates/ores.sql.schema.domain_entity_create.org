@@ -998,6 +998,9 @@ end $$;
 -- =============================================================================
 alter table {{domain_entity.sql_name_base}}_tbl enable row level security;
 
+drop policy if exists {{domain_entity.rls_table_base}}_tbl_tenant_isolation_policy
+    on {{domain_entity.sql_name_base}}_tbl;
+
 create policy {{domain_entity.rls_table_base}}_tbl_tenant_isolation_policy
 on {{domain_entity.sql_name_base}}_tbl
 for all using (
@@ -1015,6 +1018,9 @@ with check (
 -- party set admits. The visible_party_ids-is-null passthrough applies
 -- for sessions with no party restriction (tenant admins, service
 -- contexts).
+drop policy if exists {{domain_entity.rls_table_base}}_tbl_party_isolation_policy
+    on {{domain_entity.sql_name_base}}_tbl;
+
 create policy {{domain_entity.rls_table_base}}_tbl_party_isolation_policy
 on {{domain_entity.sql_name_base}}_tbl
 as restrictive

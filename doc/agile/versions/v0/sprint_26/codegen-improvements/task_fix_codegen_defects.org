@@ -72,7 +72,8 @@ with the evidence that shows it. The fix is its own commit on this branch.
 
 | # | Defect | Evidence | Cause | Fix |
 |---+--------+----------+-------+-----|
-| 1 | The umbrella header's namespace comment reaches clang-format pre-wrapped, so the formatter cannot wrap it: =ores.analytics.api.hpp= carries a four-line paragraph at ~72 columns, and its continuation lines have no = * = prefix, so the comment is not a doc comment at all. | =projects/ores.analytics/api/include/ores.analytics.api/ores.analytics.api.hpp=; =ores.reporting.api.hpp= has the same ~72-column wrap but keeps its = * = prefixes. =ores.history.api.hpp= is the counter-example: one long line in, clang-format wrapped it at 100 with prefixes. clang-format 21.1.8 run twice over the analytics file is byte-identical, so the formatter is not going to repair it. | The file is not stale output from a live generator; it is orphaned. The archetype was moved into =ores.cpp.scaffold=, =#+default: disabled=, on 2026-09-26 by the scaffold-is-opt-in story, whose stated trigger was exactly this file: the drift gate kept recreating =ores.nats.hpp= after a clean pass deleted it as dead code. A normal regeneration therefore never emits it, and no gate covers it. | Open. |
+| 1 | The umbrella header's namespace comment reaches clang-format pre-wrapped, so the formatter cannot wrap it: =ores.analytics.api.hpp= carries a four-line paragraph at ~72 columns, and its continuation lines have no = * = prefix, so the comment is not a doc comment at all. | =projects/ores.analytics/api/include/ores.analytics.api/ores.analytics.api.hpp=; =ores.reporting.api.hpp= has the same ~72-column wrap but keeps its = * = prefixes. =ores.history.api.hpp= is the counter-example: one long line in, clang-format wrapped it at 100 with prefixes. clang-format 21.1.8 run twice over the analytics file is byte-identical, so the formatter is not going to repair it. | The archetype sat in the disabled =ores.cpp.scaffold= facet, so no regeneration emitted it and no gate covered it. The 46 files are orphaned rather than stale, and the two malformed ones predate the frontmatter loader. | Partly: the archetype moved to the gated =ores.cpp.component= facet, the loader collapses the description to one line, and the adapter and composite rules are pinned by tests (2715018f50). What remains is defect 2, without which the 46 committed files still cannot be regenerated. |
+| 2 | A sub-component's component model is invisible to codegen discovery, so nothing regenerates or gates anything generated from it. That is why defect 1 could not be fixed by moving the archetype alone. | =manifest.discover_models= reads one =modeling_dir= per component, and all 23 discovered component models are composite roots. Zero of the 46 umbrella owners is reachable; the models live at =<composite>/<part>/modeling/component_overview.org=. | The product-group regroup made every component a composite with parts, but the parts were never registered, so the gate kept seeing only the roots. | Open. Widening discovery is not safe on its own: see the notes. |
 
 * Notes
 
@@ -83,26 +84,29 @@ gates them, and none of the 46 is =#include=d by any =.cpp=, =.hpp= or =.h= in
 the tree: they survive only as entries in a generated =component_files.cmake=
 list and as namespace prose. 78 of the 124 components have none.
 
-*Why regeneration is off.* Moving the umbrella into =ores.cpp.component= would
-put it back under regular codegen and the drift gate, but it would emit one for
-every component of kind =flat=, =api=, =core= or =service= -- about 84 of the
-124 -- recreating =ores.nats.hpp= and some 37 that do not have one. That is
-precisely what the scaffold-is-opt-in story stopped, and it is why the facet is
-disabled.
+*The discovery gap, measured.* Making =discover_models= pick up the parts'
+=component_overview.org= makes the gate reach them, and the check then reports
+**381 files**: 336 gain the =AUTO-GENERATED= marker they never had, and 46 are
+new umbrella headers. That part is right.
 
-*The inconsistency.* The scaffold facet's own lifecycle says every artefact in
-it is deleted as the component's first real model lands. 46 were never
-deleted, so the tree holds a file that is in neither state: not scaffolding
-any more, and not a generated artefact either.
+*Why it cannot be applied as-is.* The same render also fires the
+first-generation CMake archetypes, which are not scaffolding in the current
+tree and are not safe to re-render over a mature component.
+=cmake_component_src.mustache= rewrote =projects/ores.http/server/src/CMakeLists.txt=
+by dropping =list(FILTER lib_files EXCLUDE REGEX "main.cpp")= and rewriting its
+=target_link_libraries=. Those archetypes only never fire today because the
+gate sees composites, whose kind excludes them.
 
 *Options.*
 
-- Delete the 46, which finishes the opt-in decision and removes the malformed
-  comments with the files. The generated CMake file lists drop their entries.
-- Move the archetype back to =ores.cpp.component=, making the umbrella a
-  permanent generated artefact for every eligible component, and accept the
-  ~38 new headers and the reversal of the opt-in decision.
-- Leave them and keep the register entry as the only record.
+- Make the first-generation CMake archetypes opt-in, as the stub trio already
+  is, then widen discovery. This is the consistent reading: a file that may not
+  be re-rendered over an existing component belongs behind the scaffold opt-in.
+- Give the parts a narrow path that renders only the component facet, so the
+  umbrella regenerates and the CMake archetypes never fire. Narrower, but it is
+  a second way of regenerating a component.
+- Register the parts as components. Largest, and it changes the manifest that
+  many other tools read.
 
 *Test Scenarios*
 

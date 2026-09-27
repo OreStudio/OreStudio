@@ -126,3 +126,21 @@ the properties the engine gives against what the design needs, the two state
 machines and which is authoritative, and the three engine gaps the pipeline
 leans on. The contract itself is tasked separately as *Define and enforce the
 orchestration contract*.
+
+* Added after review: making the workflow clear
+
+A second review asked whether the document made the workflow clear, and it did
+not. The orchestration section had stated the contract, but the document still
+opened with a stage table that reads like a chain of direct calls, and it never
+said what a workflow *is* here.
+
+It now carries *The workflow: how the stages are run*, which states that a
+workflow is a definition registered in C++ at startup rather than seeded data,
+that =build_steps= is rebuilt on every dispatch and on recovery, that the chain
+is therefore a pure function of the start message, and that one registered
+definition serves both modes because the mode is an input to =build_steps=
+rather than a type of its own. The stage table now says outright that every
+stage is run by the engine and that the Owner column means who does the work,
+not who calls it. A third diagram, the dispatch loop, draws the mechanism once
+so the two mode diagrams can stay about the stages, and the "what the diagrams
+show" section now states that no stage calls another.

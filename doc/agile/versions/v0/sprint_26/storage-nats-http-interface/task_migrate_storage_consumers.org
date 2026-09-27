@@ -8,7 +8,7 @@
 #+filetags: :storage-nats-http-interface:sprint_26:v0:
 #+owner: marco
 #+branch: feature/storage-bucket-protocol
-#+pr:
+#+pr: 2230
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2230][#2230]] | [storage] Give object storage one bucket, one key protocol and one token |
 
 * Review
 

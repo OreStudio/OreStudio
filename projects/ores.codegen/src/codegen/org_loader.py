@@ -5722,4 +5722,10 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
 
     c["extra_dependencies"] = named_block(doc.root, "extra_dependencies")
     c["extra_test_dependencies"] = named_block(doc.root, "extra_test_dependencies")
+    # A part with no sources of its own -- an api part that is nothing but
+    # headers -- cannot use the library profile, because CMake needs a source
+    # file to decide the link language. The model says so, and the build file
+    # comes out as an INTERFACE library instead.
+    c["header_only"] = str(fm.get("header_only", "")).strip().lower() in (
+        "true", "yes", "1")
     return {"component": c}

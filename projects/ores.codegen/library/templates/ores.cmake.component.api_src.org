@@ -30,6 +30,17 @@ The full template source. Edit here and re-tangle with
 set(name "{{full_name}}")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
+{{#header_only}}
+# Headers only: the source glob below has nothing to compile, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
+add_library(${lib_target_name} INTERFACE)
+
+target_include_directories(${lib_target_name} INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+install(TARGETS ${lib_target_name})
+{{/header_only}}
+{{^header_only}}
 
 set(files "")
 file(GLOB_RECURSE files RELATIVE
@@ -62,6 +73,7 @@ target_link_libraries(${lib_target_name}
 {{{extra_dependencies}}}
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+{{/header_only}}
 {{/component}}
 #+end_src
 

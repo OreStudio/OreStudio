@@ -5,6 +5,7 @@
 #+description: The public contract of object storage: the bucket and key path and URL helpers its consumers link, and the modelled operation surface.
 #+type: ores.codegen.component
 #+component_kind: api
+#+header_only: true
 #+level: cross
 #+filetags: :storage:api:component:
 #+created: 2026-09-26

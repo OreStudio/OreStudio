@@ -4,7 +4,7 @@
 #+title: ores.doc.http-recipe.recipe
 #+description: One literate HTTP recipe per model that renders a route: a section per endpoint, each section exporting its own Hurl file into the gateway's library.
 #+type: archetype
-#+output: doc/recipes/http/{group}/{entity}.org
+#+output: doc/recipes/http/{entity_plural}/{entity}.org
 #+facet: ores.doc.http-recipe
 #+model_types: domain_entity
 #+requires_facet: ores.cpp.http-route

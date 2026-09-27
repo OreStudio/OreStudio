@@ -4251,6 +4251,113 @@ def _shell_recipe_intro(menu: str, plural: str, commands: list[dict[str, Any]],
         "from.")
 
 
+def http_recipe_document(component: str, plan: dict[str, Any], singular: str,
+                         plural: str) -> dict[str, Any]:
+    """The literate recipe document an entity's HTTP surface renders as.
+
+    One entity, one document, one section per endpoint. The endpoints are the
+    route plan's, so the document cannot describe a route the gateway does not
+    serve: the plan states the method and the path, and this reads them rather
+    than deriving a second set that could disagree.
+    """
+    group = plural
+    rendered: list[dict[str, Any]] = []
+    for route in plan["routes"]:
+        name = route["command"]
+        block = f"{group}-{name}"
+        pattern = _http_sample_path(route)
+        rendered.append({
+            "command": name,
+            "heading": f"{route['method_upper']} {pattern}",
+            # The block's own name, the id a reader links to, and the file it
+            # exports. All three are built from the group and the command, so
+            # one rename moves the section, the block and the library file
+            # together.
+            "block": block,
+            "id": recipe_org_id(f"{component}.{block}"),
+            "name": block,
+            # A route that answers returns http_response::json, and every error
+            # path states its own status, so a served endpoint answers 200.
+            "status": "200",
+            "method_upper": route["method_upper"],
+            "pattern": pattern,
+            "subject": route.get("subject", ""),
+            "requires_session": bool(route.get("requires_session", True)),
+            "commentary": _http_route_commentary(route),
+        })
+    return {
+        "id": recipe_org_id(f"{component}.{group}"),
+        "component": component,
+        "group": group,
+        "singular": singular,
+        "plural": plural,
+        "title": f"How do I call the {plural} endpoints over HTTP?",
+        "description": (
+            f"Every endpoint the {plural} resource answers over HTTP, with the "
+            "request each one exports into the gateway's recipe library."),
+        "intro": _http_recipe_intro(plural, rendered),
+        "endpoints": rendered,
+        "endpoint_count": len(rendered),
+    }
+
+
+def _http_sample_path(route: dict[str, Any]) -> str:
+    """The route's path, with a sentinel standing in for every placeholder.
+
+    A request that sent nothing would be refused before it reached the router,
+    and a client-side refusal proves nothing about the gateway. The sentinel is
+    the one a generated shell script sends for the same column, so the two
+    surfaces address the same shape.
+    """
+    pattern = route["pattern"]
+    for key in route.get("keys") or []:
+        name = key.get("name", "")
+        if name:
+            pattern = pattern.replace(
+                "{" + name + "}",
+                _sentinel_for_field(name, key.get("cpp_type", "")))
+    # A route may address a segment that is not one of the entity's keys: a
+    # version read addresses the version as well. It is a number, and a string
+    # sentinel in its place is refused by the router rather than served.
+    if route.get("kind") == "version_read":
+        pattern = pattern.replace(
+            "{version}", _sentinel_for_field("version", "std::uint32_t"))
+    # Anything still unaddressed is replaced rather than left as a literal
+    # placeholder, because a brace in a URL is a request to a different path
+    # than the one the recipe claims to document.
+    return re.sub(r"\{(\w+)\}", lambda m: _sentinel_for_field(m.group(1), ""),
+                  pattern)
+
+
+def _http_route_commentary(route: dict[str, Any]) -> str:
+    """What one endpoint is for, in the recipe's own voice.
+
+    The authorisation position is stated for every endpoint rather than only
+    the guarded ones: an endpoint that needs no session is the interesting
+    case, and a reader should not have to infer it from an absent line.
+    """
+    summary = (route.get("summary") or "").strip()
+    sentence = f"{summary[0].upper()}{summary[1:]}." if summary else ""
+    auth = ("It needs a session." if route.get("requires_session", True)
+            else "It needs no session.")
+    return f"{sentence} {auth}".strip()
+
+
+def _http_recipe_intro(plural: str, endpoints: list[dict[str, Any]]) -> str:
+    """The document's opening prose, in the recipe's own voice."""
+    if len(endpoints) == 1:
+        return (
+            f"This file documents the {plural} resource over HTTP. Its one "
+            f"endpoint is ={endpoints[0]['heading']}=, and the section below "
+            "exports it as a Hurl file into "
+            "=projects/ores.http/scripts/library/=, which the harness runs.")
+    return (
+        f"This file documents the {plural} resource over HTTP, one section per "
+        "endpoint. Every section exports its own Hurl file into "
+        "=projects/ores.http/scripts/library/=. Running a file sends that one "
+        "request, so a failure names the endpoint it came from.")
+
+
 def entity_shell_commands(entity: dict[str, Any]) -> list[dict[str, Any]]:
     """The shell commands an entity's derived operation set yields."""
     return entity_shell_plan(entity)["commands"]

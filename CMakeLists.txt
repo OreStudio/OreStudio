@@ -252,6 +252,11 @@ add_custom_target(tangle_shell_scripts
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-recipe-scripts.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(tangle_http_recipes
+    COMMENT "Generating the Hurl library from recipes in doc/recipes/http/ into projects/ores.http/scripts/library/" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-http-recipes.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_SKILLS_DIRECTORY ".claude/skills")
 add_custom_target(deploy_skills
     COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SKILLS_DIRECTORY}" VERBATIM

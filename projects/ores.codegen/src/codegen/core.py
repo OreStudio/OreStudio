@@ -667,6 +667,11 @@ def _component_path_vars(entity):
 # literal is three places for the name to drift.
 _SHELL_RECIPE_TEMPLATE = "shell_recipe.org.mustache"
 
+# The same for the literate HTTP recipe. The route plan is built for every
+# model that renders it, so the document is assembled only when the renderer is
+# actually drawing this template.
+_HTTP_RECIPE_TEMPLATE = "http_recipe.org.mustache"
+
 
 def resolve_output_path(output_pattern, model_data, model_type):
     """
@@ -4326,6 +4331,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             key_is_primary,
             entity_shell_plan,
             entity_http_route_plan,
+            http_recipe_document,
             operations_by_verb,
             protocol_operations,
             response_payload_member,
@@ -4438,6 +4444,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 domain_entity.get('entity_plural', ''),
                 domain_entity['shell']['commands'],
                 is_operation=False)
+        # The literate HTTP recipe is the same idea over the other surface, so
+        # it too is a view of the plan rather than a second reading of the
+        # model: a route the gateway gains arrives in the document that
+        # documents it, in the same commit.
+        if target_template == _HTTP_RECIPE_TEMPLATE:
+            data['http_recipe'] = http_recipe_document(
+                domain_entity.get('component', ''),
+                domain_entity['http_route'],
+                domain_entity.get('entity_singular', ''),
+                domain_entity.get('entity_plural', ''))
         # Whether this entity's protocol is derived from its own model or
         # owned by an operation model beside it. The derived names are what
         # the service speaks, so an owned protocol must not be assumed:

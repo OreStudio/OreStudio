@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 5CE9A9DA-423C-55CD-A7CD-8CC84F89813E
+:END:
+#+title: How do I call the accounts endpoints over HTTP?
+#+description: Every endpoint the accounts resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:accounts:
+
+This file documents the accounts resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/iam/accounts=
+:PROPERTIES:
+:ID: 331B3179-B21A-51C0-90B4-90F821A78A13
+:END:
+
+List accounts. It needs a session.
+
+It forwards to =iam.v1.accounts.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/accounts
+#+end_example
+
+#+name: accounts-list
+#+begin_src hurl :tangle accounts-list.hurl :exports none
+GET {{base_url}}/api/v1/iam/accounts
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/iam/accounts/__none__=
+:PROPERTIES:
+:ID: E9A79CD8-8AD2-5658-A45E-7F9FB882FB33
+:END:
+
+Get one account. It needs a session.
+
+It forwards to =iam.v1.accounts.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/accounts/__none__
+#+end_example
+
+#+name: accounts-get
+#+begin_src hurl :tangle accounts-get.hurl :exports none
+GET {{base_url}}/api/v1/iam/accounts/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/get-many=
+:PROPERTIES:
+:ID: 224ECF89-4C28-50EE-93CD-357D6D91964A
+:END:
+
+Get many accounts. It needs a session.
+
+It forwards to =iam.v1.accounts.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/get-many
+#+end_example
+
+#+name: accounts-get-many
+#+begin_src hurl :tangle accounts-get-many.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/iam/accounts/__none__/versions=
+:PROPERTIES:
+:ID: 9734C2CD-F6C3-530B-9D71-466276B71494
+:END:
+
+List the recorded versions of one account. It needs a session.
+
+It forwards to =iam.v1.accounts_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/accounts/__none__/versions
+#+end_example
+
+#+name: accounts-versions
+#+begin_src hurl :tangle accounts-versions.hurl :exports none
+GET {{base_url}}/api/v1/iam/accounts/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/iam/accounts/__none__/versions/0=
+:PROPERTIES:
+:ID: D1BE46B0-4206-5A63-AD25-64CFBBF2A875
+:END:
+
+Get one recorded version of one account. It needs a session.
+
+It forwards to =iam.v1.accounts_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/accounts/__none__/versions/0
+#+end_example
+
+#+name: accounts-version
+#+begin_src hurl :tangle accounts-version.hurl :exports none
+GET {{base_url}}/api/v1/iam/accounts/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

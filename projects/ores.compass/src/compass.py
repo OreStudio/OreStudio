@@ -6255,6 +6255,7 @@ EMACS_BUILD_SCRIPTS = {
     "org_roam_db_sync":        "ores-sync-org-roam.el",
     "org_ids":                 "ores-org-ids.el",
     "tangle_shell_scripts":    "ores-build-recipe-scripts.el",
+    "tangle_http_recipes":     "ores-build-http-recipes.el",
     "tangle_codegen_templates": "ores-build-codegen-templates.el",
     "tangle_clang_format":     "ores-build-clang-format.el",
 }

@@ -57,7 +57,14 @@ TEST_CASE("write_single_dataset_bundle", tags) {
     bundle.code = bundle.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle: " << bundle;
-    CHECK_NOTHROW(repo.write(h.context(), bundle));
+    repo.write(h.context(), bundle);
+
+    auto read_bundles = repo.read_latest(h.context(), boost::uuids::to_string(bundle.id));
+    BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
+
+    REQUIRE(read_bundles.size() == 1);
+    CHECK(read_bundles[0].id == bundle.id);
+    CHECK(read_bundles[0].code == bundle.code);
 }
 
 TEST_CASE("write_multiple_dataset_bundles", tags) {
@@ -74,8 +81,21 @@ TEST_CASE("write_multiple_dataset_bundles", tags) {
         b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Dataset bundles: " << bundles;
+    repo.write(h.context(), bundles);
 
-    CHECK_NOTHROW(repo.write(h.context(), bundles));
+    auto read_bundles = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
+
+    for (const auto& written : bundles) {
+        bool found = false;
+        for (const auto& read_row : read_bundles) {
+            if (read_row.id == written.id) {
+                found = true;
+                CHECK(read_row.code == written.code);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_dataset_bundles", tags) {
@@ -98,8 +118,16 @@ TEST_CASE("read_latest_dataset_bundles", tags) {
     auto read_bundles = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
-    CHECK(!read_bundles.empty());
-    CHECK(read_bundles.size() >= written_bundles.size());
+    for (const auto& written : written_bundles) {
+        bool found = false;
+        for (const auto& read_row : read_bundles) {
+            if (read_row.id == written.id) {
+                found = true;
+                CHECK(read_row.code == written.code);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_dataset_bundle_by_id", tags) {

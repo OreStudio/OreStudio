@@ -65,7 +65,15 @@ TEST_CASE("write_single_subject_area", tags) {
     subject_area.domain_name = dd.name;
 
     BOOST_LOG_SEV(lg, debug) << "Subject area: " << subject_area;
-    CHECK_NOTHROW(repo.write(h.context(), subject_area));
+    repo.write(h.context(), subject_area);
+
+    auto read_subject_areas = repo.read_latest(h.context(), subject_area.name, dd.name);
+    BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
+
+    REQUIRE(read_subject_areas.size() == 1);
+    CHECK(read_subject_areas[0].name == subject_area.name);
+    CHECK(read_subject_areas[0].domain_name == subject_area.domain_name);
+    CHECK(read_subject_areas[0].description == subject_area.description);
 }
 
 TEST_CASE("write_multiple_subject_areas", tags) {
@@ -88,8 +96,21 @@ TEST_CASE("write_multiple_subject_areas", tags) {
         s.domain_name = dd.name;
     }
     BOOST_LOG_SEV(lg, debug) << "Subject areas: " << subject_areas;
+    repo.write(h.context(), subject_areas);
 
-    CHECK_NOTHROW(repo.write(h.context(), subject_areas));
+    auto read_subject_areas = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
+
+    for (const auto& written : subject_areas) {
+        bool found = false;
+        for (const auto& read_row : read_subject_areas) {
+            if (read_row.name == written.name && read_row.domain_name == written.domain_name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_subject_areas", tags) {
@@ -118,8 +139,16 @@ TEST_CASE("read_latest_subject_areas", tags) {
     auto read_subject_areas = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read subject areas: " << read_subject_areas;
 
-    CHECK(!read_subject_areas.empty());
-    CHECK(read_subject_areas.size() >= written_subject_areas.size());
+    for (const auto& written : written_subject_areas) {
+        bool found = false;
+        for (const auto& read_row : read_subject_areas) {
+            if (read_row.name == written.name && read_row.domain_name == written.domain_name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_subject_area_by_compound_key", tags) {

@@ -132,8 +132,12 @@ TEST_CASE("parse_help_returns_empty", tags) {
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
+    const std::string output = info.str();
     CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    CHECK(output.starts_with("Data quality service\n\nUsage: ores.dq.service [options]"));
+    CHECK(output.find("--help") != std::string::npos);
+    CHECK(output.find("Display usage and exit.") != std::string::npos);
+    CHECK(err.str().empty());
 }
 
 TEST_CASE("parse_version_returns_empty", tags) {
@@ -143,8 +147,12 @@ TEST_CASE("parse_version_returns_empty", tags) {
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
+    const std::string output = info.str();
     CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    CHECK(output.starts_with("ores.dq.service v"));
+    CHECK(output.find("Copyright (C) 2026 Marco Craveiro.") != std::string::npos);
+    CHECK(output.find("License GPLv3: GNU GPL version 3 or later") != std::string::npos);
+    CHECK(err.str().empty());
 }
 
 TEST_CASE("parse_unknown_option_throws", tags) {

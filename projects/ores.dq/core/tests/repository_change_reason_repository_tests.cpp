@@ -65,7 +65,14 @@ TEST_CASE("write_single_change_reason", tags) {
     change_reason.category_code = cat.code;
 
     BOOST_LOG_SEV(lg, debug) << "Change reason: " << change_reason;
-    CHECK_NOTHROW(repo.write(h.context(), change_reason));
+    repo.write(h.context(), change_reason);
+
+    auto read_change_reasons = repo.read_latest(h.context(), change_reason.code);
+    BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
+
+    REQUIRE(read_change_reasons.size() == 1);
+    CHECK(read_change_reasons[0].code == change_reason.code);
+    CHECK(read_change_reasons[0].description == change_reason.description);
 }
 
 TEST_CASE("write_multiple_change_reasons", tags) {
@@ -89,7 +96,21 @@ TEST_CASE("write_multiple_change_reasons", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Change reasons: " << change_reasons;
 
-    CHECK_NOTHROW(repo.write(h.context(), change_reasons));
+    repo.write(h.context(), change_reasons);
+
+    auto read_change_reasons = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
+
+    for (const auto& written : change_reasons) {
+        bool found = false;
+        for (const auto& read_row : read_change_reasons) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_change_reasons", tags) {
@@ -118,8 +139,16 @@ TEST_CASE("read_latest_change_reasons", tags) {
     auto read_change_reasons = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read change reasons: " << read_change_reasons;
 
-    CHECK(!read_change_reasons.empty());
-    CHECK(read_change_reasons.size() >= written_change_reasons.size());
+    for (const auto& written : written_change_reasons) {
+        bool found = false;
+        for (const auto& read_row : read_change_reasons) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_change_reason_by_code", tags) {

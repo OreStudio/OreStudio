@@ -26,6 +26,7 @@
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -117,8 +118,17 @@ TEST_CASE("dataset_bundle_member_generator_produces_multiple_instances", tags) {
     BOOST_LOG_SEV(lg, info) << members;
 
     CHECK(members.size() == count);
+
+    std::set<std::string> bundle_codes;
+    std::set<std::string> dataset_codes;
     for (const auto& m : members) {
+        CHECK(m.version == 0);
+        CHECK(m.change_reason_code == "system.test");
         CHECK(!m.bundle_code.empty());
         CHECK(!m.dataset_code.empty());
+        bundle_codes.insert(m.bundle_code);
+        dataset_codes.insert(m.dataset_code);
     }
+    CHECK(bundle_codes.size() == count);
+    CHECK(dataset_codes.size() == count);
 }

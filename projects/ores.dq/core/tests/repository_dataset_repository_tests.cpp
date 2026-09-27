@@ -72,7 +72,14 @@ TEST_CASE("write_single_dataset", tags) {
     make_unique(dataset);
 
     BOOST_LOG_SEV(lg, debug) << "Dataset: " << dataset;
-    CHECK_NOTHROW(repo.write(h.context(), dataset));
+    repo.write(h.context(), dataset);
+
+    auto read_datasets = repo.read_latest(h.context(), boost::uuids::to_string(dataset.id));
+    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+
+    REQUIRE(read_datasets.size() == 1);
+    CHECK(read_datasets[0].id == dataset.id);
+    CHECK(read_datasets[0].code == dataset.code);
 }
 
 TEST_CASE("write_multiple_datasets", tags) {
@@ -88,8 +95,21 @@ TEST_CASE("write_multiple_datasets", tags) {
         make_unique(d);
     }
     BOOST_LOG_SEV(lg, debug) << "Datasets: " << datasets;
+    repo.write(h.context(), datasets);
 
-    CHECK_NOTHROW(repo.write(h.context(), datasets));
+    auto read_datasets = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
+
+    for (const auto& written : datasets) {
+        bool found = false;
+        for (const auto& read_row : read_datasets) {
+            if (read_row.id == written.id) {
+                found = true;
+                CHECK(read_row.code == written.code);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_datasets", tags) {
@@ -111,8 +131,16 @@ TEST_CASE("read_latest_datasets", tags) {
     auto read_datasets = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
-    CHECK(!read_datasets.empty());
-    CHECK(read_datasets.size() >= written_datasets.size());
+    for (const auto& written : written_datasets) {
+        bool found = false;
+        for (const auto& read_row : read_datasets) {
+            if (read_row.id == written.id) {
+                found = true;
+                CHECK(read_row.code == written.code);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_dataset_by_id", tags) {
@@ -149,6 +177,16 @@ TEST_CASE("read_nonexistent_dataset_by_id", tags) {
     database_helper h;
 
     dataset_repository repo;
+    generation_context ctx;
+
+    auto dataset = generate_synthetic_dataset(ctx);
+    dataset.tenant_id = h.tenant_id();
+    make_unique(dataset);
+    repo.write(h.context(), dataset);
+
+    auto written_datasets = repo.read_latest(h.context(), boost::uuids::to_string(dataset.id));
+    REQUIRE(written_datasets.size() == 1);
+    CHECK(written_datasets[0].code == dataset.code);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;

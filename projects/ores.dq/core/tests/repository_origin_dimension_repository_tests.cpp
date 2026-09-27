@@ -57,7 +57,14 @@ TEST_CASE("write_single_origin_dimension", tags) {
         origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
-    CHECK_NOTHROW(repo.write(h.context(), origin_dimension));
+    repo.write(h.context(), origin_dimension);
+
+    auto read_origin_dimensions = repo.read_latest(h.context(), origin_dimension.code);
+    BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
+
+    REQUIRE(read_origin_dimensions.size() == 1);
+    CHECK(read_origin_dimensions[0].code == origin_dimension.code);
+    CHECK(read_origin_dimensions[0].name == origin_dimension.name);
 }
 
 TEST_CASE("write_multiple_origin_dimensions", tags) {
@@ -73,8 +80,21 @@ TEST_CASE("write_multiple_origin_dimensions", tags) {
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Origin dimensions: " << origin_dimensions;
+    repo.write(h.context(), origin_dimensions);
 
-    CHECK_NOTHROW(repo.write(h.context(), origin_dimensions));
+    auto read_origin_dimensions = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
+
+    for (const auto& written : origin_dimensions) {
+        bool found = false;
+        for (const auto& read_row : read_origin_dimensions) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_origin_dimensions", tags) {
@@ -96,8 +116,16 @@ TEST_CASE("read_latest_origin_dimensions", tags) {
     auto read_origin_dimensions = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
-    CHECK(!read_origin_dimensions.empty());
-    CHECK(read_origin_dimensions.size() >= written_origin_dimensions.size());
+    for (const auto& written : written_origin_dimensions) {
+        bool found = false;
+        for (const auto& read_row : read_origin_dimensions) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_origin_dimension_by_code", tags) {

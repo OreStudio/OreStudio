@@ -89,4 +89,18 @@ TEST_CASE("read_latest_by_machine_name_returns_nothing_for_an_unknown_machine", 
     const auto states = repo.read_latest_by_machine_name(sys_ctx, "no_such_machine");
 
     CHECK(states.empty());
+
+    // A known machine still answers with its own states, so the empty list
+    // above is the name filter at work rather than a read that returns nothing
+    // for every name.
+    const auto known_states = repo.read_latest_by_machine_name(sys_ctx, "workflow_instance");
+    REQUIRE_FALSE(known_states.empty());
+    bool found = false;
+    for (const auto& s : known_states) {
+        if (s.name == "compensating") {
+            found = true;
+            CHECK(s.machine_id == known_states.front().machine_id);
+        }
+    }
+    CHECK(found);
 }

@@ -56,7 +56,14 @@ TEST_CASE("write_single_dataset_bundle_member", tags) {
     member.change_reason_code = "system.test";
 
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle member: " << member;
-    CHECK_NOTHROW(repo.write(member));
+    repo.write(member);
+
+    auto read_members = repo.read_latest_by_bundle(member.bundle_code);
+    BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
+
+    REQUIRE(read_members.size() == 1);
+    CHECK(read_members[0].bundle_code == member.bundle_code);
+    CHECK(read_members[0].dataset_code == member.dataset_code);
 }
 
 TEST_CASE("write_multiple_dataset_bundle_members", tags) {
@@ -73,8 +80,22 @@ TEST_CASE("write_multiple_dataset_bundle_members", tags) {
         m.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle members: " << members;
+    repo.write(members);
 
-    CHECK_NOTHROW(repo.write(members));
+    auto read_members = repo.read_latest();
+    BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
+
+    for (const auto& written : members) {
+        bool found = false;
+        for (const auto& read_row : read_members) {
+            if (read_row.bundle_code == written.bundle_code &&
+                read_row.dataset_code == written.dataset_code) {
+                found = true;
+                CHECK(read_row.display_order == written.display_order);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_dataset_bundle_members", tags) {
@@ -97,8 +118,17 @@ TEST_CASE("read_latest_dataset_bundle_members", tags) {
     auto read_members = repo.read_latest();
     BOOST_LOG_SEV(lg, debug) << "Read members: " << read_members;
 
-    CHECK(!read_members.empty());
-    CHECK(read_members.size() >= written_members.size());
+    for (const auto& written : written_members) {
+        bool found = false;
+        for (const auto& read_row : read_members) {
+            if (read_row.bundle_code == written.bundle_code &&
+                read_row.dataset_code == written.dataset_code) {
+                found = true;
+                CHECK(read_row.display_order == written.display_order);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_dataset_bundle_members_by_bundle", tags) {

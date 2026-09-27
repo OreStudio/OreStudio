@@ -57,7 +57,14 @@ TEST_CASE("write_single_nature_dimension", tags) {
         nature_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
-    CHECK_NOTHROW(repo.write(h.context(), nature_dimension));
+    repo.write(h.context(), nature_dimension);
+
+    auto read_nature_dimensions = repo.read_latest(h.context(), nature_dimension.code);
+    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+
+    REQUIRE(read_nature_dimensions.size() == 1);
+    CHECK(read_nature_dimensions[0].code == nature_dimension.code);
+    CHECK(read_nature_dimensions[0].name == nature_dimension.name);
 }
 
 TEST_CASE("write_multiple_nature_dimensions", tags) {
@@ -73,8 +80,21 @@ TEST_CASE("write_multiple_nature_dimensions", tags) {
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Nature dimensions: " << nature_dimensions;
+    repo.write(h.context(), nature_dimensions);
 
-    CHECK_NOTHROW(repo.write(h.context(), nature_dimensions));
+    auto read_nature_dimensions = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+
+    for (const auto& written : nature_dimensions) {
+        bool found = false;
+        for (const auto& read_row : read_nature_dimensions) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_nature_dimensions", tags) {
@@ -96,8 +116,16 @@ TEST_CASE("read_latest_nature_dimensions", tags) {
     auto read_nature_dimensions = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
 
-    CHECK(!read_nature_dimensions.empty());
-    CHECK(read_nature_dimensions.size() >= written_nature_dimensions.size());
+    for (const auto& written : written_nature_dimensions) {
+        bool found = false;
+        for (const auto& read_row : read_nature_dimensions) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_nature_dimension_by_code", tags) {
@@ -134,11 +162,28 @@ TEST_CASE("read_nonexistent_nature_dimension", tags) {
 
     nature_dimension_repository repo;
 
+    generation_context ctx;
+    auto nature_dimension = generate_synthetic_nature_dimension(ctx);
+    nature_dimension.tenant_id = h.tenant_id();
+    nature_dimension.code =
+        nature_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
+    BOOST_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
+
+    // Seed a real row, so a miss below proves the key was respected.
+    repo.write(h.context(), nature_dimension);
+
+    auto read_nature_dimensions = repo.read_latest(h.context(), nature_dimension.code);
+    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+
+    REQUIRE(read_nature_dimensions.size() == 1);
+    CHECK(read_nature_dimensions[0].code == nature_dimension.code);
+    CHECK(read_nature_dimensions[0].name == nature_dimension.name);
+
     const std::string nonexistent_code = "nonexistent.nature_dimension.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
-    auto read_nature_dimensions = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read nature dimensions: " << read_nature_dimensions;
+    auto read_missing = repo.read_latest(h.context(), nonexistent_code);
+    BOOST_LOG_SEV(lg, debug) << "Read by non-existent code: " << read_missing;
 
-    CHECK(read_nature_dimensions.size() == 0);
+    CHECK(read_missing.size() == 0);
 }

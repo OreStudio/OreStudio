@@ -56,7 +56,14 @@ TEST_CASE("write_single_change_reason_category", tags) {
     category.code = category.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Change reason category: " << category;
-    CHECK_NOTHROW(repo.write(h.context(), category));
+    repo.write(h.context(), category);
+
+    auto read_categories = repo.read_latest(h.context(), category.code);
+    BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
+
+    REQUIRE(read_categories.size() == 1);
+    CHECK(read_categories[0].code == category.code);
+    CHECK(read_categories[0].description == category.description);
 }
 
 TEST_CASE("write_multiple_change_reason_categories", tags) {
@@ -73,7 +80,21 @@ TEST_CASE("write_multiple_change_reason_categories", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Change reason categories: " << categories;
 
-    CHECK_NOTHROW(repo.write(h.context(), categories));
+    repo.write(h.context(), categories);
+
+    auto read_categories = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
+
+    for (const auto& written : categories) {
+        bool found = false;
+        for (const auto& read_row : read_categories) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_change_reason_categories", tags) {
@@ -95,8 +116,16 @@ TEST_CASE("read_latest_change_reason_categories", tags) {
     auto read_categories = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
-    CHECK(!read_categories.empty());
-    CHECK(read_categories.size() >= written_categories.size());
+    for (const auto& written : written_categories) {
+        bool found = false;
+        for (const auto& read_row : read_categories) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_change_reason_category_by_code", tags) {

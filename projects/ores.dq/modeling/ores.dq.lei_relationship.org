@@ -24,7 +24,7 @@ GLEIF LEI corporate hierarchy relationships from RR golden copy files
 :schema:    public
 :product:   ores
 :component: dq
-:profile:   simple-lookup, artefact-staging-only
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
 :END:
 
 
@@ -181,7 +181,7 @@ std::string(faker::word::noun())
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_dq_lei_relationships_tbl
+:tablename: ores_dq_lei_relationships_artefact_tbl
 :END:
 
 * Insert trigger
@@ -196,7 +196,6 @@ std::string(faker::word::noun())
 ** Flags
 :PROPERTIES:
 :subcomponent:     api
-:has_batch_remove: true
 :END:
 
 ** Repository
@@ -234,7 +233,6 @@ std::string(faker::word::noun())
 | relationship_start_node_node_id      | Start Node   |
 | relationship_end_node_node_id        | End Node     |
 | relationship_relationship_type       | Type         |
-| modified_by                          | Modified By  |
 
 ** Custom repository methods
 

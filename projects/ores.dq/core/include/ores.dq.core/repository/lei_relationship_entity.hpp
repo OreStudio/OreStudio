@@ -40,11 +40,10 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct lei_relationship_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_dq_lei_relationships_tbl";
+    constexpr static const char* tablename = "ores_dq_lei_relationships_artefact_tbl";
 
     sqlgen::PrimaryKey<std::string> relationship_start_node_node_id;
     std::string tenant_id;
-    int version = 0;
     std::string relationship_start_node_node_id_type;
     std::string relationship_end_node_node_id;
     std::string relationship_end_node_node_id_type;
@@ -56,12 +55,6 @@ struct lei_relationship_entity {
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> registration_last_update_date;
     std::optional<std::string> registration_registration_status;
     std::optional<std::string> registration_validation_sources;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const lei_relationship_entity& v);

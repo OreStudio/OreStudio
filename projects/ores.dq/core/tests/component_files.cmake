@@ -30,8 +30,6 @@ set(files
     "coding_scheme_eventing_integration_tests.cpp"
     "data_domain_eventing_integration_tests.cpp"
     "generators_tests.cpp"
-    "lei_entity_eventing_integration_tests.cpp"
-    "lei_relationship_eventing_integration_tests.cpp"
     "main.cpp"
     "nature_dimension_eventing_integration_tests.cpp"
     "origin_dimension_eventing_integration_tests.cpp"

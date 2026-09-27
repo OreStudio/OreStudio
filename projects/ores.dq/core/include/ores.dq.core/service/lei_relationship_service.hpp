@@ -81,18 +81,6 @@ public:
     get_lei_relationship(const messaging::get_lei_relationship_request& request);
     messaging::get_many_lei_relationships_response
     get_many_lei_relationships(const messaging::get_many_lei_relationships_request& request);
-    messaging::put_lei_relationship_response
-    put_lei_relationship(const messaging::put_lei_relationship_request& request);
-    messaging::put_many_lei_relationships_response
-    put_many_lei_relationships(const messaging::put_many_lei_relationships_request& request);
-    messaging::delete_lei_relationship_response
-    delete_lei_relationship(const messaging::delete_lei_relationship_request& request);
-    messaging::delete_many_lei_relationships_response
-    delete_many_lei_relationships(const messaging::delete_many_lei_relationships_request& request);
-    messaging::list_lei_relationship_versions_response list_lei_relationship_versions(
-        const messaging::list_lei_relationship_versions_request& request);
-    messaging::get_lei_relationship_version_response
-    get_lei_relationship_version(const messaging::get_lei_relationship_version_request& request);
     /**@}*/
 
     /**
@@ -112,17 +100,6 @@ public:
      */
     std::uint32_t count_relationships();
 
-
-    /**
-     * @brief Retrieves a single LEI relationship as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The LEI relationship at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::lei_relationship>
-    get_relationship_at_version(const std::string& relationship_start_node_node_id,
-                                std::uint32_t version);
 
     /**
      * @brief Retrieves a single LEI relationship by its primary key.
@@ -166,34 +143,10 @@ public:
      */
     void delete_relationships(const std::vector<std::string>& relationship_start_node_node_ids);
 
-    /**
-     * @brief Retrieves all historical versions of a LEI relationship.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::lei_relationship>
-    get_relationship_history(const std::string& relationship_start_node_node_id);
 
 private:
     context ctx_;
     repository::lei_relationship_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result prepare_change(const messaging::lei_relationship_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::lei_relationship& out);
 };
 
 }

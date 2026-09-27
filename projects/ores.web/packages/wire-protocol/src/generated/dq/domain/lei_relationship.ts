@@ -31,7 +31,6 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface LeiRelationship {
-    version: number;
     tenant_id: string;
     relationship_start_node_node_id: string;
     relationship_start_node_node_id_type: string;
@@ -45,9 +44,4 @@ export interface LeiRelationship {
     registration_last_update_date: string | null;
     registration_registration_status: string | null;
     registration_validation_sources: string | null;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
 }

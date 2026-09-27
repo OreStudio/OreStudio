@@ -37,12 +37,10 @@ using ores::utility::generation::generation_keys;
 domain::lei_relationship
 generate_synthetic_lei_relationship(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::lei_relationship r;
-    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
@@ -59,11 +57,6 @@ generate_synthetic_lei_relationship(utility::generation::generation_context& ctx
     r.registration_last_update_date = std::chrono::system_clock::now();
     r.registration_registration_status = std::string(faker::word::noun());
     r.registration_validation_sources = std::string(faker::word::noun());
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

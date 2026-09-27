@@ -39,11 +39,6 @@ namespace ores::dq::domain {
  */
 struct lei_relationship final {
     /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
@@ -108,39 +103,6 @@ struct lei_relationship final {
      * @brief GLEIF LEI corporate hierarchy relationships from RR golden copy files
      */
     std::optional<std::string> registration_validation_sources;
-
-    /**
-     * @brief Username of the person who last modified this LEI relationship.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     *
-     * The transaction-time window's start, which the store sets from its own
-     * clock. It travels with the audit members because it is only ever read
-     * with them: the history builder takes a version type that carries an
-     * actor *and* this timestamp, so an entity without the actor has no use
-     * for the timestamp either.
-     */
-    std::chrono::system_clock::time_point recorded_at;
 
     /**
      * @brief Value equality.

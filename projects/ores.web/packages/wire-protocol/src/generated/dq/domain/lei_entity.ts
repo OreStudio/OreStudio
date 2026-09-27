@@ -31,7 +31,6 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface LeiEntity {
-    version: number;
     tenant_id: string;
     lei: string;
     entity_legal_name: string;
@@ -58,9 +57,4 @@ export interface LeiEntity {
     registration_registration_status: string | null;
     entity_transliterated_name_1: string | null;
     entity_transliterated_name_1_type: string | null;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
 }

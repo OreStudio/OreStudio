@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/default-the-administrator-identity
-#+pr:
+#+pr: 2301
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2301][#2301]] | [web] Default the administrator's identity on the setup screen |
 
 * Review
 

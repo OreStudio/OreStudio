@@ -129,12 +129,12 @@ arrive as query parameters.
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:CCFCDAC3-DAA3-433E-9A51-924FC00992AF][ores.cpp.http-route.operation_header]] | HTTP route unit header for an operation model: the unit class and one handler per declared message. |
+| [[id:5CCD5E44-6BD9-4068-8928-0C1E6EAE015C][ores.cpp.http-route.operation_implementation]] | HTTP route unit implementation for an operation model: the route table and one handler body per declared message. |
+| [[id:2E06E8BC-851D-4389-8CFA-FC1A8D2FACD0][ores.cpp.http-route.operation_tests]] | HTTP route unit tests for an operation model: the registered method and pattern of every declared message, and the auth flag each states. |
 | [[id:182DD2AF-9543-4722-B8CA-1A98FABFDF85][ores.cpp.http-route.route_header]] | HTTP route unit header: the unit class, its registration entry point and one handler per derived verb. |
 | [[id:9946AA4E-5C08-4DF4-9D0F-D544D977B264][ores.cpp.http-route.route_implementation]] | HTTP route unit implementation: the route table, the parameter readers and the handler bodies for one entity. |
 | [[id:A1A5750C-705A-43DD-B333-BA545EB3216A][ores.cpp.http-route.route_tests]] | HTTP route unit tests: the registered method and pattern of every derived route, and the auth flag each operation states. |
-| [[id:CCFCDAC3-DAA3-433E-9A51-924FC00992AF][ores.cpp.http-route.operation_header]] | HTTP route unit header for an operation model: the unit class and one handler per declared message. |
-| [[id:5CCD5E44-6BD9-4068-8928-0C1E6EAE015C][ores.cpp.http-route.operation_implementation]] | HTTP route unit implementation for an operation model: the route table and one handler per declared message. |
-| [[id:2E06E8BC-851D-4389-8CFA-FC1A8D2FACD0][ores.cpp.http-route.operation_tests]] | HTTP route unit tests for an operation model: the registered method and pattern of every declared message, and the auth flag each states. |
 
 * The operation archetypes
 

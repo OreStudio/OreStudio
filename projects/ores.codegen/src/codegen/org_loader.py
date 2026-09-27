@@ -5844,9 +5844,17 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     fm = doc.frontmatter
 
     c: dict[str, Any] = {}
-    for k in ("name", "full_name", "brief", "description"):
+    for k in ("name", "full_name", "brief"):
         if k in fm:
             c[k] = fm[k]
+    # The umbrella header puts this inside a /** ... */ block and lets
+    # clang-format wrap it, which the formatter only does for a line that is
+    # too long. A description that arrives already broken stays broken, and
+    # every break lands after the " * " prefix, so the continuation lines stop
+    # being comment lines at all. Collapse it here, so the template always
+    # receives the one line clang-format is expecting.
+    if fm.get("description"):
+        c["description"] = " ".join(str(fm["description"]).split())
     # Component kind (flat | api | core | service | composite | adapter)
     # selects the scaffolding variant set via the graph's kind discriminator;
     # defaults to "flat". A composite has sub-components and no code of its

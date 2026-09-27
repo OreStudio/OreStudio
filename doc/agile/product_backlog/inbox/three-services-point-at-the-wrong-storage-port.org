@@ -33,7 +33,7 @@ The base URL is consequently plumbed three different ways across the tree: the
 shell reads the environment (=compute_commands.cpp:63-65=), =ores.ore.service=
 is given the flag by its unit, and these three silently take a default. And
 =storage_paths.hpp:39= documents a fourth route — discovery over NATS on
-=http-server.v1.info.get= — which no C++ caller uses; only the web client does.
+=http.v1.info.get= — which no C++ caller uses; only the web client does.
 
 * Why
 

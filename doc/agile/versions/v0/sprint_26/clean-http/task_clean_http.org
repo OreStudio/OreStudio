@@ -152,7 +152,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Status block still read STARTED with the inventory in flight while the checklist below it was complete through V08. | =story.org=; this task | Taken | The review ran on the commit before the closure, so the block it saw described work in progress. Both files now read DONE and the task carries its Result. |
+| 2 | An inbox capture still names =http-server.v1.info.get=, which this work renames. | =doc/agile/product_backlog/inbox/three-services-point-at-the-wrong-storage-port.org= | Taken | Not in this diff, but the rename made the reference stale, so the fact is corrected in place. |
+| 3 | The reviewer could not run the suite, the build or the gate scripts in its environment and relied on the task's own evidence. | — | Noted | Every figure in this record was measured here; the build, =ctest=, the codegen suite and each gate were run on the branch's final head. |
 
 * Result
 

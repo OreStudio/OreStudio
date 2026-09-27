@@ -24,8 +24,8 @@
 namespace ores::workflow::service {
 
 fsm_state_map load_fsm_states(ores::database::context ctx, const std::string& machine_name) {
-    const auto states = ores::dq::repository::fsm_state_repository().read_latest_by_machine_name(
-        ctx, machine_name);
+    const auto states =
+        ores::dq::repository::fsm_state_repository().read_latest_by_machine_name(ctx, machine_name);
 
     if (states.empty())
         throw std::runtime_error(

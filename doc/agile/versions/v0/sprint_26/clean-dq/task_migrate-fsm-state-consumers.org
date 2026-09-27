@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -22,30 +22,108 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 The dq FSM migration deleted fsm_protocol.hpp and with it the machine-scoped state lookup, without moving its consumers. ores.workflow.core and ores.trading.core no longer compile on main, and ores.reporting.core asks for states through a request type that no longer exists. Every consumer reads FSM states through the generated surface and the deleted header is referenced by nothing.
 
+The migration also left the tree unable to recreate its own database. a fresh =compass db recreate= is what proves a generated tree, so the task carries every defect that stood between the branch and a provisioned Acme tenant.
+
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Field        | Field        | Value                                  |
+|--------------+--------------+----------------------------------------|
+| State        | STARTED      |                                        |
+| Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | |
+| Now          | The migration's consumers build and read through the generated repository, the database recreates cleanly, and the Acme system is provisioned. The Acme run then found two workflow defects, the second of which is open. | |
+| Waiting on   | A decision on the cross-tenant read below. | |
+| Next         | Scope the engine's tenant handling, then re-run the Acme bundle publish to completion. | |
+| Last touched | 2026-09-27   |                                        |
 
 * Acceptance
 
 - ores.workflow.core, ores.reporting.core and ores.trading.core build from this branch, and no source includes the deleted fsm_protocol.hpp.
 - The workflow and reporting services resolve their state names to the same state ids they resolved before the migration, through dq's generated repository.
 - A test in ores.dq.core proves the machine-scoped read returns the states of the machine it names and nothing from another machine.
+- =compass db recreate= completes from scratch, and a freshly built fleet serves the Acme provisioning script.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** 1. The FSM consumers
+
+=load_fsm_states= takes the states of one machine by name. The generated
+wire surface addresses a state by name alone, and a state's name is unique
+only within its machine, so the question cannot be asked over the wire. The
+migration's own remedy is a read on the store, so dq's fsm_state repository
+gains =read_latest_by_machine_name= and the loader moves onto it.
+
+** 2. The consumers of that decision
+
+A direct read needs a grant the NATS call did not: both services declare the
+=ores_dq_fsm_= select prefix, and the grants regenerate from the registry
+model. The workflow service also stops taking an outbound authenticated
+client, because the state load was its only use.
+
+** 3. Whatever else the recreate finds
+
+A recreate is the acceptance test for a generated tree. Each defect it
+surfaced is fixed at its source, not worked around.
 
 * Notes
+
+** The step tenant, which the identity fixture could not reach
+
+The step insert trigger validates =workflow_id= within the step's own tenant.
+The engine left the step's tenant at its default, so a workflow started for
+another tenant wrote an instance under that tenant and a step under the
+system tenant, and the trigger refused the pair. Fixed in all three creation
+sites. The identity fixture runs in the system tenant, so only a tenant run
+could find it.
+
+** The cross-tenant read, still open
+
+Every engine read goes through the generated repository, which compares
+=tenant_id= with =ctx.tenant_id()=. The engine's context is the service's own
+(system) tenant, so once the step above is in the right tenant the completion
+event arrives and the engine cannot see the step it dispatched:
+
+#+begin_example
+Step-completed event received: step=23cc89bc-... outcome=completed
+Step not found: 23cc89bc-...
+#+end_example
+
+The RLS policies already allow the system session to see every tenant's
+instances and steps -- the policy comment says "cross-tenant service" -- so
+the obstacle is the repository's own filter, not the database. Three things
+follow: the start path must scope its later reads and writes to the request's
+tenant (=stamp_command_published= and =set_step_progress= are silent no-ops
+today), the completion must carry the tenant it belongs to, and recovery needs
+a read across tenants, which the codegen docs already name as the
+=read_latest_all_tenants= paste pattern. It changes the completion protocol, so
+it is its own unit.
+
+** Other defects the recreate found
+
+- =service_vars.sh= and four IAM SQL files were never regenerated after
+  =ores.storage.service= joined the registry, so no storage role was created
+  and =iam_service_account_roles_populate.sql= died on an undefined psql
+  variable.
+- The generated tags artefact table lost the unique index on
+  =(tenant_id, dataset_id, name)= that =ores_dq_tags_upsert_fn= conflicts on.
+  The codegen template could not express a unique artefact index at all, so
+  the template and the loader gained that before the model could declare it.
+- The version guard added in 71ab7dd85d refuses a version-zero insert that
+  collides with a live row, before =ON CONFLICT= is consulted. Every seed
+  upsert and 43 publish functions insert that way; both families now state the
+  replace the guard asks them to.
+
+** The storage HTTP API, which the Acme script needs
+
+=compute publish-package= uploads through the storage HTTP API and is refused
+with HTTP 401. The server side says why:
+
+#+begin_example
+JWT verification failed: wrong algorithm
+Invalid token for /api/v1/storage/{bucket}/{key}
+#+end_example
+
+The tenant steps below it were run directly instead. The upload is not on the
+workflow path, and the mismatch is the storage surface's to fix.
 
 * Test Scenarios
 
@@ -71,3 +149,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** The consumers build and read through the generated surface -- done
+
+=trading/core/include/ores.trading.core/messaging/trade_handler.hpp= included
+the deleted header for a transition fetch the save path had already stopped
+making, so the include and its doc comment went, in the model as well as the
+generated header.
+
+=load_fsm_states= now reads dq's fsm_state repository instead of sending
+=authenticated_request=, so the workflow service's outbound authenticated
+client and its token provider went too. Both services declare the
+=ores_dq_fsm_= select prefix and the grants regenerate from the registry model.
+
+=ores.dq.core.tests= proves the new read: each machine's read returns its own
+states and none of the other's, and an unknown machine is empty rather than
+fatal.
+
+** The database recreates from scratch -- done
+
+Repeated =compass db recreate -y -k= runs drove out every defect above. The
+last run completed with exit code 0 through the full schema, populate and
+grant sequence, and the fleet then started with 24 of 24 units ready.
+
+** Acme provisioning -- partial
+
+The system half ran: =provision system super_admin ...= created the initial
+admin and the =acme_corporation= tenant. =provision tenant --source acme= and
+=bundles publish risk_management --wait= were run directly, because the
+compute package upload ahead of them is refused by the storage HTTP API.
+
+=bundle_publish_workflow= then started for the acme tenant and ran its first
+step:
+
+#+begin_example
+Start-workflow request received: type=bundle_publish_workflow instance_id=8e0c668c-...
+Workflow STARTED: type=bundle_publish_workflow step_count=38 first_step=refdata.calendar_types
+publish_from_dq complete: fn=ores_refdata_publish_calendar_types_from_dq_fn inserted=5 updated=0
+#+end_example
+
+and stopped at the cross-tenant read above. The identity configurations
+replayed from the durable stream in the same window and all behaved: completed
+runs, failed-then-compensated runs, the five-step fan-out, and the
+unknown-type refusal.

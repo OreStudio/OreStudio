@@ -57,9 +57,8 @@ TEST_CASE("read_latest_by_machine_name_returns_the_named_machines_states", tags)
     REQUIRE_FALSE(step_states.empty());
 
     const auto has = [](const auto& states, std::string_view name) {
-        return std::any_of(states.begin(), states.end(), [name](const auto& s) {
-            return s.name == name;
-        });
+        return std::any_of(
+            states.begin(), states.end(), [name](const auto& s) { return s.name == name; });
     };
 
     CHECK(has(instance_states, "compensating"));

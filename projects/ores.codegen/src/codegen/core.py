@@ -667,6 +667,11 @@ def _component_path_vars(entity):
 # literal is three places for the name to drift.
 _SHELL_RECIPE_TEMPLATE = "shell_recipe.org.mustache"
 
+# The same for the literate HTTP recipe. The route plan is built for every
+# model that renders it, so the document is assembled only when the renderer is
+# actually drawing this template.
+_HTTP_RECIPE_TEMPLATE = "http_recipe.org.mustache"
+
 
 def resolve_output_path(output_pattern, model_data, model_type):
     """
@@ -745,6 +750,11 @@ def resolve_output_path(output_pattern, model_data, model_type):
             result = result.replace('{' + placeholder + '}', value)
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', snake_to_pascal(entity_singular))
+        # An operation has no declared plural, so the menu it is grouped under
+        # is also its plural: the recipe facet writes one document per resource
+        # and operations share the menu of the resource they belong to.
+        result = result.replace('{entity_plural}',
+                                shell_menu_name('operation', model_data))
         result = result.replace('{shell_menu}',
                                 shell_menu_name('operation', model_data))
 
@@ -4326,6 +4336,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             key_is_primary,
             entity_shell_plan,
             entity_http_route_plan,
+            http_recipe_document,
             operations_by_verb,
             protocol_operations,
             response_payload_member,
@@ -4438,6 +4449,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 domain_entity.get('entity_plural', ''),
                 domain_entity['shell']['commands'],
                 is_operation=False)
+        # The literate HTTP recipe is the same idea over the other surface, so
+        # it too is a view of the plan rather than a second reading of the
+        # model: a route the gateway gains arrives in the document that
+        # documents it, in the same commit.
+        if target_template == _HTTP_RECIPE_TEMPLATE:
+            data['http_recipe'] = http_recipe_document(
+                domain_entity.get('component', ''),
+                domain_entity['http_route'],
+                domain_entity.get('entity_singular', ''),
+                domain_entity.get('entity_plural', ''))
         # Whether this entity's protocol is derived from its own model or
         # owned by an operation model beside it. The derived names are what
         # the service speaks, so an owned protocol must not be assumed:
@@ -4569,6 +4590,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_events,
             entity_http_route_plan,
             entity_shell_plan,
+            http_recipe_document,
             junction_entity_shape,
             junction_protocol_messages,
             operations_by_verb,
@@ -4621,7 +4643,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # protocol twin reads ``{{#domain_entity}}`` and ``{{#junction}}``
         # both, and would render its header twice.
         if (target_template.startswith(('cpp_shell_command_', 'cpp_http_route_'))
-                or target_template == _SHELL_RECIPE_TEMPLATE):
+                or target_template in (_SHELL_RECIPE_TEMPLATE,
+                                       _HTTP_RECIPE_TEMPLATE)):
             _shape = junction_entity_shape(junction)
             _shape['messages'] = junction['messages']
             _shape['write_fields'] = write_record_for(_shape)
@@ -4638,6 +4661,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     _shape.get('entity_plural', ''),
                     _shape['shell']['commands'],
                     is_operation=False)
+            if target_template == _HTTP_RECIPE_TEMPLATE:
+                data['http_recipe'] = http_recipe_document(
+                    _shape.get('component', ''),
+                    _shape['http_route'],
+                    _shape.get('entity_singular', ''),
+                    _shape.get('entity_plural', ''))
             # A junction states its C++ sub-component in the C++ drawer rather
             # than in the frontmatter a domain entity uses, so the include path
             # the unit renders is read from where a junction states it.
@@ -4791,7 +4820,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # operation model: the address each route states comes from the subject
         # grammar, the exposure from the message, and a model that never opted
         # in has no route to state.
-        if target_template.startswith('cpp_http_route_operation_'):
+        if (target_template.startswith('cpp_http_route_operation_')
+                or target_template == _HTTP_RECIPE_TEMPLATE):
             from .org_loader import (  # noqa: PLC0415
                 operation_http_route_plan,
             )
@@ -4810,6 +4840,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 op.get('entity_singular', ''),
                 op.get('shell_commands') or [],
                 is_operation=True)
+        # The HTTP recipe reads the same projection, and is grouped under the
+        # menu the operation belongs to, which is what its output path states.
+        if target_template == _HTTP_RECIPE_TEMPLATE:
+            from .org_loader import (  # deferred to avoid circular import
+                http_recipe_document,
+                shell_menu_name,
+            )
+            _menu = shell_menu_name('operation', model)
+            data['http_recipe'] = http_recipe_document(
+                op.get('component', ''),
+                op['http_route'],
+                op.get('entity_singular', ''),
+                _menu)
         data['operation'] = op
 
     # Special processing for enum models

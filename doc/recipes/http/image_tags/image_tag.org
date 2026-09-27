@@ -1,0 +1,220 @@
+:PROPERTIES:
+:ID: 83E84B75-637A-5B86-A308-7FD495BFD81E
+:END:
+#+title: How do I call the image_tags endpoints over HTTP?
+#+description: Every endpoint the image_tags resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:image_tags:
+
+This file documents the image_tags resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/assets/image_tags=
+:PROPERTIES:
+:ID: 90326854-5566-529B-A360-C4FD384A2490
+:END:
+
+List image tags. It needs a session.
+
+It forwards to =assets.v1.image_tags.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/image_tags
+#+end_example
+
+#+name: image_tags-list
+#+begin_src hurl :tangle image_tags-list.hurl :exports none
+GET {{base_url}}/api/v1/assets/image_tags
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/image_tags/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: F70B2DFD-D359-5EA0-8632-5CB2E19F2B6F
+:END:
+
+Get one image tag. It needs a session.
+
+It forwards to =assets.v1.image_tags.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/image_tags/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: image_tags-get
+#+begin_src hurl :tangle image_tags-get.hurl :exports none
+GET {{base_url}}/api/v1/assets/image_tags/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/image_tags/get-many=
+:PROPERTIES:
+:ID: 21C649B0-861B-56DE-9BAD-DC035D9F0F8E
+:END:
+
+Get many image tags. It needs a session.
+
+It forwards to =assets.v1.image_tags.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/image_tags/get-many
+#+end_example
+
+#+name: image_tags-get-many
+#+begin_src hurl :tangle image_tags-get-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/image_tags/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/image_tags=
+:PROPERTIES:
+:ID: 80BEFDB2-C74A-5229-B0CF-94A4D205A599
+:END:
+
+Create one image tag. It needs a session.
+
+It forwards to =assets.v1.image_tags.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/image_tags
+#+end_example
+
+#+name: image_tags-add
+#+begin_src hurl :tangle image_tags-add.hurl :exports none
+POST {{base_url}}/api/v1/assets/image_tags
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/assets/image_tags=
+:PROPERTIES:
+:ID: AA8CBBB7-4141-5050-9FFC-408B71045C80
+:END:
+
+Replace one image tag. It needs a session.
+
+It forwards to =assets.v1.image_tags.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/assets/image_tags
+#+end_example
+
+#+name: image_tags-set
+#+begin_src hurl :tangle image_tags-set.hurl :exports none
+PUT {{base_url}}/api/v1/assets/image_tags
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/image_tags/put-many=
+:PROPERTIES:
+:ID: CC2E33FD-4332-5FAF-81AD-8AF0210C4FA2
+:END:
+
+Write many image tags. It needs a session.
+
+It forwards to =assets.v1.image_tags.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/image_tags/put-many
+#+end_example
+
+#+name: image_tags-put-many
+#+begin_src hurl :tangle image_tags-put-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/image_tags/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/assets/image_tags/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 4B88CF71-5C28-58F6-850E-2551C4136BDD
+:END:
+
+Delete one image tag. It needs a session.
+
+It forwards to =assets.v1.image_tags.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/assets/image_tags/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: image_tags-delete
+#+begin_src hurl :tangle image_tags-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/assets/image_tags/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/image_tags/delete-many=
+:PROPERTIES:
+:ID: 6E3F1279-104A-53A8-A733-E2298F2C73B5
+:END:
+
+Delete many image tags. It needs a session.
+
+It forwards to =assets.v1.image_tags.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/image_tags/delete-many
+#+end_example
+
+#+name: image_tags-delete-many
+#+begin_src hurl :tangle image_tags-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/image_tags/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/image_tags/by-image-id/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 9FAC9655-8528-59C9-A0FD-DA9E5C2710FA
+:END:
+
+List the image tags that reference one image id. It needs a session.
+
+It forwards to =assets.v1.image_tags.list_by_image_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/image_tags/by-image-id/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: image_tags-by-image-id
+#+begin_src hurl :tangle image_tags-by-image-id.hurl :exports none
+GET {{base_url}}/api/v1/assets/image_tags/by-image-id/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

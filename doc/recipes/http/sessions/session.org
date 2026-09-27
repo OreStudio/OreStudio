@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 0E61EABD-0AF3-59A0-B796-0519EEE06FC9
+:END:
+#+title: How do I call the sessions endpoints over HTTP?
+#+description: Every endpoint the sessions resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:sessions:
+
+This file documents the sessions resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/iam/sessions=
+:PROPERTIES:
+:ID: 3E1CD1D6-5D89-53C0-8AE7-B5209F25995C
+:END:
+
+List sessions. It needs a session.
+
+It forwards to =iam.v1.sessions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/sessions
+#+end_example
+
+#+name: sessions-list
+#+begin_src hurl :tangle sessions-list.hurl :exports none
+GET {{base_url}}/api/v1/iam/sessions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/iam/sessions/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 91967DB9-65E4-5A2A-B754-F5F29EF78C0A
+:END:
+
+Get one session. It needs a session.
+
+It forwards to =iam.v1.sessions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/sessions/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: sessions-get
+#+begin_src hurl :tangle sessions-get.hurl :exports none
+GET {{base_url}}/api/v1/iam/sessions/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/sessions/get-many=
+:PROPERTIES:
+:ID: 470AE5DF-FA5A-5BA5-9D35-0A2165F5768E
+:END:
+
+Get many sessions. It needs a session.
+
+It forwards to =iam.v1.sessions.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/sessions/get-many
+#+end_example
+
+#+name: sessions-get-many
+#+begin_src hurl :tangle sessions-get-many.hurl :exports none
+POST {{base_url}}/api/v1/iam/sessions/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/sessions=
+:PROPERTIES:
+:ID: 07851262-1A14-5661-839F-D8C672F60E14
+:END:
+
+Create one session. It needs a session.
+
+It forwards to =iam.v1.sessions.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/sessions
+#+end_example
+
+#+name: sessions-add
+#+begin_src hurl :tangle sessions-add.hurl :exports none
+POST {{base_url}}/api/v1/iam/sessions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/iam/sessions=
+:PROPERTIES:
+:ID: A5A86BB6-5878-55D4-A922-7CCCE16AC60E
+:END:
+
+Replace one session. It needs a session.
+
+It forwards to =iam.v1.sessions.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/iam/sessions
+#+end_example
+
+#+name: sessions-set
+#+begin_src hurl :tangle sessions-set.hurl :exports none
+PUT {{base_url}}/api/v1/iam/sessions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/sessions/put-many=
+:PROPERTIES:
+:ID: 5C3321FD-0F38-52B1-810D-3E0B621C227A
+:END:
+
+Write many sessions. It needs a session.
+
+It forwards to =iam.v1.sessions.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/sessions/put-many
+#+end_example
+
+#+name: sessions-put-many
+#+begin_src hurl :tangle sessions-put-many.hurl :exports none
+POST {{base_url}}/api/v1/iam/sessions/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/iam/sessions/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 28D4B58D-CFBB-5BC0-913F-A6723F64DAB3
+:END:
+
+Delete one session. It needs a session.
+
+It forwards to =iam.v1.sessions.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/iam/sessions/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: sessions-delete
+#+begin_src hurl :tangle sessions-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/iam/sessions/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/sessions/delete-many=
+:PROPERTIES:
+:ID: A709C1CA-3A30-55D3-9646-F39A9A7C325C
+:END:
+
+Delete many sessions. It needs a session.
+
+It forwards to =iam.v1.sessions.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/sessions/delete-many
+#+end_example
+
+#+name: sessions-delete-many
+#+begin_src hurl :tangle sessions-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/iam/sessions/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A
+:END:
+#+title: How do I call the tags endpoints over HTTP?
+#+description: Every endpoint the tags resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:tags:
+
+This file documents the tags resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/assets/tags=
+:PROPERTIES:
+:ID: ACAEA6BB-EBE4-5EEA-ABA3-B764243B9F13
+:END:
+
+List tags. It needs a session.
+
+It forwards to =assets.v1.tags.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/tags
+#+end_example
+
+#+name: tags-list
+#+begin_src hurl :tangle tags-list.hurl :exports none
+GET {{base_url}}/api/v1/assets/tags
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/tags/__none__=
+:PROPERTIES:
+:ID: 8800F32B-BF6D-5F80-8E1A-C17FD15BCE72
+:END:
+
+Get one tag. It needs a session.
+
+It forwards to =assets.v1.tags.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/tags/__none__
+#+end_example
+
+#+name: tags-get
+#+begin_src hurl :tangle tags-get.hurl :exports none
+GET {{base_url}}/api/v1/assets/tags/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/tags/get-many=
+:PROPERTIES:
+:ID: F5899199-CC51-5493-A17E-5BFF08698F65
+:END:
+
+Get many tags. It needs a session.
+
+It forwards to =assets.v1.tags.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/tags/get-many
+#+end_example
+
+#+name: tags-get-many
+#+begin_src hurl :tangle tags-get-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/tags/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/tags=
+:PROPERTIES:
+:ID: A1454DA4-6D77-5188-9BBF-34D3A9B2E58B
+:END:
+
+Create one tag. It needs a session.
+
+It forwards to =assets.v1.tags.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/tags
+#+end_example
+
+#+name: tags-add
+#+begin_src hurl :tangle tags-add.hurl :exports none
+POST {{base_url}}/api/v1/assets/tags
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/assets/tags=
+:PROPERTIES:
+:ID: F37E8037-1BF0-56BF-8A35-E1193D6E7F10
+:END:
+
+Replace one tag. It needs a session.
+
+It forwards to =assets.v1.tags.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/assets/tags
+#+end_example
+
+#+name: tags-set
+#+begin_src hurl :tangle tags-set.hurl :exports none
+PUT {{base_url}}/api/v1/assets/tags
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/tags/put-many=
+:PROPERTIES:
+:ID: F9C477CB-8C57-5261-AC00-BD2444AD727B
+:END:
+
+Write many tags. It needs a session.
+
+It forwards to =assets.v1.tags.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/tags/put-many
+#+end_example
+
+#+name: tags-put-many
+#+begin_src hurl :tangle tags-put-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/tags/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/assets/tags/__none__=
+:PROPERTIES:
+:ID: BB6DA722-C430-5267-851D-53C1A8BFAD95
+:END:
+
+Delete one tag. It needs a session.
+
+It forwards to =assets.v1.tags.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/assets/tags/__none__
+#+end_example
+
+#+name: tags-delete
+#+begin_src hurl :tangle tags-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/assets/tags/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/tags/delete-many=
+:PROPERTIES:
+:ID: FAA3E173-C304-5FCD-800A-5594FB16704B
+:END:
+
+Delete many tags. It needs a session.
+
+It forwards to =assets.v1.tags.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/tags/delete-many
+#+end_example
+
+#+name: tags-delete-many
+#+begin_src hurl :tangle tags-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/tags/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/tags/__none__/versions=
+:PROPERTIES:
+:ID: BD410F98-EF9B-51C8-B552-3BB0342F776F
+:END:
+
+List the recorded versions of one tag. It needs a session.
+
+It forwards to =assets.v1.tags_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/tags/__none__/versions
+#+end_example
+
+#+name: tags-versions
+#+begin_src hurl :tangle tags-versions.hurl :exports none
+GET {{base_url}}/api/v1/assets/tags/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/tags/__none__/versions/0=
+:PROPERTIES:
+:ID: 1A44400D-4101-5AC4-83C9-524D3577F9A3
+:END:
+
+Get one recorded version of one tag. It needs a session.
+
+It forwards to =assets.v1.tags_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/tags/__none__/versions/0
+#+end_example
+
+#+name: tags-version
+#+begin_src hurl :tangle tags-version.hurl :exports none
+GET {{base_url}}/api/v1/assets/tags/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

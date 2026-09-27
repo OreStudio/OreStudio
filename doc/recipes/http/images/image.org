@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: B631A4E0-4B74-574C-9C61-DEC4597C2710
+:END:
+#+title: How do I call the images endpoints over HTTP?
+#+description: Every endpoint the images resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:images:
+
+This file documents the images resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/assets/images=
+:PROPERTIES:
+:ID: B7DFAD26-5AA6-5EC6-ACC4-1E3A6BC17F3B
+:END:
+
+List images. It needs a session.
+
+It forwards to =assets.v1.images.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/images
+#+end_example
+
+#+name: images-list
+#+begin_src hurl :tangle images-list.hurl :exports none
+GET {{base_url}}/api/v1/assets/images
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/images/__none__=
+:PROPERTIES:
+:ID: 4FCB98F6-20A3-5C2B-ACAA-729F4736F4C1
+:END:
+
+Get one image. It needs a session.
+
+It forwards to =assets.v1.images.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/images/__none__
+#+end_example
+
+#+name: images-get
+#+begin_src hurl :tangle images-get.hurl :exports none
+GET {{base_url}}/api/v1/assets/images/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/images/get-many=
+:PROPERTIES:
+:ID: 85FA161B-60A1-54EA-844D-9BD239E07023
+:END:
+
+Get many images. It needs a session.
+
+It forwards to =assets.v1.images.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/images/get-many
+#+end_example
+
+#+name: images-get-many
+#+begin_src hurl :tangle images-get-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/images/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/images=
+:PROPERTIES:
+:ID: 6A4A9E23-42AA-52E4-A3DE-60203DB0E675
+:END:
+
+Create one image. It needs a session.
+
+It forwards to =assets.v1.images.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/images
+#+end_example
+
+#+name: images-add
+#+begin_src hurl :tangle images-add.hurl :exports none
+POST {{base_url}}/api/v1/assets/images
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/assets/images=
+:PROPERTIES:
+:ID: BB09BF39-CB13-5BD4-B680-08002FE106F6
+:END:
+
+Replace one image. It needs a session.
+
+It forwards to =assets.v1.images.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/assets/images
+#+end_example
+
+#+name: images-set
+#+begin_src hurl :tangle images-set.hurl :exports none
+PUT {{base_url}}/api/v1/assets/images
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/images/put-many=
+:PROPERTIES:
+:ID: B8801B69-4E8F-533D-ABF1-BB2F31E7A74C
+:END:
+
+Write many images. It needs a session.
+
+It forwards to =assets.v1.images.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/images/put-many
+#+end_example
+
+#+name: images-put-many
+#+begin_src hurl :tangle images-put-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/images/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/assets/images/__none__=
+:PROPERTIES:
+:ID: CF3E6716-B89D-526D-95DC-F695773D914D
+:END:
+
+Delete one image. It needs a session.
+
+It forwards to =assets.v1.images.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/assets/images/__none__
+#+end_example
+
+#+name: images-delete
+#+begin_src hurl :tangle images-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/assets/images/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/assets/images/delete-many=
+:PROPERTIES:
+:ID: 5CF1A8EB-0C22-5727-B425-420A75892FA4
+:END:
+
+Delete many images. It needs a session.
+
+It forwards to =assets.v1.images.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/assets/images/delete-many
+#+end_example
+
+#+name: images-delete-many
+#+begin_src hurl :tangle images-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/assets/images/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/images/__none__/versions=
+:PROPERTIES:
+:ID: E743598C-6791-5C55-B249-50621AB71E94
+:END:
+
+List the recorded versions of one image. It needs a session.
+
+It forwards to =assets.v1.images_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/images/__none__/versions
+#+end_example
+
+#+name: images-versions
+#+begin_src hurl :tangle images-versions.hurl :exports none
+GET {{base_url}}/api/v1/assets/images/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/assets/images/__none__/versions/0=
+:PROPERTIES:
+:ID: 89D2B99E-2571-5CA4-BC57-9B4307BD28BD
+:END:
+
+Get one recorded version of one image. It needs a session.
+
+It forwards to =assets.v1.images_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/assets/images/__none__/versions/0
+#+end_example
+
+#+name: images-version
+#+begin_src hurl :tangle images-version.hurl :exports none
+GET {{base_url}}/api/v1/assets/images/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

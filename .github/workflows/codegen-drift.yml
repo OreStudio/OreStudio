@@ -156,6 +156,11 @@ jobs:
   # reader browsing the inventory -- nothing else looks. The index had 97
   # entries for 122 recipes before this check existed. Reads the recipes and
   # the index only, so it needs neither codegen nor a formatter.
+  #
+  # The generated HTTP recipes have the same index and the same check, in a
+  # document of their own: the curated http.org catalogues the hand-written
+  # recipes that predate the facet, and regenerating it from filetags would
+  # replace its headings.
   inventory:
     runs-on: ubuntu-24.04
     steps:
@@ -168,6 +173,9 @@ jobs:
       - name: Check the shell recipe inventory lists every recipe
         run: |
           python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check
+      - name: Check the generated HTTP recipe inventory lists every recipe
+        run: |
+          python3 projects/ores.codegen/scripts/regenerate_http_recipe_inventory.py --check
 
   # Accepted exceptions: a listed component may carry checklist items it does
   # not pass, and each is recorded in the registry with its reason and the

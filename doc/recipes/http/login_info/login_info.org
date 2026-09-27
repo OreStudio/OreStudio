@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: E5F57DD2-8258-5688-BB05-DEF61B680A9A
+:END:
+#+title: How do I call the login_info endpoints over HTTP?
+#+description: Every endpoint the login_info resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:login_info:
+
+This file documents the login_info resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/iam/login_info=
+:PROPERTIES:
+:ID: 95BD51F9-A5BD-5041-8964-F3B9EAEB8209
+:END:
+
+List login info. It needs a session.
+
+It forwards to =iam.v1.login_info.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/login_info
+#+end_example
+
+#+name: login_info-list
+#+begin_src hurl :tangle login_info-list.hurl :exports none
+GET {{base_url}}/api/v1/iam/login_info
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/iam/login_info/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 744A3753-ED85-5D9E-B1CD-ADF0B87B7A9A
+:END:
+
+Get one login info. It needs a session.
+
+It forwards to =iam.v1.login_info.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/iam/login_info/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: login_info-get
+#+begin_src hurl :tangle login_info-get.hurl :exports none
+GET {{base_url}}/api/v1/iam/login_info/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/login_info/get-many=
+:PROPERTIES:
+:ID: 1F60006E-7EF1-5298-AB33-13999A94F8BE
+:END:
+
+Get many login info. It needs a session.
+
+It forwards to =iam.v1.login_info.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/login_info/get-many
+#+end_example
+
+#+name: login_info-get-many
+#+begin_src hurl :tangle login_info-get-many.hurl :exports none
+POST {{base_url}}/api/v1/iam/login_info/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

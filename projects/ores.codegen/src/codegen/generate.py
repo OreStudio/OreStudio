@@ -153,12 +153,14 @@ _PROTOCOL_FACETS = frozenset({
     # nothing renders.
     "ores.doc.shell-recipe",
     # The HTTP route unit forwards the same derived request types on the same
-    # subjects, so it depends on the derived protocol for the same reason. The
-    # facet's operation archetypes, which would render an operation model's
-    # own declared messages, are not written yet; until they are, an operation
-    # model that opts in renders nothing rather than a unit naming types that
-    # do not exist.
+    # subjects, so it depends on the derived protocol for the same reason. Its
+    # operation archetypes render an operation model's own declared messages,
+    # so an operation model that opts in renders a unit from its own protocol.
     "ores.cpp.http-route",
+    # The recipe documents the HTTP route unit, one recipe per endpoint, so it
+    # goes wherever that unit goes. Left behind, it is a recipe for an endpoint
+    # nothing renders.
+    "ores.doc.http-recipe",
 })
 
 # The facets that name the derived protocol's request types, and so cannot

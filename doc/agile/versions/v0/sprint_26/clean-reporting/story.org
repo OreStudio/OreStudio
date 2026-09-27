@@ -49,7 +49,7 @@ ores.reporting meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 | [[id:1DBC799D-396F-4C9A-BF5A-5163FE05AC5A][Repair the registrar composition and generate the risk_report_config surface]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
 | [[id:5A2E6A1D-DA47-421C-B1E2-51A9665ECFBF][Make reporting's shell commands answer]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
 | [[id:537367BD-2294-498B-9BD5-707D6A67B8A0][Fix the three shared codegen template defects]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
-| [[id:AC5127C7-7A85-4549-B129-FEBC5452BC94][Scaffold the remaining ores.reporting clean-up]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:AC5127C7-7A85-4549-B129-FEBC5452BC94][Scaffold the remaining ores.reporting clean-up]] | DONE | | 2026-09-27 | Task for: Clean ores.reporting to the component clean standard |
 
 * Notes
 

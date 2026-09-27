@@ -8,7 +8,7 @@
 #+filetags: :remove_the_web_fleet_workaround:sprint_26:v0:
 #+owner: marco
 #+branch: feature/delete-the-web-fleet-scripts
-#+pr:
+#+pr: 2288
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -128,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2288][#2288]] | [web] Delete the ores.web fleet scripts busctl made obsolete |
 
 * Review
 

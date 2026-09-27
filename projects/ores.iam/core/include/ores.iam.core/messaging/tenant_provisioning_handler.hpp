@@ -793,9 +793,15 @@ private:
                                             const std::string& dataset_code) {
         std::optional<boost::uuids::uuid> dataset_id;
         {
-            dq::messaging::get_datasets_request req;
+            dq::messaging::list_datasets_request req;
             req.limit = 1000;
             auto resp = client.request(req);
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list datasets failed: "
+                    << resp.result.message;
+                return false;
+            }
             for (auto& d : resp.datasets)
                 if (d.code == dataset_code) {
                     dataset_id = d.id;
@@ -911,9 +917,15 @@ private:
                                            const std::string& party_id_str) {
         std::optional<boost::uuids::uuid> dataset_id;
         {
-            dq::messaging::get_datasets_request req;
+            dq::messaging::list_datasets_request req;
             req.limit = 1000;
             auto resp = resolve_client.request(req);
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                    << "create_theme_feed_bindings: list datasets failed: "
+                    << resp.result.message;
+                return false;
+            }
             for (auto& d : resp.datasets)
                 if (d.code == dataset_code) {
                     dataset_id = d.id;

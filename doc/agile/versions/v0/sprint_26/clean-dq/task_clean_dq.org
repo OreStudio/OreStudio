@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
-#+branch: feature/dq-clean-batch-3
+#+branch: chore/dq-survey-tools
 #+pr: 2300
 #+blocked_on:
 #+blocked_since:

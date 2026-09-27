@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 1FC10A19-DF36-44D1-BABF-454C9981F39C
+:END:
+#+title: Story: Move reporting's write path onto the storage protocol
+#+description: Point the reporting storage plan at the protocol bucket and key shape, so the writer and the reader of a report blob agree, and re-verify the compute and ORE consumers on the current tree.
+#+type: story
+#+level: s2
+#+filetags: :storage:reporting:ore:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The last consumer moves onto the bucket and key protocol, and the two consumers
+that already moved are verified again on the current tree.
+
+=ores.reporting= gathers a report's inputs by asking =ores.trading= and
+=ores.marketdata= to write them to object storage, and =ores.ore= reads them
+back when it packages the report. The writer named the bucket =report-data= and
+built a two-segment key; the reader named =ores= and received the writer's keys.
+So the two disagreed about where one object lives, and the packaging step could
+not find its inputs.
+
+The handlers in the middle own neither name: the bucket and the key arrive in the
+request. That is why the interface migration could move =compute= and =ore= and
+leave this one behind, and why the work is in the caller.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Implemented and verified; the PR carries it. |
+| Waiting on    | Nothing.                               |
+| Next          | Raise and merge the PR.                |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- The reporting storage plan names the protocol bucket and builds both keys with
+  =object_keys::make=.
+- The capture =reporting-writes-a-bucket-ore-does-not-read= is resolved and
+  closed.
+- =compute= publishes a package and ORE round-trips a document on the current
+  tree, on the protocol keys.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B5A29D31-8D5E-4F12-B431-876453E8CA8B][Scaffold story: Move reporting's write path onto the storage protocol]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F6D0ED49-27B2-4CA0-9EA5-139E3CAFBA06][Point the reporting storage plan at the bucket and key protocol]] | STARTED | 2026-09-27 | | Point the plan at the protocol bucket, build both keys with object_keys::make, and verify compute and ORE on the current tree. |
+
+* Decisions
+
+- *The component keeps no bucket name.* =report_data_bucket= was deleted rather
+  than repointed. Keeping the name would leave a second place where the bucket is
+  spelled, which is what drifted in the first place.
+- *The stale comments are part of the fix.* Three of them still named the retired
+  bucket, and one was the model the ORE import protocol generates from. A name
+  that survives in prose is a name that comes back in code.
+
+* Out of scope
+
+- The =modified_by= failure the ORE import hits after the bundle is fetched, and
+  the credit-instrument tenor check beside it. Neither is a storage-key problem,
+  and both belong to the components that own them.
+- Granting =storage::objects:*= to a human or tenant-admin role. Only the service
+  roles hold it today, so a tenant admin cannot reach the raw shell surface; the
+  verifications run as the system admin, which holds the service roles.
+
+* Result
+
+Closed on the story's one work task. The reporting write path builds the
+protocol's key under its own service segment, so the blob it stores is the one
+=ores.ore= fetches back, and the component no longer spells a bucket name at all.
+
+Verified live on the current tree: =compute= published the ORE engine package to
+=ores/compute/packages/ORE-1.8.17.0/…= with a server-computed digest that matches
+both the tarball and the seeded =package_uri=, and ORE wrote
+=ores/ore/imports/<id>.tar.gz= and read it back, parsing 46 trades from it. Both
+directions of both consumers therefore move over the protocol keys.
+
+The two captures this defect produced are resolved and moved to =discarded=, and
+no source reference to =report-data= or =ore-imports= remains.

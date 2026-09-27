@@ -8,8 +8,15 @@
 #+filetags: :storage:reporting:ore:
 #+created: 2026-09-27
 #+updated: 2026-09-27
+#+state: ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*ABANDONED 2026-09-27* — Closed by
+[[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the
+storage protocol]]. The plan names no bucket of its own, both keys are built with
+=object_keys::make("reporting", "runs", <instance_id>, <name>)=, and the test
+that pinned the retired name now asserts the protocol's shape.
 
 * What
 

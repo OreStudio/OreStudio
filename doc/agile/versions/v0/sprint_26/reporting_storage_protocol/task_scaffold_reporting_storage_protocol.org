@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: B5A29D31-8D5E-4F12-B431-876453E8CA8B
+:END:
+#+title: Task: Scaffold story: Move reporting's write path onto the storage protocol
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :reporting_storage_protocol:sprint_26:v0:
+#+owner: marco
+#+branch: feature/reporting-storage-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story, its tasks and its sprint wiring exist, and the branch carries them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] |
+| Now          | Scaffolding is done and rides this branch. |
+| Waiting on   | Nothing.                               |
+| Next          | Close before the story PR merges.      |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The story, its work task and the sprint row exist and link to each other.
+
+* Plan
+
+Scaffold with =compass story new=, then keep both tasks on the story branch so
+one PR carries the story.
+
+* Notes
+
+- =compass task start= derived a second branch from the task slug. The task's
+  =#+branch:= now names the story branch, and the second branch was deleted, so
+  the story's documents and its code travel together.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story opened with its goal, acceptance and one work task, and the sprint
+table carries its row. This scaffold task closes with the same PR.

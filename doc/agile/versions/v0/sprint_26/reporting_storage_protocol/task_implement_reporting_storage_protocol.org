@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: F6D0ED49-27B2-4CA0-9EA5-139E3CAFBA06
+:END:
+#+title: Task: Point the reporting storage plan at the bucket and key protocol
+#+description: Initial task for: Move reporting's write path onto the storage protocol
+#+type: task
+#+level: s1
+#+filetags: :reporting_storage_protocol:sprint_26:v0:
+#+owner: marco
+#+branch: feature/reporting-storage-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gathered trades and market data of a report execution are written to the
+bucket and key shape that =ores.ore= reads them back from, so the ORE packaging
+step finds them, and the compute and ORE consumers are verified working on the
+new keys against the current tree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] |
+| Now          | Implementation complete; compute and ORE verified live. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge with the story branch.           |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The reporting storage plan names the protocol bucket and builds both keys with
+  =object_keys::make=.
+- The capture =reporting-writes-a-bucket-ore-does-not-read= is resolved and
+  closed.
+- =compute= publishes a package and ORE round-trips a document on the current
+  tree, on the protocol keys.
+
+* Plan
+
+1. Delete the component's own bucket constant rather than retype it, so no
+   second name for the bucket exists to drift.
+2. Build both keys with the protocol's =make=, under the component's own service
+   segment.
+3. Replace the test that pins the retired name with one that asserts the shape
+   the protocol parses.
+4. Verify =compute= and ORE against the running fleet, on a freshly built tree.
+
+* Notes
+
+- The trading protocol's own comment already named the intended key,
+  =reporting/runs/{instance_id}/trades.msgpack=, so the code had documented the
+  shape it did not produce.
+- The plan's old header claimed the storage server "refuses a bucket it does not
+  know with a 404". It does not: it creates a bucket on first write. That claim
+  is what made the disagreement look safe, so the header states the protocol
+  instead.
+- The stale name was also in three comments the migration left behind: the ORE
+  import protocol's model, the shell's =ore= command unit, and the HTTP server's
+  storage-directory option. All three are corrected, the generated two at their
+  model.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The last consumer is on the protocol, and both consumers are verified on the
+current tree.
+
+*What changed.* =execution_storage_plan.hpp= no longer names a bucket. The two
+call sites in =report_execution_handler.cpp= take
+=object_keys::ores_bucket=, and both keys are built with
+=object_keys::make("reporting", "runs", <instance_id>, <name>)=. The component
+links =ores.storage.api=, so the protocol is a declared dependency rather than a
+transitive accident.
+
+*Verified live.* =compute publish-package= uploaded
+=ore-1.8.17.0-x64-linux.tar.gz= to
+=/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz=
+and the server's computed SHA256, =8099ac8f…79868=, equals both the local
+tarball's digest and the digest the seed registered. The object is on disk at
+=storage/ores/compute/packages/ORE-1.8.17.0/=. =ore upload= wrote
+=ores/ore/imports/<request_id>.tar.gz=, and the import that followed read the
+bundle back and parsed 46 trades out of it, so both directions of the ORE
+consumer move over the protocol key.
+
+*Observed, not fixed.* The import's trade saves then failed on
+=modified_by cannot be null or empty= and on one credit-instrument tenor check.
+That is not a storage-key failure: the bundle was fetched, unpacked and parsed
+before the first save was attempted. It is named here because it stops a full
+round trip in this environment.
+
+*Also corrected.* Three comments still named the retired =ore-imports= bucket:
+the ORE import protocol's model (=ores.cpp.protocol= and =ores.ts.protocol=
+regenerated from it), the shell's =ore= command unit, and the HTTP server's
+storage-directory option. No source reference to =ore-imports= or =report-data=
+remains.

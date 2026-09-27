@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 3EB4B454-B837-41FA-8A8D-2D9C49DE967A
+:END:
+#+title: Generated HTTP recipes
+#+description: Inventory of the generated HTTP recipes grouped by category.
+#+type: knowledge
+#+level: cross
+#+filetags: :recipe:http:index:knowledge:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The request recipes the =ores.doc.http-recipe= facet generates, one per
+resource, listed by category. The link lists are generated from the recipes
+themselves by
+=projects/ores.codegen/scripts/regenerate_http_recipe_inventory.py=, so a new
+recipe appears here as soon as that runs; the paragraph under each heading, and
+any note beside a link, are hand-written and are kept.
+
+The hand-written recipes that predate the facet are catalogued separately in
+=doc/recipes/http/http.org=.
+
+* Accounts
+
+- [[id:5CE9A9DA-423C-55CD-A7CD-8CC84F89813E][How do I call the accounts endpoints over HTTP?]]
+
+* Images
+
+- [[id:B631A4E0-4B74-574C-9C61-DEC4597C2710][How do I call the images endpoints over HTTP?]]
+
+* Login Info
+
+- [[id:E5F57DD2-8258-5688-BB05-DEF61B680A9A][How do I call the login_info endpoints over HTTP?]]
+
+* Permissions
+
+- [[id:ADCE3FA3-359E-503C-9F11-8DD2E01DA71E][How do I call the permissions endpoints over HTTP?]]
+
+* Roles
+
+- [[id:62EF06D0-D41D-5D6A-ADD5-6958FF8A43C0][How do I call the roles endpoints over HTTP?]]
+
+* Sessions
+
+- [[id:0E61EABD-0AF3-59A0-B796-0519EEE06FC9][How do I call the sessions endpoints over HTTP?]]
+
+* Tags
+
+- [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I call the tags endpoints over HTTP?]]

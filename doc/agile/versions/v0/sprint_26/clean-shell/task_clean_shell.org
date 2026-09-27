@@ -28,9 +28,9 @@ ores.shell passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] |
-| Now          | Baseline and inventory recorded. Working the checklist in order. |
+| Now          | Every item worked and recorded. Open for review. |
 | Waiting on   | Nothing.                               |
-| Next         | Classify the hand-written remainder (B03 table) and the public symbols (B06). |
+| Next         | Take the PR through its review round, then close the task and the story. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -60,7 +60,48 @@ record each item's result in the table below.
 | B01 | Baseline recorded before any edit. Regeneration at every address reproduces the checked-in tree: no pre-existing difference, so any later difference is this work's. The model drift check is clean, with one known exception in ores.reporting that is not this component's. | =check_component_drift.py --component shell --dry-run= reports "No drift: generated output matches the checked-in tree" at all six addresses. =check_model_drift.py --summary= reports "No model drift". |
 | B02 | One model in the shell's own =modeling/= directory, =component_overview.org=, metatype =ores.codegen.component=. No entity, junction, operation, message, field group or module model. The Entity and Protocol sections therefore do not apply to a model of this component: every generated shell unit is output of another component's model, rendered into the shell's tree. | =grep '^#+type:' projects/ores.shell/modeling/*.org= yields one line, =ores.codegen.component=. |
 | B03 | 642 C++ files: 501 generated (334 non-test, 167 test) and 141 hand-written (120 non-test, 21 test). The hand-written remainder is the shell's own application surface and the component adapters the generation does not yet own, which is what S01 and G02 are about. | File census over =projects/ores.shell= by the generated marker. |
-|      |        |          |
+| B04 | Not applicable: a Protocol item, and the shell owns no subject. It is a client of every other component's protocol. Recorded rather than skipped, and the part of it that does apply is clean: the shell holds no raw subject literal outside generated code, so every subject it sends is a generated constant. | =grep= for subject-shaped literals over the non-generated sources returns none. |
+| B05 | Recorded before any edit: the open captures and in-flight branches that touch this component are listed under Notes, with what each one means for this work. | The Notes section of this task. |
+| B06 | No public symbol's only consumer is a test, so no dead public API. Every header of the shared surface has production consumers inside the component; none has a consumer outside it, which is what an application-internal component looks like. The shared surface is reachable only from the shell, and the build enforces that. | Per-header census of =projects/ores.shell/api/include= against the production and test trees. |
+| M01 | Not applicable: an Entity item, and ores.shell has no entity model. | B02. |
+| M02 | Not applicable: an Entity item. There is nothing to bind to a profile. | B02. |
+| M03 | Not applicable: an Entity item. | B02. |
+| M04 | Not applicable: an Entity item. | B02. |
+| M05 | Not applicable: an Entity item. | B02. |
+| M06 | Not applicable: a Protocol item, and no wire type belongs to this component. The units in its tree are other components' generated output. | B02. |
+| M07 | Not applicable: an Entity item. | B02. |
+| M08 | Not applicable: an Entity item. | B02. |
+| M09 | Pass. No legacy fragment in the model: no Qt or Wt presentation drawer or property, no retired message type, no retired feature, no dead history property. | =grep= over =projects/ores.shell/modeling= for the retired keywords returns one file, the component model, with no match. |
+| M10 | Pass. The component model is current, declares its parts, and its root CMakeLists.txt generates from it. | =validate_docs.sh=; the =ores.cmake= address of the drift check. |
+| P01 | Not applicable: a Protocol item. | B02. |
+| P02 | Not applicable, with the client-side half checked and clean under B04. | B04. |
+| P03 | Not applicable: this component declares no subject. | B02. |
+| P04 | Not applicable: it owns no operation model. | B02. |
+| P05 | Pass, and it is the item this component feels first. Every consumer of a protocol change follows it in the same work, which for the shell means the generated unit and its recipe arrive in the same regeneration. The last change to the shell-command template took every one of the 167 generated units with it in one commit. | The template change and the regeneration in PR #2272. |
+| P06 | Not applicable: the shell is an event consumer, not a cache. | B02. |
+| G01 | Pass. Regeneration is byte-identical to the checked-in tree at all six addresses, and a second run changes nothing. | =check_component_drift.py --component shell --dry-run= then =--all=, the second with =shell= listed. |
+| G02 | Pass with the reason recorded. No hand-written file here is superseded by generation today: no menu name is registered by both a hand-written and a generated unit, so the wholesale deletion the item asks for has no target. The fourteen hand-written trading instrument units are the shell surface of =ores.trading= entities whose models do not enable the shell facet, so generation does not supersede them yet; they are that component's S01, and the finding is recorded for it rather than absorbed here. | The menu-ownership census: 30 hand-written-only names, 0 shared. |
+| G03 | Pass. Every generated file carries the marker and no hand-written file does. | Marker census over =projects/ores.shell=: 0 generated without it, 0 hand-written with it. |
+| G04 | Not applicable: an Entity item, about the generated code reading like the component's best hand-written code. The code generated *into* this tree belongs to the entities' own components. | B02. |
+| G05 | Pass. No generator defect surfaced by this pass is left unfixed. The diagram generator cannot read a composite, which is recorded under H01 as a tool gap rather than a defect in the output, and no artefact was refreshed by it. | The codegen suite, 906 case(s), and the regression tests the seam change carries. |
+| G06 | Pass for this component. Its two CMake source lists were stale under the marker template and are regenerated; both now match the tree. Thirty-two further lists are stale tree-wide and belong to their own components. The item is a manual check: no workflow and no compass command runs the check, which is recorded as a gate gap. | =regenerate_cmake_component_files.py --component ores.shell.synthetic=; =--all --check= for the tree-wide count. |
+| G07 | Pass, with the generator's own dry run read first as the item requires. The known parser defect does not reach this component: it fires on a one-line =enum class= in a header and the shell has none. The diagram was refreshed by hand and its rendered image read. | =grep= for one-line =enum class=; the diagram diff and the image. |
+| G08 | Pass. The component keeps one namespace documentation header for its outermost namespace, and it carries the =@brief= doxygen renders. Its claim was stale and is corrected in place. Facet-header coverage is uneven across the tree and the item says filling those gaps is separate work. | =projects/ores.shell/api/include/ores.shell/ores.shell.hpp=. |
+| H01 | Pass, and the pass found the tool gap. The diagram's automated section predated the seam, listed no =shell_root_menu=, and its manual section was empty, so every class arrived as a box with fields and no API. It is now drawn in two passes: the section above the sentinel in the shape the generator would produce, and the manual section below it with the public API, the inheritance edge no automated pass can see because =cli::Menu= is third-party, and the free functions a class-only reading misses. The rendered image was read, not merely regenerated. =generate_component_puml.py= answers "No include/ directory found for ores.shell" and changes nothing, because the shell keeps its headers under one directory per part and the generator reads =projects/<name>/include/<name>/=; a composite needs the generator to learn a new shape. | =projects/ores.shell/modeling/ores.shell.puml= and =.png=; the generator's own output. |
+| H02 | Pass. No Qt or Wt fragment survives, no =TODO=, =FIXME=, =XXX= or =HACK=, and no commented-out block. No hand-written duplicate of a generated artefact remains in the sense this item means: the duplicates the component held were the shadowed menus, and the last change removed them. | Scans over =projects/ores.shell= for the Qt and Wt keywords, the marker words, and runs of three or more code-shaped comment lines. |
+| H03 | Pass. Comments sit above the code they explain, no comment narrates an edit, and no explanatory comment shares a line with code. The closing-brace annotation the project uses, such as =} // anonymous namespace=, is the one end-of-line form and is not an explanation. | Scan for explanatory end-of-line comments and for commented-out code: none. |
+| H04 | Pass. No hand-rolled per-platform shim. No =ORES_NO_UNIQUE_ADDRESS=, no compiler-conditional block, and no bespoke =unreachable=. | =grep= for the shim spellings. |
+| H05 | Pass. The component carries its overview with all six sections the Guide requires, its =Diagram= section points at the committed image, and both the =.puml= source and the rendered image sit beside it. The diagram is refreshed in this pass because the code changed. The prose is not a skeleton, and the audit record section is present. | =projects/ores.shell/modeling/component_overview.org= and its =.puml=/=.png= pair; =validate_docs.sh=. |
+| S01 | Not applicable: an Entity item, and this component has no entity. What it does hold is the shell surface of other components' entities, and G02 records where that work belongs. | B02; G02. |
+| S02 | Not applicable: an Entity item. The recipe inventory is a gate nonetheless, and it passes. | =regenerate_shell_recipe_inventory.py --check=, exit 0. |
+| V01 | Pass. The whole tree builds, with this component's tests and every consumer. | A full =cmake --build= of the =linux-clang-debug-make= preset, exit 0. |
+| V02 | Pass. The codegen suite passes, and all fourteen of this component's test suites pass with the fleet up: 6,280 assertions over 2,796 cases. One case was red before this pass, and the finding was in the case rather than the code. | The codegen suite at 906 case(s); the fourteen =test_ores.shell.*.tests= targets. |
+| V03 | Not applicable: an Entity item. | B02. |
+| V04 | Not applicable: an Entity item. The generated commands replayed live are the entities' components' V04; this component's verbs were exercised live during the work. | The live runs recorded in the commits. |
+| V05 | Pass for every gate this component can run. Component drift, the catalogue sweep, model drift, protocol twin coverage, handler permissions, populate references, the recipe inventory, test case reachability and registry exceptions are green. The CMake source list gate is green for this component and red tree-wide for thirty-two lists outside it. | Each check script, run with =shell= listed. |
+| V06 | Pass. =shell= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes with it listed and leaves the tree clean. It is the first component of kind All to join. | =component_registry.py=; the writing =--all= run. |
+| V07 | Pass after four findings, all in the seam suite this work added. Four cases asserted only that a call did not throw, so a =claim_name= that accepted every name would have passed them; they now assert a value. The one remaining match is a second assertion in a case that asserts a parsed vector equals a literal. | The scan, and the suite at 83 assertions over 31 cases. |
+| V08 | Recorded, which is what the item asks. 52 source files have no test that matches them by name: the REPL host, the application entry point and the argument parser; the api helpers whose tests are named with an =app_= prefix; and the hand-written command units, which are the coverage work item. The generated units are all covered. | The per-file census under =src= against =tests=. |
 
 * Notes
 
@@ -143,3 +184,34 @@ on, which is not this one; this note is so the two are not read as agreeing.
   scripted session path.
 - =codegen-shell-recipe-sentinel-for-optional-columns.org= is about the recipe
   template.
+
+** The largest hand-written block belongs to another component
+
+Fourteen hand-written command units in =application/src/app/commands/trading/=
+register the shell surface of =ores.trading= entities. Eleven of those entities
+have a model that does not enable the shell facet, and four have no model at all
+(=commodity_instrument=, =composite_instrument=, =credit_instrument=,
+=scripted_instrument=). Their verb set is a subset of what generation produces,
+and with a non-canonical spelling: =get= is a paged list where the convention
+gives =get <key>= for one row and =list= for the page.
+
+So generation supersedes none of them *today*, and S01, the item that asks for
+them to be deleted, is an Entity item that applies to =ores.trading= rather than
+to the component that hosts their output. Enabling the facet on eleven trading
+models and writing four more is trading's work; =ores.trading= is in flight with
+one hundred and fifty-one files of regeneration, so it is not this branch's to
+start.
+
+** Two gate gaps the pass found
+
+=regenerate_cmake_component_files.py --check= was red for thirty-two lists
+outside this component and green for the two inside it. No workflow and no
+compass command runs it, so the tree-wide staleness the standard already records
+is invisible to every gate.
+
+=generate_component_puml.py= reads =projects/<name>/include/<name>/= and reports
+"No include/ directory found for ores.shell", because a composite keeps its
+headers under one directory per part. It changes nothing, which is safe, but it
+also draws nothing, so H01's automated pass does not exist for this component and
+the diagram is hand-authored. Teaching the generator to read a composite is the
+fix, and it is not attempted here.

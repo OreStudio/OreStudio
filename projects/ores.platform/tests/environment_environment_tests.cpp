@@ -196,8 +196,8 @@ TEST_CASE("real_environment_provider_set_overwrites_an_existing_value", tags) {
     provider.unset(name);
 }
 
-#ifndef _WIN32
 TEST_CASE("real_environment_provider_set_is_visible_to_std_getenv", tags) {
+#ifndef _WIN32
     real_environment_provider provider;
     const std::string name("ORES_PLATFORM_TEST_VISIBLE_TO_GETENV");
 
@@ -207,5 +207,7 @@ TEST_CASE("real_environment_provider_set_is_visible_to_std_getenv", tags) {
     CHECK(std::string(from_c_runtime) == "visible");
 
     provider.unset(name);
-}
+#else
+    SKIP("the C runtime keeps its own environment block on Windows");
 #endif
+}

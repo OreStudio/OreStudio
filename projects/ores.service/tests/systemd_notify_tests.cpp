@@ -30,17 +30,24 @@
 // the macro is defined by boost/asio's own configuration header, so a guard
 // that precedes every asio include is never true and silently compiles the
 // whole file away.
+//
+// The guard covers only the socket types and the helpers that build them. Every
+// case below is declared unconditionally and skips at run time, so a platform
+// without local sockets reports three skipped cases where it used to report
+// nothing at all.
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-
 #    include <boost/asio/buffer.hpp>
 #    include <boost/asio/error.hpp>
 #    include <boost/asio/io_context.hpp>
 #    include <cstdio>
 #    include <unistd.h>
+#endif
 
 namespace {
 
 const std::string tags("[systemd_notify]");
+
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 const std::string ready_message("READY=1");
 
 using datagram_socket = boost::asio::local::datagram_protocol::socket;
@@ -55,12 +62,14 @@ datagram_socket bind_receiver(boost::asio::io_context& io, const std::string& na
     receiver.bind(datagram_endpoint(name));
     return receiver;
 }
+#endif
 
 }
 
 // The socket name carries the process id so a leftover socket from an
 // interrupted run cannot make the bind fail.
 TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", tags) {
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
     const std::string path("/tmp/ores.service.notify." + std::to_string(::getpid()) + ".sock");
     std::remove(path.c_str());
 
@@ -78,12 +87,16 @@ TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", t
 
     REQUIRE(received == ready_message.size());
     REQUIRE(std::string(buffer, received) == ready_message);
+#else
+    SKIP("boost::asio local sockets are unavailable on this platform");
+#endif
 }
 
 // systemd names an abstract socket with a leading '@'; on the wire that is a
 // leading NUL byte, and the notification must not go to a literal file named
 // "@...".
 TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading at", tags) {
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
     const std::string abstract_name(1, '\0');
     const std::string socket_name("ores.service.notify." + std::to_string(::getpid()));
     const std::string path = abstract_name + socket_name;
@@ -101,9 +114,13 @@ TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading
 
     REQUIRE(received == ready_message.size());
     REQUIRE(std::string(buffer, received) == ready_message);
+#else
+    SKIP("boost::asio local sockets are unavailable on this platform");
+#endif
 }
 
 TEST_CASE("notify_systemd_ready stops sending once NOTIFY_SOCKET is unset", tags) {
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
     const std::string path("/tmp/ores.service.notify.none." + std::to_string(::getpid()) + ".sock");
     std::remove(path.c_str());
 
@@ -130,6 +147,7 @@ TEST_CASE("notify_systemd_ready stops sending once NOTIFY_SOCKET is unset", tags
 
     // No second notification was sent, so this receive would have blocked.
     REQUIRE(ec == boost::asio::error::would_block);
-}
-
+#else
+    SKIP("boost::asio local sockets are unavailable on this platform");
 #endif
+}

@@ -97,8 +97,8 @@ TEST_CASE("get_hostname_matches_the_operating_system", tags) {
     CHECK(hostname == os_hostname);
 }
 
-#if defined(__linux__)
 TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", tags) {
+#if defined(__linux__)
     auto lg(make_logger(test_suite));
 
     const auto kernel_macs = kernel_mac_addresses();
@@ -112,9 +112,13 @@ TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", tags) {
     BOOST_LOG_SEV(lg, info) << "Primary MAC: " << *mac;
 
     CHECK(*mac == kernel_macs.front());
+#else
+    SKIP("the cross-check reads /sys/class/net, which only Linux provides");
+#endif
 }
 
 TEST_CASE("get_primary_mac_address_bytes_are_the_first_kernel_address", tags) {
+#if defined(__linux__)
     const auto kernel_macs = kernel_mac_addresses();
     if (kernel_macs.empty())
         return;
@@ -128,8 +132,10 @@ TEST_CASE("get_primary_mac_address_bytes_are_the_first_kernel_address", tags) {
 
     CHECK(*bytes == expected);
     CHECK(bytes->size() == 6);
-}
+#else
+    SKIP("the cross-check reads /sys/class/net, which only Linux provides");
 #endif
+}
 
 TEST_CASE("derive_machine_id_is_the_hex_hash_of_hostname_and_formatted_mac", tags) {
     auto lg(make_logger(test_suite));

@@ -181,6 +181,64 @@ _PROTOCOL_DEPENDENT_FACETS = frozenset({
     "ores.doc.shell-recipe",
 })
 
+# What a staging shim does not own. A model that binds
+# ``artefact-staging-only`` is the staging table some component's entity is
+# imported through. Where that entity belongs to *another* component, the shim
+# must render no user-facing command unit: the shell names a menu after the
+# entity's plural, so the shim generates the same menu as the entity it stages,
+# and the shell resolves a duplicate by registration order. dq's
+# report_definition shim did exactly that to reporting's report_definitions
+# menu -- the shim registers first, so the whole menu answered from dq,
+# including calls whose arity belongs to the real owner.
+#
+# The profile alone is not the condition. Three further dq models bind it
+# (lei_entity, lei_relationship, synthetic_fx_spot_config) and dq is their only
+# owner, so their command units are the only surface those entities have. The
+# gate fires only where another component models the same plural; see
+# :func:`_plural_owners`.
+_STAGING_ONLY_FACETS = frozenset({
+    "ores.cpp.shell-command",
+    # The literate recipe documents the unit above, so it goes wherever that
+    # unit goes. Left behind, it is a recipe for a command nothing renders.
+    "ores.doc.shell-recipe",
+})
+
+# The frontmatter keys a shell menu name is derived from: a domain entity names
+# its menu after ``entity_plural``, a junction after ``name``.
+_PLURAL_KEYWORDS = frozenset({"entity_plural", "name"})
+
+@lru_cache(maxsize=None)
+def _plural_owners(projects_root: str) -> dict[str, frozenset[str]]:
+    """The components that model each entity plural, keyed by plural.
+
+    Read from every component's modeling directory. The template graph
+    describes facets, not models, so there is no in-memory registry of what
+    the other components model; the tree is the registry, and this is the same
+    reason :func:`_operation_protocol_owners` reads its own directory. Cached
+    per root: the codegen resolves one model at a time, so a run reads the tree
+    once per process rather than once per model. Callers must not mutate the
+    result.
+    """
+    root = Path(projects_root)
+    owners: dict[str, set[str]] = {}
+    for candidate in sorted(root.glob("*/modeling/*.org")):
+        if not candidate.is_file():
+            continue
+        component = candidate.parent.parent.name
+        try:
+            head = candidate.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for line in head.splitlines():
+            if not line.startswith("#+"):
+                continue
+            key, _, value = line[2:].partition(":")
+            if key.strip() in _PLURAL_KEYWORDS and value.strip():
+                owners.setdefault(value.strip(), set()).add(component)
+                break
+    return {plural: frozenset(components) for plural, components in owners.items()}
+
+
 @lru_cache(maxsize=None)
 def _operation_protocol_owners(modeling_dir: str) -> dict[tuple[str, str], str]:
     """The protocols operation models own, keyed by (component, entity).
@@ -420,6 +478,22 @@ def resolve_targets(
             # re-admit a facet whose output cannot build for this entity.
             gen_facets = {f for f in gen_facets
                           if f not in _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS}
+        if "artefact-staging-only" in {
+                p.strip() for p in (entity.get("profile") or "").split(",")}:
+            # Hard gate, like the two above. The shell names its menu after the
+            # entity's plural, so a staging shim whose plural another component
+            # also models renders that component's menu, and the shell resolves
+            # the duplicate silently by registration order. A shim that is the
+            # entity's only owner keeps its unit: the menu is the only surface
+            # the entity has. Runs before the per-archetype override loop, so an
+            # explicit :ores.cpp.shell-command.enabled: cannot re-admit the
+            # collision.
+            plural = entity.get("entity_plural")
+            component = Path(model_path).parent.parent.name
+            owners = _plural_owners(str(Path(base_dir).parent))
+            if plural and (owners.get(plural, frozenset()) - {component}):
+                gen_facets = {f for f in gen_facets
+                              if f not in _STAGING_ONLY_FACETS}
         if sql_flags.get("current_state"):
             # A current-state entity has no version rows, so the history
             # dialog's field mapper (which reads the domain type's recorded_at

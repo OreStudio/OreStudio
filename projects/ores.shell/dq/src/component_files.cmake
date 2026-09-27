@@ -39,7 +39,6 @@ set(files
     "app/commands/dq/methodology_commands.cpp"
     "app/commands/dq/nature_dimension_commands.cpp"
     "app/commands/dq/origin_dimension_commands.cpp"
-    "app/commands/dq/report_definition_commands.cpp"
     "app/commands/dq/synthetic_fx_spot_config_commands.cpp"
     "app/commands/dq/treatment_dimension_commands.cpp"
 )
@@ -65,7 +64,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/methodology_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/nature_dimension_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/origin_dimension_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/report_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 )

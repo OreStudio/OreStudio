@@ -18,7 +18,6 @@
 #include "ores.shell/app/commands/dq/methodology_commands.hpp"
 #include "ores.shell/app/commands/dq/nature_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/origin_dimension_commands.hpp"
-#include "ores.shell/app/commands/dq/report_definition_commands.hpp"
 #include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
 #include "ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 
@@ -45,7 +44,6 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     methodology_commands::register_commands(root_menu, session);
     nature_dimension_commands::register_commands(root_menu, session);
     origin_dimension_commands::register_commands(root_menu, session);
-    report_definition_commands::register_commands(root_menu, session);
     synthetic_fx_spot_config_commands::register_commands(root_menu, session);
     treatment_dimension_commands::register_commands(root_menu, session);
 }

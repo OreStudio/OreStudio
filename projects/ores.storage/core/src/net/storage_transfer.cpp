@@ -20,9 +20,9 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/http_client.hpp"
-#include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.utility/compression/gzip.hpp"
 #include <chrono>
 #include <fstream>

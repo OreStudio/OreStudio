@@ -18,19 +18,19 @@
  *
  */
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <cli/cli.h>
 #include <algorithm>
+#include <cli/cli.h>
 #include <expected>
 #include <map>
 #include <optional>
@@ -140,13 +140,13 @@ void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_c
     workflow_menu->Insert(
         "wait",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            auto parsed = parse_args(
-                args,
-                {{.name = "timeout",
-                  .requires_value = true,
-                  .default_value = std::to_string(default_timeout.count())},
-                 {.name = "expect-steps", .requires_value = true, .default_value = "0"},
-                 {.name = "expect-state", .requires_value = true, .default_value = ""}});
+            auto parsed =
+                parse_args(args,
+                           {{.name = "timeout",
+                             .requires_value = true,
+                             .default_value = std::to_string(default_timeout.count())},
+                            {.name = "expect-steps", .requires_value = true, .default_value = "0"},
+                            {.name = "expect-state", .requires_value = true, .default_value = ""}});
             if (!parsed) {
                 fail(out) << parsed.error() << std::endl;
                 return;
@@ -195,31 +195,29 @@ void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_c
         "Wait for a workflow instance to reach a terminal state",
         {"instance_id [--timeout <seconds>] [--expect-steps <n>] [--expect-state <state>]"});
 
-    workflow_menu->Insert(
-        "definitions",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_definitions(std::ref(out), std::ref(session), args);
-        },
-        "List the workflow types the service has registered",
-        {});
+    workflow_menu->Insert("definitions",
+                          [&session](std::ostream& out, std::vector<std::string> args) {
+                              process_definitions(std::ref(out), std::ref(session), args);
+                          },
+                          "List the workflow types the service has registered",
+                          {});
 
-    workflow_menu->Insert(
-        "start",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_start(std::ref(out), std::ref(session), args);
-        },
-        "Start a workflow and print the instance id to follow",
-        {"<type> <request_json> [--instance-id <uuid>]"});
+    workflow_menu->Insert("start",
+                          [&session](std::ostream& out, std::vector<std::string> args) {
+                              process_start(std::ref(out), std::ref(session), args);
+                          },
+                          "Start a workflow and print the instance id to follow",
+                          {"<type> <request_json> [--instance-id <uuid>]"});
 
     root_menu.Insert(std::move(workflow_menu));
 }
 
 bool workflow_operation_commands::wait_for_instance(std::ostream& out,
-                                               nats_client& session,
-                                               const std::string& instance_id,
-                                               std::chrono::seconds timeout,
-                                               std::size_t expected_steps,
-                                               const std::string& expected_state) {
+                                                    nats_client& session,
+                                                    const std::string& instance_id,
+                                                    std::chrono::seconds timeout,
+                                                    std::size_t expected_steps,
+                                                    const std::string& expected_state) {
     BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
                               << " (timeout: " << timeout.count() << "s)";
 
@@ -362,8 +360,8 @@ void workflow_operation_commands::process_definitions(std::ostream& out,
 }
 
 void workflow_operation_commands::process_start(std::ostream& out,
-                                               nats_client& session,
-                                               const std::vector<std::string>& args) {
+                                                nats_client& session,
+                                                const std::vector<std::string>& args) {
     auto parsed = parse_args(args, {{.name = "instance-id", .requires_value = true}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
@@ -424,9 +422,8 @@ void workflow_operation_commands::process_start(std::ostream& out,
     // discovers that when it reads the message, so without this the command
     // printed an instance id to follow for a run that would never exist.
     workflow::messaging::list_workflow_definitions_request definitions_request;
-    auto definitions =
-        do_auth_request<workflow::messaging::list_workflow_definitions_response>(
-            out, session, std::string(definitions_request.nats_subject), definitions_request);
+    auto definitions = do_auth_request<workflow::messaging::list_workflow_definitions_response>(
+        out, session, std::string(definitions_request.nats_subject), definitions_request);
     if (!definitions)
         return;
     if (!definitions->success) {
@@ -434,8 +431,8 @@ void workflow_operation_commands::process_start(std::ostream& out,
         return;
     }
 
-    const auto known = std::ranges::any_of(
-        definitions->definitions, [&type](const auto& d) { return d.type_name == type; });
+    const auto known = std::ranges::any_of(definitions->definitions,
+                                           [&type](const auto& d) { return d.type_name == type; });
     if (!known) {
         fail(out) << "No workflow type named '" << type << "' is registered." << std::endl;
         if (!definitions->definitions.empty()) {
@@ -458,9 +455,8 @@ void workflow_operation_commands::process_start(std::ostream& out,
     msg.instance_id = instance_id;
 
     try {
-        session.transport().js_publish(
-            workflow::messaging::start_workflow_message::nats_subject,
-            ores::nats::default_wire_codec().encode(msg));
+        session.transport().js_publish(workflow::messaging::start_workflow_message::nats_subject,
+                                       ores::nats::default_wire_codec().encode(msg));
     } catch (const std::exception& e) {
         fail(out) << "Failed to start the workflow: " << e.what() << std::endl;
         return;

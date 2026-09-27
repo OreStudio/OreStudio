@@ -85,7 +85,8 @@ TEST_CASE("create_single_telemetry_entry", tags) {
 
     repo.create(h.context(), entry);
 
-    const auto results = repo.query(h.context(), make_tag_query("integration-test", entry.timestamp));
+    const auto results =
+        repo.query(h.context(), make_tag_query("integration-test", entry.timestamp));
 
     REQUIRE(results.size() == 1);
     CHECK(results[0].message == "Test log message from integration test");
@@ -208,9 +209,9 @@ TEST_CASE("read_by_session", tags) {
         CHECK(*entry.session_id == session_id);
         messages.insert(entry.message);
     }
-    CHECK(messages ==
-          std::set<std::string>{
-              "Session test message 0", "Session test message 1", "Session test message 2"});
+    CHECK(messages == std::set<std::string>{"Session test message 0",
+                                            "Session test message 1",
+                                            "Session test message 2"});
 }
 
 TEST_CASE("count_telemetry_entries", tags) {

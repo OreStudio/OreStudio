@@ -19,15 +19,15 @@
  */
 #include "ores.variability.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.eventing.api/service/event_bus.hpp"
-#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.variability.core/messaging/registrar.hpp"
-#include "ores.variability.service/messaging/system_setting_event_registrar.hpp"
 #include "ores.variability.service/app/application_exception.hpp"
+#include "ores.variability.service/messaging/system_setting_event_registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 

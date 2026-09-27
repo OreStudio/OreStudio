@@ -48,14 +48,14 @@ TEST_CASE("scheduler_job_name is the definition prefixed", tags) {
 
 TEST_CASE("a definition with no job anywhere has no id to adopt", tags) {
     const std::map<std::string, boost::uuids::uuid> jobs;
-    CHECK_FALSE(existing_job_for(jobs, uuid_of("11111111-2222-3333-4444-555555555555")).has_value());
+    CHECK_FALSE(
+        existing_job_for(jobs, uuid_of("11111111-2222-3333-4444-555555555555")).has_value());
 }
 
 TEST_CASE("a job under the definition's name is adopted", tags) {
     const auto definition = uuid_of("11111111-2222-3333-4444-555555555555");
     const auto job = uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
-    const std::map<std::string, boost::uuids::uuid> jobs{
-        {scheduler_job_name(definition), job}};
+    const std::map<std::string, boost::uuids::uuid> jobs{{scheduler_job_name(definition), job}};
 
     const auto adopted = existing_job_for(jobs, definition);
     REQUIRE(adopted.has_value());

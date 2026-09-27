@@ -212,8 +212,8 @@ public:
             const auto series = svc.list_market_series(0, total ? total : 1);
 
             const auto blob = rfl::msgpack::write(series);
-            ores::storage::net::storage_transfer transfer(
-                http_base_url, ores::nats::service::extract_bearer(msg));
+            ores::storage::net::storage_transfer transfer(http_base_url,
+                                                          ores::nats::service::extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 
             resp.success = true;

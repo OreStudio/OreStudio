@@ -54,8 +54,7 @@ ores::scheduler::domain::job_definition make_job(const std::string& payload) {
 
 // A client with no token provider, so an authenticated request presents no
 // bearer. The refusal tests rely on that.
-ores::nats::service::nats_client make_unauthenticated_client(
-    ores::nats::service::client& nats) {
+ores::nats::service::nats_client make_unauthenticated_client(ores::nats::service::client& nats) {
     return ores::nats::service::nats_client(nats, [](bool) { return std::string{}; });
 }
 
@@ -159,10 +158,9 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     auto svc_nats = make_unauthenticated_client(nats);
     nats_publish_action_handler handler(nats, svc_nats);
 
-    const auto job = make_job(
-        R"({"subject":"reporting.v1.ops.trigger_report_instance",)"
-        R"("report_definition_id":"00000000-0000-0000-0000-000000000000",)"
-        R"("tenant_id":"00000000-0000-0000-0000-000000000000"})");
+    const auto job = make_job(R"({"subject":"reporting.v1.ops.trigger_report_instance",)"
+                              R"("report_definition_id":"00000000-0000-0000-0000-000000000000",)"
+                              R"("tenant_id":"00000000-0000-0000-0000-000000000000"})");
     const action_context ctx{job, h.context(), 7};
 
     boost::asio::io_context io;

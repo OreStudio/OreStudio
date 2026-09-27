@@ -20,8 +20,8 @@
 #ifndef ORES_DQ_API_MESSAGING_PARTY_PROVISIONING_PLAN_HPP
 #define ORES_DQ_API_MESSAGING_PARTY_PROVISIONING_PLAN_HPP
 
-#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>

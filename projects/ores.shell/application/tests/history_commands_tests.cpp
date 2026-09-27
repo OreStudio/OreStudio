@@ -63,9 +63,8 @@ TEST_CASE("history_commands registers the get verb", tags) {
     // The command is the only way into the generic history protocol from the
     // shell, so a get that is no longer registered leaves the family unreachable.
     const auto completions = root_menu.GetCompletions("history ");
-    CHECK(std::find(completions.begin(),
-                    completions.end(),
-                    std::string{"history get"}) != completions.end());
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"history get"}) !=
+          completions.end());
 }
 
 TEST_CASE("history_commands_get_names_the_arguments_it_needs", tags) {
@@ -106,8 +105,7 @@ TEST_CASE("history_commands_get_refuses_a_version_without_a_diff", tags) {
     // The listing has no version to pick: only the diff takes one. Saying so is
     // better than ignoring the flag and returning the newest version anyway.
     command_feedback::reset();
-    history_commands::process_get(
-        out, session, {workflow_instance, instance_id, "--version", "2"});
+    history_commands::process_get(out, session, {workflow_instance, instance_id, "--version", "2"});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a version without a diff: " << out.str();
     CHECK(out.str().find("only supported together with --diff") != std::string::npos);

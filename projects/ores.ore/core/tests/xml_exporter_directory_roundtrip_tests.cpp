@@ -145,8 +145,8 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
     const auto summary = ores::ore::xml::roundtrip(input, out.path);
 
     INFO("total=" << summary.total_xml_files << " unsupported=" << summary.unsupported
-                  << " failed=" << summary.failed << " written="
-                  << summary.output_files_written << " mapped=" << summary.trades_mapped
+                  << " failed=" << summary.failed << " written=" << summary.output_files_written
+                  << " mapped=" << summary.trades_mapped
                   << " passthrough=" << summary.trades_passthrough);
 
     CHECK(summary.total_xml_files > 0);

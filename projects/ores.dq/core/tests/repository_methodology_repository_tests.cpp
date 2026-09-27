@@ -136,7 +136,8 @@ TEST_CASE("read_nonexistent_methodology_by_id", tags) {
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_methodologies = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
+    auto read_methodologies =
+        repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
     CHECK(read_methodologies.size() == 0);

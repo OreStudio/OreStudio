@@ -96,8 +96,7 @@ public:
                 "Tenant onboarding completed on tenant activation");
             ores::service::messaging::reply(nats_, msg, clear_bootstrap_mode_response{});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(operations_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             clear_bootstrap_mode_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";
@@ -119,7 +118,8 @@ public:
         auto req = ores::service::messaging::decode<complete_party_onboarding_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::bad_request);
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
             return;
         }
 
@@ -135,8 +135,7 @@ public:
                 "Party onboarding completed on party activation");
             ores::service::messaging::reply(nats_, msg, complete_party_onboarding_response{});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(operations_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             complete_party_onboarding_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";

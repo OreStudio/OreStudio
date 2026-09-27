@@ -16,12 +16,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.service/service/request_context.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/error_code.hpp"
+#include "ores.service/service/request_context.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -94,7 +94,8 @@ TEST_CASE("a request without an authorization header is unauthorized", tags) {
 TEST_CASE("an authorization header that is not a bearer token is unauthorized", tags) {
     ores::testing::database_helper h;
     ores::nats::message msg;
-    msg.headers[std::string(ores::nats::headers::authorization)] = make_token(std::chrono::minutes(5));
+    msg.headers[std::string(ores::nats::headers::authorization)] =
+        make_token(std::chrono::minutes(5));
 
     const auto result = make_request_context(h.context(), msg, make_authenticator(secret));
 
@@ -129,7 +130,8 @@ TEST_CASE("a token signed with another key is unauthorized", tags) {
 TEST_CASE("a valid bearer token scopes the context to its tenant, actor and permissions", tags) {
     ores::testing::database_helper h;
     ores::nats::message msg;
-    msg.headers[std::string(ores::nats::headers::authorization)] = bearer(make_token(std::chrono::minutes(5)));
+    msg.headers[std::string(ores::nats::headers::authorization)] =
+        bearer(make_token(std::chrono::minutes(5)));
 
     const auto result = make_request_context(h.context(), msg, make_authenticator(secret));
 
@@ -206,7 +208,8 @@ TEST_CASE("a token with no tenant is unauthorized", tags) {
 TEST_CASE("the workspace headers scope the context to the requested workspace and chain", tags) {
     ores::testing::database_helper h;
     ores::nats::message msg;
-    msg.headers[std::string(ores::nats::headers::authorization)] = bearer(make_token(std::chrono::minutes(5)));
+    msg.headers[std::string(ores::nats::headers::authorization)] =
+        bearer(make_token(std::chrono::minutes(5)));
     msg.headers[std::string(ores::nats::headers::x_workspace_id)] = workspace;
     msg.headers[std::string(ores::nats::headers::x_workspace_resolution)] =
         workspace + "," + ancestor;

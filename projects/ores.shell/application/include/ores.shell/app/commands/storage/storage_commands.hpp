@@ -41,8 +41,7 @@ namespace ores::shell::app::commands {
  */
 class storage_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.storage.storage_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.storage.storage_commands";
 
     static auto& lg() {
         using namespace ores::logging;

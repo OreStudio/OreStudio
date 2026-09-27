@@ -42,8 +42,7 @@ namespace ores::workflow::messaging {
  * means the identity fixture exercises the same reply path a real step does.
  */
 [[nodiscard]] ORES_WORKFLOW_CORE_EXPORT std::vector<ores::nats::service::subscription>
-register_identity_step_handlers(ores::nats::service::client& nats,
-                                std::string_view queue_group);
+register_identity_step_handlers(ores::nats::service::client& nats, std::string_view queue_group);
 
 }
 

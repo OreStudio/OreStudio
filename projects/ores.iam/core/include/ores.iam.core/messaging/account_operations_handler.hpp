@@ -48,8 +48,8 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <chrono>
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <stdexcept>
 
@@ -162,8 +162,7 @@ public:
                 ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
             token_settings_.store(
-                std::make_shared<const domain::token_settings>(
-                    domain::token_settings::load(svc)),
+                std::make_shared<const domain::token_settings>(domain::token_settings::load(svc)),
                 std::memory_order_release);
         } catch (const std::exception& e) {
             using namespace ores::logging;

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
-#include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
@@ -55,6 +54,7 @@
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_status_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_type_registrar.hpp"
+#include "ores.variability.api/messaging/system_setting_protocol.hpp"
 
 // Generic history.v1.get subject.
 #include "ores.history.core/messaging/registrar.hpp"
@@ -376,10 +376,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ah->reload_token_settings();
             acth->reload_token_settings();
         };
-        for (const auto subject :
-             {system_setting_event_subjects::created,
-              system_setting_event_subjects::updated,
-              system_setting_event_subjects::deleted})
+        for (const auto subject : {system_setting_event_subjects::created,
+                                   system_setting_event_subjects::updated,
+                                   system_setting_event_subjects::deleted})
             subs.push_back(nats.queue_subscribe(std::string(subject), qg, reload));
     }
 

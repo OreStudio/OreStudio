@@ -137,8 +137,7 @@ inline std::ostream& operator<<(std::ostream& s, product_type pt) {
  * The shell's token reader finds this by argument-dependent lookup; the
  * shell header carries no domain include of its own.
  */
-[[nodiscard]] inline std::optional<product_type> parse_token(std::string_view sv,
-                                                             product_type) {
+[[nodiscard]] inline std::optional<product_type> parse_token(std::string_view sv, product_type) {
     return product_type_from_string(sv);
 }
 

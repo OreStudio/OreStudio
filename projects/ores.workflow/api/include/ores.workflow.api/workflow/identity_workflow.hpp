@@ -23,8 +23,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 #include <optional>
+#include <rfl/json.hpp>
 #include <string>
 #include <vector>
 
@@ -80,8 +80,7 @@ struct identity_workflow_request {
 
 /// The subject a step's command is dispatched to. One subject serves every step,
 /// because the payload says what the step does.
-inline constexpr std::string_view identity_step_command_subject =
-    "workflow.v1.identity.step";
+inline constexpr std::string_view identity_step_command_subject = "workflow.v1.identity.step";
 
 /// The subject a step's compensation is dispatched to.
 inline constexpr std::string_view identity_compensation_command_subject =
@@ -121,8 +120,8 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
         for (const auto& wanted : parsed->steps) {
             workflow_step_def s;
             s.name = wanted.name;
-            s.description = "Identity step '" + wanted.name + "' reporting '" + wanted.outcome() +
-                            "'";
+            s.description =
+                "Identity step '" + wanted.name + "' reporting '" + wanted.outcome() + "'";
             s.command_subject = std::string(identity_step_command_subject);
             s.compensation_subject =
                 wanted.compensates() ? std::string(identity_compensation_command_subject) : "";
@@ -133,9 +132,9 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
 
             // The command carries what the handler needs to know, so the handler
             // itself stays a reader of the payload rather than a decision-maker.
-            s.build_command = [name, behaviour, delay](const std::string& /*request_json*/,
-                                                       const std::vector<std::string>& /*results*/)
-                -> std::string {
+            s.build_command = [name, behaviour, delay](
+                                  const std::string& /*request_json*/,
+                                  const std::vector<std::string>& /*results*/) -> std::string {
                 return rfl::json::write(identity_step_request{.name = name,
                                                               .behaviour = behaviour,
                                                               .compensate = false,

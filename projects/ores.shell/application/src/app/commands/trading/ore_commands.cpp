@@ -73,24 +73,26 @@ parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
 void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto ore_menu = std::make_unique<cli::Menu>("ore");
 
-    ore_menu->Insert(
-        "upload",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            auto parsed = parse_args(args, {{.name = "request-id", .requires_value = true}});
-            if (!parsed) {
-                fail(out) << parsed.error() << std::endl;
-                return;
-            }
-            if (parsed->positionals.size() != 1) {
-                fail(out) << "Usage: ore upload <src_dir> [--request-id <uuid>]" << std::endl;
-                return;
-            }
-            process_upload(
-                std::ref(out), std::ref(session), parsed->positionals.front(),
-                parsed->flag("request-id"));
-        },
-        "Pack a directory of ORE documents and upload it to the ore-imports bucket",
-        {"src_dir [--request-id <uuid>]"});
+    ore_menu->Insert("upload",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         auto parsed =
+                             parse_args(args, {{.name = "request-id", .requires_value = true}});
+                         if (!parsed) {
+                             fail(out) << parsed.error() << std::endl;
+                             return;
+                         }
+                         if (parsed->positionals.size() != 1) {
+                             fail(out) << "Usage: ore upload <src_dir> [--request-id <uuid>]"
+                                       << std::endl;
+                             return;
+                         }
+                         process_upload(std::ref(out),
+                                        std::ref(session),
+                                        parsed->positionals.front(),
+                                        parsed->flag("request-id"));
+                     },
+                     "Pack a directory of ORE documents and upload it to the ore-imports bucket",
+                     {"src_dir [--request-id <uuid>]"});
 
     ore_menu->Insert("import",
                      [&session](std::ostream& out, std::vector<std::string> args) {
@@ -196,7 +198,7 @@ void ore_commands::process_upload(std::ostream& out,
 
     try {
         ores::storage::net::storage_transfer transfer(default_http_base_url(),
-                                                       session.bearer_token());
+                                                      session.bearer_token());
         transfer.pack_and_upload(source, bucket, key);
     } catch (const std::exception& e) {
         fail(out) << "Upload failed: " << e.what() << std::endl;

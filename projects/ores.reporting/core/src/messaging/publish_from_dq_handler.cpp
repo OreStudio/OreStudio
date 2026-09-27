@@ -18,11 +18,11 @@
  *
  */
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.reporting.core/service/publish_subject_plan.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.core/service/publish_subject_plan.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <algorithm>
 #include <format>

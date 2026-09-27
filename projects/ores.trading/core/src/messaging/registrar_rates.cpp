@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/vanilla_swap_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/cap_floor_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/swaption_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/balance_guaranteed_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/cap_floor_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/inflation_swap_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/rpa_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
+#include "ores.trading.core/messaging/rpa_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/swaption_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/vanilla_swap_instrument_registrar.hpp"
 
 namespace ores::trading::messaging::detail {
 
@@ -41,7 +41,8 @@ register_rates_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(fra_instrument_subs.begin()),
                 std::make_move_iterator(fra_instrument_subs.end()));
 
-    auto vanilla_swap_instrument_subs = register_vanilla_swap_instrument_handlers(nats, ctx, verifier);
+    auto vanilla_swap_instrument_subs =
+        register_vanilla_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(vanilla_swap_instrument_subs.begin()),
                 std::make_move_iterator(vanilla_swap_instrument_subs.end()));
@@ -56,22 +57,26 @@ register_rates_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(swaption_instrument_subs.begin()),
                 std::make_move_iterator(swaption_instrument_subs.end()));
 
-    auto balance_guaranteed_swap_instrument_subs = register_balance_guaranteed_swap_instrument_handlers(nats, ctx, verifier);
+    auto balance_guaranteed_swap_instrument_subs =
+        register_balance_guaranteed_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(balance_guaranteed_swap_instrument_subs.begin()),
                 std::make_move_iterator(balance_guaranteed_swap_instrument_subs.end()));
 
-    auto callable_swap_instrument_subs = register_callable_swap_instrument_handlers(nats, ctx, verifier);
+    auto callable_swap_instrument_subs =
+        register_callable_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(callable_swap_instrument_subs.begin()),
                 std::make_move_iterator(callable_swap_instrument_subs.end()));
 
-    auto knock_out_swap_instrument_subs = register_knock_out_swap_instrument_handlers(nats, ctx, verifier);
+    auto knock_out_swap_instrument_subs =
+        register_knock_out_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(knock_out_swap_instrument_subs.begin()),
                 std::make_move_iterator(knock_out_swap_instrument_subs.end()));
 
-    auto inflation_swap_instrument_subs = register_inflation_swap_instrument_handlers(nats, ctx, verifier);
+    auto inflation_swap_instrument_subs =
+        register_inflation_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(inflation_swap_instrument_subs.begin()),
                 std::make_move_iterator(inflation_swap_instrument_subs.end()));

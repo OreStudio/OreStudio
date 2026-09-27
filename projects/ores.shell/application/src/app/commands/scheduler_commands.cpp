@@ -33,8 +33,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <cstdint>
 #include <optional>
 #include <ostream>
@@ -122,9 +122,8 @@ bool report_result(std::ostream& out,
  * name, so the name is resolved through the same list the jobs command
  * renders before anything is deleted.
  */
-std::optional<ores::scheduler::domain::job_definition> find_by_name(std::ostream& out,
-                                                   nats_client& session,
-                                                   const std::string& job_name) {
+std::optional<ores::scheduler::domain::job_definition>
+find_by_name(std::ostream& out, nats_client& session, const std::string& job_name) {
     list_job_definitions_request req;
     req.limit = default_page_limit;
 
@@ -161,13 +160,12 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
         "Create a job definition: schedule <job_name> <cron> [--action <type>] "
         "[--payload <json>] [--description <text>] [--inactive] [--reason <code>]");
 
-    scheduler_menu->Insert(
-        "remove",
-        [&session](std::ostream& out, std::string job_name) {
-            process_remove(std::ref(out), std::ref(session), job_name);
-        },
-        "Delete a job definition by name",
-        {"job_name"});
+    scheduler_menu->Insert("remove",
+                           [&session](std::ostream& out, std::string job_name) {
+                               process_remove(std::ref(out), std::ref(session), job_name);
+                           },
+                           "Delete a job definition by name",
+                           {"job_name"});
 
     scheduler_menu->Insert(
         "instances",
@@ -214,8 +212,8 @@ void scheduler_commands::process_jobs(std::ostream& out, nats_client& session) {
         return;
     }
 
-    out << response->total << " job definition(s), showing " << response->definitions.size()
-        << ":" << std::endl;
+    out << response->total << " job definition(s), showing " << response->definitions.size() << ":"
+        << std::endl;
     for (const auto& d : response->definitions)
         print_definition(out, d);
 }
@@ -236,7 +234,9 @@ void scheduler_commands::process_schedule(std::ostream& out,
         {.name = "description", .requires_value = true, .default_value = ""},
         {.name = "command", .requires_value = true, .default_value = ""},
         {.name = "inactive", .requires_value = false, .default_value = "false"},
-        {.name = "reason", .requires_value = true, .default_value = std::string(default_reason_code)}};
+        {.name = "reason",
+         .requires_value = true,
+         .default_value = std::string(default_reason_code)}};
 
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -283,9 +283,9 @@ void scheduler_commands::process_schedule(std::ostream& out,
         return;
 
     const auto& created = response->job_definition;
-    out << "Scheduled '" << created.job_name << "' as "
-        << boost::uuids::to_string(created.id) << " on '" << created.schedule_expression.to_string()
-        << "'" << (created.is_active ? "." : ", paused.") << std::endl;
+    out << "Scheduled '" << created.job_name << "' as " << boost::uuids::to_string(created.id)
+        << " on '" << created.schedule_expression.to_string() << "'"
+        << (created.is_active ? "." : ", paused.") << std::endl;
     out << "Run 'scheduler watch' to see it fire." << std::endl;
 }
 
@@ -328,9 +328,10 @@ void scheduler_commands::process_instances(std::ostream& out,
         return;
     }
 
-    const std::vector<flag_spec> specs{
-        {.name = "job", .requires_value = true, .default_value = ""},
-        {.name = "limit", .requires_value = true, .default_value = std::to_string(default_page_limit)}};
+    const std::vector<flag_spec> specs{{.name = "job", .requires_value = true, .default_value = ""},
+                                       {.name = "limit",
+                                        .requires_value = true,
+                                        .default_value = std::to_string(default_page_limit)}};
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
@@ -376,9 +377,8 @@ void scheduler_commands::process_instances(std::ostream& out,
     }
 
     if (shown == 0) {
-        out << (job_filter.empty() ?
-                    "No executions have been recorded." :
-                    "No executions recorded for '" + job_filter + "'.")
+        out << (job_filter.empty() ? "No executions have been recorded." :
+                                     "No executions recorded for '" + job_filter + "'.")
             << std::endl;
         return;
     }
@@ -409,8 +409,8 @@ void scheduler_commands::process_status(std::ostream& out, nats_client& session)
         return;
     }
 
-    out << response->total_active << " active, " << response->total_running << " running:"
-        << std::endl;
+    out << response->total_active << " active, " << response->total_running
+        << " running:" << std::endl;
     for (const auto& j : response->jobs) {
         out << "  " << j.job_name << (j.is_active ? " [active]" : " [paused]") << " on '"
             << j.schedule_expression << "'" << std::endl;
@@ -461,17 +461,15 @@ void scheduler_commands::process_watch(std::ostream& out,
         << std::endl;
 
     std::size_t printed = 0;
-    const auto deadline =
-        std::chrono::system_clock::now() + std::chrono::seconds(*seconds);
+    const auto deadline = std::chrono::system_clock::now() + std::chrono::seconds(*seconds);
     while (std::chrono::system_clock::now() < deadline) {
         std::this_thread::sleep_for(watch_poll_interval);
 
         const auto snapshot = subscription.snapshot();
         for (; printed < snapshot.size(); ++printed) {
             const auto& msg = snapshot[printed];
-            const auto event =
-                ores::nats::default_wire_codec()
-                    .decode<ores::eventing::domain::entity_change_event>(msg.data);
+            const auto event = ores::nats::default_wire_codec()
+                                   .decode<ores::eventing::domain::entity_change_event>(msg.data);
             if (!event) {
                 out << "  " << msg.subject << ": undecodable message, " << msg.data.size()
                     << " bytes" << std::endl;

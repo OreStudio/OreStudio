@@ -17,9 +17,9 @@
  *
  */
 #include "ores.ore.core/xml/roundtrip.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <chrono>
@@ -51,75 +51,66 @@ using millis = std::chrono::milliseconds;
  * exporter. It throws when either half fails, so the caller decides what a
  * failure means rather than reading it out of a shared counter.
  */
-std::string convert(const std::filesystem::path& file,
-                    document_kind kind,
-                    roundtrip_summary& summary) {
+std::string
+convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary& summary) {
     switch (kind) {
-    case document_kind::portfolio: {
-        const auto t0 = clock_type::now();
-        auto items = importer::import_portfolio_with_context(file);
-        summary.import_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
+        case document_kind::portfolio: {
+            const auto t0 = clock_type::now();
+            auto items = importer::import_portfolio_with_context(file);
+            summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
 
-        std::vector<trading::messaging::trade_export_item> export_items;
-        export_items.reserve(items.size());
-        for (const auto& item : items) {
-            trading::messaging::trade_export_item export_item;
-            export_item.trade = item.trade;
-            export_item.instrument = trading::domain::encode_instrument(item.instrument);
-            export_item.envelope = item.envelope;
-            if (std::holds_alternative<std::monostate>(item.instrument))
-                ++summary.trades_passthrough;
-            else
-                ++summary.trades_mapped;
-            export_items.push_back(std::move(export_item));
+            std::vector<trading::messaging::trade_export_item> export_items;
+            export_items.reserve(items.size());
+            for (const auto& item : items) {
+                trading::messaging::trade_export_item export_item;
+                export_item.trade = item.trade;
+                export_item.instrument = trading::domain::encode_instrument(item.instrument);
+                export_item.envelope = item.envelope;
+                if (std::holds_alternative<std::monostate>(item.instrument))
+                    ++summary.trades_passthrough;
+                else
+                    ++summary.trades_mapped;
+                export_items.push_back(std::move(export_item));
+            }
+
+            const auto t1 = clock_type::now();
+            auto xml = exporter::export_portfolio(export_items);
+            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
+            return xml;
         }
+        case document_kind::currency_config: {
+            const auto t0 = clock_type::now();
+            auto currencies = importer::import_currency_config(file);
+            summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
 
-        const auto t1 = clock_type::now();
-        auto xml = exporter::export_portfolio(export_items);
-        summary.export_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
-        return xml;
-    }
-    case document_kind::currency_config: {
-        const auto t0 = clock_type::now();
-        auto currencies = importer::import_currency_config(file);
-        summary.import_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
+            const auto t1 = clock_type::now();
+            auto xml = exporter::export_currency_config(currencies);
+            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
+            ++summary.currency_files;
+            return xml;
+        }
+        case document_kind::calendar_adjustments: {
+            const auto t0 = clock_type::now();
+            auto adjustments = importer::import_calendar_adjustments(file);
+            summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
 
-        const auto t1 = clock_type::now();
-        auto xml = exporter::export_currency_config(currencies);
-        summary.export_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
-        ++summary.currency_files;
-        return xml;
-    }
-    case document_kind::calendar_adjustments: {
-        const auto t0 = clock_type::now();
-        auto adjustments = importer::import_calendar_adjustments(file);
-        summary.import_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
+            const auto t1 = clock_type::now();
+            auto xml = exporter::export_calendar_adjustments(adjustments);
+            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
+            ++summary.calendar_files;
+            return xml;
+        }
+        case document_kind::conventions: {
+            const auto t0 = clock_type::now();
+            auto mc = importer::import_conventions(file);
+            summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
 
-        const auto t1 = clock_type::now();
-        auto xml = exporter::export_calendar_adjustments(adjustments);
-        summary.export_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
-        ++summary.calendar_files;
-        return xml;
-    }
-    case document_kind::conventions: {
-        const auto t0 = clock_type::now();
-        auto mc = importer::import_conventions(file);
-        summary.import_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
-
-        const auto t1 = clock_type::now();
-        auto xml = exporter::export_conventions(mc);
-        summary.export_ms +=
-            std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
-        ++summary.convention_files;
-        return xml;
-    }
+            const auto t1 = clock_type::now();
+            auto xml = exporter::export_conventions(mc);
+            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
+            ++summary.convention_files;
+            return xml;
+        }
     }
     throw std::logic_error("unhandled document kind");
 }
@@ -147,8 +138,7 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
             relative = std::filesystem::relative(file, input_dir).string();
             const auto kind = detect_document_kind(file);
             if (!kind) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Unsupported document, not written: " << relative;
+                BOOST_LOG_SEV(lg(), debug) << "Unsupported document, not written: " << relative;
                 ++summary.unsupported;
                 continue;
             }
@@ -168,20 +158,20 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
         }
     }
 
-    summary.total_ms =
-        std::chrono::duration_cast<millis>(clock_type::now() - wall_start).count();
+    summary.total_ms = std::chrono::duration_cast<millis>(clock_type::now() - wall_start).count();
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Roundtrip complete."
-        << " Total: " << summary.total_xml_files << " Unsupported: " << summary.unsupported
-        << " Failed: " << summary.failed
-        << " Written: " << summary.output_files_written
-        << " Mapped: " << summary.trades_mapped
-        << " Passthrough: " << summary.trades_passthrough
-        << " Currencies: " << summary.currency_files
-        << " Calendars: " << summary.calendar_files
-        << " Conventions: " << summary.convention_files << " Import ms: " << summary.import_ms
-        << " Export ms: " << summary.export_ms << " Total ms: " << summary.total_ms;
+    BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete." << " Total: " << summary.total_xml_files
+                               << " Unsupported: " << summary.unsupported
+                               << " Failed: " << summary.failed
+                               << " Written: " << summary.output_files_written
+                               << " Mapped: " << summary.trades_mapped
+                               << " Passthrough: " << summary.trades_passthrough
+                               << " Currencies: " << summary.currency_files
+                               << " Calendars: " << summary.calendar_files
+                               << " Conventions: " << summary.convention_files
+                               << " Import ms: " << summary.import_ms
+                               << " Export ms: " << summary.export_ms
+                               << " Total ms: " << summary.total_ms;
 
     return summary;
 }

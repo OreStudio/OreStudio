@@ -16,10 +16,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -131,9 +131,9 @@ TEST_CASE("stamp keeps the client's change reason and applies the requested defa
 // generic stamp documents the exception instead of guessing.
 TEST_CASE("stamp overwrites the party id from the context", tags) {
     ores::testing::database_helper h;
-    const auto other_party = boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
-    const auto ctx =
-        h.context().with_party(h.tenant_id(), other_party, {other_party}, "alice");
+    const auto other_party =
+        boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
+    const auto ctx = h.context().with_party(h.tenant_id(), other_party, {other_party}, "alice");
     party_scoped_record r;
 
     stamp(r, ctx);

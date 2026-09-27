@@ -42,11 +42,7 @@ struct geolocation_result {
 /**
  * @brief Error codes for geolocation lookup failures.
  */
-enum class geolocation_error {
-    address_not_found,
-    lookup_failed,
-    invalid_address
-};
+enum class geolocation_error { address_not_found, lookup_failed, invalid_address };
 
 /**
  * @brief Service for looking up geographic location from IP addresses.

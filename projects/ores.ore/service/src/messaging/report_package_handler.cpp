@@ -77,8 +77,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             return;
         }
 
-        ores::storage::net::storage_transfer transfer(http_base_url_,
-                                                      service_nats_.bearer_token());
+        ores::storage::net::storage_transfer transfer(http_base_url_, service_nats_.bearer_token());
 
         // ── Create a staging directory ────────────────────────────────
         const auto stage_dir = std::filesystem::temp_directory_path() /

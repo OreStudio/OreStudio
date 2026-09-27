@@ -77,7 +77,8 @@ public:
     /**
      * @brief Queries log entries with filters.
      */
-    std::vector<messaging::telemetry_log_entry> query(context ctx, const messaging::telemetry_query& q);
+    std::vector<messaging::telemetry_log_entry> query(context ctx,
+                                                      const messaging::telemetry_query& q);
 
     /**
      * @brief Counts log entries matching a query.
@@ -165,7 +166,8 @@ public:
     /**
      * @brief Inserts a batch of NATS per-stream metrics samples.
      */
-    void insert_stream_samples(context ctx, const std::vector<messaging::nats_stream_sample>& samples);
+    void insert_stream_samples(context ctx,
+                               const std::vector<messaging::nats_stream_sample>& samples);
 
     /**
      * @brief Queries NATS server samples within a time range.

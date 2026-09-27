@@ -157,11 +157,10 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     const auto* def = registry_->find(instance.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << instance.type;
-        set_instance_state(
-                                    instance.id,
-                                    instance_states_.require("failed"),
-                                    "",
-                                    "Unknown workflow type: " + instance.type);
+        set_instance_state(instance.id,
+                           instance_states_.require("failed"),
+                           "",
+                           "Unknown workflow type: " + instance.type);
         return;
     }
 
@@ -172,7 +171,8 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         BOOST_LOG_SEV(lg(), info) << "Workflow COMPLETED:" << " type=" << instance.type
                                   << " workflow=" << boost::uuids::to_string(instance.id)
                                   << " steps=" << instance.step_count;
-        set_instance_state(instance.id, instance_states_.require("completed"), last_result_json, "");
+        set_instance_state(
+            instance.id, instance_states_.require("completed"), last_result_json, "");
         publish_status_event(instance.id, instance.tenant_id.to_uuid());
         return;
     }
@@ -188,17 +188,17 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     if (next_index >= static_cast<int>(steps.size())) {
         BOOST_LOG_SEV(lg(), error)
             << "Step index " << next_index << " out of range for type: " << instance.type;
-        set_instance_state(
-                                    instance.id,
-                                    instance_states_.require("failed"),
-                                    "",
-                                    "Step index out of range: " + std::to_string(next_index));
+        set_instance_state(instance.id,
+                           instance_states_.require("failed"),
+                           "",
+                           "Step index out of range: " + std::to_string(next_index));
         return;
     }
 
     // Build the command for the next step.
     const auto& step_def = steps[next_index];
-    const auto all_steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+    const auto all_steps =
+        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
 
     // Only include forward step results (step_index >= 0), not compensation.
     std::vector<std::string> results;
@@ -231,10 +231,10 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     publish_command(next_step, instance.id, instance.tenant_id.to_uuid());
 
     // Record that the command was published.
-    stamp_command_published( next_id);
+    stamp_command_published(next_id);
 
     // Advance the instance's step index.
-    set_step_progress( instance.id, next_index);
+    set_step_progress(instance.id, next_index);
     instance.current_step_index = next_index;
 
     BOOST_LOG_SEV(lg(), info) << "Dispatched step " << next_index << "/"
@@ -267,7 +267,8 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
                                             instance.correlation_id);
 
     // Load completed forward steps in reverse order for compensation.
-    auto steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+    auto steps =
+        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
     std::ranges::reverse(steps);
 
     bool dispatched_any = false;
@@ -311,7 +312,7 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
                                   << step_def.name << "_compensation)"
                                   << " workflow=" << boost::uuids::to_string(instance.id);
         publish_command(comp_step, instance.id, instance.tenant_id.to_uuid());
-        stamp_command_published( comp_id);
+        stamp_command_published(comp_id);
         dispatched_any = true;
     }
 
@@ -326,7 +327,8 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
 
 void workflow_engine::check_compensation_complete(const domain::workflow_instance& instance) {
 
-    const auto steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+    const auto steps =
+        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
 
     for (const auto& s : steps) {
         // Compensate the completed steps only; the rest never ran.
@@ -342,7 +344,7 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
     BOOST_LOG_SEV(lg(), info) << "Workflow COMPENSATED (all rollback steps complete):" << " type="
                               << instance.type
                               << " workflow=" << boost::uuids::to_string(instance.id);
-    set_instance_state( instance.id, instance_states_.require("compensated"), "", "");
+    set_instance_state(instance.id, instance_states_.require("compensated"), "", "");
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 
@@ -398,13 +400,14 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
             break;
         case outcome::completed_with_warnings:
             set_step_state(step_id,
-                                    step_states_.require("completed_with_warnings"),
-                                    event.result_json,
-                                    "",
-                                    log_json);
+                           step_states_.require("completed_with_warnings"),
+                           event.result_json,
+                           "",
+                           log_json);
             break;
         case outcome::failed:
-            set_step_state(step_id, step_states_.require("failed"), "", event.error_message, log_json);
+            set_step_state(
+                step_id, step_states_.require("failed"), "", event.error_message, log_json);
             break;
     }
 
@@ -418,8 +421,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         return;
     }
 
-    auto found_instances =
-        instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    auto found_instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
     if (found_instances.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow instance not found: " << event.workflow_instance_id;
         return;
@@ -516,8 +518,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     } catch (const std::exception& e) {
         // The read is a courtesy and the write is the authority, so a read that
         // fails must not stop a start that would otherwise succeed.
-        BOOST_LOG_SEV(lg(), warn)
-            << "Could not check for an existing workflow instance: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Could not check for an existing workflow instance: "
+                                  << e.what();
     }
 
     domain::workflow_instance instance;
@@ -567,7 +569,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         step_repo_.write(ctx_, step);
         step_created = true;
         publish_command(step, instance_id, tenant_id);
-        stamp_command_published( step_id);
+        stamp_command_published(step_id);
 
         BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:" << " type=" << req.type
                                   << " workflow=" << boost::uuids::to_string(instance_id)
@@ -585,20 +587,19 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         const auto id_str = boost::uuids::to_string(instance_id);
         if (instance_created) {
             BOOST_LOG_SEV(lg(), error) << "Failed to start workflow " << id_str << ": " << e.what();
-            set_instance_state(
-                                        instance_id,
-                                        instance_states_.require("failed"),
-                                        "",
-                                        "Failed to start workflow: " + std::string(e.what()));
+            set_instance_state(instance_id,
+                               instance_states_.require("failed"),
+                               "",
+                               "Failed to start workflow: " + std::string(e.what()));
             publish_status_event(instance_id, tenant_id);
             // The step-0 row persisted before the failure would otherwise
             // stay in_progress forever: recovery re-dispatches only steps of
             // instances still in_progress, and this instance is now failed.
             if (step_created) {
                 set_step_state(step_id,
-                                        step_states_.require("failed"),
-                                        "",
-                                        "Failed to start workflow: " + std::string(e.what()));
+                               step_states_.require("failed"),
+                               "",
+                               "Failed to start workflow: " + std::string(e.what()));
             }
         } else {
             BOOST_LOG_SEV(lg(), error)
@@ -644,18 +645,18 @@ void workflow_engine::recover_in_progress() {
             }
 
             // Find all in-progress steps for this instance and re-dispatch.
-            const auto steps = step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+            const auto steps = step_repo_.read_latest_by_workflow_id(
+                ctx_, boost::uuids::to_string(instance.id), 0, 1000);
             if (steps.empty()) {
                 // A start that died before persisting its first step leaves
                 // an in_progress instance with no steps; nothing can ever
                 // re-dispatch it. Mark it failed so waiters see a real error.
                 BOOST_LOG_SEV(lg(), error) << "Instance " << boost::uuids::to_string(instance.id)
                                            << " has no steps; marking failed";
-                set_instance_state(
-                                            instance.id,
-                                            instance_states_.require("failed"),
-                                            "",
-                                            "instance has no steps after recovery");
+                set_instance_state(instance.id,
+                                   instance_states_.require("failed"),
+                                   "",
+                                   "instance has no steps after recovery");
                 publish_status_event(instance.id, instance.tenant_id.to_uuid());
                 continue;
             }

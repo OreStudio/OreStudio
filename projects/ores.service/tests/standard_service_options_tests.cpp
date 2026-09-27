@@ -56,7 +56,8 @@ TEST_CASE("the application's own options are merged into the shared set", tags) 
 
 TEST_CASE("read_options reports no logging until logging is switched on", tags) {
     const auto od = standard_service_options::make_options_description(log_file);
-    const std::vector<std::string> required{"--db-user", "ores_test_user", "--db-database", "ores_test_db"};
+    const std::vector<std::string> required{
+        "--db-user", "ores_test_user", "--db-database", "ores_test_db"};
 
     const auto off = standard_service_options::read_options(
         standard_service_options::parse(od, required, app_name));

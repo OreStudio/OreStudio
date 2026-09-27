@@ -39,11 +39,11 @@ namespace ores::storage::service::messaging {
  */
 class registrar final {
 public:
-    static std::vector<ores::nats::service::subscription> register_handlers(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        ores::storage::filesystem::local_store store);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+                      ores::database::context ctx,
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                      ores::storage::filesystem::local_store store);
 };
 
 }

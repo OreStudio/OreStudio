@@ -1,14 +1,14 @@
 :PROPERTIES:
 :ID: 03B11C75-ED92-4819-9EF3-EF2507F6D21B
 :END:
-#+title: Task: Design the two-mode report pipeline
-#+description: Task for: Run a full report: scheduling, reporting and compute in two modes
+#+title: Task: Design the report processing architecture
+#+description: Task for: Run a full report: scheduling, reporting and compute
 #+type: task
 #+level: s1
 #+filetags: :full-report-pipeline:sprint_26:v0:
 #+owner: marco
 #+branch: feature/design-two-mode-pipeline
-#+pr: 2280
+#+pr: 2284
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -16,18 +16,18 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-State the target architecture for one report run across scheduling, reporting and compute, in two modes selected by one knob, with the stage list, the storage-URI seam, the NATS contract and the interaction diagrams. The design lands as a knowledge page, because it outlives the story.
+State the target architecture for report processing across scheduling, reporting and compute: the phases of a run, the workflow that executes them, the data characteristics that shape the interfaces, and how each end of the pipeline is built and can be substituted. The design lands as a knowledge cluster, because it outlives the story.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] |
+| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
@@ -35,9 +35,9 @@ State the target architecture for one report run across scheduling, reporting an
 
 * Acceptance
 
-- The document names every stage, its owner and what it consumes and produces.
-- Both modes are drawn end to end as PlantUML interaction diagrams showing the NATS subjects, and the rendered images are read.
-- The document links the existing reporting, compute, scheduling, workflow and storage documents by org-roam id.
+- The cluster names every phase, its owner and what it consumes and produces.
+- The pipeline, the orchestration loop and the substitution mechanism are drawn as PlantUML interaction diagrams showing the NATS subjects, and the rendered images are read.
+- The document links the existing reporting, compute, scheduling, workflow, storage and ORE documents by org-roam id.
 
 * Plan
 
@@ -76,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2284][#2284]] | [reporting] Write the report processing architecture as a structure note and its notes |
 | [[https://github.com/OreStudio/OreStudio/pull/2280][#2280]] | [reporting] Make the workflow clear in the two-mode design |
 | [[https://github.com/OreStudio/OreStudio/pull/2279][#2279]] | [reporting] State the orchestration contract in the two-mode design |
 | [[https://github.com/OreStudio/OreStudio/pull/2278][#2278]] | [reporting] Design the two-mode report pipeline |
@@ -88,11 +89,18 @@ via its "Verifies task" field.
 
 * Result
 
-Delivered as [[id:259EA767-EDF7-45EF-BE4D-B1A8FA96F7BD][Report execution
-modes]]. It states the stage list with an owner for each, the storage-URI seam
-that makes the two modes interchangeable, the rule that step results are
-addressed by role rather than index, the full NATS contract hop by hop, and
-two PlantUML interaction diagrams whose rendered images were read.
+Delivered first as *Report execution modes*, then replaced. A review found that
+document mis-shaped: its subject was a configuration mechanism rather than the
+architecture, and it was written as one page where the documentation convention
+asks for a structure note and atomic notes. The replacement is
+[[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]], a cluster of
+nine pages, and the record of what it contains is on that task.
+
+The first version stated the stage list with an owner for each, the storage
+arrangement that made the two modes interchangeable, the rule that step results
+are addressed by role rather than index, the full NATS contract hop by hop, and
+two PlantUML interaction diagrams whose rendered images were read. Most of that
+survives in the cluster; what changed is the frame and the wording.
 
 The design's most useful output is not the diagram but the distance it
 measured, because that is what changes the plan:

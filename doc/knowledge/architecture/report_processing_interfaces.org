@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 8DAB4D55-9D53-48FA-96B0-2EA432B4B42C
+:END:
+#+title: Report processing interfaces
+#+description: Every message and storage key a report run uses, in one place, with its publisher, its consumer and its payload.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:interfaces:reference:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+This page is the reference for what a report run sends and stores. It collects
+the messages of the pipeline, the messages that control it, and the objects a
+run reads and writes, so that an implementer has one list to work from rather
+than one per phase.
+
+Subjects marked *new* do not exist yet. Subjects marked *substitute* belong to
+the replacement steps described in
+[[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] and
+are dispatched instead of the phase they replace, never alongside it.
+
+* Detail
+
+** The run's messages
+
+| Subject | Publisher | Consumer | Payload |
+|---------+-----------+----------+---------|
+| =reporting.v1.ops.trigger_report_instance= | the scheduler, on a firing | reporting | definition, tenant, job instance |
+| =workflow.v1.start= | reporting | the workflow engine | workflow type and the run's configuration |
+| =reporting.v1.ops.preprocess= *(new)* | the workflow engine | pre-processing | tenant, instance, scope, market data timestamp, analytics switches |
+| =reporting.v1.ops.use-prepared-input= *(new, substitute)* | the workflow engine | pre-processing, substitute path | tenant, instance, and the location of a prepared archive |
+| =compute.v1.report.submit= | the workflow engine | ores.compute | instance, tenant, correlation, input locations |
+| =compute.v1.work.assignments.{tenant}.{platform}= | ores.compute | a worker node, by queue group | result, workunit, package and its digest, input, output |
+| =compute.v1.results.submit= | the worker node | ores.compute | result, host, output location, outcome |
+| =reporting.v1.ops.retrieve-results= *(new)* | the workflow engine | reporting | instance and batch |
+| =reporting.v1.ops.postprocess= *(new)* | the workflow engine | post-processing | instance and the output location |
+| =reporting.v1.ops.ignore-results= *(new, substitute)* | the workflow engine | post-processing, substitute path | instance and the output location |
+| =reporting.v1.ops.finalise= | the workflow engine | reporting | instance |
+| =reporting.v1.ops.fail= | any phase, and the engine's compensation | reporting | instance and the reason |
+| =workflow.v1.events.step-completed= | any phase | the workflow engine | step and its result |
+
+** The messages that control the run rather than perform it
+
+| Subject | Publisher | Consumer | Purpose |
+|---------+-----------+----------+---------|
+| =scheduler.v1.job_definitions.put= | reporting, when reconciling | the scheduler | create or update a definition's schedule |
+| =scheduler.v1.job_definitions.delete= | reporting, when unscheduling | the scheduler | remove a definition's schedule |
+| =workflow.v1.steps.get-result= | the workflow engine, and any reader | the workflow engine | read a completed phase's result |
+| =reporting.v1.ops.schedule-report-definitions= | the shell, or an operator | reporting | schedule on demand |
+| =reporting.v1.ops.unschedule-report-definitions= | the shell, or an operator | reporting | unschedule on demand |
+
+** The bulk reads pre-processing depends on
+
+These are not part of a run's pipeline but are the interfaces its first phase
+cannot work without. Both are *new*: neither component exposes a scope-limited
+bulk read today.
+
+| Subject | Publisher | Consumer | Payload |
+|---------+-----------+----------+---------|
+| =trading.v1.ops.scope-read= *(new)* | pre-processing | ores.trading | scope and as-of timestamp; returns the trades |
+| =marketdata.v1.ops.resolve= *(new)* | pre-processing | ores.marketdata | the selected trades; returns the items they require |
+
+** Storage
+
+| Object | Key | Written by | Read by |
+|--------+-----+------------+---------|
+| the engine package | =compute/packages/{app}/{version}/{platform}.tar.gz= | seeded, once per engine build | the worker node |
+| the input artifact | =reporting/inputs/{digest}.tar.gz= *(new)* | pre-processing | pre-processing, on a hit; the worker node |
+| a prepared input | named by the run's configuration *(new)* | seeding, or an earlier run | pre-processing, substitute path |
+| the engine output | =compute/output/{result_id}.tar.gz= | the worker node | retrieval, post-processing |
+
+Both object access paths are as specified in
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]]: the command subjects
+=storage.v1.objects.put/get/delete/list= for control, and
+=PUT/GET /api/v1/storage/{bucket}/{key}= for bytes.
+
+** Keys that exist today and are replaced
+
+The current pipeline writes =reporting/runs/{instance}/trades.msgpack= and
+=market_data.msgpack=, and packages them into
+=ore/packages/{instance}/ore_package.tar.gz=. Those carry the run's intermediate
+data, which the target does not store: the trades and market data are read,
+mapped and released within pre-processing, and only the mapped artifact is kept.
+The three keys disappear with the phases that produced them.
+
+** Naming
+
+- Entity verbs name a resource and a verb, as the
+  [[id:C650CBC9-FDED-4C68-981F-7902E296928E][entity protocol]] specifies.
+- Everything that is not an entity verb is an operation, under the component's
+  =ops= segment. Every new subject on this page is an operation, because a phase
+  is an action rather than a resource.
+- The subject of a substitute names what it does — =use-prepared-input=,
+  =ignore-results= — rather than naming the phase it replaces plus a flag.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

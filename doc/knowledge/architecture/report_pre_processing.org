@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 08C54927-C7BD-48B7-BF7B-13DC3702FF68
+:END:
+#+title: Report pre-processing
+#+description: Turning a definition's scope into the ORE engine's input: bulk reads of trades and market data, mapping to the engine's documents, and packaging a reusable artifact.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:preprocessing:ore:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+Pre-processing produces the input the ORE engine consumes. It reads the trades
+in a definition's scope and the market data those trades require, maps both into
+the engine's input files, packages them into one archive, and stores it under a
+key derived from everything that determines it.
+
+It is the most expensive phase of a run and the only one that reads the domain
+database. It is also the phase most likely to be unavailable while its
+dependencies are built, so it has a documented substitute: a prepared input
+archive, named by the run's configuration, which the phase resolves instead of
+generating. Both paths return the same thing — the location and digest of an
+input artifact — so the phases around them cannot tell which was used.
+
+* Detail
+
+** The steps
+
+| Step | Reads | Produces |
+|------+-------+----------|
+| Select trades | the trading component, by scope and as-of timestamp | the run's trade set |
+| Resolve market data | the market data component, by the selected trades | the curves, fixings and quotes those trades need |
+| Map | both of the above | the engine's input files |
+| Package | the mapped files | one archive whose root holds =Input/ore.xml= |
+| Store | the archive | one object in object storage, named by its digest |
+
+Every step is bounded and streams: a batch is read, mapped, appended to the
+archive and released. Materialising the whole document before writing it is what
+makes a run's memory proportional to its input, which is the quantity that
+concurrency multiplies.
+
+** The artifact
+
+The archive is the engine's working directory. Its layout is not a detail: the
+wrapper runs the engine with the job directory as the working directory and
+passes =Input/ore.xml=, and =ore.xml= names the other files in =Input/=. So the
+archive must contain =Input/ore.xml= plus the files that document references,
+and any change to the layout is a change to the contract with the grid.
+
+Because the archive is determined by its inputs, its key is a digest of them:
+the scope, the market data timestamp, the analytics configuration and the engine
+version. Two runs over the same inputs name the same object, and the second
+finds the first's work already done. The digest is only sound while every input
+to it is immutable; a corrected market data row produces a new timestamp and
+therefore a new digest, and stale input can never be served under a current key.
+
+** The operation
+
+Pre-processing is invoked as one operation, not several. The workflow dispatches
+a single pre-processing step and receives a single answer, so the internal
+decomposition above is invisible to the chain and can change without changing
+the pipeline.
+
+- *Request:* tenant, report instance, definition, the scope and market data
+  timestamp from the configuration, and the analytics switches.
+- *Response:* the artifact's location and digest, and whether it was generated
+  or found.
+
+The operation may be retried. A retry after a partial run finds either no object
+under the digest — and generates — or a complete one, and returns it. It never
+appends to an existing object, so a retry cannot produce a corrupt archive.
+
+** The substitute: using a prepared input
+
+When the run's configuration selects the substitute, the phase is not executed.
+The workflow dispatches a different step that resolves an input archive prepared
+in advance and returns its location and digest. Nothing is read from the trading
+or market data components and nothing is generated.
+
+This is the mechanism that allows the pipeline to be exercised before those
+components can supply what pre-processing needs. It has three conditions:
+
+- *The artifact must have the same shape.* A substitute that is not a valid
+  engine input moves the failure from a missing component to a failing engine,
+  which is a worse place to find it.
+- *The phase must be indistinguishable.* The step that follows receives a
+  location and a digest, exactly as it would from the real phase. It is not told
+  which was used, and it must not need to be.
+- *The substitution must be recorded.* The run records that pre-processing was
+  substituted, so that a result obtained this way is never mistaken for one
+  obtained from live data.
+
+What the substitute gives up is the whole of the phase: with it, a run proves
+nothing about selection, resolution, mapping or packaging. That is the intended
+trade, and it is why the record must say so.
+
+** Component boundaries
+
+The knowledge needed by this phase is distributed, and the boundaries follow the
+data rather than the steps:
+
+- *Trading* owns which trades a scope contains, including any date qualification.
+  It exposes a bulk read; it does not know what a report is.
+- *Market data* owns which items a set of trades requires, including the
+  dependency closure of the curves they reference. It exposes a bulk read.
+- *ores.ore* owns the mapping from domain data to the engine's documents, as a
+  library rather than a service. Sending intermediate documents over the message
+  bus would serialise and deserialise them for no benefit.
+- *The packaging and the artifact's lifecycle* — the digest, the lookup, the
+  write — belong to one owner, so that the contract with the grid has a single
+  author.
+
+Whether that owner is a worker role inside reporting or a component of its own
+is a deployment decision rather than a data one, and it is deliberately left
+open. The criteria are whether the batch workload needs to scale independently
+of reporting's request handling, and whether its failures should be isolated
+from the rest of the service. The interfaces above are the same either way.
+
+** What does not exist today
+
+- No scope read on either component. Trading pages trades one book at a time and
+  market data exports every series the tenant holds.
+- No resolution. There is machinery for deriving market data requirements from
+  trades, but nothing calls it outside its own tests.
+- No mapping for the four configuration documents the engine needs. The
+  bindings cover the whole ORE vocabulary and can save them; the mappers from
+  ORE Studio data cover portfolio, currency configuration, calendar adjustments
+  and conventions, and none of the four.
+- No packaging that produces what the wrapper expects. The step named for the
+  job ships two MsgPack files rather than =Input/ore.xml= and the six files it
+  names.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 61EA2FC7-C112-44FB-8042-9BD7994B71E9
+:END:
+#+title: Report execution orchestration
+#+description: The workflow engine as the executor of a report run: how a phase is invoked, how it reports completion, what delivery guarantees hold, and which record is authoritative.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:workflow:orchestration:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+No phase of a report run calls another. A run is a workflow instance, and
+[[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] invokes each phase in
+turn by publishing its command and waiting for its completion. The set of phases
+a run executes is built by a function in reporting's own code from the workflow
+start message, so the run's shape is determined by the definition rather than by
+which service happens to make the next call.
+
+The engine also owns resumption. It persists each phase before publishing it and
+re-publishes anything left unfinished when a service restarts, which means a
+phase can be invoked more than once and every phase must be written to tolerate
+that. This page states the contract between the engine and a phase, and what
+follows from it.
+
+* Detail
+
+** A workflow is registered in code
+
+The report execution workflow is neither a seeded row nor a model. It is a
+definition registered in C++ when the workflow service starts, declaring a type
+name, a function that returns the ordered phases, and for each phase a name, a
+command subject, a compensation subject and the payload to send.
+
+The function that builds the phases receives the start message's payload, the
+tenant and a correlation identifier. It currently ignores all three and returns
+the same phases every time, which is why no definition can select a shorter
+chain today. In the target it reads the run configuration and returns the phases
+that configuration names, including any substitutes.
+
+Because the function is re-run on every dispatch and on recovery, it must be a
+pure function of its inputs. A phase list that read anything else could be
+rebuilt differently after a restart, and the run would change shape midway.
+
+** The phase contract
+
+A phase is invoked by publishing its command subject with the step identifier,
+the workflow instance identifier and the tenant in the message headers, and the
+phase's own payload in the body. A phase answers on the workflow's completion
+subject, naming the step and carrying its result.
+
+That is the entire interface. A phase does not know its position in the chain,
+does not know what the next phase is, and does not call it. Adding a phase adds
+a participant in this contract; it does not add a new mechanism.
+
+#+caption: The orchestration loop: building the phase list, dispatching each phase, recording completion, compensating on failure, and re-dispatching unfinished work on restart.
+[[proj:doc/knowledge/architecture/report_execution_orchestration_loop.png]]
+
+Source: [[./report_execution_orchestration_loop.puml][=report_execution_orchestration_loop.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_execution_orchestration_loop.puml=.
+
+** What the engine guarantees
+
+| Property | Guarantee |
+|----------+-----------|
+| ordering | a phase is dispatched only after its predecessor has reported completion |
+| persistence | a phase is recorded as in progress before its command is published, so a crash leaves a record |
+| resumption | every phase left in progress is re-dispatched when a service restarts |
+| failure | a failing phase ends the run; the engine walks the completed phases in reverse, publishing each one's compensation subject |
+| selection | the phase list is rebuilt from the start message on every dispatch |
+
+** What a phase must guarantee in return
+
+The guarantee above that matters most is resumption: dispatch is at least once,
+with no acknowledgement and no timeout, so a phase can be invoked again after a
+crash or a restart. Every phase must therefore converge when repeated rather
+than accumulate.
+
+| Phase | What convergence means |
+|-------+------------------------|
+| Pre-processing | a repeated run finds either no artifact under its digest or a complete one; it never appends to an existing artifact |
+| Submission | a repeated submission adopts the work it created the first time rather than creating a second batch |
+| Retrieval | recording the same output location twice is the same as recording it once |
+| Post-processing | loading the same result file twice does not double the rows |
+| Finalisation | a terminal state is terminal; a second transition to it is refused, not applied |
+
+** The two records
+
+A run has two records of its progress: the workflow's own instance and step
+records, and the report instance's state. They serve different readers and can
+disagree — a workflow that has failed while the instance still reads running is
+a reachable state in the current implementation.
+
+The report instance is the authoritative record for a caller. The workflow's
+records are the executor's bookkeeping. The terminal transition is the join
+between them: the workflow's outcome is what moves the instance, through the
+state machine, and nothing else may write that state.
+
+** Failure
+
+A phase fails by answering with a failure rather than by staying silent, and the
+engine then compensates: it walks the phases that completed, in reverse, and
+publishes each one's compensation so that the work they did can be undone or
+marked. For a report run, compensation ends in the fail phase, which moves the
+instance to a terminal failed state with the reason.
+
+Two failure modes are not covered by this and must be designed for:
+
+- *A phase that never answers.* With no acknowledgement and no timeout, a phase
+  whose service is unavailable leaves the run in progress indefinitely and is
+  re-dispatched on every restart. The run needs a deadline.
+- *A phase list the engine cannot satisfy.* An unknown workflow type is logged
+  and dropped while the trigger has already answered that the run started, so a
+  mis-selected chain looks like a success. A run must fail when its chain cannot
+  be built.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

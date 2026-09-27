@@ -26,7 +26,7 @@ participant "stage handler\n(ores.reporting, ores.ore\nor ores.compute)" as stag
 
 starter -> wf : workflow.v1.start\n{type, request_json}
 wf -> wf : build_steps(request_json, tenant, correlation_id)\npure function; rebuilt on every dispatch
-note right of wf : the mode is an input here.\nDemo and full differ in what this returns.
+note right of wf : the run's configuration is an input here;\nit decides which phases are listed,\nincluding any substitutes.
 wf -> db : persist workflow instance and its steps
 
 loop each step, in order

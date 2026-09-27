@@ -1,41 +1,42 @@
 :PROPERTIES:
-:ID: 904155B2-C5D9-451F-8EF9-25718CBE7513
+:ID: AF9F5930-3D00-4EF7-AA4B-B6996AB71C13
 :END:
-#+title: Task: Scaffold story: Run a full report: scheduling, reporting and compute
-#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+title: Task: Measure report processing and record a baseline
+#+description: Task for: Run a full report: scheduling, reporting and compute
 #+type: task
 #+level: s1
 #+filetags: :full-report-pipeline:sprint_26:v0:
 #+owner: marco
-#+branch: feature/full-report-pipeline
+#+branch: feature/measure-report-processing
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment: bright_faraday
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Instrument the pipeline and record a baseline, so that the architecture's claims about cost can be checked rather than asserted: which step dominates, whether scope reads are selective, whether the artifact digest is repaid by cache hits, and whether ingestion can keep up with execution.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
 
--
+- The measurements listed in Report processing data characteristics are collected and recorded on the task.
+- Each measurement is recorded against the decision it was meant to inform, including any that contradict the design.
 
 * Plan
 
@@ -83,22 +84,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-Delivered. The story is wired into Sprint 26 with four tasks, and the target
-architecture is written as
-[[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]], a
-knowledge page rather than a story document, because the target outlives the
-story. That page replaced an earlier single document, written under the same
-task, whose subject was the run's modes rather than the pipeline.
-
-The story was framed as "integrate scheduling, reporting and compute". The
-design found that the integration already exists along one path — the shell
-can drive a batch to completion — and fails along the path the story needs,
-because the reporting to compute handoff publishes on a subject no wrapper
-subscribes to, leaves the workunit's fields empty, and hands over a URI in the
-wrong shape. That work is the ACME smoke-test story's and this one waits on
-it, recorded on the story so the dependency is visible rather than implicit.
-
-Four tasks carry the rest: design, the execution mode together with
-role-addressed step results, demo mode end to end, and full mode. The fourth
-is deliberately deferred.

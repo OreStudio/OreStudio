@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 3594348F-6679-4D8B-858F-38B073FDFAFE
+:END:
+#+title: Report compute handoff
+#+description: The contract between a report run and the compute grid: what a run submits, what a workunit requires, what the grid returns, and what a run must guarantee about re-submission.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:compute:grid:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A report run hands its input to [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]],
+which turns it into a batch of workunits, and the grid executes each on a worker
+node running the ORE engine. The run's involvement ends when it has said which
+input to run and what to call the work; it learns the outcome from the result
+the worker submits.
+
+The contract has three parts: what the run sends, what the grid guarantees about
+a workunit, and what the run must guarantee in return. The last is the one most
+easily overlooked — the run may submit the same work twice, and the grid must
+not execute it twice.
+
+* Detail
+
+** What the run sends
+
+A submission names the report instance, the tenant, a correlation identifier,
+and the location of one or more input archives. Everything else the grid needs
+it resolves itself: the engine version is chosen from the tenant's registered
+application versions, and the output location is derived from the result
+identifier the grid assigns.
+
+The run does not send its definition, its scope, its analytics switches or its
+report type. The grid has no use for them, and sending them would give compute a
+dependency on reporting's model. The input archive is the entire message.
+
+** What a workunit requires
+
+| Field | Comes from | Why it is required |
+|-------+------------+--------------------|
+| the input location | the run | what the worker downloads |
+| the engine package location and its digest | the registered application version | what the worker runs, and how it verifies it |
+| the application version | the tenant's newest registered version | ties the work to a build |
+| the result identifier | the grid | the worker's identity for this attempt, and the name of the output |
+| the output location | the grid | where the worker uploads |
+| the redundancy target | the run | how many successful attempts count |
+
+A workunit with any of these missing cannot be executed. The worker fetches the
+package, verifies its digest, fetches the input, runs the engine with the job
+directory as its working directory, archives the engine's output directory, and
+uploads it to the output location.
+
+** The archive contract
+
+Two archives are involved and they are not interchangeable:
+
+- the *engine package*, whose root holds a manifest naming the executable and
+  its arguments;
+- the *input archive*, whose root holds =Input/= and, within it, the files the
+  engine's entry point names.
+
+Both are contracts with the grid rather than with any one service. A change to
+either is a change to what the grid can run, and neither is discoverable from
+the other's code. The input archive's layout is specified in
+[[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]].
+
+** What comes back
+
+The worker submits a result naming itself, the output location and an outcome.
+The grid records it against the workunit, and when enough attempts have
+succeeded the workunit has a canonical result and the batch closes. The run
+learns the outcome by reading the result for its batch; it does not receive a
+callback.
+
+A run therefore needs two things it is easy to omit: a way to distinguish a
+finished job from a slow one, and a policy for a job that never reports at all.
+The grid has no notion of a job that has failed to start, so the run cannot rely
+on an outcome arriving.
+
+** Re-submission
+
+Submission is the phase where repeated delivery is most expensive, because a
+second batch means a second execution of the engine. The run must therefore make
+submission idempotent for a given input: a retry must find the work it already
+created rather than create more.
+
+The natural key is the input artifact's digest, which is already unique to the
+work the run intends to do. A run that submits the same digest twice should
+adopt the batch it created the first time. Where the grid cannot be asked to
+enforce that, the run must record the batch it created before it can be retried,
+so that a retry has something to find.
+
+** What does not exist today
+
+The grid path works when it is driven from the shell. It does not work when it
+is driven from a report run, for three independent reasons, each of which must
+be corrected before a run can submit anything:
+
+- the submission publishes on a subject no worker subscribes to: the assignment
+  is published per tenant, where workers subscribe per tenant and platform;
+- the fields a worker needs are left empty — the result identifier, the package
+  location, the configuration location and the output location;
+- the input location handed over is a bucket-relative key where the worker
+  fetches an absolute storage path.
+
+A run also needs an application version to exist for its tenant. Submission
+fails without one, and nothing in the pipeline creates it.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

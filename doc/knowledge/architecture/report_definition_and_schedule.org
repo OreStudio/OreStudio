@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: D4938956-1A5E-4F67-BCE8-7A951CE957E9
+:END:
+#+title: Report definition and schedule
+#+description: How a report definition is described, how it acquires and holds a schedule, and how a firing becomes a report instance with a state machine.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:scheduling:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A *report definition* is the stored description of a report: what it is
+called, which party owns it, what kind of report it is, the parameters the
+engine needs, and when it should run. The schedule does not live in the
+definition. Reporting asks [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]]
+to hold one job per definition, and the job's action is a message back to
+reporting. Firing that message creates a *report instance*, which is the record
+of one run and the only record a caller reads to learn what happened.
+
+The definition is configuration and the instance is state. Everything that
+changes during a run belongs to the instance; everything that decides how a run
+behaves belongs to the definition. This page describes both and the boundary
+between them.
+
+* Detail
+
+** The definition
+
+A definition is a bitemporal row in =ores_reporting_report_definitions_tbl=,
+owned by a party and scoped to a tenant and a workspace. It carries a name, a
+description, the report type, a concurrency policy, a cron schedule expression,
+the identifier of the scheduler job that holds its schedule, the run
+configuration described below, and the audit envelope every entity carries.
+
+Two fields are frequently mistaken for something they are not:
+
+- =report_type= is a category of report — risk, grid, regulatory — held as a
+  foreign key to =ores_reporting_report_types_tbl=. It describes what the
+  report is, not how it runs.
+- =fsm_state_id= points at the definition's own lifecycle state, active or
+  suspended, not at the state of any run.
+
+** The parameters
+
+The definition carries no engine parameters. Those live in
+=ores_reporting_risk_report_configs_tbl=, one row per definition, with the
+analytics switches a run enables and a book and portfolio scope held in two
+temporal junction tables. The configuration also supplies the market data date
+and the worker thread count the engine should use.
+[[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] reads this
+row to decide what to select.
+
+** The run configuration
+
+The definition carries the configuration that decides how much of the pipeline a
+run executes. Each substitutable phase is either executed or replaced by a
+prepared substitute, and the choice is stored with the definition so that a run
+is reproducible from the database alone and needs no operator present.
+
+This exists so that the pipeline can be exercised before the components it
+depends on are ready. It is described in full in
+[[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]],
+and it is why the pipeline page marks each phase as substitutable or not.
+
+** The schedule
+
+Reporting does not schedule itself. For each definition it asks the scheduler to
+store a job named =report_definition.<definition-id>= whose action is a NATS
+publish. The action payload names the trigger subject, the definition and the
+tenant, so the job holds everything the trigger needs and the scheduler never
+reads reporting's database.
+
+The name is the identity. Reporting adopts a job by name rather than by
+identifier, which is what makes reconciliation idempotent: on startup, and on
+every change to a definition, reporting lists the scheduler's jobs, adopts the
+one whose name matches a definition with no job identifier recorded, and creates
+one only where none exists. A definition that is already scheduled is left
+alone.
+
+Two consequences follow from holding the schedule outside the definition, and
+both are properties of the current implementation rather than of the target:
+
+- deleting a definition does not delete its job, because the only path that
+  removes a job is an explicit unschedule;
+- reconciliation adopts and creates but never removes or suspends, so a job
+  whose definition has gone stays in the scheduler.
+
+** The firing
+
+The scheduler evaluates each job's cron expression once a minute. When a job is
+due it writes a job instance — so a firing is recorded even when the action
+fails — and executes the action. A publish action sends the trigger message to
+reporting as an authenticated request carrying the scheduler's own service
+identity.
+
+Reporting answers by creating a report instance and starting a workflow. The
+instance is described below; the workflow belongs to
+[[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]].
+
+** The instance and its states
+
+A run is a row in =ores_reporting_report_instances_tbl= with a state drawn from
+a machine seeded in the database as =report_instance_lifecycle=. Seven states
+exist.
+
+| State | Kind | Reached when |
+|-------+------+--------------|
+| =pending= | initial | the concurrency policy allows the run to start |
+| =queued= | initial | the queue policy accepts a run while another is in progress |
+| =running= | intermediate | the workflow begins |
+| =completed= | terminal | the last phase succeeds |
+| =failed= | terminal, and initial under the fail policy | a phase fails, or the fail policy refuses the run |
+| =skipped= | terminal, and initial under the skip policy | the skip policy discards the run |
+| =cancelled= | terminal | an operator cancels the run |
+
+Three of these are initial states, which is deliberate: the concurrency policy
+decides the state a run is born in. A run whose policy is skip never starts and
+is recorded as skipped; one whose policy is fail is recorded as failed without
+executing; one whose policy is queue waits in queued. Only =pending= means the
+run will execute.
+
+Transitions are checked against the seeded transition table by a database
+trigger, so an illegal change is refused by the database rather than by
+convention.
+
+** The boundary between definition and instance
+
+| Belongs to the definition | Belongs to the instance |
+|---------------------------+-------------------------|
+| name, party, report type | the workflow instance that ran |
+| analytics switches, scope, market data date | start and completion times |
+| cron expression, concurrency policy | the state, and the reason for it |
+| the run configuration | which phases executed and which were substituted |
+| the scheduler job that watches it | the output location and any result |
+| who may trigger it | what actually happened |
+
+A change to the definition affects the next run and no earlier one. That is why
+the workflow start message carries a copy of what the run needs rather than a
+reference to re-read: a definition edited while a run is in flight must not
+change that run's shape.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 7786B8F5-0B30-4265-842F-7E63710433B8
+:END:
+#+title: Report execution substitution
+#+description: Replacing phases of a report run with prepared substitutes, so the pipeline can be exercised before the trade and market data components are ready.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:testing:substitution:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+Two phases of a report run can be replaced. Pre-processing, which produces the
+engine's input, can be replaced by a step that resolves an input archive
+prepared in advance. Post-processing, which records the engine's results, can be
+replaced by a step that records only where the output is. In both cases the
+replacement is a step in the run's chain, not a flag inside the phase it
+replaces, and the phases around it cannot tell which was used.
+
+The purpose is to be able to exercise the pipeline and the workflow around it
+while the trade and market data components — which pre-processing depends on —
+are still catching up. A run configured this way executes the real scheduler,
+the real workflow, the real compute grid and the real storage. It does not
+execute the phases that were replaced, and it proves nothing about them.
+
+* Detail
+
+** Substitution is a chain decision, not a phase behaviour
+
+There are two ways to make a phase optional. The phase can take a flag telling
+it to do less, or the chain can invoke a different step instead. This design
+takes the second.
+
+The reason is that the first makes every phase responsible for two behaviours
+and pushes the test configuration into production code, where it must be
+maintained and where it can be reached by accident. The second keeps each step
+single-purpose: the step that resolves a prepared archive only resolves, and the
+step that generates only generates. What chooses between them is the function
+that builds the run's chain, which is already the place where a run's shape is
+decided.
+
+It also means the substitution is visible where it should be. A reader of a
+run's chain sees a step named for what it does; nobody has to know that a
+particular flag changes what a differently-named step means.
+
+#+caption: The two chains a run configuration can build: both ends executed, and both ends substituted. The middle is identical in each.
+[[proj:doc/knowledge/architecture/report_execution_substitution.png]]
+
+Source: [[./report_execution_substitution.puml][=report_execution_substitution.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_execution_substitution.puml=.
+
+** The configuration
+
+The run's configuration is stored with the definition, one entry per
+substitutable phase:
+
+| Entry | Values | Meaning |
+|-------+--------+---------|
+| pre-processing | execute, or substitute with an archive location | generate the input, or resolve a prepared one |
+| post-processing | execute, or ignore | ingest the results, or record only where they are |
+
+Storing it with the definition rather than in the environment is deliberate. A
+run must be reproducible from the database: an operator asking why a run
+produced no results should be able to read the answer from the run's definition
+and its instance, not from the environment the service happened to start in. It
+also means a definition that uses a substitute can be recognised as such before
+it runs, rather than only afterwards.
+
+** The pre-processing substitute
+
+The step resolves an archive whose location the configuration names and answers
+with that location and its digest. Nothing is read from trading or market data
+and nothing is generated.
+
+The archive must be a valid engine input. A substitute that the engine cannot
+run moves the failure from a missing component to a failing engine, which is a
+worse place to discover it, and it is the difference between a test that proves
+the pipeline and one that proves nothing at all.
+
+** The post-processing substitute
+
+The step records the output location on the run and completes. The archive is
+not fetched, parsed or loaded.
+
+The output must still be recorded. A run that ignores its results and does not
+name where they are loses them as soon as the archive expires, which converts an
+intentional omission into accidental data loss. Recording the location also
+means the substitution can be reversed later — the results are still there to be
+ingested by a subsequent run or by hand.
+
+** What a substitute must satisfy
+
+- *The same answer shape.* The step that follows receives what it would have
+  received from the real phase. It is not told which ran, and it must not need
+  to be.
+- *The same failure behaviour.* A substitute that cannot do its work fails the
+  run in the same way the real phase would, so that the failure path is
+  exercised too.
+- *Idempotence.* A substitute is dispatched by the same engine and is subject to
+  the same at-least-once delivery, so resolving the same archive twice must be
+  the same as resolving it once.
+
+** What a substituted run proves, and what it does not
+
+| Proves | Does not prove |
+|--------|----------------|
+| the scheduler fires and the trigger arrives authenticated | that the scope is selected correctly |
+| the chain built from the configuration is the chain that runs | that the trades and market data resolve |
+| submission creates work the grid executes | that the engine's input is well formed |
+| the engine runs and its output reaches storage | that the results are correct |
+| the run reaches a terminal state through the state machine | that results can be ingested |
+| a failure in any phase is compensated and recorded | — |
+
+The right reading of a substituted run is that it tests the middle of the
+pipeline. The phases at the ends are exactly the ones it does not test, which is
+why the run must record that they were substituted.
+
+** Recording it
+
+The instance records which phases executed and which were substituted, in the
+same record as the outcome. A completed instance that was substituted at both
+ends must never be mistaken for one that ran the whole pipeline — by an operator
+reading a dashboard, by a test asserting success, or by a later reader of the
+database.
+
+This is the one place where the configuration affects correctness rather than
+convenience: without it, the mechanism that exists to test the pipeline becomes
+a way of reporting success for work that was never done.
+
+** What this is not
+
+It is not a production feature. A substituted run produces no report. The
+configuration exists so that the pipeline can be developed and tested ahead of
+its dependencies, and it is expected to be used in that period and then rarely.
+Nothing in the design should depend on substitution to make a run work; a run
+that needs a substitute to complete is a run whose dependencies are missing.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

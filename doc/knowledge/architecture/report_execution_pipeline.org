@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 4F9639E5-AA68-4D47-BB05-8FA864FF9855
+:END:
+#+title: Report execution pipeline
+#+description: The phases of a report run, end to end, and the responsibility of each.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:pipeline:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A report run is a sequence of six phases. The first produces the input the
+engine will consume; the last closes the run. Between them the work is handed
+to the compute grid, executed on a worker node, and brought back. No phase calls
+another: each is invoked by the workflow engine, and each is handed the
+identifier or the location of what the previous phase produced rather than its
+contents.
+
+Two phases — pre-processing and post-processing — can be replaced by a prepared
+substitute. This is what allows the pipeline to be exercised, and the workflow
+around it tested, before the trade and market data components can supply what
+pre-processing needs. The mechanism is described in
+[[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]].
+
+* Detail
+
+** The phases
+
+| Phase | Responsibility | Consumes | Produces | Substitutable |
+|-------+----------------+----------+----------+---------------|
+| Pre-processing | produce the engine's input | the definition's configuration | one input artifact in object storage | yes |
+| Submission | turn that artifact into work | the artifact's location | a batch and its workunits | no |
+| Execution | run the engine | the engine package and the input | the output archive | no |
+| Retrieval | bring the result back | the result identifier | the output location, recorded on the run | no |
+| Post-processing | record what the engine produced | the output archive | rows in the result store | yes |
+| Finalisation | close the run | the outcomes above | the instance in a terminal state | no |
+
+The four non-substitutable phases are the reason the two substitutable ones can
+be replaced at all. Submission, execution and retrieval are the same whatever
+produced the input and whatever will be done with the output, so a run that
+substitutes both ends still exercises the whole of the middle.
+
+#+caption: One report run end to end: the schedule firing, the workflow building the phase list from the run configuration, and the six phases with the messages each uses.
+[[proj:doc/knowledge/architecture/report_processing_pipeline.png]]
+
+Source: [[./report_processing_pipeline.puml][=report_processing_pipeline.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_processing_pipeline.puml=.
+
+** Pre-processing
+
+Pre-processing turns a definition's scope into a document the ORE engine
+accepts. It reads the trades in scope and the market data those trades require,
+maps both into the engine's input files, and packages them into a single
+archive. Its interface is specified in
+[[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]].
+
+Its output is one object in storage, named by a digest of everything that
+determines it. Two runs over the same scope and the same market data timestamp
+name the same object, so the second finds the first's work already done. This is
+the only phase whose cost grows with the size of the data rather than with the
+number of runs.
+
+** Submission
+
+Submission turns an artifact into work on the grid. It creates a batch and one
+workunit per job, records the package and the input, and leaves the grid to
+dispatch. Its contract is specified in
+[[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]].
+
+** Execution
+
+Execution happens on a worker node and is not a step any ORE Studio service
+performs. The node downloads the engine package and the input, runs the engine,
+archives the output directory, and uploads it. The run's only involvement is to
+have made the work available and to wait, which is why execution is the phase
+most likely to outlast everything around it.
+
+** Retrieval
+
+Retrieval records where the engine's output is. It does not read the output.
+Separating retrieval from post-processing means a run can complete knowing its
+result exists without paying to parse it, which is what makes the
+post-processing substitute meaningful: the output is genuinely optional.
+
+** Post-processing
+
+Post-processing reads the output archive and records what it contains. Its
+design is specified in
+[[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]]. It is the
+only phase whose work is proportional to the size of the result rather than to
+the size of the input.
+
+** Finalisation
+
+Finalisation closes the run. It is what moves the instance to a terminal state,
+and it is the only phase that touches the state machine. Keeping it separate
+means the state transition happens once, in one place, whatever the phases
+before it did.
+
+** What every phase may assume
+
+- *The previous phase's artifact is complete.* A phase is invoked only after its
+  predecessor reported completion, and the artifact it is handed is either
+  whole or absent. No phase reads a partially written object.
+- *No phase holds another's data in memory.* Phases are separate invocations and
+  may be served by different processes. Everything passed between them is an
+  identifier or a storage location.
+- *A phase may run more than once.* Dispatch does not guarantee exactly-once
+  delivery, so every phase must converge when repeated rather than accumulate.
+  The consequences are set out in
+  [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]].
+- *A phase may be replaced.* A phase that is substitutable must be defined so
+  that its replacement is indistinguishable to the phases around it.
+
+** What a phase must leave behind
+
+Every phase records enough for two readers: the next phase, which needs a
+location or an identifier, and an operator, who needs to know what happened. A
+phase that succeeds silently and a phase that fails silently are both defects;
+the run's record must name the phase, its outcome and the artifact it produced.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

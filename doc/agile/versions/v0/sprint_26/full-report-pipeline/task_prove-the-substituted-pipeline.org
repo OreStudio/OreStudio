@@ -1,13 +1,13 @@
 :PROPERTIES:
-:ID: 68A0FEFB-2567-4CD0-AF2C-3DBEC9EE75FD
+:ID: 8C2D973B-5D85-4FFC-8322-3603DD385E96
 :END:
-#+title: Task: Implement demo mode end to end from a schedule
-#+description: Task for: Run a full report: scheduling, reporting and compute in two modes
+#+title: Task: Prove the pipeline with both ends substituted
+#+description: Task for: Run a full report: scheduling, reporting and compute
 #+type: task
 #+level: s1
 #+filetags: :full-report-pipeline:sprint_26:v0:
 #+owner: marco
-#+branch: feature/demo-mode-end-to-end
+#+branch: feature/prove-the-substituted-pipeline
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -16,18 +16,18 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Bind the preprocessing end to an input tarball that already exists and the post-processing end to recording where the output landed, then run the whole pipeline from a schedule against a freshly recreated database.
+Run a definition whose configuration substitutes both pre-processing and post-processing, and show that the middle of the pipeline executes for real: the scheduler fires, the workflow builds the substituted chain, the grid runs the engine, the output reaches storage, and the run records that it was substituted.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] |
+| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,9 +35,9 @@ Bind the preprocessing end to an input tarball that already exists and the post-
 
 * Acceptance
 
-- A seeded definition with execution_mode = demo fires from the scheduler and its instance reaches completed through the FSM guard.
-- The grid runs the vendored input and its output object exists in storage; the instance records where.
-- The run is reproducible from a database recreate and is kept as a check.
+- The instance reaches a terminal state through the state machine, and records which phases were substituted.
+- The engine runs and its output object exists in storage, on a database recreated from scratch.
+- The run is kept as a repeatable check, and it proves nothing about the phases it replaced.
 
 * Plan
 

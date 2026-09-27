@@ -1,0 +1,59 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Report processing: the two chains a run configuration can build
+
+participant "workflow engine" as wf
+participant "pre-processing" as pre
+participant "compute" as comp
+participant "post-processing" as post
+participant "ores.storage" as store
+
+== Execute both ends: the full chain ==
+wf -> pre : reporting.v1.ops.preprocess
+pre -> store : generate and store reporting/inputs/{digest}.tar.gz
+pre --> wf : input location and digest
+wf -> comp : compute.v1.report.submit
+comp --> wf : batch
+wf -> post : reporting.v1.ops.postprocess
+post -> store : GET the output archive
+post --> wf : rows loaded
+
+== Substitute both ends: the chain used while dependencies are missing ==
+wf -> pre : reporting.v1.ops.use-prepared-input\n{archive location from the run configuration}
+note right of pre : nothing is read from trading or\nmarket data; nothing is generated
+pre -> store : HEAD the prepared archive
+store --> pre : the location and its digest
+pre --> wf : input location and digest
+wf -> comp : compute.v1.report.submit
+note over wf, comp : the same command, the same payload shape.\nSubmission cannot tell which chain it is in.
+comp --> wf : batch
+wf -> post : reporting.v1.ops.ignore-results
+note right of post : the output location is recorded,\nnothing is fetched or loaded
+post --> wf : output location recorded
+
+== The invariant ==
+note over wf, comp
+  In both chains the four phases that are never substituted
+  are identical: submission, execution, retrieval and
+  finalisation. A substitute changes what produced the input
+  and what consumes the output, and nothing else.
+end note
+
+@enduml

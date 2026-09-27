@@ -42,6 +42,14 @@ ores.reporting meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 | [[id:3732B9B9-EF38-423D-AF1E-A7FACB7A0E71][Bring ores.reporting to the clean standard]] | DONE | 2026-09-26 | 2026-09-27 | Work ores.reporting through the Component Clean Standard in order and record each item. |
 | [[id:92B0C404-B477-4284-942D-FC9C4A8CD807][Make the scheduler-triggered report execution correct]] | DONE | 2026-09-26 | 2026-09-27 | Determine how much of the report instance FSM and the report execution workflow is actually implemented, and make the scheduler-to-report trigger path work end to end. |
 | [[id:68BE2DDE-F82E-4CEB-9575-71C51E787EAC][Close the ores.reporting checklist]] | STARTED | 2026-09-27 | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:3F97E996-07C6-46F9-9296-E571EA78D4F5][Correct the ores.reporting entity models]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:A9875FC8-1F58-4654-B1FA-700B640734FC][Validate the instance's definition key and type the schedule]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:BC6EF127-E160-4FE1-A602-41BAB92A5F12][Decide and act on the report input bundle model]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:118EA950-13F2-48E2-9574-B67957AFBC87][Complete the reporting diagrams and write the audit record]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:1DBC799D-396F-4C9A-BF5A-5163FE05AC5A][Repair the registrar composition and generate the risk_report_config surface]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:5A2E6A1D-DA47-421C-B1E2-51A9665ECFBF][Make reporting's shell commands answer]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:537367BD-2294-498B-9BD5-707D6A67B8A0][Fix the three shared codegen template defects]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:AC5127C7-7A85-4549-B129-FEBC5452BC94][Scaffold the remaining ores.reporting clean-up]] | DONE | | 2026-09-27 | Task for: Clean ores.reporting to the component clean standard |
 
 * Notes
 

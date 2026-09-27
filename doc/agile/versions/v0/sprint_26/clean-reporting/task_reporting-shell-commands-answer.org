@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5A2E6A1D-DA47-421C-B1E2-51A9665ECFBF
+:END:
+#+title: Task: Make reporting's shell commands answer
+#+description: Task for: Clean ores.reporting to the component clean standard
+#+type: task
+#+level: s1
+#+filetags: :clean-reporting:sprint_26:v0:
+#+owner: marco
+#+branch: feature/reporting-shell-commands-answer
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close V04's reporting-owned causes: three generated recipes pass __none__ where a required uuid belongs, and the eight execution-step handlers return in silence when the workflow headers are absent, so the caller learns only that time passed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- No generated recipe requires the caller to supply a server-owned identifier.
+- A step handler that cannot attribute a message answers with an error instead of returning in silence.
+- The replay records every generated command as answering, or as unable to run with its reason.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

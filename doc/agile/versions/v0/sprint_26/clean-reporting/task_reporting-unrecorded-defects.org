@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: A9875FC8-1F58-4654-B1FA-700B640734FC
+:END:
+#+title: Task: Validate the instance's definition key and type the schedule
+#+description: Task for: Clean ores.reporting to the component clean standard
+#+type: task
+#+level: s1
+#+filetags: :clean-reporting:sprint_26:v0:
+#+owner: marco
+#+branch: feature/reporting-unrecorded-defects
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close two defects that no checklist item names: report_instance's definition_id is written without validation because the model declares no foreign key, and schedule_expression is a plain string where ores.scheduler types the same concept as a validated cron value type.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- An instance naming a definition that does not exist is rejected at the write, not later inside a workflow step.
+- A malformed schedule cannot be stored, or the reason it still can is recorded on the model.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

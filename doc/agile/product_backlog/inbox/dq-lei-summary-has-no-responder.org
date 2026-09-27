@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 6DCD61EF-E821-47A4-9AD1-EEE5CBF0D0C9
+:END:
+#+title: The dq LEI summary subject has no responder
+#+description: dq.v1.lei-entities.summary is declared and called by the shell's lei menu, but no handler subscribes it, so lei countries and lei entities always fail. Commit 5e9cabdbbc removed the handler and left the header, the shell commands and two SQL functions behind.
+#+type: capture
+#+level: cross
+#+filetags: :dq:protocol:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=dq.v1.lei-entities.summary= has no subscriber. The subject occurs exactly once
+in the tree, as the =nats_subject= of
+=get_lei_entities_summary_request= in
+=projects/ores.dq/api/include/ores.dq.api/messaging/lei_entity_summary_protocol.hpp=.
+Nothing in =projects/ores.dq/core/src/messaging/= subscribes it: the LEI
+registrar subscribes only =list=, =get= and =get_many=. The shell commands that
+send to it, =lei countries= and =lei entities= in
+=projects/ores.shell/application/src/app/commands/lei_commands.cpp=, therefore
+always fail.
+
+* Why
+
+Commit =5e9cabdbbc= deleted =lei_entity_handler::summary()= and its subscription
+when the LEI entities moved to the canonical generated stack, but left the
+header, the shell commands and the two SQL functions that answered the request.
+Those functions,
+=ores_dq_lei_entities_distinct_countries_fn= and
+=ores_dq_lei_entities_summary_by_country_fn= in
+=projects/ores.sql/create/dq/dq_lei_entities_query_functions_create.sql=, are
+dead alongside the subject.
+
+The capability the commands carry — the distinct countries an entity set covers,
+and the root entities of one country — is not what the generated =lei_entities=
+list provides, so retiring the commands loses a feature and restoring the
+handler keeps it. Restoring is a hand-written handler beside the operation
+model that now owns the wire types, which is the shape =ores.storage.objects=
+already uses: an operation model generates no handler.
+
+* References
+
+- =projects/ores.dq/core/src/messaging/lei_entity_registrar.cpp= — the
+  subscriptions that do exist.
+- =projects/ores.dq/core/src/messaging/registrar.cpp= — the LEI composition
+  point.
+
+* See also
+
+- [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]]
+- [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][Stop ores.shell menus from silently shadowing each other]]

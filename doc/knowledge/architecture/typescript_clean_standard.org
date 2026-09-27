@@ -175,7 +175,7 @@ value, and there is no second representation downstream.
 | Id    | Applies to | Item | Evidence |
 |-------+------------+------+----------|
 | TS-R01 | Generated | Every generated file carries the generated marker, and no hand-written file carries it. | The marker against the census |
-| TS-R02 | Generated | No generated file is edited by hand, and none is formatted by a different tool from the one that wrote it. Either the generator emits canonical output, or the generated paths are excluded from the formatter. | =git diff= after regeneration; =.prettierignore=, or a formatting step inside the generator |
+| TS-R02 | Generated | No generated file is edited by hand, and none is formatted by a different tool from the one that wrote it. Either the generator emits canonical output, or the generated paths are excluded from the formatter. | =git diff= after regeneration; the prettier step inside the generator, which the drift gate then depends on |
 | TS-R03 | Generated | Regeneration is byte-identical to the checked-in tree, and idempotent: a second run changes nothing. | =check_component_drift.py --dry-run=, run twice |
 | TS-R04 | All | A generator defect is fixed in the template, with a regression test in the codegen suite. | The codegen suite |
 | TS-R05 | All | The generated TypeScript compiles under the same strictness as the hand-written code. | =npm run typecheck=, over the generated tree included |
@@ -185,7 +185,7 @@ value, and there is no second representation downstream.
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
 |-------+------------+------+----------|
-| TS-H01 | All | Formatting is mechanical and gated: the configuration is committed, the whole component passes the check, and the check runs on a pull request. | =prettier --check .= for the check itself, and the CI workflow once it runs that check. It does not today, so this item needs a configuration, a formatted tree and a workflow step, in that order. |
+| TS-H01 | All | Formatting is mechanical and gated: the configuration is committed, the whole component passes the check, and the check runs on a pull request. | =prettier --check .=, and the =Format check= step in =typescript.yml= |
 | TS-H02 | All | No dead code, no commented-out code, no unused variable or export. | =@typescript-eslint/no-unused-vars=; the census; review |
 | TS-H03 | All | Comments follow the project comment rules: sparse, above the code, no edit history, and no narration of what the next line already says. | A comment review pass |
 | TS-H04 | All | A file that exports one thing is named for it. A boolean reads as a predicate. A type is a noun. | =eslint-plugin-check-file= for the file name; review for the rest |
@@ -201,11 +201,11 @@ value, and there is no second representation downstream.
 | TS-V01 | All | Every package typechecks, and no strictness flag was weakened to make it pass. | =npm run typecheck= |
 | TS-V02 | All | Every package's tests pass. Record the file count and the case count. | =npm test= |
 | TS-V03 | All | The component builds: the browser bundle and the server. | =npm run build= |
-| TS-V04 | All | The format check passes over the whole component, generated files included or excluded by decision rather than by accident. | =npm run format:check= |
+| TS-V04 | All | The format check passes over the whole component, generated files included or excluded by decision rather than by accident. | =npm run format:check=, green. One exclusion, named in =.prettierignore= with its reason: refdata's generated protocol directory, which the render disagrees with. |
 | TS-V05 | All | The lint gate is green: a flat ESLint configuration over the type-checked rule set, with the framework overrides the packages need. | =npm run lint=. The script does not exist yet, and neither does the configuration, so this item is unproved until both are added; the audit below records that. |
 | TS-V06 | All | The declared engine floor is not below any installed tool's floor. | =node -p= against each tool's =package.json= |
 | TS-V07 | Browser | The client runs against the live fleet: sign in, and the journey under test completes. A mock or a unit test does not prove this. | The verification script against a running stack |
-| TS-V08 | All | Every gate above runs on a pull request that touches the component. | The TypeScript workflow runs =typecheck= and =test= on those paths today; =build=, =format:check=, =lint=, coverage and the live-fleet check must be added to it, so this item is met when that workflow names them all. |
+| TS-V08 | All | Every gate above runs on a pull request that touches the component. | The TypeScript workflow runs =typecheck=, =format:check= and =test= on those paths today; =build=, =lint=, coverage and the live-fleet check are still missing, so the item stays open. |
 
 ** What the first audit found
 
@@ -264,6 +264,48 @@ One item is worth stating because it is easy to get wrong.
 parameter property, and does /not/ reject a =declare enum=. That was
 checked by compiling each form, which is why TS-T09 leans on both the
 flag and the rule.
+
+** What changed since the first audit
+
+Measured on 2026-09-27 at =0df6665001=, the commit that lands the
+formatting. The tree is that commit's, so every figure below is a
+measurement rather than an intention.
+
+| What | Value | Command |
+|------+-------+---------|
+| The format gate | green | =npm run format:check= |
+| ... of which generated | 0 of 306 | the same list, =src/generated/= kept |
+| A tracked prettier configuration | one, =.prettierrc.yaml= at the repository root | =find . -name '.prettierrc*'= |
+| The formatter inside the render | =prettier_format_files=, called beside =clang_format_files= | =projects/ores.codegen/src/codegen/generate.py= |
+| Files the one-off format touched | 216: 148 generated, 68 hand-written | =git diff --diff-filter=M --name-only= |
+| Generated files the render no longer produces | 1, deleted | =git diff --diff-filter=D --name-only= |
+| The workflow that runs the check | =typescript.yml=, a =Format check= step between the typecheck and the tests | the workflow |
+| The codegen suite | 927 cases, including 5 for the step | =python3 -m pytest projects/ores.codegen/tests -q= |
+
+Four items move, and one of them only in part.
+
+- *TS-R02* is met by the first branch it offered. The generator formats its
+  own output, so no generated file is formatted by a tool other than the one
+  that wrote it, and the templates never have to be prettier-shaped.
+- *TS-H01* is met. The configuration is committed, the tree passes, and the
+  check runs on a pull request.
+- *TS-V04* is met with one exclusion, which is the "by decision" this item
+  asks for rather than an accident: eighteen files of refdata's generated
+  protocol tree are excluded, because the render disagrees with them about
+  content, and formatting a file the drift sweep then finds changed fails that
+  gate. The reason is written in =.prettierignore= beside the pattern, and the
+  exclusion goes when refdata is regenerated.
+- *TS-V08* stays open, closer than it was. The workflow now names =typecheck=,
+  =format:check= and =test=; =build=, =lint=, coverage and the live-fleet check
+  are still missing.
+
+One conclusion in the first audit needs correcting, because the words were
+read too narrowly. It said the generated tree "should be the generator's
+business, not the formatter's", which this work took to mean the generated
+tree stays unformatted. The two are different: the generator's business can
+include running the formatter, and now it does. The 306 generated files are
+prettier-shaped because the render makes them so, not because anyone
+formatted them by hand.
 
 * See also
 

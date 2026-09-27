@@ -21,11 +21,11 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The story is scaffolded. Nothing is formatted yet: the check is red on every generated file and no configuration exists. |
-| Waiting on    | Nothing.                               |
-| Next          | Commit the style, add the render step, format the tree, and gate the check. |
+| Now           | The style is committed, the render formats its own output, the tree passes the check, and the check runs on a pull request. The drift gate is clean. |
+| Waiting on    | Nothing. The story is complete. |
+| Next          | Nothing. refdata's drifted projection and the regenerate-all hazard are captures. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -42,7 +42,7 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:06C72448-F226-4D00-9C29-A1A09A38FFCB][Scaffold story: Format the generated TypeScript with prettier]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E2916B0D-F652-4F9D-B664-A828F10916D6][Format the generated TypeScript with prettier]] | STARTED | 2026-09-27 | | Commit the prettier style, run prettier from the TypeScript render the way the C++ render runs clang-format, format the tree once, and gate the check in CI. |
+| [[id:E2916B0D-F652-4F9D-B664-A828F10916D6][Format the generated TypeScript with prettier]] | DONE | 2026-09-27 | 2026-09-27 | Commit the prettier style, run prettier from the TypeScript render the way the C++ render runs clang-format, format the tree once, and gate the check in CI. |
 
 * Decisions
 
@@ -73,4 +73,25 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
   its own item in the standard, and this story only closes the formatting ones.
 - The C++ tree, which clang-format and =nightly-format.yml= already own.
 - The templates' own whitespace. The formatter normalises the output, so a
-  template that emits ragged indentation stops mattering.
+  template that emits ragged indentation stops meaning anything.
+
+* Result
+
+prettier is the second step of the TypeScript render, as clang-format is the
+second step of the C++ render, and the format check is a gate on a pull
+request.
+
+The style is committed in =.prettierrc.yaml= and applies the C++ widths, so one
+style governs both languages. The tree is formatted: 216 files, 148 of them
+generated. The generator and the drift gate agree on formatted bytes by
+construction, which is what lets the gate stay a byte comparison.
+
+Four items of the [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean
+Standard]] move: TS-R02, TS-H01 and TS-V04 are met, and TS-V08 is closer but
+still open. The standard's first audit is corrected where it was read too
+narrowly, and its new section carries the numbers.
+
+Two things found on the way are captures rather than work: the documented
+regenerate-all command generates components that do not project, and refdata's
+generated wire projection is drifted. The second is why refdata's protocol
+directory is excluded from the check, by name and with its reason.

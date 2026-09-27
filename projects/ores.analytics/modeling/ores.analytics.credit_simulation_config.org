@@ -1,0 +1,238 @@
+:PROPERTIES:
+:ID: 9F2C7A31-5D48-4B96-A1E7-0C3B6E8D2451
+:END:
+#+title: ores.analytics.credit_simulation_config
+#+description: Codegen entity model for the analytics =credit_simulation_config= table. The ORE credit simulation document root, its risk block and the entities that migrate.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: An ORE credit simulation configuration.
+#+entity_singular: credit_simulation_config
+#+entity_plural: credit_simulation_configs
+#+entity_title: Credit Simulation Config
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+One =CreditSimulation= document. The root carries the =Risk= block as typed
+columns and owns the entities that migrate; the matrices are shared by name,
+so they are their own table and an entity points at one.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: analytics
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   uuid-identified-lookup
+:tablename: ores_analytics_credit_simulation_configs_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the configuration.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name of the configuration, which is ours and not ORE's.
+
+** market
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The market risk mode the run uses.
+
+** credit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The credit risk mode the run uses.
+
+** zero_market_pnl
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: true
+:END:
+
+Whether the market profit and loss is zeroed.
+
+** evaluation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The evaluation date or rule the run uses.
+
+** double_default
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: true
+:END:
+
+Whether double default is modelled.
+
+** seed
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:END:
+
+The Monte Carlo seed.
+
+** paths
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:END:
+
+The number of Monte Carlo paths.
+
+** credit_mode
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The credit simulation mode.
+
+** loan_exposure_mode
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+How loan exposure is computed.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_simulation_configs_tbl
+:END:
+
+* Foreign keys
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: config
+:entity_plural_short:   configs
+:entity_singular_words: credit simulation configuration
+:entity_plural_words:   credit simulation configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cfg
+:END:
+
+** Table display
+
+| Column      | Header      |
+|-------------+-------------|
+| name        | Name        |
+| seed        | Seed        |
+| paths       | Paths       |
+| version     | Version     |
+| modified_by | Modified By |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.analytics.api/domain/credit_simulation_config.hpp
+:domain_class:            analytics::domain::credit_simulation_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_config_protocol.hpp
+:collection_name:         credit_simulation_configs
+:item_var:                credit_simulation_config
+:key_field:               name
+:get_request_class:       analytics::messaging::list_credit_simulation_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_configs_response
+:get_message_type:        list_credit_simulation_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_config_response
+:save_message_type:       put_credit_simulation_config_request
+:save_request_item_field: credit_simulation_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_config_response
+:delete_message_type:     delete_credit_simulation_config_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: false
+:has_explorer_api:        true
+:has_export_macro:        true
+:settings_group:          Credit Simulation ConfigListWindow
+:window_title:            Credit Simulation Config
+:icon:                    Credit Simulation Config
+:END:
+
+*** Detail fields
+
+| field | label | widget    | type   | is_key | is_required | placeholder |
+|-------+-------+-----------+--------+--------+-------------+-------------|
+| name  | Name  | line_edit | string | true   | true        | Enter name  |
+
+*** Columns
+
+| enum_name  | field       | header      | type   | width |
+|------------+-------------+-------------+--------+-------|
+| Name       | name        | Name        | string | 220   |
+| Seed       | seed        | Seed        | int    | 90    |
+| Paths      | paths       | Paths       | int    | 90    |
+| Version    | version     | Version     | int    | 80    |
+| ModifiedBy | modified_by | Modified By | string | 120   |
+
+** Paste blocks
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

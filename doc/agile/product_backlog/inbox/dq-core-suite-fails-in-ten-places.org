@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FD4F9DD4-F0BD-40EC-9151-6D00519FCE52
+:END:
+#+title: The dq core suite fails in ten places on main
+#+description: ores.dq.core.tests reports 101 of 111 cases on main at d053ef068d, in three groups. Seven are generators_tests.cpp lines 138, 165, 222, 259, 287, 314 and 369, each asserting sut.version == 1 and getting 0, so the generator and the table disagree on where the version starts. Two are the lei entity and lei relationship eventing tests, whose repository read names ores_dq_lei_entities_tbl and ores_dq_lei_relationships_tbl, tables the artefact migration replaced. One is change_reason_eventing_integration_tests.cpp:110, refused with 'Invalid change_reason_category: data_correction', a category the seed no longer creates. Pre-existing debt from the dq migration, confirmed by two full runs.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -253,6 +253,14 @@ owner.
 
 ** 3. Classify the unmodelled hand-written domain types
 
+Done: =evidence/pr3_m05_classification.txt=. Five of the twenty-four
+already have a model, as field groups; nine are models to author; ten are
+messages rather than entities, by M05; and none is infrastructure, so no
+type needed a recorded reason for staying hand-written. The task's "no
+model" was true of the B02 census of entity models and not of the
+meta-model as a whole, which is why five field groups appeared on both
+lists.
+
 Twenty-four hand-written domain types have no model:
 =activity_type=, =fpml_event_type=, =commodity_instrument=,
 =composite_instrument=, =composite_leg=, =credit_instrument=,

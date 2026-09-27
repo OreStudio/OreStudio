@@ -102,7 +102,8 @@ It is recorded in the story's Decisions and not filed as a task of its own.
   which is why this changes the template rather than the records already written.
   Sprint 26 holds 148 task records, counted with
   =git ls-tree -r --name-only HEAD doc/agile/versions/v0/sprint_26/ | grep -cE '/task[^/]*\.org$'=,
-  or 147 at the branch point with this task's own record set aside. An earlier draft
+  and 147 at the branch point, which simply predates this task's record. An earlier
+  draft
   of this very task said 128, from an =ls= glob that misses a level; the verification
   caught it, which is the failure this change exists to prevent.
 - 6 of the 147 task records in sprint 26 at the branch point reference an =evidence/= file, and 94

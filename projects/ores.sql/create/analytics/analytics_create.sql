@@ -51,6 +51,8 @@
 -- Credit simulation transition matrices (named, reusable)
 \ir ./analytics_credit_simulation_matrix_configs_create.sql
 \ir ./analytics_credit_simulation_matrix_configs_notify_trigger_create.sql
+\ir ./analytics_credit_simulation_matrix_state_configs_create.sql
+\ir ./analytics_credit_simulation_matrix_state_configs_notify_trigger_create.sql
 
 -- Credit simulation entities (one row per migrating entity)
 \ir ./analytics_credit_simulation_entity_configs_create.sql

@@ -37,6 +37,9 @@
 \ir ./analytics_credit_simulation_entity_configs_notify_trigger_drop.sql
 \ir ./analytics_credit_simulation_entity_configs_drop.sql
 
+\ir ./analytics_credit_simulation_matrix_state_configs_notify_trigger_drop.sql
+\ir ./analytics_credit_simulation_matrix_state_configs_drop.sql
+
 \ir ./analytics_credit_simulation_matrix_configs_notify_trigger_drop.sql
 \ir ./analytics_credit_simulation_matrix_configs_drop.sql
 

@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
     "app/commands/synthetic/folder_commands.cpp"
     "app/commands/synthetic/fx_spot_generation_config_commands.cpp"
@@ -28,7 +31,7 @@ set(files
     "app/commands/synthetic/yield_curve_process_type_commands.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/folder_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/fx_spot_generation_config_commands.hpp"

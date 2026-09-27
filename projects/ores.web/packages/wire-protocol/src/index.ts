@@ -132,6 +132,9 @@ export type {
 export { changeReasonPageSchema, changeReasonSchema } from './operations.js';
 export type { ChangeReason } from './operations.js';
 
+export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';
+export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
+
 export {
     imageInfoSchema,
     listImagesRequestSchema,

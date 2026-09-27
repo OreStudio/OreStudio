@@ -44,6 +44,7 @@ import {
     toWireTimestamp,
     loginResultSchema,
     selectPartyRequestSchema,
+    seedProfilesResponseSchema,
     sessionViewSchema,
     NotAuthenticatedError,
     type LoginOutcome,
@@ -456,6 +457,22 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw new NotAuthenticatedError('Session ended during party selection');
         }
         return sessionResponse(activated);
+    });
+
+    /**
+     * The starting points a new tenant may be provisioned from.
+     *
+     * The tenant journey opens on them, and they are data: the two that exist
+     * today are seeded rows, and a third profile is a row rather than a screen
+     * change. Each one travels with the step kinds it orders and the parameters
+     * its form declares, because the card counts them and the form is built
+     * from the schema.
+     */
+    server.get('/api/seed-profiles', async (request) => {
+        const session = requireSession(request);
+        return seedProfilesResponseSchema.parse({
+            profiles: await session.client.seedProfiles(),
+        });
     });
 
     /**

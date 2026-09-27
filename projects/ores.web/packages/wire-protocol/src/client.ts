@@ -25,6 +25,7 @@ import { WireCodec } from './codec.js';
 import type { PartySummary } from './domain.js';
 import {
     NotAuthenticatedError,
+    OperationFailedError,
     ServerError,
     SessionExpiredError,
     type ProtocolError,
@@ -36,6 +37,12 @@ import {
     createInitialAdminRequestSchema,
     createInitialAdminResponseSchema,
     emptyRequestSchema,
+    listSeedProfileChildrenRequestSchema,
+    listSeedProfilesRequestSchema,
+    seedProfilePageSchema,
+    seedProfileParameterPageSchema,
+    seedProfileStepPageSchema,
+    toSeedProfileChoice,
     loginRequestSchema,
     loginResponseSchema,
     logoutResponseSchema,
@@ -46,6 +53,7 @@ import {
     httpInfoResponseSchema,
     listAccountsRequestSchema,
     type LoginResponse,
+    type SeedProfileChoice,
     type WireAccountPage,
 } from './operations.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
@@ -243,6 +251,75 @@ export class OresClient {
             accountId: reply.account_id,
             tenantId: reply.tenant_id,
         };
+    }
+
+    /**
+     * The starting points tenant provisioning offers.
+     *
+     * Three reads joined into one answer: the profile page carries no
+     * children, and the screen that chooses a starting point shows each
+     * profile, the step kinds it orders and the form it declares together.
+     * The join belongs here rather than in the browser, which cannot name a
+     * subject at all.
+     *
+     * The profile page is ordered by the key, so the answer is sorted by the
+     * order each profile declares: that column exists to order the cards, and
+     * two deployments' profiles need not be created in that order. Each
+     * profile's children are already in the order the server read them.
+     */
+    async seedProfiles(
+        input: { readonly limit?: number } = {},
+    ): Promise<readonly SeedProfileChoice[]> {
+        const page = await this.#authenticatedCall(
+            SUBJECTS.listSeedProfiles,
+            listSeedProfilesRequestSchema.parse({ limit: input.limit ?? 50 }),
+            seedProfilePageSchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (page.result.outcome !== 'ok') {
+            throw new OperationFailedError(SUBJECTS.listSeedProfiles, page.result.message);
+        }
+
+        const choices: SeedProfileChoice[] = [];
+        for (const profile of page.seed_profiles) {
+            const request = listSeedProfileChildrenRequestSchema.parse({
+                seed_profile_id: profile.id,
+            });
+            const steps = await this.#authenticatedCall(
+                SUBJECTS.listSeedProfileSteps,
+                request,
+                seedProfileStepPageSchema,
+                { timeoutMs: this.#timeouts.fastMs },
+            );
+            if (steps.result.outcome !== 'ok') {
+                throw new OperationFailedError(SUBJECTS.listSeedProfileSteps, steps.result.message);
+            }
+            const parameters = await this.#authenticatedCall(
+                SUBJECTS.listSeedProfileParameters,
+                request,
+                seedProfileParameterPageSchema,
+                { timeoutMs: this.#timeouts.fastMs },
+            );
+            if (parameters.result.outcome !== 'ok') {
+                throw new OperationFailedError(
+                    SUBJECTS.listSeedProfileParameters,
+                    parameters.result.message,
+                );
+            }
+            choices.push(
+                toSeedProfileChoice(
+                    profile,
+                    steps.seed_profile_steps,
+                    parameters.seed_profile_parameters,
+                ),
+            );
+        }
+
+        return choices.sort((left, right) =>
+            left.order === right.order
+                ? left.code.localeCompare(right.code)
+                : left.order - right.order,
+        );
     }
 
     /**

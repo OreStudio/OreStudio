@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 00CDF787-728D-4422-B9D5-2B7C00C129A1
+:END:
+#+title: Task: Read the seed profiles through the BFF
+#+description: The tenant journey's first step shows the starting points, and the browser reaches the server through one hand-written BFF route per step. Add the route that returns the profiles with their ordered steps and their declared parameters, and the wire-client method behind it.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/read-the-seed-profiles-through-the-bff
+#+pr: 2310
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The choose-a-starting-point step needs each profile with its steps and its parameters, and the browser holds no profile of its own. Add the read end to end: a wire-client method over the generated seed profile subjects, a hand-written BFF route that parses the generated shape, and the tests that call both the way their callers do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- GET /api/seed-profiles returns every profile with its ordered steps and its declared parameters, parsed from the generated schemas.
+- The wire client gains a method over iam.v1.seed_profiles.list, iam.v1.seed_profile_steps.list_by_seed_profile_id and iam.v1.seed_profile_parameters.list_by_seed_profile_id, and the BFF stays the browser's only HTTP surface.
+- The route and the client have tests that call them the way their callers do, asserting a literal expected response.
+- The new route is recorded in the component specification and in the BFF's own route documentation.
+- The workspace typechecks, passes the format check, tests green, and builds.
+
+* Plan
+
+1. Define the wire shapes and the joined shape once, in
+   =@ores/wire-protocol=: the three response pages, the two request shapes, and
+   =seedProfileChoiceSchema=, which is what the browser parses. The profile's
+   step arguments stay on the server — the kind fixes their shape in code — so
+   the joined shape carries each step's kind and position and no more.
+2. Add the wire-client method. It reads the profile page, then each profile's
+   steps and parameters, joins them, and sorts by the order the profile
+   declares: the profile page comes back in key order, because the generated
+   read orders by key and the profile's own column is what orders the cards.
+3. Add the hand-written BFF route, authenticated like every other read that
+   needs a session, and record it in the component specification's route table.
+4. Test both ends as their callers use them: the client against a scripted
+   transport asserting the joined literal and the subjects it called, and the
+   route through Fastify's inject with a session and a fake client asserting
+   the served body and the 401.
+5. Prove it on the live deployment: sign in through the BFF and read the route.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Tests added | 5 (3 in the client suite, 2 route tests) | =npm test= in =projects/ores.web= | =b5a85365b8= (working tree) |
+| TypeScript suites, whole workspace | 3 packages, 117 tests passed (bff 34, web 44, wire-protocol 39) | =npm test= in =projects/ores.web= | =b5a85365b8= (working tree) |
+| Typecheck and format | 0 errors; all files match Prettier | =npm run typecheck=, =npm run format:check= | =b5a85365b8= (working tree) |
+| Whole-tree build | exit 0 | =compass build= | =b5a85365b8= (working tree) |
+| Org corpus | filetags and generator markers valid | =compass lint= | =b5a85365b8= (working tree) |
+| Route on the live deployment | both profiles, in declared order, with their steps and parameters | =curl -c jar -X POST .../api/session= then =curl -b jar .../api/seed-profiles= | =b5a85365b8= (working tree) |
+| Route without a session | 401 | =curl .../api/seed-profiles= | =b5a85365b8= (working tree) |
+
+* Notes
+
+- *The join lives in the client.* Three subjects answer the read and the browser
+  may name none of them, so the method that composes them belongs next to the
+  subjects. The BFF route is then a parse and a return, which is what makes it
+  reviewable against the others.
+- *The arguments stay on the server.* A step row carries the arguments its kind
+  consumes, and the kind fixes their shape in code. The joined shape carries the
+  kind and its position, which is what the starting-point card shows, and no
+  copy of a handler's contract crosses to the browser.
+- *The order is the profile's.* The generated paged read orders by key, so the
+  two profiles arrive in whatever order their surrogates sort in. The method
+  sorts by the =display_order= the model carries, because that column exists to
+  order the cards; the test is written so the seeded order and the key order
+  differ, which is what makes the sort observable.
+- *The route is not called by the browser yet.* The journey screen adds the
+  call; the component specification already says a route no module calls is
+  served and reachable, and a screen adds the call it needs.
+- *Two bootstrap routes were missing from the specification's table.* They were
+  added by an earlier task in this story and the table was not updated; this
+  change adds all three rows, so the table is the browser's whole authority
+  again.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2310][#2310]] | [web] Read the seed profiles through the BFF |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The browser can read the starting points. =GET /api/seed-profiles= answers with
+every profile, each carrying the step kinds it orders and the parameters its
+form declares, parsed from the schema the wire and the browser share.
+
+=@ores/wire-protocol= gained the three response pages, two request shapes, the
+joined =seedProfileChoiceSchema= and the =OresClient.seedProfiles()= method
+that composes the three subjects and sorts the answer by the order each profile
+declares. =@ores/bff= gained the authenticated route, which is a parse and a
+return. The component specification's route table gained this route and the two
+bootstrap routes an earlier task added without recording them.
+
+Measured on the live deployment, signed in through the BFF:
+
+#+begin_example
+GET /api/seed-profiles
+  empty_operational, order 10: publish_bundle, import_lei_hierarchy,
+    provision_party; parameters counterparty_count (integer, default 50,
+    required) and gleif_root_lei (string, no default, optional)
+  acme_demo, order 20: all six step kinds; no parameters
+GET /api/seed-profiles with no session
+  401
+#+end_example
+
+Both ends are tested the way their callers use them: the client against a
+scripted transport, asserting the joined literal and the six subjects it
+called, and the route through Fastify's inject with a live session and a fake
+client, asserting the served body and the 401. The whole workspace typechecks,
+formats clean, passes 117 tests across the three packages, and the tree builds.
+
+Left to the screens that own them: no browser module calls the route yet, and
+the provision request that consumes a chosen profile is step 6 of the story.

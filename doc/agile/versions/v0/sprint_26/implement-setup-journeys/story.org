@@ -96,6 +96,7 @@ state and the progress are real.
 | [[id:549C5E75-56B8-47B9-B365-9B9FC0F8D023][Create the first administrator from the setup screen]] | DONE | 2026-09-27 | 2026-09-27 | The setup screen creates the first administrator with no session, through a hand-written BFF route and a wire-client method, and the server closes bootstrap mode when it succeeds. |
 | [[id:F22E12E7-C099-4B6F-BD7A-024448F015A8][Default the administrator's identity on the setup screen]] | DONE | 2026-09-27 | 2026-09-27 | The setup form proposes super_admin and its system-scope address, so an empty installation needs only a password, and both fields stay editable. |
 | [[id:2888E3D3-CCC0-43B5-AEB4-6A20A5298188][Model the seed profile and seed the two profiles]] | DONE | 2026-09-27 | 2026-09-28 | The seed profile is registered data: a row orders step kinds from a fixed catalogue and declares the parameters its form takes. Empty operational and ACME demo become rows. |
+| [[id:00CDF787-728D-4422-B9D5-2B7C00C129A1][Read the seed profiles through the BFF]] | DONE | 2026-09-28 | 2026-09-28 | The tenant journey's first step shows the starting points, and the browser reaches the server through one hand-written BFF route per step. Add the route that returns the profiles with their ordered steps and their declared parameters, and the wire-client method behind it. |
 
 * Plan
 

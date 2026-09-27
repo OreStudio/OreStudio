@@ -74,10 +74,29 @@ std::chrono::year_month_day time_utils::parse_date(std::string_view s) {
 
     int y = 0, m = 0, d = 0;
 
-    if (s.size() == 8) {
+    if (s.size() == 8 && s[2] == '.') {
+        // DD.MM.YY, as ORE's CurveBuilding examples write it. Two-digit years
+        // are read as 20YY: the corpus is entirely 2020s, and a sliding window
+        // would guess differently for a file dated in the 1990s.
+        if (!parse_field(s.substr(0, 2), d) || !parse_field(s.substr(3, 2), m) ||
+            !parse_field(s.substr(6, 2), y))
+            throw std::invalid_argument("invalid date: " + std::string(s));
+        y += 2000;
+    } else if (s.size() == 8) {
         // YYYYMMDD
         if (!parse_field(s.substr(0, 4), y) || !parse_field(s.substr(4, 2), m) ||
             !parse_field(s.substr(6, 2), d))
+            throw std::invalid_argument("invalid date: " + std::string(s));
+    } else if (s.size() == 10 && s[2] == '.' && s[5] == '.') {
+        // DD.MM.YYYY
+        if (!parse_field(s.substr(0, 2), d) || !parse_field(s.substr(3, 2), m) ||
+            !parse_field(s.substr(6, 4), y))
+            throw std::invalid_argument("invalid date: " + std::string(s));
+    } else if (s.size() == 10 && s[2] == '-' && s[5] == '-') {
+        // DD-MM-YYYY. Unambiguous against YYYY-MM-DD, whose first field is four
+        // digits; both carry ten characters, so the separator positions decide.
+        if (!parse_field(s.substr(0, 2), d) || !parse_field(s.substr(3, 2), m) ||
+            !parse_field(s.substr(6, 4), y))
             throw std::invalid_argument("invalid date: " + std::string(s));
     } else if (s.size() == 10 && s[4] == '-' && s[7] == '-') {
         // YYYY-MM-DD

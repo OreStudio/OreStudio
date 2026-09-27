@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: E44D54EF-14D9-4010-A626-12AF1EDC8F26
+:END:
+#+title: Story: Add proper curve support to ores.marketdata
+#+description: Give ores.marketdata a first-class representation of a curve, so a bootstrapped curve is an entity with identity, provenance and a consumer rather than a derived series nothing reads back.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:marketdata:curves:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make a curve a thing ores.marketdata owns. Today a curve exists only as a
+side effect of one service: a `market_series` row stamped
+=derivation_kind='IR_CURVE_BOOTSTRAP'= with one =market_observation= per
+pillar. Nothing gives it identity, nothing records what it was built from,
+nothing tells a build apart from an observation, and nothing reads it back.
+
+The outcome this story delivers: a curve can be created, identified, read
+and asked about its provenance, without the reader having to know that it is
+stored as a series.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not started. Scoped by a read-only investigation on 2026-09-27, recorded below. |
+| Waiting on    | The ores.marketdata clean-up closing. This story should not start before it does, because it changes the data model the clean-up is still bringing under the standard. |
+| Next          | A deeper analysis: decide whether a curve becomes an entity of its own or stays a derived series with an explicit shape. |
+| Last touched  | 2026-09-27                               |
+
+* What exists today
+
+The findings below came from a read-only investigation. Each is grounded in
+code; the paths are the evidence.
+
+**A curve is a derived series, and nothing else.** A curve is created by
+=curve_republish_service::republish()= in
+=projects/ores.marketdata/service/src/app/curve_republish_service.cpp= (note
+=service/=, not =core/=). It stamps the pre-minted output series
+=derivation_kind = "IR_CURVE_BOOTSTRAP"= (:182), calls
+=quant::curve_bootstrap_engine::bootstrap()= (:224), and writes one
+=market_observation= per pillar (:296) plus =observation_lineage= rows
+(:299). Derivation kinds are seeded in
+=projects/ores.sql/populate/refdata/refdata_derivation_kinds_populate.sql=:
+=OBSERVED=, =IR_CURVE_BOOTSTRAP=, =CRM_DERIVATION=.
+
+**There is no curve table, no curve entity and no curve type.** The
+component's seven tables are series, the asset-class junction, observations,
+fixings, observation lineages, feed bindings and classification rules.
+=market_series= has no curve column: =marketdata_market_series_create.sql=
+carries only the key columns, =series_subclass=, and the derivation markers.
+=oresmd= declares =instrument_type::curve=, and no line of code references
+it.
+
+**A build is indistinguishable from an observation by shape.** There is no
+=reference_date= and no =build_kind= anywhere. The only markers are
+=derivation_kind= on the *series* and a =source= string of the form
+="ir_curve_bootstrap:<config id>"= on the *observation*. The seeded example
+=marketdata_market_series_fomc_populate.sql= shows the intended pairing: a
+=RATES=/=YIELD= input grid and a =YieldCurve=/=DISCOUNT= output series for
+the same qualifier.
+
+**The recipe lives in refdata, not marketdata.**
+=ir_curve_bootstrap_config= plus =ir_curve_bootstrap_pillar= hold the
+interpolation method, day-count convention, split tenor, curve family role
+(FUNDING or PROJECTION) and the ordered pillar list.
+=source_series_id= and =output_series_id= are *soft* references into
+marketdata's =market_series= — no foreign key, because the tables are in
+different components. A database check requires
+=source_series_id <> output_series_id=, so the first republish cannot
+reclassify the raw feed's own series and overwrite live data.
+
+**Nothing consumes a curve.** =curve_health_checker= has no production
+callers at all. =interpolate_discount_factor= is called only from inside the
+engine and its tests. The curve_snapshot reads
+(=marketdata.v1.curve-snapshot.get= and =.buckets=) are thin wrappers over
+=read_as_of= on one series' observations, so they work for any series and do
+not know a curve when they read one. The bootstrapped output series is
+write-only today.
+
+**A curve is reachable only by hand-crafted NATS.** The two requests
+=republish_curve_request= and =compute_curve_request= are registered at
+=application.cpp:202,208=, with permissions
+=marketdata::curve_bootstrap:republish= and =:compute=. There is no shell
+verb, no HTTP route, no web client and no scheduler job that publishes on
+either subject. The recipe table has no editing UI either: the model records
+that its real editor, =CurveBuilderWorkbench=, lived in the removed desktop
+client.
+
+**The design for doing this properly exists and was abandoned.** Sprint 25's
+=adopt-oresmd-native-market-data-identity= story proposed =curve_build= and
+=curve_point= tables — a build is one observation of a curve entity, and its
+points hang off it. That story was abandoned at sprint close on 2026-09-23
+and nothing implements it. The classes survive in
+=ores.marketdata.puml= under a "Target model" legend, marked =<<new>>=.
+
+**Three vocabularies are called a role, and two of them are called
+=curve_role=.** refdata's =curve_role= is DEPOSIT/FRA/SWAP/NONE and
+classifies an *instrument code*, not a curve; oresmd's =curve_role= is
+discount/projection/self_discounting; and
+=ir_curve_bootstrap_config.curve_family_role= is FUNDING/PROJECTION, where
+FUNDING does not mean discount. oresmd's =curve_role= is inert — parsed,
+carried, re-serialised, and branched on nowhere. Its one behavioural
+consumer in the whole tree is =feeds_conflict()= in
+=ores.synthetic/service/src/feed_controller.hpp=.
+
+**Nothing crosses the ORE boundary in either direction.** ORE builds a curve
+in memory for the duration of a run from =curveconfig.xml= (which quote keys,
+conventions, interpolation), =market.txt= (the values) and =todaysmarket.xml=
+(which to build). None of that configuration is stored here: the only reader
+of ORE's =curveconfiguration= model is a round-trip fidelity test. The
+quote-to-curve wiring itself — ORE's =Simple=, =AverageOIS=, =TenorBasis=,
+=CrossCurrency=, =ZeroSpread= segtypes — has no counterpart in this
+repository. Going the other way, =report_package_handler::prepare_package=
+describes itself as a stub that packs raw MsgPack rather than an ORE input
+package, =collect_results= is a pass-through stub, and
+=ores.ore/core/src/xml/document_kind.cpp= does not even classify a
+=curveconfig.xml= dropped into an import.
+
+**Where ORE's own source is, and where curves live in it.** The vendored copy
+under =external/ore/= ships examples, XSDs and prebuilt engine packages but
+*no* engine source, so none of the above can be answered from it — and an
+earlier pass at this investigation wrongly concluded the source was
+unavailable. It is a separate checkout:
+
+#+begin_example
+/home/marco/Vault/Development/ORE/Engine
+#+end_example
+
+The curve ground in that tree, for whoever picks this up:
+
+| What | Where |
+|------+-------|
+| The configuration classes | =OREData/ored/configuration/curveconfig.hpp=, =curveconfigurations.hpp=, and one =*curveconfig.hpp= per curve family |
+| The curve specification | =OREData/ored/marketdata/curvespec.hpp= |
+| Which curves a run builds | =OREData/ored/marketdata/todaysmarket.hpp= |
+| The implementations | =QuantExt/qle/termstructures/= (and =QuantLib/ql/termstructures/yield/=) |
+| The user guide | =Docs/UserGuide/parameterisation/curveconfig.tex=, =Docs/UserGuide/curve_configurations/yieldcurves.tex= |
+| The schema | =xsd/curveconfig.xsd= (the same file vendored here) |
+
+Any deeper analysis of what a curve is, or of what a lossless ORE export
+would have to reproduce, should read that tree rather than the vendored copy.
+
+* Acceptance
+
+- A curve is identifiable as a curve without knowing which strings to
+  combine. Whatever the representation, "is this a curve" and "which curve is
+  this" are answerable from the data.
+- A build records when it was built and against what, so two builds of the
+  same curve are distinguishable and a build is distinguishable from an
+  observation.
+- A curve's provenance is readable: what it was built from, by which recipe,
+  and when.
+- At least one production consumer reads a curve, or the story says in the
+  record why none does.
+- The three role vocabularies are either reconciled or documented where a
+  reader meets them, because two of them share a name.
+- No new name collision between this work and the oresmd layer's existing
+  =curve= vocabulary.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+**Why this is a story and not a task under the clean-up.** The clean-up
+brings ores.marketdata up to the Component Clean Standard. This changes the
+data model, adds an entity or a shaped representation, and needs a consumer
+that does not exist. Folding it into the clean-up would put a modelling
+decision inside a mechanical PR.
+
+**Why it does not start yet.** The clean-up is still moving the models,
+projections and import boundary. Landing a curve representation on top of a
+model that is still in motion would mean doing it twice.
+
+* Out of scope
+
+- The ORE handoff — writing =curveconfig.xml=, =market.txt=, =todaysmarket.xml=
+  and reading =curves.csv= back. It is a prerequisite for a lossless curve
+  round trip and it is large enough to be its own story, but it is not this
+  one.
+- Changing how ORE itself builds curves, and any ORE-side configuration
+  format.
+- The synthetic generator's curve feeds (=ir_curve_feed=,
+  =ir_curve_generation_config=). They publish curve *points* as ticks and are
+  a producer, not a representation.
+
+* Open questions for the deeper analysis
+
+- **An entity or a shaped series?** Sprint 25 proposed =curve_build= and
+  =curve_point= tables. The shipped implementation reused the observation
+  tables instead. Which is right, given that a curve's points must be
+  bitemporal and versioned the way observations already are?
+- **Does a curve need its own table when it is one series plus points?** If
+  not, what is the minimal thing that gives it identity — a marker column, a
+  reserved =series_type=, a view, or the oresmd URI?
+- **What consumes a curve?** Nothing does today. Until something does, every
+  representation decision is speculative, so the analysis should establish the
+  first real consumer before choosing a shape.
+- **Does the oresmd =curve= vocabulary become load-bearing here?**
+  =instrument_type::curve= is dead and =to_curve_key()= is gated on
+  =type=fixing=. If a curve gains identity, is the URI its identity, and does
+  =to_curve_key() then mean what its name says?
+- **Is =IR_CURVE_BOOTSTRAP= the whole story?** =CRM_DERIVATION= is seeded and
+  unused, so there is at least one other derived kind waiting. Does the shape
+  chosen generalise to it?
+- **Where does the recipe belong?** It is in refdata today behind soft
+  references. Should a curve and its recipe live in one component?
+- **How does a curve relate to =feed_binding= and =observation_lineage=?=
+  Lineage is documented as deliberately generic, and feed bindings map a raw
+  producer channel to a series. A curve's inputs are a series, not a channel.
+
+* References
+
+- ORE engine source: =/home/marco/Vault/Development/ORE/Engine= — the real
+  checkout, not the vendored copy under =external/ore/=. Start at
+  =OREData/ored/configuration/curveconfig.hpp= for what a curve config is, and
+  =QuantExt/qle/termstructures/= for how one is built.
+- [[id:F9E8C6BE-9606-48E5-AEE3-431642C0EB28][Task: Bring ores.marketdata to the clean standard]] — the work that must close first.
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]
+- =doc/agile/versions/v0/sprint_26/clean-marketdata/analysis.org= — the
+  clean-up's analysis, including the PR 4 boundary work this story depends on.
+- =doc/knowledge/domain/interest_rate_curves.org= — what a curve is.
+- =doc/knowledge/domain/funding_and_projection_curves.org= — the two-tier
+  family the recipe encodes.
+- =doc/knowledge/domain/curve_sets_storage.org= — the storage-grouping
+  concept, which is not what this story is about but shares the vocabulary.
+- =doc/knowledge/domain/curve_point_provenance.org= — provenance, the second
+  acceptance bullet.

@@ -142,6 +142,9 @@ end $$;
 -- =============================================================================
 alter table ores_marketdata_market_observations_tbl enable row level security;
 
+drop policy if exists market_observations_tbl_tenant_isolation_policy
+    on ores_marketdata_market_observations_tbl;
+
 create policy market_observations_tbl_tenant_isolation_policy
 on ores_marketdata_market_observations_tbl
 for all using (

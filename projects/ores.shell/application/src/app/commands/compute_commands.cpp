@@ -448,11 +448,10 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
     const auto batch_id_str = boost::uuids::to_string(batch->id);
 
     // The shared input bundle: uploaded once, referenced by every workunit
-    // of the batch. The key is batch-scoped, so compute_storage::input_key
-    // (workunit-scoped) does not apply; download-input reverses the same
-    // convention. The tarball is uploaded verbatim, matching the Qt UI
-    // convention of uploading the file as-is.
-    const auto key = "input/" + batch_id_str + ".tar.gz";
+    // of the batch, so its key is batch-scoped rather than workunit-scoped.
+    // The tarball is uploaded verbatim, matching the Qt UI convention of
+    // uploading the file as-is.
+    const auto key = ores::compute::net::compute_storage::batch_input_key(batch_id_str);
     const auto input_uri = ores::storage::net::storage_paths::make_object_path(
         ores::compute::net::compute_storage::bucket, key);
 

@@ -16,15 +16,17 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Hand-authored: this part is header-only, so the generated library profile
-# (which globs for sources) cannot serve it. The shape follows
-# ores.history/api/src/CMakeLists.txt.
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_api_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.storage.api")
+set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-
+# Headers only: the source glob below has nothing to compile, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
 add_library(${lib_target_name} INTERFACE)
 
 target_include_directories(${lib_target_name} INTERFACE
-    ${CMAKE_SOURCE_DIR}/projects/ores.storage/api/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 install(TARGETS ${lib_target_name})

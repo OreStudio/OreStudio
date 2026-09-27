@@ -30,6 +30,9 @@
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_report_definitions_tbl enable row level security;
 
+drop policy if exists report_definitions_tenant_isolation_policy
+    on ores_reporting_report_definitions_tbl;
+
 create policy report_definitions_tenant_isolation_policy
 on ores_reporting_report_definitions_tbl
 for all using (
@@ -43,6 +46,9 @@ with check (
 -- When no party context is set (visible_party_ids is NULL), the policy
 -- passes through, preserving backward compatibility with service contexts
 -- that set only tenant context (e.g. report populators, test helpers).
+drop policy if exists report_definitions_party_isolation_policy
+    on ores_reporting_report_definitions_tbl;
+
 create policy report_definitions_party_isolation_policy
 on ores_reporting_report_definitions_tbl
 as restrictive
@@ -56,6 +62,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_configs_tbl enable row level security;
 
+drop policy if exists risk_report_configs_tenant_isolation_policy
+    on ores_reporting_risk_report_configs_tbl;
+
 create policy risk_report_configs_tenant_isolation_policy
 on ores_reporting_risk_report_configs_tbl
 for all using (
@@ -64,6 +73,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists risk_report_configs_party_isolation_policy
+    on ores_reporting_risk_report_configs_tbl;
 
 create policy risk_report_configs_party_isolation_policy
 on ores_reporting_risk_report_configs_tbl
@@ -96,6 +108,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_config_portfolios_tbl enable row level security;
 
+drop policy if exists risk_report_config_portfolios_tenant_isolation_policy
+    on ores_reporting_risk_report_config_portfolios_tbl;
+
 create policy risk_report_config_portfolios_tenant_isolation_policy
 on ores_reporting_risk_report_config_portfolios_tbl
 for all using (
@@ -104,6 +119,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists risk_report_config_portfolios_party_isolation_policy
+    on ores_reporting_risk_report_config_portfolios_tbl;
 
 create policy risk_report_config_portfolios_party_isolation_policy
 on ores_reporting_risk_report_config_portfolios_tbl
@@ -144,6 +162,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_config_books_tbl enable row level security;
 
+drop policy if exists risk_report_config_books_tenant_isolation_policy
+    on ores_reporting_risk_report_config_books_tbl;
+
 create policy risk_report_config_books_tenant_isolation_policy
 on ores_reporting_risk_report_config_books_tbl
 for all using (
@@ -152,6 +173,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists risk_report_config_books_party_isolation_policy
+    on ores_reporting_risk_report_config_books_tbl;
 
 create policy risk_report_config_books_party_isolation_policy
 on ores_reporting_risk_report_config_books_tbl
@@ -192,6 +216,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_report_instances_tbl enable row level security;
 
+drop policy if exists report_instances_tenant_isolation_policy
+    on ores_reporting_report_instances_tbl;
+
 create policy report_instances_tenant_isolation_policy
 on ores_reporting_report_instances_tbl
 for all using (
@@ -204,6 +231,9 @@ with check (
 -- Party isolation (RESTRICTIVE — ANDed with the permissive tenant policy).
 -- Same null-bypass semantics as report_definitions: when no party context
 -- is set, the policy passes through for compatibility with service contexts.
+drop policy if exists report_instances_party_isolation_policy
+    on ores_reporting_report_instances_tbl;
+
 create policy report_instances_party_isolation_policy
 on ores_reporting_report_instances_tbl
 as restrictive
@@ -216,6 +246,9 @@ for select using (
 -- Report Input Bundles
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_report_input_bundles_tbl enable row level security;
+
+drop policy if exists report_input_bundles_tenant_isolation_policy
+    on ores_reporting_report_input_bundles_tbl;
 
 create policy report_input_bundles_tenant_isolation_policy
 on ores_reporting_report_input_bundles_tbl

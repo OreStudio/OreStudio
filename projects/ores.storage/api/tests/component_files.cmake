@@ -21,5 +21,6 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
+    "object_keys_tests.cpp"
     "storage_paths_tests.cpp"
 )

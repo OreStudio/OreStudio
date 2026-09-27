@@ -22,77 +22,53 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- * Series Key Shape Table
+ * Workspace Table
  *
- * The key grammar of ORE market data, one row per series type. Every ORE
- * key follows the skeleton TYPE/METRIC/[QUALIFIER...]/[POINT_ID], and
- * this table says where the split falls: qualifier_depth counts the
- * segments after the metric that identify the series and stay stable
- * across market dates, and every remaining segment is the point (a tenor,
- * a strike, a surface coordinate).
- *
- * The table belongs to ores.ore because the grammar it records is
- * ORE's, not ours: ORE defines the file format and we only read it. It
- * replaces a compiled C++ table, so a type ORE adds later, or one a user
- * brings, is an inserted row rather than a rebuild. A type with no row is
- * not an error -- its key folds whole into the qualifier and still
- * reconstructs verbatim -- so an uncatalogued type never aborts an
- * import.
- *
- * Two invariants hold. The reader rejects an empty table, because an
- * empty table silently degrades every key into a series of its own. A row
- * that claims a point dimension and also carries a default point is
- * contradictory and is rejected, both by the reader and by the check
- * constraint below.
- *
- * The table carries an entity, a repository and its SQL, and nothing
- * else. It is a reference table that reads like configuration: one seeded
- * row per series type ORE defines. Nothing sends its subjects, serves its
- * handlers or drives its commands, so every facet that would build a
- * surface for them is disabled, and the repository the component keeps is
- * the whole of its use of this entity. ores.marketdata, the one real
- * consumer, reads it through that repository, in process.
+ * Workspaces provide Docker-layer-style inheritance: data not present in a
+ * workspace is resolved from the parent chain up to the Live workspace
+ * (ores_utility_live_workspace_id_fn()).
  */
 
-create table if not exists "ores_ore_series_key_shapes_tbl" (
-    "series_type" text not null,
+create table if not exists "ores_workspaces_tbl" (
+    "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "qualifier_depth" integer not null,
-    "has_point_dimension" boolean not null,
-    "default_point" text not null default '',
-    "description" text not null,
+    "description" text null,
+    "source_path" text null,
+    "parent_workspace_id" uuid null,
+    "scope_portfolio_id" uuid null,
+    "owner_id" uuid not null,
+    "status_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, series_type, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        series_type WITH =,
+        id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("series_type" <> ''),
-    check (not ("has_point_dimension" and "default_point" <> ''))
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists series_key_shapes_version_uniq_idx
-on "ores_ore_series_key_shapes_tbl" (tenant_id, series_type, version)
+create unique index if not exists workspaces_version_uniq_idx
+on "ores_workspaces_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists series_key_shapes_series_type_uniq_idx
-on "ores_ore_series_key_shapes_tbl" (tenant_id, series_type)
+create unique index if not exists workspaces_id_uniq_idx
+on "ores_workspaces_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists series_key_shapes_tenant_idx
-on "ores_ore_series_key_shapes_tbl" (tenant_id)
+create index if not exists workspaces_tenant_idx
+on "ores_workspaces_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_ore_series_key_shapes_insert_fn()
+create or replace function ores_workspaces_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -105,9 +81,9 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores_ore_series_key_shapes_tbl"
+    from "ores_workspaces_tbl"
     where tenant_id = NEW.tenant_id
-      and series_type = NEW.series_type
+      and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -133,10 +109,10 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_ore_series_key_shapes_tbl"
+        update "ores_workspaces_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and series_type = NEW.series_type
+          and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -152,32 +128,15 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_ore_series_key_shapes_insert_trg
-before insert on "ores_ore_series_key_shapes_tbl"
-for each row execute function ores_ore_series_key_shapes_insert_fn();
+create or replace trigger ores_workspaces_insert_trg
+before insert on "ores_workspaces_tbl"
+for each row execute function ores_workspaces_insert_fn();
 
-create or replace rule ores_ore_series_key_shapes_delete_rule as
-on delete to "ores_ore_series_key_shapes_tbl" do instead (
-    update "ores_ore_series_key_shapes_tbl"
+create or replace rule ores_workspaces_delete_rule as
+on delete to "ores_workspaces_tbl" do instead (
+    update "ores_workspaces_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and series_type = OLD.series_type
+      and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
-);
-
--- =============================================================================
--- Row-level security: tenant isolation for Series Key Shape
--- =============================================================================
-alter table ores_ore_series_key_shapes_tbl enable row level security;
-
-drop policy if exists series_key_shapes_tbl_tenant_isolation_policy
-    on ores_ore_series_key_shapes_tbl;
-
-create policy series_key_shapes_tbl_tenant_isolation_policy
-on ores_ore_series_key_shapes_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
 );

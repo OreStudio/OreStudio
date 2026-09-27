@@ -195,24 +195,51 @@ The rules that keep a wrapper thin:
 
 * Buckets and keys
 
-A bucket is an *allocation*, and it belongs to the caller. Storage holds no
-bucket name, no registry and no allow-list: a bucket is part of the key, the way
-the first column of any composite key is part of it, and which buckets exist is
-declared by the components that use them. A server therefore validates the
-bucket as a path segment — traversal, charset, length — and authorises the
-operation rather than the name.
+A bucket is an *allocation*, and the allocation is the deployment's. ORE Studio
+therefore runs one bucket, =ores=, and puts everything that tells one object
+from another into the key:
 
-The hardcoded two-name list in the server is the defect this settles. It was an
-unowned literal, and it had already drifted: =report-data= is used by two
-shipping callers and was absent from the list, so that path answered 404 and no
-gate noticed. A server that keeps no list cannot fall behind one.
+#+begin_example
+bucket  ores
+key     <service>/<purpose>/<id>[/<name>]
+#+end_example
 
-A key is opaque, and the contract must state in one place how a key containing
-a slash, a space or a reserved character travels over each interface, so that
-the same key names the same object on both. Storage rejects a key that would
-escape its bucket, on every path that turns a key into a location: today the
-server guards traversal carefully and the archive extractor does not, which is
-an asymmetry across the same wire.
+- =service= is the owning domain component, lower snake case: =compute=,
+  =ore=, =reporting=. One service per first segment, and a service never writes
+  under another service's segment.
+- =purpose= says what the object is for within that service, in the plural where
+  it is a collection: =packages=, =imports=, =runs=.
+- =id= identifies the domain object the bytes belong to, as the domain stores
+  it. It is what makes a key unique.
+- =name=, when present, is the file's own name, so two objects under one id --
+  =trades.msgpack= and =market_data.msgpack= in one run -- stay apart.
+
+A segment holds letters, digits, dots, hyphens and underscores, and never a
+slash. An id may carry its own extension where the object is the id's file and
+has no name of its own, as in =compute/input/<uuid>.tar.gz=. Dot and dot dot
+are refused, and a slash is the only separator, so no key leaves the bucket
+that owns it. Lower snake case is the convention for the service and purpose
+segments, not a rule the protocol enforces.
+
+One bucket, because a bucket is an allocation and services come and go inside an
+allocation. A bucket per service would change the deployment's storage layout
+every time a service is added, and =report-data= shows what that costs: it named
+a *purpose* as if it were an allocation, two callers shared the literal, and the
+server's own allow-list had already fallen behind it. A server that keeps no
+list cannot fall behind one, so the server holds no bucket name at all.
+
+The protocol is a convention the domains keep, and
+=ores.storage.api/net/object_keys.hpp= is where it is written down and checked,
+so every caller builds a key the same way. The store does not enforce it: a key
+stays opaque, the store never parses a segment, and it never treats a slash as a
+directory it must create. Storage validates a key only as a path -- traversal,
+charset, length -- on every path that turns a key into a location.
+
+A deployment that needs a second bucket says so here first. A bucket name is one
+segment, lower snake case, and it names an allocation rather than a service, a
+purpose or a tenant. The tenancy question is still open (see [[*Authentication
+and tenancy]]), and a bucket-per-tenant answer would arrive as a rule in this
+section rather than as a name a caller invents.
 
 * Backends
 
@@ -252,7 +279,27 @@ claim the isolation its callers assume.
 
 * Distance from today
 
-Recorded so that the target is not mistaken for the tree:
+Recorded so that the target is not mistaken for the tree. The list below is the
+snapshot taken when this target was written; the interface work has since closed
+the transport items on it. Storage now answers on both interfaces through one
+store, every route authenticates, HEAD, DELETE and listing exist on both sides,
+the path prefix is declared once, and no bucket allow-list remains in the
+server.
+
+What is still open is the consumers: =compute=, =ore= and =reporting= keep the
+retired bucket names, so the migration onto the protocol in [[*Buckets and
+keys][Buckets and keys]] is the live work, and the items below that describe the
+callers, the generation gap and the raw shell surface still stand.
+
+One item on that list was a live blocker, and main has since closed it: the
+routes authenticate, and every caller that moves bytes now presents a token.
+=storage_transfer= takes the caller's bearer as a required parameter, the
+generated HTTP routes relay it with =with_delegation=, and the service handlers
+forward the caller's own token rather than minting one -- the system-level rule
+is on [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth
+Patterns]]. The investigation that found it is in
+[[id:15062C8E-3282-4A84-B3BC-40C286388993][Storage routes demand a token no C++
+caller sends]].
 
 1. *No NATS interface.* The only transport is HTTP.
 2. *Not modelled, so nothing generates.* No protocol, handler, permission,

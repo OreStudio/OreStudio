@@ -30,6 +30,9 @@
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_pricing_engine_types_tbl enable row level security;
 
+drop policy if exists pricing_engine_types_tenant_isolation_policy
+    on ores_analytics_pricing_engine_types_tbl;
+
 create policy pricing_engine_types_tenant_isolation_policy
 on ores_analytics_pricing_engine_types_tbl
 for all using (
@@ -45,6 +48,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_pricing_model_configs_tbl enable row level security;
 
+drop policy if exists pricing_model_configs_tenant_isolation_policy
+    on ores_analytics_pricing_model_configs_tbl;
+
 create policy pricing_model_configs_tenant_isolation_policy
 on ores_analytics_pricing_model_configs_tbl
 for all using (
@@ -59,6 +65,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_pricing_model_products_tbl enable row level security;
 
+drop policy if exists pricing_model_products_tenant_isolation_policy
+    on ores_analytics_pricing_model_products_tbl;
+
 create policy pricing_model_products_tenant_isolation_policy
 on ores_analytics_pricing_model_products_tbl
 for all using (
@@ -72,6 +81,9 @@ with check (
 -- Pricing Model Product Parameters (tenant-scoped)
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_pricing_model_product_parameters_tbl enable row level security;
+
+drop policy if exists pricing_model_product_parameters_tenant_isolation_policy
+    on ores_analytics_pricing_model_product_parameters_tbl;
 
 create policy pricing_model_product_parameters_tenant_isolation_policy
 on ores_analytics_pricing_model_product_parameters_tbl

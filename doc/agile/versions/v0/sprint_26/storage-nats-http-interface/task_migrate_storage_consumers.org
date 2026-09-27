@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :storage-nats-http-interface:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/storage-bucket-protocol
+#+pr: 2230
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -33,11 +33,11 @@ storage needs to learn the names for the migration to work.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The interface task: the api, core and service split and the modelled surface. |
-| Next         | Inventory the consumers and their duplicate machinery. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The rest is this task's own work. |
+| Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2230][#2230]] | [storage] Give object storage one bucket, one key protocol and one token |
 
 * Review
 
@@ -88,3 +88,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The platform writes one bucket and one key grammar, and the HTTP boundary verifies
+the tokens the platform issues.
+
+**What it delivers**
+
+- =object_keys= states and enforces the protocol -- bucket =ores=, key
+  =service/purpose/id[/name]= -- on the Object Storage page, with build, parse and
+  the refusal of a segment that could leave the bucket, and key helpers for compute
+  and ore on top.
+- compute, ore, reporting and the shell write it; the =compute=, =ore-imports= and
+  =report-data= names are gone, the seeded compute package URIs moved with them, and
+  the four consumer roles hold =storage::objects:read= and =write=.
+- The HTTP boundary verifies the platform's RS256 session tokens through IAM's
+  public key, keeping the symmetric authenticator for the login token it mints
+  itself, and it fails closed when no verifier is configured.
+- A headers-only api part is generated as an INTERFACE library rather than a source
+  glob CMake refuses.
+- The setup SQL is idempotent through the create phase: the entity template drops a
+  policy before creating it, and the hand-written policies carry the same guard.
+
+**Superseded by main**
+
+Main implemented the bearer plumbing its own way -- =storage_transfer= takes the
+caller's bearer and the generated routes relay it -- along with the DQ artefact
+index fix, the DQ publish replace gate and the storage service variables. Those
+commits were dropped in the rebase rather than merged twice.
+
+**Verified**
+
+=compass db recreate= completes; component drift is clean; the full build is green;
+the recreated database seeds the storage service account and the protocol package
+URIs, and live runs published a compute package, uploaded an ORE directory and
+completed an ORE import on the new keys.
+
+**Left over**
+
+- The raw shell surface -- a verb taking a bucket, a key and a path -- is not built,
+  so the consumer verbs remain the way to reach storage from the shell.
+- A second =setup_schema.sql= run still stops, now on the notify triggers
+  (=mq_queues_create.sql:90= is the first), so the seed helpers' idempotency is
+  code-reviewed but not yet shown by a clean second run.
+- The trading and marketdata export handlers are main's own and were not changed
+  here.

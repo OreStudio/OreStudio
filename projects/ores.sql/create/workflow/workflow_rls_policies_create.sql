@@ -33,6 +33,9 @@
 -- Regular callers are restricted to their own tenant's instances.
 alter table ores_workflow_workflow_instances_tbl enable row level security;
 
+drop policy if exists workflow_instances_tenant_isolation_policy
+    on ores_workflow_workflow_instances_tbl;
+
 create policy workflow_instances_tenant_isolation_policy
 on ores_workflow_workflow_instances_tbl
 for all using (
@@ -50,6 +53,9 @@ with check (
 -- System-tenant context bypasses the join check to allow the workflow engine
 -- to read and write steps for any tenant.
 alter table ores_workflow_workflow_steps_tbl enable row level security;
+
+drop policy if exists workflow_steps_tenant_isolation_policy
+    on ores_workflow_workflow_steps_tbl;
 
 create policy workflow_steps_tenant_isolation_policy
 on ores_workflow_workflow_steps_tbl

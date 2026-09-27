@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_API_NET_ORE_STORAGE_HPP
 #define ORES_ORE_API_NET_ORE_STORAGE_HPP
 
+#include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include <string>
 #include <string_view>
@@ -27,35 +28,46 @@
 namespace ores::ore::net {
 
 /**
- * @brief Storage bucket constants and key helpers for ORE import.
+ * @brief Storage keys for an ORE import.
  *
- * Mirrors compute_storage in ores.compute.api — all ORE import tarballs
- * are stored in the "ore-imports" bucket with a key of "{request_id}.tar.gz".
+ * Mirrors compute_storage in ores.compute.api -- ORE import tarballs live in
+ * the platform bucket under the =ore= service, one key per import request:
+ * =ore/imports/{request_id}.tar.gz=.
  */
 struct ore_storage {
-    static constexpr std::string_view bucket = "ore-imports";
+    /**
+     * @brief The platform bucket every service writes to.
+     */
+    static constexpr std::string_view bucket =
+        ores::storage::api::object_keys::ores_bucket;
 
     /**
      * @brief Object key for an ORE import tarball.
      *
      * @param request_id  UUID of the import request.
-     * @return            e.g. "f47ac10b-58cc-4372-a567-0e02b2c3d479.tar.gz"
+     * @return            e.g. "ore/imports/f47ac10b-58cc-4372-a567-0e02b2c3d479.tar.gz"
      */
     static std::string import_key(std::string_view request_id) {
-        std::string key(request_id);
-        key += ".tar.gz";
-        return key;
+        return ores::storage::api::object_keys::make(
+            service, "imports", std::string(request_id) + ".tar.gz");
     }
 
     /**
      * @brief API path for an ORE import tarball.
      *
      * @param request_id  UUID of the import request.
-     * @return            e.g. "/api/v1/storage/ore-imports/{id}.tar.gz"
+     * @return            e.g. "/api/v1/storage/ores/ore/imports/{id}.tar.gz"
      */
     static std::string import_path(std::string_view request_id) {
-        return ores::storage::net::storage_paths::make_object_path(bucket, import_key(request_id));
+        return ores::storage::net::storage_paths::make_object_path(bucket,
+                                                                   import_key(request_id));
     }
+
+private:
+    /**
+     * @brief The service segment every ORE key starts with.
+     */
+    static constexpr std::string_view service = "ore";
 };
 
 }

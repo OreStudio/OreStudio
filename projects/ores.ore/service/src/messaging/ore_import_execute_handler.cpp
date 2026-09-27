@@ -1227,7 +1227,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         ores::refdata::messaging::put_currency_request save_req{
             .change = {.write = to_write(currency)},
             .intent = ores::utility::domain::change_intent{
-                .reason_code = "ore_import", .commentary = "Imported from an ORE directory"}};
+                .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1262,7 +1262,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         ores::refdata::messaging::put_portfolio_request save_req{
             .change = {.write = to_write(portfolio)},
             .intent = ores::utility::domain::change_intent{
-                .reason_code = "ore_import", .commentary = "Imported from an ORE directory"}};
+                .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1298,7 +1298,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         ores::refdata::messaging::put_book_request save_req{
             .change = {.write = to_write(book)},
             .intent = ores::utility::domain::change_intent{
-                .reason_code = "ore_import", .commentary = "Imported from an ORE directory"}};
+                .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {

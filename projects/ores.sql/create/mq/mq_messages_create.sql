@@ -52,11 +52,17 @@ create index if not exists messages_queue_status_idx
 
 alter table ores_mq_messages_tbl enable row level security;
 
+drop policy if exists messages_read_policy
+    on ores_mq_messages_tbl;
+
 create policy messages_read_policy on ores_mq_messages_tbl for select using (
     (tenant_id is null and party_id is null)  -- system scope
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id is null)  -- tenant scope
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id = any(ores_iam_visible_party_ids_fn()))  -- party scope
 );
+
+drop policy if exists messages_write_policy
+    on ores_mq_messages_tbl;
 
 create policy messages_write_policy on ores_mq_messages_tbl for all using (
     (tenant_id is null and party_id is null)

@@ -36,10 +36,10 @@ const std::string tags("[net]");
 TEST_CASE("make_object_path_uses_the_storage_api_prefix", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto path = storage_paths::make_object_path("compute-packages", "abc/def");
+    const auto path = storage_paths::make_object_path("ores", "abc/def");
 
     BOOST_LOG_SEV(lg, info) << "Object path: " << path;
-    CHECK(path == "/api/v1/storage/compute-packages/abc/def");
+    CHECK(path == "/api/v1/storage/ores/abc/def");
 }
 
 TEST_CASE("make_object_url_prepends_the_base_url", tags) {
@@ -62,12 +62,12 @@ TEST_CASE("key_with_slashes_survives_unchanged", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string key("releases/1.2.3/oscar-1.2.3.tar.gz");
-    const auto path = storage_paths::make_object_path("compute-packages", key);
+    const auto path = storage_paths::make_object_path("ores", key);
     const auto url =
-        storage_paths::make_object_url("http://localhost:51000", "compute-packages", key);
+        storage_paths::make_object_url("http://localhost:51000", "ores", key);
 
     BOOST_LOG_SEV(lg, info) << "Hierarchical key path: " << path;
-    CHECK(path == "/api/v1/storage/compute-packages/releases/1.2.3/oscar-1.2.3.tar.gz");
-    CHECK(url == "http://localhost:51000/api/v1/storage/compute-packages/"
+    CHECK(path == "/api/v1/storage/ores/releases/1.2.3/oscar-1.2.3.tar.gz");
+    CHECK(url == "http://localhost:51000/api/v1/storage/ores/"
                  "releases/1.2.3/oscar-1.2.3.tar.gz");
 }

@@ -127,6 +127,9 @@ end $$;
 -- =============================================================================
 alter table ores_compute_grid_samples_tbl enable row level security;
 
+drop policy if exists grid_samples_tbl_tenant_isolation_policy
+    on ores_compute_grid_samples_tbl;
+
 create policy grid_samples_tbl_tenant_isolation_policy
 on ores_compute_grid_samples_tbl
 for all using (

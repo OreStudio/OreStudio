@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 15062C8E-3282-4A84-B3BC-40C286388993
+:END:
+#+title: Storage routes demand a token no C++ caller sends
+#+description: The storage HTTP routes call auth_required() and check a permission code per operation, but no first-party C++ caller supplies a token: ores.storage.core http_client and storage_transfer have no Authorization support at all, the shell's storage call sites pass only a base URL, and so do the services. Every shell upload and download and every service-side blob transfer therefore answers 401 -- compute publish-package, compute download-input, compute download-output, ore upload, and the ore service's report-package handler that downloads the trades and market-data blobs and uploads the tarball. The bus interface is unaffected.
+#+type: capture
+#+level: cross
+#+filetags: :storage:http:shell:defect:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* Evidence
+
+=compute publish-package ORE 1.8.17.0 x64-linux --file
+build/output/linux-clang-debug-make/publish/vendor-packages/ore-1.8.17.0-x64-linux.tar.gz=
+builds the right address and the route refuses it:
+
+#+begin_example
+PUT http://localhost:21000/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz
+  -> HTTP 401
+#+end_example
+
+The bus interface is not affected: =objects put-objects ores
+compute/packages/<id>/ore-1.8.17.0-x64-linux.tar.gz= answered its size, get
+returned the bytes, and list reported the object, and the same object then read
+back over HTTP with an explicit bearer token.
+
+* Where the fix goes
+
+- =ores.storage.core/net/http_client.hpp=: the static =get=, =put= and
+  =put_returning_body= (and any download-to-string twin) gain a bearer parameter,
+  sent as =Authorization: Bearer <token>=.
+- =ores.storage.core/net/storage_transfer.hpp=: pass it through =upload=,
+  =upload_returning_response=, =download=, =pack_and_upload=, =fetch_and_unpack=,
+  =upload_blob= and =download_blob=.
+- Callers: the shell's storage sites (=compute_commands.cpp= 465, 740 and 799,
+  =ore_commands.cpp= 191) from the session it logged in with, and the services
+  (the ore report-package handler, the market-data export) from their service
+  token.
+
+Without this, every consumer verb that moves bytes over HTTP fails, so the
+migration cannot be verified end to end.
+
+* Round 12 status
+
+=ores.storage.core= carries a token now (=http_client= per operation,
+=storage_transfer= once), and the shell's three compute sites pass
+=session.auth().jwt=. =compute publish-package= still answers 401 because it does
+not go through those: =ores.compute.client= holds its own =storage_transfer
+transfer_=, built by =package_publisher(std::string http_base_url)= from
+=projects/ores.compute/client/src/client/package_publisher.cpp:28=, and the shell
+builds that publisher with no token.
+
+Two edits finish this path: give =package_publisher= a =bearer_token= parameter
+that it forwards to =transfer_=, and pass =session.auth().jwt= where the shell
+constructs the publisher. The remaining shell sites (=compute_commands.cpp= 740
+and 799, =ore_commands.cpp= 191) and the services follow the same pattern;
+=ore_commands::process_upload= takes no session yet, so it needs one threaded in.
+
+* Round 13: the token now travels, and the route refuses it
+
+=package_publisher= takes a bearer and the shell passes =session.auth().jwt=, so
+the header reaches the server. The http server log shows the change:
+
+#+begin_example
+22:57:54 [WARN] Missing authorization token for /api/v1/storage/{bucket}/{key}
+22:59:44 [WARN] Invalid token for /api/v1/storage/{bucket}/{key}: Invalid token
+22:59:44 [WARN] JWT verification failed: wrong algorithm
+#+end_example
+
+So the client plumbing is done and the remaining defect is *which* token the
+shell holds. The same route accepts a token from =POST /api/v1/auth/login= --
+curl with it answers 200, and that token is HS256, as is the server's own
+authenticator (=configured with HS256, issuer: ores, audience: ores-api=). The
+shell's session token is also HS256 but fails verification, and the verifier that
+logs the failure is the RS256 one. Next: find what =session.set_auth= stores in
+this environment (the login helpers exchange the single-use login token for a
+party-scoped access token, and a freshly bootstrapped admin may have no party),
+and whether the shell should send the login token or the access token.
+
+* Round 14: the two sides use different algorithms
+
+Printing the token the shell sends settles it. Its header is
+=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9= -- =RS256=, with =issuer= and =audience=
+unset in the claims -- while the token =POST /api/v1/auth/login= returns for the
+same account is =HS256= and the storage route answers it 200. The http server
+logs its own authenticator as =configured with HS256, issuer: ores, audience:
+ores-api=, and the failure it then logs for the shell is =wrong algorithm=.
+
+So the shell holds the party-scoped RS256 session token the NATS path issues,
+the http server verifies HS256 tokens, and the storage route refuses the shell's
+token on the algorithm alone. The client side is finished: the header travels,
+the key is the protocol key, and the only thing between =compute publish-package=
+and a stored object is which algorithm the http server accepts.
+
+The fix is on the server side of that boundary: make the http server verify the
+tokens the services issue (RS256 through IAM's JWKS, as =ores.ore.service= already
+does with =JWT authenticator configured with RS256 verifier=), or state
+deliberately that HTTP callers must use an HS256 token and give the shell one.
+Recording it here rather than choosing, because it changes the deployment's
+authentication contract.
+
+* Resolved
+
+The HTTP boundary now verifies the platform's session tokens. =http_server= gained
+=set_request_verifier()= and an RS256-from-file path (the branch that used to log
+=RS256 from file not yet implemented=), and =http_session= tries that verifier
+first, falling back to the symmetric authenticator that only the server's own
+login token needs. The http server application already receives IAM's public key
+from the service runner, so it hands the same verifier to the routes.
+
+Verified live: =compute publish-package ORE 1.8.17.0 x64-linux= uploaded
+=ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz= and reported
+its sha256, the row's =package_uri= is that path, a HEAD of the key answers 200,
+and the HS256 login token still answers 200 on the same route, so nothing that
+worked before stopped working. The http api suite passes.
+

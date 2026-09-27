@@ -44,6 +44,22 @@
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting
  * the binding.
+ *
+ * This model binds to no variability profile, and the omission is
+ * deliberate rather than unfinished. A binding is workspace-scoped
+ * (has_workspace_id  true=), keyed by a surrogate UUID
+ * (has_uuid_primary_key  true=), and carries the standard presentation
+ * tier (has_pagination  true=, has_change_reason_cache  true=,
+ * has_tenant_id  true=). No profile in the catalogue has that
+ * combination: workspace-scoped-lookup fixes
+ * has_uuid_primary_key  false= and uuid-surrogate-lookup fixes
+ * has_workspace_id  false=, so every candidate contradicts one of the
+ * two features that define this entity. Binding to the nearest profile
+ * would move a false promise rather than remove it.
+ *
+ * The gap is a profile the catalogue lacks, not a defect in this model.
+ * ores.reporting.report_definition has the same shape and is recorded
+ * in KNOWN_MODEL_DRIFT for the same reason.
  */
 
 create table if not exists "ores_marketdata_feed_bindings_tbl" (
@@ -123,7 +139,17 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
@@ -171,6 +197,9 @@ on delete to "ores_marketdata_feed_bindings_tbl" do instead (
 -- System-tenant sessions may also read every tenant's rows.
 -- =============================================================================
 alter table ores_marketdata_feed_bindings_tbl enable row level security;
+
+drop policy if exists feed_bindings_tbl_tenant_isolation_policy
+    on ores_marketdata_feed_bindings_tbl;
 
 create policy feed_bindings_tbl_tenant_isolation_policy
 on ores_marketdata_feed_bindings_tbl

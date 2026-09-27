@@ -125,6 +125,9 @@ end $$;
 -- =============================================================================
 alter table ores_compute_node_samples_tbl enable row level security;
 
+drop policy if exists node_samples_tbl_tenant_isolation_policy
+    on ores_compute_node_samples_tbl;
+
 create policy node_samples_tbl_tenant_isolation_policy
 on ores_compute_node_samples_tbl
 for all using (

@@ -162,6 +162,9 @@ on delete to "ores_variability_system_settings_tbl" do instead (
 -- =============================================================================
 alter table ores_variability_system_settings_tbl enable row level security;
 
+drop policy if exists system_settings_tbl_tenant_isolation_policy
+    on ores_variability_system_settings_tbl;
+
 create policy system_settings_tbl_tenant_isolation_policy
 on ores_variability_system_settings_tbl
 for all using (
@@ -176,6 +179,9 @@ with check (
 -- party set admits. The visible_party_ids-is-null passthrough applies
 -- for sessions with no party restriction (tenant admins, service
 -- contexts).
+drop policy if exists system_settings_tbl_party_isolation_policy
+    on ores_variability_system_settings_tbl;
+
 create policy system_settings_tbl_party_isolation_policy
 on ores_variability_system_settings_tbl
 as restrictive

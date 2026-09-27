@@ -36,6 +36,9 @@
 -- -----------------------------------------------------------------------------
 alter table ores_compute_platforms_tbl enable row level security;
 
+drop policy if exists platforms_read_policy
+    on ores_compute_platforms_tbl;
+
 create policy platforms_read_policy
 on ores_compute_platforms_tbl
 for select using (
@@ -43,11 +46,17 @@ for select using (
     or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
+drop policy if exists platforms_insert_policy
+    on ores_compute_platforms_tbl;
+
 create policy platforms_insert_policy
 on ores_compute_platforms_tbl
 for insert with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists platforms_update_policy
+    on ores_compute_platforms_tbl;
 
 create policy platforms_update_policy
 on ores_compute_platforms_tbl
@@ -57,6 +66,9 @@ for update using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists platforms_delete_policy
+    on ores_compute_platforms_tbl;
 
 create policy platforms_delete_policy
 on ores_compute_platforms_tbl
@@ -68,6 +80,9 @@ for delete using (
 -- App Version Platforms (tenant-scoped junction table)
 -- -----------------------------------------------------------------------------
 alter table ores_compute_app_version_platforms_tbl enable row level security;
+
+drop policy if exists app_version_platforms_tenant_isolation_policy
+    on ores_compute_app_version_platforms_tbl;
 
 create policy app_version_platforms_tenant_isolation_policy
 on ores_compute_app_version_platforms_tbl
@@ -84,6 +99,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_apps_tbl enable row level security;
 
+drop policy if exists apps_tenant_isolation_policy
+    on ores_compute_apps_tbl;
+
 create policy apps_tenant_isolation_policy
 on ores_compute_apps_tbl
 for all using (
@@ -98,6 +116,9 @@ with check (
 -- App Versions (global registry — system tenant records visible to all tenants)
 -- -----------------------------------------------------------------------------
 alter table ores_compute_app_versions_tbl enable row level security;
+
+drop policy if exists app_versions_tenant_isolation_policy
+    on ores_compute_app_versions_tbl;
 
 create policy app_versions_tenant_isolation_policy
 on ores_compute_app_versions_tbl
@@ -114,6 +135,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_hosts_tbl enable row level security;
 
+drop policy if exists hosts_tenant_isolation_policy
+    on ores_compute_hosts_tbl;
+
 create policy hosts_tenant_isolation_policy
 on ores_compute_hosts_tbl
 for all using (
@@ -127,6 +151,9 @@ with check (
 -- Batches
 -- -----------------------------------------------------------------------------
 alter table ores_compute_batches_tbl enable row level security;
+
+drop policy if exists batches_tenant_isolation_policy
+    on ores_compute_batches_tbl;
 
 create policy batches_tenant_isolation_policy
 on ores_compute_batches_tbl
@@ -142,6 +169,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_batch_dependencies_tbl enable row level security;
 
+drop policy if exists batch_dependencies_tenant_isolation_policy
+    on ores_compute_batch_dependencies_tbl;
+
 create policy batch_dependencies_tenant_isolation_policy
 on ores_compute_batch_dependencies_tbl
 for all using (
@@ -156,6 +186,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_workunits_tbl enable row level security;
 
+drop policy if exists workunits_tenant_isolation_policy
+    on ores_compute_workunits_tbl;
+
 create policy workunits_tenant_isolation_policy
 on ores_compute_workunits_tbl
 for all using (
@@ -169,6 +202,9 @@ with check (
 -- Results
 -- -----------------------------------------------------------------------------
 alter table ores_compute_results_tbl enable row level security;
+
+drop policy if exists results_tenant_isolation_policy
+    on ores_compute_results_tbl;
 
 create policy results_tenant_isolation_policy
 on ores_compute_results_tbl

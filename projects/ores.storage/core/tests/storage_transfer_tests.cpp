@@ -69,11 +69,11 @@ TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", tags) {
     scoped_temp_file source;
     write_file(source.path(), content);
 
-    sut.upload("compute-packages", "oscar/1.0/oscar.tar.gz", source.path());
+    sut.upload("ores", "compute/packages/oscar-1.0/oscar.tar.gz", source.path());
 
     BOOST_LOG_SEV(lg, info) << "Server saw target: " << server.last_target();
     CHECK(server.last_method() == "PUT");
-    CHECK(server.last_target() == "/api/v1/storage/compute-packages/oscar/1.0/oscar.tar.gz");
+    CHECK(server.last_target() == "/api/v1/storage/ores/compute/packages/oscar-1.0/oscar.tar.gz");
     CHECK(server.last_put_body() == content);
     CHECK(server.last_authorization() == "Bearer " + test_token);
 }
@@ -88,10 +88,10 @@ TEST_CASE("download_writes_the_exact_server_bytes", tags) {
     server.set_get_body(content);
 
     scoped_temp_file destination;
-    sut.download("compute-packages", "oscar/1.0/oscar.tar.gz", destination.path());
+    sut.download("ores", "compute/packages/oscar-1.0/oscar.tar.gz", destination.path());
 
     BOOST_LOG_SEV(lg, info) << "Server saw target: " << server.last_target();
-    CHECK(server.last_target() == "/api/v1/storage/compute-packages/oscar/1.0/oscar.tar.gz");
+    CHECK(server.last_target() == "/api/v1/storage/ores/compute/packages/oscar-1.0/oscar.tar.gz");
     CHECK(read_file(destination.path()) == content);
 }
 
@@ -125,17 +125,17 @@ TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", tags) {
     write_file(source.path() / "manifest.txt", manifest_content);
     write_file(source.path() / "nested" / "payload.json", payload_content);
 
-    sut.pack_and_upload(source.path(), "compute-packages", "releases/tree.tar.gz");
+    sut.pack_and_upload(source.path(), "ores", "compute/packages/tree.tar.gz");
 
     const auto uploaded = server.last_put_body();
     BOOST_LOG_SEV(lg, info) << "Uploaded archive of " << uploaded.size() << " bytes";
-    CHECK(server.last_target() == "/api/v1/storage/compute-packages/releases/tree.tar.gz");
+    CHECK(server.last_target() == "/api/v1/storage/ores/compute/packages/tree.tar.gz");
     CHECK(!uploaded.empty());
 
     server.set_get_body(uploaded);
 
     scoped_temp_directory destination;
-    sut.fetch_and_unpack("compute-packages", "releases/tree.tar.gz", destination.path());
+    sut.fetch_and_unpack("ores", "compute/packages/tree.tar.gz", destination.path());
 
     CHECK(std::filesystem::exists(destination.path() / "manifest.txt"));
     CHECK(read_file(destination.path() / "manifest.txt") == manifest_content);

@@ -64,6 +64,18 @@ public:
     }
 
     /**
+     * @brief Sets the verifier for the platform's session tokens.
+     *
+     * Session tokens are RS256 and IAM signs them, so the server checks them
+     * against IAM's public key. The symmetric authenticator above stays because
+     * the server mints the login token that starts a session.
+     */
+    void set_request_verifier(
+        std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier) {
+        request_verifier_ = std::move(verifier);
+    }
+
+    /**
      * @brief Sets the session bytes callback for tracking request/response sizes.
      *
      * This callback is invoked after each authenticated request to update
@@ -107,6 +119,9 @@ private:
     http_server_options options_;
     std::shared_ptr<router> router_;
     std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
+
+    // Verifies the RS256 session tokens IAM issues.
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier_;
     std::shared_ptr<openapi::endpoint_registry> registry_;
     std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
     std::atomic<bool> running_{false};

@@ -43,11 +43,11 @@ consumer-named shell verbs go.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Design settled and the four open decisions taken: buckets stay a caller concern, existence is a read, storage gets a service, and the consumers migrate onto it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Split the component into api, core and service parts. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -80,8 +80,8 @@ consumer-named shell verbs go.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F7564B4B-EDCF-46F4-BB8B-DE88449BEC70][Add the NATS and HTTP interface to ores.storage, with authentication]] | STARTED | 2026-09-26 | | Split the component into api, core and service parts, model the storage surface as an operation model so its protocol, TypeScript twin and shell commands generate, hand-write the handler and service no facet will generate, and give both the NATS handler and the existing HTTP routes real authentication and per-operation permission checks. |
-| [[id:97D5B848-DCF9-4E10-B71A-0F8BA866AE8F][Migrate the storage consumers onto the shared interface]] | BACKLOG | | | Move ores.compute.wrapper, ores.ore, ores.reporting and the shell verbs onto the storage service contract, and delete the duplicate HTTP client, archiver and key builders the migration leaves behind. |
+| [[id:F7564B4B-EDCF-46F4-BB8B-DE88449BEC70][Add the NATS and HTTP interface to ores.storage, with authentication]] | DONE | 2026-09-26 | 2026-09-26 | Split the component into api, core and service parts, model the storage surface as an operation model so its protocol, TypeScript twin and shell commands generate, hand-write the handler and service no facet will generate, and give both the NATS handler and the existing HTTP routes real authentication and per-operation permission checks. |
+| [[id:97D5B848-DCF9-4E10-B71A-0F8BA866AE8F][Migrate the storage consumers onto the shared interface]] | DONE | 2026-09-26 | 2026-09-27 | Move ores.compute.wrapper, ores.ore, ores.reporting and the shell verbs onto the storage service contract, and delete the duplicate HTTP client, archiver and key builders the migration leaves behind. |
 
 * Decisions
 
@@ -115,3 +115,21 @@ consumer-named shell verbs go.
   story must not settle it by accident: it authenticates the caller and gates
   the operation, and leaves the isolation question where the target state
   leaves it.
+
+* Result
+
+Object storage is a service with two authenticated interfaces and a written key
+protocol, and the consumers that move bytes use it.
+
+The interface shipped on PR #2188: the api/core/service split, the modelled
+operation set, authentication and a per-operation permission on both interfaces,
+and one local store behind both. The consumer migration shipped on PR #2230: one
+bucket =ores= with keys =service/purpose/id[/name]=, the consumers writing it, the
+consumer roles holding the storage permissions, the HTTP boundary verifying the
+platform's RS256 session tokens, and the setup SQL idempotent through its create
+phase.
+
+Left to other work: the raw shell surface; a second =setup_schema.sql= run that
+still stops on the notify triggers; and the export handlers' token story, which
+main took on its own terms.
+

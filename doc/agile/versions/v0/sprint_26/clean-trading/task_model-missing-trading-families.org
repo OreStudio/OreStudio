@@ -38,7 +38,7 @@ to the reference-data work and are out of scope, per decision D5.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | The commodity family is ported and proven end to end. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
 | Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
-| Next         | Port the seven remaining table-backed families one at a time -- =activity_types=, =fpml_event_types=, =composite_instruments= with =composite_legs=, =credit_instruments=, =scripted_instruments= and =swap_legs=. For each: author the model, regenerate in place, migrate its consumers, build, run the suites, and require the drift dry run to be empty. Then close the type defects and raise PR 3. |
+| Next         | Close the type defects (plan step 5), then regenerate and prove the component once more (step 6), update the story's checklist rows (step 7), and raise PR 3. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -385,7 +385,7 @@ the proof.
 | composite_leg        | trading-instrument  | ores.trading.composite_leg.org, with a new identity field group | Done: build green, eight suites pass, drift empty |
 | credit_instrument    | trading-instrument  | ores.trading.credit_instrument.org     | Done: build green, eight suites pass, drift empty |
 | scripted_instrument  | trading-instrument  | ores.trading.scripted_instrument.org   | Done: build green, eight suites pass, drift empty |
-| swap_leg             | trading-instrument  | --                                     | Next |
+| swap_leg             | trading-instrument  | ores.trading.swap_leg.org, with a new identity field group | Done: build green, eight suites pass, drift empty |
 
 The composite port found a generator defect and fixed it at its source:
 the eventing integration test template read a mandatory FK parent's key as

@@ -19,29 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/swap_leg_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_TRADING_CORE_PRESENTATION_SWAP_LEG_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_SWAP_LEG_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::trading::domain {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
+namespace ores::trading::presentation {
 
-std::string convert_to_table(const std::vector<swap_leg>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "ID" << "Instrument" << "Leg" << "Type" << "Ccy" << "Notional"
-          << "Fixed Rate" << "Index" << "Recorded At" << fort::endr;
-
-    for ([[maybe_unused]] const auto& sl : v) {
-        table << sl.identity.id << sl.identity.instrument_id << sl.identity.leg_number
-              << sl.leg_type_code << sl.currency << sl.notional << sl.fixed_rate
-              << sl.floating_index_code << sl.audit.recorded_at << fort::endr;
-    }
-    return table.to_string();
-}
+/**
+ * @brief Renders a swap_leg to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_swap_leg_fields(const domain::swap_leg& v);
 
 }
+
+#endif

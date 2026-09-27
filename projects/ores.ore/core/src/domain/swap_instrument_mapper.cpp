@@ -379,7 +379,7 @@ currencyCode parse_currency_code(const std::string& s) {
 swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     swap_leg sl;
     auto& id = sl.identity;
-    auto& tm = sl.terms;
+    auto& tm = sl;
     auto& au = sl.audit;
     id.leg_number = leg_number;
     tm.leg_type_code = to_string(ld.LegType);
@@ -521,7 +521,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
 
     swap_leg sl;
     sl.identity.leg_number = 1;
-    auto& tm = sl.terms;
+    auto& tm = sl;
     tm.leg_type_code = "Fixed";
     tm.currency = to_string(fra.Currency);
     tm.floating_index_code = std::string(fra.Index);
@@ -565,7 +565,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
 
     swap_leg sl;
     sl.identity.leg_number = 1;
-    auto& tm = sl.terms;
+    auto& tm = sl;
     tm.leg_type_code = to_string(cf.LegData.LegType);
     tm.currency = to_string(cf.LegData.Currency);
     tm.day_count_fraction_code = to_string(cf.LegData.DayCounter);
@@ -602,7 +602,7 @@ legData swap_instrument_mapper::reverse_leg(const std::string& start_date,
                                             const swap_leg& sl) {
     legData ld;
 
-    const auto& tm = sl.terms;
+    const auto& tm = sl;
     const auto leg_type = leg_type_from_string(tm.leg_type_code);
     if (!leg_type)
         throw std::runtime_error("reverse_leg: unrecognised leg type '" + tm.leg_type_code +
@@ -685,7 +685,7 @@ trade swap_instrument_mapper::reverse_fra(const fra_instrument& instr,
     fra.Notional = static_cast<float>(instr.notional);
 
     if (!legs.empty()) {
-        const auto& tm = legs.front().terms;
+        const auto& tm = legs.front();
         static_cast<std::string&>(fra.Index) = tm.floating_index_code;
         fra.Strike = static_cast<float>(tm.fixed_rate);
         fra.LongShort = longShort::Long;
@@ -712,7 +712,7 @@ trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr
     if (!legs.empty()) {
         const auto& sl = legs.front();
 
-        const auto& tm = sl.terms;
+        const auto& tm = sl;
         cf.LegData.LegType = leg_type_from_string(tm.leg_type_code).value_or(legType::Floating);
 
         cf.LegData.Currency = parse_currency_code(tm.currency);

@@ -67,6 +67,7 @@ set(files
     "scripted_instrument_eventing_integration_tests.cpp"
     "service_bond_instrument_reader_tests.cpp"
     "service_trade_envelope_reader_tests.cpp"
+    "swap_leg_eventing_integration_tests.cpp"
     "trade_eventing_integration_tests.cpp"
     "trade_id_type_eventing_integration_tests.cpp"
     "trade_type_eventing_integration_tests.cpp"

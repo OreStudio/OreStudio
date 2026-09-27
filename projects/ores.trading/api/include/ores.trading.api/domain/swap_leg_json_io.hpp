@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_SWAP_LEG_JSON_IO_HPP
-#define ORES_TRADING_DOMAIN_SWAP_LEG_JSON_IO_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_SWAP_LEG_JSON_IO_HPP
+#define ORES_TRADING_API_DOMAIN_SWAP_LEG_JSON_IO_HPP
 
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/export.hpp"

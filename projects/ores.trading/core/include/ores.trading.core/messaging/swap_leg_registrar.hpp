@@ -19,29 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/swap_leg_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_TRADING_CORE_MESSAGING_SWAP_LEG_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_SWAP_LEG_REGISTRAR_HPP
 
-namespace ores::trading::domain {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
+namespace ores::trading::messaging {
 
-std::string convert_to_table(const std::vector<swap_leg>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+std::vector<ores::nats::service::subscription>
+register_swap_leg_handlers(ores::nats::service::client& nats,
+                           ores::database::context ctx,
+                           std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-    table << fort::header << "ID" << "Instrument" << "Leg" << "Type" << "Ccy" << "Notional"
-          << "Fixed Rate" << "Index" << "Recorded At" << fort::endr;
+} // namespace ores::trading::messaging
 
-    for ([[maybe_unused]] const auto& sl : v) {
-        table << sl.identity.id << sl.identity.instrument_id << sl.identity.leg_number
-              << sl.leg_type_code << sl.currency << sl.notional << sl.fixed_rate
-              << sl.floating_index_code << sl.audit.recorded_at << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+#endif

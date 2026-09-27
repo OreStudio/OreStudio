@@ -82,6 +82,7 @@
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/swap_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_envelope_additional_field_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_envelope_event_registrar.hpp"
@@ -253,6 +254,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto scripted_instrument_sub =
         ores::trading::service::messaging::register_scripted_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto swap_leg_sub = ores::trading::service::messaging::register_swap_leg_event_mapping(
+        event_source, event_bus, nats);
 
     auto ascot_sub = ores::trading::service::messaging::register_ascot_event_mapping(
         event_source, event_bus, nats);

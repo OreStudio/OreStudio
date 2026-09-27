@@ -19,29 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/swap_leg_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_TRADING_SERVICE_MESSAGING_SWAP_LEG_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_SWAP_LEG_EVENT_REGISTRAR_HPP
 
-namespace ores::trading::domain {
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
+namespace ores::trading::service::messaging {
 
-std::string convert_to_table(const std::vector<swap_leg>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+[[nodiscard]] ores::eventing::service::subscription
+register_swap_leg_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                ores::eventing::service::event_bus& event_bus,
+                                ores::nats::service::client& nats);
 
-    table << fort::header << "ID" << "Instrument" << "Leg" << "Type" << "Ccy" << "Notional"
-          << "Fixed Rate" << "Index" << "Recorded At" << fort::endr;
+} // namespace ores::trading::service::messaging
 
-    for ([[maybe_unused]] const auto& sl : v) {
-        table << sl.identity.id << sl.identity.instrument_id << sl.identity.leg_number
-              << sl.leg_type_code << sl.currency << sl.notional << sl.fixed_rate
-              << sl.floating_index_code << sl.audit.recorded_at << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+#endif

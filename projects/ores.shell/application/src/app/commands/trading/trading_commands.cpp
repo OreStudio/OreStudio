@@ -52,6 +52,7 @@
 #include "ores.shell/app/commands/trading/party_role_type_commands.hpp"
 #include "ores.shell/app/commands/trading/rpa_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/scripted_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/swap_leg_commands.hpp"
 #include "ores.shell/app/commands/trading/swaption_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_id_type_commands.hpp"
@@ -102,6 +103,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     party_role_type_commands::register_commands(root_menu, session);
     rpa_instrument_commands::register_commands(root_menu, session);
     scripted_instrument_commands::register_commands(root_menu, session);
+    swap_leg_commands::register_commands(root_menu, session);
     swaption_instrument_commands::register_commands(root_menu, session);
     trade_commands::register_commands(root_menu, session);
     trade_id_type_commands::register_commands(root_menu, session);

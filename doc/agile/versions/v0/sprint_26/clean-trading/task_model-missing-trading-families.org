@@ -38,7 +38,7 @@ to the reference-data work and are out of scope, per decision D5.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | M09's model half is done and verified in trading: the generator facets are collapsed, the retired presentation properties are gone, the three trading libs and their tests build, the three suites pass and the drift dry run is empty. The whole-tree build is blocked by =ores.workflow=, which still consumes the dq protocol dq deleted. |
 | Waiting on   | PR 2 merged, so the model work starts from a drift-clean tree. |
-| Next         | Bind the 26 unbound entities or record each no-match with its features, then author the seven missing models. Re-verify the whole-tree build once the workflow consumer lands on main. |
+| Next         | Author the seven missing models, starting with product_type and the five families with a table and no model; re-verify the whole-tree build once the workflow consumer lands on main. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -130,6 +130,43 @@ Two findings from doing it:
    components keep theirs. What M09 forbids is a property that names a
    retired message type, which is what the refdata precedent
    (=6bb3577a55=) removed.
+
+** 1. Bound or recorded: the M02 survey
+
+Thirty-one of the component's sixty-five org files bind a profile today
+(twenty-six trading-instrument, three simple-lookup, one
+workspace-scoped-lookup and one trading-record). The remaining
+thirty-four are the six field-group models, the module, the component
+overview, and twenty-six entity models. Every one of the twenty-six is
+recorded as a no-match, with the features that decide it and the reason:
+=evidence/pr3_m02_no_match_survey.txt=.
+
+The bindings were tested against every profile's own assignment table
+rather than against a name:
+
+- No profile declares a composite natural key, and fourteen of the
+  twenty-six key on two or more columns (for example
+  =instrument_id + leg_role + leg_number=).
+- =uuid-identified-lookup= fixes =has_change_reason_cache= and
+  =has_pagination= true, which every one of these entities resolves
+  false, and =has_workspace_id= false, which two of them contradict.
+- =trading-instrument= fixes =has_workspace_id= and
+  =party_id_from_session=, neither of which the bond family sets. It is
+  the closest profile and still the wrong one, which is why the task
+  forbids a forced bind.
+- =fk-scoped-child= fixes =has_workspace_id=, =has_explorer_api= and a
+  parent, and only two of the twenty-six are workspace-scoped.
+- =tenant-scoped-junction= fixes only =has_tenant_id=, but it is anchored
+  to the junction metatype, and M07 already records that this component
+  has no junction metatype. =trade_party_role= is the entity that would
+  open when one is introduced.
+- =readonly-timeseries= describes a TimescaleDB hypertable, and every one
+  of the twenty-six is an ordinary versioned table.
+
+None of this is recorded as a model property, because the loader does not
+know the names the spec's =RecordNoMatch= rule uses and an unknown
+property is silently inert. The record is the survey, which is what the
+standard's M02 method names.
 
 * Plan
 

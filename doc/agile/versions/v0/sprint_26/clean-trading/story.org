@@ -449,6 +449,14 @@ row is updated as each PR lands.
   moves exhaustiveness from the compiler to a switch. Recommendation:
   take it up when the ore import workflow is next revised, not inside
   PR 2. Recorded as a capture on the product backlog.
+- *D10, the swap legs shape.* One model over the shared table, not one
+  per family. =ores_trading_swap_legs_tbl= is one table with one
+  surrogate key, one parent column (=instrument_id=) and a
+  =leg_type_code= discriminator; the leg type is data, not a table. The
+  generator holds one entity per table, so several models would each
+  claim the same DDL and drift against each other. The model is
+  =swap_leg=, child-shaped: uuid key, tenant and workspace scope, a
+  parent foreign key to the instrument. PR 3 authors it.
 
 * Delivery plan
 

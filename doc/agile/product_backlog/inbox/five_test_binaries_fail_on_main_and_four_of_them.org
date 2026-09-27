@@ -23,6 +23,15 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 -
 
+* Evidence
+
+Reproduced twice on this checkout, and it survives a rebase: a full =compass build= and =compass test run= on 2026-09-27 gave the same five targets and 81 of 86 passing, both before and after the branch under test was rebased onto more than fifty newer commits of main. So it is not drift from one branch.
+
+Two details the run adds to the list above.
+
+- The marketdata eventing failure this capture does not name is =series_classification_rule_eventing_integration_tests.cpp:184=, which asserts a changed event arrived and sees none. It belongs to the same group as the insert refusals: the write raises, so nothing notifies.
+- The dq core generator cases number seven, not six, at =generators_tests.cpp= source lines 138, 165, 222, 259, 287, 314 and 369; with the two lei eventing cases and the change-reason one that is the ten the target reports.
+
 * See also
 
--
+- [[id:44FA7541-D3E2-4D46-9D60-8C8517A64980][to_iso8601_utc emits a space separator]] — the fifth target, whose cause is its own.

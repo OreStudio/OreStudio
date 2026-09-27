@@ -66,3 +66,39 @@ What this means for the port
 application library and their test binaries all compile, and the drift
 dry run reports no drift. The suites are the missing evidence, and they
 are missing for an environment reason, not a code one.
+
+Defect 4, found after the first three were worked around
+--------------------------------------------------------
+The populate then fails in the flags step:
+
+    psql:populate/flags/flags_dataset_tag_populate.sql:44:
+    ERROR: there is no unique or exclusion constraint matching the
+    ON CONFLICT specification
+
+    on conflict (tenant_id, dataset_id, name) do nothing
+    ... in ores_dq_tags_artefact_tbl
+
+The dq artefact table does not carry the unique constraint that clause
+names. The same artefact family looks malformed elsewhere: the create
+scripts emit the same index name a dozen times, each reported as
+"already exists, skipping", which is why the constraint is not there to
+match. This is generated SQL, and dq is not in the drift registry, so
+nothing catches it.
+
+State after four defects
+------------------------
+The database now reaches the schema-complete state and aborts in the
+flags populate. Against it, =ores.trading.core.tests= still reports 103
+cases with 99 failed, across the whole suite: the seeds the suites need
+are not there. The four repairs were reverted, so this branch carries
+only trading work.
+
+The premise is what is wrong
+----------------------------
+Each repair revealed the next defect, and all four are in the same
+component's generated SQL and its service plumbing. Rebuilding the
+environment from main's tree is not a thing that works today, and
+patching it defect by defect from a trading branch is not the fix. The
+owners of dq and of the storage service should regenerate their SQL, and
+the environment should be restorable from a snapshot so that one broken
+component cannot stop every worktree's verification.

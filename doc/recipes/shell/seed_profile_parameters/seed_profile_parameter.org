@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: B582B99D-4CE8-5731-83E5-F8A3DA18BF95
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the seed_profile_parameters commands from the shell?
+#+description: Every command the seed_profile_parameters submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:seed_profile_parameters:
+
+This file documents the seed_profile_parameters resource at the shell, one section per command. Every command is a subcommand of =seed_profile_parameters=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F5881245-B238-50F3-B07F-383F1199A00E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.list=.
+
+#+name: seed_profile_parameters-list
+#+begin_src ores-shell :tangle seed_profile_parameters-list.ores :exports none
+seed_profile_parameters list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 51D8F4ED-4CB1-5C4F-A236-AA0B79E5F60F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters get <id>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.get=.
+
+#+name: seed_profile_parameters-get
+#+begin_src ores-shell :tangle seed_profile_parameters-get.ores :exports none
+seed_profile_parameters get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 86E2D1A8-1205-5FE8-803D-EC21DAD9FFD0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.get_many=.
+
+#+name: seed_profile_parameters-get-many
+#+begin_src ores-shell :tangle seed_profile_parameters-get-many.ores :exports none
+seed_profile_parameters get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 54E62DAA-3876-5593-B166-759DB313E372
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters add <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.put=.
+
+#+name: seed_profile_parameters-add
+#+begin_src ores-shell :tangle seed_profile_parameters-add.ores :exports none
+seed_profile_parameters add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 784878D7-98C0-557A-A448-EBA2C5B0A3E8
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters set <id> <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.put=.
+
+#+name: seed_profile_parameters-set
+#+begin_src ores-shell :tangle seed_profile_parameters-set.ores :exports none
+seed_profile_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 862A169F-2421-5AC3-A719-29F3CA0D9693
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters put-many --count <n> <id> <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.put_many=.
+
+#+name: seed_profile_parameters-put-many
+#+begin_src ores-shell :tangle seed_profile_parameters-put-many.ores :exports none
+seed_profile_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A7288B60-3D54-59EC-B335-4A568CFC8527
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.delete=.
+
+#+name: seed_profile_parameters-delete
+#+begin_src ores-shell :tangle seed_profile_parameters-delete.ores :exports none
+seed_profile_parameters delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D4BA685F-669D-5178-8993-FBED622C5121
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.delete_many=.
+
+#+name: seed_profile_parameters-delete-many
+#+begin_src ores-shell :tangle seed_profile_parameters-delete-many.ores :exports none
+seed_profile_parameters delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-seed-profile-id=
+:PROPERTIES:
+:ID: 86F3594F-8C6E-56E0-B415-89879CE51ADD
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters by-seed-profile-id <seed_profile_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters.list_by_seed_profile_id=.
+
+#+name: seed_profile_parameters-by-seed-profile-id
+#+begin_src ores-shell :tangle seed_profile_parameters-by-seed-profile-id.ores :exports none
+seed_profile_parameters by-seed-profile-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0B33847F-1C02-5605-9EA4-6D74AD73B57D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters_versions.list=.
+
+#+name: seed_profile_parameters-versions
+#+begin_src ores-shell :tangle seed_profile_parameters-versions.ores :exports none
+seed_profile_parameters versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FC95EBDE-17B5-53FA-99A9-0A3D232F7B9B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_parameters version <id> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_parameters_versions.get=.
+
+#+name: seed_profile_parameters-version
+#+begin_src ores-shell :tangle seed_profile_parameters-version.ores :exports none
+seed_profile_parameters version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

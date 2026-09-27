@@ -48,6 +48,9 @@
 #include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.iam.core/messaging/reset_handler.hpp"
 #include "ores.iam.core/messaging/role_registrar.hpp"
+#include "ores.iam.core/messaging/seed_profile_parameter_registrar.hpp"
+#include "ores.iam.core/messaging/seed_profile_registrar.hpp"
+#include "ores.iam.core/messaging/seed_profile_step_registrar.hpp"
 #include "ores.iam.core/messaging/session_operations_handler.hpp"
 #include "ores.iam.core/messaging/session_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
@@ -66,6 +69,9 @@
 #include "ores.iam.core/messaging/account_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/account_type_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/role_history_provider_registrar.hpp"
+#include "ores.iam.core/messaging/seed_profile_history_provider_registrar.hpp"
+#include "ores.iam.core/messaging/seed_profile_parameter_history_provider_registrar.hpp"
+#include "ores.iam.core/messaging/seed_profile_step_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_type_history_provider_registrar.hpp"
@@ -415,6 +421,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(aci_subs.begin()),
                 std::make_move_iterator(aci_subs.end()));
 
+    // --- Seed profiles, their steps and their parameters ---
+    // Provisioning reads a profile, its ordered step kinds and its form
+    // schema before the tenant it creates exists, so all three resources
+    // answer on their own derived subjects.
+    for (auto& sub : register_seed_profile_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_seed_profile_step_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_seed_profile_parameter_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+
     // --- Publish-from-DQ workflow step handlers ---
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
@@ -449,6 +466,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_account_history_provider(hist_registry);
         register_account_type_history_provider(hist_registry);
         register_role_history_provider(hist_registry);
+        register_seed_profile_history_provider(hist_registry);
+        register_seed_profile_parameter_history_provider(hist_registry);
+        register_seed_profile_step_history_provider(hist_registry);
         register_tenant_history_provider(hist_registry);
         register_tenant_status_history_provider(hist_registry);
         register_tenant_type_history_provider(hist_registry);

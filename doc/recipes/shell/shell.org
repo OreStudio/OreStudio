@@ -817,3 +817,15 @@ tangled into the runnable script library
 * Publications
 
 - [[id:924F7A20-A61E-52A4-B2CE-951A084C6216][How do I run the publications commands from the shell?]]
+
+* Seed Profile Parameters
+
+- [[id:B582B99D-4CE8-5731-83E5-F8A3DA18BF95][How do I run the seed_profile_parameters commands from the shell?]]
+
+* Seed Profile Steps
+
+- [[id:00679BCA-C8E8-51EC-9835-B0C4C5A5612B][How do I run the seed_profile_steps commands from the shell?]]
+
+* Seed Profiles
+
+- [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I run the seed_profiles commands from the shell?]]

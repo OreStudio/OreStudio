@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 2888E3D3-CCC0-43B5-AEB4-6A20A5298188
+:END:
+#+title: Task: Model the seed profile and seed the two profiles
+#+description: The seed profile is registered data: a row orders step kinds from a fixed catalogue and declares the parameters its form takes. Empty operational and ACME demo become rows.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/model-the-seed-profile
+#+pr: 2306
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tenant journey's first step is choosing a starting point, and the starting points are data. Model the seed profile, its ordered step kinds and its declared parameters, seed the two accepted profiles, and let the browser read them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Three models written and regenerated; the composition points and the shell aggregator wired; the two profiles, nine steps and two parameters seeded by SQL; the reads subscribed on the live broker. Working the gates. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the remaining gates, build, and commit. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A seed profile is an entity whose rows order step kinds from the catalogue the contract fixes: publish_bundle, import_lei_hierarchy, provision_party, load_staff, attach_photos, start_market_feeds.
+- Each profile declares the parameters its form takes, and the details it prefills for the tenant it creates.
+- Empty operational and ACME demo are rows seeded by SQL, not constants in a client.
+- The generated read subjects answer for both profiles, and the component's clean-standard gates stay green.
+- The workspace typechecks, passes the format check, tests green, and builds.
+
+* Plan
+
+1. Model the three entities in =projects/ores.iam/modeling/=: the profile, the
+   step kinds it orders, and the parameters its form declares. The binding is
+   =uuid-identified-lookup= plus =system_scope=, the combination
+   =ores.iam.tenant= uses, because a profile is platform-owned registered data
+   and is read before the tenant it creates exists.
+2. Regenerate the component from those models, then work the post-generation
+   checklist: the messaging registrar, the history providers and the event
+   mappings at the component's composition points, the shell's IAM aggregator,
+   the SQL create and drop aggregators, and the CMake source lists.
+3. Seed the two rows by SQL in =projects/ores.sql/populate/iam/=, each with its
+   ordered steps and its declared parameters, and add the writer permissions
+   the generated handlers check.
+4. Verify: the service subscribes the new subjects on the live broker, the
+   reads return both profiles, the generated tests pass, and the codegen gates
+   stay green.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Entities modelled | 3 (profile, step, parameter) | =ls projects/ores.iam/modeling/ores.iam.seed_profile*.org= | =4fa9bb6082= (working tree) |
+| Generated files written for the three entities | 117 (39 each) | =compass codegen regenerate --component iam --entity seed_profile,seed_profile_step,seed_profile_parameter --address ores= | =4fa9bb6082= (working tree) |
+| Seeded rows | 2 profiles, 9 steps, 2 parameters | =compass sql -- -f projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql= (its own summary counts) | =4fa9bb6082= (working tree) |
+| New subjects subscribed by the live iam service | 27 | =curl -s 'http://localhost:21406/subsz?subs=1'= | =4fa9bb6082= (working tree) |
+| Codegen drift, files this branch touched | 0 | =check_component_drift.py --sweep= | =4fa9bb6082= (working tree) |
+| Model drift | 0 (1 pre-existing known exception) | =check_model_drift.py --summary= | =4fa9bb6082= (working tree) |
+| SQL hygiene | 1548 files, 0 problems | =check_sql_hygiene.py projects/ores.sql= | =4fa9bb6082= (working tree) |
+| Protocol twins | 80 headers, 10 components, all twinned | =check_protocol_twin_coverage.py= | =4fa9bb6082= (working tree) |
+| Handler permissions | 7 components, 226 codes, all seeded | =check_handler_permissions.py= | =4fa9bb6082= (working tree) |
+| Shell menu collisions | 443 files, 217 names, 0 collisions | =check_shell_menu_collisions.py= | =4fa9bb6082= (working tree) |
+| Populate references | resolve | =check_populate_references.py= | =4fa9bb6082= (working tree) |
+| Test case reachability | 6580 cases in 836 files, none conditional | =check_test_case_reachability.py= | =4fa9bb6082= (working tree) |
+| CMake source lists | up to date for the four components touched | =regenerate_cmake_component_files.py --component <c> --check= | =4fa9bb6082= (working tree) |
+| C++ tests for the component | 5 suites, 100% passed (101 cases in =ores.iam.core.tests=) | =compass test run -- -R iam= | =4fa9bb6082= (working tree) |
+| Workspace build | exit 0, all targets | =compass build= | =4fa9bb6082= (working tree) |
+| TypeScript typecheck, format, tests | 0 errors; clean; 44 + 36 tests passed | =npm run typecheck=, =npm run format:check=, =npm test= in =projects/ores.web= | =4fa9bb6082= (working tree) |
+
+* Notes
+
+- *Binding.* The three models bind =uuid-identified-lookup=, the profile
+  =ores.iam.tenant= binds, plus =:system_scope: true=. =uuid-surrogate-lookup=
+  fixes =system_scope= to false, which platform-owned registered data cannot
+  be, and the model-drift gate refuses the contradiction.
+- *Whole-table ownership.* =:system_scope:= leaves =tenant_id= out of the
+  primary key, which is =(id, valid_from, valid_to)=, so the profile's unique
+  index is on =code= alone and the insert trigger forces the system tenant. The
+  children's composite index still carries =tenant_id=, because the template
+  adds it for a natural key even when the tenant is out of the primary key.
+- *Pre-existing failures met on the way.* Both are captures in the inbox:
+  the =entity_org= scaffold writes a =* Primary key= heading the entity loader
+  does not read, and the generated shell =get=, =delete=, =versions= and
+  =version= never read a minted UUID key.
+- *Live-database grants.* The three tables were applied to the live database by
+  hand, ahead of the create aggregator, so the rw role and the iam service user
+  needed the grants re-applied by hand before the writes and reads answered. A
+  =compass db recreate= covers both through the schema's default privileges and
+  the prefix-matching service grant script; nothing in the repository needed
+  changing for it.
+- *Orphan rows from the generated tests.* Each child's generated eventing test
+  writes its parent profile and does not delete it. The two synthetic profiles
+  the tests left active were soft-deleted from the live database after the run.
+
+* Test Scenarios
+
+No new manual scenario: the task's acceptance is proved by gates and by the
+scripted shell session recorded in =* Result=, and the journey that consumes
+these rows gets its own scenario when its screen exists.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2306][#2306]] | [iam] Model the seed profile and seed the two profiles |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The three entities are modelled, generated and wired, and the two accepted
+profiles are rows. =projects/ores.iam/modeling= gained
+=ores.iam.seed_profile=, =ores.iam.seed_profile_step= and
+=ores.iam.seed_profile_parameter=, bound to =uuid-identified-lookup= with
+=:system_scope: true= so every row belongs to the system tenant.
+
+=projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql= seeds
+*Empty operational* (three steps: =publish_bundle= of =base=,
+=import_lei_hierarchy=, =provision_party= of =party_essentials=; two
+parameters: the counterparty count and the GLEIF root LEI; no prefilled tenant
+details) and *ACME demo* (all six step kinds, the root LEI
+=9695ACMEGROUP0000030= in the import's arguments, =base= together with
+=risk_management=, the tenant details and the tenant administrator's identity
+prefilled, and no parameters). The script is idempotent: a second run inserts
+nothing.
+
+The component's composition points carry the three registrar families and the
+shell's IAM aggregator carries the three command units, so the SQL, C++,
+TypeScript, shell and CMake surfaces all exist and all build.
+
+The read subjects answer. Measured in one authenticated shell session against
+the live service, which is the whole chain: NATS subject, handler, service,
+repository, database.
+
+#+begin_example
+seed_profiles list --limit 10
+  ok; empty_operational and acme_demo returned with their prefilled details
+seed_profiles get-many <empty_operational id>
+  ok; {"code":"empty_operational", "force_password_change":true, ...}
+seed_profiles get-many <acme_demo id>
+  ok; {"code":"acme_demo", "inherits_admin_password":true, ...}
+seed_profile_steps by-seed-profile-id <empty_operational id>
+  ok; publish_bundle {"bundles": ["base"]}, import_lei_hierarchy {},
+  provision_party {"bundles": ["party_essentials"]}
+seed_profile_steps by-seed-profile-id <acme_demo id>
+  ok; all six kinds, in order, with the root LEI in the import's arguments
+seed_profile_parameters by-seed-profile-id <empty_operational id>
+  ok; counterparty_count (integer, default 50, required) and gleif_root_lei
+  (string, no default, optional)
+seed_profile_parameters by-seed-profile-id <acme_demo id>
+  ok; none, which is what "no parameters" means for that profile
+#+end_example
+
+One caveat, and it is the caller's: =seed_profiles get <id>= answers
+=missing/not_found= although =list= and =get-many= return the same row. The
+generated shell unit never writes its positional argument into the request
+when the entity's key is a minted UUID, so it asks for the nil key. That is a
+pre-existing shell-command template defect, not a read defect -- the row reads
+correctly by the same id through =get-many= and through the service -- and it
+is filed in the inbox with the measurement, together with the same shape in
+=ores.dq.publication=, =ores.compute.result= and the trading instruments.
+
+The component's gates are green: the codegen sweep reports no drift in any
+file this branch touched, the model-drift, SQL-hygiene, protocol-twin,
+handler-permission, menu-collision, route-auth, populate-reference,
+test-reachability and registry-exception gates all pass, the CMake source
+lists match the tree, the five iam test suites pass including the three
+generated eventing integration tests, the workspace build is green, and the
+TypeScript workspace typechecks, formats clean and its 80 tests pass.
+
+Not done here, and left to the steps that own them: no BFF route reads these
+subjects yet (step 4 of the story owns that), and no provisioning step consumes
+the arguments the rows carry (steps 6 and 7 do).

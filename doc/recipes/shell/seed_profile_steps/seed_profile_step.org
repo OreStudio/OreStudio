@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 00679BCA-C8E8-51EC-9835-B0C4C5A5612B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the seed_profile_steps commands from the shell?
+#+description: Every command the seed_profile_steps submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:seed_profile_steps:
+
+This file documents the seed_profile_steps resource at the shell, one section per command. Every command is a subcommand of =seed_profile_steps=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5DC3E1D7-2E56-5B8E-8708-593845049042
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.list=.
+
+#+name: seed_profile_steps-list
+#+begin_src ores-shell :tangle seed_profile_steps-list.ores :exports none
+seed_profile_steps list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A66C1AC4-BC87-56E6-825E-F6C4362549C9
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps get <id>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.get=.
+
+#+name: seed_profile_steps-get
+#+begin_src ores-shell :tangle seed_profile_steps-get.ores :exports none
+seed_profile_steps get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 76345EB8-AB98-5664-A274-175BDC78EA8A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.get_many=.
+
+#+name: seed_profile_steps-get-many
+#+begin_src ores-shell :tangle seed_profile_steps-get-many.ores :exports none
+seed_profile_steps get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: F8CF596E-A617-5D21-A380-B4EDF3499719
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps add <seed_profile_id> <step_kind> <arguments_json> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.put=.
+
+#+name: seed_profile_steps-add
+#+begin_src ores-shell :tangle seed_profile_steps-add.ores :exports none
+seed_profile_steps add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6433DA3F-A7AD-5D73-8177-30C880DE99CF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps set <id> <seed_profile_id> <step_kind> <arguments_json> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.put=.
+
+#+name: seed_profile_steps-set
+#+begin_src ores-shell :tangle seed_profile_steps-set.ores :exports none
+seed_profile_steps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6D0EF995-44EA-53C9-B65B-93E5BA0FD5FA
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps put-many --count <n> <id> <seed_profile_id> <step_kind> <arguments_json> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.put_many=.
+
+#+name: seed_profile_steps-put-many
+#+begin_src ores-shell :tangle seed_profile_steps-put-many.ores :exports none
+seed_profile_steps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1B6DD320-E8D4-5E35-A775-01F775B348C0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.delete=.
+
+#+name: seed_profile_steps-delete
+#+begin_src ores-shell :tangle seed_profile_steps-delete.ores :exports none
+seed_profile_steps delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 3ACFD57C-83FA-5167-B391-6B275C29B373
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.delete_many=.
+
+#+name: seed_profile_steps-delete-many
+#+begin_src ores-shell :tangle seed_profile_steps-delete-many.ores :exports none
+seed_profile_steps delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-seed-profile-id=
+:PROPERTIES:
+:ID: 333AC4FD-4E1C-5E59-BB9B-DD9C057A5867
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps by-seed-profile-id <seed_profile_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps.list_by_seed_profile_id=.
+
+#+name: seed_profile_steps-by-seed-profile-id
+#+begin_src ores-shell :tangle seed_profile_steps-by-seed-profile-id.ores :exports none
+seed_profile_steps by-seed-profile-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 143D3234-55FA-5759-829D-A129687EE560
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps_versions.list=.
+
+#+name: seed_profile_steps-versions
+#+begin_src ores-shell :tangle seed_profile_steps-versions.ores :exports none
+seed_profile_steps versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0CEA1EFD-8E0C-5185-8E63-04923A5D5630
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profile_steps version <id> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.seed_profile_steps_versions.get=.
+
+#+name: seed_profile_steps-version
+#+begin_src ores-shell :tangle seed_profile_steps-version.ores :exports none
+seed_profile_steps version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

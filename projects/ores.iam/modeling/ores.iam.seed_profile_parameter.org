@@ -1,0 +1,230 @@
+:PROPERTIES:
+:ID: 248D66E3-4FC1-4A95-BEBC-35686227B58C
+:END:
+#+title: ores.iam.seed_profile_parameter
+#+description: Codegen entity model for the iam seed_profile_parameter table. Drives the C++ domain class, mapper, repository, service, handler, protocol and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: seed_profile_parameter
+#+entity_plural: seed_profile_parameters
+#+entity_title: Seed Profile Parameter
+#+brief: One input a seed profile's form declares.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The schema of the form that a seed profile presents: one row per
+parameter, stating its name, its type, its default and whether a value is
+required. The web builds the tenant form from these rows. The shell takes
+the same values as =--param key=value=.
+
+The declared shape is deliberately small. A profile decides how many
+counterparties to create and which GLEIF root LEI to import; it does not
+decide what a step kind does, because that is code.
+
+A profile with no parameters states that its form asks for nothing. The
+demonstration profile is one: it carries every value it needs, so its
+journey presents no input at all.
+
+The pair =(seed_profile_id, name)= is the identity.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:END:
+
+Surrogate identifier for the parameter row.
+
+** seed_profile_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+Profile whose form declares this parameter.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+Parameter name, as the form's field key and as the shell's =--param= key.
+For example =counterparty_count= or =gleif_root_lei=.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** data_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How to read the value: =string=, =integer= or =boolean=. Stored beside the
+value because one table carries every type, and the form picks its widget
+from it.
+
+#+begin_src cpp :name generator
+std::string("string")
+#+end_src
+
+** default_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Value the form starts with, as text and read according to =data_type=.
+Null states that the parameter has no default and the administrator must
+supply one.
+
+#+begin_src cpp :name generator
+std::string("50")
+#+end_src
+
+** is_required
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  true
+:END:
+
+Whether the form refuses to continue without a value. A required
+parameter with a default is prefilled and accepted as it stands.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+What the parameter changes, as the form's help text.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order the form presents this field in. Lower numbers appear first.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:    ores_iam_seed_profile_parameters_tbl
+:system_scope: true
+:END:
+
+** Checks
+
+| expression          |
+|---------------------|
+| "name" <> ''        |
+| "data_type" <> ''   |
+
+* Foreign keys
+
+** seed_profile_id
+:PROPERTIES:
+:table:              ores_iam_seed_profiles_tbl
+:parent_entity:      seed_profile
+:nullable:           false
+:error_message:      Invalid seed_profile_id: %. No active seed profile found with this id.
+:list_by:            true
+:list_by_order_by:   display_order
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: seed_profile_parameter
+:entity_plural_short:   seed_profile_parameters
+:entity_singular_words: seed profile parameter
+:entity_plural_words:   seed profile parameters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: spp
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| name          | Name        |
+| data_type     | Type        |
+| default_value | Default     |
+| is_required   | Required    |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Paste blocks
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
+- [[id:25B5DE96-7E9E-4713-92D7-F286BB41C855][ores.iam.seed_profile]] — the profile whose form these parameters describe.

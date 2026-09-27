@@ -8,7 +8,7 @@
 #+filetags: :codegen-http-routes:sprint_26:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2229
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -73,6 +73,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2229][#2229]] | [agile] Close the codegen-http-routes story with the merged facts |
 | #2210 | [http] Generate the gateway's routes from the component models |
 
 * Review

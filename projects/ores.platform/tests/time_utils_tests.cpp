@@ -141,3 +141,48 @@ TEST_CASE("to_time_point_utc_roundtrips", tags) {
 
     CHECK(result == expected);
 }
+
+// The date formats ORE's own example files use. Two were supported; a survey of
+// the corpus at external/ore/examples found five, and the three that were
+// missing made 9,423 lines across four files unreadable.
+
+TEST_CASE("parse_date_reads_yyyy_mm_dd", tags) {
+    const auto d = time_utils::parse_date("2025-09-30");
+    CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
+}
+
+TEST_CASE("parse_date_reads_yyyymmdd", tags) {
+    const auto d = time_utils::parse_date("20250930");
+    CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
+}
+
+TEST_CASE("parse_date_reads_dd_mm_yyyy", tags) {
+    const auto d = time_utils::parse_date("30-09-2025");
+    CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
+}
+
+TEST_CASE("parse_date_reads_dd_mm_yyyy_with_dots", tags) {
+    const auto d = time_utils::parse_date("30.09.2025");
+    CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
+}
+
+TEST_CASE("parse_date_reads_dd_mm_yy_as_a_2000s_year", tags) {
+    const auto d = time_utils::parse_date("30.09.25");
+    CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
+}
+
+TEST_CASE("parse_date_distinguishes_dd_mm_yyyy_from_yyyy_mm_dd", tags) {
+    // Both are ten characters, so only the separator positions tell them apart.
+    // A day above the twelfth cannot be confused, but an ambiguous one can, and
+    // reading 05-03-2025 as month five would be silent rather than loud.
+    CHECK(time_utils::parse_date("05-03-2025") ==
+          std::chrono::year{2025} / std::chrono::month{3} / std::chrono::day{5});
+    CHECK(time_utils::parse_date("2025-03-05") ==
+          std::chrono::year{2025} / std::chrono::month{3} / std::chrono::day{5});
+}
+
+TEST_CASE("parse_date_rejects_a_date_that_is_not_one", tags) {
+    CHECK_THROWS_AS(time_utils::parse_date("31-02-2025"), std::invalid_argument);
+    CHECK_THROWS_AS(time_utils::parse_date("2025/09/30"), std::invalid_argument);
+    CHECK_THROWS_AS(time_utils::parse_date(""), std::invalid_argument);
+}

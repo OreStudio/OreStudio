@@ -20,6 +20,7 @@
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.platform/time/time_utils.hpp"
+#include <algorithm>
 #include <istream>
 #include <map>
 #include <stdexcept>
@@ -90,9 +91,13 @@ std::vector<T> dedupe_by_date_and_key(std::vector<T> items,
  * @return {date_str, key_str, value_str} or throws on fewer than 3 tokens.
  */
 struct line_tokens {
-    std::string_view date;
-    std::string_view key;
-    std::string_view value;
+    // Owning rather than views: the comma normalisation below builds a buffer
+    // inside this function, so a view into it would dangle the moment tokenize
+    // returned. These are three short strings on a path that already parses a
+    // date and allocates.
+    std::string date;
+    std::string key;
+    std::string value;
 };
 
 line_tokens tokenize(std::string_view line) {
@@ -101,23 +106,19 @@ line_tokens tokenize(std::string_view line) {
         return p == std::string_view::npos ? std::string_view{} : sv.substr(p);
     };
 
-    line = skip_ws(line);
+    // Commas and whitespace both separate fields in ORE's market data: some
+    // files are comma-delimited throughout, some put a comma only after the
+    // date and a space before the value, and some use whitespace alone. The
+    // separator is normalised rather than detected. Detecting it meant taking
+    // the comma path only when a line held two commas or more, so a line with
+    // exactly one fell through to the whitespace path, failed to yield three
+    // tokens, and aborted its whole file.
+    std::string normalised(line);
+    std::replace(normalised.begin(), normalised.end(), ',', ' ');
+    line = skip_ws(normalised);
 
-    // Detect comma-delimited format: if there are at least two commas, split on commas.
-    const auto c1 = line.find(',');
-    if (c1 != std::string_view::npos) {
-        const auto c2 = line.find(',', c1 + 1);
-        if (c2 != std::string_view::npos) {
-            const auto date = line.substr(0, c1);
-            const auto key = line.substr(c1 + 1, c2 - c1 - 1);
-            const auto value = line.substr(c2 + 1);
-            if (date.empty() || key.empty() || value.empty())
-                throw std::invalid_argument("fewer than 3 tokens: " + std::string(line));
-            return {date, key, value};
-        }
-    }
-
-    // Whitespace-delimited format.
+    // Three fields, whitespace-separated. The value is the remainder of the
+    // line, so a value that carries a space survives.
     auto next_token = [](std::string_view sv) -> std::pair<std::string_view, std::string_view> {
         const auto end = sv.find_first_of(" \t\r");
         if (end == std::string_view::npos)
@@ -138,7 +139,7 @@ line_tokens tokenize(std::string_view line) {
     if (value.empty())
         throw std::invalid_argument("fewer than 3 tokens: " + std::string(line));
 
-    return {date, key, value};
+    return {std::string(date), std::string(key), std::string(value)};
 }
 
 } // namespace

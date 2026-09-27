@@ -243,7 +243,7 @@ select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
 
 -- ---------------------------------------------------------------------------
--- storage_service: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else. domain service
+-- storage_service: Object Storage domain service
 -- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------

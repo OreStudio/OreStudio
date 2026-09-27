@@ -383,12 +383,21 @@
 :psql_var:    storage_service
 :env_key:     STORAGE_SERVICE
 :iam_role:    StorageService
-:description: Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else.
+:description: Object Storage
 :email:       storage_service@system.ores
 :replicas:    1
 :enabled:     true
 :depends_on:  ores.iam.service
 :END:
+
+Answers put, get, delete and list on the =storage.v1.objects.*= subjects,
+over the same storage root the HTTP routes are given, so a caller reaches one
+set of objects either way. It holds no tables: the database gives it the
+request context the shared runner hands to a handler, and nothing else.
+
+=description:= stays a few words because three templates append "; domain
+service" to it for a SQL comment and a service-account label. A paragraph here
+reads back as "... and nothing else. domain service".
 
 ** Extra args
 

@@ -210,7 +210,7 @@ select ores_iam_service_accounts_upsert_fn(
 select ores_iam_service_accounts_upsert_fn(
     :'storage_service_user',
     'storage_service@system.ores',
-    'System service account for Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else. NATS domain service',
+    'System service account for Object Storage NATS domain service',
     :'storage_service_pw'
 );
 

@@ -174,7 +174,7 @@ alter  user :analytics_service_user with password :'analytics_service_password';
 grant :service_role to :analytics_service_user;
 alter  role :analytics_service_user set search_path to public;
 
--- Object storage over the bus. Answers put, get, delete and list on the storage.v1.objects.* subjects, over the same storage root the HTTP routes are given, so a caller reaches one set of objects either way. It holds no tables: the database gives it the request context the shared runner hands to a handler, and nothing else. domain service
+-- Object Storage domain service
 select set_config('ores.cur_user', :'storage_service_user', false);
 do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then

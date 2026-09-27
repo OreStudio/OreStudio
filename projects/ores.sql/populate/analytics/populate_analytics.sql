@@ -18,4 +18,5 @@
  *
  */
 
+\ir ./analytics_credit_ratings_populate.sql
 \ir ./analytics_pricing_engine_types_populate.sql

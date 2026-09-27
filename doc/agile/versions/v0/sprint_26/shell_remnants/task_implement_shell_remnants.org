@@ -152,8 +152,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 All three pieces are done, and the count in the first one was wrong when the
 story was scaffolded.
 

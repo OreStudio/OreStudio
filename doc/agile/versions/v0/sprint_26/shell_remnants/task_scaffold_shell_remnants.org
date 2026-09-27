@@ -83,7 +83,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-* Result
 
 The story, its two tasks and the sprint row, scaffolded with =compass story new=.
 The implement task carries the plan, the measurements and the result.

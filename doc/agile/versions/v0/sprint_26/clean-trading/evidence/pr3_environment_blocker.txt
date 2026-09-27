@@ -102,3 +102,29 @@ patching it defect by defect from a trading branch is not the fix. The
 owners of dq and of the storage service should regenerate their SQL, and
 the environment should be restorable from a snapshot so that one broken
 component cannot stop every worktree's verification.
+
+Defect 5, found after the first four were worked around
+-------------------------------------------------------
+The populate then advances past the flags step and fails in the
+synthetic seed:
+
+    psql:populate/synthetic/synthetic_fx_spot_configs_uniform_demo_populate.sql:55:
+    ERROR: Row already exists: a create cannot replace it. State the
+    version you read to replace the row, or ask for a version replace.
+    CONTEXT: PL/pgSQL function ores_dq_catalogs_insert_fn()
+
+Two seed scripts insert the same =Synthetic Market Data= catalogue row,
+and the insert function refuses the second rather than skipping it, so
+the seed is not re-runnable and the recreate cannot finish. This is the
+fifth independent defect, and the fifth time a repair revealed the next.
+
+The suite failures are downstream of this
+-----------------------------------------
+The grant step runs after the populate, so the half-seeded database also
+leaves the test role without the grants the suites need. The failure that
+was visible on the last attempt is exact:
+
+    permission denied for table ores_refdata_parties_tbl
+
+That is why the trading core suite reports 103 cases with 99 failed: not
+the commodity port, and not only missing rows.

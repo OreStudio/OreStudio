@@ -252,12 +252,19 @@ def _report_drift(tmp_root: Path, verbose: bool) -> int:
     return 1
 
 
-def _render_components(components: list, address: str, tmp_root: Path) -> int:
+def _render_components(components: list, address: str, tmp_root: Path,
+                       whole_address: bool = False) -> int:
     """Render every component/address into ``tmp_root``; write nothing in the repo.
 
     Each model goes through the same ``_generate_single`` the in-place mode
     uses, so the units are identical; ``output_root`` redirects the write
     target to the temporary root.
+
+    ``whole_address`` renders each component at the single ``ores`` address
+    instead of expanding it into the technical spaces. A facet that requires a
+    facet in another space -- the recipe facets require the shell-command and
+    http-route facets -- fires only that way, so the sweep asks for it and the
+    per-component modes keep the expansion they have always had.
     """
     graph = load_graph(TEMPLATES_DIR)
     for component in components:
@@ -272,8 +279,11 @@ def _render_components(components: list, address: str, tmp_root: Path) -> int:
                   f"(modeling_dir: {comp.modeling_dir or '(no modeling dir)'})",
                   file=sys.stderr)
             continue
-        addresses = ([address] if address != "ores"
-                     else _addresses_for(component, graph))
+        if whole_address:
+            addresses = ["ores"]
+        else:
+            addresses = ([address] if address != "ores"
+                         else _addresses_for(component, graph))
         for one_address in addresses:
             print(f"Checking component {component!r} at address "
                   f"{one_address!r} (dry run, no writes)...")
@@ -407,7 +417,8 @@ def _sweep(base: str, verbose: bool) -> int:
     with tempfile.TemporaryDirectory(prefix="ores-codegen-sweep-") as tmpdir:
         tmp_root = Path(tmpdir)
         _seed_clang_format(tmp_root)
-        rc = _render_components(components, "ores", tmp_root)
+        rc = _render_components(components, "ores", tmp_root,
+                                whole_address=True)
         if rc != 0:
             return rc
         would_change, would_create = _compare_generated_tree(tmp_root)

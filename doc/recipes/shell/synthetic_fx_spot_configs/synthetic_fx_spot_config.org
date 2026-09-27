@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 433F316B-EEFE-5C37-B7C8-2C6DA4D0B817
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the synthetic_fx_spot_configs commands from the shell?
 #+description: Every command the synthetic_fx_spot_configs submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: DBF608CE-EB7D-5AD6-B2A0-2CAD7A624046
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the pricing_engine_types commands from the shell?
 #+description: Every command the pricing_engine_types submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

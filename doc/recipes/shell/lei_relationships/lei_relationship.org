@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 1874CC7F-A727-5FFD-A98E-5FE54754EB1E
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the lei_relationships commands from the shell?
 #+description: Every command the lei_relationships submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

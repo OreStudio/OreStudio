@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 922962C6-FC22-42D9-9DAD-3F9280F7DD88
+:END:
+#+title: Task: Mark generated recipes, and give them a gate
+#+description: The recipe templates carry a codegen marker as a Mustache comment, which Mustache strips, so no generated recipe reaches the tree with one: 247 files sit at the generated recipe path shape and 172 carry the tangle block a generated recipe exports, none carries a marker, against 7,854 C++ files that do. The sweep renders per technical space, so it never produces a recipe and cannot cover them either. Emit the marker at the render seam and render the whole ores address.
+#+type: task
+#+level: s1
+#+filetags: :harden-clean-standard-gates:sprint_26:v0:
+#+owner: marco
+#+branch: feature/mark-generated-recipes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give generated org output the codegen marker every other generated kind already
+carries, and give the generated recipes the gate they have never had.
+
+The recipe templates do carry a marker, but as a Mustache comment, and Mustache
+comments produce no output. So no generated recipe reached the tree with one:
+247 files sit at the generated recipe path shape and 172 carry the =:tangle=
+block a generated recipe exports, against 7,854 C++ files that name their
+template. Nothing could tell a generated recipe from a hand-written one, and
+nothing checked either, because the sweep rendered per technical space and the
+recipe facets need a facet from another space.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
+| Now          | Marker emitted, rollout applied, recording the two findings. |
+| Waiting on   | Nothing.                               |
+| Next         | The recipe staleness, which needs its owner. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Every generated org document carries a marker naming its template, emitted at
+  the render seam rather than by each template.
+- The marker does not disturb the document's frontmatter, its blurb, or the doc
+  index that reads them.
+- The sweep renders the whole =ores= address, so the recipe facets fire and the
+  generated recipes are covered.
+- The rollout changes nothing but the marker: no generated recipe is rewritten
+  beyond adding one line, and the check proves it.
+- A test fails if the org marker stops being emitted.
+
+* Plan
+
+*Where the marker goes, and why there.* Org has no licence block to append a
+marker to, so the marker is a =#+generated:= keyword inserted after the leading
+=:PROPERTIES:= drawer. Placement is not cosmetic. The doc index reads the drawer
+from the first line and folds whatever precedes it into the document's blurb --
+the prose =compass show= prints -- so a marker above the drawer gives the blurb
+the drawer's own text. And the blurb skips =#+= lines and blank lines and stops
+at anything else, so a =#= comment in the same position becomes the blurb too.
+Both were measured against =doc_index.extract_blurb= before the change: the
+=#+generated:= keyword after the drawer preserves the blurb and the id, and a
+marker above the drawer corrupts the blurb.
+
+*The coverage half.* =_render_components= expands =ores= into the technical
+spaces, and passing =ores= to it does not render the whole address. A facet
+whose =#+requires_facet:= names a facet in another space therefore never fires,
+which is how the recipe facets were missed: for =ores.trading= the per-space path
+gives 1,867 files and no recipe, while rendering each model at the whole address
+gives 2,003 files and 22 recipes. The sweep now asks for the whole address; the
+per-component modes keep the expansion they have always had.
+
+*The rollout, and its safety rule.* Applying a marker to files that already exist
+is a rewrite, and 58 of the renderable recipes disagree with their models by more
+than a marker. So the rollout wrote a recipe only where the marker was the sole
+difference, and left the rest alone. That is the rule the check enforces, and it
+is what keeps a hand edit from being overwritten by a marker pass.
+
+* Notes
+
+*Measured at this head.*
+
+- The whole-address render produces 185 recipe files. 113 took the marker with
+  nothing else changed, 58 differ by more than the marker and were left alone,
+  and 14 the render produces are absent from the tree entirely.
+- The rollout is exactly additive: 113 files changed, 113 lines added, 0 removed,
+  and every added line is a =#+generated:= line. Re-running the pass applies 0.
+- The canonical doc index loads all 281 org files under =doc/recipes/shell/= and
+  =doc/recipes/http/=, every one with a non-empty blurb, and none with the marker
+  in its blurb.
+- The sweep renders the whole address now and reports 969 files drifting across
+  the catalogue rather than 645, because it reaches the recipes. It takes about
+  a minute and stays green: none of that drift is this branch's.
+- Proved end to end: appending a line to
+  =doc/recipes/shell/trade_types/trade_type.org= makes the sweep exit 1 and name
+  that file, where before the change it could not see a recipe at all.
+- Codegen suite 901 passed; =compass lint= clean; =validate_docs.sh= 40 of 40.
+
+*Two findings the rollout exposed, neither fixed here.*
+
+1. *58 recipes are stale against their template.* They differ only inside their
+   =#+begin_src ores-shell :tangle ...= blocks, and only by =__none__= becoming
+   =-= in the placeholder positions; no prose changed, so they are stale rather
+   than hand-edited. Which of the two the shell actually accepts is the shell
+   owner's call, so this task leaves them and records them.
+2. *62 files sit at the generated recipe path shape that no render produces.*
+   Fourteen the render produces are missing from the tree; the rest are files
+   with no model behind them, which is what a retired or renamed template leaves.
+   Nothing deletes them, and nothing should: a clean-up that removed files no
+   render produces would delete whatever a hand-written nested recipe looks like.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

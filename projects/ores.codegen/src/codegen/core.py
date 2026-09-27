@@ -308,6 +308,55 @@ def _emits_ts(template_name):
     return template_name.endswith('.ts.mustache')
 
 
+def _emits_org(template_name):
+    """
+    Whether a template produces an org document.
+
+    Org carries no licence block to append a marker to, so the marker is
+    inserted into the document itself by ``_insert_org_marker`` rather than
+    appended to a licence the way the C++, TypeScript and CMake markers are.
+    """
+    return template_name.endswith('.org.mustache')
+
+
+def generated_org_marker(template_name):
+    """
+    Build the generated-file marker for an org document.
+
+    A ``#+`` keyword rather than a ``#`` comment, and inserted after the
+    frontmatter drawer rather than at the top of the file. The doc index reads
+    the drawer from the first line and folds whatever precedes it into the
+    document's blurb, which is the prose ``compass show`` prints; and it skips
+    ``#+`` lines and blank lines before the blurb and stops at anything else,
+    so a ``#`` comment in that position would become the blurb too.
+
+    Args:
+        template_name (str): Basename of the template being rendered
+
+    Returns:
+        str: An org keyword naming the template
+    """
+    return ("#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. "
+            f"Template: {template_name}. To modify, update the template and "
+            "regenerate.")
+
+
+def _insert_org_marker(rendered, template_name):
+    """
+    Put the org marker immediately after the document's frontmatter drawer.
+
+    A document with no drawer has no blurb above its body to spoil, so the
+    marker goes at the top of it.
+    """
+    marker = generated_org_marker(template_name)
+    lines = rendered.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() == ":END:":
+            body = "\n".join(lines[:index + 1] + [marker] + lines[index + 1:])
+            return body + ("\n" if rendered.endswith("\n") else "")
+    return marker + "\n" + rendered
+
+
 # Templates emit SQL, C++ and org, never HTML, so mustache's HTML escaping
 # would corrupt every value carrying an apostrophe or an ampersand. pystache's
 # module-level render() ignores the escape argument, so the renderer is built
@@ -344,7 +393,10 @@ def render_template(template_path, data):
                 f"{generated_marker(template_name, cmake=cmake)}"
             )
 
-    return _RENDERER.render(template_content, extended_data)
+    rendered = _RENDERER.render(template_content, extended_data)
+    if _emits_org(template_name):
+        rendered = _insert_org_marker(rendered, template_name)
+    return rendered
 
 
 

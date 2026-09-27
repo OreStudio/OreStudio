@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: E2FE5D11-E8B1-52E1-AA59-2C46663EF553
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the tenor_resolution_algorithms commands from the shell?
 #+description: Every command the tenor_resolution_algorithms submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

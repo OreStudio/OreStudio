@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 91845E51-131E-5C5A-89A3-1261457C1A17
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the artefact_types commands from the shell?
 #+description: Every command the artefact_types submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

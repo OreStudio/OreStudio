@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 788B9C8F-08A8-5B70-9794-3447973C6090
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I call the authorization endpoints over HTTP?
 #+description: Every endpoint the authorization resource answers over HTTP, with the request each one exports into the gateway's recipe library.
 #+type: recipe

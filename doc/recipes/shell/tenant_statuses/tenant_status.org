@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 5CF80075-6E0E-57A5-9A76-DD3BC0E17211
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the tenant_statuses commands from the shell?
 #+description: Every command the tenant_statuses submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

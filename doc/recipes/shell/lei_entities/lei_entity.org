@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: EBAD9DD1-95BB-527F-B0E0-B09E3A02A925
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the lei_entities commands from the shell?
 #+description: Every command the lei_entities submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

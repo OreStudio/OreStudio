@@ -64,6 +64,18 @@ no-match with the features that decide it and the reason.
 26. trade_party_role
     Junction-shaped domain_entity. The one junction profile is anchored to the junction metatype, and M07 records that this component has no junction metatype; a later reclassification opens it.
 
+Where a no-match is recorded: there is no in-model convention. No entity
+model in the tree carries :profile: none or a no-match marker, and the
+loader does not read the names the spec's RecordNoMatch rule uses
+(classification, no_match_reason), so writing them would be silently
+inert. The record is prose in the task or story, which is what the
+completed components did: clean-compute/task_clean_compute.org records
+"M02, the workflow batch link has no profile" and clean-iam's task
+records its account and permission entities "as genuine no-matches with
+their feature values". The machine-readable list in
+check_model_drift.py is for a binding that contradicts its profile, which
+is a different case.
+
 The rest of the component: 31 models bind a profile today -- 26 trading-instrument,
 3 simple-lookup, 1 workspace-scoped-lookup and 1 trading-record. The six field-group
 models, the module and the component overview are not domain_entity models and are

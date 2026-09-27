@@ -47,10 +47,16 @@ to the reference-data work and are out of scope, per decision D5.
   feature values and the reason. Twenty-six of fifty-seven bind none
   today: the fourteen bond family entities, the seven instrument child
   entities and the five trade envelope and party entities.
-- The tables that have no model have one: =commodity_instruments=,
+- The artefacts that have no model have one: the eight tables
+  =activity_types=, =fpml_event_types=, =commodity_instruments=,
   =composite_instruments=, =composite_legs=, =credit_instruments=,
-  =scripted_instruments=, =swap_legs= and =product_type=. Each
+  =scripted_instruments= and =swap_legs=, and =product_type=, which is a
+  database enum on the trades table rather than a table of its own. Each
   regenerates, and the drift dry run stays empty with it included.
+  The task first said seven, counting the six families and
+  =product_type=; the PR 3 survey found =activity_types= and
+  =fpml_event_types= in the same state, and they are the two remaining
+  legacy notify triggers PR 2 measured in the database.
 - Every hand-written domain type with no model is classified as a model
   to author, a message that is not an entity, or infrastructure, and the
   classification is recorded. Twenty-four are in that state today.
@@ -166,7 +172,10 @@ rather than against a name:
 None of this is recorded as a model property, because the loader does not
 know the names the spec's =RecordNoMatch= rule uses and an unknown
 property is silently inert. The record is the survey, which is what the
-standard's M02 method names.
+standard's M02 method names and what the components that have already
+closed M02 did: =clean-compute= records its workflow batch link as a
+no-match with no profile, and =clean-iam= records two entities as genuine
+no-matches with their feature values.
 
 * Plan
 
@@ -179,18 +188,18 @@ per-trade instrument is the wrong bind, and a forced nearest bind is not
 allowed. Where no profile fits, record the entity's actual feature
 values and the reason, as item M02 requires.
 
-** 2. Author the seven missing models
+** 2. Author the nine missing models
 
-Five families have a table, a repository, a service, a handler and SQL,
-and no model at all: commodity, composite with its legs child table,
-credit, scripted, and the shared swap legs table. =product_type= is the
-seventh, and its current shape is a database enum on the trades table
+Eight tables have a table, a repository, a service, a handler and SQL, and
+no model at all: =activity_types=, =fpml_event_types=, =commodity_instruments=,
+=composite_instruments= with =composite_legs=, =credit_instruments=,
+=scripted_instruments=, and the shared =swap_legs= table. =product_type=
+is the ninth, and its current shape is a database enum on the trades table
 rather than an entity, which is defect 10.
 
 Use the established entity org format. The bond family from the sprint
-25 pilot is the worked example. =swap_legs= needs a decision the sprint
-25 analysis left open: a shared table with one model, or one per
-family. Record the decision on the story before authoring it.
+25 pilot is the worked example. =swap_legs= is decided: D10 on the story
+fixes one model over the shared table, not one per family.
 
 ** 3. Classify the unmodelled hand-written domain types
 

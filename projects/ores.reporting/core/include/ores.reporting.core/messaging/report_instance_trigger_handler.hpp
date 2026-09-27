@@ -118,7 +118,7 @@ public:
 
         trigger_report_instance_response response;
         try {
-            trigger_one(req_ctx, *req, response);
+            trigger_one(req_ctx, *req, response, msg);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
                 << "Trigger failed: " << e.what();
@@ -138,7 +138,8 @@ private:
      */
     void trigger_one(const ores::database::context& req_ctx,
                      const trigger_report_instance_request& req,
-                     trigger_report_instance_response& response) {
+                     trigger_report_instance_response& response,
+                     const ores::nats::message& msg) {
         const auto tenant = boost::uuids::to_string(req.tenant_id);
         const auto definition_id = boost::uuids::to_string(req.report_definition_id);
         // Scoped from the authenticated context, not the base one: the
@@ -229,7 +230,7 @@ private:
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
         if (dispatch) {
-            dispatch_workflow(req, definition_id, inst_id_str, rg);
+            dispatch_workflow(req, definition_id, inst_id_str, rg, msg);
         }
 
         response.result.code = dispatch ? "triggered" : "not_dispatched";
@@ -259,7 +260,8 @@ private:
     void dispatch_workflow(const trigger_report_instance_request& req,
                            const std::string& definition_id,
                            const std::string& instance_id,
-                           boost::uuids::random_generator& rg) {
+                           boost::uuids::random_generator& rg,
+                           const ores::nats::message& msg) {
         report_execution_request exec_req{.report_instance_id = instance_id,
                                           .definition_id = definition_id,
                                           .tenant_id = boost::uuids::to_string(req.tenant_id),

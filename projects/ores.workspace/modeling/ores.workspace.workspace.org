@@ -1,8 +1,9 @@
 :PROPERTIES:
 :ID: B09B3A40-C58C-4918-AFD6-22CFF2B4E4C6
+:ores.sql.schema.enabled: false
 :END:
 #+title: ores.workspace.workspace
-#+description: Codegen entity model for the workspace =workspace= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+description: Codegen entity model for the workspace =workspace= table. Drives the C++ domain class, mapper, repository, service, and generator from a single literate source. The SQL schema facet is off while this model is migrated (see the note below).
 #+type: ores.codegen.entity
 #+component: workspace
 #+filetags: :model:entity:workspace:
@@ -11,11 +12,35 @@
 #+entity_plural: workspaces
 #+entity_title: Workspace
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-09-27
 
 Workspaces provide Docker-layer-style inheritance: data not present in a
 workspace is resolved from the parent chain up to the Live workspace
 (ores_utility_live_workspace_id_fn()).
+
+* The SQL schema facet is off, and must stay off until this model is migrated
+
+The =ores.sql.schema= facet is disabled outright (=.enabled: false= above)
+rather than generated and discarded, the way
+[[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] disables the editing
+surface it does not own. The live schema for =ores_workspaces_tbl= is
+hand-written and wired: =create/workspace/workspace_create.sql=,
+=create/workspace/workspace_notify_trigger.sql= and their =drop/= siblings.
+It carries what this model does not yet express -- the =party_id= and =name=
+columns, the parent-chain cycle guard, =ores_workspace_resolution_order_fn=,
+and =ores_workspace_trade_scope_tbl=.
+
+Generating the facet produced a second definition of the same table, the same
+three indexes and the same =ores_workspaces_insert_fn=, one that drops
+=party_id= and =name= because this model states its natural key in the retired
+=* Natural keys= heading (the loader reads keys from =* Columns=, so =name= is
+silently ignored) and states =party_id= through =:has_party_id:=, a flag no
+other model uses. Wiring that file in place of the hand-written one would
+break the workspace repository, which reads both columns. Unwired, it failed
+=validate_schemas.sh= with four WIRE_001 warnings, so the facet is off until
+[[id:EF349D87-4D3A-4F98-A454-7DBB2A80E48B][the workspace model drift task]] moves the key and the columns into the
+current format, at which point the facet is re-enabled, the generated schema
+is reconciled with the hand-written one, and the aggregators are re-pointed.
 
 * Flags
 :PROPERTIES:

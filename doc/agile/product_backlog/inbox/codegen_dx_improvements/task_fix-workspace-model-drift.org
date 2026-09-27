@@ -74,6 +74,30 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+- 2026-09-27: the entity's =ores.sql.schema= facet is switched off
+  ([[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on main]]). Commit =48f4282df6=
+  committed the four files the facet generates --
+  =create/workspace/workspace_workspaces_create.sql=, its =drop=, and the
+  two notify-trigger files -- and no aggregator includes them, so
+  =validate_schemas.sh= refused the tree with four WIRE_001 warnings. They
+  cannot be wired as they stand: they define the same table, the same
+  three indexes and the same =ores_workspaces_insert_fn= as the wired,
+  hand-written =workspace_create.sql=, and they drop the =party_id= and
+  =name= columns that the hand-written repository reads. The hotfix
+  deleted the four files and set =:ores.sql.schema.enabled: false= on
+  =ores.workspace.workspace.org=, with the reasoning on the model page.
+  This task must re-enable the facet, reconcile the generated schema with
+  the hand-written one (cycle guard, resolution-order function, trade
+  scope table, validate function) and re-point =create.sql= and =drop.sql=
+  at the result, then delete the hand-written files.
+- The model states its natural key =name= under a =* Natural keys=
+  heading. The loader reads keys only from a =* Columns= section with
+  =:natural_key: true= (=org_loader._split_columns_section=), so =name= is
+  silently absent from every generated artefact. =:has_party_id: true= is
+  likewise used by no other model and reaches the SQL generator not at
+  all. Both are moved into the current format by this task's first
+  acceptance item.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -28,11 +28,11 @@ rests on a true record rather than on a claim the gates cannot see.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] |
-| Now          | The five fixes are written; verification is in progress. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build, run the iam suites against a recreated database, and verify each fix against the running fleet. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -101,6 +101,13 @@ prove each fix against the running fleet.
   live run shows the guarded reads still serving it. A live caller without the
   code was not built; the denial is the generated =has_permission= call, which
   the regression test renders and asserts for every read verb.
+- *The reset surface keeps decisions of its own.* The recorded defect noted two
+  questions beside the ignored current password: whether an administrator reset
+  should set =password_reset_required= rather than choose a password, and that
+  =set_password_reset_required= has no caller because the hand-written HTTP
+  route that called it was replaced by a forwarder to the same NATS subject.
+  The primary defect is closed; the two questions are recorded here as the
+  capture is retired, and they belong to the reset flow rather than this pass.
 
 * Test Scenarios
 

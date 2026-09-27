@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 45256D66-9869-466A-A5FB-68712684036F
+:END:
+#+title: The function that creates the first administrator does not refuse a second one
+#+description: ores_iam_create_initial_admin_fn grants SuperAdmin and clears bootstrap mode, but it never checks the flag, so anything that can reach the subject can make another super user after setup.
+#+type: capture
+#+level: cross
+#+filetags: :iam:security:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_iam_create_initial_admin_fn= creates an account in the system tenant,
+assigns it the =SuperAdmin= role, associates it with the system party, and
+clears =system.bootstrap_mode=. It checks the tenant context, that the three
+arguments are non-empty, that the role exists and that the party exists.
+
+It does not check that the system is still in bootstrap mode, and it does not
+check that no administrator exists. Its only guard against a repeat is the
+unique index on =(tenant_id, username)= for live rows, which refuses the *same*
+username and nothing else.
+
+* Why
+
+Bootstrap mode is the flag that says "this deployment has no accounts". Every
+other layer treats it as the boundary: the BFF refuses a sign-in while it is
+set, the setup screen is the only page, and the generated protocol marks the
+subject =requires_session = false= because there is no session to present. The
+function that grants the highest privilege in the deployment is the one place
+that does not read it.
+
+The exposure today is a caller that can reach =iam.v1.bootstrap.create-admin=,
+which means anything holding a client certificate: every service in the fleet.
+It widens the day a browser-facing route exists, which is why the route added
+with the setup screen asks the flag first and refuses with =bootstrap-complete=
+rather than trusting the function.
+
+The fix belongs in the function, because that is where the privilege is granted:
+refuse unless =system.bootstrap_mode= is true. The route's check is then a
+second line rather than the only one.
+
+* References
+
+- =projects/ores.sql/create/iam/iam_system_provisioner_create.sql= — the function, and its exit from bootstrap mode.
+- =projects/ores.sql/create/iam/iam_accounts_create.sql:121= — the unique index on =(tenant_id, username)=, the only thing that refuses a repeat.
+- =projects/ores.web/packages/bff/src/server.ts= — the route's own check, and the reason it exists.
+
+* See also
+
+- [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] — the story that exposed it by giving the create a browser route.

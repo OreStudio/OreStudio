@@ -194,6 +194,8 @@ record each item's result in the table below.
 | Rebase 2 | The rebase broke nothing, but it made the checked-in shell commands and recipes stale in a way only the gate could see: main's shared menu composition renders =ores::shell::app::insert_menu=, and the refdata commands this branch regenerated still called =root_menu.Insert=. Regeneration re-emitted 18 command files, added the recipe family header to 36 recipes and materialised the http currencies recipe, which no component had committed. Main's =check_step_idempotency(nats_, step_id, tenant_id)= and this branch's uuid party id were both preserved in =ores.refdata.party.org=. | =62fc34e083=; =check_component_drift.py --all= exit 0. |
 | Final 2 | Re-verified on the rebased, committed tree and against a store rebuilt from nothing: =compass build= exits 0, =compass db recreate -y -k= exits 0, all six refdata targets pass (1581 cases, 8209 assertions, 0 failed), the codegen suite passes (936 tests), =check_component_drift.py --all= reports no drift, =validate_docs.sh= reports all 40 components clean, the backlog index check passes, and every other codegen gate exits 0 — model drift, protocol twins, handler permissions, populate references, registry exceptions, paste-block symbols, route auth, shell menu collisions, test reachability, oresmd coverage and the shell recipe inventory. V04 re-ran end to end: 732 commands, 0 aborts. | =build/audit/refdata-clean/postrebase3-*.txt=, each exit 0. |
 | Final 2 | One check is red, and it is red on main: =regenerate_cmake_component_files.py --all --check= wants to change 24 committed source lists across analytics, assets, compute and workspace. Every flagged file is byte-identical to =origin/main=, so no branch caused it and no per-PR job runs the check. Filed as an inbox capture rather than fixed here, because it is 24 files in components this task does not own. | =postrebase3-gates.txt=; =doc/agile/product_backlog/inbox/cmake-component-file-lists-are-stale.org=. |
+| V01 | The regeneration this branch ran had deleted a hand-written correctness guard, and a second environment's report is how it was found. =ores.iam='s generated =party_cache.hpp= carried a hand-written tenant-isolation filter: the party read is deliberately widened to the system tenant so IAM can resolve a name during authentication, so rows from every tenant arrive, and only the requested partition's rows may be filed under its key. The checked-in copy had the filter; the regenerated copy dropped it, and the next regeneration would have re-dropped it. The fix is at source: =derive_tenant_read_flags= now sets =cache_tenant_filter= beside =read_tenant_filtered= (they answer one question from opposite sides), the =nats-event-cache= header keeps only rows whose =tenant_id= matches the partition, and five tests pin the derivation and both renderings. Regenerating refdata restores the file to main's behaviour with the filter template-rendered. | =6c7d088e60=, =bec4bba545=; =test_cache_tenant_filter.py=; =check_component_drift.py --all= exit 0; =compass build= exit 0; 7 of 7 targets pass. |
+| V01 | The same report lists two other reasons regeneration was rejected on main. Both are already answered here, because the branch regenerates rather than hand-patches: =business_unit_key= is ={std::string unit_code}= on this branch and ={boost::uuids::uuid id}= on main, which is the disagreement that makes the installed notify trigger's key undecodable; and the two =del_req.removals.push_back= sites in =ore_import_execute_handler.cpp= pass a natural key (={.key = {.name = name}}=) rather than a uuid, so the regenerated removal type compiles. | =git show origin/main:.../business_unit_protocol.hpp= versus the branch; =bec4bba545='s build, exit 0. |
 
 * Notes
 
@@ -248,6 +250,18 @@ record each item's result in the table below.
   =--jwt-secret=, so =ores.http.server= failed its parse and systemd tripped its
   start limit. Removing the line (the file is untracked) brought the unit back;
   with it, 25 of 25 units run.
+- A second environment independently diagnosed the same 499-file staleness from
+  the failing =ores.refdata.core.tests= eventing cases, and rejected the
+  regeneration for three reasons: it reverts the party cache's tenant filter, it
+  breaks two =ores.ore= call sites, and refdata is not in the drift gate. Their
+  update is on =doc/agile/product_backlog/inbox/five_test_binaries_fail_on_main_and_four_of_them.org=
+  (not yet on the branch, which carries the capture's earlier revision). All
+  three are answered here: the gate lists refdata, the =ores.ore= call sites pass
+  a natural key, and the cache filter is now generated. That report is also what
+  exposed that this branch's own regeneration had dropped the filter, which is
+  fixed above. Nothing in this task should be taken as disagreeing with their
+  finding — the hand-written filter was the one real casualty of regenerating
+  refdata, and it is the reason the fix belongs in the generator.
 
 * Test Scenarios
 

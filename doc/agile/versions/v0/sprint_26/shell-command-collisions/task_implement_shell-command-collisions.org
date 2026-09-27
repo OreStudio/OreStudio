@@ -26,11 +26,11 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][Stop ores.shell menus from silently shadowing each other]] |
-| Now          | The seven shadowed verbs are deleted, the menus they were shadowed by are merged, and a duplicate now fails at startup. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review round on PR 1.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

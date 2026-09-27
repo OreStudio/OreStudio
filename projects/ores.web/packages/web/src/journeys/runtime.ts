@@ -82,6 +82,10 @@ export interface RailEntry {
  * would lie quietly. A journey that inlines another journey's steps is exactly
  * where that happens, so the check runs when the two lists are joined rather
  * than when somebody notices.
+ *
+ * The list is frozen before it is returned, because a check that a caller can
+ * undo is not a check. `readonly` stops the type checker from offering `push`,
+ * and it stops nothing at run time; freezing stops both.
  */
 export function defineJourney<Body>(steps: readonly JourneyStep<Body>[]): readonly JourneyStep<Body>[] {
     if (steps.length === 0) {
@@ -94,7 +98,7 @@ export function defineJourney<Body>(steps: readonly JourneyStep<Body>[]): readon
         }
         seen.add(step.id);
     }
-    return steps;
+    return Object.freeze(steps);
 }
 
 /**

@@ -42,11 +42,11 @@ into code.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The contract is being written. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Write the contract page, then the rail model, then the vocabulary. |
+| Next          | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -158,6 +158,35 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =defineJourney= returns the array it was given without freezing or copying, so a caller could mutate it and reintroduce a duplicate id undetected | =packages/web/src/journeys/runtime.ts= | Accept | Right, and the module's own premise makes it the wrong hole to leave: the check is the whole reason the definition is validated once. =readonly= is what the compiler enforces and nothing at run time, so the list is now frozen before it is returned, and a test pushes onto the result and expects the throw. The reviewer offered to defer this until a real journey exists; it costs one call and a test, and closing it now means the first journey is built on a guard that holds. |
+| 2 | The task's State field still read STARTED | this task | Accept | Closed with this round. |
 
 * Result
+
+The contract is written and the part of it that is code is in place.
+=journey_runtime.org= owns the client half: what a step is, why the rail is
+derived from the step list rather than passed beside it, the rule that a
+step which changed server state is final, the step-call contract of one
+hand-written BFF route per step, the bootstrap gate, the direction between
+the four packages, and the path from an org model to a parsed value.
+=journey_execution.org= gained the step and the human step and had its
+exists-or-missing table corrected against the code, and
+=component_specification.org= links the page.
+
+=runtime.ts= implements the rail model, generic over the step body so it
+carries no rendering library and its tests need no DOM, and it is frozen
+once validated so a caller cannot undo the check that made it valid.
+=defineJourney= refuses an empty journey and a repeated step id, and
+positions are found by name rather than by arithmetic, which is what lets
+first run inline the new tenant steps without counting them.
+
+Two things this task did not do, both recorded rather than implied. The
+React component that renders a rail belongs to the next task, because it
+needs the shared primitives the reduction commit deleted. And the rules the
+page states are not all enforced: most of them name a lint rule from a gate
+the component does not have, which is the single largest gap the TypeScript
+Clean Standard records.
+
+Verified on the branch: =npm run typecheck= exits 0, =npm test= passes 11
+test files and 84 cases of which the rail model contributes 14, =compass
+lint= is clean and =validate_docs.sh= reports all 40 components passing.

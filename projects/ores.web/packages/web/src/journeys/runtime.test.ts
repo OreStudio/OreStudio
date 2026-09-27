@@ -149,4 +149,16 @@ describe('defining a journey', () => {
 
         expect(() => defineJourney(collides)).toThrow('duplicate step id "provisioning"');
     });
+
+    it('cannot be extended after validation, which is what would undo the check', () => {
+        const steps = defineJourney([welcome, ready]);
+        /*
+         * The cast is the point of the test: `readonly` is what the compiler
+         * enforces, and a caller who ignores it is what the freeze is for.
+         */
+        const asTheCompilerSeesIt = steps as JourneyStep<string>[];
+
+        expect(Object.isFrozen(steps)).toBe(true);
+        expect(() => asTheCompilerSeesIt.push(step('welcome', 'Welcome again'))).toThrow(TypeError);
+    });
 });

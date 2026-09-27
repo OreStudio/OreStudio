@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 026C7253-4E4E-4290-B26C-B9258FD16523
+:END:
+#+title: Task: Check that a model's pasted block names symbols that exist
+#+description: A model can paste hand-written C++ into generated output through an :implements block, and the block is compiled only when its component is regenerated. So a cross-component rename can leave a block naming a symbol that no longer exists, with no compile error, until somebody regenerates that component and the build breaks. That is the measured ores.service defect. The sweep catches it only when the generated file disagrees with its model; this catches the model itself.
+#+type: task
+#+level: s1
+#+filetags: :harden-clean-standard-gates:sprint_26:v0:
+#+owner: marco
+#+branch: feature/paste-block-symbols
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fail when a model's pasted code block names a symbol the tree does not declare.
+
+A model can paste hand-written C++ into generated output through an
+=:implements= block, and the block reaches the compiler only when its component
+is regenerated. So a rename in one component can leave another component's block
+naming a symbol that no longer exists, and nothing notices: the generated file
+still compiles because the block is not in it yet, and the build breaks only when
+somebody later regenerates that component and the stale block arrives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
+| Now          | Gate written, proven end to end, and wired. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Every qualified name a pasted block references resolves against the namespaces
+  and types the headers declare, or the check fails and names the block.
+- The identifier existing under a different namespace fails, which is the shape
+  of the measured defect.
+- It fails when it finds no block and when it finds no qualified name, so it
+  cannot pass a tree by finding nothing.
+- It runs on every change under =projects/=, because a rename in any component's
+  headers is what it is sensitive to.
+- A test fails if the resolution stops working, and the measured shape is one of
+  them.
+
+* Plan
+
+*Why a second gate rather than the sweep.* The sweep added by
+[[id:EE473AFD-DFAB-4F72-97B0-F74D56BE9BA8][the catalogue sweep task]] catches the
+measured case, because the model and the generated file disagree there: refdata's
+generated handler was hand-edited to the new names while the model kept the old
+ones. It cannot catch the narrower case where a model and its generated file
+agree and are both stale, because the render reproduces the committed bytes. This
+check reads the model, so it catches both, and it needs no regeneration, which is
+what lets it fail at review.
+
+*How a name resolves.* The check reads every header under a =projects/= =include/=
+directory and builds the set of =(scope, identifier)= pairs it mentions, where the
+scope is the namespace, class, enum or struct path the identifier sits inside. A
+pasted =ores::a::b::name= resolves when =(ores, a, b)= declares =name=. Two
+details were found by measuring rather than by design: an export macro sits
+between the keyword and the name, as in =class ORES_PLATFORM_EXPORT datetime=, so
+the macro has to be skipped; and a type's own name has to be recorded before its
+braces are entered, or =ores::platform::time::datetime= does not resolve.
+
+*What it does not do.* It does not expand macros, follow =using= aliases across
+translation units, or tell a declaration from a use. The scope an identifier sits
+inside is recorded whether or not the identifier is declared there, and that errs
+towards resolving, which keeps the check quiet on the tree it runs against. It is
+a lint for a rename, not a compiler, and the honest statement of its power is
+that it resolves 34 of the 34 names on this tree and would have caught the
+measured defect through two of its three names.
+
+*Why it is in the sweep workflow.* A rename lands in somebody else's headers, so
+the check is sensitive to any change under =projects/=. =codegen-drift.yml= fires
+on the inputs codegen reads, which does not include a component's headers;
+=codegen-sweep.yml= fires on any change under =projects/=, which does. It reads
+models and headers only, so it needs neither codegen nor a formatter and takes
+about eight seconds.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. Measured at the branch point, =87437c8748=.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Pasted blocks | 98 blocks in 21 models | =check_paste_block_symbols.py= | =87437c8748= |
+| Qualified names referenced | 34, all resolving | =check_paste_block_symbols.py= | =87437c8748= |
+| Declared (scope, identifier) pairs | 191,661 in 4,545 headers | =check_paste_block_symbols.py= | =87437c8748= |
+| Check runtime | 7.5 seconds | =time check_paste_block_symbols.py= | =87437c8748= |
+| End-to-end proof | renaming =make_request_context= fails with 4 blocks named, in marketdata, refdata and trading | rename the declaration in =ores.service/service/request_context.hpp= and run the check | =87437c8748= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

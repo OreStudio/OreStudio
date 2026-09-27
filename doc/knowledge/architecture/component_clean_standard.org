@@ -162,7 +162,7 @@ the rest of the review.
 | V02 | All | The codegen suite passes, and the component's test suites pass with the fleet up. | =compass test run= |
 | V03 | Entity | The database recreates from scratch, and the fleet starts and serves. | =compass db recreate -y -k=; =compass services start= |
 | V04 | Entity | Every generated shell command runs against the live fleet and answers. Record any command that cannot run, with the reason. | Recipe run log on the task |
-| V05 | All | Every codegen gate is green with the component added: component drift, the catalogue drift sweep, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory, test case reachability and CMake source lists. | Each check script |
+| V05 | All | Every codegen gate is green with the component added: component drift, the catalogue drift sweep, pasted block symbols, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory, test case reachability and CMake source lists. | Each check script |
 | V06 | All | The component joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes with it listed. | =component_registry.py= diff |
 | V07 | All | No vacuous test. Every test fails when its subject does nothing, so a test that asserts only a length, a non-throw, a truthiness, or one production run against another is a finding. Assert a literal expected value. | Stub the subject and re-run. The test must fail |
 | V08 | All | Every source file has a test that exercises it, or is recorded with the reason it does not. The list of source files no test touches is the coverage work item. | Per-file survey under =src/=, against the component's test run |

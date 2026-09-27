@@ -124,6 +124,17 @@ lifecycle is ordered this way.
      templates are older than main's. Run it whenever anything under
      =projects/= changed, which is why it also runs on every pull request that
      touches =projects/**=.
+   - *pasted block symbols*:
+     =python3 projects/ores.codegen/scripts/check_paste_block_symbols.py=.
+     A model can paste hand-written C++ into generated output through an
+     =:implements= block, and the block reaches the compiler only when its
+     component is regenerated, so a block can name a symbol a rename elsewhere
+     deleted and nothing notices. The =ores.service= clean-up moved three
+     workflow header names into =ores.workflow.api= while =ores.refdata= kept a
+     pasted block naming the old home. The check resolves every qualified name a
+     block references against the namespaces and types the headers declare, so a
+     rename fails at review with no regeneration. Run it whenever anything under
+     =projects/= changed; it takes about eight seconds.
    - *populate reference drift*:
      =python3 projects/ores.codegen/scripts/check_populate_references.py=.
      It reads the lookup contract from the upsert function bodies under

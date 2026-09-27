@@ -72,9 +72,33 @@ with the evidence that shows it. The fix is its own commit on this branch.
 
 | # | Defect | Evidence | Cause | Fix |
 |---+--------+----------+-------+-----|
-|   |        |          |       |     |
+| 1 | The umbrella header's namespace comment reaches clang-format pre-wrapped, so the formatter cannot wrap it: =ores.analytics.api.hpp= carries a four-line paragraph at ~72 columns, and its continuation lines have no = * = prefix, so the comment is not a doc comment at all. | =projects/ores.analytics/api/include/ores.analytics.api/ores.analytics.api.hpp=; =ores.reporting.api.hpp= has the same ~72-column wrap but keeps its = * = prefixes. =ores.history.api.hpp= is the counter-example: one long line in, clang-format wrapped it at 100 with prefixes. clang-format 21.1.8 run twice over the analytics file is byte-identical, so the formatter is not going to repair it. | The committed file is one-shot scaffold output. The live loader, =load_org_component_overview_model=, reads the one-line frontmatter =#+description:= and would emit a single line; history, scaffolded after that loader landed, proves it. The analytics and reporting files predate it, when =load_org_component_model= fed the template the whole literate body, which is hand-wrapped. The scaffold facet is =#+default: disabled= and its opt-in line is removed after first use, so nothing regenerates or gates the file. | Open. |
 
-* Test Scenarios
+* Notes
+
+*Finding.* A scaffold artefact is emitted once and is then unreachable: the
+facet is disabled, the opt-in line is gone, and the drift gate covers
+regeneration, which never produces it. A stale one therefore lives forever
+with nothing to correct or detect it. Adding the opt-in back and running
+=compass codegen generate --address ores.cpp.scaffold= regenerates the
+umbrella header correctly, but it also emits three placeholder files
+(=domain/stub.hpp=, =src/domain/stub.cpp=, =tests/stub_tests.cpp=) that must
+then be deleted, which is why the repair is not something to run routinely.
+
+*Open decision.* Two repairs, with different outcomes:
+
+- Refresh the comment from the model's =#+description=, by regenerating. The
+  text becomes "Domain types and NATS protocol schemas for the analytics
+  component." The stale prose ("generators, messaging protocols and
+  eventing...") exists nowhere in the tree and would be dropped.
+- Rewrap the existing comment, joining its prose into one line so
+  clang-format lays it out at 100 with prefixes. The text stays as it is,
+  stale though it is.
+
+Either way the class-level gap stays open until a scaffold artefact has a
+regeneration and a gate.
+
+*Test Scenarios*
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link

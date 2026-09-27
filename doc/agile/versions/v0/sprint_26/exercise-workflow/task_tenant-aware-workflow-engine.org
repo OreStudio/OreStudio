@@ -121,6 +121,8 @@ via its "Verifies task" field.
 | 4 | New captures filed under an =[agile]= commit bracket; the recipe reserves =[inbox]= for filing an untriaged capture. | commit =a17e59dcf= | Accepted, fixed | Re-committed as =[inbox]=, and every commit body wrapped at 72. |
 | 5 | Comments in the new test cases narrated the old behaviour ("used to come back empty", "went missing"). | =workflow_engine_tests.cpp= | Accepted, fixed | Rewritten to state what holds now. |
 | 6 | Fixture took a bare =bool= and the tenant guard was duplicated. | =workflow_engine_tests.cpp= | Accepted, fixed | Replaced by an =engine_tenant= enum and a =service_tenant_id()= accessor. |
+| 7 | =tenant_read_scope: shared= widens these two repositories for every caller, not only the engine: the generic list/count the generated service exposes now reaches every tenant when the session is the system tenant. No test covered that surface. | =workflow_instance_service.cpp=, =workflow_step_service.cpp= | Accepted, confirmed intended, test added | Intended, and not the shape of the badge regression it was compared to: the badge policy admitted *system-tenant rows* to every tenant, so a tenant that held its own copy saw both. The workflow policy's fallback is conditioned on the *session* being the system tenant, so a tenant still sees only its own rows and a run cannot appear twice. The generated handlers pass the caller's JWT tenant, so only a system-tenant session gets the wide view. =workflow repositories list one tenant's runs for a tenant and all for the service= now pins both halves, list and count. |
+| 8 | =get_step_result= resolved the tenant with a name lookup and a connection-pool verification on every step dispatch. | =workflow_query_handler.cpp= | Accepted, fixed | The id is now parsed and the context built directly, the way =make_request_context= does it. The value came from the engine's own header, so there is no code to look up and nothing to verify; a request naming a tenant that does not exist can only be asking for rows the policy will not show it. Removes one query and one pool acquisition per step dispatch. |
 
 * Result
 
@@ -178,15 +180,17 @@ select count(*) from ores_workflow_workflow_instances_tbl
 
 ** Tests
 
-- =ores.workflow.core.tests=: 16 cases, 77 assertions, all pass. The three new
-  cases failed before the change — the instance read came back empty, the
-  recovery case never saw its second command, and the step-result query answered
-  about another tenant's step.
+- =ores.workflow.core.tests=: 17 cases, 85 assertions, all pass. The four cases
+  this task added failed before the change — the instance read came back empty,
+  the recovery case never saw its second command, the step-result query answered
+  about another tenant's step, and the list and count did not follow the reading
+  tenant.
 - =ores.workflow.api.tests=, =ores.workflow.service.tests= and
   =ores.shell.workflow.tests=: all pass.
-- Full suite, =ctest --preset linux-clang-debug-make=: 81 of 86 pass, the same
-  five targets that fail on main and for the same reasons. None of them is a
-  workflow target, and the change touches no other component's reads.
+- Full suite, =ctest --preset linux-clang-debug-make=, on the tip after the
+  review round: 84 of 86 pass. The two failures are =ores.refdata.core.tests= and
+  =ores.marketdata.core.tests=, both on the pre-existing version-guard inserts
+  documented in the inbox, and neither is a workflow target.
 - =check_component_drift.py --component workflow-cpp --dry-run=: no drift.
 
 The header change reaches every service that checks step idempotency, so the

@@ -37,6 +37,7 @@
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <memory>
@@ -579,4 +580,59 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names", tags)
     REQUIRE(unnamed.has_value());
     CHECK_FALSE(unnamed->found);
     BOOST_LOG_SEV(lg, debug) << "Step result confined to the requested tenant.";
+}
+
+TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for the service",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_list_scope_workflow", {"one"});
+
+    // Two runs: one in the test tenant, one in the tenant the service itself
+    // holds. The second is what tells the two read scopes apart, because only a
+    // system-tenant session can see it.
+    const auto run_tenant = f.tenant();
+    const auto service_tenant = f.service_tenant_id();
+    REQUIRE(run_tenant != service_tenant);
+    const auto run_in_tenant = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto run_in_service = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 1000);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_list_scope_workflow", run_tenant, run_in_tenant)));
+    f.engine->on_start_workflow(
+        as_message(start_for("test_list_scope_workflow", service_tenant, run_in_service)));
+    REQUIRE(wait_for_instance(commands, run_in_tenant, 1, std::chrono::seconds(5)).size() == 1);
+    REQUIRE(wait_for_instance(commands, run_in_service, 1, std::chrono::seconds(5)).size() == 1);
+
+    const auto has = [](const std::vector<ores::workflow::domain::workflow_instance>& rows,
+                        const std::string& id) {
+        return std::ranges::any_of(rows, [&](const auto& row) {
+            return boost::uuids::to_string(row.id) == id;
+        });
+    };
+
+    workflow_instance_repository instances;
+
+    // The service's own context is the platform-wide view: the generic list and
+    // count that the generated service exposes reach every tenant's runs. This
+    // is the widening the shared read scope buys, and it is what the engine
+    // needs; nothing else in the component depends on the older, narrower view.
+    const auto all = instances.read_latest(f.service_context(), 0, 1000);
+    CHECK(has(all, run_in_tenant));
+    CHECK(has(all, run_in_service));
+
+    // A tenant's own context still reaches its runs and only its runs. The
+    // workflow tables' policy is own-tenant-or-system-*session*, so a tenant
+    // never inherits the service's rows the way a shared reference table's
+    // rows would be inherited, and a list cannot show a run twice.
+    const auto own = instances.read_latest(f.h.context(), 0, 1000);
+    CHECK(has(own, run_in_tenant));
+    CHECK_FALSE(has(own, run_in_service));
+
+    // The count follows the list, so the wider view is not list-only.
+    CHECK(instances.get_total_instance_count(f.service_context()) >
+          instances.get_total_instance_count(f.h.context()));
+    BOOST_LOG_SEV(lg, debug) << "List and count follow the reading tenant.";
 }

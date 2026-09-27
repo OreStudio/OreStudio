@@ -121,6 +121,16 @@ A report definition's configuration is a set of strongly typed entities rather t
   `xml_creditsimulation_roundtrip_tests.cpp` deliberately does not compare
   `Data`. A test can therefore pass while the matrix is lost. Our round trip
   compares the grid cell by cell and names the first difference.
+- A passing round trip can hide an axis it never measured. The credit
+  simulation label comparison ran over an empty vector on both sides,
+  because the binding does not hand the mapper the XML comment the labels
+  live in: `parse_credit_simulation_grid` returned 64 values and no labels,
+  and the loop that compared them executed zero times. Fourteen files
+  passed a check that never ran, and it was reported as proof. The scale is
+  fixed and is now in the type, so both directions take the ratings from
+  one ordered constant and the comparison has a real expected value. An
+  assertion over an empty vector is not an assertion, and a test that
+  cannot fail is worse than no test.
 
 * Out of scope
 

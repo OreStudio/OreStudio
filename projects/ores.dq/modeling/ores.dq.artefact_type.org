@@ -202,21 +202,10 @@ faker::number::integer(1, 100)
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/artefact_type.hpp
 :domain_class:           dq::domain::artefact_type
-:protocol_include:       ores.dq.api/messaging/artefact_type_protocol.hpp
 :collection_name:        types
 :key_field:              code
 :has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::get_artefact_types_request
-:get_response_class:     dq::messaging::get_artefact_types_response
-:get_message_type:       get_artefact_types_request
-:save_request_class:     dq::messaging::save_artefact_type_request
-:save_response_class:    dq::messaging::save_artefact_type_response
-:save_message_type:      save_artefact_type_request
-:delete_request_class:   dq::messaging::delete_artefact_type_request
-:delete_response_class:  dq::messaging::delete_artefact_type_response
-:delete_message_type:    delete_artefact_type_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

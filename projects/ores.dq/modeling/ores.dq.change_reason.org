@@ -222,21 +222,10 @@ faker::number::integer(1, 100)
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/change_reason.hpp
 :domain_class:           dq::domain::change_reason
-:protocol_include:       ores.dq.api/messaging/change_reason_protocol.hpp
 :collection_name:        reasons
 :key_field:               code
 :has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::get_change_reasons_request
-:get_response_class:     dq::messaging::get_change_reasons_response
-:get_message_type:       get_change_reasons_request
-:save_request_class:     dq::messaging::save_change_reason_request
-:save_response_class:    dq::messaging::save_change_reason_response
-:save_message_type:      save_change_reason_request
-:delete_request_class:   dq::messaging::delete_change_reason_request
-:delete_response_class:  dq::messaging::delete_change_reason_response
-:delete_message_type:    delete_change_reason_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

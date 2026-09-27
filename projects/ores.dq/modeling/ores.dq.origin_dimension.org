@@ -125,21 +125,10 @@ std::string(faker::lorem::sentence())
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/origin_dimension.hpp
 :domain_class:           dq::domain::origin_dimension
-:protocol_include:       ores.dq.api/messaging/origin_dimension_protocol.hpp
 :collection_name:        dimensions
 :key_field:              code
 :has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::list_origin_dimensions_request
-:get_response_class:     dq::messaging::list_origin_dimensions_response
-:get_message_type:       list_origin_dimensions_request
-:save_request_class:     dq::messaging::put_origin_dimension_request
-:save_response_class:    dq::messaging::put_origin_dimension_response
-:save_message_type:      put_origin_dimension_request
-:delete_request_class:   dq::messaging::delete_origin_dimension_request
-:delete_response_class:  dq::messaging::delete_origin_dimension_response
-:delete_message_type:    delete_origin_dimension_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

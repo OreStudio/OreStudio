@@ -123,21 +123,10 @@ std::string(faker::lorem::sentence())
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/data_domain.hpp
 :domain_class:           dq::domain::data_domain
-:protocol_include:       ores.dq.api/messaging/data_domain_protocol.hpp
 :collection_name:        domains
 :key_field:               name
 :has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::get_data_domains_request
-:get_response_class:     dq::messaging::get_data_domains_response
-:get_message_type:       get_data_domains_request
-:save_request_class:     dq::messaging::save_data_domain_request
-:save_response_class:    dq::messaging::save_data_domain_response
-:save_message_type:      save_data_domain_request
-:delete_request_class:   dq::messaging::delete_data_domain_request
-:delete_response_class:  dq::messaging::delete_data_domain_response
-:delete_message_type:    delete_data_domain_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

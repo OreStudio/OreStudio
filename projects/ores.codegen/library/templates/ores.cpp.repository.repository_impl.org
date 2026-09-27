@@ -884,6 +884,13 @@ void {{entity_singular}}_repository::remove(
         remove(ctx, {{{primary_key.batch_loop_args}}});
 {{/primary_key.is_compound}}
 {{^primary_key.is_compound}}
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if ({{{primary_key.batch_empty_check}}}) return;
 {{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{/current_state}}

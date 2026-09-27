@@ -36,9 +36,9 @@ to the reference-data work and are out of scope, per decision D5.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | M09's model half is done and verified in trading: the generator facets are collapsed, the retired presentation properties are gone, the three trading libs and their tests build, the three suites pass and the drift dry run is empty. The whole-tree build is blocked by =ores.workflow=, which still consumes the dq protocol dq deleted. |
-| Waiting on   | PR 2 merged, so the model work starts from a drift-clean tree. |
-| Next         | Author the seven missing models, starting with product_type and the five families with a table and no model; re-verify the whole-tree build once the workflow consumer lands on main. |
+| Now          | M09 is done and verified in trading; the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches); and the model-authoring pilot shows what a port costs: the commodity model is written, its regeneration converges the domain type to the canonical shape, and four consumers read the old shape and must move with it. The model is parked as evidence, so the tree stays green. |
+| Waiting on   | The =ores.workflow= consumer of the dq FSM protocol, which blocks the whole-tree build on main; and a dedicated pass for the eight table-backed ports. |
+| Next         | Port the table-backed families one at a time: restore the parked commodity model, regenerate, migrate its four consumers, and prove the build, the suites and the drift; then the five remaining tables. =evidence/pr3_model_authoring_pilot.txt=. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

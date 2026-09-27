@@ -75,6 +75,7 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.analytics.api.lib
         ores.ore.api.lib
         ores.database.lib
         ores.refdata.api.lib

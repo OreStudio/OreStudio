@@ -48,10 +48,32 @@ export interface SetupPageProps {
     readonly onCreate: (request: CreateAdministratorRequest) => Promise<void>;
 }
 
+/**
+ * What the form proposes before anybody types.
+ *
+ * The administrator of a fresh installation is almost always this account, so
+ * the screen proposes it rather than making somebody invent a name and an
+ * address. Both fields are editable, so a deployment that wants another name
+ * types one.
+ *
+ * The address follows the convention every other system-scope account already
+ * uses, `<name>@system.ores`, which is also why it is safer than a plausible
+ * domain: `.ores` is not a real top-level domain, so nothing can be delivered to
+ * an address nobody changed. The prototype left the email empty and defaulted
+ * only the username; proposing the address too means the only thing a person has
+ * to invent is the password.
+ *
+ * The password has no default, deliberately. A password that ships with the
+ * product is not a password, and this one is the SuperAdmin of a fresh
+ * installation.
+ */
+const DEFAULT_PRINCIPAL = 'super_admin';
+const DEFAULT_EMAIL = 'super_admin@system.ores';
+
 export function SetupPage({ message, onCreate }: SetupPageProps): ReactNode {
     const { t } = useTranslation();
-    const [principal, setPrincipal] = useState('');
-    const [email, setEmail] = useState('');
+    const [principal, setPrincipal] = useState(DEFAULT_PRINCIPAL);
+    const [email, setEmail] = useState(DEFAULT_EMAIL);
     const [password, setPassword] = useState('');
     const [passwordAcceptable, setPasswordAcceptable] = useState(false);
     const [failure, setFailure] = useState<string | undefined>(undefined);

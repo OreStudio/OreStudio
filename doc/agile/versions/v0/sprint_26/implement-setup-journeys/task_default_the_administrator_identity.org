@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: F22E12E7-C099-4B6F-BD7A-024448F015A8
+:END:
+#+title: Task: Default the administrator's identity on the setup screen
+#+description: The setup form proposes super_admin and its system-scope address, so an empty installation needs only a password, and both fields stay editable.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/default-the-administrator-identity
+#+pr: 2301
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The setup form asks for an identity almost everyone will want the same value for. Propose it, and let the person override it, so the one thing they must invent is the password.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | The form proposes the administrator's identity and leaves the password to the person. The workspace typechecks, passes the format check, tests green and builds. |
+| Waiting on   | The review round on the change. |
+| Next          | The rest of plan step 4: the seed profile read, provision, progress and retry. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The setup form proposes =super_admin= and an address, and both are editable.
+- The password keeps no default, because a password that ships with the product is not a password.
+- A test asserts the proposed values, and the workspace typechecks, passes the format check, tests green and builds.
+
+* Plan
+
+One commit: two constants, their comment, and the tests that hold them.
+
+** The username
+
+=super_admin=, which is what the accepted prototype's first-run journey
+defaulted the system administrator to (=8b0ce0a95b=, "Default the system
+administrator to =super_admin="). The prototype is the design record for the
+journey's content, so the default comes from there rather than from a guess.
+
+** The address, and why not a plausible domain
+
+=super_admin@system.ores=. Two reasons, and the second is the one that decided
+it. Every other system-scope account already uses that suffix —
+=compute_wrapper@system.ores=, =http@system.ores=, =ddl@system.ores= in the IAM
+seeds — so the first administrator reads like the rest of the deployment. And
+=.ores= is not a real top-level domain, so nothing can be delivered to an
+address nobody changed; the example the request named, =localhost.com=, is a
+registered domain, so a placeholder there could reach a stranger if a deployment
+never changed it.
+
+The prototype left the email empty, so proposing it goes beyond the design
+record. It is the same kind of convenience as the username, and it is editable.
+
+** The password, which gets nothing
+
+A default password is a password that ships with the product, and this account
+is the SuperAdmin of a fresh installation. The prototype left it empty too. The
+form requires the policy to be met before it will submit, and the policy is the
+one the server enforces.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The workspace suite | 112 cases in 15 files | =npm test= | =60ab3ce772= |
+| ... of which new | 1, asserting that no password is proposed | =npm test= | =60ab3ce772= |
+| The browser bundle | 417.93 kB | =npm run build --workspace @ores/web= | =60ab3ce772= |
+
+The live check: the bundle the service serves
+(=index-CrE97myW.js=) carries the address, and
+=GET /api/bootstrap= still answers =isInBootstrapMode true=, so the screen with
+the proposed identity is what a browser on this environment reaches.
+
+* Notes
+
+- *The address differs from the one the request named.* It asked for
+  =super_admin@localhost.com=; the default is =super_admin@system.ores=. The two
+  reasons are the convention above and the routability of =localhost.com=. It is
+  one line in =SetupPage.tsx= to change.
+- *The prototype left the email empty.* Defaulting only the username was the
+  accepted design; defaulting the address as well is the same convenience, and
+  the person can clear it.
+- *A default is a value, not a word.* Neither constant belongs in the i18n
+  catalogue: a catalogue carries the words, and a translator has no business
+  translating an account name.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2301][#2301]] | [web] Default the administrator's identity on the setup screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The setup form proposes =super_admin= and =super_admin@system.ores=, both
+editable, and proposes no password. A person creating the administrator of an
+empty installation now types one thing and clicks once.
+
+The username comes from the accepted prototype, so the default is the design
+record's rather than a choice made here. The address follows the convention
+every other system-scope account uses and cannot be delivered anywhere, which is
+what makes it safe to leave unchanged.
+
+The form still refuses to submit until the password meets the policy the server
+enforces, and the account it creates is the SuperAdmin the deployment needs
+before it can be signed in to at all.

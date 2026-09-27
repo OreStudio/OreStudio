@@ -64,10 +64,24 @@ The environment load is not optional: the binary aborts with
 ## Traps that cost time, recorded so they do not cost it again
 
 - **The binding strips XML comments on load.** A `Data` element's state
-  comment is in the file and gone after `load_data`. Any assertion about
-  labels must be made against the serialised text, not a re-parsed document.
-  This made one assertion unsatisfiable and made an earlier label comparison
-  vacuous — it compared two empty vectors across 14 files and passed.
+  comment is in the file and gone after `load_data`
+  (`stripComments`, `projects/ores.ore/core/src/domain/domain.cpp:635`). Any
+  assertion about labels must be made against the serialised text, not a
+  re-parsed document. This made one assertion unsatisfiable and made an
+  earlier label comparison vacuous — it compared two empty vectors across 14
+  files and passed.
+- **The serialiser escapes the comment it is given.** `save_data` escapes `<`
+  and `>` (`escape_xml`, `domain.cpp:874`) and `stripComments` does not
+  unescape, so a comment written by `reverse` comes back as the literal text
+  `&lt;!-- ... --&gt;`. That broke the value parse as well as the labels. The
+  shared codec now accepts both spellings.
+- **Which means the exported document is not yet known to be faithful.**
+  Round trip is now green because our import tolerates our export, and those
+  are the two sides we control. Whether ORE's own reader accepts an escaped
+  comment where it wrote a real one is **untested**. This is the same shape as
+  the vacuous label comparison: our two ends agreeing does not prove the
+  artefact is right. Check it against the ORE schemas or the engine before
+  treating this document as round-tripped.
 - **A codegen model with a malformed header fails silently.** Lines not
   starting at column zero, or a stray `+` before `#+filetags`, leave the
   entity type unresolved and the generator writes 38 files named `unknown_*`

@@ -27,6 +27,7 @@ keys every other class rejects.
 | bond_yield_spread | BOND | bond | YIELD_SPREAD | scalar | no_ccy | BOND/YIELD_SPREAD (bond yield spread). |
 | bond_conversion_factor | BOND | bond | CONVERSION_FACTOR | scalar | no_ccy | BOND/CONVERSION_FACTOR (bond futures conversion factor). |
 | recovery_rate | RECOVERY_RATE | recovery_rate | RATE | scalar | no_ccy | RECOVERY_RATE/RATE (recovery assumption named by a security rather than by an entity and a seniority). |
+| cpr | CPR | cpr | RATE | scalar | no_ccy | CPR/RATE (conditional prepayment rate). The corpus keys it by ISIN, inside `<Security>` blocks in curveconfig.xml, so it belongs to this class rather than to commodity, which carried it as a simplification while no security-level identifier existed. |
 
 * Enum brief
 
@@ -83,6 +84,7 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | oresmd://security/security_1?type=quote&quote=bond_yield_spread | BOND/YIELD_SPREAD/SECURITY_1 | security_bond_yield_spread_quote_key_matches_the_corpus |
 | oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor | BOND/CONVERSION_FACTOR/SECURITY_1_FWDEXP_20251220 | security_bond_conversion_factor_quote_key_matches_the_corpus |
 | oresmd://security/security_1?type=quote&quote=recovery_rate | RECOVERY_RATE/RATE/SECURITY_1 | security_recovery_rate_quote_key_matches_the_corpus |
+| oresmd://security/isin:xs0983610930?type=quote&quote=cpr | CPR/RATE/ISIN:XS0983610930 | security_cpr_quote_key_matches_the_corpus |
 
 ** Round-trip
 
@@ -92,6 +94,7 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | oresmd://security/security_1?type=quote&quote=bond_yield_spread | round_trip_security_bond_yield_spread |
 | oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor | round_trip_security_bond_conversion_factor |
 | oresmd://security/security_1?type=quote&quote=recovery_rate | round_trip_security_recovery_rate |
+| oresmd://security/isin:xs0983610930?type=quote&quote=cpr | round_trip_security_cpr |
 
 ** Rejection
 

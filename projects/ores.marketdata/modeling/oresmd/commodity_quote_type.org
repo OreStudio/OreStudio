@@ -2,7 +2,7 @@
 :ID: 74607978-2963-409C-9731-E17F4CA98879
 :END:
 #+title: Commodity oresmd quote type family
-#+description: Quote types for commodity: spot, forward, CPR.
+#+description: Quote types for commodity: spot, forward, option.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: commodity
 #+validate: inline_delegate
@@ -19,7 +19,6 @@
 |-----------+----------+------------+-----------------+-----------------+--------------------------------------------------|
 | spot | COMMODITY | PRICE | scalar | with_ccy | COMMODITY/PRICE (spot price, the default). |
 | fwd | COMMODITY_FWD | PRICE | tenor | with_ccy | COMMODITY_FWD/PRICE (commodity forward price). |
-| cpr | CPR | RATE | tenor | with_ccy | CPR/RATE (conditional prepayment rate). |
 | option | COMMODITY_OPTION | RATE | surface | with_ccy | COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity option's three shapes, with a commodity code where the equity has a ticker; the metric segment is the vol model, not this table's ore_metric | COMMODITY_OPTION (commodity option implied vol). |
 
 * Enum brief
@@ -79,7 +78,6 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 |-----+-------------|
 | oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | round_trip_commodity |
 | oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | round_trip_commodity_fwd |
-| oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y | round_trip_commodity_cpr |
 | oresmd://commodity/ice:b?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=10m,del,fwd,call,0.10 | round_trip_commodity_option_delta_vol |
 
 ** Rejection

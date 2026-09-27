@@ -769,14 +769,6 @@ std::string_view ore_type(commodity_quote_type qt) {
             return ore_type_spec::commodity_fwd;
         case commodity_quote_type::option:
             return ore_type_spec::commodity_option;
-        // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
-        // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
-        // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
-        // commodity_market_data_identifier is a deliberate simplification since
-        // ORE Studio has no security-level identifier yet; the key emitted here
-        // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
-        case commodity_quote_type::cpr:
-            return ore_type_spec::cpr;
     }
     return ore_type_spec::commodity;
 }
@@ -787,8 +779,6 @@ std::string_view ore_commodity_metric(commodity_quote_type qt) {
         case commodity_quote_type::fwd:
             return ore_metric_spec::price;
         case commodity_quote_type::option:
-            return ore_metric_spec::rate;
-        case commodity_quote_type::cpr:
             return ore_metric_spec::rate;
     }
     return ore_metric_spec::price;
@@ -887,6 +877,8 @@ std::string_view ore_type(security_quote_type qt) {
             return ore_type_spec::bond;
         case security_quote_type::recovery_rate:
             return ore_type_spec::recovery_rate;
+        case security_quote_type::cpr:
+            return ore_type_spec::cpr;
     }
     return ore_type_spec::bond;
 }
@@ -900,6 +892,7 @@ std::string_view ore_security_metric(security_quote_type qt) {
         case security_quote_type::bond_conversion_factor:
             return ore_metric_spec::conversion_factor;
         case security_quote_type::recovery_rate:
+        case security_quote_type::cpr:
             return ore_metric_spec::rate;
     }
     return ore_metric_spec::price;
@@ -1020,7 +1013,7 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
     if (qt == commodity_quote_type::spot)
         return std::format(
             "{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt), id.commodity_code, id.ccy);
-    // fwd/cpr: TYPE/METRIC/CODE/CCY/TENOR — curves, need point for the tenor.
+    // fwd: TYPE/METRIC/CODE/CCY/TENOR — a curve, needs point for the tenor.
     if (!id.point)
         return std::nullopt;
     return std::format("{}/{}/{}/{}/{}",
@@ -1640,10 +1633,8 @@ std::optional<market_data_identifier> from_commodity_spot(const std::vector<std:
 
 std::optional<market_data_identifier> from_commodity_curve(commodity_quote_type qt,
                                                            const std::vector<std::string>& parts) {
-    // COMMODITY_FWD/PRICE/CODE/CCY/TENOR, CPR/RATE/CODE/CCY/TENOR.
-    const auto expected =
-        (qt == commodity_quote_type::cpr) ? ore_metric_spec::rate : ore_metric_spec::price;
-    if (parts.size() != 5 || !metric_is(parts[1], expected))
+    // COMMODITY_FWD/PRICE/CODE/CCY/TENOR.
+    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::price))
         return std::nullopt;
     commodity_market_data_identifier id;
     id.commodity_code = parts[2];
@@ -1889,7 +1880,7 @@ inverse_projection(const std::vector<std::string>& parts,
     if (type == ore_type_spec::commodity_fwd)
         return from_commodity_curve(commodity_quote_type::fwd, parts);
     if (type == ore_type_spec::cpr)
-        return from_commodity_curve(commodity_quote_type::cpr, parts);
+        return from_security(security_quote_type::cpr, parts);
     if (type == ore_type_spec::cds || type == ore_type_spec::hazard_rate) {
         const auto qt = parse_enum_lower<credit_quote_type>(type);
         return qt ? from_credit_curve(*qt, parts) : std::nullopt;

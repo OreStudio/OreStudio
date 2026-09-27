@@ -548,6 +548,11 @@ TEST_CASE("security_recovery_rate_quote_key_matches_the_corpus", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/SECURITY_1");
 }
 
+TEST_CASE("security_cpr_quote_key_matches_the_corpus", tags) {
+    const auto id = parse("oresmd://security/isin:xs0983610930?type=quote&quote=cpr");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/ISIN:XS0983610930");
+}
+
 TEST_CASE("shape_profile_factor_quote_key_matches_the_corpus", tags) {
     const auto id = parse(
         "oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec");
@@ -588,9 +593,13 @@ TEST_CASE("rating_transition_probability_rejects_the_catalogue_six_segment_shape
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
-TEST_CASE("commodity_cpr_quote_key", tags) {
-    const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");
+TEST_CASE("security_cpr_quote_key", tags) {
+    // CPR is security-level, keyed by ISIN inside <Security> blocks in
+    // curveconfig.xml. It is modelled in the security class rather than under
+    // commodity, which carried it as a simplification while no security-level
+    // identifier existed.
+    const auto id = parse("oresmd://security/isin:xs0983610930?type=quote&quote=cpr");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/ISIN:XS0983610930");
 }
 
 TEST_CASE("discount_vs_projection_gap_resolved_structurally", tags) {
@@ -839,8 +848,6 @@ TEST_CASE("from_ore_key_commodity", tags) {
             parse("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
     REQUIRE(oresmd_projections::from_ore_key("COMMODITY_FWD/PRICE/WTI/USD/6M") ==
             parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
-    REQUIRE(oresmd_projections::from_ore_key("CPR/RATE/WTI/USD/5Y") ==
-            parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
 }
 
 TEST_CASE("from_ore_key_credit_index_option_is_a_surface", tags) {

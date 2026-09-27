@@ -128,8 +128,6 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
-* Result
-
 * Notes
 
 ** What the component is, and what that makes not applicable

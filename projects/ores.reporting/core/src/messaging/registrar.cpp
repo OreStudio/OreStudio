@@ -56,10 +56,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     const auto group = std::string(queue_group);
 
     // ----------------------------------------------------------------
-    // Load FSM state maps (one NATS round-trip each).
+    // Load FSM state maps (one store read each).
     // ----------------------------------------------------------------
     const auto instance_states =
-        ores::workflow::service::load_fsm_states(svc_nats, "report_instance_lifecycle");
+        ores::workflow::service::load_fsm_states(ctx, "report_instance_lifecycle");
 
     // ----------------------------------------------------------------
     // Report definition templates

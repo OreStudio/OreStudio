@@ -26,6 +26,7 @@
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
@@ -64,6 +65,7 @@
 #include "ores.dq.core/messaging/fsm_transition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
+#include "ores.dq.core/messaging/lei_entity_summary_handler.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
@@ -85,7 +87,9 @@
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include <array>
 #include <memory>
+#include <string_view>
 
 namespace ores::dq::messaging {
 
@@ -148,9 +152,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // =========================================================================
     // Catalog and data_domain are on the standard generated stack (see
-    // catalog_handler/_registrar and data_domain_handler/_registrar);
-    // methodologies and subject-areas stay on the bespoke
-    // data_organization_handler for now.
+    // catalog_handler/_registrar and data_domain_handler/_registrar).
+    // Methodologies and subject-areas use the bespoke data_organization_handler.
     // =========================================================================
 
     {
@@ -167,7 +170,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // =========================================================================
     // Artefact type is on the standard generated stack (see
-    // artefact_type_handler/_registrar), migrated from lookup_entity.
+    // artefact_type_handler/_registrar).
     // =========================================================================
 
     {
@@ -191,8 +194,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // =========================================================================
     // Subject areas are on the standard generated stack (see
-    // subject_area_handler/_registrar). Their history provider stays
-    // hand-written, because the entity's history identity is composite.
+    // subject_area_handler/_registrar). Their history provider is hand-written,
+    // because the entity's history identity is composite.
     // =========================================================================
 
     {
@@ -231,8 +234,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // =========================================================================
 
     // Datasets are on the standard generated stack (see
-    // dataset_handler/_registrar), migrated from the hand-written handler
-    // once the publish verb moved to publish_handler.
+    // dataset_handler/_registrar); publish_handler serves the publish verb.
 
     {
         auto dataset_subs = register_dataset_handlers(nats, ctx, verifier);
@@ -241,9 +243,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                     std::make_move_iterator(dataset_subs.end()));
     }
 
-    // Dataset bundles and their members moved to the standard generated
-    // stack; see register_dataset_bundle_handlers below alongside the other
-    // generated registrars.
+    // Dataset bundles and their members are on the standard generated stack;
+    // see register_dataset_bundle_handlers below.
 
     // =========================================================================
     // Publications
@@ -300,7 +301,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // =========================================================================
     // LEI Entities, LEI Relationships, Report Definitions, Synthetic FX Spot
     // Configs are on the standard generated stack (see their own
-    // *_handler/_registrar pairs), migrated from lookup_entity.
+    // *_handler/_registrar pairs).
     // =========================================================================
 
     {
@@ -339,6 +340,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(list_dq_report_definition_templates_request::nats_subject,
                                  queue_group,
                                  [rdt](ores::nats::message msg) { rdt->list(std::move(msg)); }));
+    }
+
+    // =========================================================================
+    // LEI Entity Summary (a projection over the LEI artefact tables)
+    // =========================================================================
+
+    {
+        auto les = std::make_shared<lei_entity_summary_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_lei_entities_summary_request::nats_subject,
+                                 queue_group,
+                                 [les](ores::nats::message msg) { les->summary(std::move(msg)); }));
     }
 
     // =========================================================================
@@ -413,7 +426,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         // the composite (name, domain_name) that the Qt client sends as
         // "name|domain_name" (SubjectAreaController::showHistoryWindow), and
         // the generated registrar declines to register one for a compound key.
-        // So the bridge stays here rather than moving with the rest.
+        // The generated registrar declines to register a provider for a
+        // compound key, so this bridge is hand-written.
         hist_registry.register_history_provider(
             "ores.dq.subject_area",
             [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
@@ -437,30 +451,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(nats.queue_subscribe(
-            "dq.v1.ip2country.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
-                pdq->handle(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            "dq.v1.coding-schemes.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
-                pdq->handle(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            "dq.v1.badge-severities.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
-                pdq->handle(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            "dq.v1.badge-definitions.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
-                pdq->handle(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            "dq.v1.code-domains.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
-                pdq->handle(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            "dq.v1.badge-mappings.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
-                pdq->handle(std::move(msg));
-            }));
+        static constexpr std::array<std::string_view, 6> subjects = {
+            "dq.v1.ip2country.publish-from-dq",
+            "dq.v1.coding-schemes.publish-from-dq",
+            "dq.v1.badge-severities.publish-from-dq",
+            "dq.v1.badge-definitions.publish-from-dq",
+            "dq.v1.code-domains.publish-from-dq",
+            "dq.v1.badge-mappings.publish-from-dq"};
+        for (const auto subject : subjects)
+            subs.push_back(
+                nats.queue_subscribe(subject, queue_group, [pdq](ores::nats::message msg) {
+                    pdq->handle(std::move(msg));
+                }));
     }
 
     return subs;

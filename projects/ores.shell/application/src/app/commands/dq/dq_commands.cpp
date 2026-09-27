@@ -2,6 +2,7 @@
 #include "ores.shell/app/commands/dq/artefact_type_commands.hpp"
 #include "ores.shell/app/commands/dq/badge_definition_commands.hpp"
 #include "ores.shell/app/commands/dq/badge_mapping_commands.hpp"
+#include "ores.shell/app/commands/dq/badge_severity_commands.hpp"
 #include "ores.shell/app/commands/dq/catalog_commands.hpp"
 #include "ores.shell/app/commands/dq/change_reason_category_commands.hpp"
 #include "ores.shell/app/commands/dq/change_reason_commands.hpp"
@@ -20,6 +21,7 @@
 #include "ores.shell/app/commands/dq/nature_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/origin_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
+#include "ores.shell/app/commands/dq/subject_area_commands.hpp"
 #include "ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 
 namespace ores::shell::app::commands {
@@ -29,6 +31,7 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     artefact_type_commands::register_commands(root_menu, session);
     badge_definition_commands::register_commands(root_menu, session);
     badge_mapping_commands::register_commands(root_menu, session);
+    badge_severity_commands::register_commands(root_menu, session);
     catalog_commands::register_commands(root_menu, session);
     change_reason_category_commands::register_commands(root_menu, session);
     change_reason_commands::register_commands(root_menu, session);
@@ -47,6 +50,7 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     nature_dimension_commands::register_commands(root_menu, session);
     origin_dimension_commands::register_commands(root_menu, session);
     synthetic_fx_spot_config_commands::register_commands(root_menu, session);
+    subject_area_commands::register_commands(root_menu, session);
     treatment_dimension_commands::register_commands(root_menu, session);
 }
 

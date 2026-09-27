@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 94EF527D-49F7-580C-80CD-3CE890D7ABB7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the origin_dimensions commands from the shell?
+#+description: Every command the origin_dimensions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:origin_dimensions:
+
+This file documents the origin_dimensions resource at the shell, one section per command. Every command is a subcommand of =origin_dimensions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B823F256-BC13-53FD-9CD1-FD0A8855F1F6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.list=.
+
+#+name: origin_dimensions-list
+#+begin_src ores-shell :tangle origin_dimensions-list.ores :exports none
+origin_dimensions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 073E53B8-F4E4-550A-8F6A-ED2DA8C98672
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions get <code>
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.get=.
+
+#+name: origin_dimensions-get
+#+begin_src ores-shell :tangle origin_dimensions-get.ores :exports none
+origin_dimensions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F4A65104-99F0-5B43-BE65-B7233F1A9230
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.get_many=.
+
+#+name: origin_dimensions-get-many
+#+begin_src ores-shell :tangle origin_dimensions-get-many.ores :exports none
+origin_dimensions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A2060610-9626-57CD-9CF5-A1AF23A3E3FC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions add <code> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.put=.
+
+#+name: origin_dimensions-add
+#+begin_src ores-shell :tangle origin_dimensions-add.ores :exports none
+origin_dimensions add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2EA1F854-0CFE-58FE-BDED-59914787E84F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions set <code> <name> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.put=.
+
+#+name: origin_dimensions-set
+#+begin_src ores-shell :tangle origin_dimensions-set.ores :exports none
+origin_dimensions set __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: DDB279BB-0A26-5B88-940F-F07FC408C221
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions put-many --count <n> <code> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.put_many=.
+
+#+name: origin_dimensions-put-many
+#+begin_src ores-shell :tangle origin_dimensions-put-many.ores :exports none
+origin_dimensions put-many --count 1 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BEACFC0A-C4B7-51EB-8081-4E5A3719EBFA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.delete=.
+
+#+name: origin_dimensions-delete
+#+begin_src ores-shell :tangle origin_dimensions-delete.ores :exports none
+origin_dimensions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1F77A096-43D7-509D-ABAC-170B39505C44
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions.delete_many=.
+
+#+name: origin_dimensions-delete-many
+#+begin_src ores-shell :tangle origin_dimensions-delete-many.ores :exports none
+origin_dimensions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D2BB6591-9BE8-5024-B45A-49669C0D6EED
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions_versions.list=.
+
+#+name: origin_dimensions-versions
+#+begin_src ores-shell :tangle origin_dimensions-versions.ores :exports none
+origin_dimensions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4D906013-8848-5B9E-87B9-266E90F0A5AC
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+origin_dimensions version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.origin_dimensions_versions.get=.
+
+#+name: origin_dimensions-version
+#+begin_src ores-shell :tangle origin_dimensions-version.ores :exports none
+origin_dimensions version __none__ --version 1
+#+end_src
+

@@ -22,6 +22,7 @@
 set(files
     "artefact_type_eventing_integration_tests.cpp"
     "badge_definition_eventing_integration_tests.cpp"
+    "badge_severity_eventing_integration_tests.cpp"
     "catalog_eventing_integration_tests.cpp"
     "change_reason_category_eventing_integration_tests.cpp"
     "change_reason_eventing_integration_tests.cpp"
@@ -49,5 +50,6 @@ set(files
     "repository_origin_dimension_repository_tests.cpp"
     "repository_subject_area_repository_tests.cpp"
     "repository_treatment_dimension_repository_tests.cpp"
+    "subject_area_eventing_integration_tests.cpp"
     "treatment_dimension_eventing_integration_tests.cpp"
 )

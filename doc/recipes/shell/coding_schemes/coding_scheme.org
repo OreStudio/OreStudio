@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: BD298865-4613-56D7-BF3D-23B492927D68
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the coding_schemes commands from the shell?
+#+description: Every command the coding_schemes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:coding_schemes:
+
+This file documents the coding_schemes resource at the shell, one section per command. Every command is a subcommand of =coding_schemes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3CF2D9BE-9276-5155-83C9-FED70381BCC6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.list=.
+
+#+name: coding_schemes-list
+#+begin_src ores-shell :tangle coding_schemes-list.ores :exports none
+coding_schemes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 379C6713-07DD-554E-B68F-C015B3250980
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes get <code>
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.get=.
+
+#+name: coding_schemes-get
+#+begin_src ores-shell :tangle coding_schemes-get.ores :exports none
+coding_schemes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 41DB3C2E-A5E3-5D31-9745-43A549F9B4E5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.get_many=.
+
+#+name: coding_schemes-get-many
+#+begin_src ores-shell :tangle coding_schemes-get-many.ores :exports none
+coding_schemes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B1559EBB-8DA6-5EE1-A9DB-E56C5B8A494E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes add <code> <name> <authority_type> <subject_area_name> <domain_name> <uri> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.put=.
+
+#+name: coding_schemes-add
+#+begin_src ores-shell :tangle coding_schemes-add.ores :exports none
+coding_schemes add __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B5B62930-2034-5D68-818F-09421FF7FE43
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes set <code> <name> <authority_type> <subject_area_name> <domain_name> <uri> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.put=.
+
+#+name: coding_schemes-set
+#+begin_src ores-shell :tangle coding_schemes-set.ores :exports none
+coding_schemes set __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 53907497-4277-5EB0-8691-7D87B56F7006
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes put-many --count <n> <code> <name> <authority_type> <subject_area_name> <domain_name> <uri> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.put_many=.
+
+#+name: coding_schemes-put-many
+#+begin_src ores-shell :tangle coding_schemes-put-many.ores :exports none
+coding_schemes put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 89472F00-7FD8-525A-9E36-ABE50200689B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.delete=.
+
+#+name: coding_schemes-delete
+#+begin_src ores-shell :tangle coding_schemes-delete.ores :exports none
+coding_schemes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DEDDB1D9-EAAE-586F-B821-485C64150C6E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes.delete_many=.
+
+#+name: coding_schemes-delete-many
+#+begin_src ores-shell :tangle coding_schemes-delete-many.ores :exports none
+coding_schemes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 3C15914B-9E3E-59FD-9A74-5868118128B0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes_versions.list=.
+
+#+name: coding_schemes-versions
+#+begin_src ores-shell :tangle coding_schemes-versions.ores :exports none
+coding_schemes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DB743C3E-BD0A-56A7-852B-8A3905499EE6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+coding_schemes version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.coding_schemes_versions.get=.
+
+#+name: coding_schemes-version
+#+begin_src ores-shell :tangle coding_schemes-version.ores :exports none
+coding_schemes version __none__ --version 1
+#+end_src
+

@@ -57,7 +57,7 @@ persistence without depending on =ores.dq=.
 - =ores.dq.api= — shared domain types and NATS protocol schemas.
 - =ores.iam.core= — identity and authorisation context.
 - =rfl= — JSON serialisation via reflection.
-- =soci= — SQL ORM for PostgreSQL persistence.
+- =sqlgen= — SQL ORM and query generator for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 
 * See also

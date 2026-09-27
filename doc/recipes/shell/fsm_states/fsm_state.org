@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: EDB33C5A-9066-57F6-9548-A7705D2093F1
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fsm_states commands from the shell?
+#+description: Every command the fsm_states submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fsm_states:
+
+This file documents the fsm_states resource at the shell, one section per command. Every command is a subcommand of =fsm_states=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2BBD8E80-4057-508C-AE0F-B8FAB7715C55
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.list=.
+
+#+name: fsm_states-list
+#+begin_src ores-shell :tangle fsm_states-list.ores :exports none
+fsm_states list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: AA10D862-D769-5A70-8767-947A24E05AA4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states get <name>
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.get=.
+
+#+name: fsm_states-get
+#+begin_src ores-shell :tangle fsm_states-get.ores :exports none
+fsm_states get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0DAB696A-8D1E-59F0-8955-2AD98F1574E6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states get-many <name>
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.get_many=.
+
+#+name: fsm_states-get-many
+#+begin_src ores-shell :tangle fsm_states-get-many.ores :exports none
+fsm_states get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4C8D713E-B64F-51B3-A09B-A312A04FBD41
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states add <machine_id> <name> <is_initial> <is_terminal> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.put=.
+
+#+name: fsm_states-add
+#+begin_src ores-shell :tangle fsm_states-add.ores :exports none
+fsm_states add 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 960BB9CA-D4DE-522F-95F3-178F2BB277DC
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states set <id> <machine_id> <name> <is_initial> <is_terminal> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.put=.
+
+#+name: fsm_states-set
+#+begin_src ores-shell :tangle fsm_states-set.ores :exports none
+fsm_states set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 38E6B031-82FC-5DB9-B18A-CC201015F389
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states put-many --count <n> <id> <machine_id> <name> <is_initial> <is_terminal> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.put_many=.
+
+#+name: fsm_states-put-many
+#+begin_src ores-shell :tangle fsm_states-put-many.ores :exports none
+fsm_states put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E7D94342-C11D-504C-A1E4-11E2F9990A72
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.delete=.
+
+#+name: fsm_states-delete
+#+begin_src ores-shell :tangle fsm_states-delete.ores :exports none
+fsm_states delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D3304343-1D9E-5AA3-9676-2E80E9AE2D75
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.fsm_states.delete_many=.
+
+#+name: fsm_states-delete-many
+#+begin_src ores-shell :tangle fsm_states-delete-many.ores :exports none
+fsm_states delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: AAEFE697-9D30-5BEA-9C0D-F11E51C799FD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.fsm_states_versions.list=.
+
+#+name: fsm_states-versions
+#+begin_src ores-shell :tangle fsm_states-versions.ores :exports none
+fsm_states versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B5A21C30-94E5-5C78-90F7-EDBA3DB90545
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fsm_states version <name> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.fsm_states_versions.get=.
+
+#+name: fsm_states-version
+#+begin_src ores-shell :tangle fsm_states-version.ores :exports none
+fsm_states version __none__ --version 1
+#+end_src
+

@@ -42,9 +42,9 @@ publish_service::publish_service(context ctx)
 
 std::vector<domain::publication_result>
 publish_service::publish(const std::vector<boost::uuids::uuid>& dataset_ids,
-                             domain::publication_mode mode,
-                             const std::string& published_by,
-                             bool resolve_dependencies) {
+                         domain::publication_mode mode,
+                         const std::string& published_by,
+                         bool resolve_dependencies) {
 
     BOOST_LOG_SEV(lg(), info) << "Publishing " << dataset_ids.size()
                               << " datasets with mode: " << mode
@@ -167,12 +167,8 @@ publish_service::resolve_publication_order(const std::vector<boost::uuids::uuid>
         }
     }
 
-    // Build the dependency graph using boost.graph
-    using graph_t = boost::adjacency_list<boost::vecS,
-                                          boost::vecS,
-                                          boost::directedS,
-                                          std::string // vertex property = dataset code
-                                          >;
+    // Build the dependency graph using boost.graph, keyed by dataset code.
+    using graph_t = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, std::string>;
 
     graph_t g;
     std::map<std::string, graph_t::vertex_descriptor> code_to_vertex;
@@ -218,7 +214,6 @@ publish_service::resolve_publication_order(const std::vector<boost::uuids::uuid>
 
     return result;
 }
-
 
 
 std::map<std::string, domain::artefact_type>
@@ -299,8 +294,8 @@ domain::publication_result publish_service::publish_dataset(
 }
 
 void publish_service::record_publication(const domain::publication_result& result,
-                                             domain::publication_mode mode,
-                                             const std::string& published_by) {
+                                         domain::publication_mode mode,
+                                         const std::string& published_by) {
 
     BOOST_LOG_SEV(lg(), debug) << "Recording publication for dataset: " << result.dataset_code;
 
@@ -331,9 +326,9 @@ void publish_service::record_publication(const domain::publication_result& resul
 
 domain::publication_result
 publish_service::call_populate_function(const domain::dataset& dataset,
-                                            const domain::artefact_type& artefact_type,
-                                            domain::publication_mode mode,
-                                            const std::string& /*published_by*/) {
+                                        const domain::artefact_type& artefact_type,
+                                        domain::publication_mode mode,
+                                        const std::string& /*published_by*/) {
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
@@ -395,7 +390,7 @@ publish_service::call_populate_function(const domain::dataset& dataset,
 
 std::vector<bundle_publishable_dataset>
 publish_service::list_publishable_datasets(const std::vector<boost::uuids::uuid>& dataset_ids,
-                                               bool resolve_dependencies) {
+                                           bool resolve_dependencies) {
 
     BOOST_LOG_SEV(lg(), debug) << "Resolving publishable datasets for " << dataset_ids.size()
                                << " IDs, resolve_dependencies=" << resolve_dependencies;
@@ -444,7 +439,7 @@ publish_service::list_publishable_datasets(const std::vector<boost::uuids::uuid>
 
 std::vector<bundle_publishable_dataset>
 publish_service::list_bundle_publishable_datasets(const std::string& bundle_code,
-                                                      bool resolve_dependencies) {
+                                                  bool resolve_dependencies) {
 
     BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code
                                << ", resolve_dependencies=" << resolve_dependencies;

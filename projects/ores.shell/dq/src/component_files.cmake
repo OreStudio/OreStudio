@@ -23,6 +23,7 @@ set(files
     "app/commands/dq/artefact_type_commands.cpp"
     "app/commands/dq/badge_definition_commands.cpp"
     "app/commands/dq/badge_mapping_commands.cpp"
+    "app/commands/dq/badge_severity_commands.cpp"
     "app/commands/dq/catalog_commands.cpp"
     "app/commands/dq/change_reason_category_commands.cpp"
     "app/commands/dq/change_reason_commands.cpp"
@@ -40,6 +41,7 @@ set(files
     "app/commands/dq/methodology_commands.cpp"
     "app/commands/dq/nature_dimension_commands.cpp"
     "app/commands/dq/origin_dimension_commands.cpp"
+    "app/commands/dq/subject_area_commands.cpp"
     "app/commands/dq/synthetic_fx_spot_config_commands.cpp"
     "app/commands/dq/treatment_dimension_commands.cpp"
 )
@@ -49,6 +51,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/artefact_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/badge_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/badge_mapping_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/badge_severity_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/catalog_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/change_reason_category_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/change_reason_commands.hpp"
@@ -66,6 +69,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/methodology_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/nature_dimension_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/origin_dimension_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/subject_area_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 )

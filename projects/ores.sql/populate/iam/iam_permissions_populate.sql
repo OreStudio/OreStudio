@@ -549,6 +549,46 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::dataset_bundle_members:write', 'Create and modify dataset bundle members');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::dataset_bundle_members:delete', 'Delete dataset bundle members');
 
+    -- Artefact types
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::artefact_types:read', 'View artefact types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::artefact_types:write', 'Create and modify artefact types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::artefact_types:delete', 'Delete artefact types');
+
+    -- Badge definitions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_definitions:read', 'View badge definitions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_definitions:write', 'Create and modify badge definitions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_definitions:delete', 'Delete badge definitions');
+
+    -- Badge mappings
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_mappings:read', 'View badge mappings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_mappings:write', 'Create and modify badge mappings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_mappings:delete', 'Delete badge mappings');
+
+    -- Badge severities
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_severities:read', 'View badge severities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_severities:write', 'Create and modify badge severities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badge_severities:delete', 'Delete badge severities');
+
+    -- Code domains
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::code_domains:read', 'View code domains');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::code_domains:write', 'Create and modify code domains');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::code_domains:delete', 'Delete code domains');
+
+    -- FSM states
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:read', 'View FSM states');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:write', 'Create and modify FSM states');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:delete', 'Delete FSM states');
+
+    -- FSM transitions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:read', 'View FSM transitions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:write', 'Create and modify FSM transitions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:delete', 'Delete FSM transitions');
+
+    -- Publications
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::publications:read', 'View publications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::publications:write', 'Create and modify publications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::publications:delete', 'Delete publications');
+
     -- Badge permissions (badge severities, code domains, definitions)
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badges:read',   'View badge definitions and severities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::badges:write',  'Create and modify badge definitions and severities');

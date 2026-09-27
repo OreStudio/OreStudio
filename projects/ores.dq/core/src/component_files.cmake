@@ -247,6 +247,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/fsm_transition_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/lei_entity_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/lei_entity_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/lei_entity_summary_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/lei_relationship_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/lei_relationship_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/methodology_handler.hpp"

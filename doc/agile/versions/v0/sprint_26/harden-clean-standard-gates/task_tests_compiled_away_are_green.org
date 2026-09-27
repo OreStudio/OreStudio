@@ -121,18 +121,19 @@ re-measured for each verdict after it.*
 
 | Check | First verdict | After the revision | After the later fixes | On the rebased head |
 |-------+---------------+--------------------+-----------------------+---------------------|
-| Declared cases | 6242 | 6242 | 6242 | 6248 |
-| Files scanned | 722 | 807 | 807 | 809 |
+| Declared cases | 6242 | 6242 | 6242 | 6254 |
+| Files scanned | 722 | 807 | 807 | 810 |
 | =ores.codegen= suite | 837 passed | 845 passed | 853 passed | 874 passed |
 | =ores.service.tests= | 42 cases / 118 assertions | not rebuilt | not rebuilt | 42 cases / 118 assertions |
 | =ores.platform.tests= | 119 cases / 253 assertions | not rebuilt | not rebuilt | 119 cases / 253 assertions |
 | =validate_docs.sh= | 40 of 40 | 40 of 40 | 40 of 40 | 40 of 40 |
 
-The last column is the rebase onto the trunk tip before landing. Trunk had moved
-53 commits and added two test sources holding six cases, so the earlier columns
-were stale the moment the branch was rebased. Every number in this task names
-the head it was measured at; the earlier ones stand for those heads and are not
-the numbers of the merged tree.
+The last column is the rebase onto the trunk tip before landing. Trunk moved
+twice while the branch was in review and added test sources both times, so the
+census grew from 6242 in 807 at the verified head to 6254 in 810 at the merged
+one. Every number in this task names the head it was measured at; the earlier
+ones stand for those heads and are not the numbers of the merged tree. The three
+test files this task changes were not touched by trunk in either move.
 
 The scanned-file count rises because the revision reads every C++ file under a
 =tests/= directory, not only =*_tests.cpp=. The declared-case count does not
@@ -324,7 +325,7 @@ finds 0 of its 3 cases reaching the compiler before the change and 3 of 3
 after, so a platform without local sockets now reports three skipped cases
 where it reported nothing at all.
 
-The tree declares 6248 cases in 809 files, none conditional, every conditional
+The tree declares 6254 cases in 810 files, none conditional, every conditional
 balanced, and no raw string moving under splicing. =ores.codegen= suite 874
 passed. The gate is named in V05 of the Component Clean Standard and in the
 =compass-pr-raise= gate roster.

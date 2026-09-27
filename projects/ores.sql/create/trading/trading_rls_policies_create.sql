@@ -28,6 +28,9 @@
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trade_types_tbl enable row level security;
 
+drop policy if exists trade_types_tenant_isolation_policy
+    on ores_trading_trade_types_tbl;
+
 create policy trade_types_tenant_isolation_policy on ores_trading_trade_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -40,6 +43,9 @@ with check (
 -- FpML Event Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fpml_event_types_tbl enable row level security;
+
+drop policy if exists fpml_event_types_tenant_isolation_policy
+    on ores_trading_fpml_event_types_tbl;
 
 create policy fpml_event_types_tenant_isolation_policy on ores_trading_fpml_event_types_tbl
 for all using (
@@ -54,6 +60,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_activity_types_tbl enable row level security;
 
+drop policy if exists activity_types_tenant_isolation_policy
+    on ores_trading_activity_types_tbl;
+
 create policy activity_types_tenant_isolation_policy on ores_trading_activity_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -66,6 +75,9 @@ with check (
 -- Party Role Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_party_role_types_tbl enable row level security;
+
+drop policy if exists party_role_types_tenant_isolation_policy
+    on ores_trading_party_role_types_tbl;
 
 create policy party_role_types_tenant_isolation_policy on ores_trading_party_role_types_tbl
 for all using (
@@ -80,6 +92,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trade_id_types_tbl enable row level security;
 
+drop policy if exists trade_id_types_tenant_isolation_policy
+    on ores_trading_trade_id_types_tbl;
+
 create policy trade_id_types_tenant_isolation_policy on ores_trading_trade_id_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -92,6 +107,9 @@ with check (
 -- Trades
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trades_tbl enable row level security;
+
+drop policy if exists trades_tenant_isolation_policy
+    on ores_trading_trades_tbl;
 
 create policy trades_tenant_isolation_policy on ores_trading_trades_tbl
 for all using (
@@ -120,6 +138,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trade_identifiers_tbl enable row level security;
 
+drop policy if exists identifiers_tenant_isolation_policy
+    on ores_trading_trade_identifiers_tbl;
+
 create policy identifiers_tenant_isolation_policy on ores_trading_trade_identifiers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -132,6 +153,9 @@ with check (
 -- Trade Party Roles
 -- -----------------------------------------------------------------------------
 alter table ores_trading_party_roles_tbl enable row level security;
+
+drop policy if exists party_roles_tenant_isolation_policy
+    on ores_trading_party_roles_tbl;
 
 create policy party_roles_tenant_isolation_policy on ores_trading_party_roles_tbl
 for all using (
@@ -152,6 +176,9 @@ with check (
 -- Bond Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_bond_instruments_tbl enable row level security;
+
+drop policy if exists bond_instruments_tenant_isolation_policy
+    on ores_trading_bond_instruments_tbl;
 
 create policy bond_instruments_tenant_isolation_policy on ores_trading_bond_instruments_tbl
 for all using (
@@ -182,6 +209,9 @@ for select using (
 -- Bond Issues
 alter table ores_trading_bond_issues_tbl enable row level security;
 
+drop policy if exists bond_issues_tenant_isolation_policy
+    on ores_trading_bond_issues_tbl;
+
 create policy bond_issues_tenant_isolation_policy on ores_trading_bond_issues_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -192,6 +222,9 @@ with check (
 
 -- Bond Issue Call Dates
 alter table ores_trading_bond_issue_call_dates_tbl enable row level security;
+
+drop policy if exists bond_issue_call_dates_tenant_isolation_policy
+    on ores_trading_bond_issue_call_dates_tbl;
 
 create policy bond_issue_call_dates_tenant_isolation_policy on ores_trading_bond_issue_call_dates_tbl
 for all using (
@@ -204,6 +237,9 @@ with check (
 -- Bond Issue Conversion Targets
 alter table ores_trading_bond_issue_conversion_targets_tbl enable row level security;
 
+drop policy if exists bond_issue_conversion_targets_tenant_isolation_policy
+    on ores_trading_bond_issue_conversion_targets_tbl;
+
 create policy bond_issue_conversion_targets_tenant_isolation_policy on ores_trading_bond_issue_conversion_targets_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -214,6 +250,9 @@ with check (
 
 -- Bond Options
 alter table ores_trading_bond_options_tbl enable row level security;
+
+drop policy if exists bond_options_tenant_isolation_policy
+    on ores_trading_bond_options_tbl;
 
 create policy bond_options_tenant_isolation_policy on ores_trading_bond_options_tbl
 for all using (
@@ -226,6 +265,9 @@ with check (
 -- Bond Futures
 alter table ores_trading_bond_futures_tbl enable row level security;
 
+drop policy if exists bond_futures_tenant_isolation_policy
+    on ores_trading_bond_futures_tbl;
+
 create policy bond_futures_tenant_isolation_policy on ores_trading_bond_futures_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -236,6 +278,9 @@ with check (
 
 -- Bond TRS
 alter table ores_trading_bond_trs_tbl enable row level security;
+
+drop policy if exists bond_trs_tenant_isolation_policy
+    on ores_trading_bond_trs_tbl;
 
 create policy bond_trs_tenant_isolation_policy on ores_trading_bond_trs_tbl
 for all using (
@@ -248,6 +293,9 @@ with check (
 -- Bond Repos
 alter table ores_trading_bond_repos_tbl enable row level security;
 
+drop policy if exists bond_repos_tenant_isolation_policy
+    on ores_trading_bond_repos_tbl;
+
 create policy bond_repos_tenant_isolation_policy on ores_trading_bond_repos_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -258,6 +306,9 @@ with check (
 
 -- Ascots
 alter table ores_trading_ascots_tbl enable row level security;
+
+drop policy if exists ascots_tenant_isolation_policy
+    on ores_trading_ascots_tbl;
 
 create policy ascots_tenant_isolation_policy on ores_trading_ascots_tbl
 for all using (
@@ -277,6 +328,9 @@ with check (
 -- Trade Envelopes
 alter table ores_trading_trade_envelopes_tbl enable row level security;
 
+drop policy if exists trade_envelopes_tenant_isolation_policy
+    on ores_trading_trade_envelopes_tbl;
+
 create policy trade_envelopes_tenant_isolation_policy on ores_trading_trade_envelopes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -287,6 +341,9 @@ with check (
 
 -- Trade Envelope Portfolio Ids
 alter table ores_trading_trade_envelope_portfolio_ids_tbl enable row level security;
+
+drop policy if exists trade_envelope_portfolio_ids_tenant_isolation_policy
+    on ores_trading_trade_envelope_portfolio_ids_tbl;
 
 create policy trade_envelope_portfolio_ids_tenant_isolation_policy on ores_trading_trade_envelope_portfolio_ids_tbl
 for all using (
@@ -299,6 +356,9 @@ with check (
 -- Trade Envelope Additional Fields
 alter table ores_trading_trade_envelope_additional_fields_tbl enable row level security;
 
+drop policy if exists trade_envelope_additional_fields_tenant_isolation_policy
+    on ores_trading_trade_envelope_additional_fields_tbl;
+
 create policy trade_envelope_additional_fields_tenant_isolation_policy on ores_trading_trade_envelope_additional_fields_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -309,6 +369,9 @@ with check (
 
 -- Bond Legs
 alter table ores_trading_bond_legs_tbl enable row level security;
+
+drop policy if exists bond_legs_tenant_isolation_policy
+    on ores_trading_bond_legs_tbl;
 
 create policy bond_legs_tenant_isolation_policy on ores_trading_bond_legs_tbl
 for all using (
@@ -321,6 +384,9 @@ with check (
 -- Bond Leg Amounts
 alter table ores_trading_bond_leg_amounts_tbl enable row level security;
 
+drop policy if exists bond_leg_amounts_tenant_isolation_policy
+    on ores_trading_bond_leg_amounts_tbl;
+
 create policy bond_leg_amounts_tenant_isolation_policy on ores_trading_bond_leg_amounts_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -331,6 +397,9 @@ with check (
 
 -- Bond Leg Amortizations
 alter table ores_trading_bond_leg_amortizations_tbl enable row level security;
+
+drop policy if exists bond_leg_amortizations_tenant_isolation_policy
+    on ores_trading_bond_leg_amortizations_tbl;
 
 create policy bond_leg_amortizations_tenant_isolation_policy on ores_trading_bond_leg_amortizations_tbl
 for all using (
@@ -343,6 +412,9 @@ with check (
 -- Bond Leg Rates
 alter table ores_trading_bond_leg_rates_tbl enable row level security;
 
+drop policy if exists bond_leg_rates_tenant_isolation_policy
+    on ores_trading_bond_leg_rates_tbl;
+
 create policy bond_leg_rates_tenant_isolation_policy on ores_trading_bond_leg_rates_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -353,6 +425,9 @@ with check (
 
 -- Instrument Schedules
 alter table ores_trading_instrument_schedules_tbl enable row level security;
+
+drop policy if exists instrument_schedules_tenant_isolation_policy
+    on ores_trading_instrument_schedules_tbl;
 
 create policy instrument_schedules_tenant_isolation_policy on ores_trading_instrument_schedules_tbl
 for all using (
@@ -365,6 +440,9 @@ with check (
 -- Instrument Schedule Dates
 alter table ores_trading_instrument_schedule_dates_tbl enable row level security;
 
+drop policy if exists instrument_schedule_dates_tenant_isolation_policy
+    on ores_trading_instrument_schedule_dates_tbl;
+
 create policy instrument_schedule_dates_tenant_isolation_policy on ores_trading_instrument_schedule_dates_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -375,6 +453,9 @@ with check (
 
 -- Instrument Options
 alter table ores_trading_instrument_options_tbl enable row level security;
+
+drop policy if exists instrument_options_tenant_isolation_policy
+    on ores_trading_instrument_options_tbl;
 
 create policy instrument_options_tenant_isolation_policy on ores_trading_instrument_options_tbl
 for all using (
@@ -387,6 +468,9 @@ with check (
 -- Instrument Option Premiums
 alter table ores_trading_instrument_option_premiums_tbl enable row level security;
 
+drop policy if exists instrument_option_premiums_tenant_isolation_policy
+    on ores_trading_instrument_option_premiums_tbl;
+
 create policy instrument_option_premiums_tenant_isolation_policy on ores_trading_instrument_option_premiums_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -397,6 +481,9 @@ with check (
 
 -- Instrument Option Exercise Fees
 alter table ores_trading_instrument_option_exercise_fees_tbl enable row level security;
+
+drop policy if exists instrument_option_exercise_fees_tenant_isolation_policy
+    on ores_trading_instrument_option_exercise_fees_tbl;
 
 create policy instrument_option_exercise_fees_tenant_isolation_policy on ores_trading_instrument_option_exercise_fees_tbl
 for all using (
@@ -409,6 +496,9 @@ with check (
 -- Instrument Option Payment Dates
 alter table ores_trading_instrument_option_payment_dates_tbl enable row level security;
 
+drop policy if exists instrument_option_payment_dates_tenant_isolation_policy
+    on ores_trading_instrument_option_payment_dates_tbl;
+
 create policy instrument_option_payment_dates_tenant_isolation_policy on ores_trading_instrument_option_payment_dates_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -419,6 +509,9 @@ with check (
 
 -- Instrument Strikes
 alter table ores_trading_instrument_strikes_tbl enable row level security;
+
+drop policy if exists instrument_strikes_tenant_isolation_policy
+    on ores_trading_instrument_strikes_tbl;
 
 create policy instrument_strikes_tenant_isolation_policy on ores_trading_instrument_strikes_tbl
 for all using (
@@ -431,6 +524,9 @@ with check (
 -- Bond Forwards
 alter table ores_trading_bond_forwards_tbl enable row level security;
 
+drop policy if exists bond_forwards_tenant_isolation_policy
+    on ores_trading_bond_forwards_tbl;
+
 create policy bond_forwards_tenant_isolation_policy on ores_trading_bond_forwards_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -441,6 +537,9 @@ with check (
 
 -- Bond Future Delivery Baskets
 alter table ores_trading_bond_future_delivery_baskets_tbl enable row level security;
+
+drop policy if exists bond_future_delivery_baskets_tenant_isolation_policy
+    on ores_trading_bond_future_delivery_baskets_tbl;
 
 create policy bond_future_delivery_baskets_tenant_isolation_policy on ores_trading_bond_future_delivery_baskets_tbl
 for all using (
@@ -454,6 +553,9 @@ with check (
 -- Commodity Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_commodity_instruments_tbl enable row level security;
+
+drop policy if exists commodity_instruments_tenant_isolation_policy
+    on ores_trading_commodity_instruments_tbl;
 
 create policy commodity_instruments_tenant_isolation_policy on ores_trading_commodity_instruments_tbl
 for all using (
@@ -478,6 +580,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_option_instruments_tbl enable row level security;
 
+drop policy if exists equity_option_instruments_tenant_isolation_policy
+    on ores_trading_equity_option_instruments_tbl;
+
 create policy equity_option_instruments_tenant_isolation_policy on ores_trading_equity_option_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -500,6 +605,9 @@ for select using (
 -- Equity Digital Option Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_digital_option_instruments_tbl enable row level security;
+
+drop policy if exists equity_digital_option_instruments_tenant_isolation_policy
+    on ores_trading_equity_digital_option_instruments_tbl;
 
 create policy equity_digital_option_instruments_tenant_isolation_policy on ores_trading_equity_digital_option_instruments_tbl
 for all using (
@@ -524,6 +632,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_barrier_option_instruments_tbl enable row level security;
 
+drop policy if exists equity_barrier_option_instruments_tenant_isolation_policy
+    on ores_trading_equity_barrier_option_instruments_tbl;
+
 create policy equity_barrier_option_instruments_tenant_isolation_policy on ores_trading_equity_barrier_option_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -546,6 +657,9 @@ for select using (
 -- Equity Asian Option Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_asian_option_instruments_tbl enable row level security;
+
+drop policy if exists equity_asian_option_instruments_tenant_isolation_policy
+    on ores_trading_equity_asian_option_instruments_tbl;
 
 create policy equity_asian_option_instruments_tenant_isolation_policy on ores_trading_equity_asian_option_instruments_tbl
 for all using (
@@ -570,6 +684,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_forward_instruments_tbl enable row level security;
 
+drop policy if exists equity_forward_instruments_tenant_isolation_policy
+    on ores_trading_equity_forward_instruments_tbl;
+
 create policy equity_forward_instruments_tenant_isolation_policy on ores_trading_equity_forward_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -592,6 +709,9 @@ for select using (
 -- Equity Variance Swap Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_variance_swap_instruments_tbl enable row level security;
+
+drop policy if exists equity_variance_swap_instruments_tenant_isolation_policy
+    on ores_trading_equity_variance_swap_instruments_tbl;
 
 create policy equity_variance_swap_instruments_tenant_isolation_policy on ores_trading_equity_variance_swap_instruments_tbl
 for all using (
@@ -616,6 +736,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_swap_instruments_tbl enable row level security;
 
+drop policy if exists equity_swap_instruments_tenant_isolation_policy
+    on ores_trading_equity_swap_instruments_tbl;
+
 create policy equity_swap_instruments_tenant_isolation_policy on ores_trading_equity_swap_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -638,6 +761,9 @@ for select using (
 -- Equity Accumulator Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_accumulator_instruments_tbl enable row level security;
+
+drop policy if exists equity_accumulator_instruments_tenant_isolation_policy
+    on ores_trading_equity_accumulator_instruments_tbl;
 
 create policy equity_accumulator_instruments_tenant_isolation_policy on ores_trading_equity_accumulator_instruments_tbl
 for all using (
@@ -662,6 +788,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_position_instruments_tbl enable row level security;
 
+drop policy if exists equity_position_instruments_tenant_isolation_policy
+    on ores_trading_equity_position_instruments_tbl;
+
 create policy equity_position_instruments_tenant_isolation_policy on ores_trading_equity_position_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -684,6 +813,9 @@ for select using (
 -- Credit Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_credit_instruments_tbl enable row level security;
+
+drop policy if exists credit_instruments_tenant_isolation_policy
+    on ores_trading_credit_instruments_tbl;
 
 create policy credit_instruments_tenant_isolation_policy on ores_trading_credit_instruments_tbl
 for all using (
@@ -708,6 +840,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_scripted_instruments_tbl enable row level security;
 
+drop policy if exists scripted_instruments_tenant_isolation_policy
+    on ores_trading_scripted_instruments_tbl;
+
 create policy scripted_instruments_tenant_isolation_policy on ores_trading_scripted_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -730,6 +865,9 @@ for select using (
 -- Composite Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_composite_instruments_tbl enable row level security;
+
+drop policy if exists composite_instruments_tenant_isolation_policy
+    on ores_trading_composite_instruments_tbl;
 
 create policy composite_instruments_tenant_isolation_policy on ores_trading_composite_instruments_tbl
 for all using (
@@ -754,6 +892,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_composite_legs_tbl enable row level security;
 
+drop policy if exists composite_legs_tenant_isolation_policy
+    on ores_trading_composite_legs_tbl;
+
 create policy composite_legs_tenant_isolation_policy on ores_trading_composite_legs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -776,6 +917,9 @@ for select using (
 -- Swap Legs
 -- -----------------------------------------------------------------------------
 alter table ores_trading_swap_legs_tbl enable row level security;
+
+drop policy if exists swap_legs_tenant_isolation_policy
+    on ores_trading_swap_legs_tbl;
 
 create policy swap_legs_tenant_isolation_policy on ores_trading_swap_legs_tbl
 for all using (
@@ -804,6 +948,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fra_instruments_tbl enable row level security;
 
+drop policy if exists fra_instruments_tenant_isolation_policy
+    on ores_trading_fra_instruments_tbl;
+
 create policy fra_instruments_tenant_isolation_policy on ores_trading_fra_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -826,6 +973,9 @@ for select using (
 -- Vanilla Swap Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_vanilla_swap_instruments_tbl enable row level security;
+
+drop policy if exists vanilla_swap_instruments_tenant_isolation_policy
+    on ores_trading_vanilla_swap_instruments_tbl;
 
 create policy vanilla_swap_instruments_tenant_isolation_policy on ores_trading_vanilla_swap_instruments_tbl
 for all using (
@@ -850,6 +1000,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_cap_floor_instruments_tbl enable row level security;
 
+drop policy if exists cap_floor_instruments_tenant_isolation_policy
+    on ores_trading_cap_floor_instruments_tbl;
+
 create policy cap_floor_instruments_tenant_isolation_policy on ores_trading_cap_floor_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -872,6 +1025,9 @@ for select using (
 -- Swaption Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_swaption_instruments_tbl enable row level security;
+
+drop policy if exists swaption_instruments_tenant_isolation_policy
+    on ores_trading_swaption_instruments_tbl;
 
 create policy swaption_instruments_tenant_isolation_policy on ores_trading_swaption_instruments_tbl
 for all using (
@@ -896,6 +1052,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_balance_guaranteed_swap_instruments_tbl enable row level security;
 
+drop policy if exists bgs_instruments_tenant_isolation_policy
+    on ores_trading_balance_guaranteed_swap_instruments_tbl;
+
 create policy bgs_instruments_tenant_isolation_policy on ores_trading_balance_guaranteed_swap_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -918,6 +1077,9 @@ for select using (
 -- Callable Swap Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_callable_swap_instruments_tbl enable row level security;
+
+drop policy if exists callable_swap_instruments_tenant_isolation_policy
+    on ores_trading_callable_swap_instruments_tbl;
 
 create policy callable_swap_instruments_tenant_isolation_policy on ores_trading_callable_swap_instruments_tbl
 for all using (
@@ -942,6 +1104,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_knock_out_swap_instruments_tbl enable row level security;
 
+drop policy if exists knock_out_swap_instruments_tenant_isolation_policy
+    on ores_trading_knock_out_swap_instruments_tbl;
+
 create policy knock_out_swap_instruments_tenant_isolation_policy on ores_trading_knock_out_swap_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -965,6 +1130,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_inflation_swap_instruments_tbl enable row level security;
 
+drop policy if exists inflation_swap_instruments_tenant_isolation_policy
+    on ores_trading_inflation_swap_instruments_tbl;
+
 create policy inflation_swap_instruments_tenant_isolation_policy on ores_trading_inflation_swap_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -987,6 +1155,9 @@ for select using (
 -- Risk Participation Agreement Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_rpa_instruments_tbl enable row level security;
+
+drop policy if exists rpa_instruments_tenant_isolation_policy
+    on ores_trading_rpa_instruments_tbl;
 
 create policy rpa_instruments_tenant_isolation_policy on ores_trading_rpa_instruments_tbl
 for all using (
@@ -1015,6 +1186,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_forward_instruments_tbl enable row level security;
 
+drop policy if exists fx_forward_instruments_tenant_isolation_policy
+    on ores_trading_fx_forward_instruments_tbl;
+
 create policy fx_forward_instruments_tenant_isolation_policy on ores_trading_fx_forward_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -1037,6 +1211,9 @@ for select using (
 -- FX Vanilla Option Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_vanilla_option_instruments_tbl enable row level security;
+
+drop policy if exists fx_vanilla_option_instruments_tenant_isolation_policy
+    on ores_trading_fx_vanilla_option_instruments_tbl;
 
 create policy fx_vanilla_option_instruments_tenant_isolation_policy on ores_trading_fx_vanilla_option_instruments_tbl
 for all using (
@@ -1061,6 +1238,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_barrier_option_instruments_tbl enable row level security;
 
+drop policy if exists fx_barrier_option_instruments_tenant_isolation_policy
+    on ores_trading_fx_barrier_option_instruments_tbl;
+
 create policy fx_barrier_option_instruments_tenant_isolation_policy on ores_trading_fx_barrier_option_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -1083,6 +1263,9 @@ for select using (
 -- FX Digital Option Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_digital_option_instruments_tbl enable row level security;
+
+drop policy if exists fx_digital_option_instruments_tenant_isolation_policy
+    on ores_trading_fx_digital_option_instruments_tbl;
 
 create policy fx_digital_option_instruments_tenant_isolation_policy on ores_trading_fx_digital_option_instruments_tbl
 for all using (
@@ -1107,6 +1290,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_asian_forward_instruments_tbl enable row level security;
 
+drop policy if exists fx_asian_forward_instruments_tenant_isolation_policy
+    on ores_trading_fx_asian_forward_instruments_tbl;
+
 create policy fx_asian_forward_instruments_tenant_isolation_policy on ores_trading_fx_asian_forward_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -1130,6 +1316,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_accumulator_instruments_tbl enable row level security;
 
+drop policy if exists fx_accumulator_instruments_tenant_isolation_policy
+    on ores_trading_fx_accumulator_instruments_tbl;
+
 create policy fx_accumulator_instruments_tenant_isolation_policy on ores_trading_fx_accumulator_instruments_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -1152,6 +1341,9 @@ for select using (
 -- FX Variance Swap Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_variance_swap_instruments_tbl enable row level security;
+
+drop policy if exists fx_variance_swap_instruments_tenant_isolation_policy
+    on ores_trading_fx_variance_swap_instruments_tbl;
 
 create policy fx_variance_swap_instruments_tenant_isolation_policy on ores_trading_fx_variance_swap_instruments_tbl
 for all using (

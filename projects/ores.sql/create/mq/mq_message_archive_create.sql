@@ -88,6 +88,9 @@ end $$;
 
 alter table ores_mq_message_archive_tbl enable row level security;
 
+drop policy if exists message_archive_read_policy
+    on ores_mq_message_archive_tbl;
+
 create policy message_archive_read_policy on ores_mq_message_archive_tbl for select using (
     (tenant_id is null and party_id is null)
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id is null)

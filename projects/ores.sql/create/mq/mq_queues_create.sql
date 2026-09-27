@@ -61,6 +61,9 @@ create unique index if not exists queues_system_name_uniq_idx
 
 alter table ores_mq_queues_tbl enable row level security;
 
+drop policy if exists queues_read_policy
+    on ores_mq_queues_tbl;
+
 create policy queues_read_policy on ores_mq_queues_tbl for select using (
     scope_type = 'system'
     or (scope_type = 'tenant' and tenant_id = ores_iam_current_tenant_id_fn())

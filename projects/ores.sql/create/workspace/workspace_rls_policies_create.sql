@@ -20,6 +20,9 @@
 alter table ores_workspaces_tbl enable row level security;
 
 -- Tenant isolation: a session can only see workspaces in its own tenant.
+drop policy if exists workspaces_tenant_isolation_policy
+    on ores_workspaces_tbl;
+
 create policy workspaces_tenant_isolation_policy on ores_workspaces_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -31,6 +34,9 @@ with check (
 -- Party isolation (restrictive SELECT): a session sees only workspaces owned
 -- by a party in its visible-party set, plus the Live workspace which belongs
 -- to the system party but is readable by every party in the tenant.
+drop policy if exists workspaces_party_isolation_policy
+    on ores_workspaces_tbl;
+
 create policy workspaces_party_isolation_policy on ores_workspaces_tbl
 as restrictive
 for select using (

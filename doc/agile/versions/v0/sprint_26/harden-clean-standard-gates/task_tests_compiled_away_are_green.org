@@ -295,6 +295,41 @@ Later rounds, on the heads the previous round's fixes produced:
 
 * Result
 
+A gate forbids a =TEST_CASE= from sitting inside a conditional compilation
+block, where a false condition deletes it and the suite still reports green.
+
+=projects/ores.codegen/scripts/check_test_case_reachability.py= reads every
+C++ file under a =tests/= directory and every file named =*_tests.*=. It
+resolves the backslash-newline splices of translation phase 2 before it reads
+anything, follows a =#define= the file itself binds to a test macro, fails on a
+file whose conditionals do not balance, and reports any file whose raw strings
+read differently once the splices are removed rather than guessing which
+reading a compiler takes. It fails when it finds no test sources or no cases,
+so it cannot pass a tree by finding nothing. It needs no build, no flags and no
+formatter, so it runs in the =codegen-drift= workflow on every pull request,
+including a change that touches only tests.
+
+The six cases that used the construct now declare unconditionally and skip at
+run time: three in =ores.service/tests/systemd_notify_tests.cpp=, two in
+=ores.platform/tests/net_network_info_tests.cpp=, one in
+=ores.platform/tests/environment_environment_tests.cpp=. Preprocessing the
+readiness suite with its own flags and =-DBOOST_ASIO_DISABLE_LOCAL_SOCKETS=
+finds 0 of its 3 cases reaching the compiler before the change and 3 of 3
+after, so a platform without local sockets now reports three skipped cases
+where it reported nothing at all.
+
+The tree declares 6242 cases in 807 files, none conditional, every conditional
+balanced, and no raw string moving under splicing. =ores.codegen= suite 853
+passed. The gate is named in V05 of the Component Clean Standard and in the
+=compass-pr-raise= gate roster.
+
+It took five verification rounds, four of them finding a defect in the gate
+itself rather than in the tree, and each round's findings and decisions are
+recorded above. The last two are the ones worth remembering: a rule that claims
+to fail safe has to be tested in the direction that matters, and a comparison
+between two readings has to carry a half-open interval by its own last
+character.
+
 * Promoted from capture
 
 Captured 2026-09-26 in the product backlog; promoted preserving the UUID.

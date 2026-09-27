@@ -1,8 +1,9 @@
 :PROPERTIES:
 :ID: 1166DC86-77A8-4E93-A3D9-E35E40550A01
+:ores.ts.protocol.enabled: false
 :END:
 #+title: ores.dq.publish_bundle
-#+description: Codegen operation model for the dq bundle publish verb, rendered to C++ and TypeScript from one source.
+#+description: Codegen operation model for the dq bundle publish verb, rendered to the C++ protocol from one source.
 #+type: ores.codegen.operation
 #+component: dq
 #+subcomponent: api

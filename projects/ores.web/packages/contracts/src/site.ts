@@ -28,7 +28,7 @@ import { z } from 'zod';
  * something a person chooses at sign-in. All environments are declared in one
  * file, and the site is started against one of them:
  *
- *   npm run dev:bff -- --env bright_hopper
+ *   npm run dev:bff -- --env brave_hopper
  *
  * That is the whole of it. Nobody signing in needs to know what a namespace, a
  * port or a certificate is, and the browser never learns where the server

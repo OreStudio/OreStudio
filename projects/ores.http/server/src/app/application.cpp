@@ -182,7 +182,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                     "JWT verifier is required to register HTTP server handlers.");
             // The runner has IAM's public key; the HTTP routes need it too,
             // because the callers hold the RS256 session tokens IAM signs.
-            server.set_request_verifier(
+            server.set_verifier(
                 std::make_shared<ores::security::jwt::jwt_authenticator>(*verifier));
             return ores::http::server::messaging::registrar::register_handlers(
                 n, std::move(*verifier), http_base_url);

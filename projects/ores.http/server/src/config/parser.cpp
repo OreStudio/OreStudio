@@ -42,9 +42,6 @@ const std::string version_arg("version");
 const std::string server_address_arg("address");
 const std::string server_port_arg("port");
 const std::string server_max_connections_arg("max-connections");
-const std::string server_jwt_secret_arg("jwt-secret");
-const std::string server_jwt_issuer_arg("jwt-issuer");
-const std::string server_jwt_audience_arg("jwt-audience");
 const std::string server_disable_cors_arg("disable-cors");
 const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
@@ -84,14 +81,6 @@ options_description make_options_description() {
         "max-connections,m",
         value<std::uint32_t>()->default_value(100),
         "Maximum number of concurrent connections. Defaults to 100.")(
-        "jwt-secret",
-        value<std::string>()->default_value(""),
-        "JWT secret for HS256 authentication. Required.")(
-        "jwt-issuer",
-        value<std::string>()->default_value("ores"),
-        "JWT issuer for token validation.")("jwt-audience",
-                                            value<std::string>()->default_value("ores-api"),
-                                            "JWT audience for token validation.")(
         "disable-cors",
         "Disable CORS support. Enabled by default.")("cors-origins",
                                                      value<std::string>()->default_value("*"),
@@ -158,9 +147,6 @@ http_server_options read_server_configuration(const variables_map& vm) {
     r.address = vm[server_address_arg].as<std::string>();
     r.port = vm[server_port_arg].as<std::uint16_t>();
     r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
-    r.jwt_secret = vm[server_jwt_secret_arg].as<std::string>();
-    r.jwt_issuer = vm[server_jwt_issuer_arg].as<std::string>();
-    r.jwt_audience = vm[server_jwt_audience_arg].as<std::string>();
     r.enable_cors = (vm.count(server_disable_cors_arg) == 0);
     r.cors_allowed_origins = vm[server_cors_origins_arg].as<std::string>();
     r.server_identifier = vm[server_identifier_arg].as<std::string>();
@@ -210,12 +196,6 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.nats = nats_configuration::read_options(vm);
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
     r.storage_dir = vm[storage_dir_arg].as<std::string>();
-
-    // Validate required configuration
-    if (r.server.jwt_secret.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "JWT secret is required. Set --jwt-secret or ORES_HTTP_SERVER_JWT_SECRET."));
-    }
 
     return r;
 }

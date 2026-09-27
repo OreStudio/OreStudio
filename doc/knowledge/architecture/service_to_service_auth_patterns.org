@@ -183,6 +183,18 @@ Two consequences follow, and both were learned the hard way:
   identity built once from =svc_nats=; a workflow step acts as the caller only
   when the request that dispatched it carried that caller's token.
 
+How the edge verifies is worth stating, because the failure above is easy to
+reintroduce. The gateway holds no signing key of its own and never mints a
+token: IAM is the only signer. At startup the service framework fetches IAM's
+public key from its JWKS endpoint over NATS, and the gateway hands that one
+verifier to every session. There is deliberately no second, symmetric verifier
+to fall back to. A shared secret would be a second way to be *believed* rather
+than a second way to *sign*, and since the edge has nothing to sign, it would
+authenticate nothing legitimate while widening what an attacker who learns the
+secret can do. A session with no verifier refuses every request rather than
+serving it, so a failed key fetch is a loud outage instead of a quiet
+weakening.
+
 A token that travels inside a request is a short-lived credential, not durable
 state. It may be relayed through a message; it must not become a stored
 credential, and a row, a queue archive or a workflow instance that retains one

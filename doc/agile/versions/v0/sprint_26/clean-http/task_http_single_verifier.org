@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: F1E98183-5526-4A8D-82BB-7C1C033511F1
+:END:
+#+title: Task: Verify session tokens at the gateway with IAM's key alone
+#+description: The gateway authenticates HTTP sessions with a verifier that prefers IAM's published RS256 key and silently falls back to a symmetric HS256 secret it generates. The fallback is a second trust root, it authenticates nothing legitimate because the gateway never mints, and it masks a failed key fetch. Remove it, so the edge has one way of being believed, and document how the edge verifies on the security architecture page.
+#+type: task
+#+level: s1
+#+filetags: :clean-http:sprint_26:v0:
+#+owner: marco
+#+branch: feature/http-single-verifier
+#+pr: 2258
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gateway verifies session tokens with IAM's published RS256 key alone, holds no signing credential of its own, and refuses requests when it has no verifier; the security architecture page states how the edge verifies.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The gateway verifies with one verifier: IAM's RS256 public key, fetched from its JWKS at startup.
+- The HS256 path is gone: no option, no parser requirement, and no environment variable.
+- A session with no verifier refuses every request, so a failed key fetch cannot fall back to anything weaker.
+- The HTTP edge's verification is documented on the security architecture page.
+
+* Plan
+
+Remove the second verifier rather than reconcile it. The gateway preferred
+IAM's RS256 key and fell back to a symmetric HS256 secret, and the fallback
+was load-bearing for nothing: the component never mints, so the secret only
+widened what an attacker who learned it could do, and it turned a failed key
+fetch into a quiet weakening instead of a loud outage.
+
+That makes the change a subtraction in four places, and a documentation
+addition in one:
+
+1. =http_server= and =http_session= hold one verifier instead of two. The
+   accessor that returned the old symmetric one is dead and goes with it.
+2. =http_server_options= loses the four JWT fields, and =parser.cpp= loses
+   the three options and the requirement that made an operator generate a
+   secret nothing needed.
+3. =env_init.py= stops generating =ORES_HTTP_SERVER_JWT_SECRET=. Removing the
+   variable matters as much as removing the option: CLI11 maps it onto the
+   option name, so leaving it in =/.env= fails the parse at startup.
+4. The unreachable public-key-file branch goes, and so do the includes that
+   only it used.
+5. The security architecture page gains the "how" beside its existing "must":
+   the edge holds no signing key, the key arrives through the framework, and
+   there is deliberately no fallback.
+
+The failure mode to respect is that this is a security change to a running
+service, so it is verified by starting the gateway with no secret in its
+environment and replaying recipes that need a session, not by the build.
+
+* Notes
+
+The defect this removes was introduced by the fix for the same symptom one
+branch earlier, which added the RS256 verifier without noticing the symmetric
+one already there was now redundant. The lesson is the usual one: a new
+credential path is a change to the trust surface, so the old path has to be
+accounted for in the same piece of work.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2258][#2258]] | [http] Verify session tokens with IAM's key alone |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | `<fstream>` and `<sstream>` were left behind by the public-key-file branch this removes. | =http_server.cpp= | Taken | Both were unused after the removal; `grep` confirmed nothing else in the file read a stream. |
+| 2 | The accessor returning the new verifier has no callers, as the one it replaced had none. | =http_server.hpp= | Taken | Deleted rather than renamed. An uncalled public accessor is a liability, and the diagram is regenerated without it. |
+| 3 | The task's Status and Plan still read as unstarted. | this task | Taken | Written up and closed with the work. |
+
+* Result
+
+The gateway has one way of being believed. It verifies session tokens with the
+RS256 key IAM publishes, fetched from IAM's JWKS by the service framework at
+startup, and it holds no signing credential of its own.
+
+The symmetric path is gone in every place it appeared: the option fields, the
+parser's three options and its requirement, the environment variable that
+feeding it implied, the unreachable public-key-file branch, the includes only
+that branch used, and the accessor nothing called. A session with no verifier
+refuses every request, so a failed key fetch is an outage rather than a quiet
+fallback.
+
+The security architecture page states how the edge verifies, beside its
+existing statement that it must: the gateway holds no key, the key arrives
+through the framework, and there is deliberately no second, symmetric
+verifier, because the edge has nothing to sign.
+
+Verified by running it, not by building it: the whole tree builds
+(=COMPASS_BUILD_EXIT=0=), =ctest -R ores.http= is 4 of 4, the gateway starts
+and serves with no =ORES_HTTP_SERVER_JWT_SECRET= in its environment and no
+HS256 line in its log, and the four read recipes still answer 200 — so the
+RS256 path is what authenticates sessions. The component-drift,
+=validate_docs=, recipe-inventory and backlog-index gates are all green.
+
+The six body-carrying recipes still fail with 400 because the generated
+recipes send no request body. That is a separate defect in the recipe facet
+and is not addressed here.

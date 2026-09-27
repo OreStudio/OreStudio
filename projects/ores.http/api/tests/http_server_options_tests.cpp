@@ -45,10 +45,6 @@ TEST_CASE("http_server_options_default_construction", tags) {
     CHECK_FALSE(sut.enable_ssl);
     CHECK(sut.certificate_file.empty());
     CHECK(sut.private_key_file.empty());
-    CHECK(sut.jwt_secret.empty());
-    CHECK(sut.jwt_public_key_file.empty());
-    CHECK(sut.jwt_issuer == "ores");
-    CHECK(sut.jwt_audience == "ores-api");
     CHECK(sut.enable_cors);
     CHECK(sut.cors_allowed_origins == "*");
     CHECK(sut.server_identifier == "ores-http-server");
@@ -66,9 +62,6 @@ TEST_CASE("http_server_options_custom_values", tags) {
     sut.enable_ssl = true;
     sut.certificate_file = "/etc/ssl/cert.pem";
     sut.private_key_file = "/etc/ssl/key.pem";
-    sut.jwt_secret = "my-secret-key";
-    sut.jwt_issuer = "my-app";
-    sut.jwt_audience = "my-api";
     sut.enable_cors = false;
     sut.cors_allowed_origins = "https://example.com";
     sut.server_identifier = "my-server";
@@ -80,9 +73,6 @@ TEST_CASE("http_server_options_custom_values", tags) {
     CHECK(sut.enable_ssl);
     CHECK(sut.certificate_file == "/etc/ssl/cert.pem");
     CHECK(sut.private_key_file == "/etc/ssl/key.pem");
-    CHECK(sut.jwt_secret == "my-secret-key");
-    CHECK(sut.jwt_issuer == "my-app");
-    CHECK(sut.jwt_audience == "my-api");
     CHECK_FALSE(sut.enable_cors);
     CHECK(sut.cors_allowed_origins == "https://example.com");
     CHECK(sut.server_identifier == "my-server");
@@ -124,8 +114,6 @@ TEST_CASE("http_server_options_streaming_contains_all_fields", tags) {
     CHECK(output.find("max_connections") != std::string::npos);
     CHECK(output.find("request_timeout") != std::string::npos);
     CHECK(output.find("enable_ssl") != std::string::npos);
-    CHECK(output.find("jwt_issuer") != std::string::npos);
-    CHECK(output.find("jwt_audience") != std::string::npos);
     CHECK(output.find("enable_cors") != std::string::npos);
     CHECK(output.find("server_identifier") != std::string::npos);
 }

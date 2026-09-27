@@ -27,8 +27,7 @@ std::ostream& operator<<(std::ostream& s, const http_server_options& v) {
       << " max_connections: " << v.max_connections
       << " request_timeout: " << v.request_timeout.count() << "s"
       << " enable_ssl: " << (v.enable_ssl ? "true" : "false")
-      << " certificate_file: " << v.certificate_file << " jwt_issuer: " << v.jwt_issuer
-      << " jwt_audience: " << v.jwt_audience
+      << " certificate_file: " << v.certificate_file
       << " enable_cors: " << (v.enable_cors ? "true" : "false")
       << " server_identifier: " << v.server_identifier << " }";
     return s;

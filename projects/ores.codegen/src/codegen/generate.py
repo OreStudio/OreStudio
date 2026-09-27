@@ -214,6 +214,25 @@ _STAGING_ONLY_FACETS = frozenset({
     "ores.doc.shell-recipe",
 })
 
+# What a staging shim cannot announce. The same profile withdraws the notify
+# trigger (`ores.sql.schema.notify_trigger` in its Physical space), because
+# there is no main table to hang one on, so the eventing facets have no
+# publisher: a registrar that maps a channel nothing raises, an event type no
+# publisher constructs, and an integration test asserting an event that cannot
+# arrive. One decision, so they go together.
+#
+# This belongs here rather than in the profile's own Physical space. A shape
+# profile fixes `ores.cpp.eventing-integration-test` to true, and two profiles
+# that fix one address differently are a conflict the binding cannot satisfy --
+# the loader rejects it rather than picking a winner. The trigger's absence is
+# a property of this profile, so the consequence is stated where the other
+# profile-independent gates live.
+_STAGING_ONLY_EVENTING_FACETS = frozenset({
+    "ores.cpp.nats-eventing",
+    "ores.cpp.nats-event-registrar",
+    "ores.cpp.eventing-integration-test",
+})
+
 # The frontmatter keys a shell menu name is derived from: a domain entity names
 # its menu after ``entity_plural``, a junction after ``name``.
 _PLURAL_KEYWORDS = frozenset({"entity_plural", "name"})
@@ -505,6 +524,11 @@ def resolve_targets(
             if plural and (owners.get(plural, frozenset()) - {component}):
                 gen_facets = {f for f in gen_facets
                               if f not in _STAGING_ONLY_FACETS}
+            # Unconditional, unlike the shell unit above: the notify trigger is
+            # absent for every staging shim, not only one whose plural a second
+            # component also models.
+            gen_facets = {f for f in gen_facets
+                          if f not in _STAGING_ONLY_EVENTING_FACETS}
         if sql_flags.get("current_state"):
             # A current-state entity has no version rows, so the history
             # dialog's field mapper (which reads the domain type's recorded_at

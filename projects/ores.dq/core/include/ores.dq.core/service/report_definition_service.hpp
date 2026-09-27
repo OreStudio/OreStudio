@@ -81,18 +81,6 @@ public:
     get_report_definition(const messaging::get_report_definition_request& request);
     messaging::get_many_report_definitions_response
     get_many_report_definitions(const messaging::get_many_report_definitions_request& request);
-    messaging::put_report_definition_response
-    put_report_definition(const messaging::put_report_definition_request& request);
-    messaging::put_many_report_definitions_response
-    put_many_report_definitions(const messaging::put_many_report_definitions_request& request);
-    messaging::delete_report_definition_response
-    delete_report_definition(const messaging::delete_report_definition_request& request);
-    messaging::delete_many_report_definitions_response delete_many_report_definitions(
-        const messaging::delete_many_report_definitions_request& request);
-    messaging::list_report_definition_versions_response list_report_definition_versions(
-        const messaging::list_report_definition_versions_request& request);
-    messaging::get_report_definition_version_response
-    get_report_definition_version(const messaging::get_report_definition_version_request& request);
     /**@}*/
 
     /**
@@ -112,16 +100,6 @@ public:
      */
     std::uint32_t count_definitions();
 
-
-    /**
-     * @brief Retrieves a single report definition as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The report definition at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::report_definition> get_definition_at_version(const boost::uuids::uuid& id,
-                                                                       std::uint32_t version);
 
     /**
      * @brief Retrieves a single report definition by its primary key.
@@ -166,33 +144,10 @@ public:
      */
     void delete_definitions(const std::vector<std::string>& ids);
 
-    /**
-     * @brief Retrieves all historical versions of a report definition.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::report_definition> get_definition_history(const std::string& id);
 
 private:
     context ctx_;
     repository::report_definition_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result prepare_change(const messaging::report_definition_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::report_definition& out);
 };
 
 }

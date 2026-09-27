@@ -40,11 +40,10 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct synthetic_fx_spot_config_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_dq_synthetic_fx_spot_configs_tbl";
+    constexpr static const char* tablename = "ores_dq_synthetic_fx_spot_configs_artefact_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    int version = 0;
     std::string name;
     std::optional<std::string> description;
     bool enabled = false;
@@ -57,12 +56,6 @@ struct synthetic_fx_spot_config_entity {
     std::string price_source;
     std::optional<std::string> vintage_source;
     std::optional<std::string> vintage_date;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const synthetic_fx_spot_config_entity& v);

@@ -39,26 +39,6 @@ struct report_definition_key {
     boost::uuids::uuid id;
 };
 
-struct report_definition_write {
-    boost::uuids::uuid id;
-    std::string name;
-    std::optional<std::string> description;
-    std::string report_type;
-    std::string schedule_expression;
-    std::string concurrency_policy;
-    int display_order;
-};
-
-struct report_definition_change {
-    report_definition_write write;
-    ores::utility::domain::precondition precondition;
-};
-
-struct report_definition_removal {
-    report_definition_key key;
-    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
-};
-
 struct report_definition_lookup {
     report_definition_key key;
     std::optional<ores::dq::domain::report_definition> report_definition;
@@ -71,17 +51,6 @@ struct report_definition_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
-};
-
-struct report_definition_version_key {
-    report_definition_key report_definition;
-    std::uint32_t version;
-};
-
-struct report_definition_versions_filter {
-    std::optional<std::uint32_t> version;
-    std::optional<std::uint32_t> from_version;
-    std::optional<std::uint32_t> to_version;
 };
 
 struct list_report_definitions_request {
@@ -139,121 +108,6 @@ struct get_many_report_definitions_request {
 struct get_many_report_definitions_response {
     ores::utility::domain::result result;
     std::vector<report_definition_lookup> entries;
-};
-
-struct put_report_definition_request {
-    using response_type = struct put_report_definition_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report_definitions.put";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    report_definition_change change;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_report_definition_response {
-    ores::utility::domain::result result;
-    ores::dq::domain::report_definition report_definition;
-};
-
-struct put_many_report_definitions_request {
-    using response_type = struct put_many_report_definitions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report_definitions.put_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<report_definition_change> changes;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_many_report_definitions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::dq::domain::report_definition> definitions;
-};
-
-struct delete_report_definition_request {
-    using response_type = struct delete_report_definition_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report_definitions.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    report_definition_removal removal;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_report_definition_response {
-    ores::utility::domain::result result;
-};
-
-struct delete_many_report_definitions_request {
-    using response_type = struct delete_many_report_definitions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report_definitions.delete_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<report_definition_removal> removals;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_many_report_definitions_response {
-    ores::utility::domain::result result;
-};
-
-struct list_report_definition_versions_request {
-    using response_type = struct list_report_definition_versions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report_definitions_versions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    report_definition_key key;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<report_definition_versions_filter> filter;
-};
-
-struct list_report_definition_versions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::dq::domain::report_definition> versions;
-    std::uint64_t total;
-};
-
-struct get_report_definition_version_request {
-    using response_type = struct get_report_definition_version_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report_definitions_versions.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    report_definition_version_key key;
-};
-
-struct get_report_definition_version_response {
-    ores::utility::domain::result result;
-    ores::dq::domain::report_definition version;
 };
 
 /**

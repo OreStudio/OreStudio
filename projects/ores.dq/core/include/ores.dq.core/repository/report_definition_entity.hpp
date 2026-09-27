@@ -40,23 +40,16 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct report_definition_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_dq_report_definitions_tbl";
+    constexpr static const char* tablename = "ores_dq_report_definitions_artefact_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    int version = 0;
     std::string name;
     std::optional<std::string> description;
     std::string report_type;
     std::string schedule_expression;
     std::string concurrency_policy;
     int display_order = 0;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const report_definition_entity& v);

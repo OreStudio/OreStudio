@@ -24,7 +24,7 @@ Synthetic FX Spot Config artefacts - denormalized parent+child FX generation con
 :schema:    public
 :product:   ores
 :component: dq
-:profile:   uuid-surrogate-lookup, artefact-staging-only
+:profile:   uuid-surrogate-lookup, read-only-current-state, artefact-staging-only
 :END:
 
 
@@ -206,7 +206,7 @@ std::string("2016-02-05")
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_dq_synthetic_fx_spot_configs_tbl
+:tablename: ores_dq_synthetic_fx_spot_configs_artefact_tbl
 :END:
 
 * Insert trigger
@@ -259,7 +259,6 @@ std::string("2016-02-05")
 | base_currency_code  | Base Ccy     |
 | quote_currency_code | Quote Ccy    |
 | enabled             | Enabled      |
-| modified_by         | Modified By  |
 
 ** Custom repository methods
 

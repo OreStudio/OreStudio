@@ -1,6 +1,0 @@
-# =delete=
-#
-# GENERATED from doc/recipes/shell/synthetic_fx_spot_configs/synthetic_fx_spot_config.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-synthetic_fx_spot_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script

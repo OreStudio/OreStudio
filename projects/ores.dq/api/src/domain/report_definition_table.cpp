@@ -33,12 +33,11 @@ std::string convert_to_table(const std::vector<report_definition>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Type" << "Schedule" << "Order" << "Modified By"
-          << fort::endr;
+    table << fort::header << "Name" << "Type" << "Schedule" << "Order" << fort::endr;
 
     for ([[maybe_unused]] const auto& rd : v) {
         table << rd.name << rd.report_type << rd.schedule_expression << rd.display_order
-              << rd.modified_by << fort::endr;
+              << fort::endr;
     }
     return table.to_string();
 }

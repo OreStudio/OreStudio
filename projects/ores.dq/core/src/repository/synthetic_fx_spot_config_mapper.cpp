@@ -38,7 +38,6 @@ synthetic_fx_spot_config_mapper::map(const synthetic_fx_spot_config_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::synthetic_fx_spot_config r;
-    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
@@ -53,11 +52,6 @@ synthetic_fx_spot_config_mapper::map(const synthetic_fx_spot_config_entity& v) {
     r.price_source = v.price_source;
     r.vintage_source = v.vintage_source;
     r.vintage_date = v.vintage_date;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -70,7 +64,6 @@ synthetic_fx_spot_config_mapper::map(const domain::synthetic_fx_spot_config& v) 
     synthetic_fx_spot_config_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.version = v.version;
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;
@@ -83,10 +76,6 @@ synthetic_fx_spot_config_mapper::map(const domain::synthetic_fx_spot_config& v) 
     r.price_source = v.price_source;
     r.vintage_source = v.vintage_source;
     r.vintage_date = v.vintage_date;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

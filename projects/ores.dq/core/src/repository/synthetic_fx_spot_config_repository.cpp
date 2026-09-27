@@ -48,8 +48,10 @@ synthetic_fx_spot_config_repository::replace_claim(context ctx,
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
-    return {ores::utility::domain::precondition_kind::must_match_version,
-            static_cast<std::uint32_t>(current.front().version)};
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
 domain::synthetic_fx_spot_config
@@ -58,25 +60,14 @@ synthetic_fx_spot_config_repository::apply_claim(context ctx,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
-    switch (claim.kind) {
-        case precondition_kind::must_not_exist:
-            // Zero states that no current row exists, which is the one meaning the
-            // store gives a zero version.
-            t.version = 0;
-            break;
-        case precondition_kind::must_match_version:
-            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
-            break;
-        case precondition_kind::any: {
-            // A caller that claims nothing still has to say what it replaces, so
-            // the row is read and its version stated. A row that moved on between
-            // this read and the write is a conflict the trigger raises, never a
-            // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
-            t.version = current.empty() ? 0 : current.front().version;
-            break;
-        }
-    }
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "synthetic_fx_spot_config_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist &&
+        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+        throw std::invalid_argument(
+            "synthetic_fx_spot_config_repository::write: a current row already exists");
     return t;
 }
 
@@ -99,10 +90,12 @@ void synthetic_fx_spot_config_repository::write(context ctx,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing synthetic FX spot config. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        synthetic_fx_spot_config_mapper::map(t),
-                        lg(),
-                        "Writing synthetic FX spot config to database.");
+    const auto query = sqlgen::insert_or_replace(synthetic_fx_spot_config_mapper::map(t));
+    const auto r = sqlgen::session(ctx.connection_pool())
+                       .and_then(sqlgen::begin_transaction)
+                       .and_then(query)
+                       .and_then(sqlgen::commit);
+    ensure_success(r, lg());
 }
 
 void synthetic_fx_spot_config_repository::write(
@@ -114,17 +107,18 @@ void synthetic_fx_spot_config_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        synthetic_fx_spot_config_mapper::map(batch),
-                        lg(),
-                        "Writing synthetic FX spot configs to database.");
+    const auto query = sqlgen::insert_or_replace(synthetic_fx_spot_config_mapper::map(batch));
+    const auto r = sqlgen::session(ctx.connection_pool())
+                       .and_then(sqlgen::begin_transaction)
+                       .and_then(query)
+                       .and_then(sqlgen::commit);
+    ensure_success(r, lg());
 }
 
 std::vector<domain::synthetic_fx_spot_config>
 synthetic_fx_spot_config_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("id"_c);
+    const auto query =
+        sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> | order_by("id"_c);
 
     return execute_read_query<synthetic_fx_spot_config_entity, domain::synthetic_fx_spot_config>(
         ctx,
@@ -137,9 +131,8 @@ synthetic_fx_spot_config_repository::read_latest(context ctx) {
 std::vector<domain::synthetic_fx_spot_config>
 synthetic_fx_spot_config_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest synthetic FX spot config. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> |
-                       where("id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> | where("id"_c == id);
 
     return execute_read_query<synthetic_fx_spot_config_entity, domain::synthetic_fx_spot_config>(
         ctx,
@@ -154,7 +147,7 @@ std::vector<domain::synthetic_fx_spot_config>
 synthetic_fx_spot_config_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all synthetic FX spot config versions. " << "id: " << id;
     const auto query = sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> |
-                       where("id"_c == id) | order_by("version"_c.desc(), "valid_from"_c.desc());
+                       where("id"_c == id) | order_by("id"_c);
 
     return execute_read_query<synthetic_fx_spot_config_entity, domain::synthetic_fx_spot_config>(
         ctx,
@@ -164,54 +157,22 @@ synthetic_fx_spot_config_repository::read_all(context ctx, const std::string& id
         "Reading all synthetic FX spot config versions by id.");
 }
 
-std::optional<domain::synthetic_fx_spot_config>
-synthetic_fx_spot_config_repository::read_at_version(context ctx,
-                                                     const std::string& id,
-                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading synthetic FX spot config at version. " << "id: " << id
-                               << " version: " << version;
-    const auto query = sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> |
-                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
-
-    const auto entities =
-        execute_read_query<synthetic_fx_spot_config_entity, domain::synthetic_fx_spot_config>(
-            ctx,
-            query,
-            [](const auto& entities) { return synthetic_fx_spot_config_mapper::map(entities); },
-            lg(),
-            "Reading synthetic FX spot config at version.");
-
-    if (entities.empty())
-        return std::nullopt;
-    return entities.front();
-}
 
 synthetic_fx_spot_config_repository::remove_status synthetic_fx_spot_config_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing synthetic FX spot config. " << "id: " << id;
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
-    // The protocol states the version as a uint32 and the row carries it as an
-    // int, so the comparison states the conversion rather than relying on one.
-    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
-        return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    // The row is named by its version as well as by its key, so the removal
-    // cannot close a row that replaced the one the caller read between the
-    // read above and this statement.
-    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<synthetic_fx_spot_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id);
 
     execute_delete_query(ctx, query, lg(), "Removing synthetic FX spot config from database.");
-    // The delete reports no affected-row count, so the row is read back: a row
-    // still open after the statement means the store refused the removal, and
-    // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, id).empty())
-        return remove_status::conflicting;
     return remove_status::removed;
 }
 
@@ -223,10 +184,8 @@ std::vector<domain::synthetic_fx_spot_config> synthetic_fx_spot_config_repositor
     context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest synthetic FX spot configs with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("id"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<synthetic_fx_spot_config_entity, domain::synthetic_fx_spot_config>(
         ctx,
@@ -238,7 +197,6 @@ std::vector<domain::synthetic_fx_spot_config> synthetic_fx_spot_config_repositor
 
 std::uint32_t synthetic_fx_spot_config_repository::get_total_config_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active synthetic FX spot config count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -246,7 +204,7 @@ std::uint32_t synthetic_fx_spot_config_repository::get_total_config_count(contex
 
     const auto query =
         sqlgen::select_from<synthetic_fx_spot_config_entity>(sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -260,9 +218,8 @@ std::vector<domain::synthetic_fx_spot_config>
 synthetic_fx_spot_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> |
-                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<synthetic_fx_spot_config_entity>> | where("id"_c.in(ids));
     auto result =
         execute_read_query<synthetic_fx_spot_config_entity, domain::synthetic_fx_spot_config>(
             ctx,
@@ -274,10 +231,9 @@ synthetic_fx_spot_config_repository::read_latest(context ctx, const std::vector<
 }
 
 void synthetic_fx_spot_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<synthetic_fx_spot_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids));
     execute_delete_query(ctx, query, lg(), "Batch removing synthetic FX spot configs.");
 }
 

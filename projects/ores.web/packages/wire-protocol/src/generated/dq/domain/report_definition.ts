@@ -31,7 +31,6 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface ReportDefinition {
-    version: number;
     tenant_id: string;
     id: string;
     name: string;
@@ -40,9 +39,4 @@ export interface ReportDefinition {
     schedule_expression: string;
     concurrency_policy: string;
     display_order: number;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
 }

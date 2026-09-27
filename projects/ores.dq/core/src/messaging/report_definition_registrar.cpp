@@ -51,30 +51,6 @@ std::vector<ores::nats::service::subscription> register_report_definition_handle
         get_many_report_definitions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->get_many_report_definitions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        put_report_definition_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_report_definition(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_report_definitions_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->put_many_report_definitions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_report_definition_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_report_definition(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_report_definitions_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->delete_many_report_definitions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        list_report_definition_versions_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->list_report_definition_versions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_report_definition_version_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->get_report_definition_version(std::move(msg)); }));
     return subs;
 }
 

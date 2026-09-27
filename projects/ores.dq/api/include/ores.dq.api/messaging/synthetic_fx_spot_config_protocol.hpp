@@ -39,32 +39,6 @@ struct synthetic_fx_spot_config_key {
     boost::uuids::uuid id;
 };
 
-struct synthetic_fx_spot_config_write {
-    boost::uuids::uuid id;
-    std::string name;
-    std::optional<std::string> description;
-    bool enabled;
-    bool auto_start;
-    std::string base_currency_code;
-    std::string quote_currency_code;
-    double gmm_initial_price;
-    int ticks_per_hour;
-    std::string process_type;
-    std::string price_source;
-    std::optional<std::string> vintage_source;
-    std::optional<std::string> vintage_date;
-};
-
-struct synthetic_fx_spot_config_change {
-    synthetic_fx_spot_config_write write;
-    ores::utility::domain::precondition precondition;
-};
-
-struct synthetic_fx_spot_config_removal {
-    synthetic_fx_spot_config_key key;
-    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
-};
-
 struct synthetic_fx_spot_config_lookup {
     synthetic_fx_spot_config_key key;
     std::optional<ores::dq::domain::synthetic_fx_spot_config> synthetic_fx_spot_config;
@@ -77,17 +51,6 @@ struct synthetic_fx_spot_config_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
-};
-
-struct synthetic_fx_spot_config_version_key {
-    synthetic_fx_spot_config_key synthetic_fx_spot_config;
-    std::uint32_t version;
-};
-
-struct synthetic_fx_spot_config_versions_filter {
-    std::optional<std::uint32_t> version;
-    std::optional<std::uint32_t> from_version;
-    std::optional<std::uint32_t> to_version;
 };
 
 struct list_synthetic_fx_spot_configs_request {
@@ -145,122 +108,6 @@ struct get_many_synthetic_fx_spot_configs_request {
 struct get_many_synthetic_fx_spot_configs_response {
     ores::utility::domain::result result;
     std::vector<synthetic_fx_spot_config_lookup> entries;
-};
-
-struct put_synthetic_fx_spot_config_request {
-    using response_type = struct put_synthetic_fx_spot_config_response;
-    static constexpr std::string_view nats_subject = "dq.v1.synthetic_fx_spot_configs.put";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    synthetic_fx_spot_config_change change;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_synthetic_fx_spot_config_response {
-    ores::utility::domain::result result;
-    ores::dq::domain::synthetic_fx_spot_config synthetic_fx_spot_config;
-};
-
-struct put_many_synthetic_fx_spot_configs_request {
-    using response_type = struct put_many_synthetic_fx_spot_configs_response;
-    static constexpr std::string_view nats_subject = "dq.v1.synthetic_fx_spot_configs.put_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<synthetic_fx_spot_config_change> changes;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_many_synthetic_fx_spot_configs_response {
-    ores::utility::domain::result result;
-    std::vector<ores::dq::domain::synthetic_fx_spot_config> configs;
-};
-
-struct delete_synthetic_fx_spot_config_request {
-    using response_type = struct delete_synthetic_fx_spot_config_response;
-    static constexpr std::string_view nats_subject = "dq.v1.synthetic_fx_spot_configs.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    synthetic_fx_spot_config_removal removal;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_synthetic_fx_spot_config_response {
-    ores::utility::domain::result result;
-};
-
-struct delete_many_synthetic_fx_spot_configs_request {
-    using response_type = struct delete_many_synthetic_fx_spot_configs_response;
-    static constexpr std::string_view nats_subject = "dq.v1.synthetic_fx_spot_configs.delete_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<synthetic_fx_spot_config_removal> removals;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_many_synthetic_fx_spot_configs_response {
-    ores::utility::domain::result result;
-};
-
-struct list_synthetic_fx_spot_config_versions_request {
-    using response_type = struct list_synthetic_fx_spot_config_versions_response;
-    static constexpr std::string_view nats_subject =
-        "dq.v1.synthetic_fx_spot_configs_versions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    synthetic_fx_spot_config_key key;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<synthetic_fx_spot_config_versions_filter> filter;
-};
-
-struct list_synthetic_fx_spot_config_versions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::dq::domain::synthetic_fx_spot_config> versions;
-    std::uint64_t total;
-};
-
-struct get_synthetic_fx_spot_config_version_request {
-    using response_type = struct get_synthetic_fx_spot_config_version_response;
-    static constexpr std::string_view nats_subject = "dq.v1.synthetic_fx_spot_configs_versions.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    synthetic_fx_spot_config_version_key key;
-};
-
-struct get_synthetic_fx_spot_config_version_response {
-    ores::utility::domain::result result;
-    ores::dq::domain::synthetic_fx_spot_config version;
 };
 
 /**

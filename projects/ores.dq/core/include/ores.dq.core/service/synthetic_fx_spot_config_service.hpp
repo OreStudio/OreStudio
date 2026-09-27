@@ -81,19 +81,6 @@ public:
     get_synthetic_fx_spot_config(const messaging::get_synthetic_fx_spot_config_request& request);
     messaging::get_many_synthetic_fx_spot_configs_response get_many_synthetic_fx_spot_configs(
         const messaging::get_many_synthetic_fx_spot_configs_request& request);
-    messaging::put_synthetic_fx_spot_config_response
-    put_synthetic_fx_spot_config(const messaging::put_synthetic_fx_spot_config_request& request);
-    messaging::put_many_synthetic_fx_spot_configs_response put_many_synthetic_fx_spot_configs(
-        const messaging::put_many_synthetic_fx_spot_configs_request& request);
-    messaging::delete_synthetic_fx_spot_config_response delete_synthetic_fx_spot_config(
-        const messaging::delete_synthetic_fx_spot_config_request& request);
-    messaging::delete_many_synthetic_fx_spot_configs_response delete_many_synthetic_fx_spot_configs(
-        const messaging::delete_many_synthetic_fx_spot_configs_request& request);
-    messaging::list_synthetic_fx_spot_config_versions_response
-    list_synthetic_fx_spot_config_versions(
-        const messaging::list_synthetic_fx_spot_config_versions_request& request);
-    messaging::get_synthetic_fx_spot_config_version_response get_synthetic_fx_spot_config_version(
-        const messaging::get_synthetic_fx_spot_config_version_request& request);
     /**@}*/
 
     /**
@@ -113,16 +100,6 @@ public:
      */
     std::uint32_t count_configs();
 
-
-    /**
-     * @brief Retrieves a single synthetic FX spot config as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The synthetic FX spot config at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::synthetic_fx_spot_config>
-    get_config_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single synthetic FX spot config by its primary key.
@@ -167,34 +144,10 @@ public:
      */
     void delete_configs(const std::vector<std::string>& ids);
 
-    /**
-     * @brief Retrieves all historical versions of a synthetic FX spot config.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::synthetic_fx_spot_config> get_config_history(const std::string& id);
 
 private:
     context ctx_;
     repository::synthetic_fx_spot_config_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result
-    prepare_change(const messaging::synthetic_fx_spot_config_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::synthetic_fx_spot_config& out);
 };
 
 }

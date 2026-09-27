@@ -74,11 +74,9 @@
 #include "ores.dq.core/messaging/publication_registrar.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/publish_handler.hpp"
-#include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
-#include "ores.dq.core/messaging/synthetic_fx_spot_config_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
@@ -409,8 +407,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_methodology_history_provider(hist_registry);
         register_nature_dimension_history_provider(hist_registry);
         register_origin_dimension_history_provider(hist_registry);
-        register_report_definition_history_provider(hist_registry);
-        register_synthetic_fx_spot_config_history_provider(hist_registry);
         register_treatment_dimension_history_provider(hist_registry);
 
         // subject_area keeps a hand-written provider. Its history identity is

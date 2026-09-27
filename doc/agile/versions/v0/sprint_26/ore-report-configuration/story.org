@@ -62,6 +62,23 @@ A report definition's configuration is a set of strongly typed entities rather t
 
 * Decisions
 
+- The plan of record is one task per ORE configuration document, each running
+  the whole path for that document: entities, an import mapper, an export
+  mapper, and a round trip over every file of that type in the vendored corpus.
+  Four earlier tasks were shaped by concern rather than by document and now roll
+  up into these, closing when their last file type lands: /Model the run
+  document and the analytic list/ into /Round trip the ORE run document/, /Model
+  the analytics configuration libraries/ into the seven analytics round trips,
+  /Model the curve configuration entities/ into /Round trip the curve
+  configuration/, and /Model the shared reference configuration/ into /Round
+  trip the shared reference configuration/. The concern-shaped tasks stay open
+  as the roll-up, so the story keeps a record of the design intent behind each
+  slice.
+- A file type is round tripped when the exported document equals the imported
+  one as a parsed document, and the test names the first difference when they
+  differ. The corpus is the evidence, not a hand-written fixture, except for the
+  two types the corpus does not contain.
+
 * Out of scope
 
 -

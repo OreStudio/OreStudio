@@ -103,6 +103,7 @@ build/nats/
 .bashrc
 .claude/
 .dsh/
+.ghcache/
 .gitconfig
 .mcp.json
 .profile

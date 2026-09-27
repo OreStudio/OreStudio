@@ -41,7 +41,7 @@ The workflow component can be driven end to end from ores.shell, against the liv
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D01518D5-D5D1-4BB9-814E-4A848633AD76][Finish the workflow fixture]] | DONE | 2026-09-26 | 2026-09-27 | Task for: Exercise the workflow engine end to end |
-| [[id:02AB0E19-9F53-4DD4-B609-A2DED9824EA5][Make the workflow engine act across tenants]] | BACKLOG | | | Task for: Exercise the workflow engine end to end |
+| [[id:02AB0E19-9F53-4DD4-B609-A2DED9824EA5][Make the workflow engine act across tenants]] | DONE | 2026-09-27 | 2026-09-27 | Task for: Exercise the workflow engine end to end |
 
 * Decisions
 

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The engine's entry points read and write through generated repositories, which c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -42,11 +42,57 @@ The engine's entry points read and write through generated repositories, which c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reproduce first, at the tenant boundary the service actually runs with. The
+existing engine tests build the engine in the run's own tenant, so they cannot
+see this defect at all; the new cases build it the way =ores.workflow.service=
+does — engine in the system tenant, run in the test tenant — and assert the run
+reaches =completed=.
+
+Then decide between the two candidate fixes and take the one the component
+already intends:
+
+1. Carry the tenant on every message and rebuild a tenant-scoped context per
+   operation. Rejected: =step_completed_event= has no tenant, so it would need a
+   wire change and a migration of every publisher, and the recovery pass would
+   still need a way to look across tenants.
+2. Let the tables' row-level security policy decide the reads, which is what the
+   policy, the repository facet's =:tenant_read_scope:= knob, and the engine's
+   own header already say should happen. Chosen.
+
+The engine is a cross-tenant service by design: =workflow_rls_policies_create.sql=
+states that a system-tenant session must reach every tenant's rows, the engine
+header documents its context as having no tenant filter, and the repository's
+=tenant_id = ctx.tenant_id()= predicate was the one part that disagreed. Marking
+both entities' reads =shared= removes only that predicate; mutations stay
+tenant-scoped, and the policy still confines a tenant session to its own rows.
+
+The change is at the model source, so the generated repositories are regenerated
+rather than hand-edited, and the drift gate covers it.
 
 * Notes
+
+The query paths had to move with the engine. =get_steps= and =get_step_result=
+both read through the service's own context, and both were broken for every
+non-system caller in the same way: a tenant's =workflow start= could never
+confirm that its run had been accepted, and =check_step_idempotency= always
+missed, so a re-dispatched step re-executed instead of replaying its cached
+result.
+
+=get_steps= came back with the read scope alone, because it already guarded its
+answer against the caller's tenant. =get_step_result= did not, and the read scope
+turned it into a cross-tenant leak: it took only a step id, it had no caller
+check at all, and the predicate that had confined it to the system tenant was the
+very thing this task removed. It now takes the tenant the caller is asking about
+— the one the engine put in the command's =X-Tenant-Id= header — and answers only
+inside that tenant. The local review found this, not a test; that is what the
+review pass is for.
+
+Two things found on the way are not fixed here, because they are not about
+tenants. Both are filed in the inbox:
+[[id:E296B5EC-F01B-4664-9DE1-E5EFCE6E123C][the engine leaves completed_at and the
+published marker unwritten]] and
+[[id:0F5115A5-05FA-4A0E-A24B-1305F6DBC41B][workflow tests leave in-progress runs
+behind]].
 
 * Test Scenarios
 
@@ -69,6 +115,92 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =get_step_result= now returns any tenant's step: it read through the service context with no caller guard, and the predicate that confined it was the one this change removes. | =workflow_query_handler.cpp=, =steps_query_protocol.hpp= | Accepted, fixed | The request now names the tenant (echoed from the command's =X-Tenant-Id=), the read is scoped to it, and the answer is checked against it. A request naming no tenant is answered =found = false=. Regression case added. |
+| 2 | The protocol's "the response carries no tenant-sensitive data" no longer held. | =steps_query_protocol.hpp= | Accepted, fixed | The comment now states the confinement and what happens without a tenant. |
+| 3 | The stale index prose still said the recovery pass reads "every instance for a tenant". | =ores.workflow.workflow_instance.org= | Accepted, fixed | The prose now states that the engine's own read spans tenants and cannot use a leading =tenant_id=. |
+| 4 | New captures filed under an =[agile]= commit bracket; the recipe reserves =[inbox]= for filing an untriaged capture. | commit =a17e59dcf= | Accepted, fixed | Re-committed as =[inbox]=, and every commit body wrapped at 72. |
+| 5 | Comments in the new test cases narrated the old behaviour ("used to come back empty", "went missing"). | =workflow_engine_tests.cpp= | Accepted, fixed | Rewritten to state what holds now. |
+| 6 | Fixture took a bare =bool= and the tenant guard was duplicated. | =workflow_engine_tests.cpp= | Accepted, fixed | Replaced by an =engine_tenant= enum and a =service_tenant_id()= accessor. |
 
 * Result
+
+State: DONE.
+
+** Acceptance
+
+| # | Acceptance | Evidence |
+|---+------------+----------|
+| 1 | A workflow started for a non-system tenant runs to completion, each step advanced by its own completion event. | =workflow_engine drives a run that belongs to another tenant=: two steps, two completion events, instance ends =completed=. Also observed live: the deployed service logged =Workflow COMPLETED: type=identity_workflow workflow=11111111-2222-3333-4444-555555555555 steps=2= for a run in =CD_tenant-0=. |
+| 2 | A start for a non-system tenant reports success only after the instance, its first step and the step's published marker are written. | The same case asserts the step row exists in the run's tenant with =command_published_at= set. |
+| 3 | Recovery finds in-progress instances in every tenant, not only the service's own. | =workflow_engine recovery finds a run in another tenant= calls =recover_in_progress= on a system-tenant engine and sees the other tenant's step re-dispatched with its original step id. Live: the deployed service logged =Found 102 recoverable workflow instance(s)=, none of them in the system tenant. |
+| 4 | An integration test starts a workflow for a tenant other than the service's and asserts its steps advance. | The two cases above; both fail before the change and pass after. |
+
+** The defect
+
+Every read the generated repositories produce carried =tenant_id =
+ctx.tenant_id()=. The engine holds the service's own tenant — the system tenant,
+by =context_factory= — so from the second write onward a run belonging to any
+other tenant was invisible to it: the published marker and the step progress were
+silent no-ops, and the completion event found no step.
+
+** The query path
+
+Removing the predicate also removed what had confined the step-result query to
+the system tenant. =get_step_result= had no caller check, so it had to learn
+which tenant it was answering about before the predicate went: the request now
+carries that tenant, the read is scoped to it, and the row is checked against it.
+=workflow_query_handler answers for the tenant a request names= covers the three
+answers: the step's own tenant finds it, another tenant does not, and a request
+naming no tenant does not either.
+
+** The fix
+
+=:tenant_read_scope: shared= on =ores.workflow.workflow_instance= and
+=ores.workflow.workflow_step=, then =check_component_drift.py --component
+workflow-cpp= regenerated both repositories. The reads lost the predicate and now
+rely on the policy; deletes and the version claims are unchanged. Two dead
+=stamp_audit= declarations, never defined and never called, went with them.
+
+Not a shortcut past isolation. The policy admits a row to its own tenant and, for
+a system-tenant session, to every tenant's rows. Verified directly against the
+live database as the service's own role, which has =rolbypassrls = false= and so
+is really subject to the policy:
+
+#+begin_src sql
+set role ores_brave_hopper_workflow_service;
+set app.current_tenant_id = '00000000-0000-0000-0000-0000000000aa';
+select count(*) from ores_workflow_workflow_instances_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn();   -- 0
+set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+select count(*) from ores_workflow_workflow_instances_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn();   -- 125, every tenant
+#+end_src
+
+** Tests
+
+- =ores.workflow.core.tests=: 16 cases, 77 assertions, all pass. The three new
+  cases failed before the change — the instance read came back empty, the
+  recovery case never saw its second command, and the step-result query answered
+  about another tenant's step.
+- =ores.workflow.api.tests=, =ores.workflow.service.tests= and
+  =ores.shell.workflow.tests=: all pass.
+- Full suite, =ctest --preset linux-clang-debug-make=: 81 of 86 pass, the same
+  five targets that fail on main and for the same reasons. None of them is a
+  workflow target, and the change touches no other component's reads.
+- =check_component_drift.py --component workflow-cpp --dry-run=: no drift.
+
+The header change reaches every service that checks step idempotency, so the
+suite was re-run after it: =ores.iam.core.tests= passes, and
+=ores.refdata.core.tests= fails only on its three pre-existing version-guard
+cases.
+
+** Live check
+
+The database was staged with an =identity_workflow= run for =CD_tenant-0=, an
+active tenant that is not the system tenant, and the workflow service restarted
+on the new binary. Its log shows the pass finding the run, the identity handler
+completing step 0, the engine advancing to step 1 and the run completing:
+=Workflow COMPLETED: type=identity_workflow workflow=11111111-2222-3333-4444-555555555555
+steps=2=. The database agrees: both steps =completed= with responses, the
+instance =completed= at step index 1.
+

@@ -26,11 +26,11 @@ The choose-a-starting-point step needs each profile with its steps and its param
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Route, client method and both tests written; the route answers on the live deployment with the two seeded profiles. Working the gates. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the remaining gates and commit.    |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

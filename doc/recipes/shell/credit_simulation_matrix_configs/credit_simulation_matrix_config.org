@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-credit_simulation_matrix_configs add <name> <reason> <commentary>
+credit_simulation_matrix_configs add <name> <t0> <t1> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.credit_simulation_matrix_configs.put=.
 
 #+name: credit_simulation_matrix_configs-add
 #+begin_src ores-shell :tangle credit_simulation_matrix_configs-add.ores :exports none
-credit_simulation_matrix_configs add __none__ system.new_record generated_script
+credit_simulation_matrix_configs add __none__ 0 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-credit_simulation_matrix_configs set <id> <name> <reason> <commentary> [--version <n>]
+credit_simulation_matrix_configs set <id> <name> <t0> <t1> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =analytics.v1.credit_simulation_matrix_configs.put=.
 
 #+name: credit_simulation_matrix_configs-set
 #+begin_src ores-shell :tangle credit_simulation_matrix_configs-set.ores :exports none
-credit_simulation_matrix_configs set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+credit_simulation_matrix_configs set 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-credit_simulation_matrix_configs put-many --count <n> <id> <name> <reason> <commentary>
+credit_simulation_matrix_configs put-many --count <n> <id> <name> <t0> <t1> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.credit_simulation_matrix_configs.put_many=.
 
 #+name: credit_simulation_matrix_configs-put-many
 #+begin_src ores-shell :tangle credit_simulation_matrix_configs-put-many.ores :exports none
-credit_simulation_matrix_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+credit_simulation_matrix_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

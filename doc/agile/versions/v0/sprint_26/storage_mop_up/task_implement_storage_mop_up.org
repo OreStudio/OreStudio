@@ -31,11 +31,11 @@ a puzzle.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] |
-| Now          | Implementation complete; verified live. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge with the story branch.           |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

@@ -37,11 +37,13 @@ surface.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Implemented and verified; the PR carries it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Raise and merge the PR.                |
+| Next          | Nothing. |
+| Last touched  | 2026-09-27                               |
+| End           | 2026-09-27                               |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -56,8 +58,8 @@ surface.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7C00660F-1419-4DAD-ABAE-D87284FD0518][Scaffold story: Mop up the storage leftovers the goal surfaced]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:4E219395-3B37-4FCD-8B46-C55E299CE0D3][Give a provisioned tenant admin its TenantAdmin role]] | STARTED | 2026-09-27 | | Assign the role the SQL provisioner copies but never hands out, clear the retired buckets, and capture the instrument-audit defect. |
+| [[id:7C00660F-1419-4DAD-ABAE-D87284FD0518][Scaffold story: Mop up the storage leftovers the goal surfaced]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4E219395-3B37-4FCD-8B46-C55E299CE0D3][Give a provisioned tenant admin its TenantAdmin role]] | DONE | 2026-09-27 | 2026-09-27 | Assign the role the SQL provisioner copies but never hands out, clear the retired buckets, and capture the instrument-audit defect. |
 
 * Decisions
 

@@ -72,7 +72,7 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =check_component_drift.py --component <c> --dry-run= and =check_model_drift.py= output, kept on the task |
+| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =check_component_drift.py --component <c> --dry-run= and =check_model_drift.py= output, in the task's =* Measurements= table with the command and the commit each figure was measured at |
 | B02 | All | Classify every model file by metatype: entity, junction, operation, message, field group, module, component. Record and exclude the metatypes that carry no variability. | Survey table on the task |
 | B03 | All | Classify every hand-written C++ file (no generated marker): generatable (domain, repository, mapper, service, handler, registrar, protocol, generator, table and JSON I/O), infrastructure that stays hand-written, or dead. | Survey table on the task |
 | B04 | Protocol | List every NATS subject the component serves or sends, every protocol header, and every raw subject string outside a protocol header. | Survey table on the task |
@@ -145,6 +145,14 @@ a typecheck all missed; only a build and a test run found them.
 | H05 | All | The component has its documentation, and the documentation is complete rather than a skeleton. Every component, and every part of a composite, carries a =component_overview.org= with the six sections [[id:B9D3D469-9E59-465F-8C18-34546B680D13][the Component Documentation Guide]] requires: Summary, Inputs, Outputs, Entry points, Dependencies, See also. Each overview carries a =Diagram= section, its =.puml= source and a rendered image committed beside it, and the =Diagram= section points at that image. A diagram that predates the code it draws is a finding: where the component's code changed, the diagram is refreshed in the same pass, per H01's two passes. A schema-owning component also carries its ER diagram. Placeholder prose and empty bullets do not pass. | The overview files and their =.puml=/image pairs; =validate_docs.sh=; the rendered image read, not merely regenerated |
 
 ** 8. Verification
+
+Every evidence cell below names a command or a document, and the number a command
+produces belongs in the task's =* Measurements= table beside the command that
+produced it and the commit it was measured at. A count on its own is not
+evidence: this pass takes many rounds and trunk moves under a branch, so a
+consumer count, a gate's component count and a suite's size all change with no
+code changing. The =ores.service= record was failed twice by independent
+verifiers for exactly that, and both rounds confirmed the code was sound.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|

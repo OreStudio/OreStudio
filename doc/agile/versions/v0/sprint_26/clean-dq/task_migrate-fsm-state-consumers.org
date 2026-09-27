@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/migrate-fsm-state-consumers
-#+pr:
+#+pr: 2240
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -144,7 +144,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2240][#2240]] | [dq,workflow] Migrate the FSM consumers and unblock the recreate |
 
 * Review
 

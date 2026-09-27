@@ -8,7 +8,7 @@
 #+filetags: :clean-reporting:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/close-reporting-checklist
-#+pr: 2259
+#+pr: 2266
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -26,11 +26,11 @@ Record a result for every Component Clean Standard item the clean-reporting pass
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
-| Now          | The 19 unrecorded items are recorded, G08 and H03 are fixed, V08 is closed, and V04 is measured: 35 of 51 commands answer. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Resolve the =report_definitions= shell menu collision, then work the six open failures plus V04's remaining causes. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -301,6 +301,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2266][#2266]] | [agile] Close the checklist task whose PRs have merged |
 | [[https://github.com/OreStudio/OreStudio/pull/2259][#2259]] | [reporting] Record three findings no checklist item names |
 | [[https://github.com/OreStudio/OreStudio/pull/2242][#2242]] | [reporting] Record the checklist results the clean pass never wrote |
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A7A25644-CBF0-4E4A-A768-4636CCF91E05
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.callable_swap_instrument
 #+description: Codegen entity model for the trading =callable_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

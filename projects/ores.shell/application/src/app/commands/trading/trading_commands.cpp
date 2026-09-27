@@ -65,10 +65,10 @@ void trading_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session,
                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
-    balance_guaranteed_swap_instrument_commands::register_commands(root_menu, session, pagination);
-    bond_instrument_commands::register_commands(root_menu, session, pagination);
-    callable_swap_instrument_commands::register_commands(root_menu, session, pagination);
-    cap_floor_instrument_commands::register_commands(root_menu, session, pagination);
+    balance_guaranteed_swap_instrument_commands::register_commands(root_menu, session);
+    bond_instrument_commands::register_commands(root_menu, session);
+    callable_swap_instrument_commands::register_commands(root_menu, session);
+    cap_floor_instrument_commands::register_commands(root_menu, session);
     commodity_instrument_commands::register_commands(root_menu, session, pagination);
     composite_instrument_commands::register_commands(root_menu, session, pagination);
     credit_instrument_commands::register_commands(root_menu, session, pagination);
@@ -88,21 +88,21 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     fx_forward_instrument_commands::register_commands(root_menu, session);
     fx_vanilla_option_instrument_commands::register_commands(root_menu, session);
     fx_variance_swap_instrument_commands::register_commands(root_menu, session);
-    fra_instrument_commands::register_commands(root_menu, session, pagination);
-    inflation_swap_instrument_commands::register_commands(root_menu, session, pagination);
-    knock_out_swap_instrument_commands::register_commands(root_menu, session, pagination);
+    fra_instrument_commands::register_commands(root_menu, session);
+    inflation_swap_instrument_commands::register_commands(root_menu, session);
+    knock_out_swap_instrument_commands::register_commands(root_menu, session);
     lifecycle_event_commands::register_commands(root_menu, session);
     ore_commands::register_commands(root_menu, session);
     party_role_type_commands::register_commands(root_menu, session);
-    rpa_instrument_commands::register_commands(root_menu, session, pagination);
+    rpa_instrument_commands::register_commands(root_menu, session);
     scripted_instrument_commands::register_commands(root_menu, session, pagination);
-    swaption_instrument_commands::register_commands(root_menu, session, pagination);
-    trade_commands::register_commands(root_menu, session, pagination);
+    swaption_instrument_commands::register_commands(root_menu, session);
+    trade_commands::register_commands(root_menu, session);
     trade_id_type_commands::register_commands(root_menu, session);
     trade_identifier_commands::register_commands(root_menu, session);
     trade_party_role_commands::register_commands(root_menu, session);
     trade_type_commands::register_commands(root_menu, session);
-    vanilla_swap_instrument_commands::register_commands(root_menu, session, pagination);
+    vanilla_swap_instrument_commands::register_commands(root_menu, session);
 }
 
 }

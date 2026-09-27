@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 15329B09-2CA2-47C8-A20E-70CC757970B3
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.balance_guaranteed_swap_instrument
 #+description: Codegen entity model for the trading =balance_guaranteed_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

@@ -535,7 +535,6 @@ checks the template emits on its own.
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

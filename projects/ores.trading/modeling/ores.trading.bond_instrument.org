@@ -189,7 +189,6 @@ annotations; domain and repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

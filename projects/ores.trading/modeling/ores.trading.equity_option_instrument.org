@@ -293,7 +293,6 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #+end_src
 

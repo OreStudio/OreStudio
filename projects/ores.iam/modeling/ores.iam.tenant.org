@@ -202,7 +202,6 @@ Tenant lifecycle status (FK to tenant_statuses).
 #+begin_src cpp :name includes
 #include <chrono>
 #include <string>
-#include <optional>
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

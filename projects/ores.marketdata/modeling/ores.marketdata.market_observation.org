@@ -206,7 +206,6 @@ index below exists specifically to serve this ordering.
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

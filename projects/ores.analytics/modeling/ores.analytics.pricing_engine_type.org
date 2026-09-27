@@ -99,7 +99,6 @@ std::string("NONE")
 
 #+begin_src cpp :name includes
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

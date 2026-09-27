@@ -157,7 +157,6 @@ Source tag identifying the feed or authority that published this fixing.
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

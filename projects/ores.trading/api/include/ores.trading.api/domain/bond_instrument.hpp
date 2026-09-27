@@ -28,7 +28,6 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <optional>
 #include <string>
 #include <string_view>
 

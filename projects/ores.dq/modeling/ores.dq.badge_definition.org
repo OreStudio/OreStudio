@@ -172,7 +172,6 @@ faker::number::integer(1, 100)
 
 #+begin_src cpp :name includes
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

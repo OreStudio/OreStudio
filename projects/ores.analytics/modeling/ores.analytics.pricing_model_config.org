@@ -110,7 +110,6 @@ std::string("standard")
 
 #+begin_src cpp :name includes
 #include <chrono>
-#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

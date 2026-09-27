@@ -8,7 +8,7 @@
 #+filetags: :storage_mop_up:sprint_26:v0:
 #+owner: marco
 #+branch: feature/storage-mop-up
-#+pr:
+#+pr: 2261
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -80,7 +80,7 @@ a puzzle.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2261][#2261]] | [iam] Give a provisioned tenant admin the role it needs |
 
 * Review
 

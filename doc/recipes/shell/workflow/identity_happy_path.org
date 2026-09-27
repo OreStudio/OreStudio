@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: aa39b1e4-de76-433e-9de3-d16c0bd40241
+:END:
+#+title: How do I run a workflow to completion?
+#+description: Every step completes, which is the path most runs take.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The happy path configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+below is tangled into the runnable script library as =identity_happy_path.ores=.
+
+* Question
+
+How do I run a workflow whose every step succeeds?
+
+* Answer
+
+Both steps report completion, so the instance settles at =completed= and =workflow wait= says every step completed.
+
+#+name: identity-happy-path
+#+begin_src ores-shell :exports none
+workflow start identity_workflow '{"steps":[{"name":"one"},{"name":"two"}]}' --instance-id 10000000-0000-4000-8000-000000000001
+workflow wait 10000000-0000-4000-8000-000000000001 --timeout 60 --expect-state completed
+#+end_src
+
+=workflow wait= fails unless the instance reaches the state named, so this
+script fails when the path it covers does nothing.
+
+* Script
+
+=projects/ores.shell/scripts/library/workflow/identity_happy_path.ores= --
+generated from this recipe by =compass build --direct tangle_shell_scripts=
+(do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f identity_happy_path.ores= against a running fleet.
+
+* See also
+
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] -- the fixture.

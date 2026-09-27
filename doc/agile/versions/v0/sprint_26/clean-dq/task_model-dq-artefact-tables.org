@@ -106,6 +106,18 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part seventeen: the publish verb is an operation, and one header fewer
+
+Run on 2026-09-26. The sequence part sixteen predicted is done, and =publish_bundle_protocol.hpp= is generated. **Five of the twelve hand-written protocol headers are now gone.**
+
+**The refactor was the whole of it.** The params helpers moved to =publish_params.hpp= and six consumers across dq, iam and shell include it: =party_provisioning_plan.hpp=, =dataset_handler.hpp= and =publication_handler.hpp= in dq, =tenant_provisioning_handler.hpp= in iam, and =provision_commands.cpp= and =bundles_commands.cpp= in shell. The operation model then rendered the request and response to the same path with the same structs, subject and fields, and the handler stayed hand-written beside it. All seven affected targets build and link.
+
+**Two things had to be found by building rather than by reading.** The generated TypeScript twin imported =../domain/publication_mode.js=, a module that does not exist because =publication_mode= is a hand-written C++ enum with no model. Opting the operation out of the TypeScript facet is **not available**: the twin-coverage gate refuses any model that sets =:ores.ts.protocol.enabled:=, and it scans every model rather than only the components under test. So =mode= is carried as a string, which is what it became on the wire anyway -- the handler stringified it on the next line, and the four shell assignments now write ="upsert"=. The enum stays for callers that want it; the protocol simply does not name it.
+
+**What this unblocks, and what it does not.** The publish verb now has a modelled message and a separated params header, so the two stashed entities are one step closer. What still stops them is that their **handlers own the verb**: =publication_handler= and =dataset_handler= each serve a publish method beside their entity methods, so migrating either entity drops the operation. The next step is therefore to move those two methods into handlers of their own -- now straightforward, because the messages are generated and the params have a home.
+
+**Evidence.** Codegen suite passing; dq drift clean twice in a row and =--all= clean; seven targets build and link including =ores.iam.core.lib= and =ores.shell.exe=; the script tangle produces no change; twin coverage, model drift, handler permissions, populate references, registry exceptions, =compass lint= and =validate_docs.sh= all pass; CI green on all ten checks.
+
 * Step 8 part sixteen: the publish operation is expressible, and the header is not one step
 
 Run on 2026-09-26. An operation model for the bundle publish verb was written and its header generated. The result is close to landable and the reason it is not is specific.
@@ -941,6 +953,7 @@ via its "Verifies task" field.
 | https://github.com/OreStudio/OreStudio/pull/2203 | [dq] Model the coding scheme pair, retiring its hand-written protocol |
 | https://github.com/OreStudio/OreStudio/pull/2216 | [dq] Model the FSM pair, and fix the mapper templates for an optional uuid |
 | https://github.com/OreStudio/OreStudio/pull/2220 | [dq] Generate the coding scheme artefact table from its model |
+| https://github.com/OreStudio/OreStudio/pull/2224 | [dq] Model the bundle publish verb as an operation, over a params header |
 
 * Review
 

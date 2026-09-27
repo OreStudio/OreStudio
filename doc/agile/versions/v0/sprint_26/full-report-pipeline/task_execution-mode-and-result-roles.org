@@ -28,9 +28,9 @@ Give the report definition a run configuration, carry it into the workflow start
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified; raising the PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review.                                |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -41,9 +41,39 @@ Give the report definition a run configuration, carry it into the workflow start
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four parts, in the order each depends on the one before it.
+
+1. *Results addressed by role.* A step result becomes a named pair rather than a
+   bare JSON string: =workflow_step_result= carries the step's name and its
+   response, =workflow_step_results= is the list of them, and =find_step_result=
+   answers the payload the named step produced. The engine builds that list from
+   every forwarded step, an empty answer included, because the list it built
+   before skipped empty answers and so its positions were not step indices. A
+   builder that cannot find or cannot read what it consumes throws; the engine
+   catches that at dispatch and starts compensation, so a missing result fails
+   the run instead of publishing a command with an empty field.
+2. *The run configuration.* The definition table gains =pre_processing=,
+   =prepared_input_key= and =post_processing=, so the choice of phase is
+   definition state and a run is reproducible from the database alone. The
+   trigger validates the codes, refuses a substituting definition that names no
+   archive, and copies the configuration into =report_execution_request=, the
+   payload the engine stores and hands to =build_steps=.
+3. *The chains.* One registered definition builds either chain from that
+   payload. =execute= and =execute= are the seven steps the definition ran
+   before; =substitute= replaces the four pre-processing steps with one that
+   resolves the named archive; =ignore= replaces result collection with one that
+   records the batch and leaves it unread. Submission takes the name of whichever
+   step filled the input role, so no consumer is told which producer ran.
+4. *The substitutes.* Both are reporting operations, and both answer in the
+   result type of the phase they replace. That shared answer is what makes them
+   indistinguishable to the step after them, and it is why the substitute
+   requests name an existing result struct rather than a type of their own.
+
+Deliberately not done here, and owned elsewhere in the story: the instance does
+not record which phases were substituted (the substituted-pipeline task adds
+it), retrieval is not yet separated from result collection, and resolving the
+prepared archive does not read it, so nothing checks that it is a valid engine
+input or digests it.
 
 * Measurements
 
@@ -57,9 +87,65 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Step consumers that read a previous result by index | 0 (was 8) | =grep -rnE "(results\|prev)\[[0-9]+\]" projects/ores.reporting/api/include/ores.reporting.api/workflow projects/ores.refdata/api/include/ores.refdata.api/workflow \| wc -l= | =f498ec543e= |
+| =build_command= definitions carried to the named-result signature | 5 | =grep -rln build_command projects/ --include=*.hpp --include=*.cpp= | =f498ec543e= |
+| Steps the =execute= and =execute= configuration builds | 7 | =ores.reporting.api.tests "[workflow][reporting]"= | =f498ec543e= |
+| Steps the =substitute= and =ignore= configuration builds | 4 | =ores.reporting.api.tests "[workflow][reporting]"= | =f498ec543e= |
+| Chain cases in the new suite | 10 cases, 31 assertions | =ores.reporting.api.tests "[workflow][reporting]"= | =f498ec543e= |
+| =ores.reporting.api.tests= | 64 cases, 248 assertions | =ores.reporting.api.tests= | =f498ec543e= |
+| =ores.shell.reporting.tests= | 108 cases, 283 assertions (was 102 and 269) | =ores.shell.reporting.tests= | =f498ec543e= |
+| =ores.workflow.core.tests= | 17 cases, 85 assertions | =ores.workflow.core.tests= | =f498ec543e= |
+| Schema validator warnings | 4, all pre-existing =workspace_workspaces= aggregation warnings | =projects/ores.sql/utility/validate_schemas.sh= | =f498ec543e= |
+| Reporting codegen drift | none | =projects/ores.codegen/scripts/check_component_drift.py --component reporting= | =f498ec543e= |
 
 * Notes
+
+** Decisions
+
+- The run configuration is definition state: one entry per substitutable phase,
+  with the prepared archive's location beside it rather than in the environment.
+  A substituted run is therefore recognisable from the definition row before it
+  runs, and an operator asking why a run produced no results reads the answer
+  from the database.
+- The chain is a pure function of =report_execution_request=, because the engine
+  rebuilds it on every dispatch and on recovery. The configuration therefore
+  travels in the start message and not only in the definition.
+- A consumer addresses a producer by role, and the role resolves to a step name
+  when the chain is built: submission is handed the name of whichever step filled
+  the input role. Neither the phase nor its substitute knows about the other, and
+  no step knows its own position.
+- The two substitutes are implemented here rather than left to the proof task. A
+  configuration that can select a phase must select one that can run; leaving the
+  subjects unhandled would have made a substituting definition hang. What the
+  proof task adds is the live run: a real grid, a real archive, and the instance's
+  record of what was substituted.
+- The DQ publish function gives a definition it publishes the =execute= and
+  =execute= configuration. A DQ artefact describes what to report, not how much
+  of the pipeline to run, so the artefact schema is unchanged and publishing
+  behaves as it did.
+
+** A codegen CLI inconsistency, found while regenerating
+
+=./compass.sh codegen generate --model projects/ores.reporting/modeling/ores.reporting.operations.org
+--address ores.cpp.shell-command= reports that it has nothing to generate, and
+it says the same for =ores.iam.account_messages.org=, a model this change does
+not touch. The component path does generate them: the drift gate's in-place
+regeneration of =reporting= wrote the shell commands for both new messages, and
+the shell suite grew from 102 to 108 cases. The two paths disagree about whether
+the drawer's =:ores.cpp.shell-command.enabled: true= override applies to an
+operation model, so the single-model form cannot be used to preview this facet.
+The generated output is right; only the preview is not, and that is not fixed
+here.
+
+** Applying the schema
+
+The table change reaches the environment by recreation, which is the only
+migration this project has. Two seed paths write definitions and both were given
+the configuration explicitly: the FSM fixture in =populate/reporting= so the
+fixture states what it runs, and the DQ publish function so its choice is read
+where the definition is written. Neither was left to a column default, because
+the table has no defaults and a definition that states nothing is not
+reproducible.
 
 * Test Scenarios
 

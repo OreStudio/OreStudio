@@ -47,13 +47,16 @@ defines to a test macro is a case. It also fails on a file whose conditionals do
 not balance, because a guard left open leaks into whatever includes that file,
 and the case it deletes is in the includer, where nothing looks conditional.
 
-A compiler keeps a backslash-newline inside a raw string literal, because
-splicing is reversed once the literal's extent is known. This check removes
-every splice before it reads anything, so a splice inside a raw string can move
-where the literal ends, and then a directive that is string content to the
-compiler reads as code here, or the other way round. The check does not guess: a
-raw string whose content holds a splice is reported, so the file fails loudly
-instead of being read as something it is not.
+A compiler splices before it tokenises and then keeps the splice inside a raw
+string's content, so a literal's extent comes from the spliced text while its
+content still holds the newline. This check removes every splice, so a splice at
+a literal's opening, or inside its content, can move where it ends, and then a
+directive that is string content to the compiler reads as code here, or the
+other way round. The check settles that by construction rather than by guessing:
+it reads the raw strings of the spliced text and of the source, and where the
+two disagree it reports the file and leaves its cases out of the census. A
+splice inside a raw string that moves nothing agrees in both readings and is
+left alone.
 
 == What the check does not cover
 
@@ -171,17 +174,18 @@ def _test_sources() -> list[Path]:
     return sources
 
 
-def _unsplice(text: str) -> tuple[str, list[int]]:
+def _unsplice(text: str) -> tuple[str, list[int], list[int]]:
     """Apply the backslash-newline splices of translation phase 2.
 
-    Returns the spliced text and, for each character in it, the 1-based line of
-    the original that the character came from. Splicing runs before comments are
-    recognised, which is what makes a directive split across lines a directive,
-    a ``#end\\``/``if`` an ``#endif``, and a ``//`` comment swallow the line it
-    is continued onto.
+    Returns the spliced text, the original 1-based line each spliced character
+    came from, and the original offset each spliced character came from.
+    Splicing runs before comments are recognised, which is what makes a
+    directive split across lines a directive, a ``#end\\``/``if`` an
+    ``#endif``, and a ``//`` comment swallow the line it is continued onto.
     """
     out: list[str] = []
     line_of: list[int] = []
+    offset_of: list[int] = []
     line = 1
     i = 0
     n = len(text)
@@ -197,10 +201,11 @@ def _unsplice(text: str) -> tuple[str, list[int]]:
             continue
         out.append(c)
         line_of.append(line)
+        offset_of.append(i)
         if c == "\n":
             line += 1
         i += 1
-    return "".join(out), line_of
+    return "".join(out), line_of, offset_of
 
 
 def _blank_comments_and_literals(text: str) -> str:
@@ -272,14 +277,13 @@ def _closes_char_literal(text: str, start: int) -> bool:
 
 
 def _raw_string_spans(text: str) -> list[tuple[int, int, int]]:
-    """``(start, stop, line)`` for every raw string literal, over the raw text.
+    """``(start, stop, line)`` for every raw string literal in ``text``.
 
-    Splices are deliberately ignored here. This pass exists to find the raw
-    strings whose extent a splice would change, so it cannot assume the splice
-    has already happened. Ignoring them can only make this pass read *more* as
-    a raw string than a compiler does, which fails safe: the worst it produces
-    is a report about a file that is in fact fine, never silence about one that
-    is not.
+    This reads one text at a time and splices nothing. It is run over the
+    spliced text and over the source, and ``_raw_strings_diverge`` compares the
+    two, because neither reading on its own is the compiler's: the compiler
+    takes a literal's extent from the spliced text and its content from the
+    source.
     """
     spans: list[tuple[int, int, int]] = []
     i = 0
@@ -313,21 +317,31 @@ def _raw_string_spans(text: str) -> list[tuple[int, int, int]]:
     return spans
 
 
-def _spliced_raw_string(text: str) -> int | None:
-    """The line of a raw string this check would splice and a compiler would not.
+def _raw_strings_diverge(text: str) -> int | None:
+    """The line of a raw string that splicing moves, or ``None``.
 
-    A compiler keeps a backslash-newline inside a raw string literal, because
-    splicing is reversed once the literal's extent is known. This check removes
-    every splice before it looks for anything, so a splice inside a raw string
-    can move where the literal ends: a directive that is string content to the
-    compiler reads as code here, or the other way round. Where that can happen
-    the file is reported rather than guessed at, so the miss is loud.
+    A compiler splices before it tokenises, and then keeps the splice inside a
+    raw string's content, so a literal's extent is read from the spliced text
+    while its content still holds the newline. This check removes every splice,
+    so a splice at a raw string's opening, or inside its content, can move where
+    the literal ends. Reading the raw strings of both texts and comparing them
+    settles it by construction, in both directions at once: any disagreement
+    means a directive that is string content to the compiler may read as code
+    here, or the other way round. A splice inside a raw string that changes
+    nothing agrees in both readings and is left alone.
     """
-    for start, stop, line in _raw_string_spans(text):
-        content = text[start:stop]
-        if "\\\n" in content or "\\\r\n" in content:
-            return line
-    return None
+    spliced, _, offset_of = _unsplice(text)
+    original_spans = {(start, stop) for start, stop, _ in
+                      _raw_string_spans(text)}
+    spliced_spans = {
+        (offset_of[start],
+         len(text) if stop >= len(spliced) else offset_of[stop])
+        for start, stop, _ in _raw_string_spans(spliced)
+    }
+    if original_spans == spliced_spans:
+        return None
+    differing = sorted(original_spans ^ spliced_spans)
+    return text.count("\n", 0, differing[0][0]) + 1 if differing else None
 
 
 def _logical_lines(text: str) -> tuple[list[tuple[int, str]], list[str]]:
@@ -336,7 +350,7 @@ def _logical_lines(text: str) -> tuple[list[tuple[int, str]], list[str]]:
     A logical line is what the compiler sees after splicing: one or more
     physical lines with their splices removed.
     """
-    spliced, line_of = _unsplice(text)
+    spliced, line_of, _ = _unsplice(text)
     blanked = _blank_comments_and_literals(spliced)
     logical: list[tuple[int, str]] = []
     start = 0
@@ -416,13 +430,14 @@ def scan_source(text: str) -> tuple[int, list[tuple[int, str, int, str]],
         problems.append((lineno, text_at, "unbalanced",
                          "opens a conditional that never closes"))
 
-    spliced_raw = _spliced_raw_string(text)
+    spliced_raw = _raw_strings_diverge(text)
     if spliced_raw is not None:
         problems.append((spliced_raw, at(spliced_raw), "raw-string",
-                         "a raw string literal here contains a backslash-newline "
-                         "splice, which a compiler keeps and this check removes, "
-                         "so where the literal ends cannot be read from this "
-                         "file alone"))
+                         "a raw string literal here begins or ends somewhere "
+                         "else once the backslash-newline splices are removed, "
+                         "which is how a compiler reads it and not how this "
+                         "check does, so its conditionals cannot be read from "
+                         "this file alone"))
 
     return declared, findings, problems
 
@@ -443,21 +458,30 @@ def main() -> int:
 
     findings: list[tuple[Path, int, str, int, str]] = []
     problems: list[tuple[Path, int, str, str, str]] = []
-    declared = 0
+    declared_by_path: dict[Path, int] = {}
     for path in sources:
         text = path.read_text(encoding="utf-8", errors="replace")
         source_declared, source_findings, source_problems = scan_source(text)
-        declared += source_declared
+        declared_by_path[path] = source_declared
         for lineno, line, opened_at, opened_by in source_findings:
             findings.append((path, lineno, line, opened_at, opened_by))
         for lineno, line, kind, message in source_problems:
             problems.append((path, lineno, line, kind, message))
 
-    if not declared:
+    if not sum(declared_by_path.values()):
         print(f"no test case declared in {len(sources)} test source(s); the "
               f"macros this check looks for are {', '.join(TEST_MACROS)}",
               file=sys.stderr)
         return 1
+
+    # Where a raw string moves under splicing, the conditional reading of that
+    # file is not to be trusted either way, so the file is reported once, for
+    # the reason the reading failed, and its cases are left out of the census.
+    unreadable = {path for path, _line, _text, kind, _msg in problems
+                  if kind == "raw-string"}
+    findings = [f for f in findings if f[0] not in unreadable]
+    declared = sum(n for path, n in declared_by_path.items()
+                   if path not in unreadable)
 
     failures = 0
     if findings:
@@ -477,8 +501,8 @@ def main() -> int:
         failures += 1
     for kind, heading in (("unbalanced", "File(s) whose conditionals do not "
                                         "balance:"),
-                          ("raw-string", "File(s) this check cannot read a raw "
-                                         "string in:")):
+                          ("raw-string", "File(s) whose raw strings this check "
+                                         "cannot read:")):
         group = [p for p in problems if p[3] == kind]
         if not group:
             continue
@@ -500,18 +524,19 @@ def main() -> int:
                   "whatever includes that file, so a case in the includer can "
                   "be deleted where nothing looks conditional. Close the guard "
                   "in the file that opens it.", file=sys.stderr)
-        if any(p[3] == "raw-string" for p in problems):
-            print("\nA backslash-newline inside a raw string literal is string "
-                  "content to a compiler and a splice to this check, so this "
-                  "file's conditionals cannot be read from the file alone. "
-                  "Remove the trailing backslash, or move the literal out of "
-                  "the test source.", file=sys.stderr)
+        if unreadable:
+            print("\nSplicing moves a raw string literal in that file, and a "
+                  "compiler reads the literal from the spliced text while this "
+                  "check reads it from the source, so its conditionals cannot "
+                  "be settled from the file alone and its cases are left out "
+                  "of the census above. Remove the trailing backslash, or move "
+                  "the literal out of the test source.", file=sys.stderr)
         return 1
 
     print(f"Test case reachability intact: {declared} declared case(s) in "
           f"{len(sources)} test source(s), none inside a conditional "
           "compilation block, every conditional is balanced, and no raw string "
-          "hides a splice.")
+          "moves under splicing.")
     return 0
 
 

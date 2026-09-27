@@ -119,11 +119,11 @@ only on Windows and macOS.
 *Measured at the reviewed head*, =83c8cbb709=, *for the first verdict, and
 re-measured for each verdict after it.*
 
-| Check | First verdict | After the revision | After the delta fix |
-|-------+---------------+--------------------+---------------------|
+| Check | First verdict | After the revision | After the later fixes |
+|-------+---------------+--------------------+-----------------------|
 | Declared cases | 6242 | 6242 | 6242 |
 | Files scanned | 722 | 807 | 807 |
-| =ores.codegen= suite | 837 passed | 845 passed | 849 passed |
+| =ores.codegen= suite | 837 passed | 845 passed | 851 passed |
 | =ores.service.tests= | 42 cases / 118 assertions | not rebuilt | not rebuilt |
 | =ores.platform.tests= | 119 cases / 253 assertions | not rebuilt | not rebuilt |
 | =validate_docs.sh= | 40 of 40 | 40 of 40 | 40 of 40 |
@@ -187,6 +187,25 @@ that is in fact fine. All five parities that the verifier swept, and a
 no-splice control, behave as intended, and no file in the tree writes a splice
 inside a raw string.
 
+*What the fourth verdict changed.* The verifier returned FAIL, on one thing
+only: the raw string rule claimed to fail safe and did not. It read only the
+source, and looked for a raw string opener as =R"= with the quote immediately
+after the =R=. An opener written =R\= followed by a line starting =\"= splices to
+=R"= for a compiler but shows a backslash here, so that literal was found by
+neither reading, a real guarded case under it was read as code and never
+reported, and the check said "no raw string hides a splice" in the same
+breath. That is the silent green pass the whole task exists to remove, and the
+claim was false in the dangerous direction in four places.
+
+The rule now compares instead of asserting. It reads the raw strings of the
+spliced text and of the source, and where the two disagree it reports the file
+and leaves its cases out of the census, so a file whose conditionals cannot be
+settled is never counted as clean. That covers the split opener and both
+parities by construction, and it is also narrower in the right direction: a
+splice inside a raw string that moves neither end now agrees in both readings
+and is left alone, where the previous rule rejected it. Both new cases have
+tests, the verifier's own repro among them.
+
 *What is not covered.* The rule is static and per file. It does not expand
 macros beyond one level, so a test macro reached through a chain of =#define=s is
 invisible to it. It does not read the flags a translation unit is compiled with,
@@ -217,12 +236,13 @@ via its "Verifies task" field.
 
 * Review
 
-Independent verification of PR #2249, two rounds. Round one at head
-=83c8cbb709=, patch-id =e06b4690c93fbdc5fe04114dfdabeaaa849ff08a=, verdict
-PASS+NOTES, nine findings. Round two at head =d5c3617ad4=, patch-id
-=bb2fdea6db902707b14d51b21c01ecf4bb660629=, verdict PASS+NOTES, with all nine
-closed, three more findings, and no new false positive on the real tree. The
-notes below are the verifier's; the section above records what each one changed.
+Independent verification of PR #2249, four rounds, each on a different head and
+patch-id. Round one PASS+NOTES, nine findings. Round two PASS+NOTES, all nine
+closed, three more findings. Round three PASS+NOTES, all closed but one claim
+the verifier could not confirm. Round four FAIL on that one claim: the raw
+string rule asserted a fail-safe property that was false in the direction that
+matters. Every round's findings are below, with the section above recording what
+each one changed.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
@@ -242,7 +262,7 @@ Second verdict, on the head the first verdict's fixes produced:
 |---+-----------------+------+----------+-------|
 | 10 | The object-like alias =#define MY_CASE TEST_CASE= is still not followed, because the alias test wants a test macro followed by an argument list and that form has none. A guarded case behind it passes silently, and the docstring names the form as followed, so the claim is untrue. | =check_test_case_reachability.py= | Fixed | The alias test matches a bare test-macro name, so both the object-like and the function-like form are followed. A chain through two definitions stays out of scope, and the docstring says so. |
 | 11 | Two cases on one logical line are counted as two but listed once, so the summary reads "1 of 2 declared case(s) can be compiled away". Exit code and the named line are right. | =check_test_case_reachability.py= | Fixed | The summary counts every declared case; the line the two share is still listed once, so the output does not repeat itself. |
-| 12 | Real compilers keep a backslash-newline inside a raw string literal where this check removes it. The verifier first reported this as unexploitable and then retracted that: with a second terminator present the file is valid C++, and the divergence misreports in both directions, flagging a string as code when the parity is even and silently losing a real guarded case when it is odd. | =check_test_case_reachability.py= | Fixed | The check no longer guesses. A raw string whose content holds a splice is found by a second pass that reads the un-spliced text, and reported as a file whose raw strings cannot be read, so the case fails loudly instead of being misread. The tree has no such file. |
+| 12 | Real compilers keep a backslash-newline inside a raw string literal where this check removes it. The verifier first reported this as unexploitable and then retracted that: with a second terminator present the file is valid C++, and the divergence misreports in both directions, flagging a string as code when the parity is even and silently losing a real guarded case when it is odd. | =check_test_case_reachability.py= | Fixed | The first fix reported any raw string holding a splice, which closed the parities but claimed a fail-safe property that was false: a literal whose =R"= opener is itself split by a splice is found by neither reading, so the file still passed in silence. The check now reads the raw strings of the spliced text and of the source, reports the file where the two disagree, and leaves its cases out of the census. |
 
 Third verdict, on the head the second verdict's fixes produced:
 

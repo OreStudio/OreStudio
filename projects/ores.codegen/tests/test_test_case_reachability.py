@@ -499,8 +499,11 @@ const char* sample = R"(xx)\
 
     assert check.main() == 1
     captured = capsys.readouterr()
-    assert "cannot read a raw string in" in captured.err
-    assert "backslash-newline" in captured.err
+    assert "whose raw strings this check cannot read" in captured.err
+    assert "cannot be settled from the file alone" in captured.err
+    # The file is reported once, for the reason the reading failed, and its
+    # cases are left out of the census rather than counted from a bad reading.
+    assert "inside a conditional compilation block" not in captured.err
 
 
 def test_a_raw_string_without_a_splice_is_string_content(
@@ -525,6 +528,52 @@ TEST_CASE("not code", tags) {}
     captured = capsys.readouterr()
     assert captured.err == ""
     assert "not code" not in captured.err
+    assert "1 declared case(s)" in captured.out
+
+
+def test_a_raw_string_opener_split_by_a_splice_is_reported(
+        tmp_path, monkeypatch, capsys):
+    # R\ + newline + "( splices to R"(, so a compiler sees a raw string while
+    # the source on its own shows a caret, a backslash and a quote. Reading the
+    # source alone therefore finds no literal at all, and the guarded case
+    # below it would be read as code and then lost. The two readings disagree,
+    # and the file is reported.
+    _write(tmp_path, SOURCE, r'''#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+
+const char* sample = R\
+"(xx)\
+" ;
+)";
+''')
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "whose raw strings this check cannot read" in captured.err
+
+
+def test_a_splice_that_moves_no_raw_string_is_left_alone(
+        tmp_path, monkeypatch, capsys):
+    # The splice is inside the literal's content and moves neither end, so
+    # both readings agree and there is nothing to report.
+    _write(tmp_path, SOURCE, r'''#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+
+const char* sample = R"(first\
+second)";
+''')
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
     assert "1 declared case(s)" in captured.out
 
 

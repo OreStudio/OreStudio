@@ -17,14 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/composite_instrument_table_io.hpp"
 #include "ores.trading.api/domain/composite_instrument_table.hpp"
 #include <ostream>
 
 namespace ores::trading::domain {
 
+namespace {
+
+void print_composite_instrument_table(std::ostream& s, const std::vector<composite_instrument>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
 std::ostream& operator<<(std::ostream& s, const std::vector<composite_instrument>& v) {
-    s << convert_to_table(v);
+    print_composite_instrument_table(s, v);
     return s;
 }
 

@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: CE8277BD-A9C9-4727-A493-6468EA9EF941
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.composite_leg
+#+description: Codegen entity model for the trading =composite_leg= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: composite_leg
+#+entity_plural: composite_legs
+#+entity_title: Composite Leg
+#+brief: One constituent trade of a composite instrument basket.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Child table of =composite_instruments=. Each row is one constituent trade
+of a composite basket and names the parent through =instrument_id=, with
+=leg_sequence= giving the leg's 1-based ordinal inside the basket.
+
+The leg carries no economics of its own: the ORE schema states a basket as
+a list of whole trades, so the constituent is a child row that points at
+the parent and records which constituent it is. The table is bi-temporal
+and audited, so the model takes the ordinary audited shape and needs no
+shape flag.
+
+The row keeps its own =id= surrogate: =composite_legs= is one of the five
+id-keyed tables the component's investigation names, and its
+=instrument_id= is a foreign key to the instrument rather than the row's
+own key.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:supplied_by:  unset
+:END:
+
+UUID uniquely identifying this leg row.
+
+Surrogate key for the leg record. The import reads the parent instrument
+it was given rather than minting a new one, so nothing supplies this
+value from a positional argument.
+
+** party_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:supplied_by: session_party
+:END:
+
+Party that owns this leg record.
+
+Set from session variable app.current_party_id.
+
+** instrument_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The composite instrument this leg belongs to.
+
+Soft FK to ores_trading_composite_instruments_tbl, checked by the insert
+trigger.
+
+** leg_sequence
+:PROPERTIES:
+:group:    identity
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+1-based ordinal of this leg within the parent instrument's basket.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 5)
+#+end_src
+
+** constituent_trade_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+UUID string or type name identifying the constituent trade.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+* Foreign keys
+
+** instrument_id
+:PROPERTIES:
+:table:         ores_trading_composite_instruments_tbl
+:target_column: instrument_id
+:nullable:      false
+:error_message: Invalid instrument_id: %. Composite instrument must exist for tenant.
+:list_by:       true
+:END:
+
+The target states =instrument_id= because that is the parent table's own
+key column. The parent is an identity-grouped instrument, so its key is
+reached through the identity member both in the store and in the domain.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_composite_legs_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "leg_sequence" >= 1 |
+| "constituent_trade_id" <> '' |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| instrument | tenant_id, instrument_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into a
+=composite_leg_identity identity;= member (see the
+ores.trading.composite_leg_identity field-group model), and the implicit
+audit columns fold into an =ores::dq::domain::audit_record audit;= member
+(see the ores.dq.audit_record field-group model). The leg is not an
+instrument sub-type: it carries its own =id= key, so it cannot take the
+=instrument_identity= field group the instrument sub-types share.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:domain_identity_group: ores.trading.composite_leg_identity
+:domain_audit_group:    ores.dq.audit_record
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: composite_leg
+:entity_plural_short:   composite_legs
+:entity_singular_words: composite leg
+:entity_plural_words:   composite legs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cl
+:END:
+
+** Table display
+
+| column                  | header       |
+|-------------------------+--------------|
+| identity.id             | ID           |
+| identity.instrument_id  | Instrument   |
+| identity.leg_sequence   | Sequence     |
+| constituent_trade_id    | Constituent  |
+| audit.modified_by       | Modified By  |
+| audit.recorded_at       | Recorded At  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

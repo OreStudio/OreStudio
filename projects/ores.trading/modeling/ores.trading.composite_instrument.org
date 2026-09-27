@@ -1,0 +1,440 @@
+:PROPERTIES:
+:ID: F5C7BD59-7632-4C23-84D0-D04412C4F3F1
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.composite_instrument
+#+description: Codegen entity model for the trading =composite_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: composite_instrument
+#+entity_plural: composite_instruments
+#+entity_title: Composite Instrument
+#+brief: Composite instrument economics for CompositeTrade, TotalReturnSwap and ContractForDifference.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Represents the composite product types ORE states. =trade_type_code=
+discriminates the exact product, and the constituent trades live in the
+=composite_legs= child table keyed by this instrument's =instrument_id=.
+
+The parent row carries only the basket identity and its optional free-text
+description: the basket's constituents are child rows, so there is no
+per-leg block to hold here. The table is bi-temporal and audited, so the
+model takes the ordinary audited shape and needs no shape flag.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this composite instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes the ORE composite products: CompositeTrade, TotalReturnSwap and
+ContractForDifference.
+
+#+begin_src cpp :name generator
+std::string("CompositeTrade")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:supplied_by: session_party
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    std::optional<boost::uuids::uuid>
+:nullable:    true
+:supplied_by: unset
+:END:
+
+Optional soft FK to the parent trade.
+
+Null for a standalone instrument.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_composite_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "trade_type_code" in ('CompositeTrade') |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+| trade_type | tenant_id, trade_type_code | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Protocol includes
+The composed write states its legs with the leg type, and the derived
+instrument type is already included by the template.
+
+#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.trading.api/domain/composite_leg.hpp"
+#+end_src
+
+** Service declarations
+The composed service writes the instrument first, then its leg set,
+because the leg table's trigger refuses a leg whose parent is not
+current. The generated surface serves one entity at a time, so the two
+calls that express the composition are carried here. Both bodies build
+their own repositories, so the service holds no member the generated
+class does not already state.
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief Reads the legs of one composite instrument, ordered by leg sequence.
+     */
+    std::vector<domain::composite_leg> get_legs(const std::string& instrument_id);
+
+    /**
+     * @brief Writes the instrument and replaces its whole leg set.
+     *
+     * One transaction from the caller's view: the instrument row is written
+     * first, then every leg the request states. The legs the instrument
+     * carried before are removed first, so a save states the whole basket
+     * rather than appending to it.
+     */
+    void save_composite_instrument(const domain::composite_instrument& v,
+                                   const std::vector<domain::composite_leg>& legs);
+#+end_src
+
+** Service implementations
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+std::vector<domain::composite_leg>
+composite_instrument_service::get_legs(const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << instrument_id;
+    repository::composite_leg_repository leg_repo;
+    return leg_repo.read_latest(ctx_, std::vector<std::string>{instrument_id});
+}
+
+void composite_instrument_service::save_composite_instrument(
+    const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
+    auto t = v;
+    if (t.identity.instrument_id.is_nil()) {
+        static boost::uuids::random_generator gen;
+        t.identity.instrument_id = gen();
+    }
+    const auto id_str = boost::uuids::to_string(t.identity.instrument_id);
+    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.instrument_id
+                               << " with " << legs.size() << " legs";
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
+    repository::composite_leg_repository leg_repo;
+    repository::composite_instrument_repository instrument_repo;
+    std::vector<std::string> stale_leg_ids;
+    for (const auto& existing : leg_repo.read_latest(ctx_, std::vector<std::string>{id_str}))
+        stale_leg_ids.push_back(boost::uuids::to_string(existing.identity.id));
+    if (!stale_leg_ids.empty())
+        leg_repo.remove(ctx_, stale_leg_ids);
+    instrument_repo.write(ctx_, t);
+    for (auto leg : legs) {
+        leg.identity.instrument_id = t.identity.instrument_id;
+        stamp(leg, ctx_);
+        leg_repo.write(ctx_, leg);
+    }
+    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.instrument_id;
+}
+#+end_src
+
+** Service includes
+#+begin_src cpp :name service_includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include <boost/uuid/random_generator.hpp>
+#+end_src
+
+** Handler methods
+
+The composed write reads and writes legs through the instrument service,
+which owns both repositories. The registrar subscribes these subjects, so
+the methods sit on the handler's public surface.
+
+#+begin_src cpp :name handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void put_with_legs(ores::nats::message msg) {
+        BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::composite_instruments:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_composite_instrument_with_legs_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(composite_instrument_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        put_composite_instrument_with_legs_response resp;
+        try {
+            service::composite_instrument_service svc(req_ctx);
+            auto instrument = req->instrument;
+            svc.save_composite_instrument(instrument, req->legs);
+            resp.instrument = std::move(instrument);
+            resp.result.outcome = ores::utility::domain::outcome::ok;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(composite_instrument_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.result.outcome = ores::utility::domain::outcome::failed;
+            resp.result.code = "internal_error";
+            resp.result.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
+    void get_legs_read(ores::nats::message msg) {
+        BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_composite_instrument_legs_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(composite_instrument_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        get_composite_instrument_legs_response resp;
+        try {
+            service::composite_instrument_service svc(req_ctx);
+            resp.legs = svc.get_legs(req->instrument_id);
+            resp.result.outcome = ores::utility::domain::outcome::ok;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(composite_instrument_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.result.outcome = ores::utility::domain::outcome::failed;
+            resp.result.code = "internal_error";
+            resp.result.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+#+end_src
+
+** Registrar subscriptions
+
+The two declared subjects are subscribed beside the derived ones, because
+the derivation owns only the CRUD surface.
+
+#+begin_src cpp :name registrar :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(nats.queue_subscribe(
+        put_composite_instrument_with_legs_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->put_with_legs(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_composite_instrument_legs_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->get_legs_read(std::move(msg)); }));
+#+end_src
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: composite_instrument
+:entity_plural_short:   composite_instruments
+:entity_singular_words: composite instrument
+:entity_plural_words:   composite instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ci
+:END:
+
+** Table display
+
+| column                   | header       |
+|--------------------------+--------------|
+| identity.instrument_id   | ID           |
+| identity.trade_type_code | Type         |
+| description              | Description  |
+| audit.modified_by        | Modified By  |
+| audit.recorded_at        | Recorded At  |
+
+** Custom repository methods
+
+* Messages
+
+The basket and its constituent legs are one user-visible write: a basket
+is meaningless without its legs, and the leg table's insert trigger
+refuses a leg whose parent is not current yet. The derived write carries
+the instrument alone, so the composed write and the by-instrument leg
+read are stated here, beside the derived protocol, and the handler serves
+them from this same model.
+
+** put_composite_instrument_with_legs_request
+:PROPERTIES:
+:subject:  trading.v1.composite_instruments.put_with_legs
+:response: put_composite_instrument_with_legs_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Writes a composite instrument and replaces its whole leg set.
+ *
+ * One request rather than two, because the store refuses a leg whose
+ * parent is not current: the instrument row and its legs have to reach
+ * one handler in order. The leg set the request states replaces whatever
+ * the instrument carried before.
+ */
+#+end_src
+
+*** instrument
+:PROPERTIES:
+:cpp_type: ores::trading::domain::composite_instrument
+:END:
+
+*** legs
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::composite_leg>
+:END:
+
+** put_composite_instrument_with_legs_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** instrument
+:PROPERTIES:
+:cpp_type: ores::trading::domain::composite_instrument
+:END:
+
+** get_composite_instrument_legs_request
+:PROPERTIES:
+:subject:  trading.v1.composite_instruments.legs
+:response: get_composite_instrument_legs_response
+:END:
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_composite_instrument_legs_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** legs
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::composite_leg>
+:END:
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

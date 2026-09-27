@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 9F60BA23-56C4-4426-B879-28E83A939317
+:END:
+#+title: ores.trading.composite_leg_identity
+#+description: Codegen field-group model for ores::trading::domain::composite_leg_identity.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: composite_leg_identity
+#+namespace: ores::trading::domain
+#+brief: Identity fields shared by the composite leg and its future leg siblings.
+#+filetags: :model:field_group:trading:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Extracted as a plain nested sub-struct to keep each rfl-reflected literal
+under the MSVC C1202 ceiling. A leg carries its own surrogate key, the
+instrument it belongs to and its ordinal within that basket, so the leg
+identity is not the instrument identity: it is the instrument identity
+plus the leg's own two members. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+* Fields
+
+** version
+:PROPERTIES:
+:cpp_type: int
+:default_value: 0
+:END:
+
+Version number for optimistic locking and change tracking.
+
+** tenant_id
+:PROPERTIES:
+:cpp_type: utility::uuid::tenant_id
+:default_value: utility::uuid::tenant_id::system()
+:END:
+
+Tenant identifier for multi-tenancy isolation.
+
+** workspace_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:default_value: utility::uuid::live_workspace_id()
+:END:
+
+Workspace this record belongs to; defaults to the Live workspace sentinel.
+
+** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this leg row.
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this leg record.
+
+** instrument_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The composite instrument this leg belongs to.
+
+** leg_sequence
+:PROPERTIES:
+:cpp_type: int
+:default_value: 1
+:END:
+
+1-based ordinal of this leg within the parent instrument's basket.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

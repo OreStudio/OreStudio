@@ -17,54 +17,71 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_COMPOSITE_LEG_HPP
-#define ORES_TRADING_DOMAIN_COMPOSITE_LEG_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_HPP
+#define ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.api/domain/composite_leg_identity.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
-// Decomposed into plain nested sub-structs (≤9 fields each) so that
-// rfl::internal::no_duplicate_field_names never sees more than 9 field names
-// at once, staying below MSVC's C1202 template-graph limit.
-// See the decomposition section of doc/knowledge/architecture/data_oriented_design.org for the
-// rule.
-
-struct composite_leg_identity final {
-    int version = 0;
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-    boost::uuids::uuid id;
-    boost::uuids::uuid party_id;
-    boost::uuids::uuid instrument_id;
-    int leg_sequence = 1;
-};
-
 /**
- * @brief One constituent trade of a composite instrument (CompositeTrade).
+ * @brief One constituent trade of a composite instrument basket.
  *
- * The leg_sequence field provides 1-based ordering of the constituent trades
- * within the parent composite instrument.
+ * Child table of composite_instruments. Each row is one constituent trade
+ * of a composite basket and names the parent through instrument_id, with
+ * leg_sequence giving the leg's 1-based ordinal inside the basket.
  *
- * Access fields via the sub-struct members:
- *   cl.identity.id, cl.identity.leg_sequence
- *   cl.constituent_trade_id
- *   cl.audit.modified_by, cl.audit.recorded_at
+ * The leg carries no economics of its own: the ORE schema states a basket as
+ * a list of whole trades, so the constituent is a child row that points at
+ * the parent and records which constituent it is. The table is bi-temporal
+ * and audited, so the model takes the ordinary audited shape and needs no
+ * shape flag.
  *
- * JSON wire format is nested: {"identity":{...},"audit":{...}}.
+ * The row keeps its own id surrogate: composite_legs is one of the five
+ * id-keyed tables the component's investigation names, and its
+ * instrument_id is a foreign key to the instrument rather than the row's
+ * own key.
  */
 struct composite_leg final {
     composite_leg_identity identity;
 
     /**
-     * @brief UUID string identifying the constituent trade.
+     * @brief UUID string or type name identifying the constituent trade.
      */
     std::string constituent_trade_id;
 
     ores::dq::domain::audit_record audit;
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const composite_leg&, const composite_leg&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for composite_leg, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const composite_leg&) {
+    return "ores.trading.composite_leg";
+}
 
 }
 

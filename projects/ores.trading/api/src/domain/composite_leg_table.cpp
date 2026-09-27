@@ -17,23 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/composite_leg_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<composite_leg>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Instrument ID" << "Sequence" << "Constituent Trade ID"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ID" << "Instrument" << "Sequence" << "Constituent" << "Modified By"
+          << "Recorded At" << fort::endr;
 
-    for (const auto& t : v) {
-        table << boost::uuids::to_string(t.identity.id)
-              << boost::uuids::to_string(t.identity.instrument_id) << t.identity.leg_sequence
-              << t.constituent_trade_id << t.audit.modified_by << t.identity.version << fort::endr;
+    for ([[maybe_unused]] const auto& cl : v) {
+        table << cl.identity.id << cl.identity.instrument_id << cl.identity.leg_sequence
+              << cl.constituent_trade_id << cl.audit.modified_by << cl.audit.recorded_at
+              << fort::endr;
     }
     return table.to_string();
 }

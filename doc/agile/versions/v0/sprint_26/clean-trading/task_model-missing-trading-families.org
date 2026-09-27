@@ -207,8 +207,9 @@ presentation features (=has_uuid_primary_key=, =has_change_reason_cache=,
   junction metatype, and M07 records that this component has no junction
   metatype.
 
-The six field-group models, the module and the component overview are not
-=domain_entity= models, so the survey excludes them.
+The field-group models, the module and the component overview are not
+=domain_entity= models, so the survey excludes them. The later ports add
+groups of their own, such as =composite_leg_identity=.
 
 The bindings were tested against every profile's own assignment table
 rather than against a name:
@@ -380,11 +381,18 @@ the proof.
 | commodity_instrument | trading-instrument  | ores.trading.commodity_instrument.org  | Done: build green, eight suites pass, drift empty |
 | activity_type        | simple-lookup       | ores.trading.activity_type.org         | Done: build green, eight suites pass, drift empty |
 | fpml_event_type      | simple-lookup       | ores.trading.fpml_event_type.org       | Done: build green, eight suites pass, drift empty |
-| composite_instrument | trading-instrument  | --                                     | Next |
-| composite_leg        | trading-instrument  | --                                     | Pending |
-| credit_instrument    | trading-instrument  | --                                     | Pending |
+| composite_instrument | trading-instrument  | ores.trading.composite_instrument.org  | Done: build green, eight suites pass, drift empty |
+| composite_leg        | trading-instrument  | ores.trading.composite_leg.org, with a new identity field group | Done: build green, eight suites pass, drift empty |
+| credit_instrument    | trading-instrument  | --                                     | Next |
 | scripted_instrument  | trading-instrument  | --                                     | Pending |
 | swap_leg             | trading-instrument  | --                                     | Pending |
+
+The composite port found a generator defect and fixed it at its source:
+the eventing integration test template read a mandatory FK parent's key as
+a flat member, which is wrong when the parent carries its key in an
+identity group. The template's org and its tangled mustache both state
+=identity.= for such a parent. The all-component dry run stays empty and
+the codegen suite passes 790 cases.
 
 A port rewrites its family's generated SQL, and the notify trigger's
 payload changes with it, so the development database takes the

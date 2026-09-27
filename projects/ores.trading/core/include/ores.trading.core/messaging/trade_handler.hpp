@@ -38,6 +38,7 @@
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
@@ -756,8 +757,8 @@ private:
         std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
             comp_legs_map;
         if (!composite_ids.empty()) {
-            service::composite_instrument_service comp_svc(ctx);
-            for (auto& leg : comp_svc.get_legs_batch(composite_ids))
+            repository::composite_leg_repository comp_leg_repo;
+            for (auto& leg : comp_leg_repo.read_latest(ctx, composite_ids))
                 comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
                     std::move(leg));
         }

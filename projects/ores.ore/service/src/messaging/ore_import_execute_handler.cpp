@@ -48,6 +48,7 @@
 #include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/commodity_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -1923,10 +1924,11 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                    save_composite_instrument_request req;
-                    req.data = r.instrument;
+                    put_composite_instrument_with_legs_request req;
+                    req.instrument = r.instrument;
+                    req.legs = r.legs;
                     auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->success;
+                    return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else if constexpr (std::is_same_v<T, scripted_instrument>) {
                     save_scripted_instrument_request req;
                     req.data = r;

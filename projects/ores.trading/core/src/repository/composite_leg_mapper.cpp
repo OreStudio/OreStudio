@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/repository/composite_leg_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/composite_leg_json_io.hpp" // IWYU pragma: keep.
@@ -34,8 +39,9 @@ domain::composite_leg composite_leg_mapper::map(const composite_leg_entity& v) {
     domain::composite_leg r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id);
     r.identity.leg_sequence = v.leg_sequence;
     r.constituent_trade_id = v.constituent_trade_id;
@@ -55,8 +61,9 @@ composite_leg_entity composite_leg_mapper::map(const domain::composite_leg& v) {
     composite_leg_entity r;
     r.id = boost::uuids::to_string(v.identity.id);
     r.tenant_id = v.identity.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
+    r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.instrument_id = boost::uuids::to_string(v.identity.instrument_id);
     r.leg_sequence = v.identity.leg_sequence;
     r.constituent_trade_id = v.constituent_trade_id;

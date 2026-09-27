@@ -17,31 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_GENERATOR_COMPOSITE_LEG_GENERATOR_HPP
-#define ORES_TRADING_GENERATOR_COMPOSITE_LEG_GENERATOR_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_GENERATORS_COMPOSITE_LEG_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_COMPOSITE_LEG_GENERATOR_HPP
 
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 /**
- * @brief Generates a synthetic composite_leg for the given instrument_id.
+ * @brief Generates a synthetic composite_leg.
  */
 ORES_TRADING_API_EXPORT domain::composite_leg
-generate_synthetic_composite_leg(const boost::uuids::uuid& instrument_id,
-                                 int leg_sequence,
-                                 utility::generation::generation_context& ctx);
+generate_synthetic_composite_leg(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates a synthetic pair of composite legs for an instrument.
+ * @brief Generates N synthetic composite_legs.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::composite_leg>
-generate_synthetic_composite_legs(const boost::uuids::uuid& instrument_id,
-                                  utility::generation::generation_context& ctx);
+generate_synthetic_composite_legs(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

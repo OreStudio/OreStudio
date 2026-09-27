@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_COMPOSITE_LEG_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_COMPOSITE_LEG_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_COMPOSITE_LEG_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_COMPOSITE_LEG_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -39,10 +44,11 @@ struct composite_leg_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     std::string party_id;
     std::string instrument_id;
-    int leg_sequence = 1;
+    int leg_sequence = 0;
     std::string constituent_trade_id;
     std::string modified_by;
     std::string performed_by;

@@ -22,6 +22,8 @@
 set(files
     "activity_type_eventing_integration_tests.cpp"
     "commodity_instrument_eventing_integration_tests.cpp"
+    "composite_instrument_eventing_integration_tests.cpp"
+    "composite_leg_eventing_integration_tests.cpp"
     "equity_accumulator_instrument_eventing_integration_tests.cpp"
     "equity_asian_option_instrument_eventing_integration_tests.cpp"
     "equity_barrier_option_instrument_eventing_integration_tests.cpp"

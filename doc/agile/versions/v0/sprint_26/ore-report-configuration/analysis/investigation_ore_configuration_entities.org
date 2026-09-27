@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 220F3CA3-115F-4398-B88A-7F429333FFE2
 :END:
-#+title: The ORE configuration entity taxonomy
+#+title: Investigation: the ORE configuration entity taxonomy
 #+description: Every entity in the ORE report configuration vocabulary, with the reviewed entity and value-type counts per document and the list of all modelled classes with their owner and relation.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:reporting:ore:model:
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -26,7 +26,7 @@ from when modelling one document.
 ** The whole vocabulary
 
 #+caption: Every entity and block in the seventeen configuration documents: 363 classes and 625 relationships. Market data and trades are absent.
-[[proj:doc/knowledge/architecture/ore_report_configuration_entities.png]]
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/ore_report_configuration_entities.png]]
 
 Source: [[./ore_report_configuration_entities.puml][=ore_report_configuration_entities.puml=]].
 Regenerate with =python3 build/scripts/xsd_to_uml.py --entities-only --format puml=.
@@ -34,7 +34,7 @@ Regenerate with =python3 build/scripts/xsd_to_uml.py --entities-only --format pu
 ** The reporting model the taxonomy targets
 
 #+caption: A report definition, what it owns, what it references, and where each entity belongs.
-[[proj:doc/knowledge/architecture/ore_report_configuration_overview.png]]
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/ore_report_configuration_overview.png]]
 
 Source: [[./ore_report_configuration_overview.puml][=ore_report_configuration_overview.puml=]].
 
@@ -84,4 +84,4 @@ data, which the brief excludes.
 
 * See also
 
-- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

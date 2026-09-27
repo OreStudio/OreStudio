@@ -66,14 +66,15 @@ Then, in order:
 4. *State the target*: the run document and the analytics libraries owned by the
    definition, the reference configuration referenced, and a kind classification
    that selects the workflow instead of three workflow-shaped columns.
-5. *Wire it into the story* as a knowledge cluster, because the analysis outlives
-   the story, and as six follow-on tasks, one per family of work.
+5. *Keep it where it belongs*: in the story, as investigation documents, because
+   it is analysis that decides an object model rather than target state. The
+   follow-on tasks, one per family of work, are cut from it.
 
-The plan changed once, early: the cluster was first built as seven flat notes in
-a working directory, and the earlier =ORE Model Configuration= page was found
-only afterwards. The two are now reconciled — this cluster supersedes that page's
-inventory and adopts its =ores.analytics= component-home decision — rather than
-sitting side by side.
+The plan changed twice, and both changes are worth keeping. The analysis was
+first built as seven flat notes in a working directory; it now lives in the story
+as investigation documents. And the earlier =ORE Model Configuration= page was
+found only afterwards: the two are reconciled rather than left side by side, with
+that page keeping the proposal and this investigation re-deriving its inventory.
 
 * Measurements
 
@@ -103,16 +104,18 @@ configuration as persisted domain entities, in =ores.analytics=. Two of its five
 layers landed there. It was not found until this task's cluster had been built,
 because the first search covered the agile tree only.
 
-The two are reconciled rather than left side by side: the cluster supersedes that
-page's by-hand inventory, and adopts its component-home decision in
+The two are reconciled rather than left side by side: the investigation re-derives
+that page's by-hand inventory, and carries its component-home decision into
 [[id:061CE0DF-F9DE-4AC7-9536-B2EB6C547531][The target report configuration
 model]]. What stays only there is the five-layer proposal, the product taxonomies
 and the pricing configuration domain model.
 
-The cluster itself is
-[[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — one
-structure note and six pages — with the diagrams beside it and the raw inventory
-in =evidence/=.
+The analysis is
+[[id:91F2CF85-B743-4CAD-99B3-E635DA075499][the ORE report configuration
+investigation]] — an index and six parts under =analysis/= — with the diagrams
+beside it and the raw inventory in =evidence/=. It is deliberately not a
+knowledge page: knowledge is for target state, and the object model is not
+decided yet.
 
 * Test Scenarios
 

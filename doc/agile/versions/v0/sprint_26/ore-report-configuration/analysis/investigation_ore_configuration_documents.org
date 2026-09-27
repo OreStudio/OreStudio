@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09
 :END:
-#+title: The ORE report configuration documents
+#+title: Investigation: the ORE report configuration documents
 #+description: The seventeen XML documents an ORE report is configured by, what each holds, what is excluded and why, and how the inventory and the diagrams are regenerated.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:reporting:ore:model:
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -84,4 +84,4 @@ nothing else.
 
 * See also
 
-- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

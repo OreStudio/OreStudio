@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 061CE0DF-F9DE-4AC7-9536-B2EB6C547531
 :END:
-#+title: The target report configuration model
+#+title: Investigation: the target report configuration model
 #+description: The target entity model: what a report definition owns, what it references, how a kind of report selects its workflow, and the decisions left open.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:reporting:ore:model:
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -94,6 +94,6 @@ lookup row, a registered workflow and a block; never a column.
 
 * See also
 
-- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the pipeline this configuration feeds.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — the principles the entity shape and the batch access patterns follow.

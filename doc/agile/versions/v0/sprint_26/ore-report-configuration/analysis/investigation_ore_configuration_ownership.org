@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 6DA5B753-73E1-4176-889F-7A95EFD5E644
 :END:
-#+title: Who owns the ORE configuration
+#+title: Investigation: who owns the ORE configuration
 #+description: Which component owns each ORE configuration document today, which parts no component models, and the rule that decides whether a report definition owns an entity or references it.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:reporting:ore:model:
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -79,4 +79,4 @@ model]].
 
 * See also
 
-- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

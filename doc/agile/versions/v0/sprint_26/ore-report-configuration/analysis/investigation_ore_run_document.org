@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 7CE34CFC-A04C-46E4-92D2-B1C09DEADE50
 :END:
-#+title: The ORE run document
+#+title: Investigation: the ORE run document
 #+description: The ORE run document in detail: the setup parameters, the named market bindings, and the analytic list with the thirty-five types and their parameter sets, measured from the shipped examples.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:reporting:ore:model:
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -115,4 +115,4 @@ twelve booleans are one row where ORE has a list of thirty-five types.
 
 * See also
 
-- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: D4B51A93-628B-49AF-9B44-129FCC345692
 :END:
-#+title: What the ORE schemas do not say
+#+title: Investigation: what the ORE schemas do not say
 #+description: The properties of the ORE schema set that shape the model: references are untyped strings, the run document constrains nothing, entities are declared but unreferenced, attributes are duplicated, and reference data is a union by discriminator.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:reporting:ore:model:
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
 
@@ -87,5 +87,5 @@ validator does not.
 
 * See also
 
-- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.
 - [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp: the ORE XML binding generator]] — how the bindings these findings describe are produced.

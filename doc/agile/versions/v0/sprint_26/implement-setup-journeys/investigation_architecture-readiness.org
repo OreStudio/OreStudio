@@ -127,16 +127,25 @@ it is not counted as clean: see the table below.
    time and no state. The mismatch is filed as
    [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][a capture]].
 2. *A party-provisioning workflow already exists.*
-   =workflow.v1.parties.provision= takes a list of parties, returns the
-   party ids and one workflow instance id per party immediately, and
-   runs a three-step saga — =refdata.v1.parties.save=,
-   =iam.v1.accounts.save=, =iam.v1.account_parties.save= — with
+   =workflow.v1.parties.provision= takes a list of parties and
+   runs a three-step saga per party — =refdata.v1.parties.put=,
+   =iam.v1.accounts.save=, =iam.v1.account_parties.put_many= — with
    compensation on failure
    (=projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_protocol.hpp:66=).
-   The new-party journey records this as missing. The real gap is a
-   mismatch: it creates accounts with passwords and does not take an
-   existing party plus chosen accounts, and it does not activate,
-   onboard or publish bundles.
+   Its response declares =workflow_instance_ids=, and the handler leaves
+   that vector empty: it publishes each start request and never learns
+   the instance id
+   (=projects/ores.workflow/core/src/messaging/workflow_handler.cpp:108-119=),
+   so it returns no instance id per party. The new-party journey records
+   this as missing. The real gap is a mismatch: it creates accounts with
+   passwords and does not take an existing party plus chosen accounts,
+   and it does not activate, onboard or publish bundles.
+
+   Two claims in this finding were re-measured on 2026-09-27 and are
+   corrected above. The audit first named the saga's subjects as
+   =refdata.v1.parties.save= and =iam.v1.account_parties.save=; no
+   =nats_subject= uses either name. It also first said the response
+   returns one instance id per party, which the handler does not do.
 3. *A retry verb is genuinely absent.* No retry, resume or abandon
    subject exists anywhere in =ores.workflow=. The only recovery is
    =workflow_engine::recover_in_progress()=, run once at service start.
@@ -201,7 +210,7 @@ it is not counted as clean: see the table below.
 | The same three journeys | The candidate is =iam.v1.journeys.get-active= | Retired by the vocabulary; no journey entity is needed |
 | The same three journeys | =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= are the working path | The setup story retires both for a generic =iam.v1.tenants.provision= |
 | [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | "No streamed progress"; the candidates are a =workflow_instance_changed= event or an =iam.v1.workflow_instances.get= read | The event subject is published, but what it carries does not match what the browser decodes (finding 1 above). The read the document asks for does exist: =workflow.v1.instances.steps= and =workflow.v1.instances.list= are implemented and subscribed. |
-| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | "Start the provision-party workflow | none | missing" | =workflow.v1.parties.provision= exists and returns instance ids |
+| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | "Start the provision-party workflow | none | missing" | =workflow.v1.parties.provision= exists and returns party ids; its declared =workflow_instance_ids= are never filled |
 | [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | =party_essentials= exists and "only the ACME handler publishes it today" | =party_essentials= occurs nowhere under =projects/=; it is a bundle the contract proposes, not one that exists |
 | [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | Nothing discards a half-provisioned tenant | =iam.v1.system.reset-tenant= exists |
 | [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] and [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey type]] | "The list, detail and history primitives still exist" | Commit =e47043269f= deleted them with the generated screens |

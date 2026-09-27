@@ -32,18 +32,18 @@ and the ACME test accounts. See `config/README.md`.
 Point a deployment at an environment when you start it:
 
 ```sh
-npm run dev:bff -- --env bright_hopper
+npm run dev:bff -- --env brave_hopper
 ```
 
 Or use the environment variable, which is what a container would use:
 
 ```sh
-ORES_WEB_ENV=bright_hopper npm run dev:bff
+ORES_WEB_ENV=brave_hopper npm run dev:bff
 ```
 
 The process logs which environment it serves as its first line. The worst
 failure mode is not knowing whether you are looking at staging or production.
-The interface repeats the environment in the header, permanently.
+The interface is to repeat the environment permanently, beside the copyright.
 
 The component has no `.env` of its own. It reads the checkout's `.env` through
 `ORES_WEB_*` for its own settings and `ORES_NATS_*` for the broker.
@@ -51,6 +51,11 @@ The component has no `.env` of its own. It reads the checkout's `.env` through
 random identifier, so the BFF needs no signing secret.
 
 ## The interface
+
+The interface is not built yet. The browser renders the application shell and a
+session line, and it declares no screens and no routes
+(`packages/web/src/main.tsx`). The paragraphs below state the design that the
+journey screens are to follow.
 
 The landing page uses the same layout as the project site at
 orestudio.github.io. It uses the same artwork, the same heading, and the same
@@ -95,7 +100,7 @@ the certificates. It never holds the bearer token.
 | Package | Directory | Responsibility |
 |---|---|---|
 | `@ores/wire-protocol` | `packages/wire-protocol` | The ORE NATS protocol: msgpack codec, subjects, schemas, session lifecycle, mTLS transport. |
-| `@ores/contracts` | `packages/contracts` | The HTTP shapes that the BFF and the browser both parse. No Node dependency. |
+| `@ores/contracts` | `packages/contracts` | The HTTP shapes the BFF parses. The browser does not import the package today; it parses with `@ores/wire-protocol/browser`. The shared-schema split is unfinished. |
 | `@ores/bff` | `packages/bff` | The Fastify server. It owns the NATS connection and the session token. |
 | `@ores/web` | `packages/web` | The React client. It talks to the BFF only. |
 
@@ -162,8 +167,8 @@ separate from the server that currently drives it.
 
 ## Generated types
 
-`ores.codegen` generates the TypeScript from the same org entity models that
-drive the C++ headers. Two facets write into this component:
+`ores.codegen` generates the TypeScript from the same org models that drive the
+C++ headers. Two facets write into this component:
 
 - `ores.ts.protocol` writes
   `packages/wire-protocol/src/generated/{component}/protocol/{entity}_protocol.ts`.
@@ -175,7 +180,13 @@ drive the C++ headers. Two facets write into this component:
 Regenerate the wire types of one entity:
 
 ```sh
-./compass.sh codegen entity generate <entity> --address ores.ts.protocol
+./compass.sh codegen regenerate --component refdata --entity currency --address ores.ts.protocol
+```
+
+Or regenerate from one model file:
+
+```sh
+./compass.sh codegen generate --model projects/ores.refdata/modeling/ores.refdata.currency.org --address ores.ts.protocol
 ```
 
 Regenerate all the TypeScript:

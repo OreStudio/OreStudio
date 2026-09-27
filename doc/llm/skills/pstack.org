@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:skills:pstack:external:integration:
 #+created: 2026-09-03
-#+updated: 2026-09-03
+#+updated: 2026-09-27
 
 * Summary
 
@@ -77,7 +77,7 @@ project.
 | subtract-before-you-add                  | Adopt       | Adds without removing overlap                                      |
 | separate-before-serializing-shared-state | Adopt       | Worktrees share a stash stack and a build lock here                |
 | model-the-domain                         | Adopt       | We already require domain grounding; this states the code side     |
-| type-system-discipline                   | Adopt       | C++ project; illegal states are representable by default           |
+| type-system-discipline                   | Adopt       | C++ and TypeScript; illegal states are representable by default    |
 | encode-lessons-in-structure              | Adopt      | Sharpens the memory contract; see below          |
 | never-block-on-the-human                 | Adopt       | Sound, and paired with recording; see below                        |
 | boundary-discipline                      | Skip        | General practice the agent already applies                         |
@@ -128,7 +128,7 @@ check carries instead of prose.
 | tdd                                | sequencing  | Skip       | compass-code-add-tests binds Catch2 and our convent |
 | create-verification-skill          | declaration | Adopt      | Builds the driver; our ladder st |
 | maintain-verification-skill        | recording   | Adopt      | Keep |
-| typescript-best-practices          | execution   | Skip        | No TypeScript here                                              |
+| typescript-best-practices          | execution   | Skip        | Our TypeScript Clean Standard governs ores.web instead          |
 | automate-me                        | execution   | Skip        | Authors a personal mode; not a project concern                  |
 | setup-pstack                       | execution   | Skip        | Plugin configuration                                            |
 | bro                                | execution   | Skip        | Restates a reply                                                |

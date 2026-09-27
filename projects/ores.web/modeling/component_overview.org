@@ -2,12 +2,12 @@
 :ID: 60088AA3-832B-45F1-91C2-4723C75554EE
 :END:
 #+title: ores.web
-#+description: TypeScript web UI for ORE Studio: a browser client, a Fastify BFF that owns the NATS mTLS connection, and the shared HTTP and wire-protocol packages.
+#+description: TypeScript web UI for ORE Studio: a browser client, a Fastify BFF that owns the NATS mTLS connection, and the contracts and wire-protocol packages.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :web:typescript:react:nats:bff:
 #+created: 2026-09-19
-#+updated: 2026-09-19
+#+updated: 2026-09-27
 #+name: web
 #+full_name: ores.web
 #+brief: Browser UI for ORE Studio, served by its own backend-for-frontend.
@@ -40,8 +40,9 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
 - NATS responses over mTLS from =ores.iam.service=, =ores.refdata.service=, and
   the other domain services.
 - Change notifications that the services publish on their event subjects.
-- The org entity models under =projects/ores.*/modeling/=, which =ores.codegen=
-  reads at build time to generate the TypeScript protocol and domain types.
+- The org models under =projects/ores.*/modeling/=, which =ores.codegen= renders
+  into the TypeScript protocol and domain types. The generated tree is
+  committed.
 - Browser requests on the =/api= HTTP surface.
 
 * Outputs
@@ -50,8 +51,8 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
   =ORES_WEB_PORT=.
 - The =/api= HTTP surface on the same port.
 - NATS requests and subscriptions that the BFF sends on behalf of the browser.
-- A first-party session cookie that holds the session token. The browser never
-  receives the token itself.
+- A first-party session cookie that holds an opaque session identifier. The
+  token stays in the BFF, and the browser never receives it.
 - Generated TypeScript in =packages/wire-protocol/src/generated/=.
 
 * Entry points
@@ -69,12 +70,11 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
 - =ores.iam.service= — authentication, sessions, accounts, and change reasons.
 - =ores.refdata.service= — reference data such as countries.
 - The other domain services that the browser reaches through the BFF.
-- =ores.codegen= — build-time generation of the TypeScript protocol and domain
-  types.
+- =ores.codegen= — the generator that renders the TypeScript protocol and
+  domain types from the org models.
 - Node.js 22 or later.
-- Third-party libraries: Fastify, React, React Router, TanStack Query, TanStack
-  Table, NATS.js, =@msgpack/msgpack=, Zod, Vite, Tailwind CSS, Vitest, and
-  Playwright.
+- Third-party libraries: Fastify, React, React Router, TanStack Query, NATS.js,
+  =@msgpack/msgpack=, Zod, Vite, Tailwind CSS, and Vitest.
 - The component links no C++ library, because it has no C++ parts.
 
 * See also
@@ -104,6 +104,8 @@ CMake target. The four npm packages under =packages/= are its structure: =bff=,
 - [[id:70F2D886-BB3F-4FE0-929C-45509E1CE967][ores.iam.service]] — the
   authentication service the browser signs in through.
 - [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] — the
-  reference-data service behind the entity screens.
-- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the
-  component layout conventions this component follows.
+  reference-data service the browser reaches through the BFF.
+- [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] — the
+  checklist this component's packages follow.
+- [[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]] — the journey
+  runtime, the step-call contract, and the direction between the packages.

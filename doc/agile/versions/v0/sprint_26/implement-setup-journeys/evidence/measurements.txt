@@ -1,0 +1,42 @@
+# Task 6F644305 - Correct and add the architecture the journeys depend on
+# Measurements for units 1 to 3.
+#
+# Every value below was measured on the working tree at commit f5e0101d8b,
+# the last content commit of the branch. The base is the merge base with
+# origin/main, 4b7e0e57d9.
+
+# 1. Files corrected
+$ git diff --name-only 4b7e0e57d9..f5e0101d8b | wc -l
+34
+# Three commits: d0cb8980cf (unit 1), e7dc2022af (unit 2), f5e0101d8b (unit 3).
+# The 34 include the three captures unit 1 filed.
+
+# 2. Icon assets
+$ ls projects/ores.web/packages/web/src/assets/icons/*.svg | wc -l
+68
+# The two icon pages are reconciled against this set, and each of the 68
+# proj: links in doc/knowledge/ui/icon_guidelines.org resolves.
+
+# 3. TypeScript Clean Standard items
+$ grep -c '^| TS-' doc/knowledge/architecture/typescript_clean_standard.org
+73
+
+# 4. Packages that depend on @ores/contracts
+$ grep -rl '"@ores/contracts":' projects/ores.web/packages/*/package.json
+projects/ores.web/packages/bff/package.json
+# One package. The browser does not import it; it parses with
+# @ores/wire-protocol/browser.
+
+# 5. Protocol headers with no AUTO-GENERATED banner
+$ find projects -name '*_protocol.hpp' | wc -l
+251
+$ n=0; for f in $(find projects -name '*_protocol.hpp'); do
+    grep -q AUTO-GENERATED "$f" || n=$((n+1));
+  done; echo $n
+16
+
+# 6. Operation models
+$ grep -rl '#+type: ores.codegen.operation' projects/*/modeling | wc -l
+29
+$ grep -rl '#+type: ores.codegen.operation' projects/*/modeling | cut -d/ -f2 | sort -u | wc -l
+12

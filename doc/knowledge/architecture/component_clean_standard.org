@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:codegen:component:checklist:drift:
 #+created: 2026-09-23
-#+updated: 2026-09-26
+#+updated: 2026-09-27
 
 * Summary
 
@@ -35,6 +35,15 @@ the evidence that proves it. The kinds are:
 - *Protocol*: a component that serves or sends NATS messages.
 - *Entity*: a component with entity, junction or operation models, and
   so with SQL, a repository and a service.
+
+These items govern C++ components only. The TypeScript packages under
+=projects/ores.web= hold none of that structure -- no SQL, no
+repository, no service and no generated registrar -- so they cannot pass
+these items. [[id:CDE625E2-96AE-4644-9921-282339925F3E][The TypeScript
+Clean Standard]] is the sibling checklist for that code: the same shape,
+one item per convention, and every item naming the check that proves it.
+The two standards answer the same question for different languages, and
+a reader of either finds the other.
 
 An item that does not apply to a component is recorded as "not
 applicable" with the reason, never skipped in silence. An item that
@@ -292,6 +301,7 @@ stays hand-written. What it added:
 
 * See also
 
+- [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] -- the sibling checklist for the TypeScript in =projects/ores.web=.
 - [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] -- the structural checklist item H01 runs.
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] -- the protocol items P01 to P06 enforce.
 - [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] -- the profiles items M02 to M04 bind to.

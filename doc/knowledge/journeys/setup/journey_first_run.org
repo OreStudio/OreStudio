@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An empty installation is brought to life: the system administrator, the first tenant and the first sign-in.
@@ -72,7 +72,7 @@ journey that can happen on an empty database.
    first tenant. The rail lists one line per workflow step, and each line reads
    pending, running, done or failed. *This is the step that carries the state.*
    The person can leave the page. A failed step stops the instance, the tenant
-   stays /provisioning/, and a retry resumes from the failed step; the
+   stays /bootstrapping/, and a retry resumes from the failed step; the
    completed steps are kept.
 7. *Hand off.* The tenant is ready. The person chooses *Continue as tenant
    admin*, which signs out, signs in as the tenant administrator and opens
@@ -110,7 +110,7 @@ is not merged; the branch is kept as the record.
 
 - Branch :: =prototype/first-run-journey=
 - Route :: =/setup=
-- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/=
+- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =prototype/first-run-journey= only; the path does not exist on =main=
 - Design record :: [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Task: Prototype the first run journey]]
 
 The prototype settled three things. Journeys are data: one page renders an
@@ -127,7 +127,7 @@ tenant journey alike.
 | =account= | The system administrator, and the tenant administrator the profile creates: username, email, account type, password (write only) | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
 | =tenant= | Code, name, hostname, type and status of the first tenant | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
 | =tenant_type= | The classification the provision step sets on the tenant | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
-| =tenant_status= | The tenant moves from /provisioning/ to /active/ | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
+| =tenant_status= | The tenant moves from /bootstrapping/ to /active/ | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
 | =account_party= | The [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]] the first sign-in chooses between | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
 | Seed profile | The ordered workflow steps the profile selects, and its parameters | none — no model and no subject exist |
 
@@ -143,11 +143,9 @@ read returns a hash.
 | Welcome | Read whether the system is in bootstrap mode | =iam.v1.bootstrap.status= | exists |
 | Create the administrator | Create the system administrator | =iam.v1.bootstrap.create-admin= | exists |
 | Choose a starting point | List the seed profiles | none | missing |
-| Describe the tenant | Provision the first tenant in bootstrap mode | =iam.v1.bootstrap.provision-tenant= | partial |
-| Describe the tenant | Provision a tenant from a seed profile | none | missing |
-| Describe the tenant (ACME) | Provision the ACME demo tenant | =iam.v1.tenants.provision-acme= | partial |
-| Review | Start the provision-tenant workflow | none | missing |
-| Provisioning | Follow the workflow instance's progress | none | missing |
+| Describe the tenant | Provision a tenant from a seed profile, the first tenant included | =iam.v1.tenants.provision= | missing |
+| Review | Start the provision-tenant workflow | =iam.v1.tenants.provision= | missing |
+| Provisioning | Follow the workflow instance's progress | =workflow.v1.instances.steps= | exists |
 | Provisioning | Mark provisioning complete | =iam.v1.tenants.complete-provisioning= | exists |
 | Provisioning | Retry from the failed step | none | missing |
 | Hand off | Sign out | =iam.v1.auth.logout= | exists |
@@ -158,32 +156,37 @@ read returns a hash.
 =iam.v1.bootstrap.status= and =iam.v1.bootstrap.create-admin= are declared in
 [[id:4B98E2D0-8FE3-4321-8CFD-90A4C13422EA][ores.iam.bootstrap_messages]] and
 need no session, because the system is in bootstrap mode. The account and
-tenant subjects need a session.
+tenant subjects need a session. =workflow.v1.instances.steps= is not in the
+generated web protocol: the generator emits no =workflow= package for the
+browser, so the BFF adds a route for it.
 
-=iam.v1.bootstrap.provision-tenant= is =partial= and legacy: it exists and
-needs no session, because bootstrap mode is still on, but it takes no seed
-profile, runs synchronously and returns no instance id. The accepted contract
-replaces it for every tenant, the first one included.
+=iam.v1.bootstrap.provision-tenant= still exists and needs no session, because
+bootstrap mode is still on. It takes no seed profile, runs synchronously and
+returns no instance id. The accepted contract retires it and replaces it with
+=iam.v1.tenants.provision= for every tenant, the first one included.
 
-=iam.v1.tenants.provision-acme= is =partial=. It exists, it runs the whole
-provisioning server-side through internal actor impersonation, and it is the
-one working path today. But it is ACME-only, it takes no seed profile, and it
-returns all its steps at the end, so it streams no progress. The generic
-profile-driven request does not exist.
+=iam.v1.tenants.provision-acme= still exists and needs a session. It runs the
+whole provisioning server-side through internal actor impersonation. It is
+ACME-only, it takes no seed profile, and it returns all its steps at the end, so
+it streams no progress. The accepted contract retires it too. The generic
+profile-driven request =iam.v1.tenants.provision= does not exist yet.
 
 * What is missing
 
-1. *No journey state.* The setup hub puts the journey in =ores.workflow=, next
-   to the workflow instance: kind, current step, the tenant, party and workflow
-   instance ids, and the actors who may resume. No =ores.workflow= component
-   and no journey subject exist today. The candidate is
-   =iam.v1.journeys.get-active= plus the events that move the journey on.
-   Until it exists the client keeps the current step in memory, and "you can
-   leave and come back" is not true.
-2. *No seed profile model and no read.* A profile is registered data that
-   orders step kinds from a fixed catalogue: =publish_bundle=,
+1. *No journey state to add.* A journey is a definition, not a server-side
+   object, so no journey entity is added anywhere. A journey's progress state IS
+   a workflow instance in =ores.workflow=. That component exists, with entities,
+   services and subjects. The reads =workflow.v1.instances.list= and
+   =workflow.v1.instances.steps= are implemented and subscribed, so a screen can
+   read the instance and its steps. Only the server-side workflow resumes; the
+   client keeps the rail position in memory, and the human steps around the
+   workflow do not survive a reload.
+2. *No seed profile model and no read.* =ores.iam= owns the seed profile, its
+   parameter schema and the step-kind catalogue. A profile is registered data
+   that orders step kinds from a fixed catalogue: =publish_bundle=,
    =import_lei_hierarchy=, =provision_party=, =load_staff=, =attach_photos=,
-   =start_market_feeds=. No entity and no subject exist. The candidates are
+   =start_market_feeds=. A new profile is a row; a new step kind is code. No
+   entity and no subject exist. The candidates are
    =iam.v1.seed_profiles.list= and =iam.v1.seed_profiles.get=. The screen must
    keep the two cards in code until then.
 3. *No generic provision-tenant request.* The accepted contract wants one
@@ -191,14 +194,22 @@ profile-driven request does not exist.
    instance id at once, for every tenant including the first. The candidate is
    =iam.v1.tenants.provision=, carrying the profile code and the profile's
    parameters.
-4. *No streamed progress.* =provision_acme_tenant_response= returns its steps
-   only at the end; the shell waits up to 45 minutes with no feedback. The
-   candidate is a =workflow_instance_changed= event, or a
-   =iam.v1.workflow_instances.get= read the page can poll.
-5. *No retry and no discard.* The contract keeps completed steps and resumes
-   from the failed one. Nothing starts a retry, and nothing discards a
-   half-provisioned tenant. The candidates are
-   =iam.v1.workflow_instances.retry= and =iam.v1.tenants.discard=.
+4. *No streamed progress the browser can read.* =provision_acme_tenant_response=
+   returns its steps only at the end, and the shell waits up to 45 minutes with
+   no feedback. The engine already publishes
+   =ores.workflow.workflow_instance_changed=, but the payload is an
+   =entity_change_event= that carries =entity_ids=, and the schema the browser
+   decodes reads =alpha2_codes= with every field defaulted, so the event
+   delivers an empty identifier list. The reads =workflow.v1.instances.steps=
+   and =workflow.v1.instances.list= exist and are subscribed, so the page can
+   poll them. The work that remains is the payload the browser can read.
+5. *No retry; discard exists.* The contract keeps completed steps and resumes
+   from the failed one. Nothing starts a retry: no retry, resume or abandon verb
+   exists anywhere in =ores.workflow=, and the only recovery is
+   =workflow_engine::recover_in_progress()=, which runs once at service start.
+   The candidate is a retry request for the workflow instance. Discard already
+   exists as =iam.v1.system.reset-tenant=, which returns a tenant to bootstrap
+   state. It does not resume a failed workflow.
 6. *No password hand-over flags.* First run copies the system administrator's
    password hash to the ACME tenant administrator, and only /Empty
    operational/ forces a change at first sign-in. The provision request has no
@@ -210,10 +221,14 @@ profile-driven request does not exist.
    cannot force a new password, and the /Empty operational/ profile cannot
    enforce its change. The candidate is for the login handler to copy the flag,
    as [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] also records.
-8. *No password policy read.* The shared =NewPasswordField= shows the rules and
-   a strength hint, and the server states neither to the client. The rules live
-   only in the client today. The candidate is a read that returns the policy the
-   server enforces.
+8. *No password policy read.* The server enforces the policy in
+   =password_validator=: at least 12 characters, an uppercase letter, a
+   lowercase letter, a digit and a special symbol. No subject returns the
+   policy, so no client can state it from the server. The shared
+   =NewPasswordField=, in =packages/web/src/ui/PasswordField.tsx=, carries its
+   own copy of the rules and a strength hint; that file survives only on
+   =prototype/first-run-journey= today. The candidate is a read that returns the
+   policy the server enforces.
 
 * Related journeys
 

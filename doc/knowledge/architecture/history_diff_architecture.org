@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:history:diff:ores.diff:qt:shell:codegen:
 #+created: 2026-07-11
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 
 * Summary
 
@@ -33,6 +33,18 @@ entity id, and field-level references render as strings like any
 other field.
 
 * Detail
+
+#+begin_note
+*The client half of this page is retired.* The =HistoryDialog= widget, the
+=ores.cpp.qt.*= archetypes and the codegen'd per-entity action registry were the
+desktop client, and that client is deleted from the tree: no Qt template or
+archetype remains under =projects/ores.codegen/library/=. The server half
+stands as written: the generic request, the codegen'd per-entity handlers and
+[[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] are current. In the
+browser a journey step draws the history it needs, and
+=projects/ores.shell/api/src/app/commands/history_diff_renderer.cpp= is the
+surviving client renderer.
+#+end_note
 
 ** One generic history request, dispatched server side
 

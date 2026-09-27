@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:verification:
 #+created: 2026-08-26
-#+updated: 2026-08-26
+#+updated: 2026-09-27
 
 #+begin_note
 *Status: target state.* This page describes the framework we are
@@ -43,7 +43,7 @@ never skips a rung below where it stops.
 | 1    | Did only the expected things change?            | The drift checks             | Always, after generating |
 | 2    | Does the behaviour do what it should?           | Catch2 unit and integration tests | Feature work |
 | 3    | Does the system do what the task claimed?       | A scripted =ores.shell= scenario | Every task and story |
-| 4    | Does the interface do what the system does?     | In-app verification          | When a client UI exists (none today) |
+| 4    | Does the interface do what the system does?     | In-app verification          | When a change touches the browser client |
 
 ** Rung 0: Generation
 
@@ -110,6 +110,13 @@ which is a gap worth closing on its own terms.
 The desktop client is removed. The TypeScript web client in =ores.web=
 is the interface now. The rung stays in the ladder because that client
 needs it, and the rule below is what governs it.
+
+=projects/ores.web= holds the TypeScript browser client in =packages/web=
+and its BFF in =packages/bff=, with =packages/wire-protocol= and
+=packages/contracts= beside them. The
+[[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]]
+governs all four packages. A change that touches them must be verified at
+this rung.
 
 The rule that governs the choice of mechanism:
 

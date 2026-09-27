@@ -20,8 +20,8 @@ it here means:
 Pass it at start, either way round:
 
 ```sh
-npm run dev:bff -- --env bright_hopper
-ORES_WEB_ENV=bright_hopper npm run dev:bff
+npm run dev:bff -- --env brave_hopper
+ORES_WEB_ENV=brave_hopper npm run dev:bff
 ```
 
 Omitting it uses the file's `active` field, or the first environment when

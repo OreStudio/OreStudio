@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/correct-the-architecture
+#+pr: 2290
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -37,11 +37,11 @@ written out in the audit's =* Decisions signed off= section.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Unit 1 item 1, [[id:CDE625E2-96AE-4644-9921-282339925F3E][the TypeScript standard]], is written. It lands with the change that also carries this story's scaffolding and its first task, because the branch was cut before this task was clocked on. |
-| Waiting on   | Nothing.                               |
-| Next          | Unit 1 items 2 to 7, then units 2 and 3. |
+| Now          | Units 1 to 3 are written, in three commits. =compass lint= is clean, and the site renders every page the change touches. |
+| Waiting on   | The review round on the change. |
+| Next          | The story's first implementation task, after this change lands. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -187,9 +187,51 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files corrected | 34 | =evidence/measurements.txt= section 1 | =f5e0101d8b= |
+| Icon assets | 68 | =evidence/measurements.txt= section 2 | =f5e0101d8b= |
+| TypeScript Clean Standard items | 73 | =evidence/measurements.txt= section 3 | =f5e0101d8b= |
+| Packages that depend on =@ores/contracts= | 1 | =evidence/measurements.txt= section 4 | =f5e0101d8b= |
+| Protocol headers with no AUTO-GENERATED banner | 16 of 251 | =evidence/measurements.txt= section 5 | =f5e0101d8b= |
+| Operation models | 29, across 12 components | =evidence/measurements.txt= section 6 | =f5e0101d8b= |
+
+The base for section 1 is the merge base with =origin/main=, =4b7e0e57d9=.
+The other five describe the tree at =f5e0101d8b=, and none of them moves
+under the commits that follow it.
 
 * Notes
+
+- *The audit's finding 2 was wrong twice over.* It named the
+  provision-parties saga's subjects as =refdata.v1.parties.save= and
+  =iam.v1.account_parties.save=, and said the response returns one workflow
+  instance id per party. The real subjects are =refdata.v1.parties.put=,
+  =iam.v1.accounts.save= and =iam.v1.account_parties.put_many=, and the
+  handler leaves =workflow_instance_ids= empty. Both are corrected in the
+  audit, with the date, because the story cites that finding as its target.
+- *Three pages outside the plan's item list describe the deleted client, so
+  they are corrected too:* =ui_design_principles.org= carried a
+  cross-reference to the section this change renamed,
+  =badge_catalogue.org= called the deleted cache "the mechanism", and
+  =history_diff_architecture.org= presented a Qt dialog as the client. The
+  last one keeps its server half and marks its client half historical.
+- *The environment id was wrong in four files.* =bright_hopper= is not a
+  declared environment; the two READMEs and two source comments now say
+  =brave_hopper=.
+- *Residues this change does not touch:*
+  - =ores.iam.account_party_junction.org:148-153= still uses the retired
+    path-segment wording. The component belongs to another environment's
+    clean-up, so a capture is the right vehicle rather than an edit here.
+  - The knowledge scaffold still emits =* Summary= where
+    [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][the knowledge document contract]]
+    asks for a blurb and =* Detail=. That is the audit's recommendation 11
+    and a template change, not a page change.
+  - =compass build --direct skills= still mirrors the two corrected skills
+    into the gitignored =.claude/skills/=, which no repository change can
+    carry.
+- *Four captures are filed, not fixed here:*
+  [[id:7E60B60A-927D-4B43-B7FB-00168BAE01AC][the empty party-provisioning instance ids]],
+  [[id:A8B2A803-531C-47E8-8BD8-E1A5199B581B][the two subjects the provision-parties comment and the refdata protocol page name]],
+  [[id:035C540C-C01A-4BD1-8022-46EBFD29C093][the unused HTTP gateway base URL]], and
+  [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][the country-shaped change-event schema]].
 
 * Test Scenarios
 
@@ -206,7 +248,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2290][#2290]] | [knowledge] Correct the architecture the setup journeys depend on |
 
 * Review
 
@@ -215,3 +257,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The task is documentation only and it is done, in three commits. The story's
+"waiting on" sentence is discharged: every page the first implementation task
+reads is now true against the tree.
+
+Unit 1 corrected the journey and provisioning architecture. The sprint 25
+catalogue's journey entity and shell journey commands are superseded, with a
+pointer to the decision that supersedes them. The deleted list, detail and
+history primitives are marked gone from the three pages that still claimed
+them. The IAM page states the seed profile contract and drops the retired
+desktop client from the client list. The plans doc marks the login-triggered
+wizards superseded. The three setup journeys are re-measured row by row: the
+retired get-active candidate is gone, the generic =iam.v1.tenants.provision=
+replaces both retired provision subjects, the two progress reads exist and are
+subscribed, =iam.v1.system.reset-tenant= discards a half-provisioned tenant,
+and the party journey's provision-party request exists but does not match the
+journey.
+
+Unit 2 corrected the ores.web pages that anchor the wire types: the decision
+record no longer denies the generator, its output location and its operation
+model are right, the component overview loses two dependencies the component
+does not have, and the README names commands that exist.
+
+Unit 3 corrected the pages whose subject is the removed desktop client: the UX
+language describes the journey screen, the two icon pages match the 68 assets
+that exist, Entity Addressing stops contradicting itself, the history diff
+architecture keeps its server half and marks its client half historical, and
+the sign-up journey names the route that exists.
+
+Four defects the work found are filed as captures rather than fixed here,
+because each is a code change in another component or in the implementation
+that follows. The shell recipes for the two retired subjects are deliberately
+not edited: they are generated, and they change in the task that removes the
+subjects.

@@ -19,6 +19,25 @@ E2E testing: branch `feature/three-level-provisioning-e2e`, story in sprint 16.
 
 ---
 
+## Superseded in part — 2026-09-27
+
+The **login-triggered wizard triggers are superseded**, and so is the wizard
+table's last column. `TenantProvisioningWizard` and
+`PartyProvisioningWizard` were the retired Qt client, and `projects/ores.qt/`
+is no longer in the tree. `party_setup_mode` occurs nowhere in `projects/`
+either. The bootstrap catalogue of 2026-09-22 drops the login-triggered tenant
+and party wizards, and the Setup journeys in `ores.web` replace them. A tenant
+that is still provisioning refuses sign-in with a clear message, so
+`tenant_bootstrap_mode` leaves the contract, and `party.status = 'Inactive'` no
+longer fires a wizard at sign-in.
+
+The rest of the plan stands. Phase 3's `ores.workflow` service is real and
+carries the provisioning sagas today; the provisioning that the wizards drove
+on the client moves to the server and to the generic `iam.v1.tenants.provision`
+request.
+
+---
+
 ## Context
 
 OreStudio uses a three-level account model: **System → Tenant → Party**. Each level has a

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :badges:ux:reference:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-09-27
 
 * Summary
 
@@ -232,5 +232,5 @@ reuse.
 * See also
 
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the colour-semantics rules this catalogue instantiates.
-- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Badge system design]] — the mechanism (schema, =BadgeCache=, delegate resolution).
+- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Badge system design]] — the historical design of the desktop client's cache; the definitions it loaded are the live mechanism.
 - [[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=dq_badge_system_populate.sql=]] — the source of truth this page mirrors.

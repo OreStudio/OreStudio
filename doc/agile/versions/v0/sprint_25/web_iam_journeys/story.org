@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:iam:journeys:prototype:sprint_25:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -173,8 +173,13 @@ before any code is written.
   =password_salt=, =service_password_hash=, =totp_secret=, every
   cleartext password field and every JWT.
 - [[id:66EEA0FB-D837-4E3B-97DA-933C2108912D][Formalise the IAM vocabulary and the screen rules]]:
-  /journey/ is already a project term -- a server-stateful guided path
-  -- and /user/ is not a term at all, only one value of account type.
+  /journey/ is a project term, and /user/ is not a term at all, only one
+  value of account type. This task's reading of /journey/ as a
+  server-stateful guided path is superseded:
+  [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] defines a
+  journey as a definition whose progress, where it needs progress at all,
+  is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]], and the Setup story adds
+  no journey entity.
   Screens are bound by =entity_specification.org= and
   =component_specification.org=, which live in
   =projects/ores.web/modeling/=. Neither UI document mentions journeys
@@ -196,7 +201,8 @@ before any code is written.
 - [[id:D81067C6-C125-47DA-90A0-66A1A2509317][Identify the post-setup IAM journeys]]:
   fourteen journeys in six topic groups. A journey is one person and one goal.
   The member's journeys and the administrator's journeys are separate. List,
-  detail and history survive as primitives but are no longer per entity. Most
+  detail and history do not survive as primitives: commit =e47043269f= deleted
+  them, and a journey step draws the view it needs. Most
   journeys carry no server-side state.
 - [[id:D48BC708-459E-4508-A6C4-631BAC079354][Document every post-setup IAM journey]]:
   done. Fourteen documents, each with a rendered =salt= wireframe and a coverage

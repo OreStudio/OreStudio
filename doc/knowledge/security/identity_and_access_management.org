@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :knowledge:security:iam:
 #+created: 2024-06-15
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 
 /Identity and Access Management (IAM)/ is the security subsystem
 that governs who can do what in ORE Studio. It is realised by the
@@ -51,9 +51,10 @@ right resource.
 * Tenant lifecycle
 
 These terms name the stages that take ORE Studio from an empty
-database to a tenant that people use. Every client (ores.web,
-ores.shell, ores.qt) uses the same terms and runs the same server-side
-operation for each stage.
+database to a tenant that people use. Every client (=ores.web=,
+=ores.shell=) uses the same terms and runs the same server-side
+operation for each stage. =ores.qt= is retired: it is no longer in the
+tree. The clients are =ores.web= and =ores.shell=.
 
 - *System bootstrap*: the system goes from an empty database to a
   usable state. It creates the system admin only. The system admin
@@ -81,9 +82,16 @@ operation for each stage.
   [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
   =ores.workflow=, so any client can resume it where it stopped. See
   [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].
-- *Seed profile*: the data set that provisioning gives a new tenant.
-  The profile selects where the parties come from and which bundles
-  are published. The profiles are:
+- *Seed profile*: the data set that provisioning gives a new tenant. A
+  profile is registered data, not a client-side constant: =ores.iam=
+  owns the profile, its declared parameter schema and the step-kind
+  catalogue, and the subjects are =iam.v1.seed_profiles.*=. A profile
+  orders step kinds from that catalogue and declares the parameters it
+  takes, so a new profile is a row and a new step kind is code. A client
+  builds its form from the declared parameter schema and holds no
+  profile of its own. None of this is built yet: no seed profile exists
+  in the code, has a table, or answers a subject today. The first two
+  rows are:
   - /Empty operational/: a production tenant. It gets the base
     reference data, a counterparty set and its own parties from a
     GLEIF root LEI. It gets no test data.

@@ -39,7 +39,7 @@ import {
  * The environment can be chosen on the command line for a one-off, in an
  * environment variable, or in the file for a deployment:
  *
- *   npm run dev:bff -- --env bright_hopper
+ *   npm run dev:bff -- --env brave_hopper
  *
  * A checkout with no choice made anywhere serves its own environment, named by
  * `ORES_ENV_NAME`, so the site follows the rest of the checkout rather than the

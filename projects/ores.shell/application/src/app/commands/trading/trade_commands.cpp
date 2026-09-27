@@ -22,6 +22,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_table_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/trade_protocol.hpp"
@@ -108,7 +109,7 @@ void trade_commands::register_commands(cli::Menu& root_menu,
         "Show a trade's version history (--diff for a unified diff, --version <n> to pick one)",
         {"id [--diff] [--version <n>]"});
 
-    root_menu.Insert(std::move(trades_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(trades_menu));
 }
 
 void trade_commands::process_get_trades(std::ostream& out,

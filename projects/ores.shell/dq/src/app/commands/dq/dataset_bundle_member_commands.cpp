@@ -29,6 +29,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -179,7 +180,7 @@ void dataset_bundle_member_commands::register_commands(cli::Menu& root_menu, nat
         },
         "by-bundle-code <bundle_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void dataset_bundle_member_commands::process_list(std::ostream& out,

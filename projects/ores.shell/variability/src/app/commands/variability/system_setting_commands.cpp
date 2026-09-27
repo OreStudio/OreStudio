@@ -28,6 +28,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include <boost/asio/ip/address.hpp>
@@ -186,7 +187,7 @@ void system_setting_commands::register_commands(cli::Menu& root_menu, nats_clien
         },
         "version <name> --version <n>");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void system_setting_commands::process_list(std::ostream& out,

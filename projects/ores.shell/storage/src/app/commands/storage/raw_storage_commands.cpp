@@ -21,6 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.shell/app/http_base_url.hpp"
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
@@ -240,7 +241,7 @@ void raw_storage_commands::register_commands(cli::Menu& root_menu, nats_client& 
         },
         "list <bucket> [--prefix <v>] [--offset <v>] [--limit <v>]");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 }

@@ -24,6 +24,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <optional>
 #include <ostream>
@@ -46,7 +47,7 @@ void history_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         "to pick one)",
         {"<entity_type> <entity_id> [--diff] [--version <n>]"});
 
-    root_menu.Insert(std::move(history_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(history_menu));
 }
 
 void history_commands::process_get(std::ostream& out,

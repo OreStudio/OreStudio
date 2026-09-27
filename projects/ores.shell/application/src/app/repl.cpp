@@ -63,6 +63,7 @@
 #include "ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_step_commands.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -99,7 +100,9 @@ void repl::run(std::istream& in, std::ostream& out) {
 }
 
 std::unique_ptr<cli::Cli> repl::setup_menus() {
-    auto root = std::make_unique<cli::Menu>("ores-shell");
+    // The shell's own root, which owns every name under it and collects
+    // the verbs a unit contributes to a menu another unit owns.
+    auto root = std::make_unique<shell_root_menu>();
 
     using namespace commands;
     dq_commands::register_commands(*root, session_);
@@ -144,6 +147,12 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     synthetic_entity_commands::register_commands(*root, session_);
     reports_commands::register_commands(*root, session_);
     provision_commands::register_commands(*root, session_);
+
+    // Every unit has registered, so the verbs each contributes to
+    // another unit's menu can be added. Applied here rather than as the
+    // menus are inserted, so the order the units register in cannot
+    // decide whether an extension reaches its menu.
+    root->apply_extensions();
 
     auto cli_instance = std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) { out << "Bye!" << std::endl; });

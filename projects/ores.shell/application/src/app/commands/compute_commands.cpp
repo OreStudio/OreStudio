@@ -36,6 +36,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/http_base_url.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
@@ -227,7 +228,7 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          "Download a result's output bundle",
                          {"<result_id> <dest_dir>"});
 
-    root_menu.Insert(std::move(compute_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(compute_menu));
 }
 
 void compute_commands::process_publish_package(std::ostream& out,

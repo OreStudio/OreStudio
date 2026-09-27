@@ -58,37 +58,6 @@ public:
                                   pagination_context& pagination);
 
     /**
-     * @brief Process a get tenants request.
-     *
-     * Retrieves tenants from the server and displays them.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     */
-    static void process_get_tenants(std::ostream& out, ores::nats::service::nats_client& session);
-
-    /**
-     * @brief Process an add tenant request.
-     *
-     * Creates a new tenant with the provided details.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param code Unique tenant code
-     * @param name Human-readable tenant name
-     * @param type Tenant type classification
-     * @param hostname Unique hostname for tenant routing
-     * @param description Optional description
-     */
-    static void process_add_tenant(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                   std::string code,
-                                   std::string name,
-                                   std::string type,
-                                   std::string hostname,
-                                   std::string description);
-
-    /**
      * @brief Process a tenant history request.
      *
      * Retrieves version history for a specific tenant.
@@ -102,15 +71,6 @@ public:
                                        std::string tenant_id);
 
     /**
-     * @brief Process a delete tenant request.
-     *
-     * Deletes a tenant by ID.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param tenant_id The tenant UUID to delete.
-     */
-    /**
      * @brief Mark the logged-in tenant's provisioning as complete.
      *
      * Sends iam.v1.tenants.complete-provisioning, the finalize step
@@ -118,10 +78,6 @@ public:
      */
     static void process_complete_provisioning(std::ostream& out,
                                               ores::nats::service::nats_client& session);
-
-    static void process_delete_tenant(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string tenant_id);
 };
 
 }

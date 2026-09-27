@@ -23,6 +23,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
@@ -547,7 +548,7 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            "Validate vintage data availability for a feed",
                            {"feed <feed-id|ore-key|source-name>"});
 
-    root_menu.Insert(std::move(synthetic_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(synthetic_menu));
 }
 
 std::vector<flag_spec> synthetic_commands::generate_flag_specs() {

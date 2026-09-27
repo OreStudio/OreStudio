@@ -23,6 +23,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <algorithm>
 #include <cli/cli.h>
 #include <functional>
@@ -80,7 +81,7 @@ void lei_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                      "List a country's LEI entities, optionally filtered by legal name",
                      {"country [--filter <text>]"});
 
-    root_menu.Insert(std::move(lei_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(lei_menu));
 }
 
 void lei_commands::process_countries(std::ostream& out, nats_client& session) {

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/orgmode_commands.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
 #include <cli/cli.h>
@@ -70,6 +71,7 @@ const orgmode::domain::link* first_link(const orgmode::domain::document& doc) {
 }
 
 void orgmode_commands::register_commands(cli::Menu& root_menu) {
+    ores::shell::app::claim_name(root_menu, "doc-show");
     root_menu.Insert(
         "doc-show",
         [](std::ostream& out, const std::string& path) { process_doc_show(out, path); },

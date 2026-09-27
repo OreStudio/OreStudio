@@ -18,49 +18,65 @@
  *
  */
 #include "ores.shell/app/commands/navigation_commands.hpp"
+#include "ores.shell/app/command_args.hpp"
+#include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
+#include <string>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
 using namespace logging;
 
 void navigation_commands::register_commands(cli::Menu& root_menu, pagination_context& pagination) {
+    ores::shell::app::claim_name(root_menu, "next");
     root_menu.Insert(
         "next",
         [&pagination](std::ostream& out) { process_next(std::ref(out), std::ref(pagination)); },
         "Show next page of the last listed entity");
 
+    ores::shell::app::claim_name(root_menu, "prev");
     root_menu.Insert(
         "prev",
         [&pagination](std::ostream& out) { process_prev(std::ref(out), std::ref(pagination)); },
         "Show previous page of the last listed entity");
 
+    ores::shell::app::claim_name(root_menu, "first");
     root_menu.Insert(
         "first",
         [&pagination](std::ostream& out) { process_first(std::ref(out), std::ref(pagination)); },
         "Jump to first page of the last listed entity");
 
+    ores::shell::app::claim_name(root_menu, "last");
     root_menu.Insert(
         "last",
         [&pagination](std::ostream& out) { process_last(std::ref(out), std::ref(pagination)); },
         "Jump to last page of the last listed entity");
 
+    // One verb, not two. Showing the page size and setting it were two
+    // registrations of the same name, and the CLI answered by falling through
+    // from the first to the second when the arity did not match. A name is
+    // claimed once now, so the two forms are one command.
+    ores::shell::app::claim_name(root_menu, "page-size");
     root_menu.Insert(
         "page-size",
-        [&pagination](std::ostream& out) {
-            process_page_size(std::ref(out), std::ref(pagination), 0);
+        [&pagination](std::ostream& out, std::vector<std::string> args) {
+            if (args.empty()) {
+                process_page_size(std::ref(out), std::ref(pagination), 0);
+                return;
+            }
+            const auto size = parse_uint32(args.front());
+            if (!size) {
+                fail(out) << "page-size takes a whole number, not '" << args.front() << "'."
+                          << std::endl;
+                return;
+            }
+            process_page_size(std::ref(out), std::ref(pagination), *size);
         },
-        "Show current page size");
-
-    root_menu.Insert(
-        "page-size",
-        [&pagination](std::ostream& out, int size) {
-            process_page_size(
-                std::ref(out), std::ref(pagination), static_cast<std::uint32_t>(size));
-        },
-        "Set page size (e.g., 'page-size 10')");
+        "Show the page size, or set it (page-size [<n>])");
 }
 
 void navigation_commands::process_next(std::ostream& out, pagination_context& pagination) {

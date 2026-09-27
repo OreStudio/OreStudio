@@ -34,6 +34,7 @@
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -83,147 +84,145 @@ std::string format_duration(std::chrono::seconds dur) {
 void accounts_commands::register_commands(cli::Menu& root_menu,
                                           nats_client& session,
                                           pagination_context& pagination) {
-    auto accounts_menu = std::make_unique<cli::Menu>("accounts");
+    // The generated account unit owns the accounts menu. Every verb below is
+    // one the model cannot express: authentication, session inspection,
+    // lockout, role assignment and the default party.
+    ores::shell::app::extend_menu(
+        root_menu,
+        "accounts",
+        [&session, &pagination](cli::Menu& accounts_menu) {
+            accounts_menu.Insert(
+            "create",
+            [&session](std::ostream& out,
+                       std::string principal,
+                       std::string password,
+                       std::string totp_secret,
+                       std::string email) {
+                process_create_account(std::ref(out),
+                                       std::ref(session),
+                                       std::move(principal),
+                                       std::move(password),
+                                       std::move(totp_secret),
+                                       std::move(email));
+            },
+            "Create a new account (principal password totp_secret email) - principal is "
+            "username@hostname or username");
 
-    accounts_menu->Insert(
-        "create",
-        [&session](std::ostream& out,
-                   std::string principal,
-                   std::string password,
-                   std::string totp_secret,
-                   std::string email) {
-            process_create_account(std::ref(out),
-                                   std::ref(session),
-                                   std::move(principal),
-                                   std::move(password),
-                                   std::move(totp_secret),
-                                   std::move(email));
-        },
-        "Create a new account (principal password totp_secret email) - principal is "
-        "username@hostname or username");
+        // Register list callback for navigation
+        pagination.register_list_callback("accounts", [&session, &pagination](std::ostream& out) {
+            process_list_accounts(out, session, pagination);
+        });
 
-    accounts_menu->Insert(
-        "list",
-        [&session, &pagination](std::ostream& out) {
-            process_list_accounts(std::ref(out), std::ref(session), std::ref(pagination));
-        },
-        "Retrieve accounts from the server (paginated)");
+        accounts_menu.Insert(
+            "login",
+            [&session](std::ostream& out, std::string principal, std::string password) {
+                process_login(
+                    std::ref(out), std::ref(session), std::move(principal), std::move(password));
+            },
+            "Login with principal (username@hostname or username) and password");
 
-    // Register list callback for navigation
-    pagination.register_list_callback("accounts", [&session, &pagination](std::ostream& out) {
-        process_list_accounts(out, session, pagination);
-    });
+        accounts_menu.Insert(
+            "lock",
+            [&session](std::ostream& out, std::string account_id) {
+                process_lock_account(std::ref(out), std::ref(session), std::move(account_id));
+            },
+            "Lock an account (account_id) - requires accounts:lock permission");
 
-    accounts_menu->Insert(
-        "login",
-        [&session](std::ostream& out, std::string principal, std::string password) {
-            process_login(
-                std::ref(out), std::ref(session), std::move(principal), std::move(password));
-        },
-        "Login with principal (username@hostname or username) and password");
+        accounts_menu.Insert(
+            "unlock",
+            [&session](std::ostream& out, std::string account_id) {
+                process_unlock_account(std::ref(out), std::ref(session), std::move(account_id));
+            },
+            "Unlock a locked account (account_id) - requires accounts:unlock permission");
 
-    accounts_menu->Insert(
-        "lock",
-        [&session](std::ostream& out, std::string account_id) {
-            process_lock_account(std::ref(out), std::ref(session), std::move(account_id));
-        },
-        "Lock an account (account_id) - requires accounts:lock permission");
+        accounts_menu.Insert(
+            "list-logins",
+            [&session](std::ostream& out) {
+                process_list_login_info(std::ref(out), std::ref(session));
+            },
+            "Retrieve all login info records from the server");
 
-    accounts_menu->Insert(
-        "unlock",
-        [&session](std::ostream& out, std::string account_id) {
-            process_unlock_account(std::ref(out), std::ref(session), std::move(account_id));
-        },
-        "Unlock a locked account (account_id) - requires accounts:unlock permission");
+        accounts_menu.Insert(
+            "logout",
+            [&session](std::ostream& out) { process_logout(std::ref(out), std::ref(session)); },
+            "Logout the current user");
 
-    accounts_menu->Insert(
-        "list-logins",
-        [&session](std::ostream& out) {
-            process_list_login_info(std::ref(out), std::ref(session));
-        },
-        "Retrieve all login info records from the server");
+        accounts_menu.Insert(
+            "roles",
+            [&session](std::ostream& out, std::string account_id) {
+                rbac_commands::process_get_account_roles(
+                    std::ref(out), std::ref(session), std::move(account_id));
+            },
+            "List roles assigned to an account (account_id)");
 
-    accounts_menu->Insert(
-        "logout",
-        [&session](std::ostream& out) { process_logout(std::ref(out), std::ref(session)); },
-        "Logout the current user");
+        accounts_menu.Insert(
+            "assign-role",
+            [&session](std::ostream& out, std::string account_id, std::string role_id) {
+                rbac_commands::process_assign_role(
+                    std::ref(out), std::ref(session), std::move(account_id), std::move(role_id));
+            },
+            "Assign a role to an account (account_id role_id | principal role_name)");
 
-    accounts_menu->Insert(
-        "roles",
-        [&session](std::ostream& out, std::string account_id) {
-            rbac_commands::process_get_account_roles(
-                std::ref(out), std::ref(session), std::move(account_id));
-        },
-        "List roles assigned to an account (account_id)");
+        accounts_menu.Insert(
+            "revoke-role",
+            [&session](std::ostream& out, std::string account_id, std::string role_id) {
+                rbac_commands::process_revoke_role(
+                    std::ref(out), std::ref(session), std::move(account_id), std::move(role_id));
+            },
+            "Revoke a role from an account (account_id role_id | principal role_name)");
 
-    accounts_menu->Insert(
-        "assign-role",
-        [&session](std::ostream& out, std::string account_id, std::string role_id) {
-            rbac_commands::process_assign_role(
-                std::ref(out), std::ref(session), std::move(account_id), std::move(role_id));
-        },
-        "Assign a role to an account (account_id role_id | principal role_name)");
+        accounts_menu.Insert(
+            "permissions",
+            [&session](std::ostream& out, std::string account_id) {
+                rbac_commands::process_get_account_permissions(
+                    std::ref(out), std::ref(session), std::move(account_id));
+            },
+            "List effective permissions for an account (account_id)");
 
-    accounts_menu->Insert(
-        "revoke-role",
-        [&session](std::ostream& out, std::string account_id, std::string role_id) {
-            rbac_commands::process_revoke_role(
-                std::ref(out), std::ref(session), std::move(account_id), std::move(role_id));
-        },
-        "Revoke a role from an account (account_id role_id | principal role_name)");
+        // Session commands
+        accounts_menu.Insert(
+            "sessions",
+            [&session](std::ostream& out) { process_list_sessions(std::ref(out), std::ref(session)); },
+            "List your session history");
 
-    accounts_menu->Insert(
-        "permissions",
-        [&session](std::ostream& out, std::string account_id) {
-            rbac_commands::process_get_account_permissions(
-                std::ref(out), std::ref(session), std::move(account_id));
-        },
-        "List effective permissions for an account (account_id)");
+        accounts_menu.Insert(
+            "sessions-for",
+            [&session](std::ostream& out, std::string account_id) {
+                process_list_sessions(std::ref(out), std::ref(session), std::move(account_id));
+            },
+            "List sessions for an account (account_id) - requires accounts:read permission");
 
-    // Session commands
-    accounts_menu->Insert(
-        "sessions",
-        [&session](std::ostream& out) { process_list_sessions(std::ref(out), std::ref(session)); },
-        "List your session history");
+        accounts_menu.Insert(
+            "active-sessions",
+            [&session](std::ostream& out) {
+                process_active_sessions(std::ref(out), std::ref(session));
+            },
+            "List your currently active sessions");
 
-    accounts_menu->Insert(
-        "sessions-for",
-        [&session](std::ostream& out, std::string account_id) {
-            process_list_sessions(std::ref(out), std::ref(session), std::move(account_id));
-        },
-        "List sessions for an account (account_id) - requires accounts:read permission");
+        accounts_menu.Insert(
+            "history",
+            [&session](std::ostream& out, std::string username) {
+                process_get_account_history(std::ref(out), std::ref(session), std::move(username));
+            },
+            "Get version history for an account by username");
 
-    accounts_menu->Insert(
-        "active-sessions",
-        [&session](std::ostream& out) {
-            process_active_sessions(std::ref(out), std::ref(session));
-        },
-        "List your currently active sessions");
+        accounts_menu.Insert(
+            "info",
+            [&session](std::ostream& out, std::string username) {
+                process_account_info(std::ref(out), std::ref(session), std::move(username));
+            },
+            "Show comprehensive account info (username) - details, roles, permissions");
 
-    accounts_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string username) {
-            process_get_account_history(std::ref(out), std::ref(session), std::move(username));
-        },
-        "Get version history for an account by username");
+        accounts_menu.Insert(
+            "set-default-party",
+            [&session](std::ostream& out, std::string party_ref) {
+                process_set_default_party(std::ref(out), std::ref(session), std::move(party_ref));
+            },
+            "Set the logged-in account's default party for quick-login (party-uuid-or-full-name)");
+        });
 
-    accounts_menu->Insert(
-        "info",
-        [&session](std::ostream& out, std::string username) {
-            process_account_info(std::ref(out), std::ref(session), std::move(username));
-        },
-        "Show comprehensive account info (username) - details, roles, permissions");
-
-    accounts_menu->Insert(
-        "set-default-party",
-        [&session](std::ostream& out, std::string party_ref) {
-            process_set_default_party(std::ref(out), std::ref(session), std::move(party_ref));
-        },
-        "Set the logged-in account's default party for quick-login (party-uuid-or-full-name)");
-
-    root_menu.Insert(std::move(accounts_menu));
-
-    // Top-level login/logout aliases for convenience
+    // Top-level aliases, so a caller need not enter the menu first.
+    ores::shell::app::claim_name(root_menu, "login");
     root_menu.Insert(
         "login",
         [&session](std::ostream& out, std::string principal, std::string password) {
@@ -232,6 +231,7 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
         },
         "Login with principal (username@hostname or username) and password");
 
+    ores::shell::app::claim_name(root_menu, "logout");
     root_menu.Insert(
         "logout",
         [&session](std::ostream& out) { process_logout(std::ref(out), std::ref(session)); },

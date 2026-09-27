@@ -27,6 +27,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
 #include <cli/cli.h>
@@ -63,7 +64,7 @@ void bundles_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          {"code [--wait] [--root-lei <lei>] [--party-id <id>] [--dataset <code>] "
                           "[--timeout <seconds>]"});
 
-    root_menu.Insert(std::move(bundles_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(bundles_menu));
 }
 
 void bundles_commands::process_list(std::ostream& out, nats_client& session) {

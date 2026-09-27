@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument_table_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -115,7 +116,7 @@ void callable_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         "Show an Callable swap instrument's version history",
         {"instrument_id"});
 
-    root_menu.Insert(std::move(callable_swap_instruments_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(callable_swap_instruments_menu));
 }
 
 void callable_swap_instrument_commands::process_get_callable_swap_instruments(

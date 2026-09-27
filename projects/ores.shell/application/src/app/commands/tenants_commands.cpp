@@ -24,6 +24,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -43,126 +44,32 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
     return ores::platform::time::datetime::to_local_display_string(tp);
 }
 
-// The tenant model caps its page size at 1000; mirror that.
-constexpr int list_limit = 1000;
-
 } // anonymous namespace
 
 void tenants_commands::register_commands(cli::Menu& root_menu,
                                          nats_client& session,
                                          pagination_context& /*pagination*/) {
-    auto tenants_menu = std::make_unique<cli::Menu>("tenants");
+    // The generated tenant unit owns the tenants menu. The two verbs below are
+    // provisioning steps the model cannot express, so they join it rather than
+    // registering a second tenants menu beside it.
+    ores::shell::app::extend_menu(
+        root_menu,
+        "tenants",
+        [&session](cli::Menu& tenants_menu) {
+            tenants_menu.Insert(
+                "history",
+                [&session](std::ostream& out, std::string tenant_id) {
+                    process_tenant_history(std::ref(out), std::ref(session), std::move(tenant_id));
+                },
+                "Show history for a tenant (tenant_code)");
 
-    tenants_menu->Insert(
-        "get",
-        [&session](std::ostream& out) { process_get_tenants(std::ref(out), std::ref(session)); },
-        "Retrieve active tenants from the server");
-
-    tenants_menu->Insert(
-        "add",
-        [&session](std::ostream& out,
-                   std::string code,
-                   std::string name,
-                   std::string type,
-                   std::string hostname,
-                   std::string description) {
-            process_add_tenant(std::ref(out),
-                               std::ref(session),
-                               std::move(code),
-                               std::move(name),
-                               std::move(type),
-                               std::move(hostname),
-                               std::move(description));
-        },
-        "Add a tenant (code name type hostname description)");
-
-    tenants_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string tenant_id) {
-            process_tenant_history(std::ref(out), std::ref(session), std::move(tenant_id));
-        },
-        "Show history for a tenant (tenant_id)");
-
-    tenants_menu->Insert(
-        "delete",
-        [&session](std::ostream& out, std::string tenant_id) {
-            process_delete_tenant(std::ref(out), std::ref(session), std::move(tenant_id));
-        },
-        "Delete a tenant (tenant_id)");
-
-    tenants_menu->Insert(
-        "complete-provisioning",
-        [&session](std::ostream& out) {
-            process_complete_provisioning(std::ref(out), std::ref(session));
-        },
-        "Mark the logged-in tenant's provisioning as complete (clears bootstrap state)");
-
-    root_menu.Insert(std::move(tenants_menu));
-}
-
-void tenants_commands::process_get_tenants(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request.";
-
-    iam::messaging::list_tenants_request req;
-    req.limit = list_limit;
-
-    auto result = do_auth_request<iam::messaging::list_tenants_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->tenants.size() << " tenants.";
-    out << result->tenants << std::endl;
-    out << result->tenants.size() << " of " << result->total << " tenants shown." << std::endl;
-}
-
-void tenants_commands::process_add_tenant(std::ostream& out,
-                                          nats_client& session,
-                                          std::string code,
-                                          std::string name,
-                                          std::string type,
-                                          std::string hostname,
-                                          std::string description) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add tenant request for code: " << code;
-
-    // Get modified_by from logged-in user
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add a tenant." << std::endl;
-        return;
-    }
-    // Generate a new UUID for the tenant
-    boost::uuids::random_generator gen;
-    auto new_id = gen();
-
-    // A write carries the user-owned fields alone. The tenant, the actor and
-    // the provenance are the service's to derive from the authenticated
-    // context, and the version is the database's.
-    iam::messaging::put_tenant_request req;
-    req.change.write.id = new_id;
-    req.change.write.code = std::move(code);
-    req.change.write.name = std::move(name);
-    req.change.write.type = std::move(type);
-    req.change.write.description = std::move(description);
-    req.change.write.hostname = std::move(hostname);
-    req.change.write.status = "active";
-    req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-    req.intent.reason_code = "new_record";
-    req.intent.commentary = "Created via shell";
-
-    auto result = do_auth_request<iam::messaging::put_tenant_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    if (result->result.outcome == ores::utility::domain::outcome::ok) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully added tenant with ID: " << new_id;
-        out << "✓ Tenant added successfully!" << std::endl;
-        out << "  ID: " << new_id << std::endl;
-    } else {
-        const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: " << msg;
-        fail(out) << "Failed to add tenant: " << msg << std::endl;
-    }
+            tenants_menu.Insert(
+                "complete-provisioning",
+                [&session](std::ostream& out) {
+                    process_complete_provisioning(std::ref(out), std::ref(session));
+                },
+                "Mark the logged-in tenant's provisioning as complete (clears bootstrap state)");
+        });
 }
 
 void tenants_commands::process_tenant_history(std::ostream& out,
@@ -224,40 +131,6 @@ void tenants_commands::process_tenant_history(std::ostream& out,
     }
 }
 
-void tenants_commands::process_delete_tenant(std::ostream& out,
-                                             nats_client& session,
-                                             std::string tenant_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete tenant request for: " << tenant_id;
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete a tenant." << std::endl;
-        return;
-    }
-
-    // A tenant is addressed by its code, which is the key the model declares.
-    if (tenant_id.empty()) {
-        fail(out) << "A tenant code is required." << std::endl;
-        return;
-    }
-
-    iam::messaging::delete_tenant_request req;
-    req.removal.key.code = tenant_id;
-    req.intent.reason_code = "deleted_via_shell";
-    req.intent.commentary = "Deleted via shell";
-
-    auto result = do_auth_request<iam::messaging::delete_tenant_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    if (result->result.outcome == ores::utility::domain::outcome::ok) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant: " << tenant_id;
-        out << "✓ Tenant deleted successfully!" << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << result->result.message;
-        fail(out) << "Failed to delete tenant: " << result->result.message << std::endl;
-    }
-}
 
 void tenants_commands::process_complete_provisioning(std::ostream& out, nats_client& session) {
     if (!session.is_logged_in()) {

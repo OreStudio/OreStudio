@@ -25,6 +25,7 @@
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -40,9 +41,6 @@ using namespace ores::logging;
 using ores::nats::service::nats_client;
 
 namespace {
-
-// A page of roles is read in one request; the shell does not page it.
-constexpr std::uint32_t list_limit = 1000;
 
 auto& parse_uuid_lg() {
     static auto instance = make_logger("ores.shell.app.commands.rbac_commands");
@@ -93,148 +91,23 @@ void format_string_list(std::ostream& out,
 void rbac_commands::register_commands(cli::Menu& root_menu,
                                       nats_client& session,
                                       pagination_context& /*pagination*/) {
-    // =========================================================================
-    // Permissions submenu
-    // =========================================================================
-    auto permissions_menu = std::make_unique<cli::Menu>("permissions");
-
-    permissions_menu->Insert(
-        "list",
-        [&session](std::ostream& out) {
-            process_list_permissions(std::ref(out), std::ref(session));
-        },
-        "List all permissions in the system");
-
-    permissions_menu->Insert(
-        "suggest",
-        [&session](std::ostream& out, std::string username, std::string identifier) {
-            process_suggest_role_commands(
-                std::ref(out), std::ref(session), std::move(username), std::move(identifier));
-        },
-        "Generate role assignment commands (username hostname_or_tenant_id)");
-
-    root_menu.Insert(std::move(permissions_menu));
-
-    // =========================================================================
-    // Roles submenu
-    // =========================================================================
-    auto roles_menu = std::make_unique<cli::Menu>("roles");
-
-    roles_menu->Insert(
-        "list",
-        [&session](std::ostream& out) { process_list_roles(std::ref(out), std::ref(session)); },
-        "List all roles in the system");
-
-    roles_menu->Insert(
-        "get",
-        [&session](std::ostream& out, std::string role_identifier) {
-            process_get_role(std::ref(out), std::ref(session), std::move(role_identifier));
-        },
-        "Get role details (role_name or role_id)");
-
-    root_menu.Insert(std::move(roles_menu));
-}
-
-void rbac_commands::process_list_permissions(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list permissions request.";
-
-    iam::messaging::list_permissions_request req;
-    req.limit = list_limit;
-
-    auto result = do_auth_request<iam::messaging::list_permissions_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    if (result->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << result->result.message << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->permissions.size()
-                              << " permissions.";
-    out << result->permissions << std::endl;
-    out << result->permissions.size() << " of " << result->total << " permissions shown."
-        << std::endl;
-}
-
-void rbac_commands::process_list_roles(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list roles request.";
-
-    iam::messaging::list_roles_request req;
-    req.limit = list_limit;
-
-    auto result = do_auth_request<iam::messaging::list_roles_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    if (result->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << result->result.message << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->roles.size() << " roles.";
-    out << result->roles << std::endl;
-    out << result->roles.size() << " of " << result->total << " roles shown." << std::endl;
-}
-
-void rbac_commands::process_get_role(std::ostream& out,
-                                     nats_client& session,
-                                     std::string role_identifier) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: " << role_identifier;
-
-    // A role is addressed by its name, which is the key the model declares and
-    // the one its subject's operations carry.
-    if (role_identifier.empty()) {
-        fail(out) << "A role name is required." << std::endl;
-        return;
-    }
-
-    iam::messaging::get_role_request req;
-    req.key.name = role_identifier;
-
-    auto result = do_auth_request<iam::messaging::get_role_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    if (result->result.outcome != ores::utility::domain::outcome::ok || !result->role) {
-        fail(out) << result->result.message << std::endl;
-        return;
-    }
-
-    const auto& found_role = *result->role;
-    BOOST_LOG_SEV(lg(), info) << "Found role: " << found_role.name;
-
-    // Display role details
-    out << std::endl;
-    out << "Role Details" << std::endl;
-    out << "============" << std::endl;
-    out << "ID:            " << boost::uuids::to_string(found_role.id) << std::endl;
-    out << "Name:          " << found_role.name << std::endl;
-    out << "Description:   " << found_role.description << std::endl;
-    out << "Version:       " << found_role.version << std::endl;
-    out << "Change Reason: " << found_role.change_reason_code << std::endl;
-    out << "Commentary:    " << found_role.change_commentary << std::endl;
-    out << "Modified By:   " << found_role.modified_by << std::endl;
-    out << "Recorded At:   " << found_role.recorded_at << std::endl;
-    out << std::endl;
-
-    iam::messaging::get_role_permissions_request perms_req;
-    perms_req.role_id = boost::uuids::to_string(found_role.id);
-
-    auto perms = do_auth_request<iam::messaging::get_role_permissions_response>(
-        out, session, iam::messaging::get_role_permissions_request::nats_subject, perms_req);
-    if (!perms)
-        return;
-
-    out << "Permissions (" << perms->permission_codes.size() << "):" << std::endl;
-    out << "-------------" << std::endl;
-    for (const auto& code : perms->permission_codes) {
-        out << "  - " << code << std::endl;
-    }
-    out << std::endl;
+    // The generated permission unit owns the permissions menu. This unit adds
+    // the one verb the model cannot express, so both live at one address and
+    // the menu's help lists both.
+    ores::shell::app::extend_menu(
+        root_menu,
+        "permissions",
+        [&session](cli::Menu& permissions_menu) {
+            permissions_menu.Insert(
+                "suggest",
+                [&session](std::ostream& out, std::string username, std::string identifier) {
+                    process_suggest_role_commands(std::ref(out),
+                                                  std::ref(session),
+                                                  std::move(username),
+                                                  std::move(identifier));
+                },
+                "Generate role assignment commands (username hostname_or_tenant_id)");
+        });
 }
 
 void rbac_commands::process_assign_role(std::ostream& out,

@@ -24,6 +24,7 @@ set(files
     "app/command_feedback.cpp"
     "app/commands/history_diff_renderer.cpp"
     "app/pagination_context.cpp"
+    "app/shell_root_menu.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -36,6 +37,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/ores.shell.app.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/pagination_context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/request_helpers.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/shell_root_menu.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.hpp"
 )

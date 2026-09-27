@@ -30,6 +30,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -186,7 +187,7 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
         },
         "Print execution events as they arrive: watch [--seconds <n>]");
 
-    root_menu.Insert(std::move(scheduler_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(scheduler_menu));
 }
 
 void scheduler_commands::process_jobs(std::ostream& out, nats_client& session) {

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 60BBB3B1-6083-4A78-B51D-4FD2E81C54C2
+:END:
+#+title: Generated HTTP recipes send no request body
+#+description: Every write endpoint answers 400 where its recipe asserts 200: the ores.doc.http-recipe template emits no body, so 57 of the 82 generated recipes never reach the handler they exist to check.
+#+type: capture
+#+level: cross
+#+filetags: :http:codegen:recipe:defect:testing:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The 82 recipes under =projects/ores.http/scripts/library/= are tangled from
+the =ores.doc.http-recipe= facet, and its template
+=http_recipe.org.mustache= emits only a method line, an =Accept= header, an
+optional =Authorization= header and the status assertion. It emits no body
+and no =Content-Type=, so a write arrives empty.
+
+57 of the 82 use a body-carrying method — 45 =POST=, 6 =PUT=, 6 =DELETE= —
+and none carries a body. Replaying the =tags= group against the running
+gateway gives 4 =PASSED= and 6 =FAILED=, every failure reading
+=actual value is <400>=: =add=, =set=, =get-many=, =put-many=, =delete= and
+=delete-many=.
+
+The path sentinel is wrong for HTTP as well. =_sentinel_for_field= falls back
+to the shell absent token =__none__= for =std::string= and for every unmapped
+type, so 17 recipes write that token straight into the request URL, as in
+=DELETE /api/v1/assets/tags/__none__=.
+
+* Why
+
+A recipe exists to prove the wiring between the route and the handler, and an
+endpoint that answers 400 proves the opposite of what its recipe asserts. The
+57 recipes are therefore worse than absent: each reports a pass-shaped
+document that cannot pass. The fault is at the source, in one template and one
+builder, so one fix corrects all of them.
+
+The typed inputs the fix needs already exist for the shell surface: the
+=entity_shell_plan= =keys=, =writes= and =put_writes= commands, and the
+per-field sentinels. Their values are shell tokens rather than JSON, so the
+facet needs a JSON-typed sentinel and a body block per write endpoint. A
+regression test should assert that a write recipe carries a body.
+
+Found while closing the ores.http clean-up. The =Generate literate HTTP
+recipes= story is marked DONE on an acceptance line — every tangled Hurl file
+runs against the live gateway unchanged — that these 57 recipes do not meet.
+
+* References
+
+- =projects/ores.codegen/library/templates/http_recipe.org.mustache= — the
+  tangle target that emits no body; its literate source is
+  =ores.doc.http-recipe.recipe.org=.
+- =projects/ores.codegen/src/codegen/org_loader.py:4289= —
+  =http_recipe_document=, the builder; =_http_sample_path= at =:4339= builds
+  the path sentinel; =_sentinel_for_field= and =_SENTINEL_VALUES= at =:4885=
+  supply =__none__=.
+- =projects/ores.http/scripts/library/tags/tags-get-many.hurl= — asserts
+  =HTTP 200= and receives 400.
+- =projects/ores.http/scripts/library/images/images-delete.hurl= — the
+  =__none__= sentinel in the request URL.
+- =doc/agile/versions/v0/sprint_26/http_recipe_harness/story.org= — the story
+  whose acceptance this defect contradicts.
+
+* See also
+
+- [[id:90BDBB0E-45D6-4B38-A2F2-5573306E0B1B][Fix the shell recipe sentinel for optional columns]] —
+  the same sentinel function, on the shell surface.

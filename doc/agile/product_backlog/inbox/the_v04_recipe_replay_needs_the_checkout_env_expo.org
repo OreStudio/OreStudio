@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 7822530E-AC7B-46AC-A99C-A0A26B17354F
+:END:
+#+title: The V04 recipe replay needs the checkout .env exported, and …
+#+description: The V04 recipe replay needs the checkout .env exported, and fails in a way that blames login.
+
+check_shell_recipes.py replays each generated shell recipe in its own ores.shell process, behind a sign-in preamble. It invokes the binary directly rather than through compass shell, and it does not load the checkout .env, so the shell starts with no ORES_NATS_SUBJECT_PREFIX and no TLS paths. The shell then reports:
+
+  Auto-connect failed: NATS subject_prefix must be set in configuration
+
+and every recipe aborts at its sign-in line, which the summary prints as:
+
+  ABORTED  <recipe>  Script aborted at line 1: login admin <password>
+
+That reads as a bad credential. The credential is fine; the process had no configuration. The fix that worked is to export .env before the script:
+
+  set -a && . ./.env && set +a
+  export V04_PRINCIPAL=... V04_PASSWORD=...
+  projects/ores.codegen/scripts/check_shell_recipes.py <groups>
+
+The docstring says only to export the two V04 variables, so a first run against a fresh checkout produces 100% ABORTED and the operator has to read a per-recipe raw log under --out-dir to find out why. Either the script should load .env itself, the way compass shell does, or its failure summary should surface the connection error rather than the login line.
+
+Found while running V04 for ores.dq; with .env exported the same run answers 181 of 229 recipes with no failures.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

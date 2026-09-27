@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include <algorithm>
+#include <cstddef>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <memory>
@@ -119,22 +120,27 @@ TEST_CASE("claim_name_refuses_a_root_command_that_takes_an_owned_name", tags) {
     insert_menu(root, menu_named("accounts", "list"));
 
     REQUIRE_THROWS_AS(claim_name(root, "accounts"), std::runtime_error);
-    CHECK_NOTHROW(claim_name(root, "login"));
+
+    // A name nobody holds can be claimed, and the claim is what a second
+    // claimant then trips over. Without this the case would pass on a
+    // claim_name that refused every name.
+    claim_name(root, "login");
+    REQUIRE_THROWS_AS(claim_name(root, "login"), std::runtime_error);
 }
 
 TEST_CASE("a_root_that_is_not_the_shells_claims_nothing", tags) {
     auto lg(make_logger(test_suite));
 
     // A unit test builds its own root, and it has no other unit to collide
-    // with. The generated units register against one of these.
+    // with. The generated units register against one of these, so the same
+    // name twice is two menus rather than a failure.
     cli::Menu root("root");
-    CHECK_NOTHROW(insert_menu(root, menu_named("accounts", "list")));
-    CHECK_NOTHROW(insert_menu(root, menu_named("accounts", "list")));
-    CHECK_NOTHROW(claim_name(root, "accounts"));
+    insert_menu(root, menu_named("accounts", "list"));
+    insert_menu(root, menu_named("accounts", "get"));
+    claim_name(root, "accounts");
 
     const auto completions = root.GetCompletions("");
-    CHECK(std::find(completions.begin(), completions.end(), std::string{"accounts"}) !=
-          completions.end());
+    CHECK(std::count(completions.begin(), completions.end(), std::string{"accounts"}) == 2);
 }
 
 TEST_CASE("extend_menu_on_a_plain_root_gives_the_verbs_their_own_menu", tags) {

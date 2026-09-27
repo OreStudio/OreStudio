@@ -28,9 +28,9 @@ Record a result for every Component Clean Standard item the clean-reporting pass
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
-| Now          | The 19 unrecorded items are recorded, and G08 and H03 are fixed. |
-| Waiting on   | The tree to compile. =origin/main= references a header that commit =dd131c388b= deleted, so nothing here can be built or replayed. |
-| Next         | Close V04 and V08 once the tree builds, then work P01, S01, G04, H01, M04 and M08. |
+| Now          | The 19 unrecorded items are recorded, G08 and H03 are fixed, and the tree builds again. |
+| Waiting on   | Nothing.                               |
+| Next         | Close V04 with a replay and V08 with a database test, then work the six open failures. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -90,17 +90,22 @@ Six items fail, and none of them is a documentation problem.
 | M04 | Two model keys nothing reads: =report_instance= 's =:parent_id_field:= and =risk_report_config= 's =:parent_entity:=. | The two models. |
 | M08 | Fifteen flags typed =integer= instead of =boolean=, and =numeric(5,4)= where the tree uses =numeric(28, 10)=. | =ores.reporting.risk_report_config.org=, then regenerate. |
 
-** Blocked
+** A block that has since lifted
 
-V04, V08, V01 and P05 cannot be closed while the tree does not compile.
+V04, V08, V01 and P05 could not be closed while the tree did not compile.
 =origin/main= currently references =ores.dq.api/messaging/fsm_protocol.hpp= in
 three places — =ores.workflow/core/src/service/fsm_state_map.cpp:21=,
 =ores.trading/core/include/ores.trading.core/messaging/trade_handler.hpp:29=
 and =ores.trading/modeling/ores.trading.trade.org:662= — and that header does
 not exist: commit =dd131c388b= replaced it with =fsm_state_protocol.hpp= and
 =fsm_transition_protocol.hpp= and updated neither consumer. A whole-tree build
-fails at =ores.workflow.core.lib=. The fix is already scaffolded in another
-worktree as =hotfix/migrate-fsm-state-consumers= and is not yet written.
+fails at =ores.workflow.core.lib=.
+
+The repair landed as =dbfb31d45d= and =e25313b2d2=, which replaced the protocol
+include with the FSM repository include in both consumers. On the rebased branch
+the whole tree builds (exit 0), =check_component_drift.py --component reporting=
+reports no drift, and the four reporting suites pass 4 of 4. V01 and P05's build
+half are therefore satisfied, and V04 and V08 are open work rather than a block.
 
 * Plan
 

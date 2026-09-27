@@ -443,7 +443,13 @@ const fr: SourceCatalogue = {
         title: 'Configurer cette installation',
         bootstrapMode:
             "Cette installation n'a pas encore de compte administrateur et fonctionne en mode amorçage. Personne ne peut se connecter tant qu'un administrateur n'existe pas.",
-        next: 'Le processus de configuration commence par la création du premier compte administrateur.',
+        next: 'Créez le premier compte administrateur pour commencer.',
+        username: "Nom d'utilisateur de l'administrateur",
+        email: "Courriel de l'administrateur",
+        password: "Mot de passe de l'administrateur",
+        create: "Créer l'administrateur",
+        creating: 'Création...',
+        failed: "L'administrateur n'a pas été créé :",
     },
 
     gate: {

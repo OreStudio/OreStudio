@@ -30,7 +30,8 @@ import { HomePage } from './pages/HomePage.js';
 import { SetupPage } from './pages/SetupPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
-import type { SessionView } from '@ores/wire-protocol/browser';
+import { api } from './api/client.js';
+import type { CreateAdministratorRequest, SessionView } from '@ores/wire-protocol/browser';
 
 /**
  * The route table, and the bootstrap gate.
@@ -51,6 +52,7 @@ export interface AppRoutesProps {
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
     readonly onRetryBootstrap: () => void;
+    readonly onCreateAdministrator: (request: CreateAdministratorRequest) => Promise<void>;
 }
 
 export function AppRoutes({
@@ -60,6 +62,7 @@ export function AppRoutes({
     onChooseParty,
     onSignOut,
     onRetryBootstrap,
+    onCreateAdministrator,
 }: AppRoutesProps): ReactNode {
     const { t } = useTranslation();
 
@@ -89,7 +92,7 @@ export function AppRoutes({
                     path="*"
                     element={
                         <PublicShell>
-                            <SetupPage message={gate.message} />
+                            <SetupPage message={gate.message} onCreate={onCreateAdministrator} />
                         </PublicShell>
                     }
                 />
@@ -127,7 +130,7 @@ export function AppRoutes({
     );
 }
 
-/** The wiring: the two states, and the three actions the screens can take. */
+/** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
@@ -143,6 +146,16 @@ export function ConnectedApp(): ReactNode {
             }}
             onRetryBootstrap={() => {
                 void recheck();
+            }}
+            /*
+             * The server closes bootstrap mode when the administrator is
+             * created, so the gate asks again rather than assuming the new
+             * state: the flag is the server's to clear, and a screen that
+             * decided for itself would be a second answer.
+             */
+            onCreateAdministrator={async (request) => {
+                await api.createAdministrator(request);
+                await recheck();
             }}
         />
     );

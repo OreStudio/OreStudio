@@ -445,7 +445,13 @@ export const en: SourceCatalogue = {
         title: 'Set up this installation',
         bootstrapMode:
             'This installation does not have an administrator account yet and is running in bootstrap mode. No one can sign in until an administrator exists.',
-        next: 'The setup process begins by creating the first administrator account.',
+        next: 'Create the first administrator account to begin.',
+        username: 'Administrator username',
+        email: 'Administrator email',
+        password: 'Administrator password',
+        create: 'Create administrator',
+        creating: 'Creating...',
+        failed: 'The administrator was not created:',
     },
 
     gate: {

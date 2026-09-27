@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 549C5E75-56B8-47B9-B365-9B9FC0F8D023
+:END:
+#+title: Task: Create the first administrator from the setup screen
+#+description: The setup screen creates the first administrator with no session, through a hand-written BFF route and a wire-client method, and the server closes bootstrap mode when it succeeds.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/create-the-first-administrator
+#+pr: 2299
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The setup screen reports the state and cannot change it. Give it the one action that does: create the first administrator, which is the write that closes bootstrap mode and opens the sign-in screen.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | The setup screen creates the first administrator, the server closes bootstrap mode when it does, and the path is proven against the running fleet. |
+| Waiting on   | The review round on the change. |
+| Next          | The rest of plan step 4: the seed profile read, provision, progress and retry. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The setup screen creates the first administrator with no session, through a hand-written BFF route and a wire-protocol client method, parsing the generated schema.
+- The password field shows the rules the server enforces, and the form refuses to submit until they are met.
+- The server closes bootstrap mode when the administrator is created, and the screen asks the gate again rather than deciding the new state itself.
+- The route refuses when the installation is not in bootstrap mode, because the function behind the subject grants SuperAdmin and does not check the flag itself.
+- The path is proven against the running fleet: create, the flag flipping, a second create refused, and a sign-in with the created account.
+- The workspace typechecks, passes the format check, tests green, and builds.
+
+* Plan
+
+One commit, because it is one action end to end.
+
+** Unit 1 — the call
+
+=createInitialAdmin= on the wire client, over the subject the generator already
+declares (=iam.v1.bootstrap.create-admin=), with hand-written request and reply
+schemas beside the one the status read uses. It is the only call that needs no
+session, and it is slow: the server hashes the password and provisions the
+account, its role and its party, so it takes the slow timeout rather than the
+fast one.
+
+=POST /api/bootstrap/administrator= on the BFF, unauthenticated for the same
+reason, returning the account rather than a session — the person signs in with
+it next, which is the point of the screen.
+
+** Unit 2 — the guard, which is the interesting part
+
+The route refuses unless the deployment says it is still in bootstrap mode. The
+SQL function behind the subject does not check that itself: it creates the
+account, grants =SuperAdmin=, associates it with the system party and clears the
+flag, with nothing stopping a second call under a different username. So the
+route's check is not defence in depth, it is the only guard on the highest
+privilege the deployment has. The refusal carries its own code,
+=bootstrap-complete=, and the code joined the shared error enum rather than
+being reported as a generic bad request.
+
+** Unit 3 — the form, and who decides the state
+
+The form asks for the username, the email, and a password through the shared
+field, so the rules shown while typing are the rules the server enforces and the
+submit waits until they are met. A failure shows the server's message.
+
+On success the gate asks again rather than assuming. The server clears the flag
+inside the same call, so the honest thing to do with the news is to re-read it;
+a screen that flipped its own state would be a second answer to a question the
+server owns.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The workspace suite | 111 cases in 15 files | =npm test= | =5771d053d3= |
+| ... of which new | 1, asserting the setup action | =npm test= | =5771d053d3= |
+| The browser bundle | 417.88 kB | =npm run build --workspace @ores/web= | =5771d053d3= |
+
+The live path, against this environment's running fleet, before the environment
+was reset:
+
+| What | Observed | Command |
+|------+----------+---------|
+| Create | =200=, =accountId= and =tenantId= returned | =curl -X POST /api/bootstrap/administrator= |
+| The flag | =isInBootstrapMode false= after it | =curl /api/bootstrap= |
+| A second create | =409 bootstrap-complete= | the same POST again |
+| Sign-in with the new account | =200=, an active session on the system party | =curl -X POST /api/session= |
+| The environment after the reset | =isInBootstrapMode true= again | =compass db reset-system -y= |
+
+* Notes
+
+- *The route's guard is the only one.* =ores_iam_create_initial_admin_fn= does
+  not check bootstrap mode and does not refuse a second administrator under a
+  different username; the unique index on =(tenant_id, username)= refuses only a
+  repeat of the same name. Filed as
+  [[id:45256D66-9869-466A-A5FB-68712684036F][a capture]], because the fix belongs
+  in the function, where the privilege is granted.
+- *The reply carries no tenant name.* The C++ response struct declares
+  =tenant_name= and the handler leaves it empty, so the HTTP shape returns the
+  account and the tenant id and does not promise a name. A field the server
+  never fills is worse than an absent one: the browser would render a blank.
+- *The environment was reset, not left provisioned.* Creating the administrator
+  closes bootstrap mode, so testing it changes what the next person sees. The
+  reset returns the system to bootstrap mode with the account soft-deleted, which
+  is why the setup screen is the live state again rather than the sign-in page.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2299][#2299]] | [web] Create the first administrator from the setup screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The setup screen creates the first administrator, so the write that closes
+bootstrap mode is the one action the screen carries.
+
+The call is the generated subject with hand-written schemas; the route is
+unauthenticated because the deployment has no account to present; and the route
+refuses once the deployment says it is no longer in bootstrap mode. That refusal
+is the only guard on a function that grants =SuperAdmin= and does not check the
+flag itself, and the function is filed as a capture because the fix belongs
+there.
+
+The path was proven against the running fleet rather than only in tests: create,
+the flag flipping, a second create refused, and a sign-in with the new account.
+The environment was then reset to bootstrap mode, so the setup screen is what a
+browser sees here again.
+
+The form's password rules are the rules the server enforces, because the field
+computes them from the same policy the validator does; the submit waits until
+they are met; and a failure shows the server's own words rather than a
+translation of them.

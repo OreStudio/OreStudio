@@ -34,7 +34,9 @@ import {
     SUBJECTS,
     bootstrapStatusSchema,
     changeReasonPageSchema,
+    createAdministratorRequestSchema,
     getImagesRequestSchema,
+    initialAdministratorSchema,
     listImagesRequestSchema,
     listImagesResponseSchema,
     getImagesResponseSchema,
@@ -54,6 +56,7 @@ import type { Config } from './config.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
 import {
+    bootstrapComplete,
     bootstrapRequired,
     invalidCredentials,
     invalidRequest,
@@ -255,6 +258,45 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         try {
             await connect();
             return bootstrapStatusSchema.parse(await client.bootstrapStatus());
+        } finally {
+            await client.close().catch(() => undefined);
+        }
+    });
+
+    /**
+     * Creates the first administrator, which closes bootstrap mode.
+     *
+     * Unauthenticated for the same reason the status read is: the deployment has
+     * no account to sign in with, and this is the request that makes one. It
+     * grants SuperAdmin, so it is refused unless the deployment says it is still
+     * in bootstrap mode. The function behind the subject does not check that
+     * itself, and an unauthenticated request that could run it twice would be a
+     * way to make a second super user with no session at all.
+     */
+    server.post('/api/bootstrap/administrator', async (request) => {
+        const parsed = createAdministratorRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('A username, an email address and a password are required.');
+        }
+        const { client, connect } = createClient();
+        try {
+            await connect();
+            const status = await client.bootstrapStatus();
+            if (!status.isInBootstrapMode) {
+                throw bootstrapComplete();
+            }
+            const created = await client.createInitialAdmin(parsed.data);
+            if (!created.success) {
+                throw invalidRequest(
+                    created.errorMessage === ''
+                        ? 'The administrator could not be created.'
+                        : created.errorMessage,
+                );
+            }
+            return initialAdministratorSchema.parse({
+                accountId: created.accountId,
+                tenantId: created.tenantId,
+            });
         } finally {
             await client.close().catch(() => undefined);
         }

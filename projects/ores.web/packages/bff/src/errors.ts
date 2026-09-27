@@ -88,6 +88,23 @@ export function bootstrapRequired(): HttpFailure {
 }
 
 /**
+ * The deployment already has its administrator, so it is not in bootstrap mode.
+ *
+ * Refused rather than attempted, because the function behind the create is the
+ * one that grants SuperAdmin and it does not itself check the flag: an
+ * unauthenticated request that could run it twice would be a way to make a
+ * second super user with no session.
+ */
+export function bootstrapComplete(): HttpFailure {
+    return new HttpFailure(409, {
+        code: 'bootstrap-complete',
+        message:
+            'This deployment already has an administrator, so it is not in ' +
+            'bootstrap mode. Sign in instead.',
+    });
+}
+
+/**
  * Translates any thrown value into an {@link HttpFailure}.
  *
  * Returns the original failure when it already is one, so a route can throw a

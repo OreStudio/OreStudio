@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { accountSchema, partySummarySchema, uuidSchema, wireTimestampSchema } from './domain.js';
 import type { Account, PartySummary } from './domain.js';
 import { subjects as httpInfoSubjects } from './generated/http/protocol/http_info_protocol.js';
+import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
 import type { Uuid } from './primitives.js';
 
 /**
@@ -45,6 +46,8 @@ export const SUBJECTS = {
     listChangeReasons: 'dq.v1.change_reasons.list',
     getImages: 'assets.v1.images.get',
     listImages: 'assets.v1.images.list',
+    bootstrapStatus: bootstrapSubjects.bootstrap_status_request,
+    createInitialAdmin: bootstrapSubjects.create_initial_admin_request,
     httpInfo: httpInfoSubjects.get_http_info_request,
 } as const;
 
@@ -58,6 +61,30 @@ export const SUBJECTS = {
 export const bootstrapStatusResponseSchema = z.object({
     is_in_bootstrap_mode: z.boolean().default(false),
     message: z.string().default(''),
+});
+
+/**
+ * The first administrator, created with no session.
+ *
+ * The one write a deployment accepts before it has any account, and the write
+ * that closes bootstrap mode: the function behind it clears the flag, so the
+ * deployment stops answering the setup screen from the moment this succeeds.
+ *
+ * `success` defaults to false rather than true, so a reply that arrives without
+ * the field reads as a failure the caller can see instead of a success nobody
+ * has checked.
+ */
+export const createInitialAdminRequestSchema = z.object({
+    principal: z.string().min(1),
+    password: z.string().min(1),
+    email: z.string().min(1),
+});
+
+export const createInitialAdminResponseSchema = z.object({
+    success: z.boolean().default(false),
+    error_message: z.string().default(''),
+    account_id: z.string().default(''),
+    tenant_id: z.string().default(''),
 });
 
 const uuidLike = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);

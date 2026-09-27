@@ -33,6 +33,8 @@ import {
 import {
     SUBJECTS,
     bootstrapStatusResponseSchema,
+    createInitialAdminRequestSchema,
+    createInitialAdminResponseSchema,
     emptyRequestSchema,
     loginRequestSchema,
     loginResponseSchema,
@@ -201,6 +203,45 @@ export class OresClient {
         return {
             isInBootstrapMode: reply.is_in_bootstrap_mode,
             message: reply.message,
+        };
+    }
+
+    /**
+     * Creates the first administrator, which closes bootstrap mode.
+     *
+     * The one write that needs no session, because bootstrap mode has no
+     * accounts to present: the account this creates is the first one. The
+     * function behind it clears the bootstrap flag, so a deployment stops
+     * answering the setup screen the moment this succeeds.
+     *
+     * It is a slow call: the server hashes the password and provisions the
+     * account, its role and its party.
+     */
+    async createInitialAdmin(input: {
+        readonly principal: string;
+        readonly password: string;
+        readonly email: string;
+    }): Promise<{
+        readonly success: boolean;
+        readonly errorMessage: string;
+        readonly accountId: string;
+        readonly tenantId: string;
+    }> {
+        const reply = await this.#call(
+            bootstrapSubjects.create_initial_admin_request,
+            createInitialAdminRequestSchema.parse({
+                principal: input.principal,
+                password: input.password,
+                email: input.email,
+            }),
+            createInitialAdminResponseSchema,
+            { timeoutMs: this.#timeouts.slowMs },
+        );
+        return {
+            success: reply.success,
+            errorMessage: reply.error_message,
+            accountId: reply.account_id,
+            tenantId: reply.tenant_id,
         };
     }
 

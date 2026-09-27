@@ -54,6 +54,8 @@ export type { Account, AccountPage, AccountType, ActiveParty, PartySummary } fro
 export {
     apiErrorSchema,
     bootstrapStatusSchema,
+    createAdministratorRequestSchema,
+    initialAdministratorSchema,
     loginResultSchema,
     loginSuccessSchema,
     partyChoiceSchema,
@@ -63,6 +65,8 @@ export {
 export type {
     ApiError,
     BootstrapStatus,
+    CreateAdministratorRequest,
+    InitialAdministrator,
     LoginResult,
     LoginSuccess,
     PartyChoice,

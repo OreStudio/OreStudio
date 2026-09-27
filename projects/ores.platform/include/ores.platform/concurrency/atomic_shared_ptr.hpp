@@ -41,6 +41,15 @@ namespace ores::platform::concurrency {
  * unlock per read of an uncontended mutex, which the callers that publish
  * settings reloads do not notice.
  *
+ * The lock never spans a call into the caller's code: @c load() copies the
+ * pointer and releases before returning, and the copy is what keeps the pointee
+ * alive. The mutex is not recursive, so a @c load() or @c store() reached from
+ * inside another @c load() or @c store() on the same instance would deadlock.
+ * Nothing calls it that way today -- both callers read and reload their settings
+ * from separate functions -- and a future caller that wants to run code under
+ * the snapshot should copy it out first, which is what the accessor shape
+ * already encourages.
+ *
  * @tparam T Pointee type. Declare it const to make the snapshot immutable
  * through the pointer, which is the shape every caller here wants.
  */

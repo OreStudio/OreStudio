@@ -98,18 +98,18 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | WIRE_001 warnings before the fix | 4, exit 1 | =projects/ores.sql/utility/validate_schemas.sh= | =b961b14561= |
-| WIRE_001 warnings after the fix | 0, exit 0, 1535 files checked | =projects/ores.sql/utility/validate_schemas.sh= | =64d4c082cc= |
-| Files the disabled facet still emits | 0 | =codegen.sh regenerate --component workspace-cpp --address ores.sql= | =64d4c082cc= |
-| Headers naming =atomic<shared_ptr>= | 0 | =grep -rn "std::atomic<std::shared_ptr" projects/= | =64d4c082cc= |
-| Platform shim tests | 4 cases, 10 assertions, all pass | =build/.../publish/bin/ores.platform.tests "[atomic_shared_ptr]"= | =64d4c082cc= |
-| Codegen suite | 922 passed | =venv/bin/python -m pytest projects/ores.codegen/tests -q= | =64d4c082cc= |
-| Codegen drift | No drift | =check_component_drift.py --all= | =64d4c082cc= |
-| Build | 0 errors, every target built | =cmake --build --preset linux-clang-debug-make -j 8= | =64d4c082cc= |
-| ctest | 86 of 87 pass; =ores.refdata.core.tests= fails | =ctest --preset linux-clang-debug-make -j 4= | =64d4c082cc= |
-| Site build | Build succeeded, every page published | =emacs -Q --script projects/ores.lisp/src/ores-build-site.el= | =64d4c082cc= |
-| Workspace table columns | 17, including =party_id= and =name= | =select string_agg(column_name, ...) from information_schema.columns= | =64d4c082cc= |
-| Storage service account | 1 row, =ores_clever_dijkstra_storage_service= | =select username from ores_iam_accounts_tbl where username like '%storage_service%'= | =64d4c082cc= |
-| Ungated stale CMake file lists | 31 files, 16 components | =regenerate_cmake_component_files.py --all --check= | =64d4c082cc= |
+| WIRE_001 warnings after the fix | 0, exit 0, 1535 files checked | =projects/ores.sql/utility/validate_schemas.sh= | =18313812f2= |
+| Files the disabled facet still emits | 0 | =codegen.sh regenerate --component workspace-cpp --address ores.sql= | =18313812f2= |
+| Headers naming =atomic<shared_ptr>= | 0 | =grep -rn "std::atomic<std::shared_ptr" projects/= | =18313812f2= |
+| Platform shim tests | 4 cases, 10 assertions, all pass | =build/.../publish/bin/ores.platform.tests "[atomic_shared_ptr]"= | =18313812f2= |
+| Codegen suite | 922 passed | =venv/bin/python -m pytest projects/ores.codegen/tests -q= | =18313812f2= |
+| Codegen drift | No drift | =check_component_drift.py --all= | =18313812f2= |
+| Build | 0 errors, every target built | =cmake --build --preset linux-clang-debug-make -j 8= | =18313812f2= |
+| ctest | 86 of 87 pass; =ores.refdata.core.tests= fails | =ctest --preset linux-clang-debug-make -j 4= | =18313812f2= |
+| Site build | Build succeeded, every page published | =emacs -Q --script projects/ores.lisp/src/ores-build-site.el= | =18313812f2= |
+| Workspace table columns | 17, including =party_id= and =name= | =select string_agg(column_name, ...) from information_schema.columns= | =18313812f2= |
+| Storage service account | 1 row, =ores_clever_dijkstra_storage_service= | =select username from ores_iam_accounts_tbl where username like '%storage_service%'= | =18313812f2= |
+| Ungated stale CMake file lists | 31 files, 16 components | =regenerate_cmake_component_files.py --all --check= | =18313812f2= |
 
 * Notes
 
@@ -173,20 +173,31 @@ task and name that file in the Command column.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2283 | [hotfix] Restore every red build on main |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | @claude review: both fixes are narrow, well-justified and match the diff; no functional or correctness issues found. Two non-blocking notes. | whole PR | Accept the review; acted on one note. | The reviewer confirmed the workspace deletion (with no dangling references anywhere), the `:ores.sql.schema.enabled: false` choice over a `validation_ignore.txt` entry, and the shim's snapshot semantics and torn-read test. |
+| 2 | Non-blocking: `load()` copies the `shared_ptr` under the lock, which is correct, but check that no caller holds the lock across a call into user code that could recursively call `load()` or `store()` on the same instance. | `projects/ores.platform/include/ores.platform/concurrency/atomic_shared_ptr.hpp` | Fixed by documenting the contract. | The reviewer is right that the mutex is not recursive. Neither handler nests — `token_settings()` and `reload_token_settings()` are separate functions — so there is no defect to fix. The class doc now states that the lock never spans a call into the caller's code and that a nested call on the same instance would deadlock, so a future caller reads the constraint from the type rather than from this review. |
+| 3 | Non-blocking: `ores.refdata.core.tests` is still red post-hotfix, a pre-existing tracked failure rather than a regression this PR introduces. | - | No change; recorded. | The review's reading matches the task's own scope note, and the newer measurement was written into the owning capture while the branch was open. |
 
 * Result
 
 The two defects that were still red on main are fixed and the two that
 were fixed before this branch started are confirmed on this tree. Every
 codegen gate, the codegen suite, =validate_docs.sh=, =compass lint=, the
-full build and the full site build are green on commit =64d4c082cc=.
+full build and the full site build are green on commit =18313812f2=.
+
+The branch was rebased twice as main moved, the second time onto
+=ef8df25c61= after main had advanced 14 further commits. The only
+conflicts were in generated and hand-maintained agile indexes
+(=inbox.org=, =sprint.org=), resolved by keeping both sprint rows and
+regenerating the index. Every gate was then re-run on the rebased tip,
+with the same results, and the numbers above are the re-run. The review
+by @claude found no functional or correctness issue; its one actionable
+note, the non-recursive lock, is answered in the shim's class doc.
 
 =validate_schemas.sh= reports 0 warnings where it reported 4; the
 workspace entity's SQL facet emits nothing; both iam handlers compile

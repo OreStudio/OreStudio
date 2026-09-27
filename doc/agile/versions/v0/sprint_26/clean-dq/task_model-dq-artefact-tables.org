@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-dq-artefact-tables
-#+pr: 2252
+#+pr: 2260
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -1221,6 +1221,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2260][#2260]] | [dq] Restore the columns the coding scheme table lost |
 | [[https://github.com/OreStudio/OreStudio/pull/2252][#2252]] | [dq] Fix the stale generator assertions and the change-reason category |
 | [[https://github.com/OreStudio/OreStudio/pull/2248][#2248]] | [dq] Stop a staging shim from owning another component's shell menu |
 | [[https://github.com/OreStudio/OreStudio/pull/2244][#2244]] | [dq] Model the publication run log and split out the publish service |

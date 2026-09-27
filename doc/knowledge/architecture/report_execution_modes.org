@@ -39,6 +39,8 @@ machinery rather than of a stub.
 - *The pipeline in stages* — the canonical stage list, and who owns each.
 - *Two modes, one knob* — where the knob lives and why it lives there.
 - *The seam* — the contract that makes the modes interchangeable.
+- *Orchestration: the workflow is the coordinator* — the saga, the participant
+  contract, and what it demands of every stage.
 - *Results are addressed by role, not position* — the change a second mode
   forces on the workflow.
 - *The NATS contract* — every subject, publisher, subscriber and credential.
@@ -152,6 +154,89 @@ its bytes. The wrapper's manifest names =Input/ore.xml=, so any input
 produced by any mode must have that shape. This is a contract between
 =ores.ore=, =ores.reporting= and =ores.compute=, and it should be stated once
 and asserted at the seam rather than assumed three times.
+
+* Orchestration: the workflow is the coordinator
+
+The pipeline crosses four services — reporting, ore, compute, and the grid
+behind compute — and one of them is asynchronous and may take minutes. That is
+a saga, and [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] is
+what makes it one. This is the part of the design that is easiest to leave
+implicit, because the stages read like a pipeline; it is stated here because
+every stage this design adds is a new participant in a coordination contract,
+not just a new box.
+
+** The shape of the coordination
+
+- One workflow instance per report instance, started by the trigger.
+- A *stage* is a participant. The engine invokes it by publishing a command on
+  the stage's subject; the stage does its work and answers on
+  =workflow.v1.events.step-completed=.
+- The engine — not the stages — decides what runs next, persists that
+  decision, and owns resumption after a crash.
+- Every step carries =reporting.v1.report.fail= as its compensation subject.
+
+** The participant contract
+
+A step command carries three headers — step id, workflow instance id, tenant
+id — which is how a stage attributes the message it receives, and its payload
+is the step's =command_json=. Completion names the step and carries its
+result. That is the entire interface between the coordinator and a
+participant, and a new stage joins it rather than inventing a mechanism.
+
+** What the engine gives today, and what this design needs**
+
+| Property | Today | What the design requires |
+|----------+-------+--------------------------|
+| dispatch | =nats_.publish=, fire and forget: no ack, no timeout | a stage that never answers must not hang the run for ever |
+| durability | the step is persisted =in_progress= *before* the publish, and recovery re-dispatches every =in_progress= step on restart | delivery is at-least-once, so every stage must be idempotent |
+| completion | a completion for a step no longer =in_progress= is ignored | a stage that runs twice must be harmless, not merely mis-recorded |
+| failure | compensation walks the completed steps in reverse, each publishing =fail_report= | each mode must say what its compensation undoes |
+| selection | =build_steps= is re-run on every dispatch | a chain must be a pure function of =request_json=, or a resumption can materialise a different chain |
+
+The last row is why the mode travels in the start message rather than being
+read again at each dispatch: resumption must rebuild the same chain it
+started with.
+
+** Idempotency is a requirement on every stage
+
+Because dispatch is at-least-once and there is no timeout, a stage can be
+invoked more than once — after a restart, after a re-dispatch, or because a
+publish was delivered twice. Every stage must therefore converge rather than
+accumulate: submitting a batch twice must not create two batches, exporting
+twice must overwrite the same object rather than append, and importing twice
+must not double the result rows.
+
+This is not a general plea for care. Demo mode will find it, because a restart
+in the middle of a run is exactly what a smoke test should survive, and
+because the modes share the tail — an idempotency defect that demo mode
+exposes is one full mode would otherwise have inherited.
+
+** Two state machines describe one run, and one must be authoritative
+
+The workflow instance records steps; the report instance records the FSM. They
+can disagree — a workflow that has failed while its instance still reads
+=running= is a real outcome today, and a second mode doubles the number of
+paths that reach it. The design's position is that the *report instance* stays
+the user-visible truth, and the workflow's terminal transition is what drives
+it, through the same FSM guard the pipeline already uses. The alternative — the
+workflow as the source of truth, with the instance as a projection — is
+defensible but would move the state a caller reads away from the table a
+caller already reads.
+
+** The engine gaps this design leans on
+
+Three are already known and are prerequisites rather than details:
+
+- an unknown workflow type is logged and dropped, while the trigger has
+  already answered =triggered=, so a mis-selected chain looks like success;
+- =materialised_steps_json= is written but never compared, so the guard its
+  own comment claims does not exist;
+- a step whose subject has no subscriber stays =in_progress= for ever and is
+  re-dispatched on every restart.
+
+None is fixed by this design, and all three are things a two-mode pipeline
+will hit rather than merely risk. They are why the design tasks the
+orchestration contract separately from the stages.
 
 * Results are addressed by role, not position
 
@@ -325,21 +410,32 @@ feature.
 
 1. *The mode is definition state.* A column, resolved when the instance is
    created and carried in =request_json=, so a run is reproducible from the
-   database and works with no operator present.
+   database and works with no operator present. It also makes =build_steps= a
+   pure function of its input, which resumption requires.
 2. *The mode is not the report type.* The type axis stays a category; the
    mode axis is separate, so a full run and a demo run of one definition
    differ in one field.
 3. *Stages exchange storage URIs, never structures.* This is what makes the
    modes interchangeable and the grid mode-blind.
-4. *Step results are addressed by role.* The change lands before the second
+4. *ores.workflow is the coordinator, and the participant contract is stated.*
+   A stage is a participant on a command and a completion event, not a link in
+   a chain of direct calls. The design states that contract rather than
+   leaving it implicit in the stage list.
+5. *Every stage is idempotent.* Dispatch is at-least-once with no timeout, so
+   convergence is a requirement on each stage, and demo mode is where it gets
+   found.
+6. *The report instance is the authoritative state.* The workflow drives it
+   through the FSM guard; the workflow's own instance record is the
+   coordinator's bookkeeping, not the answer a caller reads.
+7. *Step results are addressed by role.* The change lands before the second
    mode, because two modes make positional access a defect generator.
-5. *Both modes produce the same object shape* — a tarball whose root holds
+8. *Both modes produce the same object shape* — a tarball whose root holds
    =Input/ore.xml= — and that shape is a stated contract, asserted at the
    seam.
-6. *The engine package is a prerequisite, not a stage.* It is seeded per
+9. *The engine package is a prerequisite, not a stage.* It is seeded per
    engine build, not per run.
-7. *Full mode is designed now and built later.* No stage that demo mode
-   proves may need to change to admit it.
+10. *Full mode is designed now and built later.* No stage that demo mode
+    proves may need to change to admit it.
 
 * Open questions
 
@@ -352,10 +448,11 @@ feature.
   passes one through. It may be simpler for the demo binding to be an
   *absence* — the export stage writing the vendored object's URI — rather
   than a stage with two behaviours.
-- *What the reporting service should do when the grid is absent.* Today a
-  step whose subject has no subscriber stays in progress forever and is
-  re-dispatched on every restart. A mode that is expected to run in an
-  environment without a grid needs an answer.
+- *What a run should do when no grid is present.* The orchestration section
+  states the requirement — a stage that never answers must not hang the run —
+  but not the mechanism: a per-stage deadline, a retry budget, or a
+  compensation on timeout. The choice belongs with the orchestration
+  contract, and it decides how an environment without a grid fails.
 
 * See also
 
@@ -421,4 +518,6 @@ feature.
 - [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]]
 - [[id:A38F01BA-506A-49FD-B520-116F366CE97D][What a no-preprocessing report run requires]]
 - [[id:92B0C404-B477-4284-942D-FC9C4A8CD807][Make the scheduler-triggered report execution correct]]
+- [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]]
+- [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]]
 - [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]

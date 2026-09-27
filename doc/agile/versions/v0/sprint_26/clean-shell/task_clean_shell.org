@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-shell:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-shell
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ores.shell passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Baseline and inventory recorded. Working the checklist in order. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Classify the hand-written remainder (B03 table) and the public symbols (B06). |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -57,6 +57,9 @@ record each item's result in the table below.
 
 | Item | Result | Evidence |
 |------+--------+----------|
+| B01 | Baseline recorded before any edit. Regeneration at every address reproduces the checked-in tree: no pre-existing difference, so any later difference is this work's. The model drift check is clean, with one known exception in ores.reporting that is not this component's. | =check_component_drift.py --component shell --dry-run= reports "No drift: generated output matches the checked-in tree" at all six addresses. =check_model_drift.py --summary= reports "No model drift". |
+| B02 | One model in the shell's own =modeling/= directory, =component_overview.org=, metatype =ores.codegen.component=. No entity, junction, operation, message, field group or module model. The Entity and Protocol sections therefore do not apply to a model of this component: every generated shell unit is output of another component's model, rendered into the shell's tree. | =grep '^#+type:' projects/ores.shell/modeling/*.org= yields one line, =ores.codegen.component=. |
+| B03 | 642 C++ files: 501 generated (334 non-test, 167 test) and 141 hand-written (120 non-test, 21 test). The hand-written remainder is the shell's own application surface and the component adapters the generation does not yet own, which is what S01 and G02 are about. | File census over =projects/ores.shell= by the generated marker. |
 |      |        |          |
 
 * Notes
@@ -85,3 +88,58 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Notes
+
+** What the component is, and what that makes not applicable
+
+ores.shell holds no entity, junction or operation model of its own. Its single
+model is =component_overview.org=, metatype =ores.codegen.component=, and every
+generated unit under =projects/ores.shell/<component>/= is output of that
+*other* component's model, rendered into this tree.
+
+Three consequences run through the whole checklist.
+
+- The Entity section (M01 to M10) is about this component's own models, and there
+  are none. Each item is recorded not applicable with that reason rather than
+  left blank.
+- The Protocol section (P01 to P06) is about the subjects this component owns.
+  The shell serves none: it is a client of every other component's protocol. The
+  items that speak of subjects this component declares are not applicable; the
+  ones about consumers following a protocol change in the same work (P05) very
+  much are, because the shell is the consumer that breaks first.
+- G01 has two halves. The shell's own models are already byte-identical, which
+  the baseline proves. The generated units it hosts belong to their own
+  components' G01, and a change to a shell-command template changes them all,
+  which is why the codegen sweep exists.
+
+** Where the component sits under other components' work
+
+The shell is the render target of twelve components' shell-command facets, so a
+model change anywhere reaches this tree. Twenty generated units right now carry
+their components' pending model drift rather than this component's: sixteen in
+refdata and four in synthetic, missing a =party_id= positional and stale usage
+text. Their own clean-up stories bring them current; regenerating them here would
+absorb another component's change.
+
+** The shadowing exception this branch supersedes
+
+The registry carries an accepted exception on item S01 that reads "Four
+hand-written shell units survive and are registered after the generated
+aggregator, so some overlapping verbs are shadowed and the rest duplicate
+generated behaviour." That was true when it was written. Story 42C0752B, merged
+as PR #2272, removed the possibility: a second unit no longer registers a second
+menu, it extends the one that exists, and a duplicate name fails at startup. The
+exception's reason is now stale and belongs to whichever component it is filed
+on, which is not this one; this note is so the two are not read as agreeing.
+
+** Open captures and branches to avoid colliding with
+
+- =doc/agile/product_backlog/inbox/two_components_register_the_same_shell_command_nam.org=
+  (207B3EA7) is closed by PR #2272 and can be retired.
+- =commands-lost-their-only-recipe.org= names four hand-written commands with no
+  recipe, all in this component's surface.
+- =compass-shell-load-exit-status-ignores-a-script-abort.org= is about the
+  scripted session path.
+- =codegen-shell-recipe-sentinel-for-optional-columns.org= is about the recipe
+  template.

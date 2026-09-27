@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: AB57C960-7E15-4D02-88AE-CEA931B6F9A3
 :END:
-#+title: Story: Run a full report: scheduling, reporting and compute in two modes
-#+description: Integrate scheduling, reporting and compute so that one report definition runs end to end. The pipeline is designed in two modes: demo, which collects a tarball that already holds the deal and market data, and full, which selects the trades, resolves the market data, converts ORE Studio data into ORE XML, packages, submits, retrieves and converts the results back into the database. A single knob on the definition selects the stages, so demo mode exercises the real machinery rather than a stub. Full mode is designed here and implemented later.
+#+title: Story: Run a full report: scheduling, reporting and compute
+#+description: Integrate scheduling, reporting and compute so that one report definition runs end to end: the trades and market data are read, the engine's input is produced, the compute grid runs it, and the results are recorded. Two phases can be replaced by prepared substitutes, so the pipeline and the workflow around it can be exercised before the trade and market data components are ready.
 #+type: story
 #+level: s2
 #+filetags: :sprint_26:v0:
@@ -15,7 +15,9 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-One report definition runs end to end from the scheduler through the workflow to the compute grid and back, with a knob that selects which stages run, so demo mode proves the machinery and full mode is the target.
+One report definition runs end to end from the scheduler through the workflow to the compute grid and back. The run's configuration decides which phases execute and which are replaced by a prepared substitute, so the pipeline can be exercised while the components it depends on are still being built.
+
+The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]], a structure note over nine pages covering the definition and schedule, the pipeline, the orchestration, the data characteristics, pre-processing, the compute handoff, post-processing, substitution, and the interfaces.
 
 * Status
 
@@ -23,56 +25,64 @@ One report definition runs end to end from the scheduler through the workflow to
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The target architecture is written and the work is broken into four tasks. |
+| Now           | The architecture is written and the work is broken into tasks. |
 | Waiting on    | The reporting to compute handoff, which the ACME smoke-test story owns. |
-| Next          | Add the execution mode and address step results by role, then demo mode. |
+| Next          | Add the run configuration and address phase results by role, then pre-processing. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
 
-- A definition selects its execution mode, and the stages that mode names are the stages that run.
-- Demo mode runs the vendored input tarball through the real grid and retrieves the output.
-- Full mode is designed to the same seam, so adding it changes no stage that demo mode already proves.
+- A definition's run configuration selects which phases execute, and the phases it names are the ones that run.
+- A run with both ends substituted executes the real scheduler, the real workflow, the real grid and the real storage, and records that it was substituted.
+- A run with neither end substituted reads live trades and market data, and records the engine's results.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:904155B2-C5D9-451F-8EF9-25718CBE7513][Scaffold story: Run a full report: scheduling, reporting and compute in two modes]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:1F260481-4232-4473-8E7B-011226F78BC2][Implement Run a full report: scheduling, reporting and compute in two modes]] | BACKLOG | | | Initial task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:03B11C75-ED92-4819-9EF3-EF2507F6D21B][Design the two-mode report pipeline]] | DONE | | 2026-09-27 | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:395C3931-12CF-457B-ABFC-D89CDADCE35A][Add the execution mode and address step results by role]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:68A0FEFB-2567-4CD0-AF2C-3DBEC9EE75FD][Implement demo mode end to end from a schedule]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:AF4AA624-EC1E-47C1-98B1-E0598653CC38][Implement full mode: selection, ORE export and result import]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:FF1B7C3A-85E3-442B-801F-0B25ECF58E39][Implement report pre-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:6AB675A3-BFCE-4607-96AB-F74144AF93AC][Implement report post-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
-| [[id:AF9F5930-3D00-4EF7-AA4B-B6996AB71C13][Measure report processing and record a baseline]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
+| [[id:904155B2-C5D9-451F-8EF9-25718CBE7513][Scaffold story: Run a full report: scheduling, reporting and compute]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1F260481-4232-4473-8E7B-011226F78BC2][Implement Run a full report: scheduling, reporting and compute]] | BACKLOG | | | Initial task for: Run a full report: scheduling, reporting and compute |
+| [[id:03B11C75-ED92-4819-9EF3-EF2507F6D21B][Design the report processing architecture]] | DONE | | 2026-09-27 | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:395C3931-12CF-457B-ABFC-D89CDADCE35A][Add the run configuration and address phase results by role]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:FF1B7C3A-85E3-442B-801F-0B25ECF58E39][Implement report pre-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:6AB675A3-BFCE-4607-96AB-F74144AF93AC][Implement report post-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:AF9F5930-3D00-4EF7-AA4B-B6996AB71C13][Measure report processing and record a baseline]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:8C2D973B-5D85-4FFC-8322-3603DD385E96][Prove the pipeline with both ends substituted]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:2FF71147-6F1C-42F3-8566-8A208598653C][Prove the full pipeline against live data]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 
 * Decisions
 
-1. *The mode is the definition's own state.* A column, resolved when the
-   instance is created and carried into the workflow start message, so a run
-   is reproducible from the database and works with no operator present.
-2. *The mode is not the report type.* The type axis stays a category of
-   report; the mode axis is separate, so a full run and a demo run of one
-   definition differ in one field.
-3. *Stages hand each other storage URIs, never structures.* Both modes
-   therefore produce the same object at the seam, which is what lets the grid
-   stay mode-blind and demo mode stay a real test.
-4. *Step results are addressed by role, not by index.* Positional access is
-   already fragile with one chain and becomes a defect generator with two, so
-   it changes before the second mode lands.
-5. *The engine package is a prerequisite.* Registering the ORE build is
-   seeded per engine build, not a stage of a run.
+1. *The run's configuration is the definition's own state.* A column,
+   resolved when the instance is created and carried into the workflow start
+   message, so a run is reproducible from the database and works with no
+   operator present.
+2. *The configuration is not the report type.* The type axis stays a category
+   of report; how a run executes is separate, so a substituted run and a live
+   run of one definition differ in one field.
+3. *Phases hand each other storage URIs, never structures.* Both chains
+   therefore produce the same object at the boundary, which is what keeps the
+   compute grid unaware of how its input was produced.
+4. *Phase results are addressed by role, not by index.* Positional access is
+   fragile with one chain and becomes a defect generator with two, so it
+   changes before the second chain lands.
+5. *The engine package is a prerequisite.* Registering the ORE build is seeded
+   per engine build, not a phase of a run.
 6. *The reporting to compute handoff stays with the ACME smoke-test story.*
    That story already owns the three defects that stop the tail being driven
    from reporting, and this story waits on it rather than duplicating it.
-7. *Full mode is designed now and built later.* No stage that demo mode
-   proves may need to change to admit it.
+7. *The demo-and-full pair was withdrawn.* The story was commissioned around
+   two modes, and the two tasks that carried them —
+   =task_demo-mode-end-to-end= and =task_full-mode-selection-export-import= —
+   were removed rather than re-scoped, because the substitution mechanism
+   replaced the first and the pre-processing and post-processing tasks
+   replaced the second. Their remaining purpose, proving each chain end to
+   end, is carried by the two proof tasks below.
+8. *Live processing is designed now and built later.* No phase that a
+   substituted run proves may need to change to admit it.
 
 * Out of scope
 
-- Implementing full mode. It is designed and tasked, not built.
+- Building the live chain. It is designed and tasked, not built.
 - Parsing ORE results beyond writing them into the database; no analytics on
   them.

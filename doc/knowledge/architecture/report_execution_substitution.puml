@@ -50,10 +50,10 @@ post --> wf : output location recorded
 
 == The invariant ==
 note over wf, comp
-  In both chains the five phases of the middle are
-  identical, and both chains answer each step with the
-  same shape. A substitute changes what produced the
-  input and what consumes the output, and nothing else.
+  In both chains the four phases that are never substituted
+  are identical: submission, execution, retrieval and
+  finalisation. A substitute changes what produced the input
+  and what consumes the output, and nothing else.
 end note
 
 @enduml

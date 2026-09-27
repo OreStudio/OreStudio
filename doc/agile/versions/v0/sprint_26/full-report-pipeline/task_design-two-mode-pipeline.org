@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 03B11C75-ED92-4819-9EF3-EF2507F6D21B
 :END:
-#+title: Task: Design the two-mode report pipeline
-#+description: Task for: Run a full report: scheduling, reporting and compute in two modes
+#+title: Task: Design the report processing architecture
+#+description: Task for: Run a full report: scheduling, reporting and compute
 #+type: task
 #+level: s1
 #+filetags: :full-report-pipeline:sprint_26:v0:
@@ -16,18 +16,18 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-State the target architecture for one report run across scheduling, reporting and compute, in two modes selected by one knob, with the stage list, the storage-URI seam, the NATS contract and the interaction diagrams. The design lands as a knowledge page, because it outlives the story.
+State the target architecture for report processing across scheduling, reporting and compute: the phases of a run, the workflow that executes them, the data characteristics that shape the interfaces, and how each end of the pipeline is built and can be substituted. The design lands as a knowledge cluster, because it outlives the story.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] |
+| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
@@ -35,9 +35,9 @@ State the target architecture for one report run across scheduling, reporting an
 
 * Acceptance
 
-- The document names every stage, its owner and what it consumes and produces.
-- Both modes are drawn end to end as PlantUML interaction diagrams showing the NATS subjects, and the rendered images are read.
-- The document links the existing reporting, compute, scheduling, workflow and storage documents by org-roam id.
+- The cluster names every phase, its owner and what it consumes and produces.
+- The pipeline, the orchestration loop and the substitution mechanism are drawn as PlantUML interaction diagrams showing the NATS subjects, and the rendered images are read.
+- The document links the existing reporting, compute, scheduling, workflow, storage and ORE documents by org-roam id.
 
 * Plan
 

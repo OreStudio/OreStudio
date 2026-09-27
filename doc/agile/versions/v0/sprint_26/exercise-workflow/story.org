@@ -40,10 +40,42 @@ The workflow component can be driven end to end from ores.shell, against the liv
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D01518D5-D5D1-4BB9-814E-4A848633AD76][Finish the workflow fixture]] | STARTED | 2026-09-26 | | Task for: Exercise the workflow engine end to end |
+| [[id:D01518D5-D5D1-4BB9-814E-4A848633AD76][Finish the workflow fixture]] | DONE | 2026-09-26 | 2026-09-27 | Task for: Exercise the workflow engine end to end |
 | [[id:02AB0E19-9F53-4DD4-B609-A2DED9824EA5][Make the workflow engine act across tenants]] | BACKLOG | | | Task for: Exercise the workflow engine end to end |
 
 * Decisions
+
+** A script asserts what a run ends in; a test covers what a script cannot drive
+
+The acceptance asks for every engine path to be asserted. Six of the nine
+identity configurations are scripts, because a script can start a run, name it,
+and wait for the terminal state it expects.
+
+Three paths cannot be driven that way, and the reason is the shell's, not the
+engine's: a start the engine refuses leaves nothing to wait on, recovery needs
+a service restart mid-run, and a duplicate completion cannot be produced from
+outside the engine at all. Those are covered by integration tests in
+=ores.workflow.core.tests=, which call the handlers directly with the real
+store and bus either side of them.
+
+The two refusal cases assert nothing happens, so each carries its own control:
+the same call with a type that does resolve, in the same fixture, must create a
+run. Without that, a harness that started nothing at all would pass.
+
+** The fixture runs in the test tenant, the state ids come from the system tenant
+
+Engine integration tests write their rows to the test tenant, so a case cannot
+see or disturb another environment's data. The FSM state ids are dq's seed
+data, which lives in the system tenant, and a state id carries no foreign key
+to a machine, so the two halves do not have to agree on a tenant.
+
+** Recovery is tenant-wide
+
+=recover_in_progress= re-dispatches every instance its tenant has in progress,
+not just the caller's. The recovery case proved it by accident: counting the
+commands on the subject counted the instances the earlier cases had left
+behind, so the result depended on the order the cases ran in. The case now
+scopes its waits to its own instance id.
 
 * Out of scope
 

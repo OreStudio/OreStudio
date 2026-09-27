@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :exercise-workflow:sprint_26:v0:
 #+owner: marco
-#+branch: feature/workflow-configurations
+#+branch: feature/workflow-engine-tests
 #+pr: 2225
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ Every path the identity fixture can reach is trustworthy: a step that completes 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
-| Now          | All three workstreams are done: the step-row race is fixed, a start reports acceptance, and the six configurations are scripted and verified. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. The refusal paths and recovery are the only paths without a configuration, and the acceptance allows them as integration tests. |
-| Last touched | 2026-09-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
@@ -256,10 +256,55 @@ What they needed was =workflow wait --expect-state=, because a wait that only
 knows "all steps completed" cannot assert a run whose correct end is =failed= or
 =compensated=, and an aborted script cannot be told from a broken one.
 
-Three paths have no script. =empty= and =unknown_type= start nothing, so there is
-no state to assert; the acceptance allows an integration test for those and
-=workflow start= already refuses both at the shell. =recovery= needs a service
-restart mid-run, which a script cannot orchestrate.
+Three paths have no script, and section 4 covers them instead. =empty= and
+=unknown_type= start nothing, so there is no terminal state for a script to
+assert; =recovery= needs a service restart mid-run, which a script cannot
+orchestrate; and a duplicate completion cannot be produced from outside the
+engine at all.
 
 The instance ids are fixed, so a second run of any script reports the existing
 run rather than re-exercising the engine: each path is proven on first run only.
+
+** 4. The paths a script cannot reach -- done
+
+Four cases in =ores.workflow.core.tests=, in =workflow_engine_tests.cpp=. A
+=--load= script can only start a run and watch it, so it cannot ask the engine
+to refuse a start, cannot deliver a completion twice, and cannot run a recovery
+pass. The handlers are called directly here, with the real store and the real
+bus either side of them.
+
+- =starts nothing for a type it does not know= and =starts nothing for a
+  definition with no steps= assert no instance row and no step command. Each
+  then makes the same call with a type that does resolve, and asserts that it
+  does create one: that control is the only thing separating "the engine
+  refused" from "the harness could not have worked either way".
+- =advances once when a step completes twice=. Two steps are declared, so a
+  second advance would end the run rather than repeat a step. The instance is
+  still =in_progress= at step 1, with two step rows and two dispatched
+  commands.
+- =recovery re-dispatches the step that was in progress=. The re-dispatch
+  carries the same step id, which is the idempotency key a service
+  deduplicates on.
+
+The harness runs the fixture in the test tenant, so the rows a case writes are
+its own, and reads the state ids from the system tenant, where dq seeds them. A
+state id carries no foreign key to a machine, so the two halves need not agree
+on a tenant.
+
+** The duplicate guard, shown to discriminate
+
+A suite is only a regression test if it fails when the engine stops doing what
+it claims. Disabling the duplicate guard in =on_step_completed= fails exactly
+one case, on the instance state it asserts, and no other; the guard was then
+restored. The two refusal cases carry their control inside the case, so they
+cannot pass against a harness that starts nothing at all.
+
+** A flake the recovery case found
+
+=recover_in_progress= is tenant-wide: it re-dispatches every instance the
+tenant has in progress, including the ones the earlier cases leave behind. The
+recovery case first counted the commands arriving on its subject, so the count
+depended on how many recoverable instances the other cases had left and on the
+order they ran in -- green in one run, four commands and a foreign step id in
+the next. Every wait is now scoped to the case's own instance id, read from the
+=X-Workflow-Instance-Id= header. Five consecutive runs are green.

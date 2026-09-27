@@ -949,6 +949,41 @@ entities over with the domain member gone]]), so =market_fixing= and
 =market_observation= and the two hand-written tests that populate it move
 together.
 
+** How far we are from reading every ORE sample file into the database
+
+Three different things are usually run together when this question is asked,
+and after PR 3 they sit at very different stages. Stated separately, because
+a single percentage hides which of the three it measures.
+
+*Naming and representing every type: done.* The gate reports 43 ORE series
+types, 41 represented in oresmd and 2 recorded with a reason (=FIXING= and
+=GENERIC-MD=), zero shape mismatches, 42 quote types over 38 distinct ORE
+types, and 6 of 6 volatility-declaring asset classes wired. The two
+allowlists in =oresmd_ore_coverage_tests.cpp= -- =types_oresmd_cannot_name()=
+and =types_with_round_trip_gaps()= -- are empty and asserted equal to empty.
+So no ORE type is unnamed, and no key projects without reading back.
+
+*The database is not yet on that path.* =import_service.cpp= parses through
+=ores::ore::market::parse_market_data= in =ores.ore.core=. The import path
+names no oresmd symbol at all. The representation at 100% coverage is
+therefore not load-bearing at the write boundary, and it is reached by tests
+alone. This is B06's recorded exception, and wiring it is PR 4.
+
+*And there is no end-to-end evidence either way.* =service_import_service_tests.cpp=,
+the only test that drives an import into the database, feeds it two
+hand-written lines. Nothing imports a real ORE sample file and asserts the
+rows. So "every sample file reads into the database correctly" is unmeasured
+rather than unfinished. That test is the first thing PR 4 builds.
+
+The line counts, for the record and for the two bases they are quoted on:
+the corpus is 511,002 lines, 486,436 of them (95.2%) on modelled types. The
+remainder are lines whose first token is not a series type at all
+(=Lufthansa=, =SP5=, =EURUSD=, =SwaptionVolatility=), not market-data
+series. The 485,606-of-485,606 figure recorded earlier was of the keys the
+gate expected to name, which is a different denominator; both are true and
+neither is the answer to "how much of the corpus reaches the database",
+which is currently zero because nothing measures it.
+
 ** What PR 3 actually landed, and the two items it moved out
 
 Landed: the regenerate (97 files across four modules plus the web twin), the
@@ -995,53 +1030,89 @@ them, and the checklist says why on the row rather than in a footnote.
 ** PR 4 -- Wire the import boundary through oresmd, and add ORE export
 
 *Scope.* Make the oresmd layer load-bearing at the ORE-format edge, and
-close the fidelity gaps that stop an export being lossless:
+close the fidelity gaps that stop an export being lossless. Re-read on
+=main= after PRs 1 to 3 landed: several items this section used to list are
+now closed, and they are recorded as closed below rather than repeated as
+work.
 
-- The import path gains the inverse projection at its boundary:
+*First, the measurement.* No test in the tree imports a real ORE sample file
+and asserts the rows it produced. =oresmd_ore_coverage_tests.cpp= and
+=classification_series_classifier_tests.cpp= walk =external/ore/examples=
+and assert projection and classification in memory;
+=service_import_service_tests.cpp=, the only test that drives the import into
+the database, feeds it two hand-written lines. So "every sample file reads
+into the database correctly" is **unmeasured rather than unfinished**, and
+the first thing this PR builds is that test: import every file under
+=external/ore/examples/= into a scratch tenant and assert the resulting
+series, observation and fixing rows. It is what turns the coverage figure
+into a statement about stored rows, and it will separate a real parsing gap
+from non-series noise in the 4.8% of corpus lines that are not on a modelled
+type.
+
+Then, in order:
+
+- The import boundary gains the inverse projection:
   =parse_market_data()= -> =from_ore_key()= -> =market_data_identifier= ->
   the series and observation rows it already writes. This is the consumer
-  the B06 exception for the oresmd layer names.
+  the B06 exception for the oresmd layer names, and the boundary is not
+  half-wired: =import_service.cpp= names no oresmd symbol at all today.
+- The point-elision rule in the export mapper: drop the point for series
+  types that carry no point dimension. =has_point_dimension= no longer
+  exists anywhere in the component, so this is a rule to write, not a
+  predicate to call.
+- The IR settlement segment: replace the =std::string{"2D"}= fallback in the
+  =ir_swap= projection with the per-currency spot lag from refdata. The
+  segment survives the parse now -- PR 2 added =settle= to
+  =ir_market_data_identifier= and stopped rewriting it -- so what remains is
+  the case where the input carried no settlement segment and the projection
+  currently invents one.
+- The verbatim key, so the export is lossless for every case the
+  reconstructed key cannot reproduce. A =key text not null= column on the
+  observations and fixings tables, populated from =market_datum::key= in
+  =import_service.cpp=. Absent today.
 - A new export path. A =rows -> market_datum / fixing= mapper plus one
   serializer caller (a new =core/src/service/ore_export_service.cpp=),
   exposed as a shell verb and a subject, asserting a file round trip
   through the database.
-- The point-elision rule, in that same mapper: drop the point when
-  =has_point_dimension(series_type)= is false. The predicate already
-  exists and is unused, and this needs no schema change.
-- The one-character projection bug: =oresmd_projections.cpp:644= compares
-  with ="<="= where it means ="<"=, which rejects the 9,075
-  =DISCOUNT/<CCY>/<CCY>= lines the forward projection can emit.
-- The IR settlement segment: the real per-currency spot-lag lookup from
-  refdata, so the segment survives the round trip. A =settle= field on
-  =ir_market_data_identifier=, emitted in the quote-key projection.
-- The verbatim key, so the export is lossless for every case the
-  reconstructed key cannot reproduce. A =key text not null= column on
-  =marketdata_market_observations_create.sql= and =..._fixings_create.sql=,
-  populated from =market_datum::key= in =import_service.cpp=.
-- The remaining modelled-but-unrepresentable quote types from the corpus
-  table -- BASIS_SWAP, CC_BASIS_SWAP, ZERO, FRA, IMM_FRA, MM, MM_FUTURE,
-  OI_FUTURE, CORRELATION, CPR and the 7-segment IR and SWAPTION keys.
-  These are model defects: the oresmd quote-type models were written from
-  ORE's documentation and the corpus disagrees. Mostly =qualifier_shape=
-  in =modeling/oresmd/ir_quote_type.org= plus the projection dispatch.
-- The grammar holes the survey found: =model= accepted on seven classes
-  and discarded for six, =parse_credit= not type-gating =quote=, the =ir=
-  entity never validated as a currency, and =split_market_series_key=
-  dropping the point against the registry's four-field key.
-- =--duplicates-are-errors= on the shell import verb, so the strict
-  policy is reachable (=marketdata_commands.cpp:75-78=).
+- =--duplicates-are-errors= on the shell import verb, so the strict policy
+  is reachable (=marketdata_commands.cpp=).
+- The grammar holes, each re-checked against the current projections before
+  it is claimed: =model= accepted on seven quote classes and discarded for
+  six, =parse_credit= not type-gating =quote=, the =ir= entity never
+  validated as a currency, and =split_market_series_key= dropping the point
+  against the registry's four-field key.
+
+*Closed by PRs 2 and 3, and struck from this list.*
+
+- The modelled-but-unrepresentable quote types -- BASIS_SWAP,
+  CC_BASIS_SWAP, ZERO, FRA, IMM_FRA, MM, MM_FUTURE, OI_FUTURE, CORRELATION,
+  CPR and the 7-segment IR and SWAPTION keys. All of them project and
+  round-trip; =types_oresmd_cannot_name()= and
+  =types_with_round_trip_gaps()= are both empty in
+  =oresmd_ore_coverage_tests.cpp= and asserted to be.
+- The one-character projection bug. The DISCOUNT projection emits exactly
+  =DISCOUNT/METRIC/CCY/CURVE/TENOR= and its inverse requires exactly five
+  parts, so the two agree; and the forward requires both =curve_id= and
+  =tenor=, so the four-part form the inverse used to reject cannot be
+  emitted. The bug is gone rather than merely unreachable from the corpus.
+- The CSV tokeniser needing two commas, and the two missing date formats.
+  PR 2 fixed both.
+- CPR's shape mismatch, which was a recorded exemption. PR 2 moved CPR to
+  the security class, where it asserts the ISIN-keyed shape it writes.
 
 *Why here.* It delivers the owner's first two goals without the schema
 cutover, and it is the smallest change that makes the oresmd layer
 load-bearing. It also surfaces where the URI and the stored columns
 disagree, which is PR 5's input.
 
-*The honest limit.* Even after this PR the export is lossless only for
-the 26.0% of the corpus oresmd can name, plus whatever the coverage work
-recovers. The 232,545 lines in the 13 uncovered types cannot round-trip
-until oresmd grows those asset classes, which is a modelling programme of
-its own. That is a decision for the owner, not something this PR can
-absorb.
+*The honest limit, restated.* The figure this section used to carry --
+"lossless only for the 26.0% of the corpus oresmd can name" -- is spent:
+every ORE series type is now represented or recorded, and the corpus names
+486,436 of its 511,002 lines. What limits a lossless export is no longer
+naming coverage but the two things above that are still unwired: the
+boundary itself, and the verbatim key. Until both land the export can be
+lossless in principle and still not lossless in fact, and until the
+end-to-end import test lands we cannot say which.
 
 *Note.* =split_market_series_key()= currently serves as the identity split
 in the ingest loop. Under this PR it stays -- the cutover that retires it

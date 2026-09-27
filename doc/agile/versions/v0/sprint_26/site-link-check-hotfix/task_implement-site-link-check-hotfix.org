@@ -90,6 +90,16 @@ and the commit it was measured at.
   one. The check this task adds catches the second shape; a general
   "every link resolves" check would need a full parse of the corpus,
   which the site build already does on every push to main.
+- A second, unrelated finding, carried here because it surfaced while this
+  task ran the generators. =doc/recipes/http/currencies/currency.org= is
+  generated output (it carries the =#+generated:= marker and the
+  =http_recipe.org.mustache= template) that the tree did not contain: the
+  other HTTP resources' pages are committed, this one was not. Nothing
+  reported it, because the codegen drift check reports drift with =git
+  diff= and an untracked generated file is invisible to it. The page is
+  committed on this branch; the gate hole it exposes -- a generated file
+  the tree never received -- is the same class as the unrun CMake file
+  list check captured separately.
 
 * PRs
 

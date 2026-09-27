@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: C38934D1-3262-4DCF-9CC9-3289B8A668A8
+:END:
+#+title: ores.http.http_info
+#+description: Codegen operation model for the HTTP service-discovery protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: http
+#+subcomponent: api
+#+entity_singular: http_info
+#+namespace: ores::http::messaging
+#+brief: HTTP service discovery protocol messages.
+#+filetags: :model:operation:http:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The HTTP service-discovery surface: one request and one reply, through
+which a client learns where the companion HTTP server listens. It is an
+operation rather than an entity verb, so it is declared here instead of
+being derived from an entity. The base URL is runtime configuration, not a
+row a caller addresses by key.
+
+The subject follows the naming every other component uses, a component
+token followed by the version and the verb, so the gateway is
+=http.v1.info.get= and not =http-server.v1.info.get=.
+
+The handler that serves it stays hand-written beside this model, because it
+reads the base URL the server's own options supply.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#+end_src
+
+* Messages
+
+** get_http_info_request
+:PROPERTIES:
+:subject: http.v1.info.get
+:response: get_http_info_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the HTTP server's base URL.
+ *
+ * It carries no fields, because the answer is the same for every caller.
+ * Requires a valid session: the base URL is internal infrastructure and
+ * is not exposed to unauthenticated callers.
+ */
+#+end_src
+
+** get_http_info_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The HTTP server's externally reachable base URL.
+ */
+#+end_src
+
+*** base_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The base URL, for example "http://localhost:51000".
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the base URL was produced.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
+
+* See also
+
+- [[id:09BD5681-9C12-469A-80DA-27D1DF9D0808][ores.http]] — component group overview.

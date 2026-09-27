@@ -155,4 +155,10 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
     return ACCEPTED_EXCEPTIONS.get(component, ())
 
 
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "reporting", "telemetry-cpp", "workflow-cpp", "variability-cpp")
+# http-cpp joins at the end of its clean-standard pass. It is a Protocol
+# component with no entity of its own: its one wire type is an operation
+# model, whose C++ header and TypeScript twin both generate from it, and
+# codegen owns its composite root CMakeLists.txt. Its regeneration is
+# byte-identical across every address, and its CMake source lists are
+# current.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "http-cpp", "ore", "reporting", "telemetry-cpp", "workflow-cpp", "variability-cpp")

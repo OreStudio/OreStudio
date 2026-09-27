@@ -32,6 +32,7 @@ separate per-address component entries are needed.
 | compute-cpp | projects/ores.compute/modeling | |
 | controller-cpp | projects/ores.controller/modeling | |
 | dq-cpp | projects/ores.dq/modeling | |
+| http-cpp | projects/ores.http/modeling | |
 | iam-cpp | projects/ores.iam/modeling | |
 | scheduler-cpp | projects/ores.scheduler/modeling | |
 | telemetry-cpp | projects/ores.telemetry/modeling | |

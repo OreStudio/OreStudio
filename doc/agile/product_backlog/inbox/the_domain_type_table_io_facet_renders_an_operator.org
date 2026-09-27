@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: C0426F54-266F-4CEC-AEE9-6C8FB2340BC4
+:END:
+#+title: The domain_type_table_io facet renders an operator<< that no…
+#+description: The domain_type_table_io facet renders an operator<< that no translation unit can call.
+
+For every entity the facet emits <entity>_table_io.hpp and .cpp, defining std::ostream& operator<<(std::ostream&, const std::vector<entity>&) to print a table. Nothing declares it. Measured: of 221 *_table_io.hpp headers tree-wide, 183 are included by no translation unit other than their own .cpp; only 38 are referenced by anything else. In ores.dq, 23 of 26 are unreachable, and the three that are reachable are included by one test or one shell command.
+
+The overload callers actually get is the generic std::operator<<(std::ostream&, const std::vector<T>&) in ores.utility/streaming/std_vector.hpp, which writes JSON through rfl. So the generated table printer compiles into every component api library, is unreachable by overload resolution, and would silently change logging output if its header were ever included, because the specific overload would then win.
+
+Either the facet stops rendering, or the generic JSON overload is retired in its favour and every consumer switches. Both are cross-cutting decisions rather than a component cleanup one. Found while surveying ores.dq for the clean standard B06 item; recorded there with the measurement.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

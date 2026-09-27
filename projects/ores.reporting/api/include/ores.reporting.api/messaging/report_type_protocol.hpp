@@ -154,7 +154,7 @@ struct put_report_type_request {
 
 struct put_report_type_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_type report_type;
+    std::optional<ores::reporting::domain::report_type> report_type;
 };
 
 struct put_many_report_types_request {
@@ -250,7 +250,7 @@ struct get_report_type_version_request {
 
 struct get_report_type_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_type version;
+    std::optional<ores::reporting::domain::report_type> version;
 };
 
 /**

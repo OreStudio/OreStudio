@@ -143,7 +143,7 @@ export interface PutRiskReportConfigRequest {
 
 export interface PutRiskReportConfigResponse {
     result: Result;
-    risk_report_config: RiskReportConfig;
+    risk_report_config: RiskReportConfig | null;
 }
 
 export interface PutManyRiskReportConfigsRequest {
@@ -209,7 +209,7 @@ export interface GetRiskReportConfigVersionRequest {
 
 export interface GetRiskReportConfigVersionResponse {
     result: Result;
-    version: RiskReportConfig;
+    version: RiskReportConfig | null;
 }
 
 export const subjects = {

@@ -159,7 +159,7 @@ struct put_report_instance_request {
 
 struct put_report_instance_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_instance report_instance;
+    std::optional<ores::reporting::domain::report_instance> report_instance;
 };
 
 struct put_many_report_instances_request {
@@ -255,7 +255,7 @@ struct get_report_instance_version_request {
 
 struct get_report_instance_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_instance version;
+    std::optional<ores::reporting::domain::report_instance> version;
 };
 
 /**

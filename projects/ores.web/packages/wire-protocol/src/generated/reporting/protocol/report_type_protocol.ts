@@ -111,7 +111,7 @@ export interface PutReportTypeRequest {
 
 export interface PutReportTypeResponse {
     result: Result;
-    report_type: ReportType;
+    report_type: ReportType | null;
 }
 
 export interface PutManyReportTypesRequest {
@@ -162,7 +162,7 @@ export interface GetReportTypeVersionRequest {
 
 export interface GetReportTypeVersionResponse {
     result: Result;
-    version: ReportType;
+    version: ReportType | null;
 }
 
 export const subjects = {

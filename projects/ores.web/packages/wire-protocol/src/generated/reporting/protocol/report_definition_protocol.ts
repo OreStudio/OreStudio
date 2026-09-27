@@ -118,7 +118,7 @@ export interface PutReportDefinitionRequest {
 
 export interface PutReportDefinitionResponse {
     result: Result;
-    report_definition: ReportDefinition;
+    report_definition: ReportDefinition | null;
 }
 
 export interface PutManyReportDefinitionsRequest {
@@ -169,7 +169,7 @@ export interface GetReportDefinitionVersionRequest {
 
 export interface GetReportDefinitionVersionResponse {
     result: Result;
-    version: ReportDefinition;
+    version: ReportDefinition | null;
 }
 
 export const subjects = {

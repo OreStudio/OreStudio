@@ -116,7 +116,7 @@ export interface PutReportInstanceRequest {
 
 export interface PutReportInstanceResponse {
     result: Result;
-    report_instance: ReportInstance;
+    report_instance: ReportInstance | null;
 }
 
 export interface PutManyReportInstancesRequest {
@@ -167,7 +167,7 @@ export interface GetReportInstanceVersionRequest {
 
 export interface GetReportInstanceVersionResponse {
     result: Result;
-    version: ReportInstance;
+    version: ReportInstance | null;
 }
 
 export const subjects = {

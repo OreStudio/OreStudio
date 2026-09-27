@@ -47,6 +47,12 @@ defines to a test macro is a case. It also fails on a file whose conditionals do
 not balance, because a guard left open leaks into whatever includes that file,
 and the case it deletes is in the includer, where nothing looks conditional.
 
+Real compilers keep a backslash-newline inside a raw string literal, where this
+check removes it, because splicing is not reversed until a literal's extent is
+known. The divergence cannot hide a case: it takes a deleted splice to
+manufacture the ``)"`` that ends a raw string, and a compiler rejects that
+input rather than reading it as anything.
+
 == What the check does not cover
 
 The rule is static and per file. It does not expand macros beyond one level, so
@@ -109,12 +115,28 @@ _DEFINE_RE = re.compile(r"^\s*#\s*define\s+([A-Za-z_][A-Za-z0-9_]*)")
 
 
 def _macro_re(extra_names: frozenset[str] = frozenset()) -> re.Pattern:
-    """A matcher for every test macro plus ``extra_names``, longest first."""
+    """A matcher for every test macro plus ``extra_names``, longest first.
+
+    The trailing ``(`` is required: a declaration is an invocation.
+    """
     names = sorted(set(TEST_MACROS) | set(extra_names), key=len, reverse=True)
     return re.compile(r"\b(?:" + "|".join(names) + r")(?![A-Za-z0-9_])\s*\(")
 
 
+def _macro_name_re() -> re.Pattern:
+    """A matcher for a test macro named anywhere, invocation or not.
+
+    A ``#define`` binds its name to a test macro whether or not it repeats the
+    argument list, so the replacement text is searched for the name alone:
+    ``#define MY_CASE TEST_CASE`` is as much an alias as
+    ``#define MY_CASE(n) TEST_CASE(n, tags)``.
+    """
+    names = sorted(TEST_MACROS, key=len, reverse=True)
+    return re.compile(r"\b(?:" + "|".join(names) + r")(?![A-Za-z0-9_])")
+
+
 _TEST_MACRO_RE = _macro_re()
+_TEST_MACRO_NAME_RE = _macro_name_re()
 
 
 def _relative_parts(path: Path) -> tuple[str, ...]:
@@ -269,13 +291,14 @@ def _logical_lines(text: str) -> tuple[list[tuple[int, str]], list[str]]:
 def _aliases(logical: list[tuple[int, str]]) -> frozenset[str]:
     """Names this file's own ``#define`` binds to a test macro.
 
-    One level only: ``#define MY_CASE TEST_CASE`` is followed, a chain through
-    two definitions is not.
+    One level only: ``#define MY_CASE TEST_CASE`` and
+    ``#define MY_CASE(n) TEST_CASE(n, tags)`` are both followed, a chain
+    through two definitions is not.
     """
     names = set()
     for _, line in logical:
         define = _DEFINE_RE.match(line)
-        if define and _TEST_MACRO_RE.search(line[define.end():]):
+        if define and _TEST_MACRO_NAME_RE.search(line[define.end():]):
             names.add(define.group(1))
     return frozenset(names)
 
@@ -321,7 +344,10 @@ def scan_source(text: str) -> tuple[int, list[tuple[int, str, int, str]],
         declared += len(matches)
         if open_stack:
             opened_at, opened_by = open_stack[-1]
-            findings.append((lineno, at(lineno), opened_at, opened_by))
+            # One entry per case, so the count in the summary matches the
+            # number of findings when a line declares more than one.
+            for _ in matches:
+                findings.append((lineno, at(lineno), opened_at, opened_by))
 
     for lineno, text_at in open_stack:
         balance.append((lineno, text_at, "opens a conditional that never closes"))
@@ -365,7 +391,14 @@ def main() -> int:
     if findings:
         print("Test case(s) inside a conditional compilation block:",
               file=sys.stderr)
+        # One line can declare more than one case; it is listed once, while the
+        # summary counts every case it declares.
+        listed: set[tuple[Path, int, int]] = set()
         for path, lineno, line, opened_at, opened_by in findings:
+            key = (path, lineno, opened_at)
+            if key in listed:
+                continue
+            listed.add(key)
             print(f"  {_rel(path)}:{lineno}: {line[:88]}", file=sys.stderr)
             print(f"      inside the block opened at line {opened_at}: "
                   f"{opened_by[:88]}", file=sys.stderr)

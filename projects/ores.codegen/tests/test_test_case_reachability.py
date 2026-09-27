@@ -441,6 +441,44 @@ TEST_CASE("conditional", tags) {
     assert "conditional" in captured.err
 
 
+def test_a_case_declared_through_an_object_like_alias_is_a_case(
+        tmp_path, monkeypatch, capsys):
+    # The replacement names the macro without repeating its argument list,
+    # which is the same alias as the function-like form.
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#define MY_CASE TEST_CASE
+
+#if defined(HAS_SOCKETS)
+MY_CASE("hidden behind an object-like macro", tags)
+#endif
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "hidden behind an object-like macro" in captured.err
+    assert "1 of 1 declared case(s)" in captured.err
+
+
+def test_two_cases_on_one_line_are_two_findings(tmp_path, monkeypatch, capsys):
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#if defined(HAS_SOCKETS)
+TEST_CASE("first", tags) {} TEST_CASE("second", tags) {}
+#endif
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "2 of 2 declared case(s)" in captured.err
+    # Both cases are counted, and the one line they share is reported once.
+    assert captured.err.count("widget_tests.cpp:4:") == 1
+
+
 def test_the_real_tree_has_cases_and_declares_none_conditionally(capsys):
     """The invariant the gate exists for, checked against the tree itself."""
     assert check.main() == 0

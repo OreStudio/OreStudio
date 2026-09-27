@@ -19,6 +19,13 @@ grid, the grid runs the ORE engine, and the output is brought back. Around
 that middle sit a preprocessing end, which produces the job input, and a
 post-processing end, which consumes the output.
 
+The stages are not called directly. A run is a *workflow instance* and the
+workflow engine is what invokes each stage, in order, by publishing that
+stage's command and waiting for its completion event. The chain itself is
+built by =build_steps=, a function in reporting's own code, from the start
+message — which is what lets a run's shape depend on the definition rather
+than on which service happens to call which.
+
 A single knob on the report definition — its *execution mode* — selects which
 stages the run materialises. *Demo mode* substitutes the preprocessing end
 with an input tarball that already exists and the post-processing end with
@@ -36,6 +43,8 @@ machinery rather than of a stub.
 
 * Reading order
 
+- *The workflow: how the stages are run* — what a workflow is here, who drives
+  the stages, and why the chain is derived rather than fixed.
 - *The pipeline in stages* — the canonical stage list, and who owns each.
 - *Two modes, one knob* — where the knob lives and why it lives there.
 - *The seam* — the contract that makes the modes interchangeable.
@@ -48,11 +57,84 @@ machinery rather than of a stub.
 - *Distance from today* — what exists, and what the design still needs.
 - *How the knob is exercised* — what each mode proves.
 
+* The workflow: how the stages are run
+
+A stage list is not a pipeline by itself, and this document would mislead a
+reader who took it for one. What runs the list is a *workflow*, and the
+workflow engine is what lets a run survive a crash, a slow grid and a service
+restart. Nothing in the run calls a stage directly: the engine publishes the
+stage's command, and the stage answers.
+
+** A workflow is code, not data
+
+This is the fact most likely to surprise a reader. The report execution
+workflow is neither a seeded row nor a model. It is a definition *registered
+in C++ at startup* — =register_report_execution_workflow=, which the workflow
+service calls from its registrar. The definition declares:
+
+- a =type_name=, today =report_execution_workflow=;
+- =build_steps=, a function returning the ordered step list;
+- for each step, a name, a command subject, a compensation subject and the
+  =command_json= to send.
+
+=build_steps= receives the start message's =request_json=, the tenant and the
+correlation id, and returns the chain. It ignores its inputs today and always
+returns the same seven steps, which is exactly why no definition can select a
+shorter chain at the moment.
+
+** The chain is derived, and it is rebuilt on every dispatch
+
+Two consequences follow, and both shape this design:
+
+- the chain a run executes is *derived* from the definition's state rather
+  than fixed, which is what makes an execution mode possible at all: the mode
+  is an input to =build_steps=, not a second pipeline;
+- =build_steps= is re-run on every dispatch **and** on recovery, so it must be
+  a pure function of =request_json=. A chain that read anything else — a table
+  at dispatch time — could materialise differently after a restart than it did
+  at the start, and the run would silently change shape halfway through.
+
+** One definition, or two
+
+The design takes the single-definition route: one registered workflow whose
+=build_steps= reads the mode from =request_json= and returns the demo or the
+full chain. A second registered definition, with the trigger choosing the
+type, was considered and set aside: it would put reporting's modes into the
+workflow component's registration, and the type would then have to be resolved
+once to start and again to resume. Keeping one definition keeps the mode where
+it is decided — in reporting, which owns both the mode and the chain.
+
+** What one step is made of
+
+| Step element | Meaning |
+|--------------+---------|
+| name | identifies the stage, and is what a result is addressed by once results are addressed by role |
+| command subject | the subject the engine publishes to invoke the stage |
+| command payload | the =command_json= the engine sends; today it is built from earlier steps' results |
+| compensation subject | what the engine publishes to undo the step; =reporting.v1.report.fail= for every reporting step |
+
+** The engine's part
+
+- starting a run persists a workflow instance and materialises its steps;
+- dispatching a step persists it =in_progress= **and then** publishes its
+  command;
+- a stage answers on =workflow.v1.events.step-completed=, the engine marks the
+  step completed, and dispatches the next;
+- a run reaches a terminal state when its last step completes, or when
+  compensation fails it;
+- on restart, the engine re-dispatches every step left =in_progress=.
+
+That loop is the same in both modes. It is drawn once, in
+[[* The interaction diagrams][The interaction diagrams]], so the two mode
+diagrams can stay about the stages rather than about the engine.
+
 * The pipeline in stages
 
 A stage is a unit of work with a name, an owner and a storage-URI contract.
-The list below is the target; the two modes differ only in which stages are
-present.
+*Every stage below is run by the workflow engine*, which invokes it by
+publishing its command subject; the Owner column says who does the work, not
+who calls it. The list is the target; the two modes differ only in which
+stages are present.
 
 | # | Stage | Owner | Consumes | Produces | demo | full |
 |---+-------+-------+----------+----------+------+------|
@@ -295,6 +377,18 @@ in implementation:
 
 * The interaction diagrams
 
+Three diagrams, read in this order. The first is the engine's dispatch loop,
+which is the same in every run and every mode; the second and third are the
+two modes' stages laid over it.
+
+** The dispatch loop
+
+#+caption: How the workflow engine runs one report: materialising the chain, dispatching each step, marking completion, compensating on failure, and re-dispatching on restart.
+[[proj:doc/knowledge/architecture/report_execution_workflow_loop.png]]
+
+Source: [[./report_execution_workflow_loop.puml][=report_execution_workflow_loop.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_execution_workflow_loop.puml=.
+
 ** Demo mode
 
 #+caption: A report run in demo mode: the scheduler fires, the workflow selects the short chain, the vendored input tarball goes through the real compute grid, and the output URI is recorded on the instance.
@@ -311,13 +405,19 @@ Source: [[./report_execution_demo_sequence.puml][=report_execution_demo_sequence
 Source: [[./report_execution_full_sequence.puml][=report_execution_full_sequence.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/report_execution_full_sequence.puml=.
 
-** What the two diagrams are meant to show
+** What the mode diagrams are meant to show
 
-Read side by side, the diagrams make the argument of this document: the
-"schedule fires" section is identical, the "common tail" section is
+Read side by side, the two mode diagrams make the argument of this document:
+the "schedule fires" section is identical, the "common tail" section is
 identical, and the only difference is which stages stand between them. A
 reader who believes the demo diagram and the full diagram differ only in the
-two marked stages has understood the design.
+two marked stages has understood the design. Both are drawn over the dispatch
+loop above, which they do not repeat.
+
+One thing the mode diagrams deliberately do not show is *who calls whom*
+between stages: no stage calls another. Every arrow from the workflow engine
+to a stage is the engine invoking it, and every arrow back is that stage
+answering; there is no other edge between two stages anywhere in the design.
 
 * Distance from today
 
@@ -421,20 +521,25 @@ feature.
    A stage is a participant on a command and a completion event, not a link in
    a chain of direct calls. The design states that contract rather than
    leaving it implicit in the stage list.
-5. *Every stage is idempotent.* Dispatch is at-least-once with no timeout, so
+5. *One registered workflow, not one per mode.* The mode is an input to
+   =build_steps=, which reporting owns; the workflow component never learns
+   that modes exist. A second registered definition would put reporting's
+   modes into another component's registration and make the type resolvable
+   twice, once to start and once to resume.
+6. *Every stage is idempotent.* Dispatch is at-least-once with no timeout, so
    convergence is a requirement on each stage, and demo mode is where it gets
    found.
-6. *The report instance is the authoritative state.* The workflow drives it
+7. *The report instance is the authoritative state.* The workflow drives it
    through the FSM guard; the workflow's own instance record is the
    coordinator's bookkeeping, not the answer a caller reads.
-7. *Step results are addressed by role.* The change lands before the second
+8. *Step results are addressed by role.* The change lands before the second
    mode, because two modes make positional access a defect generator.
-8. *Both modes produce the same object shape* — a tarball whose root holds
+9. *Both modes produce the same object shape* — a tarball whose root holds
    =Input/ore.xml= — and that shape is a stated contract, asserted at the
    seam.
-9. *The engine package is a prerequisite, not a stage.* It is seeded per
-   engine build, not per run.
-10. *Full mode is designed now and built later.* No stage that demo mode
+10. *The engine package is a prerequisite, not a stage.* It is seeded per
+    engine build, not per run.
+11. *Full mode is designed now and built later.* No stage that demo mode
     proves may need to change to admit it.
 
 * Open questions

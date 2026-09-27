@@ -1,0 +1,58 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title How the workflow engine runs one report: the dispatch loop
+
+participant "starter\n(trigger, or recovery\non restart)" as starter
+participant "workflow engine\n(ores.workflow)" as wf
+database PostgreSQL as db
+participant "stage handler\n(ores.reporting, ores.ore\nor ores.compute)" as stage
+
+starter -> wf : workflow.v1.start\n{type, request_json}
+wf -> wf : build_steps(request_json, tenant, correlation_id)\npure function; rebuilt on every dispatch
+note right of wf : the mode is an input here.\nDemo and full differ in what this returns.
+wf -> db : persist workflow instance and its steps
+
+loop each step, in order
+    wf -> db : step state = in_progress
+    note right of wf : persisted *before* the publish,\nso a restart can re-dispatch it
+    wf -> stage : publish step.command_subject\nheaders: step id, instance id, tenant id\npayload: command_json
+    alt the stage completes
+        stage -> stage : do the work
+        stage -> wf : workflow.v1.events.step-completed\n{step, result}
+        wf -> db : step state = completed
+    else the stage cannot
+        stage -> wf : workflow.v1.events.step-completed\n{step, failed, reason}
+        wf -> wf : compensation:\nwalk the completed steps in reverse
+        wf -> stage : publish step.compensation_subject\n(report.fail)
+        wf -> db : instance failed
+        note right of wf : compensation is why every step\ncarries a compensation subject
+    end
+end
+
+wf -> db : instance completed
+
+== On restart ==
+
+starter -> wf : recovery
+wf -> db : read instances left in_progress
+wf -> stage : re-dispatch every in_progress step\n(at-least-once delivery)
+note over wf, stage : a stage can therefore run twice.\nEvery stage must converge, not accumulate.
+
+@enduml

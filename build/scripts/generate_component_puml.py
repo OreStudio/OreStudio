@@ -77,6 +77,7 @@ class MemberInfo:
     name: str
     type_str: str
     visibility: str = "+"  # + public, - private, # protected
+    params: str = ""       # non-empty on a member function
 
 
 @dataclass
@@ -84,6 +85,7 @@ class TypeInfo:
     name: str
     kind: str           # "struct", "class", "enum", "enum class"
     members: list[MemberInfo] = field(default_factory=list)
+    methods: list[MemberInfo] = field(default_factory=list)
     is_abstract: bool = False
 
 
@@ -119,6 +121,29 @@ _ENUM_VAL_RE = re.compile(r'^\s*(\w+)\s*(?:=\s*[^,\n]+)?\s*,?\s*$')
 _BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/')
 _LINE_COMMENT_RE = re.compile(r'//.*$')
 
+# A member function declaration or an inline definition. The name is the last
+# identifier before the parameter list, so a qualified return type, a
+# `template <...>` header and any number of specifiers may precede it. A
+# declaration with no return type is a constructor or a destructor.
+_METHOD_RE = re.compile(
+    r'^\s*(?:template\s*<[^>]*>\s*)?'
+    r'(?:(?:static|virtual|inline|constexpr|explicit)\s+)*'
+    r'(?P<ret>[\w:<>,\*&\s\[\]]*?)\s*'
+    r'(?P<name>~?\w+)\s*'
+    r'\((?P<params>[^;{}()]*)\)\s*'
+    r'(?:const\s*)?(?:noexcept\s*)?(?:override\s*)?(?:final\s*)?'
+    r'(?:=\s*(?P<init>0|default|delete)\s*)?'
+    r'(?P<tail>;|\{)'
+)
+
+# A leading token naming a statement rather than a declaration. A function
+# body is skipped before reaching here, so these guard against a macro-heavy
+# header presenting a statement at member depth.
+_NOT_A_METHOD = frozenset({
+    "if", "for", "while", "switch", "return", "catch", "do", "else",
+    "sizeof", "static_assert", "using", "typedef", "assert", "throw",
+})
+
 
 def _strip_trailing_comment(line: str) -> str:
     """Drops a trailing comment so an enumeration value that carries one still reads."""
@@ -150,6 +175,89 @@ def _simplify_type(t: str) -> str:
     t = re.sub(r'\bstd::', '', t)
     t = re.sub(r'\s+', ' ', t)
     return t
+
+
+def _simplify_params(raw: str) -> str:
+    """The parameter list of a declaration, one simplified type per parameter.
+
+    A parameter's default value is dropped: it says how a caller may omit the
+    argument, which the diagram does not show.
+    """
+    parts: list[str] = []
+    depth = 0
+    current = ""
+    for char in raw:
+        if char in '<([':
+            depth += 1
+        elif char in '>)]':
+            depth -= 1
+        if char == ',' and depth == 0:
+            parts.append(current)
+            current = ""
+        else:
+            current += char
+    parts.append(current)
+
+    simplified = []
+    for part in parts:
+        part = _simplify_type(part.split('=')[0])
+        if part:
+            simplified.append(part)
+    return ", ".join(simplified)
+
+
+def _join_lines(lines: list[str], start: int) -> tuple[str, int]:
+    """One declaration beginning at `start`, with its continuation lines.
+
+    A return type and its name may sit on different lines, and a parameter
+    list may wrap over several, so the lines are joined until the parentheses
+    balance and the declaration ends. Bounded, so a malformed header cannot
+    run away. Returns the joined text and how many lines it used.
+    """
+    parts: list[str] = []
+    depth = 0
+    for offset in range(0, 6):
+        index = start + offset
+        if index >= len(lines):
+            break
+        part = lines[index].strip()
+        if offset > 0 and not part:
+            break
+        parts.append(part)
+        depth += part.count('(') - part.count(')')
+        if depth == 0 and (part.endswith(';') or part.endswith('{')):
+            break
+    return " ".join(parts), len(parts)
+
+
+def _parse_method(line: str) -> Optional[MemberInfo]:
+    """Read a line as a member function, or return None.
+
+    A deleted or defaulted special member is not an API the reader needs, and
+    a statement that reached member depth is not a declaration at all, so both
+    are refused. So is a field whose initialiser calls something, which is the
+    shape `uuid tenant_id = tenant_id::system();`.
+    """
+    stripped = line.strip()
+    if not stripped or stripped.startswith(('#', '//', '/*', '*')):
+        return None
+    first_paren = stripped.find('(')
+    equals = stripped.find('=')
+    if first_paren == -1:
+        return None
+    if equals != -1 and equals < first_paren:
+        return None
+    m = _METHOD_RE.match(line)
+    if not m:
+        return None
+    if m.group('init') in ('delete', 'default'):
+        return None
+    if m.group('name') in _NOT_A_METHOD:
+        return None
+    return MemberInfo(
+        name=m.group('name'),
+        type_str=_simplify_type(m.group('ret')),
+        params=_simplify_params(m.group('params')))
 
 
 def _inline_body_values(line: str) -> Optional[list[str]]:
@@ -374,6 +482,14 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
 
             # Opening brace without closing: entering nested block (function body, etc.)
             if opens > 0:
+                # An inline definition opens its body on the declaration line,
+                # so this is where a member function with a body is read. The
+                # brace is still counted below, which is what keeps the body
+                # from being read as if it were still at member depth.
+                method = _parse_method(line)
+                if method is not None:
+                    method.visibility = visibility
+                    current_type.methods.append(method)
                 brace_depth += opens
                 type_member_depth += opens
                 i += 1
@@ -399,6 +515,26 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
                     if m:
                         current_type.members.append(MemberInfo(name=m.group(1), type_str="", visibility="+"))
                 i += 1
+                continue
+
+            # A member function, which the skip list would otherwise swallow
+            # whenever a specifier such as `static` opens the line. The
+            # declaration may be split across lines, so it is read joined. Its
+            # braces are accounted for here, because consuming the line skips
+            # the brace bookkeeping below: an inline body that opens without
+            # closing would otherwise leave the parser reading the body as if
+            # it were still at member depth.
+            declaration, used = _join_lines(lines, i)
+            method = _parse_method(declaration)
+            if method is not None:
+                method.visibility = visibility
+                current_type.methods.append(method)
+                consumed = lines[i:i + used]
+                opens = sum(part.count('{') for part in consumed)
+                closes = sum(part.count('}') for part in consumed)
+                brace_depth += opens - closes
+                type_member_depth += opens - closes
+                i += used
                 continue
 
             # Skip template, using, friend, operator, etc.
@@ -466,6 +602,12 @@ def _emit_type(t: TypeInfo, depth: int) -> list[str]:
                 lines.append(f"{ind}    {m.visibility}{m.name} : {m.type_str}")
             else:
                 lines.append(f"{ind}    {m.visibility}{m.name}")
+        for m in t.methods:
+            signature = f"{m.name}({m.params})"
+            if m.type_str:
+                lines.append(f"{ind}    {m.visibility}{signature} : {m.type_str}")
+            else:
+                lines.append(f"{ind}    {m.visibility}{signature}")
         lines.append(f"{ind}}}")
 
     return lines

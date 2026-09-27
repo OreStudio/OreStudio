@@ -26,28 +26,105 @@ namespace ores #F2F2F2 {
         namespace routes #F2F2F2 {
             namespace iam #F2F2F2 {
                 class account_operations_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_save_account(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_update_account(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete_account(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_lock_account(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_unlock_account(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_reset_password(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_update_my_email(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_change_password(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class account_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_list(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_versions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_version(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class authorization_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_assign_role(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_revoke_role(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_account_roles(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_account_permissions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_role_permissions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class bootstrap_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_bootstrap_status(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_create_initial_admin(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class iam_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
                 class login_info_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_list(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class login_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_login(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_logout(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class permission_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_list(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_add(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_set(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_put_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class role_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_list(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_add(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_set(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_put_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_versions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_version(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class session_operations_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_get_active_sessions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class session_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_list(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_get_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_add(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_set(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_put_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
+                    +handle_delete_many(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class signup_routes {
+                    -lg() : auto&
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +handle_signup(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
             }
         }

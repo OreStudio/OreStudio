@@ -28,11 +28,24 @@ namespace ores #F2F2F2 {
                 class storage_routes {
                     -store_ : storage::filesystem::local_store
                     -auth_service_ : shared_ptr<iam::service::authorization_service>
+                    +storage_routes(string storage_dir, shared_ptr<iam::service::authorization_service> auth_service)
+                    +register_routes(shared_ptr<http::net::router> router, shared_ptr<http::openapi::endpoint_registry> registry) : void
+                    -lg() : auto&
+                    -check_auth(const http::domain::http_request& req, string_view required_permission, string_view operation_name) : expected<auth_result, http::domain::http_response>
+                    -handle_put(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
+                    -handle_get(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
+                    -handle_head(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
+                    -handle_delete(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
+                    -handle_list(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
                 }
                 class variability_routes {
                     -ctx_ : database::context
                     -system_settings_ : shared_ptr<variability::service::system_settings_service>
                     -sessions_ : shared_ptr<iam::service::auth_session_service>
+                    +variability_routes(database::context ctx, shared_ptr<variability::service::system_settings_service> system_settings, shared_ptr<iam::service::auth_session_service> sessions)
+                    +register_routes(shared_ptr<http::net::router> router, shared_ptr<http::openapi::endpoint_registry> registry) : void
+                    -lg() : auto&
+                    -handle_list_system_settings(const http::domain::http_request& req) : boost::asio::awaitable<http::domain::http_response>
                 }
             }
         }

@@ -118,23 +118,13 @@ class AcceptedException:
 
 # The accepted exceptions, by component. A component absent from this mapping
 # passes every item that applies to it.
+#
+# variability-cpp held an H01 exception here, on the grounds that the diagram
+# capture read data members and not methods, so a class whose content is
+# methods arrived without its API. The capture now reads member functions, so
+# the exception was retired and the component's diagrams regenerated from it.
 ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
     "variability-cpp": (
-        AcceptedException(
-            item="H01",
-            reason=(
-                "The diagrams are refreshed from the code and every rendered "
-                "image was read, but the automated pass reads data members and "
-                "not methods, so a class whose content is methods arrives "
-                "without its API, and PlantUML will not attach members declared "
-                "in the manual section below the sentinel to a class inside a "
-                "nested namespace -- it draws a second, empty namespace "
-                "instead. Every class is present; the API of the method-only "
-                "ones is not drawn."
-            ),
-            accepted_by="marco",
-            accepted_on="2026-09-26",
-        ),
         AcceptedException(
             item="V08",
             reason=(

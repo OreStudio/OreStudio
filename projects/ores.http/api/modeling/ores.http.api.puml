@@ -44,12 +44,24 @@ namespace ores #F2F2F2 {
                 +http_version_major : uint16_t
                 +http_version_minor : uint16_t
                 +authenticated_user : optional<ores::security::jwt::jwt_claims>
+                +get_header(const string& name) : string
+                +get_query_param(const string& name) : string
+                +get_path_param(const string& name) : string
+                +get_bearer_token() : optional<string>
             }
             class http_response <<struct>> {
                 +status : http_status
                 +headers : unordered_map<string, string>
                 +body : string
                 +content_type : string
+                +json(const string& body, http_status status) : http_response
+                +error(http_status status, const string& message) : http_response
+                +not_found(const string& message) : http_response
+                +unauthorized(const string& message) : http_response
+                +forbidden(const string& message) : http_response
+                +bad_request(const string& message) : http_response
+                +internal_error(const string& message) : http_response
+                +set_header(const string& name, const string& value) : http_response&
             }
             enum http_status {
                 ok
@@ -67,6 +79,7 @@ namespace ores #F2F2F2 {
             class query_param <<struct>> {
                 +name : string
                 +type : string
+                +format : string
                 +required : bool
                 +description : string
                 +default_value : optional<string>
@@ -74,12 +87,14 @@ namespace ores #F2F2F2 {
             class request_body_schema <<struct>> {
                 +content_type : string
                 +required : bool
+                +json_schema : string
                 +example_json : string
             }
             class response_schema <<struct>> {
                 +status_code : string
                 +description : string
                 +content_type : string
+                +json_schema : string
                 +example_json : string
             }
             class route <<struct>> {
@@ -97,6 +112,7 @@ namespace ores #F2F2F2 {
                 +query_params : vector<query_param>
                 +body_schema : optional<request_body_schema>
                 +success_response_schema : optional<response_schema>
+                +match(const string& path, unordered_map<string, string>& path_params) : bool
             }
         }
         namespace messaging #F2F2F2 {
@@ -119,6 +135,17 @@ namespace ores #F2F2F2 {
                 -running_ : atomic<bool>
                 -active_connections_ : atomic<uint32_t>
                 -bytes_callback_ : session_bytes_callback
+                +http_server(boost::asio::io_context& io_ctx, const http_server_options& options)
+                +get_router() : shared_ptr<router>
+                +get_registry() : shared_ptr<openapi::endpoint_registry>
+                +get_authenticator() : shared_ptr<ores::security::jwt::jwt_authenticator>
+                +set_session_bytes_callback(session_bytes_callback callback) : void
+                +run() : boost::asio::awaitable<void>
+                +stop() : void
+                +is_running() : bool
+                -lg() : auto&
+                -setup_builtin_routes() : void
+                -accept_connections() : boost::asio::awaitable<void>
             }
             class http_server_options <<struct>> {
                 +address : string
@@ -145,6 +172,14 @@ namespace ores #F2F2F2 {
                 -options_ : http_server_options
                 -remote_address_ : string
                 -bytes_callback_ : session_bytes_callback
+                +http_session(boost::asio::ip::tcp::socket socket, shared_ptr<router> router, shared_ptr<ores::security::jwt::jwt_authenticator> authenticator, const http_server_options& options, session_bytes_callback bytes_callback)
+                +run() : boost::asio::awaitable<void>
+                -lg() : auto&
+                -handle_request(boost::beast::http::request<boost::beast::http::string_body> req) : boost::asio::awaitable<void>
+                -convert_request(const boost::beast::http::request<boost::beast::http::string_body>& req) : domain::http_request
+                -convert_response(const domain::http_response& resp, unsigned version, bool keep_alive) : boost::beast::http::response<boost::beast::http::string_body>
+                -convert_method(boost::beast::http::verb verb) : domain::http_method
+                -parse_query_params(const string& target, domain::http_request& req) : void
             }
             class route_builder {
                 -method_ : domain::http_method
@@ -159,9 +194,30 @@ namespace ores #F2F2F2 {
                 -query_params_ : vector<domain::query_param>
                 -body_schema_ : optional<domain::request_body_schema>
                 -success_response_schema_ : optional<domain::response_schema>
+                +route_builder(domain::http_method method, const string& pattern)
+                +handler(domain::request_handler h) : route_builder&
+                +auth_required() : route_builder&
+                +auth_optional() : route_builder&
+                +roles(vector<string> r) : route_builder&
+                +summary(string s) : route_builder&
+                +description(string d) : route_builder&
+                +tags(vector<string> t) : route_builder&
+                +query_param(const string& name, const string& type, const string& format, bool required, const string& desc, const optional<string>& default_value) : route_builder&
+                +build() : domain::route
             }
             class router {
                 -routes_ : vector<domain::route>
+                +router()
+                +get(const string& pattern) : route_builder
+                +post(const string& pattern) : route_builder
+                +put(const string& pattern) : route_builder
+                +patch(const string& pattern) : route_builder
+                +delete_(const string& pattern) : route_builder
+                +head(const string& pattern) : route_builder
+                +add_route(const domain::route& route) : void
+                +match(domain::http_method method, const string& path, unordered_map<string, string>& path_params) : optional<domain::route>
+                +routes() : const vector<domain::route>&
+                -lg() : auto&
             }
         }
         namespace openapi #F2F2F2 {
@@ -182,6 +238,14 @@ namespace ores #F2F2F2 {
                 -info_ : api_info
                 -servers_ : vector<server_info>
                 -routes_ : vector<domain::route>
+                +endpoint_registry()
+                +set_info(const api_info& info) : void
+                +add_server(const server_info& server) : void
+                +register_route(const domain::route& route) : void
+                +generate_openapi_json() : string
+                +generate_swagger_ui_html(const string& spec_url) : string
+                -lg() : auto&
+                -method_to_string(domain::http_method method) : string
             }
         }
     }

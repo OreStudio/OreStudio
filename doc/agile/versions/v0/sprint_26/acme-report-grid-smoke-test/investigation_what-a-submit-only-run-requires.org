@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: A38F01BA-506A-49FD-B520-116F366CE97D
+:END:
+#+title: Investigation: What a no-preprocessing report run requires
+#+description: The workflow chain is fixed at seven steps in a C++ header, the trigger hard-codes its type, and the reporting to compute handoff leaves the fields a wrapper needs empty and publishes on a subject no wrapper subscribes to. This records what has to change for a definition to run an existing bundle through the grid.
+#+type: investigation
+#+level: s1
+#+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A point-in-time record of an investigation into what a report run with no
+preprocessing actually requires, written while the story that commissioned it
+was open. It is a snapshot, not a description of the system. Whatever it
+concludes that the code must keep doing belongs on the page that owns the
+subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The story asks for a report definition owned by ACME corporation, carrying a
+new report type, whose run takes an input bundle that already exists, submits
+it to the compute grid and retrieves the results. It is a smoke test of the
+report definition and report instance machinery, so it must do no gathering
+and no bundle assembly, and no post-processing of what comes back.
+
+The obvious reading was that this is seeding: add a report type, add a
+definition, point it at a bundle. That reading is wrong, and this records why.
+
+* Methodology
+
+Two independent read-only analyses, one of the workflow and one of the
+compute and storage path, each working from the tree at `cb7a6bad8e`. Every
+claim below was then re-verified directly: the workflow registration, the
+trigger, the compute submit handler, the wrapper's subscription and download
+path, the storage key plans, and the compute dispatcher that does work today.
+
+* Paths taken
+
+** Seeding only, which is impossible
+
+The chain is not data. =report_execution_workflow.hpp:46-374= registers a
+single =workflow_definition= in C++ at startup — from the workflow service's
+registrar, =projects/ores.workflow/core/src/messaging/registrar.cpp:109= — and
+its =build_steps= lambda ignores all three of its inputs
+(=:57-59=). The seven steps are pushed in order at =:97, :134, :187, :242,
+:287, :332, :368=: =gather_trades=, =gather_market_data=, =assemble_bundle=,
+=prepare_ore_package=, =submit_compute=, =collect_compute_results=,
+=finalise=.
+
+Nothing on the definition selects a chain. The entity holds name, party,
+report type, FSM state, schedule, concurrency policy and the scheduler job id
+and no step or workflow column (=report_definition_entity.hpp:41-65=), and
+=report_type= is a category foreign key, not a workflow selector. The trigger
+hard-codes the type: =report_instance_trigger_handler.hpp:267-272= builds
+=start_workflow_message{ .type = "report_execution_workflow" }=.
+
+** Reusing the existing chain, which defeats the purpose
+
+The full chain works end to end today and is proven — the clean-reporting pass
+walked it to =completed=. But it gathers trades and market data and assembles
+its own bundle, which is exactly what this story excludes.
+
+** A three-step chain, which cannot submit
+
+The tempting minimal chain is submit, collect, finalise. It cannot work:
+=report_submit_handler.cpp:78-81= fails the instance when =tarball_uris= is
+empty, and those URIs are produced only by =prepare_ore_package=
+(=report_package_handler.cpp:116-120=). A bundle row carries storage keys, not
+a tarball. So the minimal chain is four steps unless the tarball URI is
+carried into the request.
+
+* Conclusions
+
+** The chain a definition runs is fixed in two places, and shortening it needs a remap
+
+=report_execution_workflow.hpp:57-372= fixes the steps and
+=report_instance_trigger_handler.hpp:268= fixes the type, so a definition
+cannot opt in to anything today. Shortening the chain is not just deleting
+steps: the step lambdas read earlier results by fixed position —
+=submit_compute= reads =results[3]= (=:266-270=), =collect_compute_results=
+reads =results[4]= (=:311-315=), =prepare_ore_package= reads
+=results[2]=, =results[0]= and =results[1]= (=:211-225=) — and a missing
+position silently yields an empty field rather than an error.
+
+** The reporting to compute handoff cannot drive a job, for three separate reasons
+
+This is the finding that changed the shape of the story. The reporting path
+does not merely lack seeding; it cannot run a job at all.
+
+1. *The subject has no subscriber.* =report_submit_handler.cpp:50= builds
+   =compute.v1.work.assignments.{tenant}=, and a wrapper subscribes to
+   =compute.v1.work.assignments.{tenant}.{platform_code}=
+   (=wrapper/src/app/application.cpp:689=). The working path builds the
+   triplet-qualified subject at =ores.compute/service/src/app/workunit_dispatcher.cpp:136=.
+2. *The fields a wrapper needs are left empty.* =report_submit_handler.cpp:145-146=
+   says so in a comment: "result_id, package_uri, config_uri, output_uri left
+   empty until the compute app version is wired up". Without them there is
+   nothing to download and nowhere to put the output.
+3. *The URI is not an HTTP path.* =report_package_handler.cpp:116= yields
+   =ores/ore/packages/{instance}/ore_package.tar.gz= — the bucket prefix — where
+   the wrapper fetches a full =/api/v1/storage/...= path.
+
+** Retrieval does not exist yet either
+
+=collect_compute_results= is a stub that completes without downloading
+anything: =report_execution_handler.cpp:330-352=, whose own comment says "A
+future phase will download output tarballs, parse ORE result data, and persist
+structured results". =ores.reporting= does not even include =ores.compute.api=.
+Today the bytes are fetched with the shell's =compute download-output=.
+
+** The example bundle already exists
+
+=external/ore/packages/TA002_IR_Swap.tar.gz= is committed: a 2.5 KB job input
+whose root holds =Input/ore.xml= and the rest of the ORE Academy example, which
+is what the wrapper's manifest expects to run. =external/ore/packages/manifest.json:38-43=
+calls it "a job input sample ... not itself an engine package". There is no
+example bundle on the reporting side: no committed =trades.msgpack= or
+=market_data.msgpack=, and no seed for one.
+
+** Two smaller traps
+
+- *A business-party-owned definition is invisible to a session scoped
+  elsewhere.* The existing fixture is owned by the tenant's system party
+  precisely because owning it with a business party hid it
+  (=reporting_test_populate.sql:87-91=). A definition owned by ACME needs a
+  session that can see ACME, which is a seeding decision and not an
+  afterthought.
+- *An unknown workflow type is reported as success.* The engine logs "No
+  workflow definition for type" and returns without creating an instance
+  (=workflow_engine.cpp:483-487=), while the trigger has already replied
+  =triggered= (=report_instance_trigger_handler.hpp:234=). A mis-typed chain
+  would therefore look like a successful trigger that produced nothing.
+
+** Also worth knowing
+
+- =prepare_ore_package= re-downloads the two blobs and re-tars them without
+  parsing, so the objects need not be valid MsgPack for the pipeline to reach
+  compute — but the reporting blobs are not the =Input/ore.xml= shape the ORE
+  engine needs, so a run that keeps =prepare_ore_package= submits the wrong
+  contents for a real ORE execution.
+- =report_input_bundle= rows are write-only in production:
+  =find_by_instance_id= is called only by tests, and =prepare_ore_package=
+  never reads =bundle_id=.
+
+* Recommendations
+
+1. *Let a definition select its chain*, with a carrier on
+   =report_definition= read where the type is hard-coded today, a second
+   registered definition for the shorter chain, and the positional remap done
+   deliberately.
+2. *Fix the reporting to compute handoff* — the subject, the four empty fields
+   and the URI shape. The code is in =projects/ores.compute=, so this may
+   belong to that workstream rather than to reporting; it is in this story
+   because the end-to-end proof needs it.
+3. *Make retrieval real*: =collect_compute_results= should fetch the output
+   object and record where it landed. Parsing it is explicitly out of scope
+   for this story.
+4. *Seed ACME*: the report type, a definition owned by an ACME party with a
+   session that can see it, the bundle objects where the chain expects them,
+   and a compute app version for the tenant, without which submit fails.
+5. *Decide what the smoke test actually runs.* Running the example bundle
+   through the grid and running the reporting chain as it stands are two
+   different jobs, because the reporting chain packages its own blobs rather
+   than =Input/ore.xml=. The story's acceptance should say which one it means.
+6. *Make a bad chain fail loudly*: an unknown workflow type should not be
+   reported as a successful trigger.
+
+* See also
+
+- [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]]
+- [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]]
+- [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]]

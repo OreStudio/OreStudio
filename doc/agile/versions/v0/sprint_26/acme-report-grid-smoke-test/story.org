@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA
+:END:
+#+title: Story: Run an example bundle through the compute grid from a report definition
+#+description: Give ACME corporation a report type and a report definition whose run does no preprocessing: it takes an existing example bundle, submits it to the compute grid and retrieves the results. The point is to prove the report definition and report instance machinery works end to end, not to analyse anything.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report definition owned by ACME corporation, carrying a new report type, runs to completion against the compute grid from an input bundle that already exists, with no gathering and no bundle assembly in the chain.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Scaffolded and analysed. The analysis found the work is larger than seeding: the step chain is fixed in C++, and the reporting to compute handoff cannot drive a job at all. |
+| Waiting on    | Nothing.                               |
+| Next          | Let a definition select its step chain, then make the handoff drive a job. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- A definition can select a step chain shorter than the full report execution workflow, and the chain it selects is the one that runs.
+- The ACME definition triggers from the shell, the instance travels pending, running, completed through the FSM guard, and the compute results are retrieved.
+- The run is reproducible from a freshly recreated database.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6908C71C-5064-42CA-AB0E-1028188D856E][Scaffold story: Run an example bundle through the compute grid from a report definition]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:06147DF3-FDC9-4EDD-8F77-1B165BB316E7][Let a definition select its step chain]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3][Make the reporting to compute handoff drive a job]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:9F93A090-D547-4599-A4B3-8F4911998F54][Retrieve the compute results]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:F185F8C8-A36C-43BD-836B-8C3D6B78C2A9][Seed ACME with the report type, the bundle and the definition]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:063E3B7C-EAEB-403F-93E5-C4384570BCF2][Prove the run end to end and keep it repeatable]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+
+* Decisions
+
+** "No preprocessing" is a code change, not a seeding choice
+
+The chain is registered once, in code, and the trigger hard-codes its type, so
+no definition can select a shorter one today. The story therefore starts with
+the carrier and the second chain rather than with the fixture. Recorded in
+[[id:A38F01BA-506A-49FD-B520-116F366CE97D][the investigation]].
+
+** The reporting to compute handoff is in scope, though the code is not ours
+
+The submit path publishes on a subject no wrapper subscribes to, leaves the
+fields a wrapper needs empty, and hands over a URI in the wrong shape. Without
+fixing all three the story cannot succeed, so the task is here rather than
+waiting on ores.compute. It may be reassigned if that workstream prefers to own
+it.
+
+** Retrieval is in scope; analysis of the results is not
+
+=collect_compute_results= currently completes without fetching anything. This
+story makes it fetch the output and record where it landed. Parsing ORE result
+data stays out.
+
+** The story must still decide what the run executes
+
+The reporting chain packages its own trades and market data blobs, not the
+=Input/ore.xml= shape the ORE engine needs, so "run the example bundle through
+the grid" and "run the reporting chain as it stands" are two different jobs.
+The investigation states both; the choice is owed before the proof task starts.
+
+* Out of scope
+
+- Parsing or post-processing the compute results.
+- Gathering trades or market data, and assembling a bundle.

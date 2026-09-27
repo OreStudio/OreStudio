@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,16 +21,16 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-27                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to this component passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.http is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
@@ -39,15 +39,44 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6B2C0AA5-94BB-4F07-9585-C4374295C983][Bring ores.http to the clean standard]] | BACKLOG | | | Work ores.http through the Component Clean Standard in order and record each item. |
+| [[id:6B2C0AA5-94BB-4F07-9585-C4374295C983][Bring ores.http to the clean standard]] | DONE | 2026-09-27 | 2026-09-27 | Work ores.http through the Component Clean Standard in order and record each item. |
 
-* Notes
+* Result
 
-- Survey on 2026-09-23: 0 entity, junction or operation models; 45 C++ files outside tests, 0 of them generated (0%); 3 messaging headers, 3 of them hand-written.
-- The HTTP server. Its own protocol headers are hand-written; its routes follow the protocols of the components it serves (P05).
+ores.http passes the Component Clean Standard and =http-cpp= is listed in
+=COMPONENTS_UNDER_TEST=. Every All and Protocol item passes, every Entity
+item is recorded as not applicable with its reason, and both generator
+defects found are fixed at their source with a regression test.
+
+The task carries the item-by-item record and its evidence. What this story
+adds is the shape of the work. The component had no model at all, so it
+gained a group overview over its six parts and codegen regained ownership
+of its root =CMakeLists.txt=. Its one wire type was not modelled, so it now
+generates both protocol twins, and its subject follows the naming every
+other component uses. Its code sat in two disjoint outermost namespaces,
+which are now one. And its diagrams, and variability's, now draw member
+functions, which retired an accepted exception in another component.
+
+A prior pass on this task was abandoned when the sprint 26 decomposition
+landed. It worked against the pre-decomposition three-part shape and 593
+commits reached main before this pass began, so it was not rebased; its
+record is preserved by the tag =archive/clean-http-pre-restructure=.
 
 * Decisions
 
+| # | Decision | Why |
+|---+----------+-----|
+| 1 | The pass covers all six parts, not the three hand-written ones. | The three adapter parts hold generated route units and their own overviews, so they are part of the component's shape. The Entity items apply to none of the six, because the component declares no entity, junction or operation model of its own. |
+| 2 | The subject is renamed to =http.v1.info.get=. | The model declares the subject now, and every other component names its subjects a component token, then the version, then the verb. The old =http-server.v1.info.get= was the only subject in the tree whose first token was not its component. |
+| 3 | =ores::http_server= becomes =ores::http::server=. | A component has one outermost namespace, and the split left this component's code in two. |
+| 4 | The diagram capture is fixed rather than the diagrams massaged by hand. | Massaging was tried first and cannot work: a member declared below the sentinel attaches to nothing inside a nested namespace, and PlantUML draws a second, empty namespace instead. The same fix retires variability-cpp's accepted H01 exception. |
+
 * Out of scope
 
--
+Recorded rather than done, each with its reason:
+
+- =server/scripts/= is not a folder in the signed-off folder catalogue.
+- The three adapter parts root their headers at =include/ores.http/= rather than =include/ores.http.<part>/=, so they share one include root named after their parent.
+- =core= and =server= expose no test target, and thirteen hand-written sources have no same-basename test.
+- The auth middleware skips its whole block when no authenticator is configured, and the server warns rather than refusing. It is already captured in the backlog as =authentication_is_optional_at_runtime_on_both_transports=, which is a posture decision rather than a patch.
+- The other 77 of 94 components' diagrams still differ from what the fixed capture draws. Each gains its member functions when its own clean task refreshes it, which is the arrangement already recorded.

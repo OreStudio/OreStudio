@@ -26,12 +26,18 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
-                    +operator : application&
+                    -lg() : auto&
+                    +application()
+                    -make_context(const ores::database::database_options& db_opts) : ores::database::context
+                    +run(boost::asio::io_context& io_ctx, const config::options& cfg) : boost::asio::awaitable<void>
                 }
                 class application_exception {
                     -message_ : string
+                    +what() : [[nodiscard]] const char*
                 }
                 class host {
+                    -lg() : auto&
+                    +execute(const vector<string>& args, ostream& std_output, ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>
                 }
             }
             namespace config #F2F2F2 {
@@ -41,9 +47,11 @@ namespace ores #F2F2F2 {
                     +database : ores::database::database_options
                 }
                 class parser {
+                    +parse(const vector<string>& arguments, ostream& info, ostream& error) : optional<options>
                 }
                 class parser_exception {
                     -message_ : string
+                    +what() : [[nodiscard]] const char*
                 }
             }
         }

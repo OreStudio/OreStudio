@@ -62,6 +62,6 @@ def test_a_component_with_no_exception_reports_none():
     assert accepted_exceptions("iam") == ()
 
 
-def test_variability_records_the_two_items_it_does_not_pass():
-    """Its three open items: V04 now passes, so H01 and V08 are what remain."""
-    assert {e.item for e in accepted_exceptions("variability-cpp")} == {"H01", "V08"}
+def test_variability_records_the_one_item_it_does_not_pass():
+    """H01 was retired when the diagram capture learned to draw methods."""
+    assert {e.item for e in accepted_exceptions("variability-cpp")} == {"V08"}

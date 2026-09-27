@@ -13,6 +13,12 @@
 #+full_name: ores.http.iam
 #+brief: HTTP iam route units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.iam component diagram
+#+caption: ores.http.iam
+[[file:ores.http.iam.png][file:ores.http.iam.png]]
+
 * Summary
 
 =ores.http.iam= is the adapter part that projects the identity-and-access

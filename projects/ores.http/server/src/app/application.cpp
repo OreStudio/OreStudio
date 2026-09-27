@@ -45,7 +45,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
 
-namespace ores::http_server::app {
+namespace ores::http::server::app {
 
 using namespace ores::logging;
 namespace asio = boost::asio;
@@ -180,7 +180,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             if (!verifier)
                 throw std::runtime_error(
                     "JWT verifier is required to register HTTP server handlers.");
-            return http_server::messaging::registrar::register_handlers(
+            return ores::http::server::messaging::registrar::register_handlers(
                 n, std::move(*verifier), http_base_url);
         },
         [&](asio::io_context& ioc) {

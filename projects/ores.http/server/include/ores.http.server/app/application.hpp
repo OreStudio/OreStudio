@@ -25,7 +25,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 
-namespace ores::http_server::app {
+namespace ores::http::server::app {
 
 /**
  * @brief Main HTTP server application.

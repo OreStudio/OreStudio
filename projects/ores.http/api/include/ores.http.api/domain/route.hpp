@@ -35,11 +35,14 @@ namespace ores::http::domain {
 
 /**
  * @brief Describes a query parameter for OpenAPI.
+ *
+ * The type and format follow the OpenAPI schema conventions: a type such as
+ * "string", narrowed by a format such as "uuid" or "date" where one applies.
  */
 struct query_param final {
     std::string name;
     std::string type = "string";
-    std::string format; // Optional format (e.g., uuid, date)
+    std::string format;
     bool required = false;
     std::string description;
     std::optional<std::string> default_value;
@@ -54,8 +57,8 @@ struct query_param final {
 struct request_body_schema final {
     std::string content_type = "application/json";
     bool required = true;
-    std::string json_schema;  // JSON schema from rfl::json::to_schema<T>()
-    std::string example_json; // Example JSON from generator
+    std::string json_schema;
+    std::string example_json;
 };
 
 /**
@@ -68,8 +71,8 @@ struct response_schema final {
     std::string status_code = "200";
     std::string description = "Successful response";
     std::string content_type = "application/json";
-    std::string json_schema;  // JSON schema from rfl::json::to_schema<T>()
-    std::string example_json; // Example JSON from generator
+    std::string json_schema;
+    std::string example_json;
 };
 
 /**

@@ -57,8 +57,8 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
 using ores::http::net::http_server_options;
-using ores::http_server::config::options;
-using ores::http_server::config::parser_exception;
+using ores::http::server::config::options;
+using ores::http::server::config::parser_exception;
 
 /**
  * @brief Creates the option descriptions.
@@ -222,7 +222,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
 
 }
 
-namespace ores::http_server::config {
+namespace ores::http::server::config {
 
 std::optional<options> parser::parse(const std::vector<std::string>& arguments,
                                      std::ostream& info,

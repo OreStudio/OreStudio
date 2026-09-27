@@ -22,7 +22,7 @@
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include <rfl/json.hpp>
 
-namespace ores::http_server::routes {
+namespace ores::http::server::routes {
 
 using namespace ores::logging;
 using namespace ores::http::domain;

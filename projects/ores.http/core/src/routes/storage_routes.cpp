@@ -27,7 +27,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace ores::http_server::routes {
+namespace ores::http::server::routes {
 
 using namespace ores::logging;
 using namespace ores::http::domain;

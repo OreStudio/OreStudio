@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::http_server::messaging {
+namespace ores::http::server::messaging {
 
 class registrar {
 public:
@@ -45,6 +45,6 @@ public:
                       const std::string& base_url);
 };
 
-} // namespace ores::http_server::messaging
+} // namespace ores::http::server::messaging
 
 #endif

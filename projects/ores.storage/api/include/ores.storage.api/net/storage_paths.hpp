@@ -36,7 +36,7 @@ namespace ores::storage::net {
  *   HEAD   /api/v1/storage/{bucket}/{key}   existence check / content-length
  *
  * Use @c make_object_path to construct the path component, then prepend
- * the HTTP base URL discovered via NATS (http-server.v1.info.get).
+ * the HTTP base URL discovered via NATS (http.v1.info.get).
  */
 struct storage_paths {
     /**

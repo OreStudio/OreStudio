@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,17 +19,9 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_HTTP_API_MESSAGING_HTTP_INFO_PROTOCOL_HPP
-#define ORES_HTTP_API_MESSAGING_HTTP_INFO_PROTOCOL_HPP
-
-#include <string>
-#include <string_view>
-
-namespace ores::http::messaging {
-
 /**
  * @brief Asks for the HTTP server's base URL.
  *
@@ -37,36 +29,35 @@ namespace ores::http::messaging {
  * Requires a valid session: the base URL is internal infrastructure and
  * is not exposed to unauthenticated callers.
  */
-struct get_http_info_request {
-    using response_type = struct get_http_info_response;
-    static constexpr std::string_view nats_subject = "http.v1.info.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-};
+export interface GetHttpInfoRequest {
+}
 
 /**
  * @brief The HTTP server's externally reachable base URL.
  */
-struct get_http_info_response {
+export interface GetHttpInfoResponse {
     /**
      * @brief The base URL, for example "http://localhost:51000".
      */
-    std::string base_url;
+    base_url: string;
     /**
      * @brief Whether the base URL was produced.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why it was not, when it was not.
      */
-    std::string message;
-};
-
+    message: string;
 }
 
-#endif
+export const subjects = {
+    get_http_info_request: "http.v1.info.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    get_http_info_request: true,
+} as const;

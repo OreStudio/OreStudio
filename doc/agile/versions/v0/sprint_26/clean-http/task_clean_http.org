@@ -7,59 +7,129 @@
 #+level: s1
 #+filetags: :clean-http:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/clean-http
+#+pr: 2235
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.http passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Protocol*.
+ores.http passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] at the scope the sprint 26 decomposition left it: a six-part component whose =api=, =core= and =server= parts are hand-written and whose =assets=, =refdata= and =iam= parts hold route units generated from other components' models.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to this component passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.http is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
 
 * Plan
 
-Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
-record each item's result in the table below.
+Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order and record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
-   edit.
+1. Baseline and inventory (B01 to B06).
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H05).
+8. Verification (V01 to V08), ending with the registry entry.
+
+Scope. The decomposition that landed in sprint 26 split the component
+into six parts. =api=, =core= and =server= are hand-written: the server
+library, the route engine, the OpenAPI registry, the process entry point
+and the storage and variability routes. =assets=, =refdata= and =iam=
+hold route units generated from the assets, refdata and iam models. The
+pass covers all six parts.
+
+Applicability. The Protocol items apply, because the gateway serves
+=http-server.v1.info.get= and sends the subject of every route it
+proxies. The Entity items do not apply: the component declares no entity,
+junction or operation model of its own, so it has no table, no repository,
+no service and no generated shell unit or recipe. Its routes are generated
+for it by the source components, which own the entity work.
+
+A prior pass on this task was abandoned when the decomposition landed.
+It worked against the pre-decomposition three-part shape, and 593 commits
+have reached main since its base. Eleven of the files it touched no
+longer exist. That work is preserved by the tag
+=archive/clean-http-pre-restructure= and is not rebased; this pass redoes
+the survey against the tree that exists.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline captured on the task branch, which is =origin/main= at =af159c1084= with nothing changed. Every read-only gate is green except one: the CMake source-list check reports 36 stale lists across the tree, two of them in this component, =projects/ores.http/api/src/component_files.cmake= and =api/tests/component_files.cmake=. Both lack the generated marker and one carries a hand-edited comment. Item G06 fixes them, and the tree-wide count falls to 34. The component-drift and model-drift gates report no drift. The whole tree does not build, and the break is not this component's: =projects/ores.trading/modeling/ores.trading.trade.org=, =ores.trading.core/messaging/trade_handler.hpp= and =ores.workflow.core/service/fsm_state_map.cpp= include =ores.dq.api/messaging/fsm_protocol.hpp=, which =dd131c388b= split into =fsm_state_protocol.hpp= and =fsm_transition_protocol.hpp= without migrating. | gate run below; =git rev-parse HEAD= |
+| B02 | One model file, =projects/ores.http/modeling/component_overview.org=, and it is the group model this task adds under M10. Its metatype is =component=, which carries no variability, so there is nothing to bind to a profile. The six part =modeling/= directories hold sub-component overviews and protocol references, not codegen models, so they are not counted. | =survey_component.py --project projects/ores.http=, section B02 |
+| B03 | 100 C++ files, of which 45 carry the generated marker (45%) and 55 are hand-written. By the survey's classification of the hand-written set: 9 generatable, 25 infrastructure, 21 unclassified, 0 dead. Per part, total/generated/hand-written: api 27/0/27, assets 12/9/3, core 5/0/5, iam 36/33/3, refdata 6/3/3, server 14/0/14. Generation reaches only the route units of assets, iam and refdata. The survey classifies by path, so its 9 generatable files overstate: five of them are the api domain value types, and the other four are the http_info protocol header and the server's handler and registrar pair, each of which item G02 examines on its merits. | =survey_component.py --project projects/ores.http=, section B03; =grep= for =AUTO-GENERATED FILE= |
+| B04 | One protocol header, =api/include/ores.http.api/messaging/http_info_protocol.hpp=, hand-written, and it declares one subject: =http-server.v1.info.get=. No raw subject literal appears anywhere in the component's sources, because a generated route reaches its subject through the target component's generated constant. No model declares a subject. The survey reports zero subjects for this header and it is wrong: it builds its subject pattern from the project directory name, which gives =http=, and the subject's first token is =http-server=. The defect is recorded under G05. The header's own comment says no authentication is required, but the handler validates a bearer token and a JWT, so the comment is wrong and belongs to M06. | =survey_component.py --project projects/ores.http=, section B04; =http_info_protocol.hpp:33,37=; =http_info_handler.hpp= |
+| B05 | No in-flight branch works on this component's own files, but one is about to. The worktree =ores_dev_solid_dirac= holds =feature/storage-bucket-protocol=, unpushed and 28 commits ahead, and it changes =projects/ores.http/api/src/net/http_server.cpp=, =api/src/net/http_session.cpp=, =api/src/net/router.cpp= and =server/src/app/application.cpp=. Those four files are in this task's scope, so this pass should land before that branch's pull request or rebase after it. Nine open captures name the component; the two that bear on the structure items are =country_http_endpoints_and_codegen= and =codegen-cli-http-shell-wt-layer-coverage=, both about the per-component route layer. | =compass fleet=; =git diff --stat main feature/storage-bucket-protocol -- projects/ores.http=; =doc/agile/product_backlog/= |
+| B06 | Passes at the file level. Every hand-written header is included by at least one other file, so no header is dead and no symbol is test-only by construction. The single header nothing includes is the namespace documentation header item G08 adds, and nothing should include it: an empty namespace is its whole content. The hand-written aggregator in each adapter part is reached by that part's application wiring and by its tests. | include census over =projects/ores.http=; =survey_cpp.md= |
+
+| M01 | Not applicable: Entity. The component declares no entity, junction or operation model, so there is no model format to migrate and no =lookup_entity= to rename. | survey B02 |
+| M02 | Not applicable: Entity. With no entity there is no variability profile to bind. The one model is a group overview, which the survey records as variability-free. | survey B02 |
+| M03 | Not applicable: Entity. Nothing here can contradict =check_model_drift.py=, which reports one known exception elsewhere in the tree and none in this component. | =check_model_drift.py= |
+| M04 | Not applicable: Entity. No entity root carries feature assignments. | survey B02 |
+| M05 | Not applicable: Entity. The component declares no table, so there is no shape to judge. | survey B02 |
+| M06 | Passes. The component's one wire type is now modelled at =projects/ores.http/modeling/ores.http.http_info.org=, an operation with one request and one reply. The generated header replaces the hand-written one at the same path with the same namespace, struct names and fields, and it adds the generated marker and =requires_session = true=. The claim that no authentication is required is gone, and the handler beside it already validated a bearer token and a JWT. The subject also follows the naming every other component uses, =<token>.v1.<verb>=, so =http-server.v1.info.get= became =http.v1.info.get=; the three references to the old name follow in P05. No hand-written wire type remains. | the model; =compass codegen generate --model projects/ores.http/modeling/ores.http.http_info.org --address ores.cpp.protocol=; the generated header; survey B04 after |
+| M07 | Not applicable: Entity. No junction. | survey B02 |
+| M08 | Not applicable: Entity. No custom C++ type is bound to a table column, because the component has no SQL. | survey B03 |
+| M09 | Passes. No Qt or Wt presentation drawer or property survives in any of the seven model files, and no property names a retired message type, a retired feature or a dead history property. The six =drawer= matches are prose about a codegen model's own property drawer, which is where =:http_route:= and the facet switch live. | =grep -niE 'qt\|wt::\|presentation\|drawer\|retired\|deprecated' projects/ores.http/*/modeling/*.org projects/ores.http/modeling/*.org= |
+| M10 | Passes. The component had no model at all: no =modeling/= directory and a hand-written root =CMakeLists.txt=. It now has =projects/ores.http/modeling/component_overview.org=, declaring =#+component_kind: composite=, =#+parts: api assets core iam refdata server=, a Summary and a Sub-components table linking the six part overviews. Codegen owns the root again: the committed =CMakeLists.txt= carries the generated marker. Recorded rather than fixed: the three adapter parts declare =#+component_kind: adapter=, which is a real kind in the tree's other overviews but is not one of the three applicability kinds the standard defines. | =projects/ores.http/modeling/component_overview.org=; =compass codegen generate --model projects/ores.http/modeling/component_overview.org --address ores.cmake.component= |
+
+| P01 | Not applicable. The canonical entity protocol — the paged and ordered list, get, put, delete, history and the point-in-time read — needs an entity, and this component has none. Its one operation is recorded under P04. | survey B03 |
+| P02 | Passes. The component owns one subject, =http.v1.info.get=. The operation model declares it once, the generated header carries it, and the registrar subscribes the generated constant. The only raw literal outside the model was the web client's mirror in =operations.ts=, which now imports the generated TypeScript twin; the last reference was a comment in =storage_paths.hpp=, corrected. The post-change cross-reference shows one distinct subject, in a model, with a code literal, and nothing on either side alone. | survey B04 after the change; =registrar.cpp:44=; =operations.ts=; =storage_paths.hpp:39= |
+| P03 | Passes. One subject, one request, one reply, and the registrar subscribes that subject through the generated constant, so nothing declared goes unserved and nothing is duplicated. | =registrar.cpp=; survey B04 |
+| P04 | Passes. The component's one operation that is not an entity verb is modelled at =projects/ores.http/modeling/ores.http.http_info.org=, and both its messages generate to C++ and TypeScript. No hand-written protocol header remains. | the model; the generated header and twin |
+| P05 | Passes. The consumer census is the whole tree. The web client's =SUBJECTS.httpInfo= and the storage path comment were the only references to the old subject, and both follow the rename in this same work, so nothing is carried for backwards compatibility. The four remaining =ores-http-server-v1= strings are a server identifier and a config default, not the subject. | =grep -rn 'http-server.v1' projects/ doc/= |
+| P06 | Not applicable. An event cache warms through the canonical list and follows the canonical event actions, and both need entities. | survey B03 |
+| G01 | Passes. =check_component_drift.py --component http-cpp --dry-run= reports no drift across every address, and =--all --dry-run= reports no drift for the whole tree. A second run changes nothing. | =check_component_drift.py=, run twice |
+| G02 | Passes, with the survey's caveat recorded. The one file generation supersedes, =http_info_protocol.hpp=, is generated at its own path rather than kept beside a copy. The survey still labels eight files generatable by path: the five api domain value types, and the server's handler, registrar header and registrar source. None is superseded. =http_method= and =http_status= are enums, and codegen has no enum facet. =http_request=, =http_response= and =route= are the HTTP engine's own library types, not wire types. The handler and registrar stay hand-written by arrangement: the handler reads the base URL the server's options supply at runtime, which no model carries, and the registrar wires it. The survey labels by path, not by facet, so its count overstates for this component. | survey B03 before and after; the model; =classify()= in =survey_component.py= |
+| G03 | Passes. 46 of the component's C++ files carry the generated marker and the survey counts 46 generated, so the two sets are the same set and no hand-written file carries it. | =grep -rl 'AUTO-GENERATED FILE' projects/ores.http --include=*.cpp --include=*.hpp= |
+| G04 | Not applicable: Entity. The item asks that generated entity code read like the component's best hand-written code, and this component has no entity. The generated protocol was read line by line and matches the shape the other operation models produce. | the generated header and twin |
+| G05 | Passes. Two defects found and fixed at their source, each with a regression test, and three more recorded rather than fixed because they belong to other components' outputs. First, the survey tool built its subject pattern from the project directory name, so it reported zero subjects for a component whose only subject is =http-server.v1.info.get=: a silent zero in the census whose whole purpose is to find undeclared subjects. It now reads declared subjects from the declaration itself. Output for =iam= and =variability-cpp= is byte-identical before and after, and the fix surfaces four declarations the guess had dropped, in =ore=, =reporting= and =shell=. Second, the diagram capture read data members and not methods, so a class whose content is functions arrived as an empty box. It now reads member functions, including a declaration split over several lines and a body that opens on the declaration line; the three filed defects — the notify-trigger collision, the generator ignoring a declared =default_value=, and the =natural_keys= blank-line leak — do not touch this component. | =survey_component.py= and =tests/test_survey_component_subjects.py=; =generate_component_puml.py= and =tests/test_plantuml_component_parse_member_functions.py=; =pytest projects/ores.codegen/tests= 802 passed |
+| G06 | Fixed. The two stale lists were this component's: =api/src/component_files.cmake= and =api/tests/component_files.cmake= lacked the generated marker, and the source list carried a hand-edited comment about AUTOMOC that the template does not emit. Both are regenerated from the model, and no list in this component is stale. The tree-wide count falls by two, from 36 on the baseline tree to 34; it reads 35 after the rebase, because main added one more of its own in another component. | =regenerate_cmake_component_files.py --component ores.http.api=; =--all --check= |
+| G07 | No artefact was refreshed while its generator had a known defect. The diagram capture's trailing-comment defect was already fixed at source on main, and the three filed defects — the notify-trigger collision, the generator ignoring a declared =default_value=, and the =natural_keys= blank-line leak — do not touch this component's outputs. The two generators this task used were dry-run first and their diff read before the write. | the filed captures; the dry runs above |
+| G08 | Passes. The component's code sat in two disjoint outermost namespaces: =api=, =assets=, =iam= and =refdata= used =ores::http=, while =core= and =server= used =ores::http_server=. The namespace is now =ores::http::server=, so the component has one outermost namespace, and =projects/ores.http/api/include/ores.http.api/ores.http.hpp= documents it with the namespace =@brief= that doxygen renders. That header is intentionally unreferenced. The rename touched 17 files, and one unqualified reference in =application.cpp= that the class =http_server= then shadowed; the six libraries, the executable and the four test executables all build after it. Recorded rather than fixed: the class =ores::http::net::http_server= and the namespace =ores::http::server= now sit one name apart, which is a readability trap for the next reader. | =ores.http.hpp=; =grep -rn 'ores::http_server' projects/= returns nothing; the http build |
+
+| W01 to W04 | Not applicable. These items wire and seed entity machinery: the registrar families the generation materialises, the history providers and event mappings, the permissions a handler checks, the names a populate script uses, and the SQL scripts with the service grants. This component has no entity, no table, no populate script and no generated registrar family. Its one registrar is hand-written and subscribes a single subject, which P03 records. | survey B03; =server/src/messaging/registrar.cpp= |
+| S01, S02 | Not applicable. Both concern the shell surface of entities and junctions: a generated command unit per verb, and a literate recipe per command. This component has no entity, so it has no verbs, no shell unit and no recipe. | survey B03; no =ores.shell.http= directory |
+| H01 | Passes, and the record is written. The audit's automated pass is =validate_docs.sh=, which reports 40 of 40. Each of the six parts' diagrams is regenerated in two passes: the automated pass rewrote the section above the sentinel, the hand-authored section below it survived in all six, and the rendered images were read. The api diagram carries =route.auth_declared_=, a field the old capture had dropped. The four method-only classes of the server part — =application=, =host=, =parser= and =registrar= — now carry their methods too, because the capture was fixed at its source (G05). Manual massaging was tried first and cannot work here: a member declared in the hand-authored section below the sentinel attaches to nothing, and PlantUML draws a second, empty namespace instead, which was verified by rendering it. Findings recorded: =server/scripts/= is not a folder in the signed-off catalogue; =assets=, =iam= and =refdata= root their headers at =include/ores.http/= rather than =include/ores.http.<part>/=, so three parts share one include root named after their parent; and =core= and =server= expose no test target. | =validate_docs.sh=; the six =.puml=/=.png= pairs, read; =generate_component_puml.py --project ores.http.<part>= |
+| H02 | Passes. No Qt or Wt fragment remains in the component. The one reference was a web-client comment naming the Qt client, corrected under P05. There is no commented-out code, no dead header (B06) and no hand-written duplicate of a generated artefact (G02). Two things are recorded rather than fixed. A =TODO= at =api/src/net/http_server.cpp:48= marks RS256-from-a-key-file as unimplemented, and the branch it sits in configures no authenticator at all. The fail-open behind it — the middleware skips its whole block when no authenticator is configured and the server warns rather than refusing — is already captured in the backlog as =authentication_is_optional_at_runtime_on_both_transports=, which is a posture decision and not this task's to pre-empt. | =grep= for Qt/Wt over =projects/ores.http=; =http_server.cpp:41-53=; the capture |
+| H03 | Passes. Every end-of-line comment that carried a fact is moved above its statement, and the ones that only restated the code are gone: five in =route.hpp=, two in =endpoint_registry.cpp= and one in =router.cpp=. What remains is namespace closers and =// IWYU pragma: keep=, which is a directive that only works on the include line and appears 2208 times across the tree. | =grep -rnE '[^:/ ][ \t]+// ' projects/ores.http= |
+| H04 | Passes. No platform macro, no OS header and no hand-rolled stand-in for a standard facility. Only export macros and include guards. | =grep= for platform macros over =projects/ores.http= |
+| H05 | Passes. Each of the six parts carries =component_overview.org= with the six sections — Summary, Inputs, Outputs, Entry points, Dependencies and See also — and the three adapter parts, =assets=, =iam= and =refdata=, now carry the =Diagram= section the other three already had, each pointing at the image committed beside it. No placeholder prose and no empty bullet. | the six overviews; =validate_docs.sh= |
+| V01 | Passes. =ORES_USE_BUSCTL=0 ./compass.sh build= exits 0 for the whole tree at 100%, including this component's executable, its four test executables and the web component, and =ctest -R ores.http= is 4 of 4. The break this item was first blocked on was repaired on main by the fsm-consumer work before this branch's final rebase: =ores.trading.core/messaging/trade_handler.hpp=, =ores.trading/modeling/ores.trading.trade.org= and =ores.workflow.core/service/fsm_state_map.cpp= no longer include the deleted =ores.dq.api/messaging/fsm_protocol.hpp=. No exception is needed. | =compass build=, exit 0 at 100%; =ctest -R ores.http= |
+| V02 | Passes. The codegen suite is 787 passed, and the component's four suites pass with the fleet up: =ctest -R ores.http= is 4 of 4. | =pytest projects/ores.codegen/tests=; =ctest -R ores.http= |
+| V03, V04 | Not applicable. Both need an entity: V03 recreates the database and starts the fleet, and V04 replays generated shell commands. This component has no table and no generated shell command. | survey B03 |
+| V05 | Passes. Every codegen gate is green with the component listed: component drift, model drift, protocol twin coverage at 46 headers across 9 components, handler permissions at 182 codes across 6 components, populate references, the registry exceptions, the route-auth gate, the shell recipe inventory, and the component's own CMake source lists. | each check script, run with =http-cpp= in the registry |
+| V06 | Passes. =http-cpp= joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= exits 0 with it listed. The twin gate counted 46 headers across 9 components once it was listed, which is the claim the entry makes. | =component_registry.py=; =check_component_drift.py --all= |
+| V07 | Passes. The component's four suites hold 100 cases. The count assertions are not vacuous: each generated route test follows its =REQUIRE(routes.size() == N)= with a loop asserting every expected route's method, path and authentication position, and the options streaming test follows its non-empty check with three assertions on the rendered values. A subject that produced nothing fails. | =api/tests/=, =assets/tests/=, =iam/tests/=, =refdata/tests/= |
+| V08 | Recorded as the coverage gap. 55 hand-written files, four test executables, 100 cases. Thirteen hand-written sources have no same-basename test, including all six =server= sources, both =core= route files and the hand-written aggregator in each of =assets=, =iam= and =refdata=. =core= and =server= declare no test target at all, which is the first thing a coverage task should fix. | =survey_cpp.md=, sections 3 and 4 |
 
 * Notes
+
+The component has no entity of its own, so the Entity items are not
+applicable and are recorded as such rather than skipped. What remains is
+G08, the structure section (H01 to H05), and the confirmation that the
+whole tree builds, which is blocked on two other components.
 
 * Test Scenarios
 
@@ -76,12 +146,62 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2235][#2235]] | [http] Bring ores.http to the component clean standard |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Status block still read STARTED with the inventory in flight while the checklist below it was complete through V08. | =story.org=; this task | Taken | The review ran on the commit before the closure, so the block it saw described work in progress. Both files now read DONE and the task carries its Result. |
+| 2 | An inbox capture still names =http-server.v1.info.get=, which this work renames. | =doc/agile/product_backlog/inbox/three-services-point-at-the-wrong-storage-port.org= | Taken | Not in this diff, but the rename made the reference stale, so the fact is corrected in place. |
+| 3 | The reviewer could not run the suite, the build or the gate scripts in its environment and relied on the task's own evidence. | — | Noted | Every figure in this record was measured here; the build, =ctest=, the codegen suite and each gate were run on the branch's final head. |
 
 * Result
+
+ores.http passes the Component Clean Standard, and =http-cpp= is listed in
+=COMPONENTS_UNDER_TEST=.
+
+The component was measured before anything changed: 100 C++ files, 45
+generated and 55 hand-written, one protocol header declaring one subject, and
+four test executables holding 100 cases. It declares no entity, junction or
+operation model of its own, so the Entity items are recorded as not
+applicable with their reasons and no item is skipped in silence.
+
+Four pieces of work followed. The component had no model at all, so it gained
+a group overview over its six parts and codegen regained ownership of its root
+=CMakeLists.txt=. Its one wire type was not modelled, so
+=ores.http.http_info= now generates the protocol header and the TypeScript
+twin, the subject follows the naming every other component uses, and its three
+callers follow the rename. Its code sat in two disjoint outermost namespaces,
+so those are now =ores::http=, documented by
+=include/ores.http.api/ores.http.hpp=. And its two stale CMake source lists
+are regenerated from the model.
+
+Two generator defects were fixed at their source, each with a regression
+test. The clean-standard survey tool built its subject pattern from the
+project directory name, so it reported zero subjects for a component whose
+only subject is =http-server.v1.info.get= — a silent zero in the census whose
+whole purpose is to find undeclared subjects. The diagram capture read data
+members and not methods, so a class whose content is member functions arrived
+as an empty box; it now draws them, and variability-cpp's accepted H01
+exception is retired because its stated reason is no longer true.
+
+Verification:
+
+- =ORES_USE_BUSCTL=0 ./compass.sh build= exits 0 for the whole tree at 100%,
+  including this component's executable, its four test executables and the
+  web component. =ctest -R ores.http= is 4 of 4.
+- =pytest projects/ores.codegen/tests= is 802 passed.
+- The component-drift, model-drift, protocol-twin, handler-permission,
+  populate-reference, route-auth, registry-exception and shell-recipe gates
+  are all green, and =validate_docs.sh= reports 40 of 40.
+- Data members are unchanged by the diagram fix: across all 92 projects and
+  28,510 (class, field) pairs the emitted set is identical before and after.
+
+Recorded rather than fixed, each with its reason: =server/scripts/= is not a
+folder in the signed-off folder catalogue; the three adapter parts root their
+headers at =include/ores.http/= rather than =include/ores.http.<part>/=;
+=core= and =server= expose no test target, and thirteen hand-written sources
+have no same-basename test; and the fail-open that lets a transport with no
+authenticator serve requests is already captured in the backlog as
+=authentication_is_optional_at_runtime_on_both_transports=.

@@ -28,13 +28,25 @@ namespace ores #F2F2F2 {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +clear_bootstrap_mode(ores::nats::message msg) : void
+                +complete_party_onboarding(ores::nats::message msg) : void
             }
             class registrar {
+                +register_handlers(ores::nats::service::client& nats, ores::database::context ctx, optional<ores::security::jwt::jwt_authenticator> verifier) : vector<ores::nats::service::subscription>
             }
             class system_setting_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_system_settings(ores::nats::message msg) : void
+                +get_system_setting(ores::nats::message msg) : void
+                +get_many_system_settings(ores::nats::message msg) : void
+                +put_system_setting(ores::nats::message msg) : void
+                +put_many_system_settings(ores::nats::message msg) : void
+                +delete_system_setting(ores::nats::message msg) : void
+                +delete_many_system_settings(ores::nats::message msg) : void
+                +list_system_setting_versions(ores::nats::message msg) : void
+                +get_system_setting_version(ores::nats::message msg) : void
             }
         }
         namespace repository #F2F2F2 {
@@ -57,15 +69,63 @@ namespace ores #F2F2F2 {
                 +valid_to : db_timestamp
             }
             class system_setting_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const system_setting_entity& v) : domain::system_setting
+                +map(const domain::system_setting& v) : system_setting_entity
+                +map(const vector<system_setting_entity>& v) : vector<domain::system_setting>
+                +map(const vector<domain::system_setting>& v) : vector<system_setting_entity>
             }
             class system_setting_repository {
                 +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::system_setting& v) : void
+                +write(context ctx, const vector<domain::system_setting>& v) : void
+                +write(context ctx, const domain::system_setting& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::system_setting>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::system_setting>
+                +read_latest(context ctx, const string& id) : vector<domain::system_setting>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::system_setting>
+                +read_latest_by_name(context ctx, const string& name) : vector<domain::system_setting>
+                +read_any_by_name(context ctx, const string& name) : vector<domain::system_setting>
+                +read_all(context ctx, const string& id) : vector<domain::system_setting>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::system_setting>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::system_setting>
+                +get_total_setting_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::system_setting& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::system_setting& v, const ores::utility::domain::precondition& claim) : domain::system_setting
             }
         }
         namespace service #F2F2F2 {
             class system_setting_service {
                 -ctx_ : context
                 -repo_ : repository::system_setting_repository
+                -lg() : [[nodiscard]] static auto&
+                +system_setting_service(context ctx)
+                +list_system_settings(const messaging::list_system_settings_request& request) : messaging::list_system_settings_response
+                +get_system_setting(const messaging::get_system_setting_request& request) : messaging::get_system_setting_response
+                +get_many_system_settings(const messaging::get_many_system_settings_request& request) : messaging::get_many_system_settings_response
+                +put_system_setting(const messaging::put_system_setting_request& request) : messaging::put_system_setting_response
+                +put_many_system_settings(const messaging::put_many_system_settings_request& request) : messaging::put_many_system_settings_response
+                +delete_system_setting(const messaging::delete_system_setting_request& request) : messaging::delete_system_setting_response
+                +delete_many_system_settings(const messaging::delete_many_system_settings_request& request) : messaging::delete_many_system_settings_response
+                +list_system_setting_versions(const messaging::list_system_setting_versions_request& request) : messaging::list_system_setting_versions_response
+                +get_system_setting_version(const messaging::get_system_setting_version_request& request) : messaging::get_system_setting_version_response
+                +list_settings(uint32_t offset, uint32_t limit) : vector<domain::system_setting>
+                +count_settings() : uint32_t
+                +get_setting_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::system_setting>
+                +get_setting(const boost::uuids::uuid& id) : optional<domain::system_setting>
+                +get_setting_by_name(const string& name) : optional<domain::system_setting>
+                +get_settings(const vector<string>& ids) : vector<domain::system_setting>
+                +save_setting(const domain::system_setting& setting) : void
+                +save_settings(const vector<domain::system_setting>& settings) : void
+                +delete_setting(const boost::uuids::uuid& id) : void
+                +delete_settings(const vector<string>& ids) : void
+                +get_setting_history(const string& key) : vector<domain::system_setting>
+                -prepare_change(const messaging::system_setting_change& change, const ores::utility::domain::change_intent& intent, domain::system_setting& out) : ores::utility::domain::result
             }
             class system_settings_service {
                 -cache_ : unordered_map<string, string>
@@ -73,6 +133,22 @@ namespace ores #F2F2F2 {
                 -tenant_id_ : string
                 -party_id_ : string
                 -repo_ : repository::system_setting_repository
+                -lg() : [[nodiscard]] static auto&
+                +get_all() : [[nodiscard]] vector<domain::system_setting>
+                +get_bool(string_view name) : [[nodiscard]] bool
+                +get_int(string_view name) : [[nodiscard]] int
+                +get_string(string_view name) : [[nodiscard]] string
+                +get(string_view name) : [[nodiscard]] optional<string>
+                +refresh() : void
+                +is_bootstrap_mode_enabled() : [[nodiscard]] bool
+                +set_bootstrap_mode(bool enabled, string_view modified_by, string_view change_reason_code, string_view change_commentary) : void
+                +is_user_signups_enabled() : [[nodiscard]] bool
+                +is_signup_requires_authorization_enabled() : [[nodiscard]] bool
+                +is_onboarding_party_complete() : [[nodiscard]] bool
+                +set_onboarding_tenant_complete(bool complete, string_view modified_by, string_view change_reason_code, string_view change_commentary) : void
+                +set_onboarding_party_complete(bool complete, string_view modified_by, string_view change_reason_code, string_view change_commentary) : void
+                -save(const domain::system_setting& setting) : void
+                -set_bool_setting(string_view name, bool value, string_view modified_by, string_view change_reason_code, string_view change_commentary) : void
             }
         }
     }

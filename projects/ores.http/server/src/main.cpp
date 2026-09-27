@@ -31,8 +31,8 @@
 namespace {
 
 boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
-    using ores::http_server::app::host;
-    using ores::http_server::config::parser_exception;
+    using ores::http::server::app::host;
+    using ores::http::server::config::parser_exception;
 
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));

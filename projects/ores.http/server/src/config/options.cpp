@@ -20,7 +20,7 @@
 #include "ores.http.server/config/options.hpp"
 #include <ostream>
 
-namespace ores::http_server::config {
+namespace ores::http::server::config {
 
 std::ostream& operator<<(std::ostream& s, const options& v) {
     s << "options {" << " logging: " << (v.logging.has_value() ? "configured" : "none")

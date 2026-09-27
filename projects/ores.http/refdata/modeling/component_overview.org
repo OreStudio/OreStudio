@@ -13,6 +13,12 @@
 #+full_name: ores.http.refdata
 #+brief: HTTP refdata route units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.refdata component diagram
+#+caption: ores.http.refdata
+[[file:ores.http.refdata.png][file:ores.http.refdata.png]]
+
 * Summary
 
 =ores.http.refdata= is the adapter part that projects the reference-data

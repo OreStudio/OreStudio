@@ -41,6 +41,16 @@ declares. The interesting row is a subject that appears in code and
 carries no model source, or the reverse. Reading the two lists side by
 side is how item P02 is satisfied.
 
+The header census reads declarations, not names. A protocol header
+declares a subject as a string literal assigned to a constant whose name
+ends in `subject`, and that declaration states its own namespace. A
+census that instead guesses the namespace from the project directory name
+(ores.http -> http) silently drops a subject whose token differs, such as
+a header declaring `http-server.v1.info.get`, which is the worst possible
+answer for a survey whose purpose is to find undeclared subjects. The
+declaration shape is therefore read directly, and the directory-token
+scan is kept for literals that are not declarations.
+
 Read-only. Nothing is written, no temporary file is created, and no
 model, catalogue entry or generated file is touched.
 
@@ -129,6 +139,15 @@ GENERATABLE_SUFFIXES = (
 
 SUBJECT_NAME_TEMPLATE = r'{token}\.v\d+\.[A-Za-z0-9_*][A-Za-z0-9_.*-]*'
 SUBJECT_RE_TEMPLATE = '"' + SUBJECT_NAME_TEMPLATE + '"'
+# A subject is declared as a string literal assigned to a constant whose
+# name ends in `subject`, e.g.
+#   static constexpr std::string_view nats_subject = "http-server.v1.info.get";
+# The declaration states its own namespace, so this shape is read directly
+# and the namespace is never guessed from the project directory name.
+DECLARED_SUBJECT_RE = re.compile(
+    r'\b\w*subject\s*=\s*"'
+    r'(?P<subject>[A-Za-z0-9_.-]+\.v\d+\.[A-Za-z0-9_*][A-Za-z0-9_.*-]*)"'
+)
 PROPERTY_SUBJECT_RE = re.compile(r"^:subject:\s*(\S+)\s*$")
 TABLE_ROW_RE = re.compile(r"^\|(?![-\s|])[^|]*\|")
 ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.IGNORECASE)
@@ -287,6 +306,21 @@ def find_matches(path: Path, pattern: re.Pattern) -> list:
     return found
 
 
+def declared_subjects(path: Path) -> list:
+    """Every (line number, subject) a file declares by assignment shape.
+
+    A declaration is a string literal assigned to an identifier that ends
+    in ``subject``. The literal states its own namespace, so a subject
+    whose first token differs from the project directory name is found
+    here even though the directory-token scan drops it.
+    """
+    found = []
+    for number, line in enumerate(read_lines(path), start=1):
+        for match in DECLARED_SUBJECT_RE.finditer(line):
+            found.append((number, match.group("subject")))
+    return found
+
+
 def model_subjects(project_dir: Path) -> tuple:
     """Subjects a model declares, and subjects a modelling doc names.
 
@@ -335,19 +369,22 @@ def model_subjects(project_dir: Path) -> tuple:
 def component_subjects(project_dir: Path) -> list:
     """Raw subject literals in the project's own sources.
 
-    The namespace is read from the project directory name (ores.iam ->
-    iam.v1.), so a literal naming another component is not claimed by
-    this survey. The version is any v<digit>, in case a subject family
-    moves on from v1.
+    Two scans feed the census. The directory-token scan reads the
+    namespace from the project directory name (ores.iam -> iam.v1.), so a
+    literal that happens to name another component is not claimed by it.
+    The declaration scan reads a literal assigned to an identifier that
+    ends in ``subject``, which is authoritative about its own namespace
+    and so catches a subject the token scan drops. The version is any
+    v<digit>, in case a subject family moves on from v1.
     """
-    token = project_dir.name
-    if token.startswith("ores."):
-        token = token[len("ores."):]
-    pattern = re.compile(SUBJECT_RE_TEMPLATE.format(token=re.escape(token)))
-    found = []
+    pattern = re.compile(
+        SUBJECT_RE_TEMPLATE.format(token=re.escape(subject_token(project_dir))))
+    found = set()
     for path in project_cxx_files(project_dir):
         for number, text in find_matches(path, pattern):
-            found.append((path, number, text.strip('"')))
+            found.add((path, number, text.strip('"')))
+        for number, subject in declared_subjects(path):
+            found.add((path, number, subject))
     return sorted(found, key=lambda entry: (str(entry[0]), entry[1], entry[2]))
 
 
@@ -467,8 +504,10 @@ def report_protocol(project_dir: Path, modeling_dir: Path) -> list:
     for path in headers:
         matches = find_matches(
             path, re.compile(SUBJECT_RE_TEMPLATE.format(token=r"[a-z_]+")))
+        subjects = {(number, text.strip('"')) for number, text in matches}
+        subjects.update(declared_subjects(path))
         rows.append((relative(path), "generated" if is_generated(path)
-                     else "hand-written", len(matches)))
+                     else "hand-written", len(subjects)))
     if rows:
         lines += markdown_table(["file", "marker", "subjects"], rows)
     else:

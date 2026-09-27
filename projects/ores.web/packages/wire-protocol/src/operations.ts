@@ -22,14 +22,17 @@
 import { z } from 'zod';
 import { accountSchema, partySummarySchema, uuidSchema, wireTimestampSchema } from './domain.js';
 import type { Account, PartySummary } from './domain.js';
+import { subjects as httpInfoSubjects } from './generated/http/protocol/http_info_protocol.js';
 import type { Uuid } from './primitives.js';
 
 /**
  * The request and response bodies for every subject this client speaks.
  *
- * The literals here are the protocol: a rename in C++ must be mirrored here or
- * the boundary test fails. Subjects are relative; the transport prepends the
- * configured prefix.
+ * A subject another component generates is imported from that component's
+ * generated protocol rather than copied here, so a rename reaches this client
+ * through the generator. The remaining literals are mirrored, and a rename in
+ * C++ must be mirrored here or the boundary test fails. Subjects are relative;
+ * the transport prepends the configured prefix.
  */
 
 export const SUBJECTS = {
@@ -42,7 +45,7 @@ export const SUBJECTS = {
   listChangeReasons: 'dq.v1.change_reasons.list',
   getImages: 'assets.v1.images.get',
   listImages: 'assets.v1.images.list',
-  httpInfo: 'http-server.v1.info.get',
+  httpInfo: httpInfoSubjects.get_http_info_request,
 } as const;
 
 /**
@@ -201,8 +204,8 @@ export const partyResponseSchema = z
 export type PartyResponse = z.infer<typeof partyResponseSchema>;
 
 /**
- * `http-server.v1.info.get` carries no body. The reply tells the client where
- * the companion HTTP server listens, which the Qt client discovers right after
+ * `http.v1.info.get` carries no body. The reply tells the client where the
+ * companion HTTP server listens, which the web client discovers right after
  * login.
  */
 export const httpInfoResponseSchema = z.object({

@@ -29,7 +29,7 @@ inline auto& registrar_lg() {
 }
 } // namespace
 
-namespace ores::http_server::messaging {
+namespace ores::http::server::messaging {
 
 using namespace ores::logging;
 
@@ -51,4 +51,4 @@ registrar::register_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::http_server::messaging
+} // namespace ores::http::server::messaging

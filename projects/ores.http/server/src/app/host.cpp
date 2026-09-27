@@ -23,10 +23,10 @@
 #include "ores.service/service/host_runner.hpp"
 #include "ores.utility/version/version.hpp"
 
-namespace ores::http_server::app {
+namespace ores::http::server::app {
 
 using namespace ores::logging;
-using ores::http_server::config::parser;
+using ores::http::server::config::parser;
 
 boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
                                           std::ostream& std_output,

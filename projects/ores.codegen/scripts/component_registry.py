@@ -118,23 +118,13 @@ class AcceptedException:
 
 # The accepted exceptions, by component. A component absent from this mapping
 # passes every item that applies to it.
+#
+# variability-cpp held an H01 exception here, on the grounds that the diagram
+# capture read data members and not methods, so a class whose content is
+# methods arrived without its API. The capture now reads member functions, so
+# the exception was retired and the component's diagrams regenerated from it.
 ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
     "variability-cpp": (
-        AcceptedException(
-            item="H01",
-            reason=(
-                "The diagrams are refreshed from the code and every rendered "
-                "image was read, but the automated pass reads data members and "
-                "not methods, so a class whose content is methods arrives "
-                "without its API, and PlantUML will not attach members declared "
-                "in the manual section below the sentinel to a class inside a "
-                "nested namespace -- it draws a second, empty namespace "
-                "instead. Every class is present; the API of the method-only "
-                "ones is not drawn."
-            ),
-            accepted_by="marco",
-            accepted_on="2026-09-26",
-        ),
         AcceptedException(
             item="V08",
             reason=(
@@ -155,4 +145,10 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
     return ACCEPTED_EXCEPTIONS.get(component, ())
 
 
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "ore", "reporting", "telemetry-cpp", "workflow-cpp", "variability-cpp")
+# http-cpp joins at the end of its clean-standard pass. It is a Protocol
+# component with no entity of its own: its one wire type is an operation
+# model, whose C++ header and TypeScript twin both generate from it, and
+# codegen owns its composite root CMakeLists.txt. Its regeneration is
+# byte-identical across every address, and its CMake source lists are
+# current.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "http-cpp", "ore", "reporting", "telemetry-cpp", "workflow-cpp", "variability-cpp")

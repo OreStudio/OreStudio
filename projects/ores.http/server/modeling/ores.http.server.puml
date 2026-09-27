@@ -22,34 +22,45 @@ title ores.http.server Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    namespace http_server #F2F2F2 {
-        namespace app #F2F2F2 {
-            class application {
+    namespace http #F2F2F2 {
+        namespace server #F2F2F2 {
+            namespace app #F2F2F2 {
+                class application {
+                    +run(boost::asio::io_context& io_ctx, const config::options& cfg) : boost::asio::awaitable<void>
+                    -lg() : auto&
+                }
+                class host {
+                    -lg() : auto&
+                    +execute(const vector<string>& args, ostream& std_output, ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>
+                }
             }
-            class host {
+            namespace config #F2F2F2 {
+                class options <<struct>> {
+                    +logging : optional<ores::logging::logging_options>
+                    +server : http::net::http_server_options
+                    +database : ores::database::database_options
+                    +nats : ores::nats::config::nats_options
+                    +storage_dir : string
+                    +http_base_url : string
+                }
+                class parser {
+                    +parse(const vector<string>& arguments, ostream& info, ostream& err) : optional<options>
+                }
+                class parser_exception {
+                    -message_ : string
+                    +what() : const char*
+                }
             }
-        }
-        namespace config #F2F2F2 {
-            class options <<struct>> {
-                +logging : optional<ores::logging::logging_options>
-                +server : http::net::http_server_options
-                +database : ores::database::database_options
-                +nats : ores::nats::config::nats_options
-                +http_base_url : string
-            }
-            class parser {
-            }
-            class parser_exception {
-                -message_ : string
-            }
-        }
-        namespace messaging #F2F2F2 {
-            class http_info_handler {
-                -nats_ : ores::nats::service::client&
-                -verifier_ : ores::security::jwt::jwt_authenticator
-                -base_url_ : string
-            }
-            class registrar {
+            namespace messaging #F2F2F2 {
+                class http_info_handler {
+                    -nats_ : ores::nats::service::client&
+                    -verifier_ : ores::security::jwt::jwt_authenticator
+                    -base_url_ : string
+                    +get(ores::nats::message msg) : void
+                }
+                class registrar {
+                    +register_handlers(ores::nats::service::client& nats, ores::security::jwt::jwt_authenticator verifier, const string& base_url) : vector<ores::nats::service::subscription>
+                }
             }
         }
     }

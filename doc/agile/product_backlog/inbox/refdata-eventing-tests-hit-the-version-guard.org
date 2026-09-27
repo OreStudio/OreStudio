@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D72C78C7-C402-479C-96D2-F211C624847E
+:END:
+#+title: The refdata book and portfolio eventing tests are refused by the version guard
+#+description: ores.refdata.core.tests fails two cases on main at d053ef068d: book_eventing_integration_tests.cpp:134 and portfolio_eventing_integration_tests.cpp:125, both with 'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace', raised from ores_refdata_books_insert_fn and ores_refdata_portfolios_insert_fn. The strict version guard refuses a version-zero create that collides with a live row, and these tests write a generated row into the test tenant; either the generated key collides within the run or the test should state the version it read. Same class as the seed and publish helpers fixed earlier this sprint.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

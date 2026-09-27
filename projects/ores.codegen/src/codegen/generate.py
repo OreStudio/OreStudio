@@ -85,6 +85,17 @@ def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
         properties = dict(doc.file_properties)
         properties.update(read_physical_space_overrides(doc))
         return properties
+    except ValueError:
+        # A profile binding error is a model defect, and
+        # _ensure_profile_binding exists so it fails loudly on every path.
+        # Swallowing it here is worse than the error: the raise happens while
+        # the overrides are being *merged*, so returning {} discards every
+        # override with it and the entity renders as though it bound no
+        # profile at all. A staging shim silently regains the main table its
+        # profile withdrew. Two profiles fixing one address differently is the
+        # case that reaches this: it is a conflict to resolve, not a parse
+        # accident to tolerate.
+        raise
     except Exception:  # noqa: BLE001 — a malformed drawer must not break codegen
         return {}
 

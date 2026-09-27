@@ -577,6 +577,50 @@ second)";
     assert "1 declared case(s)" in captured.out
 
 
+def test_a_splice_immediately_after_a_raw_string_does_not_move_it(
+        tmp_path, monkeypatch, capsys):
+    # The splice sits after the closing quote, so the literal is the same in
+    # both readings and there is nothing to report. Carrying the spliced span
+    # back by the offset of the character after it, rather than of its own last
+    # character, would overshoot by the deleted splice and reject a valid file.
+    _write(tmp_path, SOURCE, r'''#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+
+const char* sample = R"(ab)"\
+"cd";
+''')
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert "1 declared case(s)" in captured.out
+
+
+def test_a_splice_between_two_raw_strings_moves_neither(
+        tmp_path, monkeypatch, capsys):
+    # Both literals keep their extent in both readings, so the two readings
+    # agree. Neither is reported, and the splice between them is not a reason.
+    _write(tmp_path, SOURCE, r'''#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+
+const char* first = R"(ab)"\
+R"(cd)";
+''')
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert "1 declared case(s)" in captured.out
+
+
 def test_the_real_tree_has_cases_and_declares_none_conditionally(capsys):
     """The invariant the gate exists for, checked against the tree itself."""
     assert check.main() == 0

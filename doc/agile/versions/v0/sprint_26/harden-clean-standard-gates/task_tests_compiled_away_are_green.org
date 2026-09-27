@@ -123,7 +123,7 @@ re-measured for each verdict after it.*
 |-------+---------------+--------------------+-----------------------|
 | Declared cases | 6242 | 6242 | 6242 |
 | Files scanned | 722 | 807 | 807 |
-| =ores.codegen= suite | 837 passed | 845 passed | 851 passed |
+| =ores.codegen= suite | 837 passed | 845 passed | 853 passed |
 | =ores.service.tests= | 42 cases / 118 assertions | not rebuilt | not rebuilt |
 | =ores.platform.tests= | 119 cases / 253 assertions | not rebuilt | not rebuilt |
 | =validate_docs.sh= | 40 of 40 | 40 of 40 | 40 of 40 |
@@ -206,6 +206,21 @@ splice inside a raw string that moves neither end now agrees in both readings
 and is left alone, where the previous rule rejected it. Both new cases have
 tests, the verifier's own repro among them.
 
+*What the fifth verdict changed.* The verifier accepted that the dangerous
+direction was closed and named the invariant it wanted rather than another
+instance: report a file if and only if the set of raw string intervals read from
+the spliced text differs from the set read from the source. It then found the
+comparison rejecting valid C++, because the transport of an interval into source
+coordinates used the offset of the character after the span. A span is half-open,
+so its end is one past the source offset of its own last character; the
+character after the span overshoots by the length of any splice deleted between
+the two. A backslash-newline immediately after a closing quote was therefore
+reported as moving a literal that does not move. The end boundary is now
+=offset_of[stop - 1] + 1=, which satisfies the invariant in the silent direction
+as well: a splice after a complete literal, between two literals, or after a
+multi-line literal agrees in both readings and is left alone. Two tests cover the
+boundary, and the shapes that the overshoot used to reject are now clean.
+
 *What is not covered.* The rule is static and per file. It does not expand
 macros beyond one level, so a test macro reached through a chain of =#define=s is
 invisible to it. It does not read the flags a translation unit is compiled with,
@@ -236,13 +251,13 @@ via its "Verifies task" field.
 
 * Review
 
-Independent verification of PR #2249, four rounds, each on a different head and
+Independent verification of PR #2249, five rounds, each on a different head and
 patch-id. Round one PASS+NOTES, nine findings. Round two PASS+NOTES, all nine
 closed, three more findings. Round three PASS+NOTES, all closed but one claim
-the verifier could not confirm. Round four FAIL on that one claim: the raw
-string rule asserted a fail-safe property that was false in the direction that
-matters. Every round's findings are below, with the section above recording what
-each one changed.
+the verifier could not confirm. Round four FAIL: the raw string rule asserted a
+fail-safe property that was false in the direction that matters. Round five FAIL
+on the transport boundary of the comparison that replaced it. Every round's
+findings are below, with the section above recording what each one changed.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
@@ -269,6 +284,14 @@ Third verdict, on the head the second verdict's fixes produced:
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 13 | The docstring paragraph and row 12 asserted that a compiler rejects the diverging input and that the divergence cannot hide a case. Both clauses are false, and the verifier retracted its own earlier conclusion that supplied them. | =check_test_case_reachability.py=, task doc | Fixed | The paragraph now states what the check does about the divergence, and this row records the retraction. |
+
+Later rounds, on the heads the previous round's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 14 | The raw string rule claimed to fail safe and did not. It read only the source and recognised an opener as =R"= with the quote immediately after the =R=, so an opener written =R\= followed by a line starting with a quote was found by neither reading, a guarded case under it was read as code, and the file passed in silence. Four places stated the false claim. | =check_test_case_reachability.py=, task doc, story | Fixed | The rule now compares the raw strings of the spliced text and of the source and reports the file where the two disagree, leaving its cases out of the census. The invariant is the comparison, not a claim about either reading. |
+| 15 | The spliced-to-source transport of a raw string's interval used the offset of the character after the span, which overshoots by the length of any splice deleted immediately after it. A backslash-newline right after a closing quote made two identical readings look different and rejected a valid file, with a message that was untrue of it. | =check_test_case_reachability.py= | Fixed | The end of a half-open interval is one past the source offset of the span's last character. A splice after a complete literal, between two literals, or after a multi-line literal now agrees in both readings and is left alone. |
+| 16 | The check's own suite did not cover the transport boundary. | =test_test_case_reachability.py= | Fixed | Two tests: a splice immediately after a closing quote, and a splice between two raw strings. |
 
 * Result
 

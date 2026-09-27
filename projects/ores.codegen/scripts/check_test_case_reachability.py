@@ -333,9 +333,11 @@ def _raw_strings_diverge(text: str) -> int | None:
     spliced, _, offset_of = _unsplice(text)
     original_spans = {(start, stop) for start, stop, _ in
                       _raw_string_spans(text)}
+    # A span is half-open, so its end is one past the source offset of its last
+    # character. Taking the offset of the character after the span would
+    # overshoot by the length of any splice deleted between the two.
     spliced_spans = {
-        (offset_of[start],
-         len(text) if stop >= len(spliced) else offset_of[stop])
+        (offset_of[start], offset_of[stop - 1] + 1)
         for start, stop, _ in _raw_string_spans(spliced)
     }
     if original_spans == spliced_spans:

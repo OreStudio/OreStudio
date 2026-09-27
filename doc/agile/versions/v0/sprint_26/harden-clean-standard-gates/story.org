@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 09FA0936-289A-4016-A0A2-88C0A5F05870
+:END:
+#+title: Story: Harden the gates the component clean standard rests on
+#+description: The ores.service clean-up took three verification rounds, and each round failed on something no gate could see: generated output outside the registry, a test case compiled away to green, and a record whose numbers went stale on rebase. One task per class, each replacing the manual check with a gate.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A component clean-up passes or fails on what a gate can see. The
+[[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][ores.service]] clean-up took three
+verification rounds, and every round failed on something no gate could see: a
+generated header the drift gate does not cover, a test case the compiler never
+received, and a record whose numbers went stale when trunk moved. Each round cost
+a full review cycle, and each found a defect the previous round had declared
+clean.
+
+This story turns each of those manual checks into a gate. A gate is the only
+form of the check that survives the reviewer: it runs on every pull request, it
+runs on a tree nobody measured by hand, and it fails in the same way for the
+next component as it did for =ores.service=.
+
+Three classes, one task each:
+
+- *Generated output no gate sees.* The drift gate regenerates the components the
+  registry lists, and 4,892 of the 5,829 files carrying the generated marker are
+  outside that list. A rename lands in one component's model and writes into
+  another component's tree, where no gate looks.
+- *A test case that never reaches the compiler.* A =TEST_CASE= inside a false
+  conditional does not exist. The file compiles, the link succeeds, ctest
+  reports green, and only a case count nothing compares against betrays it.
+- *A record whose numbers go stale on rebase.* Every number in a clean-up record
+  is measured at a head that trunk then moves under.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The gate for a test case that never reaches the compiler. |
+| Waiting on    | Nothing.                               |
+| Next          | The sweep over generated output outside the registry. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- Each of the three classes is caught by a check that runs on a pull request,
+  with no step a human performs by hand.
+- Each new check has a test that fails when the check stops finding anything, so
+  a gate cannot pass every tree by finding nothing.
+- Every check the standard names as the proof of an item is in the same CI job
+  the item's story relies on.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B9D75AAE-DDDD-41C7-BB40-97FB3CEC7D80][A test file whose cases are compiled away reports green]] | DONE | 2026-09-27 | 2026-09-27 | A TEST_CASE that never reaches the compiler is invisible: the file builds, ctest passes, and only the case count betrays it. The ores.service readiness tests sat inside a BOOST_ASIO_HAS_LOCAL_SOCKETS guard placed above every boost::asio include, so the macro was undefined when the guard was read and the file compiled to nothing. ctest reported 39 cases where the sources held 42. Nothing compares the two. |
+
+* Decisions
+
+- *Ban the construct rather than detect the instance.* The capture this work
+  came from proposed preprocessing each test source with its own flags from
+  =compile_commands.json=. That is exact, and it cannot be a pull-request gate:
+  the codegen job has no C++ build, and the job that has one runs on a schedule
+  and on tags. A rule that forbids a =TEST_CASE= inside a conditional block needs
+  no flags, no build and no formatter, and it makes the class impossible instead
+  of reporting it. The cost is six cases in three files, and the change makes
+  those cases more visible than they were, not less.
+- *A static rule reads the tree the way the compiler does, or it is a rule about
+  the files it happens to open.* The first cut of the gate read only
+  =*_tests.cpp= and treated a backslash-newline as ordinary text. An independent
+  verifier defeated both: =#\= followed by =if 0= hid a case, and a case in an
+  included fragment was never read at all. The gate now resolves the splices of
+  translation phase 2 for the whole file before it looks for anything, reads
+  every C++ file under a =tests/= directory, and fails on a file whose
+  conditionals do not balance, because a guard left open deletes a case in
+  whichever file includes it.
+- *Where the rule cannot read a file, it fails instead of guessing.* A compiler
+  takes a raw string literal's extent from the spliced text and its content from
+  the source, while the gate removes every splice. A splice at a literal's
+  opening, or inside its content, can therefore move where the literal ends, and
+  the gate then reads string content as code or code as string. Rather than pick
+  one reading, it reads the raw strings of both texts and reports the file where
+  they disagree. A gate whose silence means clean has to be loud about the
+  inputs it cannot model, or its silence stops meaning anything. The first
+  attempt at this claimed the source reading failed safe, and it did not: the
+  claim was false in the direction that matters, which is how a later
+  verification round found a silent green pass over a real deleted case.
+
+* Out of scope
+
+- The registry tier for model-free components, which is what would let
+  =ores.service= and its five siblings into =COMPONENTS_UNDER_TEST=. Recorded in
+  [[id:B053AA24-DC76-40E8-A399-8197BCB31849][the drift-gate capture]].
+- =has_permission()= returning true for a token that carries no permissions, a
+  fail-open on an authorization check kept as a recorded pre-RBAC compatibility
+  rule.

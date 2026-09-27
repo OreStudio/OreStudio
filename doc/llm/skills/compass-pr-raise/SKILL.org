@@ -124,6 +124,15 @@ lifecycle is ordered this way.
      unseeded code refuses every caller, administrators included. Run it when
      anything under =projects/*/modeling/*=, =projects/ores.sql/populate/*=
      or =projects/ores.codegen/*= changed.
+   - *test case reachability*:
+     =python3 projects/ores.codegen/scripts/check_test_case_reachability.py=.
+     It fails when a =TEST_CASE= sits inside a conditional compilation
+     block, because a false conditional deletes the case: the file
+     compiles, the link succeeds, and ctest reports green with a case
+     count nothing compares against the sources. Three =ores.service=
+     readiness cases sat inside such a guard and never reached the
+     compiler. Run it when anything under =projects/**/tests/*= or
+     =projects/ores.codegen/*= changed.
    - *Compass test suite*:
      =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
    - *CDash experimental* (code class; visibility only):

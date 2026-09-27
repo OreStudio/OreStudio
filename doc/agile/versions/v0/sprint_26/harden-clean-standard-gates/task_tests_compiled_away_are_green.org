@@ -1,0 +1,399 @@
+:PROPERTIES:
+:ID: B9D75AAE-DDDD-41C7-BB40-97FB3CEC7D80
+:END:
+#+title: Task: A test file whose cases are compiled away reports green
+#+description: A TEST_CASE that never reaches the compiler is invisible: the file builds, ctest passes, and only the case count betrays it. The ores.service readiness tests sat inside a BOOST_ASIO_HAS_LOCAL_SOCKETS guard placed above every boost::asio include, so the macro was undefined when the guard was read and the file compiled to nothing. ctest reported 39 cases where the sources held 42. Nothing compares the two.
+#+type: task
+#+level: s1
+#+filetags: :harden-clean-standard-gates:sprint_26:v0:
+#+owner: marco
+#+branch: feature/gate-dead-test-cases
+#+pr: 2249
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make it impossible for a =TEST_CASE= to sit inside a conditional compilation
+block, so that no green suite can hide a case the compiler never received.
+
+The task is a gate plus the tree change the gate demands. The gate is a static
+rule and needs no build, so it runs on every pull request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A gate fails on a =TEST_CASE= inside any =#if=, =#ifdef=, =#ifndef= or
+  =#elif= region, and passes on the tree as it stands once the six cases that
+  use the construct are restructured.
+- The gate runs in the =codegen-drift= workflow, beside the other gates, with no
+  build, no formatter and no dependency beyond the Python standard library.
+- The six cases in the three files that use the construct register
+  unconditionally and report as skipped where they cannot run, so the case count
+  a suite reports always matches the number of cases its sources declare.
+- A test in the codegen suite fails when the gate stops finding anything, so the
+  gate cannot pass every tree by finding nothing.
+
+* Plan
+
+*Which sub-case the rule must catch.* Every way a case can fail to reach the
+compiler runs through the preprocessor. The measured instance was a guard on
+=BOOST_ASIO_HAS_LOCAL_SOCKETS= placed above every boost::asio include, so the
+macro was undefined when the guard was read and the file compiled to nothing.
+The same shape covers =#if 0=, a guard on a macro that no longer exists, a guard
+whose defining include was moved inside it, and a platform guard that is wrong
+for the target. One rule covers all five: a test case declaration may not sit
+inside a conditional block.
+
+*Why the rule is static.* The promoted capture below proposed preprocessing each
+test source with its own flags from =compile_commands.json= and comparing the
+declared cases against the preprocessed output. That is exact, and it cannot
+gate a pull request: =codegen-drift.yml= has no C++ build, and
+=continuous-linux.yml=, which has one, runs on a schedule and on tags. A static
+rule needs neither, and it makes the class impossible rather than reporting it.
+
+*What the gate reads.* The scan strips comments and string literals, tracks the
+conditional nesting depth, and reports every =TEST_CASE= whose depth is not zero
+together with the directive that opened the region. Stripping matters: a =#if=
+inside a comment or a raw string is not a directive, and a =TEST_CASE= named
+inside one is not a case.
+
+*What the tree change costs.* Six cases in three files, all legitimate platform
+guards: the three readiness cases in =ores.service=, two in
+=ores.platform/tests/net_network_info_tests.cpp= under =__linux__=, and one in
+=ores.platform/tests/environment_environment_tests.cpp= under =_WIN32=. Each
+moves its guard from around the declaration into the body, with =SKIP(...)= in
+the branch that cannot run. The case then registers everywhere, reports as
+skipped where it cannot run, and the suite's case count is stable. That is
+strictly more visible than the construct it replaces.
+
+* Notes
+
+*The gate.* =projects/ores.codegen/scripts/check_test_case_reachability.py=,
+with =projects/ores.codegen/tests/test_test_case_reachability.py=. The scan
+strips comments and string literals, tracks conditional nesting, and fails on any
+case whose depth is not zero, naming the case's line and the directive that
+opened the region. It exits non-zero when it finds no test sources or no cases,
+so it cannot pass a tree by finding nothing.
+
+*What the gate found.* Six cases in three files, all of them legitimate platform
+guards:
+
+| File | Case lines | Opened by |
+|------+------------+-----------|
+| =ores.service/tests/systemd_notify_tests.cpp= | 63, 86, 106 | line 33, =#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)= |
+| =ores.platform/tests/net_network_info_tests.cpp= | 101, 117 | line 100, =#if defined(__linux__)= |
+| =ores.platform/tests/environment_environment_tests.cpp= | 200 | line 199, =#ifndef _WIN32= |
+
+*The counterfactual, measured.* The gate rests on the claim that the old shape
+deleted the cases on a platform without local sockets. Preprocessing the file
+with its own flags from =compile_commands.json=, and
+=-DBOOST_ASIO_DISABLE_LOCAL_SOCKETS= to stand for that platform:
+
+| Revision | Local sockets on | Local sockets off |
+|----------+------------------+-------------------|
+| =origin/main= | 3 cases reach the compiler | 0 cases reach the compiler |
+| this branch | 3 cases reach the compiler | 3 cases reach the compiler |
+
+The translation unit compiles with the macro disabled. The same probe on the two
+platform guards, with =-D_WIN32= and =-U__linux__=, keeps 1 of 1 and 2 of 2 case
+names and selects the skip branch in each. The skip branches themselves execute
+only on Windows and macOS.
+
+*Measured at the reviewed head*, =83c8cbb709=, *for the first verdict, and
+re-measured for each verdict after it.*
+
+| Check | First verdict | After the revision | After the later fixes | On the rebased head |
+|-------+---------------+--------------------+-----------------------+---------------------|
+| Declared cases | 6242 | 6242 | 6242 | 6254 |
+| Files scanned | 722 | 807 | 807 | 810 |
+| =ores.codegen= suite | 837 passed | 845 passed | 853 passed | 874 passed |
+| =ores.service.tests= | 42 cases / 118 assertions | not rebuilt | not rebuilt | 42 cases / 118 assertions |
+| =ores.platform.tests= | 119 cases / 253 assertions | not rebuilt | not rebuilt | 119 cases / 253 assertions |
+| =validate_docs.sh= | 40 of 40 | 40 of 40 | 40 of 40 | 40 of 40 |
+
+The last column is the rebase onto the trunk tip before landing. Trunk moved
+twice while the branch was in review and added test sources both times, so the
+census grew from 6242 in 807 at the verified head to 6254 in 810 at the merged
+one. Every number in this task names the head it was measured at; the earlier
+ones stand for those heads and are not the numbers of the merged tree. The three
+test files this task changes were not touched by trunk in either move.
+
+The scanned-file count rises because the revision reads every C++ file under a
+=tests/= directory, not only =*_tests.cpp=. The declared-case count does not
+move, because no helper file in the tree declares a case.
+
+Sibling gates, green at every head: model drift clean (181 of 328 models bound
+to a profile); protocol twin coverage 46 headers in 9 components; handler
+permissions 6 components and 182 codes; populate references resolve; registry
+exceptions 10 components and 1 accepted exception; =compass lint= clean.
+
+The capture proposed measuring 684 test sources. The tree held 689 at the commit
+that filed the capture and 722 when the work started, so the capture's own
+number was five stale when it was written and thirty-eight stale when it was
+picked up. That is the hazard the third capture in this story records.
+
+*What the first verdict changed.* The independent verifier returned PASS+NOTES
+and found a real defect in the gate: the scan implemented the phase-2
+backslash-newline splice only for =//= comments, so a directive written as =#\=
+followed by a line starting =if 0= was not read as a directive and a case inside
+it passed silently. The same gap produced a false positive in the other
+direction, reading =#end\= plus =if= as an unclosed conditional and flagging a
+case that is unconditional. The revision resolves splicing for the whole file
+before it looks at anything, which fixes both, and it closes four further
+evasions the verifier measured: a case behind a =#define= alias of a test macro,
+a guard and case in an included =.inc= or =.hpp=, a guard opened in an included
+file and never closed, and a test source whose name or suffix the glob did not
+match. A file whose conditionals do not balance is now a finding, because the
+guard applies to whatever includes it.
+
+*What the second verdict changed.* The verifier re-ran every probe, found all
+seven original findings closed, and found one new one: the object-like alias
+=#define MY_CASE TEST_CASE= was still invisible, because the alias test looked
+for a test macro followed by an argument list and that form has none. The
+docstring named the form as followed, so the claim was simply untrue. The alias
+test now matches a bare macro name, which makes the claim true for both the
+object-like and the function-like form. A line declaring two cases was counted
+as two but listed once with the summary reading "1 of 2"; the summary now reads
+"2 of 2" and the shared line is still listed once. Beyond one level stays out of
+scope and is documented as such: =#define OUTER INNER= where =INNER= is the test
+macro is not followed.
+
+*What the third verdict changed.* The verifier confirmed the alias and the count,
+and retracted its own earlier conclusion about raw strings. It had tested only
+the shape with no later terminator and found it rejected by the compiler; with a
+second =)"= present the input is valid C++ and the divergence between this check
+and a compiler cuts both ways. Where an even number of quote characters separates
+the two terminators the check reads a string as code and reports a case that no
+compiler sees; where the number is odd it reads code as a string and loses a
+guarded case in silence, which is the hazard the gate exists to prevent. The
+docstring had recorded the retracted conclusion as fact, so the artifact claimed a
+safety property it did not have.
+
+The check now finds a raw string whose content holds a splice, in a second pass
+that reads the un-spliced text, and reports the file as one whose raw strings
+cannot be read. The un-spliced pass can only read more as a raw string than a
+compiler does, so it fails safe: the worst it produces is a report about a file
+that is in fact fine. All five parities that the verifier swept, and a
+no-splice control, behave as intended, and no file in the tree writes a splice
+inside a raw string.
+
+*What the fourth verdict changed.* The verifier returned FAIL, on one thing
+only: the raw string rule claimed to fail safe and did not. It read only the
+source, and looked for a raw string opener as =R"= with the quote immediately
+after the =R=. An opener written =R\= followed by a line starting =\"= splices to
+=R"= for a compiler but shows a backslash here, so that literal was found by
+neither reading, a real guarded case under it was read as code and never
+reported, and the check said "no raw string hides a splice" in the same
+breath. That is the silent green pass the whole task exists to remove, and the
+claim was false in the dangerous direction in four places.
+
+The rule now compares instead of asserting. It reads the raw strings of the
+spliced text and of the source, and where the two disagree it reports the file
+and leaves its cases out of the census, so a file whose conditionals cannot be
+settled is never counted as clean. That covers the split opener and both
+parities by construction, and it is also narrower in the right direction: a
+splice inside a raw string that moves neither end now agrees in both readings
+and is left alone, where the previous rule rejected it. Both new cases have
+tests, the verifier's own repro among them.
+
+*What the fifth verdict changed.* The verifier accepted that the dangerous
+direction was closed and named the invariant it wanted rather than another
+instance: report a file if and only if the set of raw string intervals read from
+the spliced text differs from the set read from the source. It then found the
+comparison rejecting valid C++, because the transport of an interval into source
+coordinates used the offset of the character after the span. A span is half-open,
+so its end is one past the source offset of its own last character; the
+character after the span overshoots by the length of any splice deleted between
+the two. A backslash-newline immediately after a closing quote was therefore
+reported as moving a literal that does not move. The end boundary is now
+=offset_of[stop - 1] + 1=, which satisfies the invariant in the silent direction
+as well: a splice after a complete literal, between two literals, or after a
+multi-line literal agrees in both readings and is left alone. Two tests cover the
+boundary, and the shapes that the overshoot used to reject are now clean.
+
+*What is not covered.* The rule is static and per file. It does not expand
+macros beyond one level, so a test macro reached through a chain of =#define=s is
+invisible to it. It does not read the flags a translation unit is compiled with,
+so a conditional that is merely wrong for one platform, rather than unreachable
+everywhere, is beyond it. It cannot see a case removed by anything other than the
+preprocessor: whether a declared case is in a CMake source list belongs to
+=regenerate_cmake_component_files.py --check=, which already fails on a component
+whose sources are not listed. And the workflow's path filter lists
+=projects/**/tests/**=, so a test source moved outside a =tests/= directory would
+not start the job that runs this check.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2249][#2249]] | [codegen] Gate a test case that never reaches the compiler |
+
+* Review
+
+Independent verification of PR #2249, five rounds, each on a different head and
+patch-id. Round one PASS+NOTES, nine findings. Round two PASS+NOTES, all nine
+closed, three more findings. Round three PASS+NOTES, all closed but one claim
+the verifier could not confirm. Round four FAIL: the raw string rule asserted a
+fail-safe property that was false in the direction that matters. Round five FAIL
+on the transport boundary of the comparison that replaced it. Every round's
+findings are below, with the section above recording what each one changed.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The phase-2 backslash-newline splice is implemented only for =//= comments, so =#\= followed by =if 0= is not read as a directive and a case inside it passes silently. The same gap reads =#end\= plus =if= as an unclosed conditional and flags an unconditional case. Both proven with =clang++ -E -P=. | =check_test_case_reachability.py= | Fixed | The whole file is spliced before anything is scanned, which removes both the false negative and the false positive. |
+| 2 | A case declared through a macro the file defines to a test macro, =#define CASE(n) TEST_CASE(n,"[t]")=, is not counted, so the gate reports one declared case where there are two. | =check_test_case_reachability.py= | Fixed | Names a file's own =#define= binds to a test macro are followed, one level. |
+| 3 | A guard and case in an included =.inc= or =.hpp=, and a guard opened in an included file and never closed, are invisible because the gate reads =*_tests.cpp= only. | =check_test_case_reachability.py= | Fixed | Every C++ file under a =tests/= directory is read, and a file whose conditionals do not balance is a finding, because the guard applies to its includer. |
+| 4 | A test source named =f_test.cpp= or =n_tests.cc= is never scanned; as the only file, the gate exits 1 with "no test sources matched". | =check_test_case_reachability.py= | Fixed | Any C++ file under a =tests/= directory is a test source, whatever its name or suffix. |
+| 5 | =SKIP_PARTS= is matched against every part of the absolute path, so a checkout under a directory named =build= makes the gate see zero sources and fail. | =check_test_case_reachability.py= | Fixed | The skip test is on the path relative to =projects/=, and the walk prunes vendored directories instead of filtering after the fact. |
+| 6 | "=ores.codegen= suite: 835 passed" is correct for the head it names but the final head is 837. | task doc | Fixed | The table above carries both heads. |
+| 7 | "The capture proposed 684 test sources. The tree held 722 ... because trunk gained 33 test files" is internally inconsistent: 722 − 684 is 38. | task doc | Fixed | Measured at the filing commit the tree held 689, so the capture's own number was already five stale. The sentence now names 689. |
+| 8 | =inbox.org= also moves the =15062C8E= "Storage routes" row into alphabetical position. | =inbox.org= | No change | The index is generated by =regenerate_backlog_indexes.py=, which the capture promotion runs. The re-sort is the generator's output, not a hand edit. |
+| 9 | Historical claim that ctest reported 39 cases where the sources held 42. | task doc | No change | The verifier confirmed the arithmetic: the pre-change =ores.service= test sources declare exactly 42 cases, 3 of them conditional. The observation itself needs a platform without local sockets, and is recorded as a measurement that was made, not one reproduced here. |
+
+Second verdict, on the head the first verdict's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 10 | The object-like alias =#define MY_CASE TEST_CASE= is still not followed, because the alias test wants a test macro followed by an argument list and that form has none. A guarded case behind it passes silently, and the docstring names the form as followed, so the claim is untrue. | =check_test_case_reachability.py= | Fixed | The alias test matches a bare test-macro name, so both the object-like and the function-like form are followed. A chain through two definitions stays out of scope, and the docstring says so. |
+| 11 | Two cases on one logical line are counted as two but listed once, so the summary reads "1 of 2 declared case(s) can be compiled away". Exit code and the named line are right. | =check_test_case_reachability.py= | Fixed | The summary counts every declared case; the line the two share is still listed once, so the output does not repeat itself. |
+| 12 | Real compilers keep a backslash-newline inside a raw string literal where this check removes it. The verifier first reported this as unexploitable and then retracted that: with a second terminator present the file is valid C++, and the divergence misreports in both directions, flagging a string as code when the parity is even and silently losing a real guarded case when it is odd. | =check_test_case_reachability.py= | Fixed | The first fix reported any raw string holding a splice, which closed the parities but claimed a fail-safe property that was false: a literal whose =R"= opener is itself split by a splice is found by neither reading, so the file still passed in silence. The check now reads the raw strings of the spliced text and of the source, reports the file where the two disagree, and leaves its cases out of the census. |
+
+Third verdict, on the head the second verdict's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 13 | The docstring paragraph and row 12 asserted that a compiler rejects the diverging input and that the divergence cannot hide a case. Both clauses are false, and the verifier retracted its own earlier conclusion that supplied them. | =check_test_case_reachability.py=, task doc | Fixed | The paragraph now states what the check does about the divergence, and this row records the retraction. |
+
+Later rounds, on the heads the previous round's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 14 | The raw string rule claimed to fail safe and did not. It read only the source and recognised an opener as =R"= with the quote immediately after the =R=, so an opener written =R\= followed by a line starting with a quote was found by neither reading, a guarded case under it was read as code, and the file passed in silence. Four places stated the false claim. | =check_test_case_reachability.py=, task doc, story | Fixed | The rule now compares the raw strings of the spliced text and of the source and reports the file where the two disagree, leaving its cases out of the census. The invariant is the comparison, not a claim about either reading. |
+| 15 | The spliced-to-source transport of a raw string's interval used the offset of the character after the span, which overshoots by the length of any splice deleted immediately after it. A backslash-newline right after a closing quote made two identical readings look different and rejected a valid file, with a message that was untrue of it. | =check_test_case_reachability.py= | Fixed | The end of a half-open interval is one past the source offset of the span's last character. A splice after a complete literal, between two literals, or after a multi-line literal now agrees in both readings and is left alone. |
+| 16 | The check's own suite did not cover the transport boundary. | =test_test_case_reachability.py= | Fixed | Two tests: a splice immediately after a closing quote, and a splice between two raw strings. |
+
+* Result
+
+A gate forbids a =TEST_CASE= from sitting inside a conditional compilation
+block, where a false condition deletes it and the suite still reports green.
+
+=projects/ores.codegen/scripts/check_test_case_reachability.py= reads every
+C++ file under a =tests/= directory and every file named =*_tests.*=. It
+resolves the backslash-newline splices of translation phase 2 before it reads
+anything, follows a =#define= the file itself binds to a test macro, fails on a
+file whose conditionals do not balance, and reports any file whose raw strings
+read differently once the splices are removed rather than guessing which
+reading a compiler takes. It fails when it finds no test sources or no cases,
+so it cannot pass a tree by finding nothing. It needs no build, no flags and no
+formatter, so it runs in the =codegen-drift= workflow on every pull request,
+including a change that touches only tests.
+
+The six cases that used the construct now declare unconditionally and skip at
+run time: three in =ores.service/tests/systemd_notify_tests.cpp=, two in
+=ores.platform/tests/net_network_info_tests.cpp=, one in
+=ores.platform/tests/environment_environment_tests.cpp=. Preprocessing the
+readiness suite with its own flags and =-DBOOST_ASIO_DISABLE_LOCAL_SOCKETS=
+finds 0 of its 3 cases reaching the compiler before the change and 3 of 3
+after, so a platform without local sockets now reports three skipped cases
+where it reported nothing at all.
+
+The tree declares 6254 cases in 810 files, none conditional, every conditional
+balanced, and no raw string moving under splicing. =ores.codegen= suite 874
+passed. The gate is named in V05 of the Component Clean Standard and in the
+=compass-pr-raise= gate roster.
+
+It took five verification rounds, four of them finding a defect in the gate
+itself rather than in the tree, and each round's findings and decisions are
+recorded above. The last two are the ones worth remembering: a rule that claims
+to fail safe has to be tested in the direction that matters, and a comparison
+between two readings has to carry a half-open interval by its own last
+character.
+
+* Promoted from capture
+
+Captured 2026-09-26 in the product backlog; promoted preserving the UUID.
+
+Two claims in this capture were superseded by the plan above: the check does not
+preprocess with =compile_commands.json=, because no pull-request job can, and the
+tree held 722 test sources rather than 684 when the work started. The capture's
+own wording is kept as the record of what was known when it was filed.
+
+** What
+
+Add a check that fails when a =TEST_CASE= in a test source never reaches the
+compiler. For each =*_tests.cpp=, count the cases the file declares, preprocess
+it with its own flags from =build/output/<preset>/compile_commands.json=, and
+fail when a declared case does not appear in the preprocessed output. It writes
+nothing and needs no test run, so it can sit beside the other codegen gates and
+run in the same CI job.
+
+** Why
+
+The hazard is silent in the strongest sense. The translation unit compiles, the
+link succeeds, ctest runs the suite and reports green, and the only evidence is a
+case count that nothing compares against the sources.
+
+The measured instance is the =ores.service= readiness suite. Its three
+=TEST_CASE=s sat inside =#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)=, and the
+guard was placed above every boost::asio include, so the macro was never defined
+when the guard was read and the file compiled to nothing. ctest reported 39 cases
+where the sources held 42, and the three missing names were exactly the readiness
+tests. A clean-standard record then cited that suite as the coverage for
+=systemd_notify.cpp= under V08, so the record claimed verification it did not
+have. An independent verifier found it by preprocessing the file with its own
+flags and counting what reached the compiler.
+
+The same shape covers =#if 0=, a guard on a macro that no longer exists, a guard
+whose defining include was moved inside it, and a platform guard that is wrong
+for the target.
+
+The class is small enough to sweep today. There are 684 test sources in the tree
+and three carry a preprocessor conditional at all, two in =ores.platform= and
+both correct.
+
+** References
+
+- =projects/ores.service/tests/systemd_notify_tests.cpp= -- the measured case,
+  fixed by moving the include above and outside the guard.
+- =build/output/<preset>/compile_commands.json= -- the per-file flags the check
+  needs, already generated by the build.
+- =projects/ores.codegen/scripts/= -- where the sibling gates live and where a
+  check would sit.
+- =doc/agile/versions/v0/sprint_26/clean-service/task_clean_service.org= -- items
+  V07 and V08, the two rows the defect falsified.
+
+** See also
+
+- [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] -- the file
+  and case conventions the check would enforce.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- V07,
+  the item that forbids a test which cannot fail, and V08, the per-file survey
+  that credits a suite with coverage.

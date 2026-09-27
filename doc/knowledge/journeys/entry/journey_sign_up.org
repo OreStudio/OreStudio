@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person registers themselves when the tenant allows self-registration.
@@ -138,14 +138,18 @@ somebody else's action.
 
 * What is missing
 
-1. *The web client cannot sign up at all.* The generated web protocol has no
-   sign-up subject and =wire-protocol/src/operations.ts= has no entry for it, so
-   the browser cannot call =iam.v1.auth.signup=. =SignUpPage.tsx= is a
-   destination rather than a form: it says accounts come from an administrator
-   and offers no fields. The candidate is a sign-up operation in the wire
-   client and a real form. Server-side, the subject exists and a legacy HTTP
-   route =POST /api/v1/auth/signup= already reaches it, which is how the gap
-   stayed invisible.
+1. *The web client cannot sign up at all.* The generator emits a sign-up
+   protocol for the browser, but =wire-protocol/src/browser.ts= does not export
+   it and =wire-protocol/src/operations.ts= has no entry for it, so the browser
+   cannot call =iam.v1.auth.signup=. Commit =e47043269f= also deleted
+   =SignUpPage.tsx=, which was a destination rather than a form: it said accounts
+   come from an administrator and offered no fields. The candidate is a sign-up
+   call in the wire client and a real form. Server-side, the subject exists, and
+   the external HTTP gateway answers it at =POST /api/v1/iam/auth/signup=,
+   registered in
+   =projects/ores.http/iam/src/routes/iam/signup_routes.cpp= at line 124. The
+   browser never reaches that gateway, and the BFF holds no sign-up route,
+   which is how the gap stayed invisible.
 2. *The screen cannot read the flag that gates it.* =system.user_signups= lives
    in the variability settings, and the web protocol generates no settings
    subject at all: the generated set covers =iam=, =refdata=, =dq=, =compute=

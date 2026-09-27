@@ -2,26 +2,27 @@
 :ID: 166B2D77-6D04-47D5-A651-5431E1F2E082
 :END:
 #+title: UX Language
-#+description: The umbrella visual-language reference for ORE Studio: colour semantics (gray means inactive, orange means missing badge definition), the badge colour catalogue, iconography rules, and the anatomy of a typical entity's windows.
+#+description: The umbrella visual-language reference for ORE Studio: colour semantics (gray means inactive, orange means missing badge definition), the badge colour catalogue, iconography rules, and the anatomy of a journey screen.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ui:ux:design:badges:icons:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-09-27
 #+startup: inlineimages
 
 * Summary
 
-ORE Studio's UI speaks one visual language across every window: colours
+ORE Studio's UI speaks one visual language across every screen: colours
 carry fixed meanings (gray always reads "inactive", orange always reads
 "missing badge definition"), icons follow the semantic rules of the
-[[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]], and every entity presents the same three windows — an
-MDI list window, a detail dialog, and a history dialog — with identical
-toolbars, badges and paging behaviour. This document is the umbrella
-reference for that language; the per-aspect documents it links to carry
-the inventories. The aesthetic rules (typography, spacing, motion) live
-in [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]; this document covers /semantics/: what the
-visual vocabulary means.
+[[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]], and every journey screen draws its steps from the
+same vocabulary. A journey is one screen organised around a goal. Its
+rail orders the steps, and each step draws the one view it needs. This
+document is the umbrella reference for that language; the per-aspect
+documents it links to carry the inventories. The aesthetic rules
+(typography, spacing, motion) live in
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]; this
+document covers /semantics/: what the visual vocabulary means.
 
 * Detail
 
@@ -40,10 +41,10 @@ carry fixed, application-wide meanings. The two load-bearing rules:
 2. /Orange (=#f97316=) means "badge definition missing"./ When a badge
    resolver finds no definition for a code-domain value (or the
    definition carries an unparseable colour), the badge renders in
-   orange — =color_constants::badge_fallback=. Orange is never a
-   semantic state colour: an orange badge in the UI is a gap in the
-   badge seed data to be fixed, deliberately visible rather than
-   camouflaged as "inactive".
+   orange — the reserved =__unmapped__= fallback definition in the badge
+   seed data. Orange is never a semantic state colour: an orange badge
+   in the UI is a gap in the badge seed data to be fixed, deliberately
+   visible rather than camouflaged as "inactive".
 
 3. /Green, Red and Amber ("RAG") are reserved for true status
    semantics — never for a plain category./ Green means healthy/
@@ -81,106 +82,78 @@ The full colour vocabulary:
 Badges are database-driven: severities, code domains, definitions and
 mappings live in the =dq= schema, seeded by
 [[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=projects/ores.sql/populate/dq/dq_badge_system_populate.sql=]] — *the
-populate script is the source of truth*. The mechanism (schema,
-BadgeCache, delegate resolution) is described in the
-[[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][badge system design]]. The full per-badge and per-code-domain listing
-— every definition's hex colour, and every code domain's value→badge
-mapping — is [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]], kept as its own page since it is long
-and grows with every new code domain.
+populate script is the source of truth*. The full per-badge and
+per-code-domain listing — every definition's hex colour, and every code
+domain's value→badge mapping — is [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]], kept as its own
+page since it is long and grows with every new code domain.
 
-Badges render through two code paths, both resolving via =BadgeCache=:
-=DelegatePaintUtils::draw_centered_badge= in table delegates, and
-=BadgeLabelUtils::apply= for labels in detail dialogs. Both fall back
-to orange per rule 2.
+A badge definition carries its label, hex colour and meaning. The =dq=
+definitions are the shared source of every badge in the interface. A
+code-domain value with no matching definition falls back to orange per
+rule 2.
 
 ** Iconography
 
 The icon vocabulary — inventory, variants, sizes and semantic usage
-rules — lives in the [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]]. The semantic core: each action
-has exactly one icon application-wide (Reload, Add, Edit, Delete,
-History never vary between windows), entity types carry their own
-identifying icon in window titles and menus, and icon colour follows
-the same rules as badges — the standard toolbar tint is
-=color_constants::icon_color=, with gray reserved for disabled actions.
+rules — lives in the [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]]. The semantic core: each concept
+has exactly one icon application-wide, so Add, Edit, Delete and History
+never vary between screens. Icon colour follows the same rules as
+badges, with gray reserved for disabled actions. The live set is 68
+Fluent regular SVG files in
+=projects/ores.web/packages/web/src/assets/icons/=.
 
-** Entity window anatomy
+** Journey screen anatomy
 
-Every persisted entity presents the same three windows, so a user who
-has learned one entity has learned them all. The screenshots below use
-currencies and accounts; the anatomy is identical for any entity.
+A journey is one screen, organised around a goal. The screen carries an
+ordered rail of steps, and each step draws the view it needs. The list,
+detail and history primitives do not exist: commit =e47043269f= deleted
+them with the generated entity screens, and no generic component has
+replaced them. A step that lists records draws its own table; a step
+that shows or edits one record draws its own form.
 
-*** MDI list window
+The journey catalogue, and the "one screen, not one per entity" rule,
+live in [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]. The
+step and the rail are defined in
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]].
 
-[[proj:assets/images/currencies_main_window.png]]
+*** The rail
 
-The list window is an MDI child inside the main window:
+A step is data, not a component. It carries an =id=, a =title= for the
+rail, a =lead= sentence, a =body=, an optional =next= action, and a
+=final= flag. The rail is the ordered list of steps, so the rail and the
+steps cannot disagree. A position outside the journey throws rather than
+rendering an empty rail. /Going back/ is refused at the first step and
+when the step before the current one is =final=.
 
-- /Toolbar/ — =Reload=, =Add=, =Edit=, =Delete=, =History= in fixed
-  order with fixed icons. Actions that need a selection (=Edit=,
-  =Delete=, =History=) are disabled — grayed, per the colour rule —
-  until a row is selected.
-- /Table/ — one row per latest record version. Status-like columns
-  render as badges (see the colour catalogue); =Version= is monospace;
-  =Recorded At= shows relative time ("4 minutes ago").
-- /Footer/ — "Showing all records (N)" plus the pagination controls:
-  =First= / =Previous= / =Next= / =Last=, a =Load All= action, and a
-  page-size combo (25/50/100/200/500, default 100). Windows whose
-  record count fits one page show the controls disabled.
-- /Eventing/ — changes made in another session arrive via NATS and
-  refresh the view without manual reload; the reload button carries a
-  stale indicator when unseen changes are pending.
+*** A step's body
 
-*** Detail dialog
+The body is opaque to the runtime, so a step draws whatever view its
+goal needs: a table, a form, a panel of related fields, or a
+confirmation. Related aspects are panels on the step, not screens of
+their own. The account journey is the worked example: its contact
+details and its sign-in state are panels. The entity models supply the
+fields; the journey decides which fields belong together and in what
+order.
 
-[[proj:assets/images/account_details.png]]
+*** History and Audit
 
-Opened by =Add= or =Edit= (or double-click). One dialog serves create,
-edit and read-only historical modes:
-
-- /Form/ — the entity's editable fields; combo boxes are populated
-  from reference data and show a loading state while fetching.
-- /Tabs/ — related aspects beyond the core form (e.g. an account's
-  Parties and Roles tabs); read-only status groups render values as
-  badges via =BadgeLabelUtils= (e.g. Online/Locked).
-- /Provenance/ — who changed the record, when, and why (version,
-  modified by, performed by, change reason, commentary).
-
-[[proj:assets/images/account_details_provenance.png]]
-
-- /Change reason flow/ — saving a modification prompts for a change
-  reason (category-filtered) and optional commentary, which feed the
-  provenance of the new version.
-
-*** History dialog
-
-[[proj:assets/images/currency_history_dialog.png]]
-
-Opened by =History= on a selected row. Shows every version of the
-record, newest first, with the same badge and provenance vocabulary as
-the detail dialog. Selecting a version opens it read-only in the
-detail dialog. Deleting a record preserves its history.
-
-- /Revert semantics/ — =Revert= restores *the selected version* as a
-  new current version, after a confirmation dialog. It is disabled
-  when the latest version is selected, where reverting would be a
-  no-op. History is immutable: reverting never removes intermediate
-  versions.
-
-*** History vs Audit
-
-/History/ always means *versioned-entity history*: the version list,
-field-by-field diff, and Open/Revert actions described above. Screens
-that show a log of /events that happened/ — login sessions, dataset
-publications, job executions — are called *Audit* instead, in class
-names, window titles, menu options and tooltips alike. Audit screens
-are read-only event logs: they have a Refresh action but no versions,
-no diff and no revert.
+/History/ always means *versioned-entity history*: the versions of one
+record, the field-by-field difference between them, and the revert that
+restores a selected version as a new current version. A step that shows
+a log of /events that happened/ — login sessions, dataset publications,
+job executions — is called *Audit* instead. An Audit step is a read-only
+event log: it has a Refresh action, but no versions, no difference and
+no revert. The sign-in record is the worked example, and its journey is
+[[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]].
 
 * See also
 
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the journey catalogue and the "one screen, not
+  one per entity" rule.
+- [[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]] — the step and the rail.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the aesthetic rules: typography, colour
   values, spacing, motion.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]] — the icon inventory and semantic usage rules.
-- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Database-Driven Badge System Design]] — the badge mechanism: schema,
-  caching, delegate resolution.
+- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Database-Driven Badge System Design]] — the badge schema and the
+  =dq= tables.
 - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — developer-facing index, including this document.

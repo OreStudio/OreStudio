@@ -2,12 +2,12 @@
 :ID: 6EF42145-CEE7-4035-806A-A4200A3E003A
 :END:
 #+title: Icon guidelines
-#+description: ORE Studio's visual language reference — variants, sizes, the full icon inventory grouped by semantic category.
+#+description: ORE Studio's visual language reference — variants, sizes, and the 68 live icons grouped by semantic category.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ui:icons:design:
 #+created: 2026-05-21
-#+updated: 2026-08-12
+#+updated: 2026-09-27
 
 #+startup: inlineimages
 ORE Studio's icon catalogue lives here as a single visual-language
@@ -16,9 +16,11 @@ variant (Regular for default / Filled for active) to the UI state.
 UI skills drive icon selection from this catalogue; for the broader
 UI design context see [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-*The asset paths below point into the desktop client's =resources/icons/= tree,
-which went with that client. This page is the record of the intended icon set;
-it is not a live path list until a UI client carries the assets again.*
+*The live icon assets are 68 SVG files in
+=projects/ores.web/packages/web/src/assets/icons/=. Every icon link below
+resolves in this tree. The file name is =ic_fluent_{concept}_{size}_regular.svg=;
+the set carries the Regular variant only. An entry whose file is absent says
+=None in the asset set=.*
 
 * Icon System Overview
 
@@ -60,7 +62,7 @@ Icons representing user-initiated operations.
 Create new items, add to lists, insert content.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_add_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: "New" buttons, add to list, create actions.
 
@@ -69,7 +71,7 @@ Create new items, add to lists, insert content.
 Copy an item, creating a duplicate with the same content.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_copy_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: "Copy" toolbar buttons and context menu actions that create a
 copy of the selected item (e.g. folder, environment, connection). The copy
@@ -79,16 +81,16 @@ gets the original name suffixed with " (copy)".
 Remove items, clear content, destructive actions.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_delete_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
-*Usage*: Delete buttons, remove from list. Use filled variant sparingly to
-indicate destructive nature.
+*Usage*: Delete buttons, remove from list. Use it sparingly to indicate a
+destructive nature.
 
 *** Delete Dismiss
 Purge data, clear all, destructive bulk action with finality.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_delete_dismiss_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Purge database actions, clear all data, bulk delete operations.
 Combines delete (trash can) with dismiss (X) to indicate permanent removal
@@ -98,7 +100,7 @@ with no undo. Always require confirmation before use.
 Modify existing content, enter edit mode.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_edit_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Edit buttons, modify actions, pencil metaphor.
 
@@ -106,7 +108,7 @@ Modify existing content, enter edit mode.
 Persist changes, commit data.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_save_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Save buttons, apply changes.
 
@@ -114,7 +116,7 @@ Persist changes, commit data.
 Confirm action, indicate completion, accept.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_checkmark_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Confirmation buttons, success indicators, selected state in lists.
 
@@ -122,7 +124,7 @@ Confirm action, indicate completion, accept.
 Close dialogs, cancel operations, clear notifications.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_dismiss_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Close buttons, cancel actions, clear/dismiss.
 
@@ -130,17 +132,15 @@ Close dialogs, cancel operations, clear notifications.
 Favorite, bookmark, rate.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_star_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
-*Usage*: Regular for "not favorited", filled for "favorited" state.
+*Usage*: The favourite action. The live set carries the Regular variant only.
 
 *** Terminal
 Interactive command shell, console, REPL.
 
-- Fluent Regular: ic_fluent_window_console_20_regular.svg
-- Fluent Filled: ic_fluent_window_console_20_filled.svg
-- Solar Linear: programming.svg
-- Solar Bold: programming.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_window_console_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Shell widget, console windows, command-line interfaces.
 
@@ -148,7 +148,7 @@ Interactive command shell, console, REPL.
 Generate synthetic data, auto-fill, magic create.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_wand_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Generate buttons, auto-fill actions, create synthetic/test data.
 
@@ -156,24 +156,48 @@ Generate synthetic data, auto-fill, magic create.
 Start recording, capture session.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_record_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
-*Usage*: Recording controls. Filled indicates actively recording.
+*Usage*: Recording controls.
 
 *** Publish
 Deploy data to production, upload, send to target system.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_upload_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Publish buttons, deploy actions, upload data to production tables.
 Represents sending data "upward" to a target system.
 
+*** Search
+Find records by text.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_search_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Search fields and search actions.
+
+*** Filter
+Narrow a list or table to matching records.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_filter_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Filter controls on a list or table.
+
+*** Settings
+Configuration and preferences.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_settings_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Configuration and settings actions.
+
 *** Reload
 Refresh data from server, reload content.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Reload buttons, refresh from server, update data. Use 16px size for
 toolbar buttons. Distinct from Sync (bidirectional) - Reload implies fetching
@@ -182,8 +206,8 @@ fresh data from source.
 *** Redo
 Redo last undone action, restore previous state.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Redo buttons in edit contexts. Pairs with Undo
 (arrow_rotate_counterclockwise). Both Reload and Redo use the same icon; context
@@ -197,31 +221,31 @@ Icons for directional movement and navigation controls.
 Navigate back, move left.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_left_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Back navigation, left scroll controls.
 
 *** Arrow Right
 Navigate forward, move right.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Forward navigation, right scroll controls, proceed actions.
 
 *** Arrow Previous
 Step to previous item in sequence.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Pagination, stepper controls, previous item.
 
 *** Arrow Next
 Step to next item in sequence.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Pagination, stepper controls, next item.
 
@@ -229,55 +253,55 @@ Step to next item in sequence.
 Download content, export data.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_download_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Download buttons, export actions.
 
 *** Arrow Download CSV
 Import CSV data.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Import CSV actions, clearly labeled with text overlay.
 
 *** Arrow Download FPML
 Import FPML data.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Import FPML actions, clearly labeled with text overlay.
 
 *** Arrow Download ORE
 Import ORE data.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Import ORE actions, clearly labeled with text overlay.
 
 *** Arrow Upload CSV
 Export CSV data.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Export CSV actions, clearly labeled with text overlay.
 
 *** Arrow Upload FPML
 Export FPML data.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Export FPML actions, clearly labeled with text overlay.
 
 *** Arrow Upload ORE
 Export ORE data.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Export ORE actions, clearly labeled with text overlay.
 
@@ -285,27 +309,24 @@ Export ORE data.
 Synchronize data, refresh with server.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_sync_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Sync buttons, bidirectional refresh.
 
 *** Arrow Trending
 Trades, financial market movement, trending data.
 
-- Fluent Regular: ic_fluent_arrow_trending_20_regular.svg
-- Fluent Filled: ic_fluent_arrow_trending_20_filled.svg
-- Solar Linear: transfer-horizontal.svg
-- Solar Bold: transfer-horizontal.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_trending_20_regular.svg]]
+- Filled: None in the asset set
 
-*Usage*: Trades management (=ActionTrades= toolbar/menu). An upward-trending arrow
-represents financial market activity and transaction flow. Solar fallback:
-~transfer-horizontal.svg~.
+*Usage*: Trades management. An upward-trending arrow represents financial
+market activity and transaction flow.
 
 *** Arrow Clockwise (16px)
 Rotate clockwise, redo action.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Redo buttons, clockwise rotation controls.
 
@@ -313,7 +334,7 @@ Rotate clockwise, redo action.
 Undo action, rotate counterclockwise.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Undo buttons, counterclockwise rotation, revert changes.
 
@@ -325,7 +346,7 @@ Icons communicating system state and user feedback.
 Informational message, help content, details.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_info_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Info tooltips, help buttons, informational banners.
 
@@ -333,7 +354,7 @@ Informational message, help content, details.
 Caution, potential issue, requires attention.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_warning_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Warning messages, caution indicators. Pair with amber/yellow color.
 
@@ -341,7 +362,7 @@ Caution, potential issue, requires attention.
 Error state, failed operation, critical issue.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_error_circle_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Error messages, validation failures, blocked states. Pair with red color.
 
@@ -349,9 +370,17 @@ Error state, failed operation, critical issue.
 Help, unknown state, requires clarification.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_question_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Help buttons, FAQ links, contextual help triggers.
+
+*** Checkmark Circle
+A confirmed or completed state.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_checkmark_circle_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Success indicators and confirmed states, such as data quality.
 
 ** Users & Identity
 
@@ -361,7 +390,7 @@ Icons representing people and account management.
 Single user, current user, profile.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: User profile, account menu, single user reference.
 
@@ -369,7 +398,7 @@ Single user, current user, profile.
 Invite user, create account, add team member.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_add_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Invite buttons, add user actions, registration.
 
@@ -377,22 +406,26 @@ Invite user, create account, add team member.
 Multiple users, team, user management.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_person_accounts_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Team views, user management, multi-user contexts.
+
+*** Contact Card
+A person's contact details.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_contact_card_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Contact details for a person or a party.
 
 *** Anchor
 Fixed reference point a value is measured from.
 
-- Fluent Regular: ic_fluent_pin_20_regular.svg
-- Fluent Filled: ic_fluent_pin_20_filled.svg
-- Solar Linear: pin.svg
-- Solar Bold: pin.svg
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Tenor Anchor reference data (SPOT, TODAY, TOMORROW, NEAR_LEG,
-IMM_ROLL) and its window/menu/toolbar icon wherever referenced. Neither
-Fluent UI nor Solar has a literal nautical-anchor glyph; Pin conveys the
-same "fixed reference location" concept.
+IMM_ROLL). The set has no pin or anchor file, so add one before use.
 
 ** Security & Access
 
@@ -402,7 +435,7 @@ Icons for authentication and authorization concepts.
 Secured, protected, authentication required.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_lock_closed_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Locked content, secure areas, login required indicators.
 
@@ -410,7 +443,7 @@ Secured, protected, authentication required.
 Unlocked, accessible, public.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_lock_open_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Unlocked state, public content, access granted.
 
@@ -418,7 +451,7 @@ Unlocked, accessible, public.
 Reset credentials, forgot password flow.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_password_reset_48_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Password reset screens, credential recovery flows. Large size for
 feature prominence.
@@ -427,7 +460,7 @@ feature prominence.
 Change master password, manage encryption keys.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_key_multiple_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Change master password actions, encryption key management, password
 vault operations.
@@ -435,8 +468,8 @@ vault operations.
 *** Keyboard
 Manual data entry, type input, user-typed values.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Manual entry options in combo boxes or dialogs where the user will
 type all values themselves (as opposed to selecting from a saved connection or
@@ -450,7 +483,7 @@ Icons indicating connectivity and network state.
 Connected to server, online, link established.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_connected_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Connection status indicators showing active connection.
 
@@ -458,7 +491,7 @@ Connected to server, online, link established.
 Disconnected, offline, no connection.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_disconnected_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Disconnected state, offline mode, connection lost.
 
@@ -466,7 +499,7 @@ Disconnected, offline, no connection.
 Connection verified, authenticated connection.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_plug_connected_checkmark_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Verified connection, authenticated session, secure link confirmed.
 
@@ -474,10 +507,9 @@ Connection verified, authenticated connection.
 Server connection bookmark, saved connection.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_server_link_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
-*Usage*: Saved server connections and bookmark management. The Connection
-Browser window that opened from it was removed with the Qt client.
+*Usage*: Saved server connections and bookmark management.
 
 ** Files & Documents
 
@@ -487,15 +519,15 @@ Icons for file system and document operations.
 Directory, container, file group.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_folder_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Folder navigation, directory listings.
 
 *** Folder Open
 Open folder, expanded directory, selected container.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Expanded folder state in tree views, selected folder.
 
@@ -503,30 +535,35 @@ Open folder, expanded directory, selected container.
 Tabular data, spreadsheet, structured document.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_document_table_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Table views, data documents, spreadsheet-like content.
 
 *** Document Code (16px)
 Source code, script, technical document.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Code files, scripts, configuration files.
 
 *** Notepad
 Log viewers, text output panes, ORE log content.
 
-- Fluent Regular: ic_fluent_notepad_20_regular.svg
-- Fluent Filled: ic_fluent_notepad_20_filled.svg
-- Solar Linear: solar_notepad.svg  (mapped from document-text.svg)
-- Solar Bold: solar_notepad.svg    (mapped from document-text.svg)
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_notepad_20_regular.svg]]
+- Filled: None in the asset set
 
-*Usage*: "Logs" toolbar button in the Compute Console Tasks tab and any other
-action that opens a log or text-output viewer. Distinct from Terminal
-(interactive shell), DocumentCode (source code), and DocumentTable (tabular
-data).
+*Usage*: Any action that opens a log or text-output viewer. Distinct from
+Terminal (interactive shell), Document Code (source code), and Document Table
+(tabular data).
+
+*** Library
+A collection of datasets or documents.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_library_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Dataset bundles and catalogue views.
 
 ** Organisation & Entities
 
@@ -535,10 +572,8 @@ Icons representing organisational structure and business entities.
 *** Organization
 Internal parties, legal entities within the firm.
 
-- Fluent Regular: ic_fluent_organization_20_regular.svg
-- Fluent Filled: ic_fluent_organization_20_filled.svg
-- Solar Linear: buildings-2.svg
-- Solar Bold: buildings-2.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_organization_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Party management (internal legal entities). Shows an org-chart/hierarchy
 symbol representing corporate structure.
@@ -546,20 +581,16 @@ symbol representing corporate structure.
 *** Handshake
 External counterparties, trading relationships.
 
-- Fluent Regular: ic_fluent_handshake_20_regular.svg
-- Fluent Filled: ic_fluent_handshake_20_filled.svg
-- Solar Linear: hand-shake.svg
-- Solar Bold: hand-shake.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_handshake_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Counterparty management. Represents external business relationships.
 
 *** People Team
 Business units, organisational divisions.
 
-- Fluent Regular: ic_fluent_people_team_20_regular.svg
-- Fluent Filled: ic_fluent_people_team_20_filled.svg
-- Solar Linear: structure.svg
-- Solar Bold: structure.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_people_team_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Business unit management. Shows a team/group of people, distinct from the
 building icons used for centres and tenants.
@@ -567,10 +598,8 @@ building icons used for centres and tenants.
 *** Building Bank
 Financial centres, business centres (London, New York, Tokyo).
 
-- Fluent Regular: ic_fluent_building_bank_20_regular.svg
-- Fluent Filled: ic_fluent_building_bank_20_filled.svg
-- Solar Linear: buildings-3.svg
-- Solar Bold: buildings-3.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_building_bank_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Business centre reference data. A bank/institutional building representing
 financial centres where business operations occur.
@@ -578,10 +607,8 @@ financial centres where business operations occur.
 *** Building Skyscraper
 Tenants, enterprise organisations.
 
-- Fluent Regular: ic_fluent_building_skyscraper_20_regular.svg
-- Fluent Filled: ic_fluent_building_skyscraper_20_filled.svg
-- Solar Linear: buildings.svg
-- Solar Bold: buildings.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_building_skyscraper_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Tenant management (admin). A tall building/skyscraper representing an
 enterprise-level organisation.
@@ -589,10 +616,8 @@ enterprise-level organisation.
 *** Building
 Generic building, general infrastructure.
 
-- Fluent Regular: ic_fluent_building_20_regular.svg
-- Fluent Filled: ic_fluent_building_20_filled.svg
-- Solar Linear: buildings.svg
-- Solar Bold: buildings.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_building_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Reserved for generic building contexts. Avoid using for specific entity
 types; prefer the specialised variants above.
@@ -600,10 +625,8 @@ types; prefer the specialised variants above.
 *** Briefcase
 Portfolios, investment collections.
 
-- Fluent Regular: ic_fluent_briefcase_20_regular.svg
-- Fluent Filled: ic_fluent_briefcase_20_filled.svg
-- Solar Linear: case-round.svg
-- Solar Bold: case-round.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_briefcase_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Portfolio management. A briefcase representing a collection of investments
 or financial instruments.
@@ -611,13 +634,13 @@ or financial instruments.
 *** Book Open
 Books, trading books, accounting books.
 
-- Fluent Regular: ic_fluent_book_open_20_regular.svg
-- Fluent Filled: ic_fluent_book_open_20_filled.svg
-- Solar Linear: book-2.svg
-- Solar Bold: book-2.svg
+- Regular: None in the asset set
+- Filled: None in the asset set
 
-*Usage*: Book management. An open book representing trading/accounting books. Distinct
-from the closed Book icon used for methodologies and reference materials.
+*Usage*: Book management. An open book representing trading/accounting books.
+Distinct from the closed Book icon used for methodologies and reference
+materials. The set has no open-book file, so use the closed Book icon until it
+arrives.
 
 ** Data & Finance
 
@@ -626,21 +649,18 @@ Icons for numerical data and financial concepts.
 *** Chart Multiple
 Report definitions, report templates with multiple visualisation types.
 
-- Fluent Regular: ic_fluent_chart_multiple_20_regular.svg
-- Fluent Filled: ic_fluent_chart_multiple_20_filled.svg
-- Solar Linear: presentation-graph.svg
-- Solar Bold: presentation-graph.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_chart_multiple_20_regular.svg]]
+- Filled: None in the asset set
 
-*Usage*: Report Definition management (=ActionReportDefinitions=). Multiple chart
-types on one icon conveys "a template that can generate various report formats".
-Distinct from the histogram icon used for data analytics. Solar fallback:
-~presentation-graph.svg~.
+*Usage*: Report definition management. Multiple chart types on one icon conveys
+"a template that can generate various report formats". Distinct from the
+histogram icon used for data analytics.
 
 *** Database
 Data storage, datasets, data dimensions.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_database_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Dataset views, data dimensions (Origin, Nature, Treatment), data assets.
 
@@ -648,7 +668,7 @@ Data storage, datasets, data dimensions.
 Coding schemes, classification systems, identifier schemes.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_code_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Coding scheme management (LEI, ISIN, etc.), classification systems.
 
@@ -656,15 +676,15 @@ Coding schemes, classification systems, identifier schemes.
 Methodologies, documentation, reference materials.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_book_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Methodology views, data processing documentation, reference guides.
 
 *** Clipboard Number 123 (16px)
 Numeric data, ID reference, sequence.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: ID fields, numeric references, serial numbers.
 
@@ -672,9 +692,58 @@ Numeric data, ID reference, sequence.
 Financial data, multi-currency, monetary values.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_currency_dollar_euro_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Currency fields, financial data, monetary transactions.
+
+*** Classification
+A type or class that a record belongs to.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_classification_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Type and class fields, such as a tenant type, a trade type or a code
+domain.
+
+*** Column Triple
+Three columns, a layout or a table structure.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_column_triple_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Report templates and batch views.
+
+*** Flag
+A country flag.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_flag_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Country fields.
+
+*** Globe
+A region, a country or the world.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_globe_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Geography views.
+
+*** Table
+A grid of rows and columns.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_table_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Tabular views, such as a queue monitor.
+
+*** Tag
+A tag or a label on a record.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_tag_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: Badge definitions and version labels.
 
 ** Compute & Execution
 
@@ -683,10 +752,8 @@ Icons representing compute infrastructure entities and executable work.
 *** Apps
 Application modules, compute applications.
 
-- Fluent Regular: ic_fluent_apps_20_regular.svg
-- Fluent Filled: ic_fluent_apps_20_filled.svg
-- Solar Linear: widget.svg
-- Solar Bold: widget.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_apps_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Compute application management (ores.compute =app= entity, e.g. an
 application such as ores.analytics.quant). A grid of squares representing a
@@ -695,21 +762,18 @@ set of application modules.
 *** Text Bullet List Square
 Batches, collections of work units.
 
-- Fluent Regular: ic_fluent_text_bullet_list_square_20_regular.svg
-- Fluent Filled: ic_fluent_text_bullet_list_square_20_filled.svg
-- Solar Linear: list-check.svg
-- Solar Bold: list-check.svg
+- Regular: None in the asset set
+- Filled: None in the asset set
 
-*Usage*: Compute batch management (ores.compute =batch= entity). A square
-with a bulleted text list representing a collection of work units.
+*Usage*: Compute batch management (ores.compute =batch= entity). The set has no
+file for this concept; the =column_triple= icon carries the batch concept
+today.
 
 *** Desktop
 Host machines, compute hosts.
 
-- Fluent Regular: ic_fluent_desktop_20_regular.svg
-- Fluent Filled: ic_fluent_desktop_20_filled.svg
-- Solar Linear: monitor.svg
-- Solar Bold: monitor.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_desktop_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Compute host management (ores.compute =host= entity). A desktop
 monitor representing a machine that runs work.
@@ -717,13 +781,19 @@ monitor representing a machine that runs work.
 *** Flash Flow
 Work units, executable units of work.
 
-- Fluent Regular: ic_fluent_flash_flow_20_regular.svg
-- Fluent Filled: ic_fluent_flash_flow_20_filled.svg
-- Solar Linear: bolt.svg
-- Solar Bold: bolt.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_flash_flow_20_regular.svg]]
+- Filled: None in the asset set
 
 *Usage*: Compute work unit management (ores.compute =workunit= entity). A
 lightning bolt with a flow arrow representing a unit of executable work.
+
+*** Play
+Run a workflow or start a process.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_play_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: A running workflow.
 
 ** Time & History
 
@@ -733,7 +803,7 @@ Icons for temporal concepts.
 Time, schedule, duration.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_clock_16_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: Time fields, timestamps, schedule indicators.
 
@@ -741,7 +811,7 @@ Time, schedule, duration.
 Activity history, past actions, audit trail.
 
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_history_20_regular.svg]]
-- Filled: None (removed with the Qt client)
+- Filled: None in the asset set
 
 *Usage*: History views, recent items, activity logs.
 
@@ -750,47 +820,41 @@ Activity history, past actions, audit trail.
 Scheduler, scheduled jobs, cron tasks.
 
 -   Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_calendar_clock_20_regular.svg]]
--   Filled: None (removed with the Qt client)
+-   Filled: None in the asset set
 
-*Usage*: Scheduler menu entries, job definition list window title, any UI
-element representing scheduled/recurring work. Solar fallback: `calendar.svg`.
+*Usage*: Scheduler menu entries, job definition screen titles, and any element
+that represents scheduled or recurring work.
 
 *** Calendar Add
 
 Schedule a new job, create a scheduled task.
 
--   Regular: None (removed with the Qt client)
--   Filled: None (removed with the Qt client)
+-   Regular: None in the asset set
+-   Filled: None in the asset set
 
-*Usage*: "Schedule Job" button in job definition list toolbar. Use instead of
-generic `Add` when the action specifically creates a scheduled task. Solar
-fallback: `calendar-add.svg`.
+*Usage*: "Schedule Job" button in a job definition toolbar. Use it instead of
+generic =Add= when the action specifically creates a scheduled task.
 
 *** Calendar Cancel
 
 Unschedule a job, deactivate a scheduled task.
 
--   Regular: None (removed with the Qt client)
--   Filled: None (removed with the Qt client)
+-   Regular: None in the asset set
+-   Filled: None in the asset set
 
-*Usage*: "Unschedule" button in job definition list toolbar and detail dialog.
-Semantically distinct from `Delete` (which implies permanent removal) —
-unschedule removes from pg_cron while retaining the definition. Solar fallback:
-`alarm-remove.svg`.
+*Usage*: "Unschedule" button in a job definition toolbar or step. Semantically
+distinct from =Delete= (which implies permanent removal) — unschedule removes
+from pg_cron while retaining the definition.
 
 *** Tasks App
 Job definitions list, task management application.
 
-- Fluent Regular: ic_fluent_tasks_app_20_regular.svg
-- Fluent Filled: ic_fluent_tasks_app_20_filled.svg
-- Solar Linear: clipboard-list.svg
-- Solar Bold: clipboard-list.svg
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_tasks_app_20_regular.svg]]
+- Filled: None in the asset set
 
-*Usage*: Job Definition management (=ActionJobDefinitions= toolbar/menu). Represents a
-task management application — a list of scheduled jobs/tasks to execute. Distinct
-from =CalendarClock= (used for scheduler-concept menu entries and window titles)
-— use =TasksApp= for the job definitions list window and toolbar button. Solar
-fallback: ~clipboard-list.svg~.
+*Usage*: Job definition management. Represents a task management application —
+a list of scheduled jobs/tasks to execute. Distinct from =Calendar Clock=,
+which carries the scheduler concept.
 
 ** Text & Formatting
 
@@ -799,8 +863,8 @@ Icons for text manipulation and formatting.
 *** Text ABC Underline Double (32px)
 Text validation, spell check, language processing.
 
-- Regular: None (removed with the Qt client)
-- Filled: None (removed with the Qt client)
+- Regular: None in the asset set
+- Filled: None in the asset set
 
 *Usage*: Spell check, text validation, language tools.
 
@@ -815,17 +879,21 @@ Text validation, spell check, language processing.
 | Edit/Modify          | edit_20                          | Default | Active |
 | Save                 | save_20                          | Default | Active |
 | Confirm/Check        | checkmark_20                     | Default | Done   |
+| Confirm/Success      | checkmark_circle_20              | Default | Done   |
 | Cancel/Close         | dismiss_20                       | Default | Active |
 | Favorite             | star_20                          | Off     | On     |
 | Generate             | wand_20                          | Default | Active |
-| Reload               | arrow_clockwise_16               | Default | Active |
-| Redo                 | arrow_clockwise_16               | Default | Active |
+| Record               | record_20                        | Default | Active |
+| Search               | search_20                        | Default | Active |
+| Filter               | filter_20                        | Default | Active |
+| Settings             | settings_20                      | Default | Active |
+| Publish              | arrow_upload_20                  | Default | Active |
+| Terminal             | window_console_20                | Default | Active |
 | Back                 | arrow_left_20                    | Default | Active |
-| Forward              | arrow_right_20                   | Default | Active |
 | Download             | arrow_download_20                | Default | Active |
 | Sync                 | arrow_sync_20                    | Default | Active |
 | Trades               | arrow_trending_20                | Default | Active |
-| Undo                 | arrow_rotate_counterclockwise_20 | Default | Active |
+| Undo/Revert          | arrow_rotate_counterclockwise_20 | Default | Active |
 | Info                 | info_20                          | Default | Active |
 | Warning              | warning_20                       | Default | Alert  |
 | Error                | error_circle_20                  | Default | Alert  |
@@ -833,102 +901,82 @@ Text validation, spell check, language processing.
 | User                 | person_20                        | Default | Active |
 | Add User             | person_add_20                    | Default | Active |
 | Team                 | person_accounts_20               | Default | Active |
-| Anchor/Reference Pt  | pin_20                           | Default | Active |
+| Contact Card         | contact_card_20                  | Default | Active |
 | Locked               | lock_closed_20                   | Default | Active |
 | Unlocked             | lock_open_20                     | Default | Active |
 | Change Password      | key_multiple_20                  | Default | Active |
-| Manual Entry         | keyboard_20                      | Default | Active |
+| Password Reset       | password_reset_48                | Default | Active |
 | Connected            | plug_connected_20                | Default | Active |
 | Disconnected         | plug_disconnected_20             | Default | Alert  |
 | Verified Connection  | plug_connected_checkmark_20      | Default | Active |
 | Server Link          | server_link_20                   | Default | Active |
 | Folder               | folder_20                        | Closed  | Active |
-| Folder Open          | folder_open_20                   | Open    | Active |
 | Table Document       | document_table_20                | Default | Active |
-| Code Document        | document_code_16                 | Default | Active |
-| Code/Scheme          | code_20                          | Default | Active |
-| Database/Dataset     | database_20                      | Default | Active |
-| Book/Methodology     | book_20                          | Default | Active |
-| Book Open/Books      | book_open_20                     | Default | Active |
-| Briefcase/Portfolio  | briefcase_20                     | Default | Active |
-| Building (generic)   | building_20                      | Default | Active |
-| Building Bank/Centre | building_bank_20                 | Default | Active |
-| Building Skyscraper  | building_skyscraper_20           | Default | Active |
+| Notepad (Log Viewer) | notepad_20                       | Default | Active |
+| Library              | library_20                       | Default | Active |
 | Organization/Party   | organization_20                  | Default | Active |
 | Handshake/Cpty       | handshake_20                     | Default | Active |
 | People Team/BU       | people_team_20                   | Default | Active |
+| Building Bank/Centre | building_bank_20                 | Default | Active |
+| Building Skyscraper  | building_skyscraper_20           | Default | Active |
+| Building (generic)   | building_20                      | Default | Active |
+| Briefcase/Portfolio  | briefcase_20                     | Default | Active |
+| Chart Multiple       | chart_multiple_20                | Default | Active |
+| Database/Dataset     | database_20                      | Default | Active |
+| Code/Scheme          | code_20                          | Default | Active |
+| Book/Methodology     | book_20                          | Default | Active |
 | Currency             | currency_dollar_euro_20          | Default | Active |
+| Classification       | classification_20                | Default | Active |
+| Column Triple        | column_triple_20                 | Default | Active |
+| Flag                 | flag_20                          | Default | Active |
+| Globe                | globe_20                         | Default | Active |
+| Table                | table_20                         | Default | Active |
+| Tag                  | tag_20                           | Default | Active |
+| Apps/Application     | apps_20                          | Default | Active |
+| Play                 | play_20                          | Default | Active |
+| Host/Desktop         | desktop_20                       | Default | Active |
+| Work Unit/Flash Flow | flash_flow_20                    | Default | Active |
 | Time                 | clock_16                         | Default | Active |
 | History              | history_20                       | Default | Active |
 | Scheduler/Jobs       | calendar_clock_20                | Default | Active |
-| Schedule Job         | calendar_add_20                  | Default | Active |
-| Unschedule Job       | calendar_cancel_20               | Default | Active |
 | Job Definitions List | tasks_app_20                     | Default | Active |
-| Report Definitions   | chart_multiple_20                | Default | Active |
-| Import CSV           | arrow_download_csv_20            | Default | Active |
-| Import FPML          | arrow_download_fpml_20           | Default | Active |
-| Import ORE           | arrow_download_ore_20            | Default | Active |
-| Export CSV           | arrow_upload_csv_20              | Default | Active |
-| Export FPML          | arrow_upload_fpml_20             | Default | Active |
-| Export ORE           | arrow_upload_ore_20              | Default | Active |
-| Publish              | arrow_upload_20                  | Default | Active |
-| Terminal             | window_console_20                | Default | Active |
-| Notepad (Log Viewer) | notepad_20                       | Default | Active |
-| Apps/Application     | apps_20                          | Default | Active |
-| Batch/Work List      | text_bullet_list_square_20       | Default | Active |
-| Host/Desktop         | desktop_20                       | Default | Active |
-| Work Unit/Flash Flow | flash_flow_20                    | Default | Active |
 
 * Adding New Icons
 
-When adding a new icon to ORE Studio, follow these steps:
+When adding a new icon to ORE Studio, follow these steps. The artwork lives in
+=projects/ores.web/packages/web/src/assets/icons/=, and the live set carries the
+regular variant. Steps 3 to 6 name files and functions of the former Qt client,
+which is not in the tree.
 
 ** Step 1: Locate Icons in Source Repositories
 
-ORE Studio supports two icon sets:
+ORE Studio uses one icon set:
 
 - *Fluent UI System Icons*: ~/Development/fluentui-system-icons-main/assets/
-- *Solar Icons*: ~/Development/solar-icons/packages/core/svgs/
 
-Search for a semantically appropriate icon in both sets. For Fluent UI, look for
-20px variants (regular and filled). For Solar, look for Linear and Bold variants.
+Search for a semantically appropriate icon. The live set carries the regular
+variant. Only =clock= is 16px and only =password_reset= is 48px; every other
+file is 20px.
 
 Example search:
 #+begin_example
-find ~/Development/fluentui-system-icons-main/assets -name "*upload*20*"
-find ~/Development/solar-icons/packages/core/svgs -name "*upload*"
+find ~/Development/fluentui-system-icons-main/assets -name "*upload*20*regular*"
 #+end_example
 
 ** Step 2: Copy Icons to Project
 
-Copy the icons to the correct locations:
+Copy the icon into the live asset directory:
 
 #+begin_example
-# Fluent UI icons (regular and filled variants)
 cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_regular.svg" \
-   projects/ores.web/packages/web/src/assets/icons/regular/
-
-cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_filled.svg" \
-   projects/ores.web/packages/web/src/assets/icons/filled/
-
-# Solar icons (Linear and Bold variants)
-cp ".../arrows-action/Linear/upload-square.svg" \
-
-cp ".../arrows-action/Bold/upload-square.svg" \
+   projects/ores.web/packages/web/src/assets/icons/
 #+end_example
 
 ** Step 3: Update Resource File
 
-# The icons are copied into the surviving set. The Qt resource file
-# that used to list them went with the ores.qt tree.
-
-#+begin_src xml
-<!-- Fluent UI icons -->
-<file>icons/fluentui/regular/ic_fluent_arrow_upload_20_regular.svg</file>
-<file>icons/fluentui/filled/ic_fluent_arrow_upload_20_filled.svg</file>
-
-<!-- Solar icons -->
-#+end_src
+There is no resource file. The Qt resource file that used to list the icons went
+with the ores.qt tree, and the web set is a flat directory of SVG files. The
+file itself is the registration.
 
 ** Step 4: Add Enum Entry
 
@@ -977,4 +1025,4 @@ Update this skill document:
 
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — broader design language.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the umbrella visual-language reference linking
-  icons, colour semantics and entity window anatomy.
+  icons, colour semantics and journey screen anatomy.

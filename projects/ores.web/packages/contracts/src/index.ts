@@ -20,14 +20,17 @@
  */
 
 /**
- * `@ores/contracts` holds the HTTP shapes the BFF and the browser agree on.
+ * `@ores/contracts` holds the HTTP shapes the BFF serves.
  *
- * Both sides import the same schema, so the browser validates what the server
- * serialised with the definition the server serialised it from. That is the
- * only way a network boundary gets checked without a code generator, and it
- * means a shape change fails loudly on whichever side is stale.
+ * The BFF imports this package. The browser does not import it: the browser
+ * parses with `@ores/wire-protocol/browser`, so the two sides do not yet share
+ * one schema. Sharing one schema is the intent, because then the browser
+ * validates what the server serialised with the definition the server
+ * serialised it from, and a shape change fails loudly on whichever side is
+ * stale. Until then this package is the BFF's alone.
  *
- * It carries no Node dependency, because the browser loads it too.
+ * It carries no Node dependency, so the browser can load it when the split is
+ * finished.
  */
 export * from './site.js';
 export * from './session.js';

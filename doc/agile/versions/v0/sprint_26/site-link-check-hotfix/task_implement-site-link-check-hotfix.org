@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: ED695A7D-60C6-4800-A7C6-8F1DF86D03AE
+:END:
+#+title: Task: Implement Hotfix: the site build aborts on a POSIX class that reads as a link
+#+description: Re-delimit the two inline verbatim spans in the dq clean task that an inner equals sign closed early, add a doc-lint check that fails any link whose target begins with a colon, prove the check on the original text and on the tree, and verify the page and the full site build publish.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:site:orgmode:ci:sprint_26:v0:site-link-check-hotfix:
+#+owner: marco
+#+branch: hotfix/site-unresolved-link
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90C80491-9626-4CCC-8F27-5C7D5B053BA2][Hotfix: the site build aborts on a POSIX class that reads as a link]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the site build publish again, and leave a check that fails the
+defect at pull-request time rather than on main after the merge.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90C80491-9626-4CCC-8F27-5C7D5B053BA2][Hotfix: the site build aborts on a POSIX class that reads as a link]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- =doc/agile/versions/v0/sprint_26/clean-dq/task_clean_dq.org= publishes,
+  and the evidence command in it renders unchanged.
+- The full site build completes.
+- =ores-check-org-links.el= fails on the text this task fixes, and passes
+  on the tree; the doc-lint job runs it on every documentation change.
+- =compass lint=, =validate_docs.sh= and the skill checks stay green.
+
+* Plan
+
+1. Reproduce the failure on the single page, then reduce it: the export
+   aborts on the page, and a probe shows a table cell is the context that
+   matters.
+2. Establish which delimiters and which inline forms survive. An inline
+   source block survives in a paragraph but not in a table cell; tilde
+   verbatim survives in both, and preserves the command text.
+3. Fix the two spans in the page, publish it, and read the rendered HTML
+   to confirm the command is intact.
+4. Write the check, prove it fails on the original text and passes on the
+   tree, and wire it into the doc-lint job.
+5. Run the full site build and the documentation gates, then raise the
+   pull request.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files the link check scans | 6020 | =emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el= | =6849e7b1a5= |
+| Files it parses | 2 (the two with a candidate) | same | =6849e7b1a5= |
+| Unresolved links on the fixed tree | 0, exit 0 | same | =6849e7b1a5= |
+| Unresolved links on the text before the fix | 2, exit 1 | same, against the pre-fix copy | =6849e7b1a5= |
+| Rendered command in the fixed page | ~grep -rhozE 'nats_subject[[:space:]]*=[[:space:]]*"dq\.v1\.[a-z0-9._-]+"' projects/ores.dq/api/include~ | read from the published HTML | =6849e7b1a5= |
+
+* Notes
+
+- The mechanism, reproduced minimally. In a table cell, the probe
+  command of two bracketed classes delimited with tildes exports; the
+  same command delimited with equals signs aborts with the same
+  =:space:= error. The equals sign inside the command closes the span, so
+  the character class that follows is parsed as a link. Tilde delimiters
+  cannot be closed by an equals sign, and an inline source block is not
+  protected inside a table cell, which is why the fix is the delimiters
+  rather than the form.
+- The check is exact rather than heuristic. No org link type begins with a
+  colon, so a parsed link whose target does is always a mistake; the
+  check reports the file, the line and the target, and it does not need
+  the id map, so it is cheap enough for the doc-lint job.
+- Two defects of this family have now reached main: the =file:= link with
+  a line-number search into a Python file, fixed in PR #2262, and this
+  one. The check this task adds catches the second shape; a general
+  "every link resolves" check would need a full parse of the corpus,
+  which the site build already does on every push to main.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=doc/agile/versions/v0/sprint_26/clean-dq/task_clean_dq.org= publishes,
+and the command in its two evidence cells renders as the exact command
+that produced the number. The full site build completes, so the section
+that follows the dq page is no longer aborted.
+
+=projects/ores.lisp/src/ores-check-org-links.el= is the structural half:
+it scans every org file the site publishes, parses only those whose text
+carries a candidate, and fails when a parsed link's target begins with a
+colon. On this tree it reports 6020 files scanned, 2 parsed and 0
+unresolved; against the pre-fix text it reports both links and exits 1.
+The =.github/workflows/doc-lint.yml= job runs it, so the shape fails a
+pull request instead of main.

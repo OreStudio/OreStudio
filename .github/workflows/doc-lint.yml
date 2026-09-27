@@ -40,11 +40,28 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Setup Emacs
+        # The link check below parses the org corpus, which is what tells a
+        # link from a POSIX class that merely looks like one.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y emacs-nox
+
       - name: Validate the org corpus
         # Filetags, generator markers and dangling id links. A dangling
         # link makes its target invisible to search and to graph
         # traversal, and nothing else reports it.
         run: ./projects/ores.compass/compass.sh --no-deps lint
+
+      - name: Check no link target begins with a colon
+        # The site build aborts on the first link it cannot resolve, which
+        # names one file and only after the merge. Two defects have reached
+        # main that way, the second one a =[[:space:]]= written inside an
+        # inline verbatim span that an inner = closed early, which org then
+        # parses as a link to =:space:=. No link type begins with a colon,
+        # so the shape is always a mistake and the check is exact.
+        run: |
+          emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el
 
       - name: Check every skill is in the compass- namespace
         # The prefix separates the skills this project owns from every

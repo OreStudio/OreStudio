@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,495 +17,345 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/service/publication_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/repository/mapper_helpers.hpp"
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/topological_sort.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.platform/time/datetime.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
-#include <format>
-#include <map>
-#include <set>
+#include <cstdint>
+#include <iterator>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+using ores::service::messaging::stamp;
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
-using namespace ores::database::repository;
 
 publication_service::publication_service(context ctx)
-    : ctx_(std::move(ctx))
-    , dependency_repo_(ctx_)
-    , publication_repo_(ctx_) {
-    BOOST_LOG_SEV(lg(), debug) << "publication_service initialized";
+    : ctx_(std::move(ctx)) {}
+namespace {
+
+/**
+ * @brief The current row a key names, or an empty vector when there is none.
+ *
+ * A key record carries each column with the column's own type, and the
+ * repository takes the text form every one of its key parameters shares, so
+ * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
+ */
+std::vector<domain::publication> read_one(repository::publication_repository& repo,
+                                          const ores::database::context& ctx,
+                                          const messaging::publication_key& key) {
+    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
-std::vector<domain::publication_result>
-publication_service::publish(const std::vector<boost::uuids::uuid>& dataset_ids,
-                             domain::publication_mode mode,
-                             const std::string& published_by,
-                             bool resolve_dependencies) {
-
-    BOOST_LOG_SEV(lg(), info) << "Publishing " << dataset_ids.size()
-                              << " datasets with mode: " << mode
-                              << ", resolve_dependencies: " << resolve_dependencies
-                              << ", published_by: " << published_by;
-
-    if (dataset_ids.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No datasets specified for publication";
-        return {};
-    }
-
-    // Resolve publication order (handles dependencies if requested)
-    std::vector<domain::dataset> ordered_datasets;
-    if (resolve_dependencies) {
-        ordered_datasets = resolve_publication_order(dataset_ids);
-    } else {
-        // Just fetch the datasets in the order given
-        for (const auto& id : dataset_ids) {
-            auto datasets = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
-            if (!datasets.empty()) {
-                ordered_datasets.push_back(datasets.front());
-            } else {
-                BOOST_LOG_SEV(lg(), warn) << "Dataset not found: " << id;
-            }
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Publication order resolved: " << ordered_datasets.size()
-                              << " datasets";
-
-    // Build artefact type cache to avoid redundant DB queries
-    auto artefact_type_cache = build_artefact_type_cache(ordered_datasets);
-    BOOST_LOG_SEV(lg(), debug) << "Built artefact type cache with " << artefact_type_cache.size()
-                               << " entries";
-
-    // Publish each dataset in order
-    std::vector<domain::publication_result> results;
-    results.reserve(ordered_datasets.size());
-
-    for (const auto& dataset : ordered_datasets) {
-        BOOST_LOG_SEV(lg(), info) << "Publishing dataset: " << dataset.code << " (" << dataset.name
-                                  << ")";
-
-        auto result = publish_dataset(dataset, mode, published_by, artefact_type_cache);
-        results.push_back(result);
-
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully published " << dataset.code
-                                      << " - inserted: " << result.records_inserted
-                                      << ", updated: " << result.records_updated
-                                      << ", skipped: " << result.records_skipped
-                                      << ", deleted: " << result.records_deleted;
-
-            // Record in audit table
-            record_publication(result, mode, published_by);
-        } else {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to publish " << dataset.code << ": " << result.error_message;
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Publication complete: " << results.size()
-                              << " datasets processed";
-
-    return results;
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::publication_key key_from(const domain::publication& v) {
+    messaging::publication_key key;
+    key.id = v.id;
+    return key;
 }
 
-std::vector<domain::dataset>
-publication_service::resolve_publication_order(const std::vector<boost::uuids::uuid>& dataset_ids) {
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy,
+ * provenance, the version and the validity window are the service's and the
+ * database's to state, and are set after this conversion.
+ */
+domain::publication to_domain(const messaging::publication_write& write) {
+    domain::publication v;
+    v.id = write.id;
+    v.dataset_id = write.dataset_id;
+    v.dataset_code = write.dataset_code;
+    v.mode = write.mode;
+    v.target_table = write.target_table;
+    v.records_inserted = write.records_inserted;
+    v.records_updated = write.records_updated;
+    v.records_skipped = write.records_skipped;
+    v.records_deleted = write.records_deleted;
+    v.published_by = write.published_by;
+    v.published_at = write.published_at;
+    return v;
+}
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving publication order for " << dataset_ids.size()
-                               << " datasets";
+} // namespace
 
-    // Fetch all datasets
-    std::map<std::string, domain::dataset> datasets_by_code;
-    std::map<boost::uuids::uuid, std::string> id_to_code;
-    std::set<std::string> requested_codes;
+messaging::list_publications_response
+publication_service::list_publications(const messaging::list_publications_request& request) {
+    messaging::list_publications_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    response.publications = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.total = repo_.get_total_publication_count(ctx_);
+    return response;
+}
 
-    for (const auto& id : dataset_ids) {
-        auto datasets = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
-        if (!datasets.empty()) {
-            const auto& dataset = datasets.front();
-            datasets_by_code[dataset.code] = dataset;
-            id_to_code[id] = dataset.code;
-            requested_codes.insert(dataset.code);
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Dataset not found: " << id;
+messaging::get_publication_response
+publication_service::get_publication(const messaging::get_publication_request& request) {
+    messaging::get_publication_response response;
+    auto found = read_one(repo_, ctx_, request.key);
+    if (found.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    response.publication = std::move(found.front());
+    return response;
+}
+
+messaging::get_many_publications_response publication_service::get_many_publications(
+    const messaging::get_many_publications_request& request) {
+    messaging::get_many_publications_response response;
+    // One entry per requested key, in the order asked for, so the reply is
+    // positional and a caller reads absence from an empty entry rather than
+    // from a missing one.
+    response.entries.reserve(request.keys.size());
+    for (const auto& k : request.keys) {
+        messaging::publication_lookup entry;
+        entry.key = k;
+        auto found = read_one(repo_, ctx_, k);
+        if (!found.empty())
+            entry.publication = std::move(found.front());
+        response.entries.push_back(std::move(entry));
+    }
+    return response;
+}
+
+messaging::put_publication_response
+publication_service::put_publication(const messaging::put_publication_request& request) {
+    messaging::put_publication_response response;
+    domain::publication value;
+    response.result = prepare_change(request.change, request.intent, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(ctx_, value, request.change.precondition);
+    auto written = read_one(repo_, ctx_, key_from(value));
+    if (!written.empty())
+        response.publication = std::move(written.front());
+    return response;
+}
+
+messaging::put_many_publications_response publication_service::put_many_publications(
+    const messaging::put_many_publications_request& request) {
+    messaging::put_many_publications_response response;
+    std::vector<domain::publication> batch;
+    batch.reserve(request.changes.size());
+    for (const auto& change : request.changes) {
+        domain::publication value;
+        const auto result = prepare_change(change, request.intent, value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
+        }
+        batch.push_back(std::move(value));
+    }
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
+    response.publications.reserve(batch.size());
+    for (const auto& value : batch) {
+        auto written = read_one(repo_, ctx_, key_from(value));
+        response.publications.push_back(written.empty() ? value : std::move(written.front()));
+    }
+    return response;
+}
+
+messaging::delete_publication_response
+publication_service::delete_publication(const messaging::delete_publication_request& request) {
+    messaging::delete_publication_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result.outcome = outcome::invalid;
+        response.result.code = "precondition_not_supported";
+        response.result.message = "A removal cannot require that a row is absent.";
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_incomplete";
+            response.result.message = "A versioned removal must state the version it expects.";
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+        case repository::publication_repository::remove_status::removed:
+            break;
+        case repository::publication_repository::remove_status::missing:
+            response.result.outcome = outcome::missing;
+            response.result.code = "not_found";
+            break;
+        case repository::publication_repository::remove_status::conflicting:
+            response.result.outcome = outcome::conflict;
+            response.result.code = "version_conflict";
+            break;
+        case repository::publication_repository::remove_status::unsupported:
+            response.result.outcome = outcome::invalid;
+            response.result.code = "precondition_not_supported";
+            response.result.message = "This resource keeps no version to match.";
+            break;
+    }
+    return response;
+}
+
+messaging::delete_many_publications_response publication_service::delete_many_publications(
+    const messaging::delete_many_publications_request& request) {
+    messaging::delete_many_publications_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result.outcome = outcome::invalid;
+            response.result.code = "batch_removal_is_unconditional";
+            response.result.message =
+                "A batch removal is unconditional; remove the rows one at a time "
+                "to state a version.";
+            return response;
         }
     }
+    if (request.removals.empty())
+        return response;
+    std::vector<std::string> id_keys;
+    id_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        id_keys.push_back(boost::uuids::to_string(removal.key.id));
+    repo_.remove(ctx_, id_keys);
+    return response;
+}
 
-    // Fetch all dependencies
-    auto all_dependencies = dependency_repo_.read_latest();
-    BOOST_LOG_SEV(lg(), debug) << "Found " << all_dependencies.size() << " total dependencies";
-
-    // Find all datasets that need to be included (requested + their dependencies)
-    std::set<std::string> all_codes = requested_codes;
-    bool changed = true;
-    while (changed) {
-        changed = false;
-        for (const auto& dep : all_dependencies) {
-            if (all_codes.count(dep.dataset_code) > 0 &&
-                all_codes.count(dep.dependency_code) == 0) {
-                // Need to add this dependency
-                all_codes.insert(dep.dependency_code);
-                changed = true;
+ores::utility::domain::result
+publication_service::prepare_change(const messaging::publication_change& change,
+                                    const ores::utility::domain::change_intent& intent,
+                                    domain::publication& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_one(repo_, ctx_, key_from(out));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty()) {
+                result.outcome = outcome::conflict;
+                result.code = "already_exists";
+                return result;
             }
-        }
+            break;
+        case precondition_kind::must_match_version:
+            result.outcome = outcome::invalid;
+            result.code = "precondition_not_supported";
+            result.message = "This resource keeps no version to match.";
+            return result;
+            break;
+        case precondition_kind::any:
+            break;
     }
-
-    // Fetch any additional datasets we need
-    if (all_codes.size() > datasets_by_code.size()) {
-        BOOST_LOG_SEV(lg(), debug) << "Fetching " << (all_codes.size() - datasets_by_code.size())
-                                   << " additional dependency datasets";
-
-        auto all_datasets = dataset_repo_.read_latest(ctx_);
-        for (const auto& ds : all_datasets) {
-            if (all_codes.count(ds.code) > 0 && datasets_by_code.count(ds.code) == 0) {
-                datasets_by_code[ds.code] = ds;
-            }
-        }
-    }
-
-    // Build the dependency graph using boost.graph
-    using graph_t = boost::adjacency_list<boost::vecS,
-                                          boost::vecS,
-                                          boost::directedS,
-                                          std::string // vertex property = dataset code
-                                          >;
-
-    graph_t g;
-    std::map<std::string, graph_t::vertex_descriptor> code_to_vertex;
-
-    // Add vertices
-    for (const auto& code : all_codes) {
-        auto v = boost::add_vertex(code, g);
-        code_to_vertex[code] = v;
-    }
-
-    // Add edges (dependency -> dependent)
-    // If A depends on B, edge goes from B to A (B must come before A)
-    for (const auto& dep : all_dependencies) {
-        if (code_to_vertex.count(dep.dataset_code) > 0 &&
-            code_to_vertex.count(dep.dependency_code) > 0) {
-            boost::add_edge(
-                code_to_vertex[dep.dependency_code], code_to_vertex[dep.dataset_code], g);
-        }
-    }
-
-    // Topological sort
-    std::vector<graph_t::vertex_descriptor> sorted;
-    try {
-        boost::topological_sort(g, std::back_inserter(sorted));
-    } catch (const boost::not_a_dag& e) {
-        BOOST_LOG_SEV(lg(), error) << "Circular dependency detected in datasets";
-        throw std::runtime_error("Circular dependency detected in datasets");
-    }
-
-    // Convert sorted vertices back to datasets
-    // Note: topological_sort returns reverse order, so we reverse
-    std::vector<domain::dataset> result;
-    result.reserve(sorted.size());
-
-    for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
-        const auto& code = g[*it];
-        if (datasets_by_code.count(code) > 0) {
-            result.push_back(datasets_by_code[code]);
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Publication order resolved: " << result.size() << " datasets";
-
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
     return result;
+}
+
+
+std::vector<domain::publication> publication_service::list_publications(std::uint32_t offset,
+                                                                        std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all publications";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t publication_service::count_publications() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total publications count";
+    return repo_.get_total_publication_count(ctx_);
+}
+
+
+std::optional<domain::publication>
+publication_service::get_publication(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting publication. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
 }
 
 std::vector<domain::publication>
-publication_service::get_publication_history(const boost::uuids::uuid& dataset_id) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Getting publication history for dataset: " << dataset_id;
-
-    return publication_repo_.read_by_dataset(dataset_id);
+publication_service::get_publications(const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
 }
 
-std::vector<domain::publication> publication_service::get_recent_publications(std::uint32_t limit) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Getting recent publications, limit: " << limit;
-
-    return publication_repo_.read_recent(limit);
+void publication_service::save_publication(const domain::publication& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Publication id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving publication. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved publication. " << "id: " << v.id;
 }
 
-std::map<std::string, domain::artefact_type>
-publication_service::build_artefact_type_cache(const std::vector<domain::dataset>& datasets) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Building artefact type cache for " << datasets.size()
-                               << " datasets";
-
-    // Collect unique artefact type codes
-    std::set<std::string> artefact_type_codes;
-    for (const auto& dataset : datasets) {
-        if (!dataset.artefact_type.empty())
-            artefact_type_codes.insert(dataset.artefact_type);
+void publication_service::save_publications(const std::vector<domain::publication>& publications) {
+    for (const auto& e : publications) {
+        if (e.id.is_nil())
+            throw std::invalid_argument("Publication id cannot be empty.");
     }
-
-    // Fetch each artefact type once
-    std::map<std::string, domain::artefact_type> cache;
-    for (const auto& code : artefact_type_codes) {
-        auto artefact_types = artefact_type_repo_.read_latest(ctx_, code);
-        if (!artefact_types.empty()) {
-            cache[code] = std::move(artefact_types.front());
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Artefact type not found: " << code;
-        }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << publications.size() << " publications";
+    auto ts = publications;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
     }
-
-    return cache;
+    repo_.write(ctx_, ts);
 }
 
-domain::publication_result publication_service::publish_dataset(
-    const domain::dataset& dataset,
-    domain::publication_mode mode,
-    const std::string& published_by,
-    const std::map<std::string, domain::artefact_type>& artefact_type_cache) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Publishing dataset: " << dataset.code
-                               << " with artefact_type: " << dataset.artefact_type;
-
-    domain::publication_result result;
-    result.dataset_id = dataset.id;
-    result.dataset_code = dataset.code;
-    result.dataset_name = dataset.name;
-
-    if (dataset.artefact_type.empty()) {
-        result.success = false;
-        result.error_message = "Dataset has no artefact_type specified";
-        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
-        return result;
-    }
-
-    // Look up the artefact_type from cache
-    auto it = artefact_type_cache.find(dataset.artefact_type);
-    if (it == artefact_type_cache.end()) {
-        result.success = false;
-        result.error_message = "Unknown artefact_type: " + dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
-        return result;
-    }
-
-    const auto& artefact_type = it->second;
-
-    if (!artefact_type.target_table.has_value() || artefact_type.target_table->empty()) {
-        result.success = false;
-        result.error_message = "Artefact type has no target_table: " + dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
-        return result;
-    }
-
-    if (!artefact_type.target_subject.has_value() || artefact_type.target_subject->empty()) {
-        result.success = false;
-        result.error_message = "Artefact type has no target_subject: " + dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
-        return result;
-    }
-
-    result.target_table = *artefact_type.target_table;
-    return call_populate_function(dataset, artefact_type, mode, published_by);
+void publication_service::delete_publication(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing publication. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed publication. " << "id: " << id;
 }
 
-void publication_service::record_publication(const domain::publication_result& result,
-                                             domain::publication_mode mode,
-                                             const std::string& published_by) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Recording publication for dataset: " << result.dataset_code;
-
-    // Build the INSERT query
-    const auto sql = std::format(
-        "INSERT INTO ores_dq_dataset_publications_tbl ("
-        "tenant_id, dataset_id, dataset_code, mode, target_table, "
-        "records_inserted, records_updated, records_skipped, records_deleted, published_by"
-        ") VALUES ('{}', '{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
-        ctx_.tenant_id().to_string(),
-        boost::uuids::to_string(result.dataset_id),
-        result.dataset_code,
-        to_string(mode),
-        result.target_table,
-        result.records_inserted,
-        result.records_updated,
-        result.records_skipped,
-        result.records_deleted,
-        published_by);
-
-    try {
-        execute_raw_command(ctx_, sql, lg(), "Recording publication");
-        BOOST_LOG_SEV(lg(), debug) << "Publication recorded successfully";
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to record publication: " << e.what();
-    }
+void publication_service::delete_publications(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
-domain::publication_result
-publication_service::call_populate_function(const domain::dataset& dataset,
-                                            const domain::artefact_type& artefact_type,
-                                            domain::publication_mode mode,
-                                            const std::string& /*published_by*/) {
-
-    domain::publication_result result;
-    result.dataset_id = dataset.id;
-    result.dataset_code = dataset.code;
-    result.dataset_name = dataset.name;
-    result.target_table = *artefact_type.target_table;
-
-    const std::string mode_str = to_string(mode);
-    const std::string function_name = *artefact_type.target_subject;
-    const std::string dataset_id_str = boost::uuids::to_string(dataset.id);
-
-    BOOST_LOG_SEV(lg(), debug) << "Calling populate function: " << function_name
-                               << ", mode: " << mode_str;
-
-    const auto sql = std::format("SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
-                                 function_name,
-                                 dataset_id_str,
-                                 ctx_.tenant_id().to_string(),
-                                 mode_str);
-
-    try {
-        auto rows = execute_raw_multi_column_query(
-            ctx_, sql, lg(), std::format("Calling {}", function_name));
-
-        // Aggregate results from the function
-        // The function returns (action, record_count) rows
-        for (const auto& row : rows) {
-            if (row.size() >= 2 && row[0].has_value() && row[1].has_value()) {
-                const std::string action = *row[0];
-                const auto count = static_cast<std::uint64_t>(std::stoll(*row[1]));
-
-                if (action == "inserted") {
-                    result.records_inserted += count;
-                } else if (action == "updated") {
-                    result.records_updated += count;
-                } else if (action == "skipped") {
-                    result.records_skipped += count;
-                } else if (action == "deleted") {
-                    result.records_deleted += count;
-                }
-            }
-        }
-
-        result.success = true;
-
-        BOOST_LOG_SEV(lg(), debug)
-            << "Populate function completed: " << "inserted=" << result.records_inserted
-            << ", updated=" << result.records_updated << ", skipped=" << result.records_skipped
-            << ", deleted=" << result.records_deleted;
-
-    } catch (const std::exception& e) {
-        result.success = false;
-        result.error_message = e.what();
-        BOOST_LOG_SEV(lg(), error) << "Populate function failed: " << e.what();
-    }
-
-    return result;
-}
-
-std::vector<bundle_publishable_dataset>
-publication_service::list_publishable_datasets(const std::vector<boost::uuids::uuid>& dataset_ids,
-                                               bool resolve_dependencies) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Resolving publishable datasets for " << dataset_ids.size()
-                               << " IDs, resolve_dependencies=" << resolve_dependencies;
-
-    std::vector<domain::dataset> ordered_datasets;
-    if (resolve_dependencies) {
-        ordered_datasets = resolve_publication_order(dataset_ids);
-    } else {
-        for (const auto& id : dataset_ids) {
-            auto rows = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
-            if (!rows.empty())
-                ordered_datasets.push_back(rows.front());
-            else
-                BOOST_LOG_SEV(lg(), warn) << "Dataset not found: " << id;
-        }
-    }
-
-    auto cache = build_artefact_type_cache(ordered_datasets);
-
-    std::vector<bundle_publishable_dataset> result;
-    result.reserve(ordered_datasets.size());
-    for (const auto& ds : ordered_datasets) {
-        if (ds.artefact_type.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "Skipping dataset without artefact_type: " << ds.code;
-            continue;
-        }
-        auto it = cache.find(ds.artefact_type);
-        if (it == cache.end()) {
-            BOOST_LOG_SEV(lg(), warn) << "Artefact type not found for dataset: " << ds.code;
-            continue;
-        }
-        if (!it->second.target_subject.has_value() || it->second.target_subject->empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No target_subject for dataset: " << ds.code;
-            continue;
-        }
-        bundle_publishable_dataset entry;
-        entry.dataset_id = boost::uuids::to_string(ds.id);
-        entry.dataset_code = ds.code;
-        entry.target_subject = *it->second.target_subject;
-        result.push_back(std::move(entry));
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Resolved " << result.size() << " publishable datasets";
-    return result;
-}
-
-std::vector<bundle_publishable_dataset>
-publication_service::list_bundle_publishable_datasets(const std::string& bundle_code,
-                                                      bool resolve_dependencies) {
-
-    BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code
-                               << ", resolve_dependencies=" << resolve_dependencies;
-
-    // Direct member IDs + their optional flag -- ores_dq_bundle_datasets_list_fn already does
-    // the dataset_code -> dataset_id lookup (skipping codes with no matching dataset record); the
-    // dependency closure and target_subject/is_publishable filtering both happen in
-    // list_publishable_datasets() below, the same core the ID-based publish path uses (it has no
-    // notion of "optional" -- that's bundle-membership metadata, not a dataset property -- so the
-    // flag is merged back in afterwards by dataset_id).
-    const auto sql = "SELECT dataset_id, optional FROM ores_dq_bundle_datasets_list_fn($1) "
-                     "WHERE dataset_id IS NOT NULL ORDER BY display_order";
-
-    auto rows = execute_parameterized_multi_column_query(
-        ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle members for {}", bundle_code));
-
-    std::vector<boost::uuids::uuid> member_ids;
-    std::map<boost::uuids::uuid, bool> optional_by_id;
-    member_ids.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() >= 2 && row[0].has_value()) {
-            try {
-                auto id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-                member_ids.push_back(id);
-                optional_by_id[id] = database::repository::text_to_bool(row[1]);
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Invalid dataset_id in bundle " << bundle_code << ": " << e.what();
-            }
-        }
-    }
-
-    auto result = list_publishable_datasets(member_ids, resolve_dependencies);
-    for (auto& entry : result) {
-        try {
-            auto it =
-                optional_by_id.find(boost::lexical_cast<boost::uuids::uuid>(entry.dataset_id));
-            entry.optional = it != optional_by_id.end() && it->second;
-        } catch (const std::exception&) {
-            entry.optional = false;
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " publishable datasets in bundle "
-                               << bundle_code << " (" << member_ids.size() << " direct member(s))";
-
-    return result;
-}
 
 }

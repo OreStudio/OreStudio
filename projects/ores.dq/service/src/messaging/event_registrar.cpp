@@ -31,6 +31,7 @@
 #include "ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_event_registrar.hpp"
 #include "ores.dq.service/messaging/lei_entity_event_registrar.hpp"
+#include "ores.dq.service/messaging/publication_event_registrar.hpp"
 #include "ores.dq.service/messaging/lei_relationship_event_registrar.hpp"
 #include "ores.dq.service/messaging/report_definition_event_registrar.hpp"
 #include "ores.dq.service/messaging/subject_area_event_registrar.hpp"
@@ -61,6 +62,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_dataset_bundle_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_dataset_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_lei_entity_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_publication_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_lei_relationship_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_report_definition_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_subject_area_event_mapping(event_source, event_bus, nats));

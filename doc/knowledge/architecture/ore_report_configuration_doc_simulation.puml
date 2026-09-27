@@ -1,0 +1,368 @@
+@startuml
+title ORE simulation entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "simulation.xml" {
+  class "boundaryConstraint" as simulation__boundaryConstraint {
+    LowerBound : float
+    UpperBound : float
+    parameter : string
+  }
+  class "calibrationBasket" as simulation__calibrationBasket {
+    parameter? : string
+  }
+  class "calibrationConfiguration" as simulation__calibrationConfiguration {
+    RmseTolerance? : positiveDecimal
+    MaxIterations? : positiveInteger
+  }
+  class "calibrationConfiguration_Constraints" as simulation__calibrationConfiguration_Constraints <<value>> {
+  }
+  class "calibrationCpiCapFloor" as simulation__calibrationCpiCapFloor {
+    Type : capFloor
+    Maturity : string
+    Strike : string
+  }
+  class "calibrationYoYCapFloor" as simulation__calibrationYoYCapFloor {
+    Type : capFloor
+    Tenor : string
+    Strike : string
+  }
+  class "calibrationYoYSwap" as simulation__calibrationYoYSwap {
+    Tenor : string
+  }
+  class "cir" as simulation__cir {
+    Currency? : currencyCode
+    CalibrationType : calibrationTypeType
+    CalibrationStrategy : string
+    StartValue : float
+    ReversionValue : float
+    LongTermValue : float
+    Volatility : float
+    RelaxedFeller : bool
+    FellerFactor : float
+    Tolerance : float
+  }
+  class "commoditySchwartz" as simulation__commoditySchwartz {
+    Currency : currencyCode
+    CalibrationType : string
+    DriftFreeState? : boolean
+    name : string
+  }
+  class "crlgm" as simulation__crlgm {
+    Currency? : currencyCode
+    CalibrationType : calibrationTypeType
+    FloatSpreadMapping? : floatSpreadMappingType
+    name? : string
+  }
+  class "crossAssetLGM" as simulation__crossAssetLGM {
+    Currency : currencyCode
+    CalibrationType : string
+    name : string
+  }
+  class "crossAssetModel" as simulation__crossAssetModel {
+    DomesticCcy : currencyCode
+    BootstrapTolerance : float
+    Measure? : measureType
+    Discretization? : discretizationType
+    SalvagingAlgorithm? : salvagingAlgoType
+    IntegrationPolicy? : string
+    PiecewiseIntegration? : bool
+  }
+  class "crossAssetModel_Commodities" as simulation__crossAssetModel_Commodities <<value>> {
+    Commodity? : string
+  }
+  class "crossAssetModel_CommodityModels" as simulation__crossAssetModel_CommodityModels <<value>> {
+  }
+  class "crossAssetModel_CreditModels" as simulation__crossAssetModel_CreditModels <<value>> {
+  }
+  class "crossAssetModel_CreditNames" as simulation__crossAssetModel_CreditNames <<value>> {
+    CreditName? : string
+  }
+  class "crossAssetModel_CreditStates" as simulation__crossAssetModel_CreditStates <<value>> {
+    NumberOfFactors : integer
+  }
+  class "crossAssetModel_Currencies" as simulation__crossAssetModel_Currencies <<value>> {
+    Currency : currencyCode
+  }
+  class "crossAssetModel_Equities" as simulation__crossAssetModel_Equities <<value>> {
+    Equity? : string
+  }
+  class "crossAssetModel_EquityModels" as simulation__crossAssetModel_EquityModels <<value>> {
+  }
+  class "crossAssetModel_ForeignExchangeModels" as simulation__crossAssetModel_ForeignExchangeModels <<value>> {
+  }
+  class "crossAssetModel_InflationIndexModels" as simulation__crossAssetModel_InflationIndexModels <<value>> {
+  }
+  class "crossAssetModel_InflationIndices" as simulation__crossAssetModel_InflationIndices <<value>> {
+    InflationIndex? : string
+  }
+  class "crossAssetModel_InstantaneousCorrelations" as simulation__crossAssetModel_InstantaneousCorrelations <<value>> {
+  }
+  class "crossAssetModel_InstantaneousCorrelations_Correlation" as simulation__crossAssetModel_InstantaneousCorrelations_Correlation <<value>> {
+    factor1 : string
+    factor2 : string
+    index1? : string
+    index2? : string
+  }
+  class "crossAssetModel_InterestRateModels" as simulation__crossAssetModel_InterestRateModels <<value>> {
+  }
+  class "crossCurrencyLGM" as simulation__crossCurrencyLGM {
+    DomesticCcy : currencyCode
+    CalibrationType : string
+    foreignCcy : currencyCodeWithDefault
+  }
+  class "dodgsonKainth" as simulation__dodgsonKainth {
+    Currency : currencyCode
+    CalibrationType : calibrationTypeType
+    index? : string
+  }
+  class "dodgsonKainth_CalibrationBaskets" as simulation__dodgsonKainth_CalibrationBaskets <<value>> {
+  }
+  class "hw" as simulation__hw {
+    Currency? : currencyCode
+    CalibrationType : calibrationTypeType
+    PCASigmaRatios? : string
+    ccy? : currencyCodeWithDefault
+    index? : string
+    key? : string
+  }
+  class "hw_Reversion" as simulation__hw_Reversion <<value>> {
+    Calibrate : bool
+    ReversionType? : reversionTypeType
+    ParamType : paramTypeType
+    TimeGrid : string
+  }
+  class "hw_Volatility" as simulation__hw_Volatility <<value>> {
+    Calibrate : bool
+    VolatilityType? : volatilityTypeType
+    ParamType : paramTypeType
+    TimeGrid : string
+  }
+  class "hw_Volatility_InitialValue" as simulation__hw_Volatility_InitialValue <<value>> {
+  }
+  class "hw_Volatility_InitialValue_Sigma" as simulation__hw_Volatility_InitialValue_Sigma <<value>> {
+    Row : string
+  }
+  class "jarrowYildrim" as simulation__jarrowYildrim {
+    Currency : currencyCode
+    CalibrationType : calibrationTypeType
+    index? : string
+  }
+  class "jarrowYildrim_CalibrationBaskets" as simulation__jarrowYildrim_CalibrationBaskets <<value>> {
+  }
+  class "jarrowYildrim_Index" as simulation__jarrowYildrim_Index <<value>> {
+  }
+  class "jarrowYildrim_RealRate" as simulation__jarrowYildrim_RealRate <<value>> {
+  }
+  class "lgm" as simulation__lgm {
+    Currency? : currencyCode
+    CalibrationType : calibrationTypeType
+    FloatSpreadMapping? : floatSpreadMappingType
+    ccy? : currencyCodeWithDefault
+    index? : string
+    key? : string
+  }
+  class "lgm_CalibrationBaskets" as simulation__lgm_CalibrationBaskets <<value>> {
+  }
+  class "localVol" as simulation__localVol {
+    DomesticCcy : currencyCode
+    Model : string
+    StochasticRatesCorrection : string
+    CalibrationMoneyness : string
+    CalibrationGrid : string
+    foreignCcy : currencyCodeWithDefault
+  }
+  class "simulation" as simulation__simulation {
+  }
+  enum "SobolBrownianGeneratorOrdering" as simulation__SobolBrownianGeneratorOrdering {
+    Factors
+    Steps
+    Diagonal
+  }
+  enum "SobolRsgDirectionIntegers" as simulation__SobolRsgDirectionIntegers {
+    Unit
+    Jaeckel
+    SobolLevitan
+    SobolLevitanLemieux
+    JoeKuoD5
+    JoeKuoD6
+    JoeKuoD7
+    Kuo
+    Kuo2
+    Kuo3
+  }
+  enum "calibrationTypeType" as simulation__calibrationTypeType {
+    Bootstrap
+    BestFit
+    None
+    StatisticalWithRiskNeutralVolatility
+  }
+  enum "default" as simulation__default {
+    default
+  }
+  enum "defaultCurveExtrapolation" as simulation__defaultCurveExtrapolation {
+    FlatFwd
+    FlatZero
+  }
+  enum "discretizationType" as simulation__discretizationType {
+    Exact
+    Euler
+    BestMarginalDiscretization
+  }
+  enum "floatSpreadMappingType" as simulation__floatSpreadMappingType {
+    NextCoupon
+    ProRata
+    Simple
+  }
+  enum "measureType" as simulation__measureType {
+    LGM
+    BA
+    
+  }
+  enum "mporMode" as simulation__mporMode {
+    ActualDate
+    StickyDate
+  }
+  enum "paramTypeType" as simulation__paramTypeType {
+    Constant
+    Piecewise
+  }
+  enum "priceRollDown" as simulation__priceRollDown {
+    Spot
+    Forward
+  }
+  enum "reversionTypeType" as simulation__reversionTypeType {
+    Hagan
+    HullWhite
+  }
+  enum "salvagingAlgoType" as simulation__salvagingAlgoType {
+    None
+    Spectral
+    Hypersphere
+    LowerDiagonal
+    Higham
+  }
+  enum "sequenceType" as simulation__sequenceType {
+    MersenneTwister
+    MersenneTwisterAntithetic
+    Sobol
+    SobolBrownianBridge
+    Burley2020SobolBrownianBridge
+  }
+  enum "timeDecayType" as simulation__timeDecayType {
+    ForwardVariance
+    ConstantVariance
+  }
+  enum "volatilityTypeType" as simulation__volatilityTypeType {
+    Hagan
+    HullWhite
+  }
+  enum "ycExtrapolation" as simulation__ycExtrapolation {
+    FlatFwd
+    FlatZero
+    Y
+    YES
+    TRUE
+    True
+    true
+    1
+    N
+    NO
+    FALSE
+    False
+    false
+    0
+    
+  }
+  enum "ycInterpolation" as simulation__ycInterpolation {
+    LogLinear
+    LinearZero
+    LogCubic
+  }
+  enum "ycRollDown" as simulation__ycRollDown {
+    ConstantDiscounts
+    ForwardForward
+  }
+}
+
+simulation__calibrationBasket *-- "1..*" simulation__calibrationCpiCapFloor : CpiCapFloor
+simulation__calibrationBasket *-- "1..*" simulation__calibrationYoYCapFloor : YoYCapFloor
+simulation__calibrationBasket *-- "1..*" simulation__calibrationYoYSwap : YoYSwap
+simulation__calibrationConfiguration *-- "0..1" simulation__calibrationConfiguration_Constraints : Constraints
+simulation__calibrationConfiguration_Constraints *-- "0..*" simulation__boundaryConstraint : BoundaryConstraint
+simulation__cir *-- "1" simulation__cir_CalibrationCdsOptions : CalibrationCdsOptions
+simulation__commoditySchwartz *-- "0..1" simulation__commoditySchwartz_CalibrationOptions : CalibrationOptions
+simulation__commoditySchwartz *-- "0..1" simulation__commoditySchwartz_Seasonality : Seasonality
+simulation__commoditySchwartz *-- "1" simulation__commoditySchwartz_Kappa : Kappa
+simulation__commoditySchwartz *-- "1" simulation__commoditySchwartz_Sigma : Sigma
+simulation__crlgm *-- "0..1" simulation__crlgm_CalibrationCdsOptions : CalibrationCdsOptions
+simulation__crlgm *-- "0..1" simulation__crlgm_ParameterTransformation : ParameterTransformation
+simulation__crlgm *-- "1" simulation__crlgm_Reversion : Reversion
+simulation__crlgm *-- "1" simulation__crlgm_Volatility : Volatility
+simulation__crossAssetLGM *-- "0..1" simulation__crossAssetLGM_CalibrationOptions : CalibrationOptions
+simulation__crossAssetLGM *-- "1" simulation__crossAssetLGM_Sigma : Sigma
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_Commodities : Commodities
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CommodityModels : CommodityModels
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CreditModels : CreditModels
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CreditNames : CreditNames
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CreditStates : CreditStates
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_Equities : Equities
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_EquityModels : EquityModels
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_ForeignExchangeModels : ForeignExchangeModels
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_InflationIndexModels : InflationIndexModels
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_InflationIndices : InflationIndices
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_InstantaneousCorrelations : InstantaneousCorrelations
+simulation__crossAssetModel *-- "1" simulation__crossAssetModel_Currencies : Currencies
+simulation__crossAssetModel *-- "1" simulation__crossAssetModel_InterestRateModels : InterestRateModels
+simulation__crossAssetModel_CommodityModels *-- "0..*" simulation__commoditySchwartz : CommoditySchwartz
+simulation__crossAssetModel_CreditModels *-- "1" simulation__cir : CIR
+simulation__crossAssetModel_CreditModels *-- "1" simulation__crlgm : LGM
+simulation__crossAssetModel_EquityModels *-- "0..*" simulation__crossAssetLGM : CrossAssetLGM
+simulation__crossAssetModel_ForeignExchangeModels *-- "0..*" simulation__crossCurrencyLGM : CrossCcyLGM
+simulation__crossAssetModel_ForeignExchangeModels *-- "0..*" simulation__localVol : LocalVol
+simulation__crossAssetModel_InflationIndexModels *-- "1" simulation__dodgsonKainth : DodgsonKainth
+simulation__crossAssetModel_InflationIndexModels *-- "1" simulation__jarrowYildrim : JarrowYildirim
+simulation__crossAssetModel_InflationIndexModels *-- "1" simulation__lgm : LGM
+simulation__crossAssetModel_InstantaneousCorrelations *-- "0..*" simulation__crossAssetModel_InstantaneousCorrelations_Correlation : Correlation
+simulation__crossAssetModel_InterestRateModels *-- "0..*" simulation__hw : HWModel
+simulation__crossAssetModel_InterestRateModels *-- "0..*" simulation__lgm : LGM
+simulation__crossCurrencyLGM *-- "0..1" simulation__crossCurrencyLGM_CalibrationOptions : CalibrationOptions
+simulation__crossCurrencyLGM *-- "1" simulation__crossCurrencyLGM_Sigma : Sigma
+simulation__dodgsonKainth *-- "0..1" simulation__calibrationConfiguration : CalibrationConfiguration
+simulation__dodgsonKainth *-- "0..1" simulation__dodgsonKainth_CalibrationBaskets : CalibrationBaskets
+simulation__dodgsonKainth *-- "1" simulation__dodgsonKainth_ParameterTransformation : ParameterTransformation
+simulation__dodgsonKainth *-- "1" simulation__dodgsonKainth_Reversion : Reversion
+simulation__dodgsonKainth *-- "1" simulation__dodgsonKainth_Volatility : Volatility
+simulation__dodgsonKainth_CalibrationBaskets *-- "1..*" simulation__calibrationBasket : CalibrationBasket
+simulation__hw *-- "0..1" simulation__hw_CalibrationSwaptions : CalibrationSwaptions
+simulation__hw *-- "0..1" simulation__hw_PCALoadings : PCALoadings
+simulation__hw *-- "0..1" simulation__hw_Volatility : Volatility
+simulation__hw *-- "0..1" simulation__volatilityParameter : PCASigma0
+simulation__hw *-- "1" simulation__hw_Reversion : Reversion
+simulation__hw_Reversion *-- "1" simulation__hw_Reversion_InitialValue : InitialValue
+simulation__hw_Volatility *-- "1" simulation__hw_Volatility_InitialValue : InitialValue
+simulation__hw_Volatility_InitialValue *-- "1..*" simulation__hw_Volatility_InitialValue_Sigma : Sigma
+simulation__jarrowYildrim *-- "0..1" simulation__calibrationConfiguration : CalibrationConfiguration
+simulation__jarrowYildrim *-- "0..1" simulation__jarrowYildrim_CalibrationBaskets : CalibrationBaskets
+simulation__jarrowYildrim *-- "1" simulation__jarrowYildrim_Index : Index
+simulation__jarrowYildrim *-- "1" simulation__jarrowYildrim_RealRate : RealRate
+simulation__jarrowYildrim_CalibrationBaskets *-- "1..*" simulation__calibrationBasket : CalibrationBasket
+simulation__jarrowYildrim_Index *-- "1" simulation__volatilityParameter : Volatility
+simulation__jarrowYildrim_RealRate *-- "1" simulation__lgmReversionTransformation : ParameterTransformation
+simulation__jarrowYildrim_RealRate *-- "1" simulation__reversionParameter : Reversion
+simulation__jarrowYildrim_RealRate *-- "1" simulation__volatilityParameter : Volatility
+simulation__lgm *-- "0..1" simulation__lgm_CalibrationBaskets : CalibrationBaskets
+simulation__lgm *-- "0..1" simulation__lgm_CalibrationCapFloors : CalibrationCapFloors
+simulation__lgm *-- "0..1" simulation__lgm_CalibrationSwaptions : CalibrationSwaptions
+simulation__lgm *-- "1" simulation__lgm_ParameterTransformation : ParameterTransformation
+simulation__lgm *-- "1" simulation__lgm_Reversion : Reversion
+simulation__lgm *-- "1" simulation__lgm_Volatility : Volatility
+simulation__lgm_CalibrationBaskets *-- "1..*" simulation__calibrationBasket : CalibrationBasket
+simulation__localVol *-- "0..1" simulation__localVolSimpleMcParameters : SimpleMcParameters
+simulation__simulation *-- "0..1" simulation__crossAssetModel : CrossAssetModel
+simulation__simulation *-- "0..1" simulation__market : Market
+simulation__simulation *-- "0..1" simulation__parameters : Parameters
+@enduml

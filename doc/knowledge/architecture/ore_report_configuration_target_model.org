@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 061CE0DF-F9DE-4AC7-9536-B2EB6C547531
+:END:
+#+title: The target report configuration model
+#+description: The target entity model: what a report definition owns, what it references, how a kind of report selects its workflow, and the decisions left open.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:ore:model:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A report definition owns the configuration of its own run — the setup block, the
+market bindings and the ordered analytic list, each analytic with its own typed
+parameters — and references the configuration that is shared: the analytics
+libraries, the curve recipes, the pricing engines and the reference data.
+
+What decides which workflow a run executes is the *kind* of report, not a value
+inside the configuration. That is what lets an imported report, a composite
+report and a diff report be added without a column appearing on the definition.
+
+* Detail
+
+** Owned by the definition
+
+- =report_run_setup= (1:1) — the =Setup= block as typed columns.
+- =report_market_binding= (1:*) — one row per =Markets= role.
+- =report_analytic= (1:*) — one row per =Analytic=: type, ordinal, active.
+- A typed parameter entity per analytic type that has parameters (1:1 with its
+  analytic), because their parameter sets do not overlap.
+- =report_scope= — the books and portfolios a run selects, which the risk
+  configuration already carries as two temporal junction tables.
+
+** Referenced by the definition, owned elsewhere
+
+Curve configuration, pricing engines, conventions, calendars, currencies,
+counterparties, netting sets, IBOR fallback and market data. These are libraries:
+many runs use the same conventions file and the same curve recipes. The
+definition pins the versions it uses so that a run stays reproducible.
+
+** The analytics libraries
+
+=simulation_config=, =sensitivity_config=, =stress_config=, =simm_calibration=,
+=historical_return_config=, =basel_traffic_light_config= and
+=credit_simulation_config=. Several analytics in one run reference the same one —
+=sensitivity=, =xva=, =stress= and =crif= all name a =sensitivityConfigFile= — so
+they are entities in their own right rather than columns on an analytic.
+
+** The classification, and why a value is not enough
+
+Today the definition carries three workflow-shaped columns
+(=pre_processing=, =prepared_input_key=, =post_processing=) and a =report_type=
+lookup of two rows. The columns say how one workflow behaves; they cannot select
+between workflows, and every new kind of report — an externally imported one, a
+composite of children, a diff of the same report under two engine versions —
+would add its own.
+
+The target is one classification field on the definition that resolves to a
+registered workflow and to that workflow's own parameter block. A new kind is a
+lookup row, a registered workflow and a block; never a column.
+
+** Where this leaves what exists
+
+- =risk_report_config= is replaced: its =Setup= columns move to
+  =report_run_setup=, its =*_enabled= booleans become =report_analytic= rows,
+  and the analytics that need them get typed parameter entities.
+- The three workflow columns on =report_definition= go, replaced by the
+  classification.
+- =report_type= either grows into the classification or stays a content category
+  beside a new kind axis. That is the first open decision below.
+
+** Open decisions
+
+1. *The classification axis.* Reuse =report_type= as the kind that selects the
+   workflow, or add a separate =kind=, or split into =type= (what the run
+   computes) and =strategy= (how it is structured). The composite and diff
+   reports are the cases that strain a single axis, because their *content* is
+   another kind of report.
+2. *Per-analytic parameters.* One typed table per analytic type — thirty-five of
+   them, narrow — or grouped parameter entities for the shapes that repeat
+   (exposure analytics share MPOR, cube and allocation settings; sensitivity-based
+   analytics share shift and threshold settings).
+3. *Ownership of the libraries.* Owned by the definition, which isolates a report
+   but copies a stress library per report, or shared named sets referenced by
+   version, which needs the run to pin what it resolved.
+4. *Which component owns the analytics libraries.* Reporting owns the run today;
+   =ores.analytics= owns pricing models. Simulation, sensitivity, stress and SIMM
+   calibration are analytics configuration and could live there.
+   [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]
+   already proposes =ores.analytics= as the component home and has landed two of
+   its five layers there, so the presumption is that the analytics libraries
+   follow it and reporting holds only what is specific to one report's run.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the pipeline this configuration feeds.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — the principles the entity shape and the batch access patterns follow.

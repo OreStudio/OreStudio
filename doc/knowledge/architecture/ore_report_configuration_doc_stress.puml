@@ -1,0 +1,161 @@
+@startuml
+title ORE stress entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "stress.xml" {
+  class "stresscapfloorvolatilities" as stress__stresscapfloorvolatilities {
+  }
+  class "stresscapfloorvolatility" as stress__stresscapfloorvolatility {
+    ShiftType : shiftTypeEntry
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    Index? : indexNameType
+    IsRelative? : boolean
+    key? : string
+    ccy? : currencyCode
+  }
+  class "stresscapfloorvolatility_Shifts" as stress__stresscapfloorvolatility_Shifts <<value>> {
+  }
+  class "stresscapfloorvolatility_Shifts_Shift" as stress__stresscapfloorvolatility_Shifts_Shift <<value>> {
+    tenor? : string
+  }
+  class "stresscommoditycurve" as stress__stresscommoditycurve {
+    Currency : currencyCode
+    ShiftType : shiftTypeEntry
+    Shifts : string
+    ShiftTenors : string
+    commodity : string
+  }
+  class "stresscommoditycurves" as stress__stresscommoditycurves {
+  }
+  class "stresscommodityvolatilities" as stress__stresscommodityvolatilities {
+  }
+  class "stresscommodityvolatility" as stress__stresscommodityvolatility {
+    ShiftType : shiftTypeEntry
+    Shifts : string
+    ShiftExpiries : string
+    ShiftMoneyness : string
+    commodity : string
+  }
+  class "stressdiscountcurve" as stress__stressdiscountcurve {
+    ShiftType : shiftTypeEntry
+    ShiftingZeros? : boolean
+    ShiftSize : shiftSizeEntry
+    Shifts : string
+    ShiftScheme? : shiftSchemeEntry
+    ShiftTenors : string
+    ParConversion? : parconversion
+    ccy : currencyCode
+  }
+  class "stressdiscountcurves" as stress__stressdiscountcurves {
+  }
+  class "stressfxvolatilities" as stress__stressfxvolatilities {
+  }
+  class "stressfxvolatility" as stress__stressfxvolatility {
+    ShiftType : shiftTypeEntry
+    Shifts : string
+    ShiftExpiries : string
+    ccypair : currencyPair
+  }
+  class "stressindexcurve" as stress__stressindexcurve {
+    ShiftType : shiftTypeEntry
+    ShiftingZeros? : boolean
+    ShiftSize : shiftSizeEntry
+    Shifts : string
+    ShiftScheme? : shiftSchemeEntry
+    ShiftTenors : string
+    ParConversion? : parconversion
+    index : indexNameType
+  }
+  class "stressindexcurves" as stress__stressindexcurves {
+  }
+  class "stressintradaypowercurve" as stress__stressintradaypowercurve {
+    ShiftType : shiftTypeEntry
+    Shifts : string
+    ShiftTenors : string
+    name : string
+  }
+  class "stressintradaypowercurves" as stress__stressintradaypowercurves {
+  }
+  class "stresssurvivalprobability" as stress__stresssurvivalprobability {
+    ShiftType : shiftTypeEntry
+    ShiftingZeros? : boolean
+    ShiftSize : shiftSizeEntry
+    Shifts : string
+    ShiftScheme? : shiftSchemeEntry
+    ShiftTenors : string
+    ParConversion? : parconversion
+    name : string
+  }
+  class "stressswaptionvolatilities" as stress__stressswaptionvolatilities {
+  }
+  class "stressswaptionvolatility" as stress__stressswaptionvolatility {
+    ShiftType : shiftTypeEntry
+    ShiftExpiries : string
+    ShiftTerms : string
+    key? : string
+    ccy? : string
+  }
+  class "stressswaptionvolatility_Shifts" as stress__stressswaptionvolatility_Shifts <<value>> {
+  }
+  class "stressswaptionvolatility_Shifts_Shift" as stress__stressswaptionvolatility_Shifts_Shift <<value>> {
+    expiry? : string
+    term? : string
+  }
+  class "stresstest" as stress__stresstest {
+    Date? : string
+    FxSpots? : fxspots
+    EquitySpots? : equityspots
+    EquityVolatilities? : equityvolatilities
+    SecuritySpreads? : securityspreads
+    RecoveryRates? : recoveryrates
+    SurvivalProbabilities? : survivalprobabilities
+    id : string
+  }
+  class "stresstesting" as stress__stresstesting {
+    UseSpreadedTermStructures? : bool
+  }
+  class "stressyieldcurve" as stress__stressyieldcurve {
+    CurveType? : string
+    ShiftType : shiftTypeEntry
+    ShiftingZeros? : boolean
+    ShiftSize : shiftSizeEntry
+    Shifts : string
+    ShiftScheme? : shiftSchemeEntry
+    ShiftTenors : string
+    ParConversion? : parconversion
+    name : string
+  }
+  class "stressyieldcurves" as stress__stressyieldcurves {
+  }
+}
+
+stress__stresscapfloorvolatilities *-- "0..*" stress__stresscapfloorvolatility : CapFloorVolatility
+stress__stresscapfloorvolatility *-- "1" stress__stresscapfloorvolatility_Shifts : Shifts
+stress__stresscapfloorvolatility_Shifts *-- "0..*" stress__stresscapfloorvolatility_Shifts_Shift : Shift
+stress__stresscommoditycurves *-- "0..*" stress__stresscommoditycurve : CommodityCurve
+stress__stresscommodityvolatilities *-- "0..*" stress__stresscommodityvolatility : CommodityVolatility
+stress__stressdiscountcurves *-- "0..*" stress__stressdiscountcurve : DiscountCurve
+stress__stressfxvolatilities *-- "0..*" stress__stressfxvolatility : FxVolatility
+stress__stressfxvolatility *-- "1" stress__stressfxvolatility_WeightedShifts : WeightedShifts
+stress__stressindexcurves *-- "0..*" stress__stressindexcurve : IndexCurve
+stress__stressintradaypowercurves *-- "0..*" stress__stressintradaypowercurve : IntradayPowerCurve
+stress__stressswaptionvolatilities *-- "0..*" stress__stressswaptionvolatility : SwaptionVolatility
+stress__stressswaptionvolatility *-- "1" stress__stressswaptionvolatility_Shifts : Shifts
+stress__stressswaptionvolatility_Shifts *-- "0..*" stress__stressswaptionvolatility_Shifts_Shift : Shift
+stress__stresstest *-- "0..1" stress__stresscapfloorvolatilities : CapFloorVolatilities
+stress__stresstest *-- "0..1" stress__stresscommoditycurves : CommodityCurves
+stress__stresstest *-- "0..1" stress__stresscommodityvolatilities : CommodityVolatilities
+stress__stresstest *-- "0..1" stress__stressdiscountcurves : DiscountCurves
+stress__stresstest *-- "0..1" stress__stressfxvolatilities : FxVolatilities
+stress__stresstest *-- "0..1" stress__stressindexcurves : IndexCurves
+stress__stresstest *-- "0..1" stress__stressintradaypowercurves : IntradayPowerCurves
+stress__stresstest *-- "0..1" stress__stressswaptionvolatilities : SwaptionVolatilities
+stress__stresstest *-- "0..1" stress__stresstestparshifts : ParShifts
+stress__stresstest *-- "0..1" stress__stressyieldcurves : YieldCurves
+stress__stresstesting *-- "1..*" stress__stresstest : StressTest
+stress__stressyieldcurves *-- "0..*" stress__stressyieldcurve : YieldCurve
+@enduml

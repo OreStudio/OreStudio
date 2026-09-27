@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 91F2CF85-B743-4CAD-99B3-E635DA075499
+:END:
+#+title: ORE report configuration
+#+description: The documents an ORE report is configured by, the entities they hold, who owns each, and the target model in which a report definition reaches its configuration through typed entities.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:ore:model:structure_note:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A report run is configured by seventeen XML documents that ORE defines and the
+studio has barely modelled. Between them they carry 605 schema types, of which
+265 are entities: the run document's setup, its named market bindings and its
+ordered analytic list; the configuration libraries the analytics reference
+(simulation, sensitivity, stress, SIMM calibration, historical return, Basel
+traffic light, credit simulation); and the reference configuration other
+components already own (curves, pricing engines, conventions, calendars,
+currencies, counterparties, netting sets).
+
+This cluster identifies every one of those entities, says who owns each, and
+states the model the reporting domain should have: a report definition that
+*owns* the configuration of its own run and *references* the shared libraries and
+the reference data, rather than growing a column per kind of report.
+
+The vocabulary is not invented here. It is extracted mechanically from the ORE
+schemas in =external/ore/xsd=, which are also what =ores.ore= already generates
+its XML bindings from, and they are the only authority on what an ORE run can be
+configured with.
+
+* Reading order
+
+** What there is
+
+[[id:0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09][The ORE report configuration
+documents]] — the seventeen documents, what each holds, what is excluded and
+why, and the per-document entity and value-type counts. Read it first: it is the
+inventory everything below refers to, and it names the command that regenerates
+it.
+
+** The one document a run is driven by
+
+[[id:7CE34CFC-A04C-46E4-92D2-B1C09DEADE50][The ORE run document]] — =ore.xml=,
+which is not a form but a setup block, a set of named market bindings and an
+ordered list of analytics. Read it second, because it is where the current
+model's flat table of switches is most obviously wrong: the schema constrains
+neither a parameter name nor an analytic name, and the shipped examples use
+forty-three, eight and thirty-five of them respectively.
+
+** What the studio already has, and what is missing
+
+[[id:6DA5B753-73E1-4176-889F-7A95EFD5E644][Who owns the ORE configuration]] —
+which component owns which document today, what no component models at all, and
+the rule that decides whether a report definition owns an entity or references
+it. Read it before proposing a model, so the proposal does not put into
+reporting what refdata, analytics, marketdata or trading already own.
+
+** A property of the schemas, not of the model
+
+[[id:D4B51A93-628B-49AF-9B44-129FCC345692][What the ORE schemas do not
+say]] — references are untyped strings, the run document constrains nothing, two
+families of shift configuration are declared but unreferenced, one curve type
+duplicates two attributes, and the reference data document is a union by
+discriminator. Read it with the inventory: it explains why so much of the value
+here is in supplying foreign keys ORE itself cannot express.
+
+** The taxonomy itself
+
+[[id:220F3CA3-115F-4398-B88A-7F429333FFE2][The ORE configuration entity
+taxonomy]] — every entity, drawn and listed, with its owner and the relation the
+report definition has to it. This is the page to work from when modelling a
+document.
+
+** Where it is going
+
+[[id:061CE0DF-F9DE-4AC7-9536-B2EB6C547531][The target report configuration
+model]] — what a definition owns, what it references, how a kind of report
+selects its workflow, and the decisions still open. Read it last; it is the one
+page here that states a design rather than a fact about ORE.
+
+** What was proposed before this
+
+[[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model
+Configuration]] — the earlier analysis of the same files, with a five-layer
+proposal, the product taxonomies, the pricing configuration domain model, and the
+decision that =ores.analytics= is the component home. Read it beside the target
+model: layers 1 and 5 landed there as =pricing_model_config=,
+=pricing_model_product=, =pricing_model_product_parameter= and
+=pricing_engine_type=, and this cluster supersedes its inventory rather than its
+proposal.
+
+* What this cluster excludes
+
+Market data (=todaysmarket.xml=), trades (=portfolio.xml=, =instruments.xsd=,
+=scriptlibrary.xml=) and observed data (=collateralbalance.xml=,
+=intradaypowerloaddata.xsd=) are out of scope, as the brief that produced this
+cluster required. They account for 271 further schema types. Market data also
+appears *inside* an in-scope document — the =market_*= subtree of
+=simulation.xml=, 116 classes — and is excluded there too.
+
+The pipeline a run executes is deliberately not here. It is the subject of
+[[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]], which this
+cluster feeds: that page says what a run does, this one says what it is
+configured with.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the pipeline this configuration feeds, and the structure note this cluster sits beside.
+- [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] — the story this cluster was written for.
+- [[id:5ED86EEE-6090-4321-A8E4-BF80D418BA32][Design the ORE report configuration entity model]] — the task that produced it.
+- =external/ore/xsd/= — the schemas, and the only authority on this vocabulary.
+- =build/scripts/xsd_to_uml.py= — the extractor that produced the inventory, the mapping and the diagrams.

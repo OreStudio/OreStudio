@@ -1,0 +1,281 @@
+@startuml
+title ORE simmcalibration entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "simmcalibration.xml" {
+  class "commodity" as simmcalibration__commodity {
+  }
+  class "commodity_Correlations" as simmcalibration__commodity_Correlations <<value>> {
+  }
+  class "commodity_Correlations_InterBucket" as simmcalibration__commodity_Correlations_InterBucket <<value>> {
+  }
+  class "commodity_Correlations_InterBucket_Correlation" as simmcalibration__commodity_Correlations_InterBucket_Correlation <<value>> {
+    label1 : integer
+    label2 : integer
+  }
+  class "commodity_Correlations_IntraBucket" as simmcalibration__commodity_Correlations_IntraBucket <<value>> {
+  }
+  class "commodity_Correlations_IntraBucket_Correlation" as simmcalibration__commodity_Correlations_IntraBucket_Correlation <<value>> {
+    bucket : string
+  }
+  class "commodity_RiskWeights" as simmcalibration__commodity_RiskWeights <<value>> {
+  }
+  class "commodity_RiskWeights_Delta" as simmcalibration__commodity_RiskWeights_Delta <<value>> {
+    mporDays? : integer
+  }
+  class "commodity_RiskWeights_Delta_Weight" as simmcalibration__commodity_RiskWeights_Delta_Weight <<value>> {
+    bucket : string
+  }
+  class "concentrationThresholds" as simmcalibration__concentrationThresholds {
+  }
+  class "concentrationThresholds_Delta" as simmcalibration__concentrationThresholds_Delta <<value>> {
+  }
+  class "concentrationThresholds_Delta_Threshold" as simmcalibration__concentrationThresholds_Delta_Threshold <<value>> {
+    bucket? : string
+  }
+  class "concentrationThresholds_Vega" as simmcalibration__concentrationThresholds_Vega <<value>> {
+  }
+  class "concentrationThresholds_Vega_Threshold" as simmcalibration__concentrationThresholds_Vega_Threshold <<value>> {
+    bucket? : string
+  }
+  class "creditNonQualifying" as simmcalibration__creditNonQualifying {
+  }
+  class "creditNonQualifying_Correlations" as simmcalibration__creditNonQualifying_Correlations <<value>> {
+  }
+  class "creditNonQualifying_Correlations_InterBucket" as simmcalibration__creditNonQualifying_Correlations_InterBucket <<value>> {
+  }
+  class "creditNonQualifying_Correlations_InterBucket_Correlation" as simmcalibration__creditNonQualifying_Correlations_InterBucket_Correlation <<value>> {
+    label1 : integer
+    label2 : integer
+  }
+  class "creditNonQualifying_Correlations_IntraBucket" as simmcalibration__creditNonQualifying_Correlations_IntraBucket <<value>> {
+  }
+  class "creditNonQualifying_Correlations_IntraBucket_Correlation" as simmcalibration__creditNonQualifying_Correlations_IntraBucket_Correlation <<value>> {
+    label1 : string
+    label2 : string
+  }
+  class "creditNonQualifying_RiskWeights" as simmcalibration__creditNonQualifying_RiskWeights <<value>> {
+  }
+  class "creditNonQualifying_RiskWeights_Delta" as simmcalibration__creditNonQualifying_RiskWeights_Delta <<value>> {
+    mporDays? : integer
+  }
+  class "creditNonQualifying_RiskWeights_Delta_Weight" as simmcalibration__creditNonQualifying_RiskWeights_Delta_Weight <<value>> {
+    bucket : string
+  }
+  class "creditQualifying" as simmcalibration__creditQualifying {
+  }
+  class "creditQualifying_Correlations" as simmcalibration__creditQualifying_Correlations <<value>> {
+    BaseCorrelation : decimal
+  }
+  class "creditQualifying_Correlations_InterBucket" as simmcalibration__creditQualifying_Correlations_InterBucket <<value>> {
+  }
+  class "creditQualifying_Correlations_InterBucket_Correlation" as simmcalibration__creditQualifying_Correlations_InterBucket_Correlation <<value>> {
+    label1 : integer
+    label2 : integer
+  }
+  class "creditQualifying_Correlations_IntraBucket" as simmcalibration__creditQualifying_Correlations_IntraBucket <<value>> {
+  }
+  class "creditQualifying_Correlations_IntraBucket_Correlation" as simmcalibration__creditQualifying_Correlations_IntraBucket_Correlation <<value>> {
+    label1 : string
+    label2 : string
+  }
+  class "creditQualifying_RiskWeights" as simmcalibration__creditQualifying_RiskWeights <<value>> {
+  }
+  class "creditQualifying_RiskWeights_BaseCorrelation" as simmcalibration__creditQualifying_RiskWeights_BaseCorrelation <<value>> {
+    mporDays? : integer
+  }
+  class "creditQualifying_RiskWeights_Delta" as simmcalibration__creditQualifying_RiskWeights_Delta <<value>> {
+    mporDays? : integer
+  }
+  class "creditQualifying_RiskWeights_Delta_Weight" as simmcalibration__creditQualifying_RiskWeights_Delta_Weight <<value>> {
+    bucket : string
+  }
+  class "currencyLists" as simmcalibration__currencyLists {
+  }
+  class "currencyLists_Currency" as simmcalibration__currencyLists_Currency <<value>> {
+    bucket : integer
+  }
+  class "equity" as simmcalibration__equity {
+  }
+  class "equity_Correlations" as simmcalibration__equity_Correlations <<value>> {
+  }
+  class "equity_Correlations_InterBucket" as simmcalibration__equity_Correlations_InterBucket <<value>> {
+  }
+  class "equity_Correlations_InterBucket_Correlation" as simmcalibration__equity_Correlations_InterBucket_Correlation <<value>> {
+    label1 : integer
+    label2 : integer
+  }
+  class "equity_Correlations_IntraBucket" as simmcalibration__equity_Correlations_IntraBucket <<value>> {
+  }
+  class "equity_Correlations_IntraBucket_Correlation" as simmcalibration__equity_Correlations_IntraBucket_Correlation <<value>> {
+    bucket : string
+  }
+  class "equity_RiskWeights" as simmcalibration__equity_RiskWeights <<value>> {
+  }
+  class "equity_RiskWeights_Delta" as simmcalibration__equity_RiskWeights_Delta <<value>> {
+    mporDays? : integer
+  }
+  class "equity_RiskWeights_Delta_Weight" as simmcalibration__equity_RiskWeights_Delta_Weight <<value>> {
+    bucket : string
+  }
+  class "equity_RiskWeights_HistoricalVolatilityRatio" as simmcalibration__equity_RiskWeights_HistoricalVolatilityRatio <<value>> {
+    mporDays? : integer
+  }
+  class "equity_RiskWeights_Vega" as simmcalibration__equity_RiskWeights_Vega <<value>> {
+    mporDays? : integer
+  }
+  class "equity_RiskWeights_Vega_Weight" as simmcalibration__equity_RiskWeights_Vega_Weight <<value>> {
+    bucket : string
+  }
+  class "fx" as simmcalibration__fx {
+  }
+  class "fx_Correlations" as simmcalibration__fx_Correlations <<value>> {
+    Volatility : decimal
+  }
+  class "fx_Correlations_IntraBucket" as simmcalibration__fx_Correlations_IntraBucket <<value>> {
+  }
+  class "fx_Correlations_IntraBucket_Correlation" as simmcalibration__fx_Correlations_IntraBucket_Correlation <<value>> {
+    bucket : integer
+    label1 : integer
+    label2 : integer
+  }
+  class "fx_RiskWeights" as simmcalibration__fx_RiskWeights <<value>> {
+  }
+  class "fx_RiskWeights_Delta" as simmcalibration__fx_RiskWeights_Delta <<value>> {
+    mporDays? : integer
+  }
+  class "fx_RiskWeights_Delta_Weight" as simmcalibration__fx_RiskWeights_Delta_Weight <<value>> {
+    label1 : integer
+    label2 : integer
+  }
+  class "fx_RiskWeights_HistoricalVolatilityRatio" as simmcalibration__fx_RiskWeights_HistoricalVolatilityRatio <<value>> {
+    mporDays? : integer
+  }
+  class "interestRate" as simmcalibration__interestRate {
+  }
+  class "interestRate_Correlations" as simmcalibration__interestRate_Correlations <<value>> {
+    SubCurves : decimal
+    Inflation : decimal
+    XCcyBasis : decimal
+    Outer : decimal
+  }
+  class "interestRate_Correlations_IntraBucket" as simmcalibration__interestRate_Correlations_IntraBucket <<value>> {
+  }
+  class "interestRate_Correlations_IntraBucket_Correlation" as simmcalibration__interestRate_Correlations_IntraBucket_Correlation <<value>> {
+    label1 : string
+    label2 : string
+  }
+  class "interestRate_RiskWeights" as simmcalibration__interestRate_RiskWeights <<value>> {
+  }
+  class "interestRate_RiskWeights_Delta" as simmcalibration__interestRate_RiskWeights_Delta <<value>> {
+    mporDays? : integer
+  }
+  class "interestRate_RiskWeights_Delta_Weight" as simmcalibration__interestRate_RiskWeights_Delta_Weight <<value>> {
+    bucket : integer
+    label1 : string
+  }
+  class "interestRate_RiskWeights_HistoricalVolatilityRatio" as simmcalibration__interestRate_RiskWeights_HistoricalVolatilityRatio <<value>> {
+    mporDays? : integer
+  }
+  class "irfxConcentrationThresholds" as simmcalibration__irfxConcentrationThresholds {
+  }
+  class "simmCalibration" as simmcalibration__simmCalibration {
+    id? : string
+  }
+  class "simmCalibration_RiskClassCorrelations" as simmcalibration__simmCalibration_RiskClassCorrelations <<value>> {
+  }
+  class "simmCalibration_RiskClassCorrelations_Correlation" as simmcalibration__simmCalibration_RiskClassCorrelations_Correlation <<value>> {
+    label1? : string
+    label2? : string
+  }
+}
+
+simmcalibration__commodity *-- "1" simmcalibration__commodity_Correlations : Correlations
+simmcalibration__commodity *-- "1" simmcalibration__commodity_RiskWeights : RiskWeights
+simmcalibration__commodity *-- "1" simmcalibration__concentrationThresholds : ConcentrationThresholds
+simmcalibration__commodity_Correlations *-- "1" simmcalibration__commodity_Correlations_InterBucket : InterBucket
+simmcalibration__commodity_Correlations *-- "1" simmcalibration__commodity_Correlations_IntraBucket : IntraBucket
+simmcalibration__commodity_Correlations_InterBucket *-- "1..*" simmcalibration__commodity_Correlations_InterBucket_Correlation : Correlation
+simmcalibration__commodity_Correlations_IntraBucket *-- "1..*" simmcalibration__commodity_Correlations_IntraBucket_Correlation : Correlation
+simmcalibration__commodity_RiskWeights *-- "1" simmcalibration__commodity_RiskWeights_Delta : Delta
+simmcalibration__commodity_RiskWeights *-- "1" simmcalibration__commodity_RiskWeights_HistoricalVolatilityRatio : HistoricalVolatilityRatio
+simmcalibration__commodity_RiskWeights *-- "1" simmcalibration__commodity_RiskWeights_Vega : Vega
+simmcalibration__commodity_RiskWeights_Delta *-- "1..*" simmcalibration__commodity_RiskWeights_Delta_Weight : Weight
+simmcalibration__concentrationThresholds *-- "1" simmcalibration__concentrationThresholds_Delta : Delta
+simmcalibration__concentrationThresholds *-- "1" simmcalibration__concentrationThresholds_Vega : Vega
+simmcalibration__concentrationThresholds <|-- simmcalibration__irfxConcentrationThresholds
+simmcalibration__concentrationThresholds_Delta *-- "1..*" simmcalibration__concentrationThresholds_Delta_Threshold : Threshold
+simmcalibration__concentrationThresholds_Vega *-- "1..*" simmcalibration__concentrationThresholds_Vega_Threshold : Threshold
+simmcalibration__creditNonQualifying *-- "1" simmcalibration__concentrationThresholds : ConcentrationThresholds
+simmcalibration__creditNonQualifying *-- "1" simmcalibration__creditNonQualifying_Correlations : Correlations
+simmcalibration__creditNonQualifying *-- "1" simmcalibration__creditNonQualifying_RiskWeights : RiskWeights
+simmcalibration__creditNonQualifying_Correlations *-- "1" simmcalibration__creditNonQualifying_Correlations_InterBucket : InterBucket
+simmcalibration__creditNonQualifying_Correlations *-- "1" simmcalibration__creditNonQualifying_Correlations_IntraBucket : IntraBucket
+simmcalibration__creditNonQualifying_Correlations_InterBucket *-- "1..*" simmcalibration__creditNonQualifying_Correlations_InterBucket_Correlation : Correlation
+simmcalibration__creditNonQualifying_Correlations_IntraBucket *-- "1..*" simmcalibration__creditNonQualifying_Correlations_IntraBucket_Correlation : Correlation
+simmcalibration__creditNonQualifying_RiskWeights *-- "1" simmcalibration__creditNonQualifying_RiskWeights_Delta : Delta
+simmcalibration__creditNonQualifying_RiskWeights *-- "1" simmcalibration__creditNonQualifying_RiskWeights_Vega : Vega
+simmcalibration__creditNonQualifying_RiskWeights_Delta *-- "1..*" simmcalibration__creditNonQualifying_RiskWeights_Delta_Weight : Weight
+simmcalibration__creditQualifying *-- "1" simmcalibration__concentrationThresholds : ConcentrationThresholds
+simmcalibration__creditQualifying *-- "1" simmcalibration__creditQualifying_Correlations : Correlations
+simmcalibration__creditQualifying *-- "1" simmcalibration__creditQualifying_RiskWeights : RiskWeights
+simmcalibration__creditQualifying_Correlations *-- "1" simmcalibration__creditQualifying_Correlations_InterBucket : InterBucket
+simmcalibration__creditQualifying_Correlations *-- "1" simmcalibration__creditQualifying_Correlations_IntraBucket : IntraBucket
+simmcalibration__creditQualifying_Correlations_InterBucket *-- "1..*" simmcalibration__creditQualifying_Correlations_InterBucket_Correlation : Correlation
+simmcalibration__creditQualifying_Correlations_IntraBucket *-- "1..*" simmcalibration__creditQualifying_Correlations_IntraBucket_Correlation : Correlation
+simmcalibration__creditQualifying_RiskWeights *-- "1" simmcalibration__creditQualifying_RiskWeights_Delta : Delta
+simmcalibration__creditQualifying_RiskWeights *-- "1" simmcalibration__creditQualifying_RiskWeights_Vega : Vega
+simmcalibration__creditQualifying_RiskWeights *-- "1..*" simmcalibration__creditQualifying_RiskWeights_BaseCorrelation : BaseCorrelation
+simmcalibration__creditQualifying_RiskWeights_Delta *-- "1..*" simmcalibration__creditQualifying_RiskWeights_Delta_Weight : Weight
+simmcalibration__currencyLists *-- "1..*" simmcalibration__currencyLists_Currency : Currency
+simmcalibration__equity *-- "1" simmcalibration__concentrationThresholds : ConcentrationThresholds
+simmcalibration__equity *-- "1" simmcalibration__equity_Correlations : Correlations
+simmcalibration__equity *-- "1" simmcalibration__equity_RiskWeights : RiskWeights
+simmcalibration__equity_Correlations *-- "1" simmcalibration__equity_Correlations_InterBucket : InterBucket
+simmcalibration__equity_Correlations *-- "1" simmcalibration__equity_Correlations_IntraBucket : IntraBucket
+simmcalibration__equity_Correlations_InterBucket *-- "1..*" simmcalibration__equity_Correlations_InterBucket_Correlation : Correlation
+simmcalibration__equity_Correlations_IntraBucket *-- "1..*" simmcalibration__equity_Correlations_IntraBucket_Correlation : Correlation
+simmcalibration__equity_RiskWeights *-- "1" simmcalibration__equity_RiskWeights_Delta : Delta
+simmcalibration__equity_RiskWeights *-- "1" simmcalibration__equity_RiskWeights_Vega : Vega
+simmcalibration__equity_RiskWeights *-- "1..*" simmcalibration__equity_RiskWeights_HistoricalVolatilityRatio : HistoricalVolatilityRatio
+simmcalibration__equity_RiskWeights_Delta *-- "1..*" simmcalibration__equity_RiskWeights_Delta_Weight : Weight
+simmcalibration__equity_RiskWeights_Vega *-- "1..*" simmcalibration__equity_RiskWeights_Vega_Weight : Weight
+simmcalibration__fx *-- "1" simmcalibration__fx_Correlations : Correlations
+simmcalibration__fx *-- "1" simmcalibration__fx_RiskWeights : RiskWeights
+simmcalibration__fx *-- "1" simmcalibration__irfxConcentrationThresholds : ConcentrationThresholds
+simmcalibration__fx_Correlations *-- "1" simmcalibration__fx_Correlations_IntraBucket : IntraBucket
+simmcalibration__fx_Correlations_IntraBucket *-- "1..*" simmcalibration__fx_Correlations_IntraBucket_Correlation : Correlation
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__currencyLists : CurrencyLists
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__fx_RiskWeights_Delta : Delta
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__fx_RiskWeights_Inflation : Inflation
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__fx_RiskWeights_Vega : Vega
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__fx_RiskWeights_XCcyBasis : XCcyBasis
+simmcalibration__fx_RiskWeights *-- "1..*" simmcalibration__fx_RiskWeights_HistoricalVolatilityRatio : HistoricalVolatilityRatio
+simmcalibration__fx_RiskWeights_Delta *-- "1..*" simmcalibration__fx_RiskWeights_Delta_Weight : Weight
+simmcalibration__interestRate *-- "1" simmcalibration__interestRate_Correlations : Correlations
+simmcalibration__interestRate *-- "1" simmcalibration__interestRate_RiskWeights : RiskWeights
+simmcalibration__interestRate *-- "1" simmcalibration__irfxConcentrationThresholds : ConcentrationThresholds
+simmcalibration__interestRate_Correlations *-- "1" simmcalibration__interestRate_Correlations_IntraBucket : IntraBucket
+simmcalibration__interestRate_Correlations_IntraBucket *-- "1..*" simmcalibration__interestRate_Correlations_IntraBucket_Correlation : Correlation
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__currencyLists : CurrencyLists
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__interestRate_RiskWeights_Delta : Delta
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__interestRate_RiskWeights_Inflation : Inflation
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__interestRate_RiskWeights_Vega : Vega
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__interestRate_RiskWeights_XCcyBasis : XCcyBasis
+simmcalibration__interestRate_RiskWeights *-- "1..*" simmcalibration__interestRate_RiskWeights_HistoricalVolatilityRatio : HistoricalVolatilityRatio
+simmcalibration__interestRate_RiskWeights_Delta *-- "1..*" simmcalibration__interestRate_RiskWeights_Delta_Weight : Weight
+simmcalibration__irfxConcentrationThresholds *-- "1" simmcalibration__currencyLists : CurrencyLists
+simmcalibration__simmCalibration *-- "0..1" simmcalibration__simmCalibration_AdditionalFields : AdditionalFields
+simmcalibration__simmCalibration *-- "1" simmcalibration__commodity : Commodity
+simmcalibration__simmCalibration *-- "1" simmcalibration__creditNonQualifying : CreditNonQualifying
+simmcalibration__simmCalibration *-- "1" simmcalibration__creditQualifying : CreditQualifying
+simmcalibration__simmCalibration *-- "1" simmcalibration__equity : Equity
+simmcalibration__simmCalibration *-- "1" simmcalibration__fx : FX
+simmcalibration__simmCalibration *-- "1" simmcalibration__interestRate : InterestRate
+simmcalibration__simmCalibration *-- "1" simmcalibration__simmCalibration_RiskClassCorrelations : RiskClassCorrelations
+simmcalibration__simmCalibration *-- "1" simmcalibration__simmCalibration_VersionNames : VersionNames
+simmcalibration__simmCalibration_RiskClassCorrelations *-- "1..*" simmcalibration__simmCalibration_RiskClassCorrelations_Correlation : Correlation
+@enduml

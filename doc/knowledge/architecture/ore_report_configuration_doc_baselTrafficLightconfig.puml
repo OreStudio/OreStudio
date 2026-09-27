@@ -1,0 +1,15 @@
+@startuml
+title ORE baselTrafficLightconfig entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "baselTrafficLightconfig.xml" {
+  class "BaselTrafficLightConfig_Configuration" as baselTrafficLightconfig__BaselTrafficLightConfig_Configuration <<value>> {
+    mporDays : string
+  }
+}
+
+baselTrafficLightconfig__BaselTrafficLightConfig_Configuration *-- "1" baselTrafficLightconfig__BaselTrafficLightConfig_Configuration_ObservationThresholds : ObservationThresholds
+@enduml

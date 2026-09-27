@@ -11,6 +11,13 @@
 
 *Status: partly implemented. The analysis holds; the proposal is now work in progress.*
 
+*The inventory below has been superseded.* It was taken from the example files
+by hand; [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]]
+re-derives it from the schemas, counts every entity, and adds the ownership rule
+and the diagrams. What remains only here is the five-layer proposal, the product
+taxonomies and the pricing configuration domain model — and this page's decision
+that =ores.analytics= is the component home, which the new cluster adopts.
+
 Layers 1 and 5 landed in =ores.analytics.api=:
 =pricing_model_config=, =pricing_model_product=,
 =pricing_model_product_parameter=, and =pricing_engine_type=. Layers 2 (smile
@@ -578,5 +585,9 @@ and initial margin configurations.
 
 Counterparty risk weights extend =ores.refdata.counterparties=. Script libraries
 stay close to =ores.trading.scripted_instruments=.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this page in its cluster, and the current schema-derived inventory of the same vocabulary.
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

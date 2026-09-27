@@ -1,0 +1,31 @@
+@startuml
+title ORE ore entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "ore.xml" {
+  class "analyticsType" as ore__analyticsType {
+  }
+  class "analyticsType_Analytic" as ore__analyticsType_Analytic <<value>> {
+    type? : string
+  }
+  class "ore" as ore__ore {
+  }
+  class "parameterListType" as ore__parameterListType {
+  }
+  class "parameterListType_Parameter" as ore__parameterListType_Parameter <<value>> {
+    name : string
+  }
+}
+
+ore__analyticsType *-- "0..*" ore__analyticsType_Analytic : Analytic
+ore__ore *-- "0..1" ore__parameterListType : Logging
+ore__ore *-- "0..1" ore__parameterListType : Markets
+ore__ore *-- "0..1" ore__parameterListType : Restore
+ore__ore *-- "1" ore__analyticsType : Analytics
+ore__ore *-- "1" ore__parameterListType : Setup
+ore__parameterListType *-- "0..*" ore__parameterListType_Parameter : Parameter
+ore__parameterListType <|-- ore__analyticsType_Analytic
+@enduml

@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B
+:END:
+#+title: Story: Model the ORE report configuration as entities
+#+description: Give the ORE report configuration vocabulary a typed entity model: the seventeen XML documents an ORE run is configured with, owned by or referenced from a report definition, so the engine's input is produced from entities rather than assembled by hand.
+#+type: story
+#+level: s2
+#+filetags: :reporting:ore:model:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report definition's configuration is a set of strongly typed entities rather than a flat row of switches, and every entity in the ORE configuration vocabulary is identified, owned, and reachable from the definition.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- Every entity in the seventeen ORE configuration documents is identified and mapped to an owning component.
+- A report definition reaches its configuration through typed entities and foreign keys, never through a flat table of switches or an XML or JSON blob.
+- A new kind of report adds a workflow and a parameter block, not a column on the report definition.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ABCCD68D-D07A-4DA6-AF44-61B16F56D26E][Scaffold story: Model the ORE report configuration as entities]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5ED86EEE-6090-4321-A8E4-BF80D418BA32][Design the ORE report configuration entity model]] | STARTED | 2026-09-27 | | Initial task for: Model the ORE report configuration as entities |
+| [[id:8F6B8D02-2951-4A7C-918F-F6F5D936B1E0][Model the run document and the analytic list]] | BACKLOG | | | Typed entities for the ORE run document: the setup block, the market bindings, and the ordered analytic list with a lookup of the analytic types. |
+| [[id:F17348AD-67DB-4844-94B3-F612C638488B][Model the analytics configuration libraries]] | BACKLOG | | | Entity models for the configuration the analytics in a run reference: simulation and cross-asset model, sensitivity, stress, SIMM calibration, historical return, Basel traffic light, and credit simulation. |
+| [[id:DB247C1C-038E-4C39-ACA2-09C687EB2244][Model the curve configuration entities]] | BACKLOG | | | The curve recipes ORE builds from, currently only partly held as ir_curve_bootstrap_config: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes. |
+| [[id:C1EEE20C-6B2D-488F-9256-0596C8C8D38E][Model the shared reference configuration]] | BACKLOG | | | The ORE configuration the reference and trading components own: conventions, calendars and adjustments, currencies, counterparties, netting set definitions and IBOR fallback, referenced by a run rather than copied into reporting. |
+| [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]] | BACKLOG | | | Replace the workflow-shaped columns on the report definition with a classification that selects the registered workflow and the parameter block it reads. |
+| [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]] | BACKLOG | | | Build the ORE run document and the configuration documents it names from the entities, replacing the current package step that emits trades.msgpack and market_data.msgpack. |
+
+* Decisions
+
+* Out of scope
+
+-

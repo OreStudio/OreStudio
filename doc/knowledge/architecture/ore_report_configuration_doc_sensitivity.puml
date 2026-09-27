@@ -1,0 +1,396 @@
+@startuml
+title ORE sensitivity entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "sensitivity.xml" {
+  class "basecorrelation" as sensitivity__basecorrelation {
+    Shifts : string
+    ShiftLossLevels : string
+    ShiftTerms : string
+    indexName : string
+  }
+  class "basecorrelations" as sensitivity__basecorrelations {
+  }
+  class "capfloorvolatilities" as sensitivity__capfloorvolatilities {
+  }
+  class "capfloorvolatility" as sensitivity__capfloorvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    Index? : indexNameType
+    IsRelative? : boolean
+    key? : string
+    ccy? : currencyCode
+  }
+  class "cdsvolatilities" as sensitivity__cdsvolatilities {
+  }
+  class "cdsvolatility" as sensitivity__cdsvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    name : string
+  }
+  class "commodityCurve" as sensitivity__commodityCurve {
+    Currency : currencyCode
+    Shifts : string
+    ShiftTenors : string
+    Calendar? : calendar
+    BusinessDayConvention? : businessDayConvention
+    name : string
+  }
+  class "commodityCurves" as sensitivity__commodityCurves {
+  }
+  class "commodityvolatilities" as sensitivity__commodityvolatilities {
+  }
+  class "commodityvolatility" as sensitivity__commodityvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    name : string
+  }
+  class "correlationcurve" as sensitivity__correlationcurve {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    index1 : string
+    index2 : string
+  }
+  class "correlationcurves" as sensitivity__correlationcurves {
+  }
+  class "cpicapfloorvolatilities" as sensitivity__cpicapfloorvolatilities {
+  }
+  class "cpicapfloorvolatility" as sensitivity__cpicapfloorvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    index : string
+  }
+  class "creditcurve" as sensitivity__creditcurve {
+    Currency : currencyCode
+    Shifts : string
+    ShiftTenors : string
+    name : string
+  }
+  class "creditcurves" as sensitivity__creditcurves {
+  }
+  class "discountcurve" as sensitivity__discountcurve {
+    Shifts : string
+    ShiftTenors : string
+    ccy : currencyCode
+  }
+  class "discountcurves" as sensitivity__discountcurves {
+  }
+  class "dividendyield" as sensitivity__dividendyield {
+    Shifts : string
+    ShiftTenors : string
+    equity : string
+  }
+  class "dividendyields" as sensitivity__dividendyields {
+  }
+  class "equityspot" as sensitivity__equityspot {
+    Shifts : string
+    equity : string
+  }
+  class "equityspots" as sensitivity__equityspots {
+  }
+  class "equityvolatilities" as sensitivity__equityvolatilities {
+  }
+  class "equityvolatility" as sensitivity__equityvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    equity : string
+  }
+  class "fxspot" as sensitivity__fxspot {
+    Shifts : string
+    ccypair : currencyPair
+  }
+  class "fxspots" as sensitivity__fxspots {
+  }
+  class "fxvolatilities" as sensitivity__fxvolatilities {
+  }
+  class "fxvolatility" as sensitivity__fxvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    ccypair : currencyPair
+  }
+  class "indexcurve" as sensitivity__indexcurve {
+    Shifts : string
+    ShiftTenors : string
+    index : indexNameType
+  }
+  class "indexcurves" as sensitivity__indexcurves {
+  }
+  class "intradaypowercurve" as sensitivity__intradaypowercurve {
+    Shifts : string
+    ShiftTenors : string
+    name : string
+  }
+  class "intradaypowercurves" as sensitivity__intradaypowercurves {
+  }
+  class "parconversion" as sensitivity__parconversion {
+    Instruments? : string
+    SingleCurve? : boolean
+    DiscountCurve? : string
+    OtherCurrency? : currencyCode
+    RateComputationPeriod? : string
+  }
+  class "parconversion_Conventions" as sensitivity__parconversion_Conventions <<value>> {
+  }
+  class "parconversion_Conventions_Convention" as sensitivity__parconversion_Conventions_Convention <<value>> {
+    id? : string
+  }
+  class "recoveryrate" as sensitivity__recoveryrate {
+    Shifts : string
+    name : string
+  }
+  class "securityspread" as sensitivity__securityspread {
+    Shifts : string
+    security : string
+  }
+  class "securityspreads" as sensitivity__securityspreads {
+  }
+  class "sensiBondFutureVolatilities" as sensitivity__sensiBondFutureVolatilities {
+  }
+  class "sensiBondFutureVolatility" as sensitivity__sensiBondFutureVolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    name : string
+  }
+  class "sensitivityanalysis" as sensitivity__sensitivityanalysis {
+    ParSensiRemoveFixing? : string
+    ParConversionMatrixRegularisation? : parConversionMatrixRegularisation
+    ParConversion? : boolean
+    ComputeGamma? : bool
+    ThetaPeriod? : period
+    UseSpreadedTermStructures? : bool
+  }
+  class "shiftSchemeEntry" as sensitivity__shiftSchemeEntry {
+    key? : string
+  }
+  class "shiftSizeEntry" as sensitivity__shiftSizeEntry {
+    key? : string
+  }
+  class "shiftTypeEntry" as sensitivity__shiftTypeEntry {
+    key? : string
+  }
+  class "survivalprobability" as sensitivity__survivalprobability {
+    Shifts : string
+    ShiftTenors : string
+    name : string
+  }
+  class "swaptionvolatilities" as sensitivity__swaptionvolatilities {
+  }
+  class "swaptionvolatility" as sensitivity__swaptionvolatility {
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    ShiftTerms : string
+    key? : string
+    ccy? : currencyCode
+  }
+  class "swaptionvolatility_Shifts" as sensitivity__swaptionvolatility_Shifts <<value>> {
+  }
+  class "swaptionvolatility_Shifts_Shift" as sensitivity__swaptionvolatility_Shifts_Shift <<value>> {
+    expiry? : string
+    term? : string
+  }
+  class "yieldcurve" as sensitivity__yieldcurve {
+    CurveType? : string
+    Shifts : string
+    ShiftTenors : string
+    name : string
+  }
+  class "yieldcurves" as sensitivity__yieldcurves {
+  }
+  class "yieldvolatilities" as sensitivity__yieldvolatilities {
+  }
+  class "yieldvolatility" as sensitivity__yieldvolatility {
+    ShiftExpiries : string
+    ShiftTerms : string
+    name : string
+  }
+  class "yieldvolatility_Shifts" as sensitivity__yieldvolatility_Shifts <<value>> {
+  }
+  class "yieldvolatility_Shifts_Shift" as sensitivity__yieldvolatility_Shifts_Shift <<value>> {
+    expiry? : string
+    term? : string
+  }
+  class "yycapfloorvolatilities" as sensitivity__yycapfloorvolatilities {
+  }
+  class "yycapfloorvolatility" as sensitivity__yycapfloorvolatility {
+    Shifts : string
+    ShiftExpiries : string
+    ShiftStrikes? : string
+    index : string
+  }
+  class "yyinflationindexcurve" as sensitivity__yyinflationindexcurve {
+    Shifts : string
+    ShiftTenors : string
+    index : string
+  }
+  class "yyinflationindexcurves" as sensitivity__yyinflationindexcurves {
+  }
+  class "zeroinflationindexcurve" as sensitivity__zeroinflationindexcurve {
+    Shifts : string
+    ShiftTenors : string
+    index : string
+  }
+  class "zeroinflationindexcurves" as sensitivity__zeroinflationindexcurves {
+  }
+  enum "parConversionMatrixRegularisation" as sensitivity__parConversionMatrixRegularisation {
+    Silent
+    Warning
+    Disable
+  }
+}
+
+sensitivity__basecorrelation *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__basecorrelation *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__basecorrelation *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__basecorrelations *-- "0..*" sensitivity__basecorrelation : BaseCorrelation
+sensitivity__capfloorvolatilities *-- "0..*" sensitivity__capfloorvolatility : CapFloorVolatility
+sensitivity__capfloorvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__capfloorvolatility *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__capfloorvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__capfloorvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__cdsvolatilities *-- "0..*" sensitivity__cdsvolatility : CDSVolatility
+sensitivity__cdsvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__cdsvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__cdsvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__commodityCurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__commodityCurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__commodityCurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__commodityCurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__commodityCurves *-- "0..*" sensitivity__commodityCurve : CommodityCurve
+sensitivity__commodityvolatilities *-- "0..*" sensitivity__commodityvolatility : CommodityVolatility
+sensitivity__commodityvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__commodityvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__commodityvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__correlationcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__correlationcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__correlationcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__correlationcurves *-- "0..*" sensitivity__correlationcurve : Correlation
+sensitivity__cpicapfloorvolatilities *-- "0..*" sensitivity__cpicapfloorvolatility : CPICapFloorVolatility
+sensitivity__cpicapfloorvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__cpicapfloorvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__cpicapfloorvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__creditcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__creditcurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__creditcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__creditcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__creditcurves *-- "0..*" sensitivity__creditcurve : CreditCurve
+sensitivity__discountcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__discountcurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__discountcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__discountcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__discountcurves *-- "0..*" sensitivity__discountcurve : DiscountCurve
+sensitivity__dividendyield *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__dividendyield *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__dividendyield *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__dividendyields *-- "0..*" sensitivity__dividendyield : DividendYieldCurve
+sensitivity__equityspot *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__equityspot *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__equityspot *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__equityspots *-- "0..*" sensitivity__equityspot : EquitySpot
+sensitivity__equityvolatilities *-- "0..*" sensitivity__equityvolatility : EquityVolatility
+sensitivity__equityvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__equityvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__equityvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__fxspot *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__fxspot *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__fxspot *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__fxspots *-- "0..*" sensitivity__fxspot : FxSpot
+sensitivity__fxvolatilities *-- "0..*" sensitivity__fxvolatility : FxVolatility
+sensitivity__fxvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__fxvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__fxvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__indexcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__indexcurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__indexcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__indexcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__indexcurves *-- "0..*" sensitivity__indexcurve : IndexCurve
+sensitivity__intradaypowercurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__intradaypowercurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__intradaypowercurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__intradaypowercurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__intradaypowercurves *-- "0..*" sensitivity__intradaypowercurve : IntradayPowerCurve
+sensitivity__parconversion *-- "0..1" sensitivity__parconversion_Conventions : Conventions
+sensitivity__parconversion_Conventions *-- "0..*" sensitivity__parconversion_Conventions_Convention : Convention
+sensitivity__recoveryrate *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__recoveryrate *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__recoveryrate *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__securityspread *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__securityspread *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__securityspread *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__securityspreads *-- "0..*" sensitivity__securityspread : SecuritySpread
+sensitivity__sensiBondFutureVolatilities *-- "0..*" sensitivity__sensiBondFutureVolatility : BondFutureVolatility
+sensitivity__sensiBondFutureVolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__sensiBondFutureVolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__sensiBondFutureVolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__basecorrelations : BaseCorrelations
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__capfloorvolatilities : CapFloorVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__cdsvolatilities : CDSVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__commodityCurves : CommodityCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__commodityvolatilities : CommodityVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__correlationcurves : Correlations
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__cpicapfloorvolatilities : CPICapFloorVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__creditcurves : CreditCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__crossgammafilter : CrossGammaFilter
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__discountcurves : DiscountCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__dividendyields : DividendYieldCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__equityspots : EquitySpots
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__equityvolatilities : EquityVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__fxspots : FxSpots
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__fxvolatilities : FxVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__indexcurves : IndexCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__intradaypowercurves : IntradayPowerCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__parExcludes : ParConversionExcludes
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__securityspreads : SecuritySpreads
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__sensiBondFutureVolatilities : BondFutureVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__setRiskFactorKeyTypes : TwoSidedDeltaKeyTypes
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__swaptionvolatilities : SwaptionVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yieldcurves : YieldCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yieldvolatilities : YieldVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yycapfloorvolatilities : YYCapFloorVolatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yyinflationindexcurves : YYInflationIndexCurves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__zeroinflationindexcurves : ZeroInflationIndexCurves
+sensitivity__survivalprobability *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__survivalprobability *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__survivalprobability *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__survivalprobability *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__swaptionvolatilities *-- "0..*" sensitivity__swaptionvolatility : SwaptionVolatility
+sensitivity__swaptionvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__swaptionvolatility *-- "1" sensitivity__swaptionvolatility_Shifts : Shifts
+sensitivity__swaptionvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__swaptionvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__swaptionvolatility_Shifts *-- "0..*" sensitivity__swaptionvolatility_Shifts_Shift : Shift
+sensitivity__yieldcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__yieldcurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__yieldcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__yieldcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__yieldcurves *-- "0..*" sensitivity__yieldcurve : YieldCurve
+sensitivity__yieldvolatilities *-- "0..*" sensitivity__yieldvolatility : YieldVolatility
+sensitivity__yieldvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__yieldvolatility *-- "1" sensitivity__yieldvolatility_Shifts : Shifts
+sensitivity__yieldvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__yieldvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__yieldvolatility_Shifts *-- "0..*" sensitivity__yieldvolatility_Shifts_Shift : Shift
+sensitivity__yycapfloorvolatilities *-- "0..*" sensitivity__yycapfloorvolatility : YYCapFloorVolatility
+sensitivity__yycapfloorvolatility *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__yycapfloorvolatility *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__yycapfloorvolatility *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__yyinflationindexcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__yyinflationindexcurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__yyinflationindexcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__yyinflationindexcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__yyinflationindexcurves *-- "0..*" sensitivity__yyinflationindexcurve : YYInflationIndexCurve
+sensitivity__zeroinflationindexcurve *-- "0..*" sensitivity__shiftSchemeEntry : ShiftScheme
+sensitivity__zeroinflationindexcurve *-- "0..1" sensitivity__parconversion : ParConversion
+sensitivity__zeroinflationindexcurve *-- "1..*" sensitivity__shiftSizeEntry : ShiftSize
+sensitivity__zeroinflationindexcurve *-- "1..*" sensitivity__shiftTypeEntry : ShiftType
+sensitivity__zeroinflationindexcurves *-- "0..*" sensitivity__zeroinflationindexcurve : ZeroInflationIndexCurve
+@enduml

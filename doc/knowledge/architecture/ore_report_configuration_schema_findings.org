@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: D4B51A93-628B-49AF-9B44-129FCC345692
+:END:
+#+title: What the ORE schemas do not say
+#+description: The properties of the ORE schema set that shape the model: references are untyped strings, the run document constrains nothing, entities are declared but unreferenced, attributes are duplicated, and reference data is a union by discriminator.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:ore:model:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+The ORE schemas describe structure, not integrity. Every link between the
+seventeen configuration documents is a plain string, so a convention, a curve, a
+calendar, an index, a currency, a counterparty and a netting set are all
+unverifiable in XML and have to become foreign keys in the studio model or stay
+unenforced.
+
+Four further properties matter: the run document constrains no parameter or
+analytic name, two families of shift configuration are declared but referenced by
+nothing, one curve type duplicates two attributes, and the reference data
+document is a union by discriminator.
+
+* Detail
+
+** Nothing is typed across documents
+
+The vocabularies the schemas define — =currencyCode= with 191 values,
+=dayCounter= with 71, =businessDayConvention= with 27, =indexNameType=,
+=currencyPair=, =calendar= — are the only typed cross-document vocabulary there
+is, and they live in =ore_types.xsd=. Everything else that points at another
+document is an =xs:string=: =Conventions=, =DiscountCurve=, =CurveId=,
+=YieldCurveId=, =Calendar=, =Index=, =CounterpartyId=, =NettingSetIds=.
+
+This is the largest single source of value in re-modelling. A curve that names
+its convention by string can name one that does not exist; a sensitivity shift
+keyed by =key= can name any curve; a credit simulation's =NettingSetIds= is a
+comma-separated string of identifiers no schema can check.
+
+** The run document constrains nothing
+
+=ore.xsd= declares =parameterListType/Parameter/@name= as a required string and
+=analyticsType_Analytic/@type= as an optional string, and nothing more. Any
+parameter name and any analytic name is schema-valid. The forty-three setup
+parameters, the eight market roles and the thirty-five analytic types are
+vocabulary observed in the shipped examples, not schema.
+
+A typed model is therefore the first place that vocabulary can be pinned down at
+all. It is also why the analytic list needs a seeded lookup: nothing else in the
+system knows which analytic names exist.
+
+** Declared but unreferenced
+
+- =stress.xsd= declares =stresssurvivalprobabilities=, holding
+  =stresssurvivalprobability=, and no element in the document points at it.
+  =StressTest/SurvivalProbabilities= uses the =survivalprobabilities= type from
+  =sensitivity.xsd= instead.
+- =sensitivity.xsd= declares =survivalprobabilities= and =recoveryrates=, and no
+  class in the document references either.
+
+The reading is not "absent" but "unwired": the shift configuration for survival
+probabilities and recovery rates exists in the schema and is reached by no path.
+A model built from the schema alone would silently omit those two families.
+
+** A duplicated declaration
+
+=simCommodityCurve= in =curveconfig.xsd= declares =DayCounter= and
+=InterpolationMethod= twice. The binding generator emits both, so a round trip
+cannot preserve which one the source meant. This is worth reporting upstream to
+ORE: it is a defect in the schema rather than a modelling choice.
+
+** Reference data is a union by discriminator
+
+=referencedata.xsd= defines one =ReferenceDatum= element carrying =id=, =Type=
+and twelve mutually exclusive =1..1= children — currency-hedged equity index,
+equity index, commodity index, credit index, bond, CBO, bond future, convertible
+bond, callable bond, credit, equity and portfolio basket. The domain model wants
+one entity per flavour, not twelve nullable children on one entity.
+
+** Generated, and schema-validated, but not order-validated
+
+The bindings that =ores.ore= holds are generated from =input.xsd= by =xsdcpp=,
+which validates presence and cardinality but not element order, attribute
+patterns or ranges. A model that supplies typed columns has to enforce what the
+validator does not.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp: the ORE XML binding generator]] — how the bindings these findings describe are produced.

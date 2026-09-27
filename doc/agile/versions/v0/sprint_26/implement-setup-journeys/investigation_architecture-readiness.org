@@ -175,9 +175,13 @@ it is not counted as clean: see the table below.
    tenant= and =provision party=, 696 lines in one file — which publish
    bundles, wait on workflows, generate a synthetic organisation and
    associate the administrator with the operational parties themselves.
-   =doc/recipes/shell/provisioning/acme_system_provision.org= runs all
-   three end to end, and it is the only artefact in the tree that takes
-   an empty database to a working tenant. The accepted
+   Three recipes under =doc/recipes/shell/provisioning/= run a whole
+   system provisioning, one per value the =--source= flag accepts, and
+   they are the only artefacts in the tree that take an empty database to
+   a working tenant: =acme_system_provision.org= on the synthetic path,
+   =barclays_system_provision.org= on the GLEIF path, and
+   =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+   on the =acme= path, which reaches the synchronous handler. The accepted
    [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][seed profile contract]] already
    decided the outcome: the shell becomes a thin caller and its
    client-side orchestration is deleted. So this is accepted,

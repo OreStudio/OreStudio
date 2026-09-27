@@ -135,11 +135,14 @@ adds is the screen, self-registration, and the failure paths.
 - *Every journey has two clients.* =ores.web= and =ores.shell= run the
   same server-side operation for each stage, so a journey is implemented
   once on the server and reached from both. The shell already carries
-  several journeys as porcelain commands, and the recipes under
-  =doc/recipes/shell/provisioning/= run the whole Setup sequence end to
-  end, one per provisioning path. A group's story therefore carries the
-  shell side of its journeys in the same group, and a group that lines up
-  only the browser has moved the disagreement rather than removed it.
+  several journeys as porcelain commands, and three recipes under
+  =doc/recipes/shell/provisioning/= run a whole system provisioning, one
+  per provisioning path: =acme_system_provision.org=,
+  =barclays_system_provision.org= and
+  =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=.
+  A group's story therefore carries the shell side of its journeys in the
+  same group, and a group that lines up only the browser has moved the
+  disagreement rather than removed it.
 - *A client's orchestration moves to the server, it is not duplicated.*
   Where the shell drives several calls in sequence today, the accepted
   contracts put that sequence in one request. Both clients then call the

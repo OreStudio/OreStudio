@@ -77,7 +77,7 @@ EOF
 
 * Script
 
-=projects/ores.shell/scripts/library/bootstrap_smoke.ores= — generated
+=projects/ores.shell/scripts/library/provisioning/bootstrap_smoke.ores= — generated
 from this recipe by =compass build --direct tangle_shell_scripts= (do not
 edit the =.ores= by hand).
 

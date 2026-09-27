@@ -25,14 +25,15 @@ same server-side operations, so that neither is the reference and neither
 can drift.
 
 The shell is not a bystander in this work. It already carries the three
-Setup journeys as porcelain commands, and two recipes under
-=doc/recipes/shell/provisioning/= run the whole sequence end to end:
-=acme_system_provision.org= with =--source synthetic=, and
+Setup journeys as porcelain commands, and three recipes under
+=doc/recipes/shell/provisioning/= run a whole system provisioning end to
+end, one per value the =--source= flag accepts. =acme_system_provision.org=
+uses =--source synthetic= and =barclays_system_provision.org= uses
+=--source gleif=; both run the system, tenant and party stages.
 =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
-with =--source acme=. Each creates the system administrator and a tenant,
-signs out, signs in as the tenant administrator, and provisions the tenant
-through the porcelain command. They are the sequences the browser is being
-built to match.
+uses =--source acme=, which reaches the synchronous =provision-acme=
+handler this task retires, and stops after the tenant stage. They are the
+sequences the browser is being built to match.
 
 Those three commands orchestrate on the client today. This task removes
 that orchestration, because the accepted
@@ -61,9 +62,10 @@ both clients become callers of one contract.
   administrator with the operational parties — happens on the server, in
   one request per stage, or is recorded as deliberately staying in the
   client with the reason.
-- =doc/recipes/shell/provisioning/acme_system_provision.org= and
+- The three end-to-end provisioning recipes —
+  =acme_system_provision.org=, =barclays_system_provision.org= and
   =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
-  both run from an empty database to a working tenant, and they are the
+  — each run from an empty database to a working tenant, and they are the
   proof.
 - The generated recipes that name the retired subjects —
   =doc/recipes/shell/bootstrap/bootstrap.org= and
@@ -118,22 +120,30 @@ code: the inventory in step 1 is the record of the wizard behaviour the
 journeys replace, and it should not be deleted with the orchestration.
 
 All six recipes under =doc/recipes/shell/provisioning/= are hand-written
-and tangle to scripts in the shell's library. Two of them run a whole
-system provisioning, and they exercise both provisioning paths that exist
-today:
+and tangle to scripts in the shell's library. Three of them run a whole
+system provisioning, one per value the =--source= flag accepts:
 
 - =acme_system_provision.org= creates a tenant called =acme=, provisions
   it with =--source synthetic=, then adds a party and sets the default
   party.
+- =barclays_system_provision.org= creates =barclays=, provisions it with
+  =--source gleif= against a root LEI, then adds a party and sets the
+  default party.
 - =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
-  creates =acme_corporation=, provisions it with =--source acme=, which
-  reaches the synchronous =provision-acme= handler, and publishes the
-  risk-management bundle.
+  creates =acme_corporation= and provisions it with =--source acme=,
+  which reaches the synchronous =provision-acme= handler. It stops after
+  the tenant stage, and it publishes two compute packages and the
+  risk-management bundle on the way.
+
+The other three are single-stage or unrelated: =tenant_provision.org= is
+the tenant stage alone, =party_provision.org= is the party stage alone,
+and =bootstrap_smoke.org= uses the raw verbs rather than =provision=.
 
 =--source= is a flag of the porcelain =provision tenant= and not of a
 script; its permitted values are =gleif=, =synthetic= and =acme=. The
 =acme= value is the one that depends on the handler the generic request
-replaces, so it is the value this task has to re-point.
+replaces, so it is the value this task has to re-point; the other two
+already go through work the generic request is meant to carry.
 
 =doc/recipes/shell/tenant_provisioning/tenant_provisioning.org= is a
 different thing: one generated recipe with a section per command in that

@@ -17,15 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ANALYTICS_CORE_HPP
 #define ORES_ANALYTICS_CORE_HPP
 
 /**
  * @brief Core implementation for ORE Studio analytics.
  *
- * Repositories, services and database access for the analytics component.
-Manages pricing engine types, pricing model configurations, products and
-normalised parameter rows. Depends on ores.analytics.api.
+ * Pricing model and analytics configuration — model types, product parameters, and batch pricing.
  */
 namespace ores::analytics::core {}
 

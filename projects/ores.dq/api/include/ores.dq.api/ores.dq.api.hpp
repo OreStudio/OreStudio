@@ -17,17 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_ORES_DQ_API_HPP
-#define ORES_DQ_API_ORES_DQ_API_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_DQ_API_HPP
+#define ORES_DQ_API_HPP
 
 /**
- * @brief Data quality shared contract: domain types, table and JSON I/O, and NATS protocol schemas.
+ * @brief Public API types for the data quality component.
  *
- * Header-only library defining the contract the data quality modules share. It
- * provides the domain types for change reasons, dimensions, coding schemes,
- * datasets and their bundles, publications, and the LEI staging entities; their
- * table and JSON I/O; and the NATS message protocol schemas the service serves
- * and the shell and web clients send.
+ * Domain types, JSON/table I/O, and NATS protocol schemas for the data-quality component.
  */
 namespace ores::dq::api {}
 

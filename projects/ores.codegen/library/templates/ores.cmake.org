@@ -41,7 +41,8 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
-| [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] | 9 | Per-component CMake build files: root, src (kind-keyed), tests, modeling. |
+| [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] | 1 | The composite root CMakeLists.txt: the one build file a component keeps for its whole life. |
+| [[id:896A1536-8BE4-414B-8338-EE51C6CDBF88][ores.cmake.scaffold]] | 8 | First-generation CMake build files for a new component: its root, src, tests and modeling CMakeLists, and the file lists beside them. Emitted only where a component opts in. |
 | [[id:88E4746E-DB9A-4BDB-8C7E-5F4571D3024D][ores.cmake.service]] | 1 | Service-component src CMakeLists variant. |
 
 * See also

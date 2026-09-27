@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ASSETS_SERVICE_HPP
 #define ORES_ASSETS_SERVICE_HPP
 
 /**
  * @brief Asset management service
  *
- * Standalone NATS microservice hosting asset handlers: binary image storage, hierarchical tagging,
- * and currency-to-image linking.
+ * NATS service entrypoint for the assets domain — wires handlers, repositories, and configuration.
  */
-namespace ores::assets.service {}
+namespace ores::assets::service {}
 
 #endif

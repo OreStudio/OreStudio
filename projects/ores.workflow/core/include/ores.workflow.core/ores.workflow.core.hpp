@@ -17,17 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKFLOW_CORE_HPP
 #define ORES_WORKFLOW_CORE_HPP
 
 /**
- * @brief Workflow orchestration service component
- *
- * Provides saga-pattern workflow orchestration for multi-step provisioning and
-other long-running distributed operations. Tracks workflow instances and their
-individual steps, supports compensation (rollback), and integrates with the
-NATS messaging layer for inter-service coordination.
+ * Workflow orchestration — workflow definitions, execution, and state tracking for multi-step
+ * operations.
  */
-namespace ores::workflow {}
+namespace ores::workflow::core {}
 
 #endif

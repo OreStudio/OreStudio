@@ -17,18 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_API_ORES_WORKSPACE_API_HPP
-#define ORES_WORKSPACE_API_ORES_WORKSPACE_API_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKSPACE_API_HPP
+#define ORES_WORKSPACE_API_HPP
 
 /**
- * @brief The workspace domain type and the protocols it travels in.
+ * @brief Workspace domain types
  *
- * Everything here generates from the component's two models: the workspace
- * domain type with its JSON, table and table-I/O companions, the canonical
- * entity protocol and its change event, the protocol for the resolution and
- * trade-scope operations, and the synthetic generator the suites seed with.
- * Generation lives in ores::workspace::core, which persists and serves these
- * types.
+ * Domain type, protocols and generator for the workspace component, generated from the workspace
+ * entity and operation models.
  */
 namespace ores::workspace::api {}
 

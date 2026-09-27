@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_export.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_CORE_EXPORT_HPP
 #define ORES_TRADING_CORE_EXPORT_HPP
 
 #include <boost/config.hpp>
 
-// On Windows this library is always a static archive (see src/CMakeLists.txt),
-// so DLL import/export decorations are never needed on that platform.
-#if defined(_WIN32)
-#    define ORES_TRADING_CORE_EXPORT
-#elif defined(ORES_TRADING_CORE_LIBRARY)
+#ifdef ORES_TRADING_CORE_LIBRARY
 #    define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_EXPORT
 #else
 #    define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_IMPORT

@@ -17,15 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_HPP
-#define ORES_TRADING_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_HPP
+#define ORES_TRADING_CORE_HPP
 
 /**
- * @brief Trade domain component
- *
- * Provides domain types, repositories, services and protocol support for trade management including
- * trade types, lifecycle events, party roles and trade identifiers.
+ * Trade booking and lifecycle management — domain model, repositories, services, and NATS message
+ * handlers.
  */
-namespace ores::trading {}
+namespace ores::trading::core {}
 
 #endif

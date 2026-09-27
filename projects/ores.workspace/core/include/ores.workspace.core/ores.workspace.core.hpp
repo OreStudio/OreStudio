@@ -17,21 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_CORE_ORES_WORKSPACE_CORE_HPP
-#define ORES_WORKSPACE_CORE_ORES_WORKSPACE_CORE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKSPACE_CORE_HPP
+#define ORES_WORKSPACE_CORE_HPP
 
 /**
- * @brief Named, isolated data contexts and the inheritance chain between them.
+ * @brief Workspace core services
  *
- * A workspace is a row in ores_workspaces_tbl, and the data a workspace does
- * not carry is resolved from its parent chain up to the Live workspace. This
- * namespace holds the repository that persists those rows and reads the chain,
- * the service that wraps it, the messaging layer that serves both over NATS,
- * the presentation mapper the history dialog renders through, and the service
- * application that hosts them all. The domain types and the protocol schemas
- * they travel in live in ores::workspace::api; the process entry point lives
- * in ores::workspace::service.
+ * Repository, service, handlers and registrars for the workspace component.
  */
-namespace ores::workspace {}
+namespace ores::workspace::core {}
 
 #endif

@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_API_HPP
 #define ORES_REFDATA_API_HPP
 
 /**
- * @brief Public API types for the reference data component.
- *
- * Domain types, their JSON, CSV and table input/output, the generated NATS
- * protocol schemas and eventing, and the synthetic generators the tests use.
- * The types are exchanged between the reference data service and the
- * components that consume it.
+ * Domain types, JSON/CSV/table I/O, and NATS protocol schemas for the reference-data component.
  */
 namespace ores::refdata::api {}
 

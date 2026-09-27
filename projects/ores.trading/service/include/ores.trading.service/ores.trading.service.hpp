@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TRADING_SERVICE_HPP
 #define ORES_TRADING_SERVICE_HPP
 
 /**
  * @brief Trade booking and lifecycle service
  *
- * Standalone NATS microservice hosting trading handlers: trade booking, FSM-enforced status
- * transitions, activity type taxonomy, and temporal versioning.
+ * NATS service entrypoint for the trading domain — wires handlers, repositories, and configuration.
  */
-namespace ores::trading.service {}
+namespace ores::trading::service {}
 
 #endif

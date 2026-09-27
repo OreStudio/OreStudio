@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_VARIABILITY_SERVICE_HPP
 #define ORES_VARIABILITY_SERVICE_HPP
 
 /**
  * @brief Feature flags and runtime configuration service
  *
- * Standalone NATS microservice hosting variability handlers: feature flag management and
- * system-wide runtime configuration.
+ * NATS service entrypoint for the variability domain.
  */
-namespace ores::variability.service {}
+namespace ores::variability::service {}
 
 #endif

@@ -17,16 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_SERVICE_ORES_IAM_SERVICE_HPP
-#define ORES_IAM_SERVICE_ORES_IAM_SERVICE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_IAM_SERVICE_HPP
+#define ORES_IAM_SERVICE_HPP
 
 /**
  * @brief Identity and access management service
  *
- * Standalone NATS microservice hosting IAM handlers: user authentication, session management,
- * account and tenant lifecycle, role and permission management, bootstrap mode, geolocation, and
- * JWT signing/validation.
+ * NATS service entrypoint for the IAM domain — wires handlers, repositories, and configuration.
  */
-namespace ores::iam.service {}
+namespace ores::iam::service {}
 
 #endif

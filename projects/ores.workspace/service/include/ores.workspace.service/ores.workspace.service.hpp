@@ -17,17 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_SERVICE_ORES_WORKSPACE_SERVICE_HPP
-#define ORES_WORKSPACE_SERVICE_ORES_WORKSPACE_SERVICE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKSPACE_SERVICE_HPP
+#define ORES_WORKSPACE_SERVICE_HPP
 
 /**
- * @brief The process that hosts the workspace component.
+ * @brief Workspace service entrypoint
  *
- * The service application builds the database context, assembles the
- * PostgreSQL LISTEN/NOTIFY to NATS change-event pipeline through the generated
- * event registrar, and runs the domain service with the component's registrar.
- * The configuration and the host it runs under live beside it here; the
- * handlers it serves are in ores::workspace.
+ * The process that hosts the workspace component: configuration, the change-event pipeline and the
+ * domain service runner.
  */
 namespace ores::workspace::service {}
 

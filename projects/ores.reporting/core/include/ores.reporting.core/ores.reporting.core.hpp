@@ -17,15 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REPORTING_CORE_HPP
 #define ORES_REPORTING_CORE_HPP
 
 /**
- * @brief Core implementation for ORE Studio reporting.
- *
- * Repositories, services and database access for the reporting component.
- * Manages report types, concurrency policies, report definitions, report
- * instances and risk report configurations. Depends on ores.reporting.api.
+ * Report management and ORE risk execution — report types, definitions, instances, and scheduling.
  */
 namespace ores::reporting::core {}
 

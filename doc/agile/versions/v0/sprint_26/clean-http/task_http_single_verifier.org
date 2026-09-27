@@ -8,7 +8,7 @@
 #+filetags: :clean-http:sprint_26:v0:
 #+owner: marco
 #+branch: feature/http-single-verifier
-#+pr:
+#+pr: 2258
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2258][#2258]] | [http] Verify session tokens with IAM's key alone |
 
 * Review
 

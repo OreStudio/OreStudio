@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 46C78DB3-7844-4C56-A4CA-7A2511CF7217
+:END:
+#+title: The seed upsert helpers rely on an ON CONFLICT clause the versioning trigger pre-empts
+#+description: Twenty-five helpers in create/seed/upsert_functions_create.sql insert with ON CONFLICT DO NOTHING against versioned tables whose BEFORE INSERT trigger refuses a duplicate create, so the clause never fires; each needs the existence check the file's header documents, and a concurrent caller meets the trigger's 23505 rather than a quiet skip.
+#+type: capture
+#+level: cross
+#+filetags: :dq:sql:seed:environment:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Twenty-five helpers in =projects/ores.sql/create/seed/upsert_functions_create.sql=
+insert with =ON CONFLICT ... WHERE valid_to = infinity DO NOTHING= against
+versioned tables whose =BEFORE INSERT= trigger refuses a version-0 create
+when a live row exists. The trigger runs before the conflict arbiter, so
+the clause never fires and the duplicate raises =23505= instead. Each
+helper needs the existence check the file's own header already documents.
+
+* Why
+
+PR #2232 fixed the one that collides in a fresh populate, the catalogue
+helper. The other twenty-five have not been exercised with a duplicate, so
+they were left alone rather than changed without a way to prove them. A
+concurrent caller of any of them meets the trigger's exception rather than
+a quiet skip: the check-then-insert window cannot be closed with =FOR
+UPDATE=, because a missing row locks nothing; the trigger's own row lock is
+what serializes the callers, and the loser raises. Treating that raise as
+"someone else created it" is a decision for whoever hardens the file, and
+it should key on the trigger's message so it does not swallow a real
+unique violation.
+
+* References
+
+- [[https://github.com/OreStudio/OreStudio/pull/2232][PR #2232]] — the
+  catalogue helper's fix, and the review note that raised this.
+- =projects/ores.sql/create/dq/dq_catalogs_create.sql= — the trigger that
+  pre-empts the clause.
+
+* See also
+
+- [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the
+  component clean standard]] — the story whose SQL this belongs to.

@@ -26,11 +26,11 @@ ores.shell passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] |
-| Now          | Every item worked and recorded. Open for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Take the PR through its review round, then close the task and the story. |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -217,3 +217,53 @@ its argument list ends the member, and a facet of free functions arrives as
 nothing and used to arrive as a class that does not exist. Both are stated in the
 manual section of the diagram they affect, and the second is what H01's manual
 pass is for.
+
+* Result
+
+Every item of the Component Clean Standard that applies to a component of kind
+All is worked and recorded in the table under Plan, with the evidence that proves
+it. Every item that does not apply is recorded not applicable with its reason,
+and the reason is the same for most of them: ores.shell has no entity, junction
+or operation model and owns no subject. Its one model is the component model, and
+every shell unit in its tree is output of some other component's model.
+
+The component joins =COMPONENTS_UNDER_TEST=, the first of kind All to do so, and
+=check_component_drift.py --all= passes with it listed and leaves the tree clean.
+Every codegen gate this component can run is green. The whole tree builds, the
+codegen suite passes at 906 cases, and all fourteen of the component's test
+suites pass with the fleet up at 6,280 assertions over 2,796 cases.
+
+What the pass changed, rather than confirmed:
+
+- Two CMake source lists were stale under the marker template, carrying no
+  generated marker and a Qt reason in the test list's header.
+- Twelve of the fourteen part diagrams were stale; =ores.shell.api= had no
+  =shell_root_menu= and drew a class for a facet of free functions that has no
+  class. All twelve regenerated with their manual sections verified byte for byte,
+  and the manual pass completed where the header parser cannot reach.
+- Six part overviews had no =Diagram= section and four parts had no rendered
+  image at all. Both fixed; =validate_docs.sh= passes for all 40 components.
+- The namespace documentation header's brief described a shell of currency and
+  account commands and named namespaces that do not exist.
+- One suite was red on a case that asserted a timestamp form the platform does
+  not write. The finding was in the case, not the writer: five other suites in
+  the tree assert the form the writer produces. The remaining finding is that
+  =to_iso8601_utc= writes the relaxed separator its name disclaims, which is
+  =ores.platform='s to settle.
+- Four cases in the seam suite asserted only that a call did not throw. They now
+  assert values.
+
+What this pass does not close, recorded rather than glossed:
+
+- The largest hand-written block, fourteen trading instrument units, belongs to
+  =ores.trading=. Eleven of their entities have a model that does not enable the
+  shell facet and four have no model, so generation supersedes none of them today
+  and the item that asks for their deletion is trading's S01.
+- =regenerate_cmake_component_files.py --check= is red tree-wide for thirty-two
+  lists outside this component, and no workflow and no compass command runs it.
+- The header parser drops a member whose parameter type is a =std::function= with
+  a comma in its argument list, and arrives as nothing for a facet of free
+  functions. Both are worked around in the manual section of the diagram they
+  affect and recorded here as generator gaps.
+- V08 is recorded rather than closed, which is what the item asks: 52 source
+  files have no name-matched test and the list is the coverage work item.

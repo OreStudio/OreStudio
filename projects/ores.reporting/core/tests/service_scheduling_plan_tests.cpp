@@ -23,11 +23,11 @@
 #include <map>
 #include <string>
 
-// The decision these pin is the one that made reconcile fail on every service
-// start: it generated a fresh job id for a definition whose job already existed,
-// and the scheduler refused the insert on the job-name index. No clock, no
-// database and no bus are involved in asking which id to use, which is why the
-// decision is a function.
+// The decision these pin: which job id to use for a definition, given the jobs
+// the scheduler already holds. A fresh id for a definition whose job already
+// exists is refused by the scheduler's job-name index. No clock, no database
+// and no bus are involved in asking which id to use, which is why the decision
+// is a function.
 
 using namespace ores::reporting::service;
 

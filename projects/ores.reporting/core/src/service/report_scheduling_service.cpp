@@ -360,9 +360,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         // Schedule each definition with its own put request. The canonical
         // put_many is all-or-nothing: the generated service stops at the first
         // change it cannot prepare, so batching would let one bad row block
-        // every job for the tenant -- which the retired scheduler
-        // schedule-batch subject did not do, because it saved each definition
-        // in its own transaction and reported the failures by id.
+        // every job for the tenant.
         struct pending_entry {
             boost::uuids::uuid job_id;
             const domain::report_definition* def;

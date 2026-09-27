@@ -207,9 +207,7 @@ private:
         inst.output_message = note;
         inst.modified_by = ctx_.service_account();
         inst.performed_by = ctx_.service_account();
-        // A code the change-reason seed defines. The trigger previously named
-        // "system.scheduler_trigger", which no seed defines, so every insert was
-        // rejected by the validator.
+        // The seeded change reason the validator accepts for a system insert.
         inst.change_reason_code = "system.new_record";
         inst.change_commentary = note.empty() ? "Created by report trigger" : note;
 

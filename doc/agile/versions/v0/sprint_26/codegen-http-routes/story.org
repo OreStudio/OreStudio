@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 39AA071A-E7EC-4684-86F8-1B2CECF9076B
+:END:
+#+title: Story: Generate HTTP routes from the models
+#+description: Decompose the HTTP gateway the way ores.shell decomposes its command surface: one sub-component per exposed component, each holding generated per-entity route units, so no route is hand-crafted. The gateway stops calling component services in process and speaks the canonical NATS protocol instead, which is what lets one generator serve both surfaces from the same models.
+#+type: story
+#+level: s2
+#+filetags: :codegen:http:clean_standard:sprint_26:v0:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.http serves every component through routes generated from that component's models, with one uniform security model, and ores.assets is the first component landed through it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The facet, three components landed, and the full tree builds. |
+| Waiting on    | Nothing.                               |
+| Next          | Review and raise the pull request.     |
+| Last touched  | 2026-09-26                               |
+
+* Result
+
+The gateway's routes generate from the models. A codegen facet,
+=ores.cpp.http-route=, projects an entity or an operation model onto a
+route unit with a header, an implementation and a test. Three components
+are landed, each in its own part beside the hand-written aggregator, and
+each with its hand-written route file deleted rather than kept in
+parallel: =ores.http.assets= (image, tag, image_tag), =ores.http.refdata=
+(currency) and =ores.http.iam= (account, role, permission, session,
+login_info, and nineteen operations). The gateway registers 109 endpoints.
+
+The gateway is a protocol gateway. A generated route builds the canonical
+request, sends it over NATS and maps the reply to an HTTP response, so it
+depends on the target's wire protocol and not on its service library. The
+server stopped linking three component libraries.
+
+Security is one declaration and one enforcement point. The route forwards
+the caller's bearer token by delegation, so the service's own permission
+check governs the real caller, and it states its authentication position
+from the model. A route that states neither position cannot be built or
+registered, and a gate fails the build if any registered route is silent.
+The storage routes were public by omission and are now authenticated.
+
+Verification, on base =24f0896773=:
+
+- =ORES_USE_BUSCTL=0 ./compass.sh build= exits 0 for the whole tree, 100%,
+  which this branch could not do until main repaired the workflow
+  component it was blocked on.
+- =ctest -R 'http|storage'= is 8 of 8.
+- =pytest projects/ores.codegen/tests= is 757 passed.
+- =check_component_drift.py --all --dry-run= reports no drift.
+- =check_route_auth_declarations.py= passes, and handler permissions,
+  model drift, protocol twin coverage, populate references and the shell
+  recipe inventory are all green.
+- =validate_docs.sh= reports all 40 components pass.
+- Live: a generated entity route answers 401 without a token, a generated
+  public operation answers 200, an unexposed operation answers 404, and an
+  unknown path answers 404.
+
+Two failures remain and neither is this branch's: =regenerate_cmake_component_files.py --all --check= reports stale lists in other components (main has more, this branch fixes two and introduces none), and =ores.iam.core.tests= fails against a restored database whose stored function predates the SQL fix, while the tree's SQL is correct.
+
+* Acceptance
+
+- A codegen facet generates a route unit per entity, with a header, an implementation and a test, from the entity's model.
+- The generated route speaks the canonical NATS protocol and carries the caller's session, so the service's own permission check governs access.
+- Every route that needs a session is behind one by construction, declared in the model rather than by hand at the call site.
+- The hand-written route file for ores.assets is deleted, and its endpoints still answer.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B22C0343-9FD0-4405-B301-0228CE07DE29][Scaffold story: Generate HTTP routes from the models]] | DONE | 2026-09-26 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6356873B-10D7-4AC7-AD63-8FA2F9C1BD78][Build the HTTP route facet and land ores.assets through it]] | BACKLOG | | | Initial task for: Generate HTTP routes from the models |
+
+* Decisions
+
+| # | Decision | Why |
+|---+----------+-----|
+| 1 | A generated route reaches its component over NATS, not in process. | It mirrors the shell, so one generator serves both surfaces from the same models, and the gateway stops linking every component's core library. |
+| 2 | Security is declared once in the model and enforced once, in the service. | The gateway forwards the caller's bearer token by delegation, so the service's own permission check governs the real caller. Shell and HTTP answer to one check, not two, and the gateway does not re-implement authorization. |
+| 3 | A route must state its authentication position, and silence is refused. | =route::requires_auth= defaulted to false, so a route that forgot the call was silently public. Three storage routes were public by omission. =build()= and =add_route()= now throw, naming the method and the pattern. |
+| 4 | An operation states =:http_route: true= to become a route; absence means it is not exposed. | Whole-model opt-in exposed the model's entire declared surface, including two public endpoints that never existed: =bootstrap/provision-tenant= and =auth/service-login=. Refusal is the right default for a gateway. |
+| 5 | Generated paths are namespaced by component, and the resulting URL changes are accepted. | The models state a NATS subject, not an HTTP path. Measured before deciding: no in-repo client calls the iam or refdata REST paths, because the web UI reaches the backend over NATS. |
+
+* Work units
+
+| Unit | Commit | What it decided and proved |
+|------+--------+----------------------------|
+| Scaffold | =9f22d14dfe= | The story, its acceptance points and its two tasks. |
+| The facet and assets | =2fb572bc6e= | A codegen facet projects an entity model onto a route unit. Assets' three entities generate 29 routes and compile. The verb-to-route mapping: a put becomes two routes because the claim is the whole difference and the method carries it. |
+| Wiring and security | =0dd86ddc07= | The generated routes replace the hand-written ones and the gateway reports 29 generated endpoints live. A route can no longer be public by omission, and a gate proves it in CI. |
+| Refdata | =b2af226191= | =risk_routes= was a misnomer for the refdata currency group; it is deleted, not renamed. Second component landed. |
+| Operations and iam | =721bd92d2d= | The operation archetype, and iam's 62 routes across eleven units. Recorded the two findings that followed: the URL changes, and blanket exposure. |
+| Exposure and the storage client | =41981304b2= | Per-message exposure, so 19 operations are served and 9 are not. The storage client requires its caller's token, and every in-repo caller follows. |
+
+* Out of scope
+
+Recorded rather than done, each with its reason:
+
+- =storage= keeps its three routes hand-written. They are file operations on ={bucket}/{key}=, not entity CRUD, so there is no entity to generate from.
+- =variability= keeps its one route hand-written. It has no models, and its clean-standard task is in flight in another worktree.
+- The whole tree build. It fails on a pre-existing break in =ores.workflow=: =ores.workflow.api.lib= is declared an INTERFACE library so its generated sources never compile, and =ores.shell.workflow.tests= has no Catch2 main. That component has an open PR.
+- The trade and market series export handlers carry the reporting service's token, not the end user's, because the reporting service calls them without delegation. Authorization there is service-level; propagating the caller needs a reporting-side change.
+- The compute wrapper has its own HTTP client and holds no JWT, so its storage transfers still receive 401. No credential exists to give it.
+- A trailing ={key}= GET shadows the versions path beneath it, so =/roles/{name}= hides =/roles/{name}/versions=. Assets has the same shape with images. Pre-existing and worth its own fix.
+- =journey_sign_up.org= still names =POST /api/v1/auth/signup=, which now answers 404. It is a journey document, not a client.

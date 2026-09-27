@@ -4325,6 +4325,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             declared_key_column,
             key_is_primary,
             entity_shell_plan,
+            entity_http_route_plan,
             operations_by_verb,
             protocol_operations,
             response_payload_member,
@@ -4422,6 +4423,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The same set as the shell addresses it: one command per operation,
         # plus the facts a unit needs about the set as a whole.
         domain_entity['shell'] = entity_shell_plan(domain_entity)
+        # The same set again as the HTTP gateway addresses it: one route per
+        # operation, derived from the shell's command set so the two surfaces
+        # answer the same verbs rather than being kept in step by hand.
+        domain_entity['http_route'] = entity_http_route_plan(domain_entity)
         # A recipe is a view of the unit the model renders, so it is built from
         # that same plan rather than from a second reading of the model: a
         # command the unit gains arrives in the document that documents it.
@@ -4562,6 +4567,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _ts_domain_type,
             entity_event_prefix,
             entity_events,
+            entity_http_route_plan,
             entity_shell_plan,
             junction_entity_shape,
             junction_protocol_messages,
@@ -4609,11 +4615,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # the shape they read, and a junction reaches them as one: the shape
         # states the same projection the protocol above was derived from, so a
         # verb the model gains reaches the protocol and the shell in the same
-        # commit instead of the shell being written out by hand beside it. It
+        # commit instead of the shell being written out by hand beside it. The
+        # HTTP route templates read the same shape, for the same reason. It
         # is published under ``domain_entity`` for those templates only -- the
         # protocol twin reads ``{{#domain_entity}}`` and ``{{#junction}}``
         # both, and would render its header twice.
-        if (target_template.startswith('cpp_shell_command_')
+        if (target_template.startswith(('cpp_shell_command_', 'cpp_http_route_'))
                 or target_template == _SHELL_RECIPE_TEMPLATE):
             _shape = junction_entity_shape(junction)
             _shape['messages'] = junction['messages']
@@ -4622,6 +4629,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for _verb, _verb_ops in operations_by_verb(_ops).items():
                 _shape[f'{_verb}_operations'] = _verb_ops
             _shape['shell'] = entity_shell_plan(_shape)
+            _shape['http_route'] = entity_http_route_plan(_shape)
             if target_template == _SHELL_RECIPE_TEMPLATE:
                 data['shell_recipe'] = shell_recipe_document(
                     _shape.get('component', ''),
@@ -4777,6 +4785,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             op[f'{path_var}_upper'] = op[path_var].replace('.', '_').upper()
         if 'entity_singular' in op:
             op['entity_singular_upper'] = op['entity_singular'].upper()
+        # The operation's HTTP routes, one per declared message that states a
+        # subject, a response and its own exposure. Read only by the HTTP
+        # operation archetypes, so it is projected here rather than for every
+        # operation model: the address each route states comes from the subject
+        # grammar, the exposure from the message, and a model that never opted
+        # in has no route to state.
+        if target_template.startswith('cpp_http_route_operation_'):
+            from .org_loader import (  # noqa: PLC0415
+                operation_http_route_plan,
+            )
+            op['http_route'] = operation_http_route_plan(op)
         # An operation model's unit is projected from its declared messages, so
         # its recipe is built from that same projection.
         if target_template == _SHELL_RECIPE_TEMPLATE:

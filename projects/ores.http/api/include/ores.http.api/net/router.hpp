@@ -44,12 +44,23 @@ public:
     route_builder& handler(domain::request_handler h);
 
     /**
-     * @brief Marks this route as requiring authentication.
+     * @brief Marks this route as requiring a session.
      */
     route_builder& auth_required();
 
     /**
+     * @brief Marks this route as deliberately reachable without a session.
+     *
+     * A route must state exactly one of auth_required() or auth_optional().
+     * Stating neither is a mistake, not a default, so build() refuses rather
+     * than letting the route read as public.
+     */
+    route_builder& auth_optional();
+
+    /**
      * @brief Sets required roles for this route.
+     *
+     * Roles imply a session, so this states auth_required() as well.
      */
     route_builder& roles(std::vector<std::string> r);
 
@@ -139,6 +150,9 @@ public:
 
     /**
      * @brief Builds the route.
+     *
+     * @throws std::logic_error when the route states no authentication
+     * position, naming the method and the pattern it would have answered.
      */
     domain::route build() const;
 
@@ -147,6 +161,7 @@ private:
     std::string pattern_;
     domain::request_handler handler_;
     bool requires_auth_ = false;
+    bool auth_declared_ = false;
     std::vector<std::string> required_roles_;
     std::string summary_;
     std::string description_;
@@ -199,6 +214,9 @@ public:
 
     /**
      * @brief Adds a built route to the router.
+     *
+     * @throws std::logic_error when the route states no authentication
+     * position, naming the method and the pattern.
      */
     void add_route(const domain::route& route);
 

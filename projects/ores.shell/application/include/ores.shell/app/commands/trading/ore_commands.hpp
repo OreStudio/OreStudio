@@ -72,10 +72,15 @@ public:
      * Generates a request id when @p request_id is empty and prints the
      * effective one, so an interactive caller can feed it to import. The
      * object key is "{request_id}.tar.gz", as the import handler expects.
-     * Marks command failure on an unreadable directory or a failed upload.
+     * The upload carries @p session's own bearer token, because the storage
+     * routes authenticate. Marks command failure when no session is
+     * established, when the directory is unreadable, or when the upload
+     * fails.
      */
-    static void
-    process_upload(std::ostream& out, const std::string& src_dir, const std::string& request_id);
+    static void process_upload(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::string& src_dir,
+                               const std::string& request_id);
 
     /**
      * @brief Start the ORE import workflow and wait for its outcome.

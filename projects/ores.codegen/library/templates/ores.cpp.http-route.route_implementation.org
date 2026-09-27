@@ -1,0 +1,408 @@
+:PROPERTIES:
+:ID: 9946AA4E-5C08-4DF4-9D0F-D544D977B264
+:END:
+#+title: ores.cpp.http-route.route_implementation
+#+description: HTTP route unit implementation: the route table, the parameter readers and the handler bodies for one entity.
+#+type: archetype
+#+output: projects/ores.http/{component}/src/routes/{component}/{entity}_routes.cpp
+#+facet: ores.cpp.http-route
+#+model_types: domain_entity junction
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The route table and the handler bodies behind the declarations of the sibling
+=ores.cpp.http-route.route_header= archetype. One handler per derived verb,
+plus the registration that puts each route on the router and the OpenAPI
+registry.
+
+* Mustache incantations
+
+Three constructs carry weight here.
+
+- ={{method}}= is the route builder the verb calls, in its own spelling:
+  =get=, =post=, =put= and =delete_=. A delete carries the trailing
+  underscore because =delete= is a C++ keyword.
+- ={{#is_*}}= sections select the handler body by shape. Mustache cannot
+  compare a string, so the projection states each shape as its own flag.
+- ={{#has_*}}= sections emit the helpers and the query parameters a route
+  needs. A paged read declares page parameters; a write that names a version
+  declares the version parameter; a delete declares its intent.
+
+The handler reads its inputs from where the route put them and nothing else.
+A key-addressed route reads the key from the path, a paged read from the
+query, and every write from the canonical request body, because that body is
+the protocol's own spelling of the row, the intent and the precondition.
+
+The two conditional sections on a handler are the whole of what the gateway
+decides: a create states the row must not exist and a replace that it may,
+which is how one put verb becomes two routes with the same path and different
+methods. Everything else -- the subject, the request type, the response type
+and whether a session is required -- is read from the operation the protocol
+derivation already stated.
+
+*One enforcement point.* =forward()= takes the caller's token from the HTTP
+request, hands it to =nats_client::with_delegation=, and sends the request on
+the subject the message states. The service's generated handler validates
+that token and checks the entity's permission. The gateway maps the answer,
+including the error the service names, and never decides access itself.
+
+*Every route states a position.* ={{#requires_session}}= emits
+=.auth_required()= and ={{^requires_session}}= emits =.auth_optional()=, so
+the route states exactly one of the two and the operation alone decides which.
+The builder refuses a route that states neither, so the template has no branch
+that emits nothing. A public route is therefore public on purpose, not because
+a default said so.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_impl.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_impl.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.route_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.http/routes/{{component}}/{{entity_singular}}_routes.hpp"
+#include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/service/timeouts.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
+#include <exception>
+#include <memory>
+#include <rfl/json.hpp>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <utility>
+
+namespace ores::http::routes::{{component}} {
+
+using namespace logging;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::nats::service::nats_client;
+namespace messaging = ores::{{component}}::messaging;
+
+namespace {
+
+/**
+ * @brief Read one path or query parameter as the member's own type.
+ *
+ * A string member takes the parameter verbatim; every other member goes
+ * through the lexical conversion its own type defines. The parameter's name
+ * travels with the value so a malformed one names the member it belongs to
+ * rather than the exception's own text.
+ */
+template <typename T>
+T read_param(const std::string& raw, const std::string& name) {
+    try {
+        if constexpr (std::is_same_v<T, std::string>) {
+            return raw;
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return raw == "true" || raw == "1";
+        } else {
+            return boost::lexical_cast<T>(raw);
+        }
+    } catch (const std::exception&) {
+        throw std::runtime_error("Invalid value for " + name + ": " + raw);
+    }
+}
+
+/**
+ * @brief The HTTP response a service error names.
+ *
+ * The service answers a refused caller with a status in its reply header
+ * rather than a body, so the gateway reads that status and maps it. An error
+ * it does not know is the caller's to see as unauthorised, which is what the
+ * service means by any code it does not spell out here.
+ */
+http_response error_response(const std::string& error) {
+    if (error == "forbidden") {
+        return http_response::forbidden(error);
+    }
+    if (error == "bad_request") {
+        return http_response::bad_request(error);
+    }
+    return http_response::unauthorized(error);
+}
+
+/**
+ * @brief Forward one canonical request and map the reply to a response.
+ *
+ * The caller's own bearer token is taken from the HTTP request and delegated
+ * on the NATS call, so the service validates that caller and its own
+ * permission check governs. The gateway authorises nobody and decides
+ * nothing; it states the subject the request already carries.
+ */
+template <typename Request>
+boost::asio::awaitable<http_response>
+forward(const http_request& req, nats_client& session, const Request& msg) {
+    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+    try {
+        const auto reply = delegated.authenticated_request(
+            msg.nats_subject, ores::nats::default_wire_codec().encode(msg),
+            ores::nats::service::default_request_timeout);
+        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+            it != reply.headers.end()) {
+            co_return error_response(it->second);
+        }
+        const auto decoded =
+            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
+        if (!decoded) {
+            co_return http_response::internal_error(std::string("Failed to decode response: ") +
+                                                    decoded.error().what());
+        }
+        co_return http_response::json(rfl::json::write(*decoded));
+    } catch (const ores::nats::service::session_expired_error& e) {
+        co_return http_response::unauthorized(e.what());
+    } catch (const std::exception& e) {
+        co_return http_response::internal_error(e.what());
+    }
+}
+{{#http_route.has_page}}
+
+/**
+ * @brief Apply the page and the order a caller stated.
+ *
+ * A parameter the caller left out leaves the request's own default standing,
+ * so a route that documents a page cannot silently change a request that
+ * stated none.
+ */
+template <typename Request>
+void apply_page(Request& msg, const http_request& req) {
+    if (const auto raw = req.get_query_param("offset"); !raw.empty()) {
+        msg.offset = read_param<std::uint32_t>(raw, "offset");
+    }
+    if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
+        msg.limit = read_param<std::uint32_t>(raw, "limit");
+    }
+    if (const auto raw = req.get_query_param("order"); !raw.empty()) {
+        msg.order.field = raw;
+    }
+    msg.order.descending = req.get_query_param("desc") == "true";
+}
+{{/http_route.has_page}}
+
+} // namespace
+{{#http_route.routes}}
+
+boost::asio::awaitable<http_response>
+{{entity_singular}}_routes::handle_{{identifier}}(const http_request& req, nats_client& session) {
+{{#is_paged}}
+    using request_type = messaging::{{request}};
+    try {
+        request_type msg;
+        apply_page(msg, req);
+        co_return co_await forward(req, session, msg);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_paged}}
+{{#is_key_read}}
+    using request_type = messaging::{{request}};
+    try {
+        request_type msg;
+{{#keys}}
+        msg.key.{{name}} = read_param<{{cpp_type}}>(req.get_path_param("{{name}}"), "{{name}}");
+{{/keys}}
+        co_return co_await forward(req, session, msg);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_key_read}}
+{{#is_get_many}}
+    using request_type = messaging::{{request}};
+    try {
+        const auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        co_return co_await forward(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_get_many}}
+{{#is_put}}
+    using request_type = messaging::{{request}};
+    try {
+        auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        // The route states whether the row may exist; the body states the rest.
+        parsed->change.precondition.kind =
+            ores::utility::domain::precondition_kind::{{precondition}};
+{{#allows_version}}
+        if (const auto raw = req.get_query_param("version"); !raw.empty()) {
+            parsed->change.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            parsed->change.precondition.version = read_param<std::uint32_t>(raw, "version");
+        }
+{{/allows_version}}
+        co_return co_await forward(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_put}}
+{{#is_put_many}}
+    using request_type = messaging::{{request}};
+    try {
+        const auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        co_return co_await forward(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_put_many}}
+{{#is_delete}}
+    using request_type = messaging::{{request}};
+    try {
+        request_type msg;
+{{#keys}}
+        msg.removal.key.{{name}} =
+            read_param<{{cpp_type}}>(req.get_path_param("{{name}}"), "{{name}}");
+{{/keys}}
+        // A delete carries no body, so its intent arrives as query parameters.
+        msg.intent.reason_code = req.get_query_param("reason");
+        msg.intent.commentary = req.get_query_param("commentary");
+        if (msg.intent.reason_code.empty()) {
+            co_return http_response::bad_request("reason is required");
+        }
+        if (msg.intent.commentary.empty()) {
+            co_return http_response::bad_request("commentary is required");
+        }
+        if (const auto raw = req.get_query_param("version"); !raw.empty()) {
+            msg.removal.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            msg.removal.precondition.version = read_param<std::uint32_t>(raw, "version");
+        }
+        co_return co_await forward(req, session, msg);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_delete}}
+{{#is_delete_many}}
+    using request_type = messaging::{{request}};
+    try {
+        const auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        co_return co_await forward(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_delete_many}}
+{{#is_versions}}
+    using request_type = messaging::{{request}};
+    try {
+        request_type msg;
+{{#keys}}
+        msg.key.{{name}} = read_param<{{cpp_type}}>(req.get_path_param("{{name}}"), "{{name}}");
+{{/keys}}
+        apply_page(msg, req);
+        co_return co_await forward(req, session, msg);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_versions}}
+{{#is_version_read}}
+    using request_type = messaging::{{request}};
+    try {
+        request_type msg;
+{{#keys}}
+        msg.key.{{entity_singular}}.{{name}} =
+            read_param<{{cpp_type}}>(req.get_path_param("{{name}}"), "{{name}}");
+{{/keys}}
+        msg.key.version = read_param<std::uint32_t>(req.get_path_param("version"), "version");
+        co_return co_await forward(req, session, msg);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_version_read}}
+{{#is_list_by}}
+    using request_type = messaging::{{request}};
+    try {
+        request_type msg;
+        msg.{{relation.name}} = read_param<{{relation.cpp_type}}>(
+            req.get_path_param("{{relation.name}}"), "{{relation.name}}");
+        if (const auto raw = req.get_query_param("scope"); !raw.empty()) {
+            msg.scope = raw == "subtree" ? ores::utility::domain::scope::subtree
+                                         : ores::utility::domain::scope::direct;
+        }
+        apply_page(msg, req);
+        co_return co_await forward(req, session, msg);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+{{/is_list_by}}
+}
+{{/http_route.routes}}
+
+void {{entity_singular}}_routes::register_routes(
+    std::shared_ptr<ores::http::net::router> router,
+    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+    nats_client& session) {
+    BOOST_LOG_SEV(lg(), info) << "Registering {{entity_plural}} routes";
+{{#http_route.routes}}
+
+    auto {{identifier}}_route = router->{{method}}("{{pattern}}")
+                                    .summary("{{summary}}")
+                                    .description("{{description}}")
+                                    .tags({"{{component}}"})
+{{#requires_session}}
+                                    .auth_required()
+{{/requires_session}}
+{{^requires_session}}
+                                    .auth_optional()
+{{/requires_session}}
+{{#has_order}}
+                                    .query_param("offset", "integer", "", false, "Rows to skip")
+                                    .query_param("limit", "integer", "", false, "Rows to return")
+                                    .query_param("order", "string", "", false, "Column to order")
+                                    .query_param("desc", "boolean", "", false, "Descending")
+{{/has_order}}
+{{#has_scope}}
+                                    .query_param("scope", "string", "", false, "direct or subtree")
+{{/has_scope}}
+{{#has_intent}}
+                                    .query_param("reason", "string", "", true, "Change reason code")
+                                    .query_param("commentary", "string", "", true, "Commentary")
+{{/has_intent}}
+{{#allows_version}}
+                                    .query_param("version", "integer", "", false, "Version")
+{{/allows_version}}
+{{#has_body}}
+                                    .body<messaging::{{request}}>()
+{{/has_body}}
+                                    .response<messaging::{{response_type}}>()
+                                    .handler([&session](const http_request& req) {
+                                        return handle_{{identifier}}(req, session);
+                                    });
+    const auto {{identifier}}_built = {{identifier}}_route.build();
+    router->add_route({{identifier}}_built);
+    registry->register_route({{identifier}}_built);
+{{/http_route.routes}}
+
+    BOOST_LOG_SEV(lg(), info) << "{{entity_plural}} routes registered: "
+                              << {{http_route.route_count}} << " endpoint(s)";
+}
+
+}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetypes: [[id:182DD2AF-9543-4722-B8CA-1A98FABFDF85][ores.cpp.http-route.route_header]] and [[id:A1A5750C-705A-43DD-B333-BA545EB3216A][ores.cpp.http-route.route_tests]].

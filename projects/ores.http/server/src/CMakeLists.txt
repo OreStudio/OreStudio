@@ -37,8 +37,12 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.api.lib
+        ores.http.assets.lib
         ores.http.core.lib
+        ores.http.iam.lib
+        ores.http.refdata.lib
         ores.eventing.core.lib
+        ores.iam.client.lib
         ores.nats.lib
         ores.service.lib
         ores.telemetry.core.lib

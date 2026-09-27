@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 4B98E2D0-8FE3-4321-8CFD-90A4C13422EA
 :END:
 #+title: ores.iam.bootstrap_messages
@@ -29,6 +30,7 @@ The bootstrap protocol messages.
 :subject: iam.v1.bootstrap.status
 :auth: none
 :response: bootstrap_status_response
+:http_route: true
 :END:
 
 ** bootstrap_status_response
@@ -49,6 +51,7 @@ The bootstrap protocol messages.
 :subject: iam.v1.bootstrap.create-admin
 :auth: none
 :response: create_initial_admin_response
+:http_route: true
 :END:
 
 *** principal

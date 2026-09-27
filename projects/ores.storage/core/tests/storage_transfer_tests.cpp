@@ -43,6 +43,9 @@ namespace {
 const std::string_view test_suite("ores.storage.tests");
 const std::string tags("[net]");
 
+/// The caller token every transfer carries.
+const std::string test_token("ores-storage-test-token");
+
 void write_file(const std::filesystem::path& path, const std::string& content) {
     std::filesystem::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary);
@@ -60,7 +63,7 @@ TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", tags) {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
-    storage_transfer sut(server.base_url());
+    storage_transfer sut(server.base_url(), test_token);
 
     const std::string content = "package tarball bytes\n";
     scoped_temp_file source;
@@ -72,13 +75,14 @@ TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", tags) {
     CHECK(server.last_method() == "PUT");
     CHECK(server.last_target() == "/api/v1/storage/compute-packages/oscar/1.0/oscar.tar.gz");
     CHECK(server.last_put_body() == content);
+    CHECK(server.last_authorization() == "Bearer " + test_token);
 }
 
 TEST_CASE("download_writes_the_exact_server_bytes", tags) {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
-    storage_transfer sut(server.base_url());
+    storage_transfer sut(server.base_url(), test_token);
 
     const std::string content = "downloaded object bytes\nsecond line\n";
     server.set_get_body(content);
@@ -95,7 +99,7 @@ TEST_CASE("upload_returning_response_returns_the_exact_server_body", tags) {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
-    storage_transfer sut(server.base_url());
+    storage_transfer sut(server.base_url(), test_token);
 
     const std::string response = "{\"checksum\":\"cafebabe\"}";
     server.set_put_response_body(response);
@@ -113,7 +117,7 @@ TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", tags) {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
-    storage_transfer sut(server.base_url());
+    storage_transfer sut(server.base_url(), test_token);
 
     scoped_temp_directory source;
     const std::string manifest_content = "name=oscar\nversion=1.2.3\n";
@@ -143,7 +147,7 @@ TEST_CASE("upload_blob_then_download_blob_round_trips_arbitrary_bytes", tags) {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
-    storage_transfer sut(server.base_url());
+    storage_transfer sut(server.base_url(), test_token);
 
     std::vector<char> original = {'b', 'l', 'o', 'b', '\0', 'p', 'a', 'y', 'l', 'o', 'a', 'd'};
     for (int i = 0; i < 256; ++i)

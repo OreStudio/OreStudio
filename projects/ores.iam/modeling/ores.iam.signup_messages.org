@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 1AB3A848-E562-46F1-84EE-A3E5F9CF0894
 :END:
 #+title: ores.iam.signup_messages
@@ -29,6 +30,7 @@ The signup protocol messages.
 :subject: iam.v1.auth.signup
 :auth: none
 :response: signup_response
+:http_route: true
 :END:
 
 *** principal

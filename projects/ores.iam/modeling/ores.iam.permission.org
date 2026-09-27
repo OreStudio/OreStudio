@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 76B113F4-410A-4DE5-9757-A4E263B7B8E7
 :END:
 #+title: ores.iam.permission

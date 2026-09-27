@@ -228,7 +228,7 @@ else
     say FAIL V05 "check_model_drift.py: $(echo "${model_gates}" | tail -1)"
 fi
 
-for gate in check_protocol_twin_coverage check_handler_permissions check_populate_references; do
+for gate in check_protocol_twin_coverage check_handler_permissions check_populate_references check_route_auth_declarations; do
     out="$(timeout 900 "${PYTHON}" "${CODEGEN}/scripts/${gate}.py" --all 2>&1)"
     if [[ $? -eq 0 ]]; then
         say PASS V05 "${gate}.py --all is clean"
@@ -255,7 +255,7 @@ fi
 # H02 check for references to the deleted stack. The count is asserted so a
 # check that stops being emitted is a failure rather than a silent gap in the
 # record.
-expected_items=39
+expected_items=40
 if [[ ${CHECKS} -ne ${expected_items} ]]; then
     say FAIL ALL "emitted ${CHECKS} checks, expected ${expected_items}"
 fi

@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include <string>
 
 namespace ores::ore::service::messaging {
@@ -50,13 +51,27 @@ private:
     }
 
 public:
-    report_package_handler(ores::nats::service::client& nats, std::string http_base_url);
+    /**
+     * @brief Constructs the handler.
+     *
+     * @param nats         Raw transport, for the workflow step context.
+     * @param http_base_url  Base URL of the storage HTTP API.
+     * @param service_nats   A service-path client, whose token every storage
+     *                       call carries. The workflow step message arrives
+     *                       without an Authorization header, so the handler
+     *                       authenticates as the service rather than as the
+     *                       user who started the workflow.
+     */
+    report_package_handler(ores::nats::service::client& nats,
+                           std::string http_base_url,
+                           ores::nats::service::nats_client service_nats);
 
     void prepare_package(ores::nats::message msg);
 
 private:
     ores::nats::service::client& nats_;
     std::string http_base_url_;
+    ores::nats::service::nats_client service_nats_;
 };
 
 }

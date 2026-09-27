@@ -1,7 +1,8 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
-:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.iam.account
 #+description: Codegen entity model for the iam accounts table. Drives the C++ domain type, mapper, repository, generator, eventing, TypeScript metadata, and SQL schema generation from a single literate source.

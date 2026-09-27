@@ -1209,7 +1209,7 @@ export paths.
 
             // Serialise to MsgPack and upload to storage.
             const auto blob = rfl::msgpack::write(all_items);
-            ores::storage::net::storage_transfer transfer(http_base_url_);
+            ores::storage::net::storage_transfer transfer(http_base_url_, extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 
             resp.success = true;

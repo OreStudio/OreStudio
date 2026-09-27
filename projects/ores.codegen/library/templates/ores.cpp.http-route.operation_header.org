@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: CCFCDAC3-DAA3-433E-9A51-924FC00992AF
+:END:
+#+title: ores.cpp.http-route.operation_header
+#+description: HTTP route unit header for an operation model: the unit class and one handler per declared message.
+#+type: archetype
+#+output: projects/ores.http/{component}/include/ores.http/routes/{component}/{entity}_routes.hpp
+#+facet: ores.cpp.http-route
+#+model_types: operation
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The class declaration for one operation model's HTTP route unit.
+
+The facet's entity archetypes render a fixed CRUD set. This archetype renders
+what the model *declares and exposes*: one handler per message that carries a
+=:subject:=, a =:response:= and an =:http_route: true=, because the subject is
+what the route forwards to, the response is what it returns, and the exposure
+is the message's own decision to answer HTTP callers. A message that states no
+exposure answers NATS callers alone and renders no route; a message with no
+response answers with nothing to carry, and a payload struct has no subject at
+all, so neither becomes a route either.
+
+The model type is the only difference from the entity archetypes, and it is
+stated here rather than inherited so the entity archetypes keep rendering
+entities. Nothing else about the facet changes: the opt-in, the part the unit
+lands in and the aggregator that calls =register_routes= are the same.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_operation_header.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_operation_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.operation_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#operation}}
+#ifndef ORES_HTTP_ROUTES_{{entity_singular_upper}}_ROUTES_HPP
+#define ORES_HTTP_ROUTES_{{entity_singular_upper}}_ROUTES_HPP
+
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <memory>
+#include <string_view>
+
+namespace ores::http::routes::{{component}} {
+
+/**
+ * @brief Every operation {{entity_singular}} declares and exposes, as one HTTP route each.
+ *
+ * The unit is the model's own declared protocol addressed over HTTP, so a
+ * message the model exposes appears as a route without an edit here and a
+ * message it stops exposing -- or loses -- takes its route with it. A route
+ * is a POST whose body is the canonical request, because a declared operation
+ * states no verb and the request is the whole of what it sends.
+ *
+ * The unit authorises nobody. The service's generated handler owns the
+ * operation's permission, and the caller's own token travels with every
+ * request this unit forwards.
+ */
+class {{entity_singular}}_routes {
+private:
+    inline static std::string_view logger_name =
+        "ores.http.routes.{{component}}.{{entity_singular}}_routes";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Register the {{entity_singular}} operation routes.
+     *
+     * @param session The client every route forwards on. The caller's token
+     * is taken from each HTTP request and delegated on it, so the unit holds
+     * no authorisation state of its own.
+     */
+    static void register_routes(std::shared_ptr<ores::http::net::router> router,
+                                std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+                                ores::nats::service::nats_client& session);
+{{#http_route.routes}}
+
+    /**
+     * @brief {{method_upper}} {{pattern}} — {{summary}}.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_{{identifier}}(const ores::http::domain::http_request& req,
+                          ores::nats::service::nats_client& session);
+{{/http_route.routes}}
+};
+
+}
+
+#endif
+{{/operation}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetype: [[id:5CCD5E44-6BD9-4068-8928-0C1E6EAE015C][ores.cpp.http-route.operation_implementation]].
+- Sibling archetype: [[id:2E06E8BC-851D-4389-8CFA-FC1A8D2FACD0][ores.cpp.http-route.operation_tests]].
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the facet whose operation archetypes these mirror.

@@ -32,6 +32,7 @@
 #include "ores.marketdata.core/service/market_series_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -211,7 +212,8 @@ public:
             const auto series = svc.list_market_series(0, total ? total : 1);
 
             const auto blob = rfl::msgpack::write(series);
-            ores::storage::net::storage_transfer transfer(http_base_url);
+            ores::storage::net::storage_transfer transfer(
+                http_base_url, ores::nats::service::extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 
             resp.success = true;

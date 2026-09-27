@@ -64,6 +64,7 @@ void http_server::setup_builtin_routes() {
             .summary("Health check")
             .description("Returns server health status")
             .tags({"system"})
+            .auth_optional()
             .handler([](const domain::http_request&) -> asio::awaitable<domain::http_response> {
                 co_return domain::http_response::json(R"({"status":"healthy"})");
             });
@@ -75,6 +76,7 @@ void http_server::setup_builtin_routes() {
             .summary("OpenAPI specification")
             .description("Returns the OpenAPI 3.0 JSON specification")
             .tags({"system"})
+            .auth_optional()
             .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
                 auto spec = registry_->generate_openapi_json();
                 co_return domain::http_response::json(spec);
@@ -87,6 +89,7 @@ void http_server::setup_builtin_routes() {
             .summary("Swagger UI")
             .description("Interactive API documentation")
             .tags({"system"})
+            .auth_optional()
             .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
                 auto html = registry_->generate_swagger_ui_html("/openapi.json");
                 domain::http_response resp;

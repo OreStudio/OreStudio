@@ -3540,6 +3540,12 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "is_put_one": verb == "put",
             "permission": ("delete" if verb in ("delete", "delete_many")
                            else "write" if verb in ("put", "put_many") else ""),
+            # The message's own authentication requirement, carried beside the
+            # verb so a projection that declares a route -- rather than the
+            # protocol header it cannot read at generate time -- states the
+            # same fact the C++ does. A message with no session requirement
+            # is one a caller runs before it has a token.
+            "requires_session": message.get("requires_session") != "false",
         })
     return operations
 
@@ -3613,6 +3619,20 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     "'true', 'yes' and '1'"
                 )
             entry["destructive"] = True
+        # Whether the message is exposed over HTTP. A declared operation is
+        # addressed by NATS callers unless it says otherwise, so the default is
+        # the absence of the property: a model that opted into the HTTP facet
+        # still exposes only the messages it names, and a change that adds an
+        # operation cannot widen the gateway by accident.
+        http_route = str(props.get("http_route", "")).strip().lower()
+        if http_route:
+            if http_route not in ("true", "yes", "1"):
+                raise ValueError(
+                    f"message {node.title} states :http_route: "
+                    f"{props['http_route']!r}; the values that mean yes are "
+                    "'true', 'yes' and '1'"
+                )
+            entry["http_route"] = True
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -3961,6 +3981,10 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             "response_type": response,
             "subject": subject,
             "public": public,
+            # Whether the message states that it is exposed over HTTP. The
+            # projection carries the fact so the HTTP facet can read it; the
+            # shell facet ignores it, because a command is a NATS caller.
+            "http_route": bool(message.get("http_route")),
             # Whether replaying the command destroys the environment it runs
             # in. The model states it, because the shape does not: a reset and
             # a status read are both a bare command name.
@@ -4374,6 +4398,10 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
                 ("put", "put_many", "delete", "delete_many"),
             "precondition": precondition,
             "allows_version": kind in ("put", "delete") and precondition != "must_not_exist",
+            # The message's own authentication requirement, carried here as it
+            # is on the operation, so an HTTP projection that states a route
+            # reads it from the command rather than re-deriving it.
+            "requires_session": operation.get("requires_session", True),
             # Only what the handler actually asks for: a paged read takes no
             # key, and a write takes the write record rather than the key,
             # because the key travels inside it.
@@ -4482,6 +4510,222 @@ def entity_shell_plan(entity: dict[str, Any]) -> dict[str, Any]:
         "any_versioned": any(command["allows_version"] for command in commands),
         "has_helpers": bool(commands),
     }
+
+
+# The verb a route states, in the route builder's own spelling: a delete is
+# spelled with its trailing underscore because `delete` is a C++ keyword, and
+# the template calls router->delete_.
+_HTTP_METHODS = {
+    "paged": "get",
+    "key_read": "get",
+    "get_many": "post",
+    "put": "post",
+    "put_many": "post",
+    "delete": "delete_",
+    "delete_many": "post",
+    "versions": "get",
+    "version_read": "get",
+    "list_by": "get",
+}
+
+# What a route's shape promises, in one phrase. Keyed by kind, because a
+# paged read and a versions read are both a GET of a different collection.
+_HTTP_SUMMARIES = {
+    "paged": "List {plural}",
+    "key_read": "Get one {singular}",
+    "get_many": "Get many {plural}",
+    "put_many": "Write many {plural}",
+    "delete": "Delete one {singular}",
+    "delete_many": "Delete many {plural}",
+    "versions": "List the recorded versions of one {singular}",
+    "version_read": "Get one recorded version of one {singular}",
+    "list_by": "List the {plural} that reference one {relation}",
+}
+
+
+def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
+    """The entity's HTTP routes, one per derived operation.
+
+    The routes are the shell's command set, addressed over HTTP rather than
+    typed at a prompt: one derived operation becomes one route, a put becomes
+    two (a create and a replace are one verb stating two different claims),
+    and a verb the model gains reaches the gateway without an edit here.
+
+    Only the addressing is decided here. What a route carries, whom it
+    authenticates and what subject it forwards to all follow from the
+    operation the derivation already stated, so the gateway cannot serve a
+    verb the service does not.
+
+    ``requires_session`` is read from the operation, which reads it from the
+    message, which is the same fact the protocol header states as
+    ``requires_session``. The template emits ``auth_required()`` from it, so a
+    route that needs a session cannot be registered without one.
+    """
+    plan = entity_shell_plan(entity)
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    plural = entity.get("entity_plural", "")
+    singular_words = singular.replace("_", " ")
+    plural_words = plural.replace("_", " ")
+    base = f"/api/v1/{component}/{plural}"
+
+    routes: list[dict[str, Any]] = []
+    for command in plan["commands"]:
+        kind = command["kind"]
+        key_path = "/".join(f"{{{key['name']}}}" for key in command["keys"])
+        relation = command.get("relation") or {}
+        if kind == "version_read":
+            pattern = f"{base}/{key_path}/versions/{{version}}"
+        elif kind == "versions":
+            pattern = f"{base}/{key_path}/versions"
+        elif kind == "list_by":
+            relation_name = relation.get("name", "")
+            dashed = relation_name.replace("_", "-")
+            pattern = f"{base}/by-{dashed}/{{{relation_name}}}"
+        elif kind in ("key_read", "delete"):
+            pattern = f"{base}/{key_path}"
+        elif kind in ("get_many", "put_many", "delete_many"):
+            pattern = f"{base}/{kind.replace('_', '-')}"
+        else:
+            pattern = base
+
+        # A replace is a put stated by a route whose method says the row may
+        # exist; a create states the row must not. The two share a path and
+        # differ by method, so a caller reads the claim off the verb.
+        if kind == "put":
+            method = "post" if command["precondition"] == "must_not_exist" else "put"
+            summary = ("Create one {singular}"
+                       if command["precondition"] == "must_not_exist"
+                       else "Replace one {singular}")
+        else:
+            method = _HTTP_METHODS[kind]
+            summary = _HTTP_SUMMARIES.get(kind, "List {plural}")
+        routes.append({
+            "command": command["command"],
+            "identifier": command["identifier"],
+            "kind": kind,
+            "method": method,
+            "method_upper": {"get": "GET", "post": "POST", "put": "PUT",
+                             "delete_": "DELETE"}[method],
+            "pattern": pattern,
+            "summary": summary.format(
+                plural=plural_words, singular=singular_words,
+                relation=relation.get("name", "").replace("_", " ")),
+            # The canonical subject the route forwards to. A caller reading the
+            # OpenAPI document learns which operation answers it.
+            "description": f"Forwards to the {command['subject']} operation.",
+            "subject": command["subject"],
+            "request": command["request"],
+            "response_type": command["response_type"],
+            "requires_session": command.get("requires_session", True),
+            "keys": command["keys"],
+            "relation": relation,
+            "precondition": command["precondition"],
+            "has_order": command["has_order"],
+            "has_scope": kind == "list_by",
+            "allows_version": command["allows_version"],
+            # The shapes the template selects a handler body by. Mustache
+            # cannot compare a string, so each shape is also a flag.
+            "has_body": kind in ("get_many", "put", "put_many", "delete_many"),
+            "has_page": kind in ("paged", "versions", "list_by"),
+            "has_intent": kind == "delete",
+            "is_paged": kind == "paged",
+            "is_key_read": kind == "key_read",
+            "is_get_many": kind == "get_many",
+            "is_put": kind == "put",
+            "is_put_many": kind == "put_many",
+            "is_delete": kind == "delete",
+            "is_delete_many": kind == "delete_many",
+            "is_versions": kind == "versions",
+            "is_version_read": kind == "version_read",
+            "is_list_by": kind == "list_by",
+        })
+
+    return {
+        "routes": routes,
+        "route_count": len(routes),
+        # A verb the projection has no route shape for would be dropped in
+        # silence, and the gateway would publish fewer verbs than the service
+        # answers with nothing to say so. The plan names them instead.
+        "uncovered_verbs": plan["uncovered_verbs"],
+        "has_page": any(route["has_page"] for route in routes),
+    }
+
+
+# The version segment of the canonical NATS subject grammar a declared
+# operation is addressed by: ``<component>.v<version>.<resource>.<action>``.
+# The derived subjects an entity states are the same grammar with a hole for
+# the owning component; a declared operation states it whole, so the HTTP
+# route can read the address the protocol already agreed on rather than
+# inventing a second one.
+_SUBJECT_VERSION_RE = re.compile(r"^v\d+$")
+
+
+def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
+    """The HTTP routes an operation model's declared messages become.
+
+    An entity projects the verbs it derives; an operation model declares the
+    messages it answers, so its routes are one per addressable declared
+    message -- the same set the shell projects into commands -- that also
+    states ``:http_route: true``. The exposure is a per-message decision
+    because an operation model states one protocol for two surfaces: a message
+    a NATS caller alone answers is not thereby an HTTP endpoint, and exposing
+    every addressable message would publish operations the gateway never
+    served. A message that states no exposure is not exposed, so a new
+    operation cannot widen the gateway without saying so. A message with no
+    subject is a payload struct and a message with no response answers with
+    nothing to carry, so neither becomes a route.
+
+    The route addresses the operation by the subject the protocol already
+    states, transliterated into a path: ``iam.v1.accounts.lock`` becomes
+    ``/api/v1/iam/accounts/lock``. There is no verb to derive -- a declared
+    operation's meaning is the service's -- so every route is a POST and the
+    canonical request travels as the body. The gateway invents no addressing
+    and decides nothing the model has not stated.
+
+    ``requires_session`` is read from the message's own ``:auth:`` property,
+    which is the same fact the protocol header states, so a route that
+    produces the session (login, signup, bootstrap) is public by the model's
+    declaration rather than by a default.
+    """
+    routes: list[dict[str, Any]] = []
+    for command in operation.get("shell_commands") or []:
+        if not command.get("http_route"):
+            continue
+        subject = command.get("subject", "")
+        segments = subject.split(".")
+        if len(segments) < 3 or not _SUBJECT_VERSION_RE.match(segments[1]):
+            raise ValueError(
+                f"{operation.get('entity_singular', '?')}: message "
+                f"{command.get('request', '?')} states subject {subject!r}, "
+                "which is not the canonical "
+                "<component>.v<version>.<resource>[.<action>] grammar; an "
+                "HTTP route cannot be derived from it")
+        component, version, resource = segments[0], segments[1], segments[2]
+        action = "/".join(segments[3:])
+        pattern = f"/api/{version}/{component}/{resource}"
+        if action:
+            pattern = f"{pattern}/{action}"
+        command_name = command["command"]
+        routes.append({
+            "command": command_name,
+            "identifier": command["identifier"],
+            # A declared operation states no verb, so the method is the one
+            # that carries a body: the canonical request.
+            "method": "post",
+            "method_upper": "POST",
+            "pattern": pattern,
+            "summary": command_name.replace("-", " ").capitalize(),
+            "description": f"Forwards to the {subject} operation.",
+            "subject": subject,
+            "request": command["request"],
+            "response_type": command["response_type"],
+            "requires_session": not command.get("public", False),
+            # A message with no field takes an empty body, so the handler
+            # constructs it rather than parsing an absent one.
+            "has_fields": bool(command.get("positionals") or command.get("flags")),
+        })
+    return {"routes": routes, "route_count": len(routes)}
 
 
 # The value a generated script sends for a field. A generator cannot invent a

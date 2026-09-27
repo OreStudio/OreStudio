@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.http-route.enabled: true
 :ID: BA19985D-DB6D-4E55-972B-18DBC3E556EE
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:

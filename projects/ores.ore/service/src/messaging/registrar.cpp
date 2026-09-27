@@ -62,8 +62,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // ----------------------------------------------------------------
-    // Engine-dispatched step handlers: execute and rollback.
+    // Engine-dispatched step handlers: execute and rollback. The report
+    // package handler shares the service token client, so its storage calls
+    // authenticate as the service.
     // ----------------------------------------------------------------
+    auto rph = std::make_shared<report_package_handler>(nats, http_base_url, outbound_nats);
     auto eh = std::make_shared<ore_import_execute_handler>(
         // Not std::move: the report package handler below takes the same
         // base URL, and moving it here leaves that one empty, so every
@@ -83,7 +86,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report package preparation (workflow step for report execution).
     // ----------------------------------------------------------------
-    auto rph = std::make_shared<report_package_handler>(nats, http_base_url);
     subs.push_back(nats.queue_subscribe(
         std::string(ores::reporting::messaging::prepare_ore_package_request::nats_subject),
         qg,

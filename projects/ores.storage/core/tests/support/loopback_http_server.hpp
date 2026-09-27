@@ -115,6 +115,17 @@ public:
         return last_put_body_;
     }
 
+    /**
+     * @brief The Authorization header of the last request, verbatim.
+     *
+     * Recorded so a test can prove the client carries the caller's token
+     * rather than only proving the bytes landed.
+     */
+    [[nodiscard]] std::string last_authorization() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return last_authorization_;
+    }
+
     void set_get_body(std::string body) {
         std::lock_guard<std::mutex> lock(mutex_);
         get_body_ = std::move(body);
@@ -161,6 +172,8 @@ private:
             last_method_ = std::string(request.method_string());
             last_target_ = std::string(request.target());
             last_body_ = request.body();
+            const auto auth = request[http::field::authorization];
+            last_authorization_ = std::string(auth.begin(), auth.end());
             if (request.method() == http::verb::put) {
                 last_put_body_ = request.body();
                 response.body() = put_response_body_;
@@ -191,6 +204,7 @@ private:
     std::string last_target_;
     std::string last_body_;
     std::string last_put_body_;
+    std::string last_authorization_;
 };
 
 }

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 082C5D76-93C2-41E6-8193-9598B79DD07A
 :END:
 #+title: ores.iam.account_messages
@@ -52,6 +53,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.save
 :response: save_account_response
+:http_route: true
 :END:
 
 *** principal
@@ -83,6 +85,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.update
 :response: update_account_response
+:http_route: true
 :END:
 
 *** account_id
@@ -200,6 +203,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.delete
 :response: delete_account_response
+:http_route: true
 :END:
 
 *** account_id
@@ -237,6 +241,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.lock
 :response: lock_account_response
+:http_route: true
 :END:
 
 *** account_ids
@@ -255,6 +260,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.unlock
 :response: unlock_account_response
+:http_route: true
 :END:
 
 *** account_ids
@@ -273,6 +279,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.reset-password
 :response: reset_password_response
+:http_route: true
 :END:
 
 *** account_ids
@@ -332,6 +339,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.update-email
 :response: update_my_email_response
+:http_route: true
 :END:
 
 *** email
@@ -492,6 +500,7 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :subject: iam.v1.accounts.change-password
 :response: change_password_response
+:http_route: true
 :END:
 
 *** current_password

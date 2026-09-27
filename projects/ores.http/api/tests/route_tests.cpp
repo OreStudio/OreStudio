@@ -147,6 +147,7 @@ TEST_CASE("route_default_construction", tags) {
     route sut;
 
     CHECK_FALSE(sut.requires_auth);
+    CHECK_FALSE(sut.auth_declared);
     CHECK(sut.required_roles.empty());
     CHECK(sut.summary.empty());
     CHECK(sut.description.empty());

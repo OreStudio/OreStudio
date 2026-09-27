@@ -16,20 +16,17 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_files_src.mustache
+# To modify, update the template and regenerate.
 set(files
-    "routes/assets_routes.cpp"
-    "routes/iam_routes.cpp"
-    "routes/risk_routes.cpp"
     "routes/storage_routes.cpp"
     "routes/variability_routes.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/assets_routes.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/iam_routes.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/risk_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/storage_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/variability_routes.hpp"
 )

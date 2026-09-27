@@ -293,7 +293,7 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     compute::client::package_publish_result upload;
     try {
-        compute::client::package_publisher publisher(http_base_url);
+        compute::client::package_publisher publisher(http_base_url, session.bearer_token());
         upload = publisher.publish(app_name, engine_version, platform_code, file);
     } catch (const std::exception& e) {
         fail(out) << "Upload failed: " << e.what() << std::endl;
@@ -463,7 +463,8 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
 
     BOOST_LOG_SEV(lg(), info) << "Uploading input bundle " << key << " for batch " << external_ref;
     try {
-        ores::storage::net::storage_transfer transfer(default_http_base_url());
+        ores::storage::net::storage_transfer transfer(default_http_base_url(),
+                                                       session.bearer_token());
         transfer.upload(std::string(ores::compute::net::compute_storage::bucket), key, tarball);
     } catch (const std::exception& e) {
         fail(out) << "Input bundle upload failed: " << e.what() << std::endl;
@@ -738,7 +739,8 @@ void compute_commands::process_download_input(std::ostream& out,
     }
 
     try {
-        ores::storage::net::storage_transfer transfer(default_http_base_url());
+        ores::storage::net::storage_transfer transfer(default_http_base_url(),
+                                                       session.bearer_token());
         transfer.fetch_and_unpack(storage->first, storage->second, dest_dir);
     } catch (const std::exception& e) {
         fail(out) << "Download failed: " << e.what() << std::endl;
@@ -797,7 +799,8 @@ void compute_commands::process_download_output(std::ostream& out,
     }
 
     try {
-        ores::storage::net::storage_transfer transfer(default_http_base_url());
+        ores::storage::net::storage_transfer transfer(default_http_base_url(),
+                                                       session.bearer_token());
         transfer.fetch_and_unpack(storage->first, storage->second, dest_dir);
     } catch (const std::exception& e) {
         fail(out) << "Download failed: " << e.what() << std::endl;

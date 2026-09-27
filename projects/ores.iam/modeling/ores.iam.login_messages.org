@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 72596DEE-01BE-40A5-B084-4C38DB212191
+:ores.cpp.http-route.enabled: true
 :END:
 #+title: ores.iam.login_messages
 #+description: Codegen operation model for the login protocol, rendered to C++ and TypeScript from one source.
@@ -51,6 +52,7 @@ The login protocol messages.
 :subject: iam.v1.auth.login
 :auth: none
 :response: login_response
+:http_route: true
 :END:
 
 *** principal
@@ -199,6 +201,7 @@ The login protocol messages.
 :PROPERTIES:
 :subject: iam.v1.auth.logout
 :response: logout_response
+:http_route: true
 :END:
 
 ** logout_response

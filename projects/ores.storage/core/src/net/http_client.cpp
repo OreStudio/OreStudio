@@ -50,7 +50,18 @@ http_client::url_parts http_client::parse_url(const std::string& url) {
     return {authority.substr(0, colon), authority.substr(colon + 1), path};
 }
 
-void http_client::get(const std::string& url, const std::filesystem::path& dest) {
+namespace {
+
+/// The bearer header every storage request carries, stated once.
+template <typename Request>
+void set_authorization(Request& req, const std::string& bearer_token) {
+    req.set(http::field::authorization, "Bearer " + bearer_token);
+}
+
+}
+
+void http_client::get(const std::string& url, const std::filesystem::path& dest,
+                      const std::string& bearer_token) {
     const auto parts = parse_url(url);
 
     asio::io_context ioc;
@@ -63,6 +74,7 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
     http::request<http::empty_body> req{http::verb::get, parts.path, 11};
     req.set(http::field::host, parts.host);
     req.set(http::field::user_agent, "ores.storage/1.0");
+    set_authorization(req, bearer_token);
 
     http::write(stream, req);
 
@@ -92,12 +104,14 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);
 }
 
-void http_client::put(const std::string& url, const std::filesystem::path& src) {
-    put_returning_body(url, src);
+void http_client::put(const std::string& url, const std::filesystem::path& src,
+                      const std::string& bearer_token) {
+    put_returning_body(url, src, bearer_token);
 }
 
 std::string http_client::put_returning_body(const std::string& url,
-                                            const std::filesystem::path& src) {
+                                            const std::filesystem::path& src,
+                                            const std::string& bearer_token) {
     const auto parts = parse_url(url);
 
     asio::io_context ioc;
@@ -111,6 +125,7 @@ std::string http_client::put_returning_body(const std::string& url,
     req.set(http::field::host, parts.host);
     req.set(http::field::user_agent, "ores.storage/1.0");
     req.set(http::field::content_type, "application/octet-stream");
+    set_authorization(req, bearer_token);
     beast::error_code open_ec;
     req.body().open(src.string().c_str(), beast::file_mode::read, open_ec);
     if (open_ec)

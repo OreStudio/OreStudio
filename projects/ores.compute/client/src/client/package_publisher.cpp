@@ -25,8 +25,8 @@
 
 namespace ores::compute::client {
 
-package_publisher::package_publisher(std::string http_base_url)
-    : transfer_(std::move(http_base_url)) {}
+package_publisher::package_publisher(std::string http_base_url, std::string bearer_token)
+    : transfer_(std::move(http_base_url), std::move(bearer_token)) {}
 
 package_publish_result package_publisher::publish(const std::string& app_name,
                                                   const std::string& version,

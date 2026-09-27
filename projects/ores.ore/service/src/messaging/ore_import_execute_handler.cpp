@@ -1109,7 +1109,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
 
     try {
         std::filesystem::create_directories(import_dir);
-        ores::storage::net::storage_transfer transfer(http_base_url_);
+        ores::storage::net::storage_transfer transfer(http_base_url_, req.bearer_token);
         transfer.fetch_and_unpack(std::string(ores::ore::net::ore_storage::bucket),
                                   ores::ore::net::ore_storage::import_key(req.request_id),
                                   import_dir);

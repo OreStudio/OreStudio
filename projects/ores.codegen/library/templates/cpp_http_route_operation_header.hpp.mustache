@@ -1,0 +1,68 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.operation_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#operation}}
+#ifndef ORES_HTTP_ROUTES_{{entity_singular_upper}}_ROUTES_HPP
+#define ORES_HTTP_ROUTES_{{entity_singular_upper}}_ROUTES_HPP
+
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <memory>
+#include <string_view>
+
+namespace ores::http::routes::{{component}} {
+
+/**
+ * @brief Every operation {{entity_singular}} declares and exposes, as one HTTP route each.
+ *
+ * The unit is the model's own declared protocol addressed over HTTP, so a
+ * message the model exposes appears as a route without an edit here and a
+ * message it stops exposing -- or loses -- takes its route with it. A route
+ * is a POST whose body is the canonical request, because a declared operation
+ * states no verb and the request is the whole of what it sends.
+ *
+ * The unit authorises nobody. The service's generated handler owns the
+ * operation's permission, and the caller's own token travels with every
+ * request this unit forwards.
+ */
+class {{entity_singular}}_routes {
+private:
+    inline static std::string_view logger_name =
+        "ores.http.routes.{{component}}.{{entity_singular}}_routes";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Register the {{entity_singular}} operation routes.
+     *
+     * @param session The client every route forwards on. The caller's token
+     * is taken from each HTTP request and delegated on it, so the unit holds
+     * no authorisation state of its own.
+     */
+    static void register_routes(std::shared_ptr<ores::http::net::router> router,
+                                std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+                                ores::nats::service::nats_client& session);
+{{#http_route.routes}}
+
+    /**
+     * @brief {{method_upper}} {{pattern}} — {{summary}}.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_{{identifier}}(const ores::http::domain::http_request& req,
+                          ores::nats::service::nats_client& session);
+{{/http_route.routes}}
+};
+
+}
+
+#endif
+{{/operation}}

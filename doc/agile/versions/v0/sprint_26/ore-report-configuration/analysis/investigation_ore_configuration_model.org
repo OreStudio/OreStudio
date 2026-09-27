@@ -71,7 +71,12 @@ one per class, because two relations with the same shape are one relation:
   become =sensitivity_shift= and =stress_shift=, each keyed by a family row. The
   family row names the XML element the family serialises to — =stressdiscountcurve=
   is =<discount_curve>=, =stressfxvolatility= is =<fx_volatility>= — so the
-  element is data, not a table name.
+  element is data, not a table name. The grids ORE writes as comma-separated
+  strings — =Shifts=, =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, and the
+  =Shifts/Shift= values — are rows: =<doc>_shift_tenor= holds one row per tenor
+  and references the tenor entity, =<doc>_shift_strike= one row per strike, and
+  =<doc>_shift_point= the values keyed by expiry and term. The comma-separated
+  form is a serialisation detail and does not reach the model.
 - *Value rows reached by one element name are one relation.* SIMM's buckets and
   labels merge: three historical volatility ratios become one relation, four
   inter-bucket correlation rows become one, and so on.
@@ -79,8 +84,8 @@ one per class, because two relations with the same shape are one relation:
   is the parent's edge, and it passes through unless it has several children, in
   which case the grouping element survives in the XML map.
 
-That is 78 relations, split as SIMM calibration 31, simulation 27, sensitivity 9,
-stress 6, credit simulation 3, and one each for historical return and Basel
+That is 86 relations, split as SIMM calibration 31, simulation 27, sensitivity 13,
+stress 10, credit simulation 3, and one each for historical return and Basel
 traffic light. SIMM and simulation are still the two large ones and further
 merges may exist in them; the exhaustive per-document entity diagrams produced by
 =build/scripts/xsd_to_uml.py= remain the reference when a relation's members

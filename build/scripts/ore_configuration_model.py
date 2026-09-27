@@ -66,15 +66,23 @@ SHIFT_FAMILIES = {
 # into (family_id, object_code).
 SHIFT_BLOCK = [
     ("shift_type_id", "uuid"),
-    ("shift_size", "numeric"),
     ("shift_scheme_id", "uuid"),
-    ("shifts", "text"),
-    ("shift_tenors", "text"),
-    ("shift_expiries", "text"),
-    ("shift_strikes", "text"),
+    ("shift_size", "numeric"),
     ("par_conversion", "text"),
     ("is_relative", "boolean"),
 ]
+# The grids ORE writes as comma-separated strings are rows here, so that a tenor
+# is a reference to the tenor entity rather than a string in a list.
+SHIFT_ROWS = {
+    "shift_tenor": [("shift_id", "uuid"), ("sequence", "integer"), ("tenor_id", "uuid")],
+    "shift_strike": [("shift_id", "uuid"), ("sequence", "integer"), ("strike", "numeric")],
+    "shift_point": [("shift_id", "uuid"), ("expiry_tenor_id", "uuid"),
+                    ("term_tenor_id", "uuid"), ("strike", "numeric"),
+                    ("value", "numeric")],
+    "shift_key_entry": [("shift_id", "uuid"), ("risk_factor_key", "text"),
+                        ("shift_type_id", "uuid"), ("shift_size", "numeric"),
+                        ("shift_scheme_id", "uuid")],
+}
 
 REPORTING = '''package "ores.reporting" #E8F4FF {
   class report_definition {
@@ -232,8 +240,13 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
             structs[doc][f"{doc}_shift_family"] = [
                 ("id", "uuid"), ("code", "text"), ("name", "text"),
                 ("xml_element", "text"), ("key_value_domain_id", "uuid")]
+            for suffix, cols in SHIFT_ROWS.items():
+                structs[doc][f"{doc}_{suffix}"] = cols
+                edges.append((doc, f"{doc}_shift", f"{doc}_{suffix}", suffix, "0", "unbounded"))
             notes.append(f'{doc}_shift : "one relation for {len(rows)} families; '
                          f'family_id names the XML element"')
+            notes.append(f'{doc}_shift_tenor : "tenor_id references the tenor entity; '
+                         f'ORE writes these as a comma-separated string"')
             notes.append(f'{doc}_shift_family : "'
                          + ", ".join(f"{f} → <{e}>" for f, e in rows) + '"')
 

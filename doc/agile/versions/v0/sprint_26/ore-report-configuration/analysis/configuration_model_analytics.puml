@@ -11,12 +11,8 @@ package "ores.analytics" #EAF7EA {
       family_id : uuid
       object_code : text
       shift_type_id : uuid
-      shift_size : numeric
       shift_scheme_id : uuid
-      shifts : text
-      shift_tenors : text
-      shift_expiries : text
-      shift_strikes : text
+      shift_size : numeric
       par_conversion : text
       is_relative : boolean
     }
@@ -26,6 +22,30 @@ package "ores.analytics" #EAF7EA {
       name : text
       xml_element : text
       key_value_domain_id : uuid
+    }
+    class "stress_shift_key_entry" as stress__stress_shift_key_entry {
+      shift_id : uuid
+      risk_factor_key : text
+      shift_type_id : uuid
+      shift_size : numeric
+      shift_scheme_id : uuid
+    }
+    class "stress_shift_point" as stress__stress_shift_point {
+      shift_id : uuid
+      expiry_tenor_id : uuid
+      term_tenor_id : uuid
+      strike : numeric
+      value : numeric
+    }
+    class "stress_shift_strike" as stress__stress_shift_strike {
+      shift_id : uuid
+      sequence : integer
+      strike : numeric
+    }
+    class "stress_shift_tenor" as stress__stress_shift_tenor {
+      shift_id : uuid
+      sequence : integer
+      tenor_id : uuid
     }
     class "stresscapfloorvolatility_Shifts_Shift" as stress__stresscapfloorvolatility_Shifts_Shift {
       tenor : text
@@ -200,6 +220,30 @@ package "ores.analytics" #EAF7EA {
       name : text
       xml_element : text
       key_value_domain_id : uuid
+    }
+    class "sensitivity_shift_key_entry" as sensitivity__sensitivity_shift_key_entry {
+      shift_id : uuid
+      risk_factor_key : text
+      shift_type_id : uuid
+      shift_size : numeric
+      shift_scheme_id : uuid
+    }
+    class "sensitivity_shift_point" as sensitivity__sensitivity_shift_point {
+      shift_id : uuid
+      expiry_tenor_id : uuid
+      term_tenor_id : uuid
+      strike : numeric
+      value : numeric
+    }
+    class "sensitivity_shift_strike" as sensitivity__sensitivity_shift_strike {
+      shift_id : uuid
+      sequence : integer
+      strike : numeric
+    }
+    class "sensitivity_shift_tenor" as sensitivity__sensitivity_shift_tenor {
+      shift_id : uuid
+      sequence : integer
+      tenor_id : uuid
     }
     class "sensitivity_shifts" as sensitivity__sensitivity_shifts {
       configuration_id : uuid
@@ -429,6 +473,10 @@ sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift : yield
 sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift : yy_cap_floor_volatility
 sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift : yy_inflation_index_curve
 sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift : zero_inflation_index_curve
+sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift_key_entry : shift_key_entry
+sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift_point : shift_point
+sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift_strike : shift_strike
+sensitivity__sensitivity_shift *-- "0..*" sensitivity__sensitivity_shift_tenor : shift_tenor
 sensitivity__sensitivity_shift *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
 sensitivity__sensitivity_shift *-- "0..1" sensitivity__parconversion : par_conversion
 sensitivity__sensitivity_shift *-- "1" sensitivity__sensitivity_shifts : shifts
@@ -528,6 +576,10 @@ stress__stress_shift *-- "0..*" stress__stress_shift : index_curve
 stress__stress_shift *-- "0..*" stress__stress_shift : intraday_power_curve
 stress__stress_shift *-- "0..*" stress__stress_shift : swaption_volatility
 stress__stress_shift *-- "0..*" stress__stress_shift : yield_curve
+stress__stress_shift *-- "0..*" stress__stress_shift_key_entry : shift_key_entry
+stress__stress_shift *-- "0..*" stress__stress_shift_point : shift_point
+stress__stress_shift *-- "0..*" stress__stress_shift_strike : shift_strike
+stress__stress_shift *-- "0..*" stress__stress_shift_tenor : shift_tenor
 stress__stress_shift *-- "1" stress__stresscapfloorvolatility_Shifts_Shift : shifts
 stress__stress_shift *-- "1" stress__stressswaptionvolatility_Shifts_Shift : shifts
 stress__stresscapfloorvolatility_Shifts_Shift *-- "0..*" stress__stresscapfloorvolatility_Shifts_Shift : shift
@@ -543,12 +595,14 @@ stress__stresstest *-- "0..1" stress__stress_shift : swaption_volatilities
 stress__stresstest *-- "0..1" stress__stress_shift : yield_curves
 stress__stresstesting *-- "1..*" stress__stresstest : stress_test
 stress_shift : "one relation for 10 families; family_id names the XML element"
+stress_shift_tenor : "tenor_id references the tenor entity; ORE writes these as a comma-separated string"
 stress_shift_family : "stressdiscountcurve → <discount_curve>, stressindexcurve → <index_curve>, stressyieldcurve → <yield_curve>, stresssurvivalprobability → <stresssurvivalprobability>, stressfxvolatility → <fx_volatility>, stressswaptionvolatility → <swaption_volatility>, stresscapfloorvolatility → <cap_floor_volatility>, stresscommoditycurve → <commodity_curve>, stressintradaypowercurve → <intraday_power_curve>, stresscommodityvolatility → <commodity_volatility>"
 simmcalibration_historical_volatility_ratio : "one relation for 3 <historical_volatility_ratio> rows"
 simmcalibration_inter_bucket : "one relation for 4 <inter_bucket> rows"
 simmcalibration_risk_weights : "one relation for 6 <risk_weights> rows"
 simmcalibration_threshold : "one relation for 2 <threshold> rows"
 sensitivity_shift : "one relation for 26 families; family_id names the XML element"
+sensitivity_shift_tenor : "tenor_id references the tenor entity; ORE writes these as a comma-separated string"
 sensitivity_shift_family : "discountcurve → <discount_curve>, indexcurve → <index_curve>, yieldcurve → <yield_curve>, fxspot → <fx_spot>, fxvolatility → <fx_volatility>, swaptionvolatility → <swaption_volatility>, yieldvolatility → <yield_volatility>, capfloorvolatility → <cap_floor_volatility>, cdsvolatility → <cds_volatility>, creditcurve → <credit_curve>, equityspot → <equity_spot>, equityvolatility → <equity_volatility>, zeroinflationindexcurve → <zero_inflation_index_curve>, yyinflationindexcurve → <yy_inflation_index_curve>, cpicapfloorvolatility → <cpi_cap_floor_volatility>, yycapfloorvolatility → <yy_cap_floor_volatility>, basecorrelation → <base_correlation>, securityspread → <security_spread>, dividendyield → <dividend_yield_curve>, commodityCurve → <commodity_curve>, intradaypowercurve → <intraday_power_curve>, commodityvolatility → <commodity_volatility>, correlationcurve → <correlation>, sensiBondFutureVolatility → <bond_future_volatility>, survivalprobability → <survivalprobability>, recoveryrate → <recoveryrate>"
 sensitivity_shift : "one relation for 2 <shift> rows"
 sensitivity_shifts : "one relation for 2 <shifts> rows"

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 5DC80342-B211-4CF5-B879-0706B83BFBAF
+:END:
+#+title: Story: Mop up the storage leftovers the goal surfaced
+#+description: Assign the tenant admin role the provisioner forgot, clear the retired bucket directories, and record the instrument-audit defect the ORE import exposes.
+#+type: story
+#+level: s2
+#+filetags: :storage:iam:reporting:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Three leftovers the storage work surfaced are closed or accounted for.
+
+The first is a provisioning gap that reads like a permission gap. A tenant admin
+provisioned against a fresh database cannot use the raw shell surface, and the
+obvious reading is that tenant roles lack =storage::objects:*=. They do not:
+=TenantAdmin= holds the global =*= permission. The account simply has no role,
+because =provision tenant= creates it and assigns none.
+
+The second is the state a retired bucket leaves behind. The store creates a
+bucket on first write and never collects one, so the protocol migration left
+directories nothing reads.
+
+The third turned out not to be a mop-up at all. The ORE import's trade saves
+fail, and the cause is that no instrument can be saved through the trading
+service: the write structs carry no audit and no handler stamps one. That is a
+generated-surface change, and it belongs to the work that is regenerating that
+surface.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Implemented and verified; the PR carries it. |
+| Waiting on    | Nothing.                               |
+| Next          | Raise and merge the PR.                |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- =provision tenant= assigns =TenantAdmin= to the account it creates, and that
+  account can upload to storage.
+- The retired bucket directories are gone, and the page says why the store
+  cannot clear them itself.
+- The instrument-audit defect is captured with the evidence that names it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7C00660F-1419-4DAD-ABAE-D87284FD0518][Scaffold story: Mop up the storage leftovers the goal surfaced]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4E219395-3B37-4FCD-8B46-C55E299CE0D3][Give a provisioned tenant admin its TenantAdmin role]] | STARTED | 2026-09-27 | | Assign the role the SQL provisioner copies but never hands out, clear the retired buckets, and capture the instrument-audit defect. |
+
+* Decisions
+
+- *Fix the provisioning, not the permission.* The temptation was to grant
+  =storage::objects:*= to a tenant role. That would have widened access to a
+  bucket with no per-tenant isolation to fix a bug that is not about access:
+  =TenantAdmin= already holds =*=. The assignment is the defect.
+- *A missing role fails loudly.* The handler logs at error level when it cannot
+  find =TenantAdmin=, rather than returning success quietly, because an admin
+  without a role holds no permissions and the journey then fails far from its
+  cause.
+- *The instrument audit is left to the trading regeneration.* Both candidate
+  fixes are coherent, and one of them regenerates the whole instrument protocol
+  surface, which another environment is regenerating now. Recorded with the
+  choice still open.
+
+* Out of scope
+
+- The instrument-audit fix itself, for the reason above.
+- Backfilling roles on tenants provisioned before this change. The task Result
+  names the remedy.
+- The credit-instrument tenor check the same import run hits. It refuses a CDS
+  from the sample portfolio, which is a data question about that instrument.
+
+* Result
+
+Closed on the story's one work task.
+
+=provision tenant= now hands the new admin the tenant's =TenantAdmin= role, and
+a freshly provisioned tenant's admin uploaded an ORE directory to
+=ores/ore/imports/<id>.tar.gz= where the same journey had answered 403 before.
+The retired bucket directories are gone and the reason the store cannot clear
+them itself is on the Object Storage page. The instrument-audit defect is
+captured as
+[[id:96BE10E0-0EF1-4AA9-82B3-16E63B699E98][An instrument cannot be saved through
+the trading service]].

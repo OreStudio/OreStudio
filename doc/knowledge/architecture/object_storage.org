@@ -243,6 +243,14 @@ purpose or a tenant. The tenancy question is still open (see [[*Authentication
 and tenancy]]), and a bucket-per-tenant answer would arrive as a rule in this
 section rather than as a name a caller invents.
 
+Retiring a bucket is an operator's task, not a consequence of a caller stopping.
+The store creates a bucket on the first write and never garbage-collects one, so
+the bytes a retired bucket holds stay where they are and the directory stays with
+them until someone removes it. That is the cost of a server that keeps no list:
+it cannot tell a bucket nobody uses any more from one nobody has used yet. The
+buckets retired by the move onto this protocol left their directories behind, and
+they were cleared by hand.
+
 * Backends
 
 The contract is stable; the store behind it is replaceable. The filesystem

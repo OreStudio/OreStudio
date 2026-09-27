@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 4E219395-3B37-4FCD-8B46-C55E299CE0D3
+:END:
+#+title: Task: Give a provisioned tenant admin its TenantAdmin role
+#+description: Initial task for: Mop up the storage leftovers the goal surfaced
+#+type: task
+#+level: s1
+#+filetags: :storage_mop_up:sprint_26:v0:
+#+owner: marco
+#+branch: feature/storage-mop-up
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant that =provision tenant= creates is given an administrator that can
+actually act: the account carries the tenant's =TenantAdmin= role, so a
+documented journey such as the ORE round trip works for it. The bucket
+directories the protocol migration retired are cleared, and the instrument-audit
+defect the ORE import exposes is recorded with its root cause rather than left as
+a puzzle.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] |
+| Now          | Implementation complete; verified live. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge with the story branch.           |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- =provision tenant= assigns =TenantAdmin= to the account it creates, and that
+  account can upload to storage.
+- The retired bucket directories are gone.
+- The instrument-audit defect is captured with the evidence that names it.
+
+* Plan
+
+1. Read what the three leftovers actually are before changing anything, because
+   two of them turned out not to be what their one-line description said.
+2. Fix the one that is a defect in code the mop-up owns.
+3. Clear the state the other leaves behind, and record the third.
+
+* Notes
+
+- The tenant-admin 403 was not a missing permission. =TenantAdmin= holds the
+  global =*= permission, so the account could do anything once it had the role;
+  it had no role at all. =compass provision tenant= creates the account and
+  associates it with the tenant's system party, and stops there. The SQL
+  provisioner copies every role definition into the new tenant and assigns none
+  of them, so the admin could log in and do nothing.
+- The instrument-audit failure is not a storage problem and is not a one-line
+  one. Every generated =put_*_instrument_request= write struct carries the
+  business fields and no audit, and no trading handler stamps one, so every
+  instrument the service writes is refused by the store. The capture carries the
+  root cause and the two coherent fixes.
+- The retired bucket directories held one object between them, written under a
+  name no caller reads any more. That is the honest cost of a server that keeps
+  no bucket list: it cannot tell a retired bucket from an unused one, so
+  retiring one is an operator's task. The page now says so.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Two of the three are closed and the third is now a diagnosis rather than a
+puzzle.
+
+*The provisioning gap.* =bootstrap_handler::provision_tenant= now assigns the
+=TenantAdmin= role to the account it creates, from the roles the SQL provisioner
+already copied into the tenant. A role that cannot be found is logged at error
+level rather than passed over, because an admin without one holds no permissions
+and the failure would otherwise be silent.
+
+*Verified live.* A fresh tenant, =mopup_test=, was provisioned with the new
+binary: the account came back carrying =TenantAdmin=, and its admin then ran
+=ore upload= successfully, writing
+=ores/ore/imports/<request_id>.tar.gz=. The same journey had failed with HTTP 403
+for a tenant admin provisioned before the fix. =ores.iam.core.tests= passes 230
+assertions in 97 cases.
+
+*The retired buckets.* =storage/compute= and =storage/ore-imports= are gone, and
+the one object they held went with them. The Object Storage page records why the
+store cannot do this for itself.
+
+*The instrument audit.* Captured as
+[[id:96BE10E0-0EF1-4AA9-82B3-16E63B699E98][An instrument cannot be saved through
+the trading service]], with the write struct, the mapper, the validator and the
+two candidate fixes. Left alone because the trading instrument protocols are
+being regenerated by
+[[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its
+models]].
+
+*Left over.* A tenant admin provisioned *before* this fix still holds no role.
+Assign it by hand, or re-provision the tenant.

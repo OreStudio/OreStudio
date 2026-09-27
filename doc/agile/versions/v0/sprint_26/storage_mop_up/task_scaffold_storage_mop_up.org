@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 7C00660F-1419-4DAD-ABAE-D87284FD0518
+:END:
+#+title: Task: Scaffold story: Mop up the storage leftovers the goal surfaced
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :storage_mop_up:sprint_26:v0:
+#+owner: marco
+#+branch: feature/storage-mop-up
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story, its task and its sprint wiring exist, and the branch carries them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] |
+| Now          | Scaffolding is done and rides this branch. |
+| Waiting on   | Nothing.                               |
+| Next          | Close before the story PR merges.      |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The story, its work task and the sprint row exist and link to each other.
+
+* Plan
+
+Scaffold with =compass story new=, and keep the work task on the story branch so
+one PR carries the story.
+
+* Notes
+
+- =compass task start= was given =--branch feature/storage-mop-up= rather than
+  left to derive one, so the task and its story stay on one branch.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story opened with its goal, acceptance and one work task, and the sprint
+table carries its row. This scaffold task closes with the same PR.

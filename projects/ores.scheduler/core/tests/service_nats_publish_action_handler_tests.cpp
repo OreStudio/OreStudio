@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
@@ -35,13 +37,17 @@
 // its tenant and the run. A job whose payload the handler cannot read must not
 // take the scheduler loop down, so the failure path returns rather than throws.
 //
-// The report-trigger case needs the fleet: it asserts that a refusal comes
-// back, which only happens if the reporting service answers.
+// A report trigger is a request, so the refusal case fakes the answering side
+// rather than starting the fleet: what the handler owes is that an X-Error on
+// the reply becomes a failed job.
 
 namespace {
 
 const std::string_view test_suite("scheduler.tests");
 const std::string tags("[action][nats]");
+
+// The subject the reporting service answers, and the one a refusal is faked on.
+constexpr std::string_view trigger_subject = "reporting.v1.ops.trigger_report_instance";
 
 ores::scheduler::domain::job_definition make_job(const std::string& payload) {
     ores::scheduler::domain::job_definition job;
@@ -152,9 +158,20 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    // The request presents no bearer, so the reporting service refuses it. The
-    // refusal has to reach the job: before this change it was discarded and the
-    // job was recorded as succeeded while no report instance existed.
+    // A stand-in for the reporting service. The handler's contract is that a
+    // refusal reaches the job instead of being discarded, and a refusal is an
+    // X-Error header on the reply -- so the test answers with one rather than
+    // requiring the fleet to be up. Before this change the header was ignored
+    // and the job was recorded as succeeded while no report instance existed.
+    auto responder = nats.subscribe(
+        trigger_subject,
+        [&nats](ores::nats::message msg) {
+            nats.publish(
+                msg.reply_subject,
+                {},
+                {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
+        });
+
     auto svc_nats = make_unauthenticated_client(nats);
     nats_publish_action_handler handler(nats, svc_nats);
 

@@ -25,9 +25,9 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is written and the work is broken into tasks. |
+| Now           | The run configuration selects the phases a run executes, and step results are addressed by role. |
 | Waiting on    | The reporting to compute handoff, which the ACME smoke-test story owns. |
-| Next          | Add the run configuration and address phase results by role, then pre-processing. |
+| Next          | Define and enforce the orchestration contract. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -43,7 +43,7 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
 | [[id:904155B2-C5D9-451F-8EF9-25718CBE7513][Scaffold story: Run a full report: scheduling, reporting and compute]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:1F260481-4232-4473-8E7B-011226F78BC2][Implement Run a full report: scheduling, reporting and compute]] | BACKLOG | | | Initial task for: Run a full report: scheduling, reporting and compute |
 | [[id:03B11C75-ED92-4819-9EF3-EF2507F6D21B][Design the report processing architecture]] | DONE | | 2026-09-27 | Task for: Run a full report: scheduling, reporting and compute |
-| [[id:395C3931-12CF-457B-ABFC-D89CDADCE35A][Add the run configuration and address phase results by role]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:395C3931-12CF-457B-ABFC-D89CDADCE35A][Add the run configuration and address phase results by role]] | DONE | 2026-09-27 | 2026-09-27 | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:FF1B7C3A-85E3-442B-801F-0B25ECF58E39][Implement report pre-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:6AB675A3-BFCE-4607-96AB-F74144AF93AC][Implement report post-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |

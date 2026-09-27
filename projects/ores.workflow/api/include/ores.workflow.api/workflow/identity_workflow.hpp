@@ -134,7 +134,7 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
             // itself stays a reader of the payload rather than a decision-maker.
             s.build_command = [name, behaviour, delay](
                                   const std::string& /*request_json*/,
-                                  const std::vector<std::string>& /*results*/) -> std::string {
+                                  const workflow_step_results& /*results*/) -> std::string {
                 return rfl::json::write(identity_step_request{.name = name,
                                                               .behaviour = behaviour,
                                                               .compensate = false,

@@ -56,6 +56,9 @@ generate_synthetic_report_definition(utility::generation::generation_context& ct
     r.schedule_expression = std::string("0 6 * * 1");
     r.concurrency_policy = std::string("skip");
     r.scheduler_job_id = std::nullopt;
+    r.pre_processing = std::string("execute");
+    r.prepared_input_key = std::string{};
+    r.post_processing = std::string("execute");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

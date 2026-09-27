@@ -88,7 +88,8 @@ public:
 
     /**
      * @brief add <name> <description> <report_type> <fsm_state_id> <schedule_expression>
-     * <concurrency_policy> <scheduler_job_id> <reason> <commentary>
+     * <concurrency_policy> <scheduler_job_id> <pre_processing> <prepared_input_key>
+     * <post_processing> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +97,8 @@ public:
 
     /**
      * @brief set <id> <name> <description> <report_type> <fsm_state_id> <schedule_expression>
-     * <concurrency_policy> <scheduler_job_id> <reason> <commentary> [--version <n>]
+     * <concurrency_policy> <scheduler_job_id> <pre_processing> <prepared_input_key>
+     * <post_processing> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +106,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <name> <description> <report_type> <fsm_state_id>
-     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <reason> <commentary>
+     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing>
+     * <prepared_input_key> <post_processing> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

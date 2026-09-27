@@ -56,6 +56,9 @@ domain::report_definition report_definition_mapper::map(const report_definition_
         v.scheduler_job_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) :
             std::nullopt;
+    r.pre_processing = v.pre_processing;
+    r.prepared_input_key = v.prepared_input_key.value_or("");
+    r.post_processing = v.post_processing;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -88,6 +91,10 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     r.scheduler_job_id = v.scheduler_job_id.has_value() ?
                              std::optional(boost::uuids::to_string(*v.scheduler_job_id)) :
                              std::nullopt;
+    r.pre_processing = v.pre_processing;
+    r.prepared_input_key =
+        v.prepared_input_key.empty() ? std::nullopt : std::optional(v.prepared_input_key);
+    r.post_processing = v.post_processing;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

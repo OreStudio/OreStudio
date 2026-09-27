@@ -74,7 +74,7 @@ inline void register_ore_import_workflow(ores::workflow::service::workflow_regis
                 std::string(ores::ore::messaging::ore_import_rollback_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                                 const std::vector<std::string>&) -> std::string {
+                                 const workflow_step_results&) -> std::string {
                 return request_json;
             };
 

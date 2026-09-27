@@ -351,6 +351,59 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
     wf->complete(rfl::json::write(result));
 }
 
+void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
+    auto wf = workflow_step_context::from_message(nats_, msg);
+    if (!wf)
+        return;
+
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto parsed = rfl::json::read<resolve_prepared_input_request>(sv);
+    if (!parsed) {
+        wf->fail("Failed to decode resolve_prepared_input_request");
+        return;
+    }
+    const auto& req = *parsed;
+
+    if (req.prepared_input_key.empty()) {
+        wf->fail("resolve_prepared_input: the run configuration names no prepared input");
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "resolve_prepared_input complete | instance="
+                              << req.report_instance_id << " input=" << req.prepared_input_key;
+
+    // The archive is named, not read. Answering in the packaging phase's own
+    // result type is what lets the substitution be invisible to what follows.
+    prepare_ore_package_result result;
+    result.success = true;
+    result.message = std::format("Resolved prepared input {}", req.prepared_input_key);
+    result.tarball_uris = {req.prepared_input_key};
+    wf->complete(rfl::json::write(result));
+}
+
+void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
+    auto wf = workflow_step_context::from_message(nats_, msg);
+    if (!wf)
+        return;
+
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto parsed = rfl::json::read<ignore_compute_results_request>(sv);
+    if (!parsed) {
+        wf->fail("Failed to decode ignore_compute_results_request");
+        return;
+    }
+    const auto& req = *parsed;
+
+    BOOST_LOG_SEV(lg(), info) << "ignore_compute_results complete | instance="
+                              << req.report_instance_id << " batch=" << req.batch_id
+                              << " (results not ingested)";
+
+    collect_compute_results_result result;
+    result.success = true;
+    result.message = std::format("Results of batch {} left unread by configuration.", req.batch_id);
+    wf->complete(rfl::json::write(result));
+}
+
 void report_execution_handler::finalise(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf)

@@ -152,6 +152,21 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         },
         "fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>");
 
+    menu->Insert(
+        "resolve-prepared-input",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_resolve_prepared_input(std::ref(out), std::ref(session), std::move(args));
+        },
+        "resolve-prepared-input <report_instance_id> <tenant_id> <correlation_id> "
+        "<prepared_input_key>");
+
+    menu->Insert(
+        "ignore-compute-results",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_ignore_compute_results(std::ref(out), std::ref(session), std::move(args));
+        },
+        "ignore-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -767,6 +782,116 @@ void report_operations_operations_commands::process_fail_report(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::reporting::messaging::fail_report_result>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_resolve_prepared_input(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating resolve-prepared-input request.";
+
+    using request_type = ores::reporting::messaging::resolve_prepared_input_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run resolve-prepared-input." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 4;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.report_instance_id = parsed->positionals[next++];
+        req.tenant_id = parsed->positionals[next++];
+        req.correlation_id = parsed->positionals[next++];
+        req.prepared_input_key = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::prepare_ore_package_result> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::prepare_ore_package_result>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::prepare_ore_package_result>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_ignore_compute_results(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating ignore-compute-results request.";
+
+    using request_type = ores::reporting::messaging::ignore_compute_results_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run ignore-compute-results." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 4;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.report_instance_id = parsed->positionals[next++];
+        req.tenant_id = parsed->positionals[next++];
+        req.correlation_id = parsed->positionals[next++];
+        req.batch_id = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::collect_compute_results_result> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::collect_compute_results_result>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::collect_compute_results_result>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

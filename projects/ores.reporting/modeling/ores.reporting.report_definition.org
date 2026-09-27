@@ -11,11 +11,17 @@
 #+entity_plural: report_definitions
 #+entity_title: Report Definition
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-09-27
 
 The persistent template for a report. Describes what to run, when to run it,
-and how to handle concurrent executions. Type-specific configuration (e.g.
-risk parameters) lives in a separate table keyed by report_definition_id.
+how to handle concurrent executions, and how much of the processing pipeline a
+run executes. Type-specific configuration (e.g. risk parameters) lives in a
+separate table keyed by report_definition_id.
+
+The run configuration is held here rather than in the environment so that a run
+is reproducible from the database alone. pre_processing and post_processing
+name, for each substitutable phase, whether the phase runs or is replaced by a
+prepared substitute.
 
 Lifecycle is managed through the report_definition_lifecycle FSM machine.
 fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
@@ -147,6 +153,49 @@ Scheduler job UUID (FK to ores_scheduler_job_definitions_tbl). Present only when
 
 #+begin_src cpp :name generator
 std::nullopt
+#+end_src
+
+** pre_processing
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What a run does to prepare the engine's input: =execute= generates it from the
+definition's scope, =substitute= resolves the prepared archive named by
+prepared_input_key.
+
+#+begin_src cpp :name generator
+std::string("execute")
+#+end_src
+
+** prepared_input_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Storage key of the prepared input archive that a substituting run resolves.
+Set only when pre_processing is =substitute=.
+
+#+begin_src cpp :name generator
+std::string{}
+#+end_src
+
+** post_processing
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What a run does with the engine's results: =execute= ingests them into the
+result store, =ignore= records only that the engine produced them.
+
+#+begin_src cpp :name generator
+std::string("execute")
 #+end_src
 
 * SQL

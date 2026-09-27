@@ -140,10 +140,12 @@ begin
             insert into ores_reporting_report_definitions_tbl (
                 id, tenant_id, version, name, party_id, description, report_type,
                 fsm_state_id, schedule_expression, concurrency_policy, scheduler_job_id,
+                pre_processing, prepared_input_key, post_processing,
                 workspace_id, modified_by, performed_by, change_reason_code, change_commentary,
                 valid_from, valid_to)
             values (v_def_id, v_tenant, 0, rec.name, v_party, rec.commentary, 'risk',
                     v_active_state, '0 0 1 1 *', rec.policy, null,
+                    'execute', null, 'execute',
                     v_workspace, v_actor, v_actor, 'system.initial_load', rec.commentary,
                     clock_timestamp(), ores_utility_infinity_timestamp_fn());
             v_inserted := v_inserted + 1;

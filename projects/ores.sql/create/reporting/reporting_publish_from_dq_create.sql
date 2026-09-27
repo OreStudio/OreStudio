@@ -80,10 +80,13 @@ begin
     --   tiers:       comma-separated tier list (default: all four)
     --   jurisdiction: ISO 3166 alpha-2 for jurisdiction-specific reports
     --   party_id:    optional explicit root party override
+    -- A definition published from a DQ dataset executes every phase: the
+    -- dataset describes what to report, not how much of the pipeline to run.
     insert into ores_reporting_report_definitions_tbl (
         tenant_id, id, version, party_id, name,
         description, report_type, schedule_expression, concurrency_policy,
         fsm_state_id, scheduler_job_id,
+        pre_processing, prepared_input_key, post_processing,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
@@ -91,6 +94,7 @@ begin
         gen_random_uuid(), 0, v_root_party_id, a.name,
         coalesce(a.description, ''), a.report_type, a.schedule_expression, a.concurrency_policy,
         null, null,
+        'execute', null, 'execute',
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Published from DQ dataset'
     from ores_dq_report_definitions_artefact_tbl a

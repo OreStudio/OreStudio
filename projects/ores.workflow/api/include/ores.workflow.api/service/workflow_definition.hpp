@@ -23,9 +23,47 @@
 #include "ores.workflow.api/export.hpp"
 #include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::workflow::service {
+
+/**
+ * @brief The result of one completed step, named by the step that produced it.
+ */
+struct ORES_WORKFLOW_API_EXPORT workflow_step_result {
+    /**
+     * @brief The step's name, as declared in its definition.
+     */
+    std::string name;
+
+    /**
+     * @brief The step's response payload. Empty when the step answered nothing.
+     */
+    std::string response_json;
+};
+
+/**
+ * @brief The results of the steps completed so far, in step order.
+ *
+ * A step addresses a result by the name of the step that produced it, never by
+ * position. A chain whose length depends on the run's configuration, or a step
+ * that completes without answering, would otherwise shift what every later step
+ * reads.
+ */
+using workflow_step_results = std::vector<workflow_step_result>;
+
+/**
+ * @brief The response produced by the named step, or nullptr if it has none.
+ */
+[[nodiscard]] inline const std::string* find_step_result(const workflow_step_results& results,
+                                                         std::string_view step_name) {
+    for (const auto& r : results) {
+        if (r.name == step_name && !r.response_json.empty())
+            return &r.response_json;
+    }
+    return nullptr;
+}
 
 /**
  * @brief Declarative definition of one step within a workflow.
@@ -63,12 +101,12 @@ struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
      * @brief Builds the step command payload.
      *
      * @param request_json  The workflow instance's originating request JSON.
-     * @param step_results  Result JSON from each previously completed step,
-     *                      in step-index order (index 0 = first completed step).
+     * @param step_results  The results of the steps completed so far, each
+     *                      named by the step that produced it.
      * @return Serialised JSON to be published as the command body.
      */
     std::function<std::string(const std::string& request_json,
-                              const std::vector<std::string>& step_results)>
+                              const workflow_step_results& step_results)>
         build_command;
 
     /**

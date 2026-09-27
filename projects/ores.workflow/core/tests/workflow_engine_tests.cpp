@@ -100,6 +100,7 @@ using ores::workflow::service::workflow_definition;
 using ores::workflow::service::workflow_engine;
 using ores::workflow::service::workflow_registry;
 using ores::workflow::service::workflow_step_def;
+using ores::workflow::service::workflow_step_results;
 
 /**
  * @brief The engine over a test tenant, with the bus and store either side.
@@ -172,7 +173,7 @@ struct fixture {
                 s.description = name;
                 s.command_subject = step_subject;
                 s.compensation_subject = compensation_subject;
-                s.build_command = [request](const std::string&, const std::vector<std::string>&) {
+                s.build_command = [request](const std::string&, const workflow_step_results&) {
                     return request;
                 };
                 s.build_compensation = [](const std::string& command, const std::string&) {

@@ -279,17 +279,14 @@ claim the isolation its callers assume.
 
 * Distance from today
 
-Recorded so that the target is not mistaken for the tree. The list below is the
-snapshot taken when this target was written; the interface work has since closed
-the transport items on it. Storage now answers on both interfaces through one
-store, every route authenticates, HEAD, DELETE and listing exist on both sides,
-the path prefix is declared once, and no bucket allow-list remains in the
-server.
+Recorded so that the target is not mistaken for the tree. The first list is what
+the interface work had to close and is kept as the record of that scope; the
+second is what is still open.
 
-What is still open is the consumers: =compute=, =ore= and =reporting= keep the
-retired bucket names, so the migration onto the protocol in [[*Buckets and
-keys][Buckets and keys]] is the live work, and the items below that describe the
-callers, the generation gap and the raw shell surface still stand.
+Almost all of the first list is closed. Two halves remain, and each says so in
+the second list: =ores.reporting= keeps a retired bucket name on its write path
+([[id:5A66C421-B55C-408D-9897-19E1290064F6][Reporting writes the report blobs to
+a bucket ore does not read]]), and =http_client= cannot ask with =HEAD=.
 
 One item on that list was a live blocker, and main has since closed it: the
 routes authenticate, and every caller that moves bytes now presents a token.
@@ -301,59 +298,47 @@ Patterns]]. The investigation that found it is in
 [[id:15062C8E-3282-4A84-B3BC-40C286388993][Storage routes demand a token no C++
 caller sends]].
 
-1. *No NATS interface.* The only transport is HTTP.
-2. *Not modelled, so nothing generates.* No protocol, handler, permission,
-   shell command or TypeScript twin is generated for storage. Its shell verbs
-   are hand-written and named after consumers (=ore upload=,
-   =compute download-input=), and there is no =storage= menu at all.
-3. *No raw surface.* No shell verb takes a bucket, a key and a path.
-4. *No authentication.* The storage routes never call =auth_required()=, the
-   route default is public, and an unauthenticated PUT succeeds. The server
-   binds to =0.0.0.0= by default.
-5. *The path prefix is duplicated,* client and server, with no shared
-   declaration.
-6. *HEAD is documented nowhere and implemented nowhere;* DELETE exists on the
-   server with no client method.
-7. *Bucket allocation is a hardcoded two-name list with no owner,* in the
-   server, while the client can address any bucket. The commit that made
-   storage application-agnostic is the same commit that moved the names into
-   the callers and left this literal behind.
-8. *Key encoding and traversal rules are not stated once.* The server guards
-   traversal; the archive extractor does not.
-9. *No test exercises the real client against the real server.* The component's
-   tests use bucket names the server would refuse.
-10. *Listing does not exist* on either interface.
-11. *The bucket list has already drifted from its consumers.* =report-data= is
-    used by =ores.reporting= and =ores.ore= and is not in the server's
-    allowlist, so that path answers 404. This is the unowned literal failing in
-    exactly the way [[*Buckets and keys][Buckets and keys]] prevents, and no gate noticed.
-12. *The contract publishes a path builder and no parser.* The shell
-    hand-builds a key for a batch input and hand-parses stored URIs by stripping
-    the prefix, because there is no inverse of =make_object_path=. Half of the
-    compute key builders have no caller at all.
-13. *The base URL is plumbed three ways.* The shell reads an environment
-    variable, one service is given a flag, and three services default to a port
-    the server does not use — while the component's own header documents a NATS
-    discovery subject that no C++ caller uses.
-14. *One consumer re-implements the component.* =ores.compute.wrapper= keeps its
-    own HTTP client and archiver, does not link the component, and its copy has
-    already diverged: its download opens the destination before it reads the
-    status, which is the defect this component fixed.
-15. *Two components link the component with no code reference,* which hides a
-    real consumer from any census built by grepping for calls.
-16. *The component's own tests speak a retired bucket name,* so the only bucket
-    names inside the library are fixtures the real server would refuse.
-17. *The client cannot delete, list or test existence.* The server implements
-    DELETE, HEAD is advertised in two headers and registered nowhere, and
-    =http_client= offers GET and PUT only. A raw surface needs operations the
-    client does not yet have.
-18. *A failed shell run exits 0.* Failure is signalled by a =✗= line and a
-    thread-local flag rather than by the exit code, so a script that checks
-    these verbs must read the output, not the status.
-19. *The shell half is otherwise ready.* A domain-free menu has a working
-    precedent in the same tree, the name =storage= is unused among the shell's
-    menus, and =ores.shell.application= already links the component, so the
-    shell change is small once the operations exist.
+*Closed since the snapshot*
+
+- The NATS interface exists beside HTTP, over the modelled operation set.
+- Storage is modelled, and its protocol, its shell command unit and its
+  TypeScript twin generate. Only the handler and the service stay hand-written.
+- The raw shell surface exists: =storage put= and =storage get= take a bucket, a
+  key and a local path, and =storage delete= and =storage list= complete the set.
+- Every route authenticates, and every caller that moves bytes presents a token.
+- HEAD, DELETE and listing exist on both interfaces, and the client speaks all
+  three.
+- The path prefix is declared once in =storage_paths.hpp=, and the routes compose
+  their patterns from it.
+- The server keeps no bucket allow-list, so none can fall behind its callers.
+- The consumers build their keys from the protocol: =compute=, =ore= and the
+  shell. =object_keys= publishes a parser as well as a builder.
+- =ores.compute.wrapper= links the component instead of keeping its own copy.
+- The component's own tests use protocol bucket names.
+
+*Still open*
+
+- *The client cannot ask with =HEAD=,* so existence stays a read. The protocol
+  declares no =exists= operation either.
+- *=ores.reporting= writes a bucket =ores.ore= does not read.* Its write path
+  keeps =report-data= and a two-segment key while the reader uses =ores=, so the
+  writer and the reader of one object disagree. The capture is
+  [[id:5A66C421-B55C-408D-9897-19E1290064F6][Reporting writes the report blobs to
+  a bucket ore does not read]].
+- *Key encoding and traversal rules are not stated once.* The server guards
+  traversal; the archive extractor does not.
+- *No test drives the real client against the real server.* The component's tests
+  use a loopback server, so the routes themselves are only exercised live.
+- *Some compute key builders have no caller,* which hides which keys the compute
+  protocol actually produces.
+- *The base URL is plumbed more than one way.* The shell now resolves it through
+  one helper, while the services take it as a flag and the component's own header
+  documents a discovery subject no C++ caller uses.
+- *Two components link the component with no code reference,* which hides a real
+  consumer from a census built by grepping for calls.
+- *A failed shell run exits 0.* Failure is signalled by a =✗= line and a
+  thread-local flag rather than by the exit code, so a script that checks these
+  verbs must read the output, not the status.
 
 * Open questions
 

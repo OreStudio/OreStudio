@@ -60,6 +60,13 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
+-- The layer runs in one transaction that declares itself a reseed. The seed
+-- scripts below state version zero, and the version gate refuses a create that
+-- meets a live row, so without this declaration a second run stops on the first
+-- row the first run wrote. Declaring the reseed makes the run replace it.
+begin;
+select ores_utility_allow_version_replace_fn();
+
 -- =============================================================================
 -- Data Governance Layer
 -- =============================================================================
@@ -355,3 +362,5 @@ union all
 select 'Workspace: Workspaces', count(*)
 from ores_workspaces_tbl
 order by entity;
+
+commit;

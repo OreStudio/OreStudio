@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: BF1538E1-74C1-41E3-A9E4-40E475BB0C7C
+:END:
+#+title: Task: Make the schema setup re-runnable
+#+description: Guard the notify triggers so a second setup_schema.sql run completes, then prove the seed helpers are idempotent with a clean second run.
+#+type: task
+#+level: s1
+#+filetags: :close_storage_leftovers:sprint_26:v0:
+#+owner: marco
+#+branch: feature/close-storage-leftovers
+#+pr: 2250
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A second =setup_schema.sql= run over a database the first run built completes.
+The create scripts stay re-runnable, and the populate phase converges to the same
+data instead of stopping on the first row it already wrote.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- =compass db recreate -y -k= completes, and a second =setup_schema.sql= run
+  over that database then completes with =ON_ERROR_STOP on=.
+- The gate that finds non-re-runnable DDL reports no problem over
+  =projects/ores.sql=.
+- The gate fails on a file that carries one.
+
+* Plan
+
+1. Sweep the create tree for DDL that cannot run twice, rather than fixing the
+   first statement the run stops on.
+2. Fix the one statement the sweep finds.
+3. Census the second run's remaining failures with =ON_ERROR_STOP off=, so the
+   whole class is visible at once.
+4. Fix the class at its source, then prove it with a clean recreate plus a
+   second run.
+
+* Notes
+
+- The sweep found one non-re-runnable statement: =mq_queues_create.sql= used
+  =create trigger= where every generated notify trigger says =create or
+  replace trigger=. It was the only one; every =create policy= already carried a
+  =drop policy if exists= guard, and the one =create type= carries a
+  =drop type if exists=.
+- The census is what changed the shape of the task. With the trigger fixed, the
+  run stopped 53 files later in the *populate* phase, all on one message: "Row
+  already exists: a create cannot replace it." The create scripts were never the
+  problem.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2250][#2250]] | [storage] Add the raw shell surface and make the schema setup re-runnable |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The schema setup is re-runnable, and the class is gated rather than the instance.
+
+*What was wrong.* Two classes, and only the first was the one the leftover named.
+
+- One hand-written file used =create trigger= instead of =create or replace
+  trigger=. It is the only statement of its kind in the tree.
+- The populate phase could not run twice at all. Its scripts state version zero,
+  and the version gate refuses a create that meets a live row, so 53 files
+  stopped on the first row the first run had written.
+
+*The fix.* The create side takes the OR REPLACE spelling the generator already
+uses. The populate side declares itself a reseed: =foundation_populate.sql= and
+=populate.sql= each run their body in one transaction that opens the replace
+gate with =ores_utility_allow_version_replace_fn()=. That is the mechanism the
+gate documents for exactly this caller, so one change closes all 53 files
+without touching any of them. A re-run therefore re-asserts each seeded row at a
+new version rather than skipping it: the data converges, and the version history
+records the re-assertion.
+
+*The gate.* =check_sql_hygiene.py= gained a third check: DDL that a second run
+cannot repeat. It reports a =create trigger= with no =or replace=, a =create
+policy= with no preceding =drop policy if exists=, a =create table= with no =if
+not exists=, and the same for views, functions, sequences, types and domains. It
+searches text the lexer has masked, so a statement inside a comment or a
+function body is not mistaken for one the server runs. It reports 0 problems
+over the 1538 files of =projects/ores.sql=, and it fails on a fixture that
+carries one of each defect.
+
+*Verified.* =compass db recreate -y -k= completed, and a second
+=setup_schema.sql= run over that database then completed with =ON_ERROR_STOP on=
+and no error lines. The populate summary reported the reseed.
+
+*Left over.* The raw shell surface and the reporting defect this work exposed
+are separate: the first is the story's other task, and the second is captured as
+[[id:5A66C421-B55C-408D-9897-19E1290064F6][Reporting writes the report blobs to
+a bucket ore does not read]].

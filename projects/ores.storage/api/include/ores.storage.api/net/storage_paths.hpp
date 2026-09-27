@@ -20,6 +20,7 @@
 #ifndef ORES_STORAGE_NET_STORAGE_PATHS_HPP
 #define ORES_STORAGE_NET_STORAGE_PATHS_HPP
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 
@@ -75,6 +76,67 @@ struct storage_paths {
         std::string url(base_url);
         url += make_object_path(bucket, key);
         return url;
+    }
+
+    /**
+     * @brief Constructs the URL path for a bucket itself, which lists its keys.
+     */
+    static std::string make_bucket_path(std::string_view bucket) {
+        std::string path(prefix);
+        path += '/';
+        path += bucket;
+        return path;
+    }
+
+    /**
+     * @brief Constructs a full URL for one page of a bucket's keys.
+     *
+     * Every parameter is stated, including an empty prefix, so one shape covers
+     * both a filtered and an unfiltered listing.
+     */
+    static std::string make_list_url(std::string_view base_url,
+                                     std::string_view bucket,
+                                     std::string_view key_prefix,
+                                     std::uint32_t offset,
+                                     std::uint32_t limit) {
+        std::string url(base_url);
+        url += make_bucket_path(bucket);
+        url += "?prefix=";
+        url += percent_encode_query(key_prefix);
+        url += "&offset=";
+        url += std::to_string(offset);
+        url += "&limit=";
+        url += std::to_string(limit);
+        return url;
+    }
+
+private:
+    /**
+     * @brief Escapes a query-string value.
+     *
+     * Reserved bytes and anything outside the unreserved set become a percent
+     * escape, so a prefix a caller typed reaches the server as the string it
+     * was rather than as extra query parameters. A slash is left alone: a key
+     * prefix is full of them.
+     */
+    static std::string percent_encode_query(std::string_view value) {
+        constexpr char hex[] = "0123456789ABCDEF";
+        std::string out;
+        out.reserve(value.size());
+        for (const char c : value) {
+            const auto uc = static_cast<unsigned char>(c);
+            const bool unreserved = (uc >= 'A' && uc <= 'Z') || (uc >= 'a' && uc <= 'z') ||
+                                    (uc >= '0' && uc <= '9') || uc == '-' || uc == '_' ||
+                                    uc == '.' || uc == '~' || uc == '/';
+            if (unreserved) {
+                out += c;
+                continue;
+            }
+            out += '%';
+            out += hex[uc >> 4];
+            out += hex[uc & 0x0F];
+        }
+        return out;
     }
 };
 

@@ -17,16 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.shell/app/commands/storage/storage_commands.hpp"
-#include "ores.shell/app/commands/storage/objects_operations_commands.hpp"
-#include "ores.shell/app/commands/storage/raw_storage_commands.hpp"
+#ifndef ORES_SHELL_APP_HTTP_BASE_URL_HPP
+#define ORES_SHELL_APP_HTTP_BASE_URL_HPP
 
-namespace ores::shell::app::commands {
+#include "ores.platform/environment/environment.hpp"
+#include <string>
 
-void storage_commands::register_commands(cli::Menu& root_menu,
-                                         ores::nats::service::nats_client& session) {
-    objects_operations_commands::register_commands(root_menu, session);
-    raw_storage_commands::register_commands(root_menu, session);
+namespace ores::shell::app {
+
+/**
+ * @brief Base URL of the ORE HTTP server, which is the door storage bytes pass
+ * through.
+ *
+ * The port is read from the environment the server was started from, so the
+ * shell and the server cannot disagree about where storage lives. Stated once
+ * because every byte-moving command needs it.
+ */
+inline std::string default_http_base_url() {
+    return "http://localhost:" +
+           ores::platform::environment::environment::get_value_or_default("ORES_HTTP_PORT", "20600");
 }
 
 }
+
+#endif

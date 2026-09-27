@@ -154,3 +154,47 @@ TEST_CASE("get_of_a_not_found_resource_leaves_an_existing_file_untouched", tags)
         std::runtime_error);
     CHECK(read_file(destination.path()) == original_content);
 }
+
+TEST_CASE("get_returning_body_returns_the_exact_server_body", tags) {
+    auto lg(make_logger(test_suite));
+
+    loopback_http_server server;
+    const std::string body = R"({"success":true,"objects":[{"key":"a","size_bytes":3}]})";
+    server.set_get_body(body);
+
+    const auto actual =
+        http_client::get_returning_body(server.base_url() + "/objects/listing", test_token);
+
+    BOOST_LOG_SEV(lg, info) << "Response body: " << actual;
+    CHECK(server.last_method() == "GET");
+    CHECK(server.last_target() == "/objects/listing");
+    CHECK(server.last_authorization() == test_authorization);
+    CHECK(actual == body);
+}
+
+TEST_CASE("delete_sends_the_verb_to_the_target_and_returns_the_server_body", tags) {
+    auto lg(make_logger(test_suite));
+
+    loopback_http_server server;
+    const std::string body = R"({"success":true,"removed":true})";
+    server.set_get_body(body);
+
+    const auto actual = http_client::del(server.base_url() + "/objects/doomed.bin", test_token);
+
+    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_method() << " " << server.last_target();
+    CHECK(server.last_method() == "DELETE");
+    CHECK(server.last_target() == "/objects/doomed.bin");
+    CHECK(server.last_authorization() == test_authorization);
+    CHECK(actual == body);
+}
+
+TEST_CASE("delete_of_a_rejected_call_throws", tags) {
+    auto lg(make_logger(test_suite));
+
+    loopback_http_server server;
+    server.set_status(403);
+
+    BOOST_LOG_SEV(lg, info) << "Expecting 403 to throw";
+    CHECK_THROWS_AS(http_client::del(server.base_url() + "/objects/denied.bin", test_token),
+                    std::runtime_error);
+}

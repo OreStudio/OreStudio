@@ -58,6 +58,24 @@ void set_authorization(Request& req, const std::string& bearer_token) {
     req.set(http::field::authorization, "Bearer " + bearer_token);
 }
 
+/// A stream already connected to the host and port a storage URL names.
+struct connected_stream {
+    explicit connected_stream(const std::string& host, const std::string& port)
+        : stream(ioc) {
+        tcp::resolver resolver(ioc);
+        stream.connect(resolver.resolve(host, port));
+    }
+
+    asio::io_context ioc;
+    beast::tcp_stream stream;
+};
+
+/// Closes the socket, ignoring the error a peer's own close produces.
+void shutdown(beast::tcp_stream& stream) {
+    beast::error_code ec;
+    stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+}
+
 }
 
 void http_client::get(const std::string& url,
@@ -65,19 +83,14 @@ void http_client::get(const std::string& url,
                       const std::string& bearer_token) {
     const auto parts = parse_url(url);
 
-    asio::io_context ioc;
-    tcp::resolver resolver(ioc);
-    beast::tcp_stream stream(ioc);
-
-    const auto results = resolver.resolve(parts.host, parts.port);
-    stream.connect(results);
+    connected_stream conn(parts.host, parts.port);
 
     http::request<http::empty_body> req{http::verb::get, parts.path, 11};
     req.set(http::field::host, parts.host);
     req.set(http::field::user_agent, "ores.storage/1.0");
     set_authorization(req, bearer_token);
 
-    http::write(stream, req);
+    http::write(conn.stream, req);
 
     // The status is read before the destination is opened, so a failed
     // download neither creates a file nor truncates one that is already
@@ -85,7 +98,7 @@ void http_client::get(const std::string& url,
     http::response_parser<http::file_body> parser;
     parser.body_limit(std::numeric_limits<std::uint64_t>::max());
     beast::flat_buffer buf;
-    http::read_header(stream, buf, parser);
+    http::read_header(conn.stream, buf, parser);
 
     if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)
         throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
@@ -99,10 +112,9 @@ void http_client::get(const std::string& url,
     if (open_ec)
         throw std::runtime_error("http_client: cannot open for writing: " + dest.string());
 
-    http::read(stream, buf, parser);
+    http::read(conn.stream, buf, parser);
 
-    beast::error_code ec;
-    stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+    shutdown(conn.stream);
 }
 
 void http_client::put(const std::string& url,
@@ -116,12 +128,7 @@ std::string http_client::put_returning_body(const std::string& url,
                                             const std::string& bearer_token) {
     const auto parts = parse_url(url);
 
-    asio::io_context ioc;
-    tcp::resolver resolver(ioc);
-    beast::tcp_stream stream(ioc);
-
-    const auto results = resolver.resolve(parts.host, parts.port);
-    stream.connect(results);
+    connected_stream conn(parts.host, parts.port);
 
     http::request<http::file_body> req{http::verb::put, parts.path, 11};
     req.set(http::field::host, parts.host);
@@ -134,18 +141,68 @@ std::string http_client::put_returning_body(const std::string& url,
         throw std::runtime_error("http_client: cannot open for reading: " + src.string());
     req.prepare_payload();
 
-    http::write(stream, req);
+    http::write(conn.stream, req);
 
     beast::flat_buffer buf;
     http::response<http::string_body> res;
-    http::read(stream, buf, res);
+    http::read(conn.stream, buf, res);
 
     if (res.result_int() < 200 || res.result_int() >= 300)
         throw std::runtime_error("http_client: PUT " + url + " returned HTTP " +
                                  std::to_string(res.result_int()));
 
-    beast::error_code ec;
-    stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+    shutdown(conn.stream);
+
+    return res.body();
+}
+
+std::string http_client::get_returning_body(const std::string& url,
+                                           const std::string& bearer_token) {
+    const auto parts = parse_url(url);
+
+    connected_stream conn(parts.host, parts.port);
+
+    http::request<http::empty_body> req{http::verb::get, parts.path, 11};
+    req.set(http::field::host, parts.host);
+    req.set(http::field::user_agent, "ores.storage/1.0");
+    set_authorization(req, bearer_token);
+
+    http::write(conn.stream, req);
+
+    beast::flat_buffer buf;
+    http::response<http::string_body> res;
+    http::read(conn.stream, buf, res);
+
+    if (res.result_int() < 200 || res.result_int() >= 300)
+        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
+                                 std::to_string(res.result_int()));
+
+    shutdown(conn.stream);
+
+    return res.body();
+}
+
+std::string http_client::del(const std::string& url, const std::string& bearer_token) {
+    const auto parts = parse_url(url);
+
+    connected_stream conn(parts.host, parts.port);
+
+    http::request<http::empty_body> req{http::verb::delete_, parts.path, 11};
+    req.set(http::field::host, parts.host);
+    req.set(http::field::user_agent, "ores.storage/1.0");
+    set_authorization(req, bearer_token);
+
+    http::write(conn.stream, req);
+
+    beast::flat_buffer buf;
+    http::response<http::string_body> res;
+    http::read(conn.stream, buf, res);
+
+    if (res.result_int() < 200 || res.result_int() >= 300)
+        throw std::runtime_error("http_client: DELETE " + url + " returned HTTP " +
+                                 std::to_string(res.result_int()));
+
+    shutdown(conn.stream);
 
     return res.body();
 }

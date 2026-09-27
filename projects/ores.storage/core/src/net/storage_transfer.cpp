@@ -113,6 +113,35 @@ void storage_transfer::download(const std::string& bucket,
                                << "ms";
 }
 
+std::string storage_transfer::remove(const std::string& bucket, const std::string& key) {
+    const auto url = storage_paths::make_object_url(http_base_url_, bucket, key);
+    BOOST_LOG_SEV(lg(), debug) << "Removing: bucket=" << bucket << " key=" << key;
+    const auto t0 = std::chrono::steady_clock::now();
+    const auto body = http_client::del(url, bearer_token_);
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
+    BOOST_LOG_SEV(lg(), debug) << "Remove complete: bucket=" << bucket << " key=" << key
+                               << " duration=" << ms << "ms";
+    return body;
+}
+
+std::string storage_transfer::list(const std::string& bucket,
+                                   const std::string& prefix,
+                                   std::uint32_t offset,
+                                   std::uint32_t limit) {
+    const auto url = storage_paths::make_list_url(http_base_url_, bucket, prefix, offset, limit);
+    BOOST_LOG_SEV(lg(), debug) << "Listing: bucket=" << bucket << " prefix=" << prefix
+                               << " offset=" << offset << " limit=" << limit;
+    const auto t0 = std::chrono::steady_clock::now();
+    const auto body = http_client::get_returning_body(url, bearer_token_);
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
+    BOOST_LOG_SEV(lg(), debug) << "List complete: bucket=" << bucket << " duration=" << ms << "ms";
+    return body;
+}
+
 void storage_transfer::pack_and_upload(const fs::path& src_dir,
                                        const std::string& bucket,
                                        const std::string& key) {

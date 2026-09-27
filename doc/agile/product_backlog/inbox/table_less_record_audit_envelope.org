@@ -2,14 +2,40 @@
 :ID: E4174872-13EA-4ECD-AD46-1E52C176701F
 :END:
 #+title: Give a table-less record a way to suppress the audit envelope
-#+description: The table-less-record profile cannot reach :no_audit_columns:, and no flag suppresses the audit recorded_at member, so a generated table-less record still carries a timestamp it has no use for.
+#+description: The table-less-record profile cannot reach :no_audit_columns:, and no flag suppresses the audit recorded_at member, so a generated table-less record still carries a timestamp it has no use for. Partly resolved: no_audit_columns is now a sql-namespace feature the profile states, which closed the blocker; the second half of the proposal was rejected.
 #+type: capture
 #+level: cross
 #+filetags: :codegen:variability:profile:
 #+created: 2026-09-22
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved, in two halves, and the second half was rejected
+
+The first proposal was adopted: =no_audit_columns= joined =_FEATURE_NAMESPACE=
+in =org_loader.py= with the =sql= namespace, the profile states it, and the
+four =ores.diff= payloads are no longer blocked by it. That landed in commit
+=5fc4cbf129=, which also reopened the file list this capture named.
+
+The second proposal — gate =recorded_at= on the entity having a
+transaction-time window, so that =iam.login_info=, =iam.permission=,
+=marketdata.market_fixing= and =marketdata.market_observation= keep the member
+while a table-less record does not — was **not** taken. =recorded_at= was
+moved behind ={{#has_audit_columns}}= instead, on the argument that it travels
+with the audit tail: it is only ever read with it, because
+=flat_history_version_source= requires a version type carrying an actor *and*
+the timestamp, and an entity without the actor has no use for the timestamp.
+The reasoning sits in the template comment at
+=projects/ores.codegen/library/templates/ores.cpp.domain.class_header.org=,
+which is where a reader will now meet it.
+
+So this capture's own example is settled the other way: the probe model no
+longer carries =recorded_at=. PR 3 then applied the consequence to
+=ores.marketdata=, the component this capture named as the one to get wrong
+last — see
+[[id:7CA3D478-597A-4175-A753-A88FFB463A4E][Bring the no-audit-columns
+entities over with the domain member gone]].
 
 * What
 

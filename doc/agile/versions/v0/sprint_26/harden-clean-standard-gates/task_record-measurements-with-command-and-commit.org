@@ -88,7 +88,7 @@ counts and suite sizes, and a verifier re-running them by hand is what has caugh
 every one so far. The route that would earn its place is a whitelist the gate
 scripts publish themselves, so that a command is runnable only if it declares
 itself read-only, and that is a larger piece of work than this capture asked for.
-It is recorded in the story rather than filed as a task of its own.
+It is recorded in the story's Decisions and not filed as a task of its own.
 
 * Notes
 
@@ -99,9 +99,13 @@ It is recorded in the story rather than filed as a task of its own.
   the whole diff.
 - The Measurements section is scaffolded into new tasks from
   =doc_task.org.mustache=; existing records keep the shape they were created with,
-  which is why this changes the template rather than the 128 records already in
-  sprint 26.
-- 6 of the 128 task records in sprint 26 reference an =evidence/= file, and 94
+  which is why this changes the template rather than the records already written.
+  Sprint 26 holds 148 task records, counted with
+  =git ls-tree -r --name-only HEAD doc/agile/versions/v0/sprint_26/ | grep -cE '/task[^/]*\.org$'=,
+  or 147 at the branch point with this task's own record set aside. An earlier draft
+  of this very task said 128, from an =ls= glob that misses a level; the verification
+  caught it, which is the failure this change exists to prevent.
+- 6 of the 147 task records in sprint 26 at the branch point reference an =evidence/= file, and 94
   such files exist beside 5 component tasks, so the practice predates this change
   and is a minority one. The section gives it a shape rather than inventing it;
   the preamble now says where the number goes and the evidence file names the raw

@@ -88,6 +88,16 @@ Three classes, one task each:
   every C++ file under a =tests/= directory, and fails on a file whose
   conditionals do not balance, because a guard left open deletes a case in
   whichever file includes it.
+- *A recorded number names its command and its head, and the verb that would
+  re-run them is not built.* A clean-up record's counts go stale on their own
+  when trunk moves, so the task template carries a Measurements table with a
+  command and a commit per row and the standard says a count alone is not
+  evidence. The capture also proposed a =compass task verify= that re-runs a
+  record's declared commands. It is not built: records legitimately carry
+  =check_component_drift.py --dry-run=, whose non-dry-run form regenerates a
+  component in place, and a verb that runs whatever a document declares would
+  eventually run a destructive one where nobody expects to be asked. The route
+  that would earn its place is a whitelist the gate scripts publish themselves.
 - *Where the rule cannot read a file, it fails instead of guessing.* A compiler
   takes a raw string literal's extent from the spliced text and its content from
   the source, while the gate removes every splice. A splice at a literal's

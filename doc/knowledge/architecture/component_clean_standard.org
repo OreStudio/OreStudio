@@ -152,7 +152,9 @@ produced it and the commit it was measured at. A count on its own is not
 evidence: this pass takes many rounds and trunk moves under a branch, so a
 consumer count, a gate's component count and a suite's size all change with no
 code changing. The =ores.service= record was failed twice by independent
-verifiers for exactly that, and both rounds confirmed the code was sound.
+verifiers, both times with stale counts among the findings; the first round also
+found two real defects in the code, so naming the head is not a substitute for
+the rest of the review.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|

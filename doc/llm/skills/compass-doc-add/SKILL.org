@@ -92,7 +92,7 @@ One row per document type. The scaffold command, where it lands, and the section
 | =skill= | =compass add skill= | =doc/llm/skills= | =When to use this skill=, =How to use this skill=, =Recipes=, =Reference= |
 | =sprint= | =compass add sprint= | =the current version= | =Mission=, =Status=, =Stories=, =Achievements=, =Captures=, =Health Review=, =Charts=, =Retrospective= |
 | =story= | =compass add story= | =the current sprint= | =Goal=, =Status=, =Acceptance=, =Tasks=, =Decisions=, =Out of scope= |
-| =task= | =compass add task= | =--parent-dir= | =Goal=, =Status=, =Acceptance=, =Plan=, =Notes=, =Test Scenarios=, =PRs=, =Review=, =Result= |
+| =task= | =compass add task= | =--parent-dir= | =Goal=, =Status=, =Acceptance=, =Plan=, =Measurements=, =Notes=, =Test Scenarios=, =PRs=, =Review=, =Result= |
 | =technical_space= | =compass add technical_space= | =--parent-dir= | =Summary=, =Facets=, =See also= |
 | =test_scenario= | =compass add test_scenario= | =--parent-dir= | =Before you start=, =Scenario Info=, =Steps=, =Results=, =Notes= |
 | =user_journey= | =compass add user_journey= | =--parent-dir= | =Goal=, =Actor and trigger=, =Steps=, =Screens and wireframes=, =Prototype=, =Entities composed=, =Operations and messages=, =What is missing=, =Related journeys=, =Related knowledge=, =See also= |

@@ -138,6 +138,8 @@ via its "Verifies task" field.
 | P3 | Acceptance 5 names the iam suite, which the Result never reports | task doc | Accepted | The Result now reports the full run, iam included |
 | P4 | Three =compass db recreate= blockers are outside the acceptance list | whole change | Accepted | Nothing can be verified without a database; each blocker is disclosed in Notes and in its own commit. The =:unique:= facet is general but inert for every model that does not state it |
 | P5 | Acceptance 2 says the service account is the fallback "only when no caller is present", but the engine also falls back on a token it cannot verify or one that names nobody | =workflow_actor.cpp= | Accepted as a recorded limitation | A token that does not verify cannot name anyone, and trusting unverified claims would be worse; the engine logs the rejection and the reason. The gap is real for iam, which forwards a short-lived impersonation token, so a start consumed after its TTL is attributed to the service account. Closing it means carrying the identity on the message or lengthening that token, which is the design change the original capture described |
+| R1 | The artefact index's new =unique= boolean has no unit test; it is exercised only through the regenerated table and the recreate | =org_loader.py= | Accepted | Eight cases added, covering true, false, absent, the columns kept verbatim and the keyword each renders. Writing them found the same gap in the lookup-entity loader, which is fixed in the same commit |
+| R2 | The provisioning comment names the handler's 1500-second wait beside a declared 1800, which reads as a mismatch | =ores.iam.tenant_provisioning_messages.org= | Accepted | Reworded to give both numbers and why they differ |
 
 * Result
 

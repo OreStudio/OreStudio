@@ -7,20 +7,13 @@ left to right direction
 package "ores.analytics" #EAF7EA {
   class "stress_shift_config" as stress__stress_shift_config {
       configuration_id : uuid
-      family_id : uuid
+      family : text
       object_code : text
       shift_type_id : uuid
       shift_scheme_id : uuid
       shift_size : numeric
       par_conversion : text
       is_relative : boolean
-  }
-  class "stress_shift_family_config" as stress__stress_shift_family_config {
-      id : uuid
-      code : text
-      name : text
-      xml_element : text
-      key_value_domain_id : uuid
   }
   class "stress_shift_key_entry_config" as stress__stress_shift_key_entry_config {
       shift_id : uuid
@@ -216,13 +209,6 @@ package "ores.analytics" #EAF7EA {
       label2 : text
       expiry : text
       term : text
-  }
-  class "sensitivity_shift_family_config" as sensitivity__sensitivity_shift_family_config {
-      id : uuid
-      code : text
-      name : text
-      xml_element : text
-      key_value_domain_id : uuid
   }
   class "sensitivity_shift_key_entry_config" as sensitivity__sensitivity_shift_key_entry_config {
       shift_id : uuid
@@ -580,16 +566,14 @@ stress__stress_stresstest_config *-- "0..1" stress__stress_shift_config : intrad
 stress__stress_stresstest_config *-- "0..1" stress__stress_shift_config : swaption_volatilities
 stress__stress_stresstest_config *-- "0..1" stress__stress_shift_config : yield_curves
 stress__stress_testing_config *-- "1..*" stress__stress_stresstest_config : stress_test
-stress_shift_config : "one relation for 10 families; family_id names the XML element"
+stress_shift_config : "one relation for 10 families. family holds the code: stressdiscountcurve, stressindexcurve, stressyieldcurve, stresssurvivalprobability, stressfxvolatility, stressswaptionvolatility, stresscapfloorvolatility, stresscommoditycurve, stressintradaypowercurve, stresscommodityvolatility"
 stress_shift_tenor_config : "tenor_id references the tenor entity; ORE writes these as a comma-separated string"
-stress_shift_family_config : "stressdiscountcurve → <discount_curve>, stressindexcurve → <index_curve>, stressyieldcurve → <yield_curve>, stresssurvivalprobability → <stresssurvivalprobability>, stressfxvolatility → <fx_volatility>, stressswaptionvolatility → <swaption_volatility>, stresscapfloorvolatility → <cap_floor_volatility>, stresscommoditycurve → <commodity_curve>, stressintradaypowercurve → <intraday_power_curve>, stresscommodityvolatility → <commodity_volatility>"
 simm_historical_volatility_ratio_config : "one relation for 3 <historical_volatility_ratio> rows"
 simm_inter_bucket_config : "one relation for 4 <inter_bucket> rows"
 simm_risk_weights_config : "one relation for 6 <risk_weights> rows"
 simm_threshold_config : "one relation for 2 <threshold> rows"
-sensitivity_shift_config : "one relation for 26 families; family_id names the XML element"
+sensitivity_shift_config : "one relation for 26 families. family holds the code: discountcurve, indexcurve, yieldcurve, fxspot, fxvolatility, swaptionvolatility, yieldvolatility, capfloorvolatility, cdsvolatility, creditcurve, equityspot, equityvolatility, zeroinflationindexcurve, yyinflationindexcurve, cpicapfloorvolatility, yycapfloorvolatility, basecorrelation, securityspread, dividendyield, commodityCurve, intradaypowercurve, commodityvolatility, correlationcurve, sensiBondFutureVolatility, survivalprobability, recoveryrate"
 sensitivity_shift_tenor_config : "tenor_id references the tenor entity; ORE writes these as a comma-separated string"
-sensitivity_shift_family_config : "discountcurve → <discount_curve>, indexcurve → <index_curve>, yieldcurve → <yield_curve>, fxspot → <fx_spot>, fxvolatility → <fx_volatility>, swaptionvolatility → <swaption_volatility>, yieldvolatility → <yield_volatility>, capfloorvolatility → <cap_floor_volatility>, cdsvolatility → <cds_volatility>, creditcurve → <credit_curve>, equityspot → <equity_spot>, equityvolatility → <equity_volatility>, zeroinflationindexcurve → <zero_inflation_index_curve>, yyinflationindexcurve → <yy_inflation_index_curve>, cpicapfloorvolatility → <cpi_cap_floor_volatility>, yycapfloorvolatility → <yy_cap_floor_volatility>, basecorrelation → <base_correlation>, securityspread → <security_spread>, dividendyield → <dividend_yield_curve>, commodityCurve → <commodity_curve>, intradaypowercurve → <intraday_power_curve>, commodityvolatility → <commodity_volatility>, correlationcurve → <correlation>, sensiBondFutureVolatility → <bond_future_volatility>, survivalprobability → <survivalprobability>, recoveryrate → <recoveryrate>"
 sensitivity_shift_config : "one relation for 2 <shift> rows"
 sensitivity_shifts_config : "one relation for 2 <shifts> rows"
 @enduml

@@ -84,6 +84,64 @@ SHIFT_ROWS = {
                         ("shift_scheme_id", "uuid")],
 }
 
+# Tidy names: every analytics struct carries the configuration type it belongs to
+# and reads as configuration rather than as a schema class. One namespace, so the
+# prefix is what keeps them apart.
+TYPE_PREFIX = {
+    "stress": "stress",
+    "simmcalibration": "simm",
+    "sensitivity": "sensitivity",
+    "simulation": "simulation",
+    "creditsimulation": "credit_simulation",
+    "historicalreturnconfig": "historical_return",
+    "baselTrafficLightconfig": "basel_traffic_light",
+}
+ROOT_NAME = {
+    "stress": "stress_testing_config",
+    "simmcalibration": "simm_calibration_config",
+    "sensitivity": "sensitivity_config",
+    "simulation": "simulation_config",
+    "creditsimulation": "credit_simulation_config",
+    "historicalreturnconfig": "historical_return_config",
+    "baselTrafficLightconfig": "basel_traffic_light_config",
+}
+ROOTS = {
+    "stress": "stresstesting",
+    "simmcalibration": "SIMMCalibrationData",
+    "sensitivity": "sensitivityanalysis",
+    "simulation": "simulation",
+    "creditsimulation": "creditsimulation",
+    "historicalreturnconfig": "ReturnConfiguration",
+    "baselTrafficLightconfig": "BaselTrafficLightConfig",
+}
+
+
+def tidy(doc: str, name: str) -> str:
+    """`{type}_{what it models}_config`, in one namespace."""
+    if name == ROOTS.get(doc):
+        return ROOT_NAME[doc]
+    sn = snake(name)
+    for drop in ("simmcalibration_", "stress_", "sensitivity_", "simulation_",
+                 "creditsimulation_", "historicalreturnconfig_",
+                 "baseltrafficlightconfig_"):
+        if sn.startswith(drop):
+            sn = sn[len(drop):]
+            break
+    sn = re.sub(r"_+", "_", sn).strip("_")
+    return f"{TYPE_PREFIX[doc]}_{sn}_config" if sn else ROOT_NAME[doc]
+
+
+def tidy_all(structs, edges, notes):
+    rename = {d: {n: tidy(d, n) for n in names} for d, names in structs.items()}
+    for d, names in structs.items():
+        structs[d] = {rename[d][n]: m for n, m in names.items()}
+    edges = [(d, rename[d][s], rename[d][t], lbl, lo, hi) for d, s, t, lbl, lo, hi in edges]
+    notes = [re.sub(r"^([a-zA-Z_]+)", lambda m: rename.get(
+        next((d for d in rename if m.group(1) in rename[d]), ""), {}).get(m.group(1), m.group(1)),
+        n) for n in notes]
+    return structs, edges, notes
+
+
 REPORTING = '''package "ores.reporting" #E8F4FF {
   class report_definition {
     id : uuid
@@ -236,21 +294,16 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
             merged[family] = f"{doc}_shift"
         if rows:
             structs.setdefault(doc, {})[f"{doc}_shift"] = (
-                [("configuration_id", "uuid"), ("family_id", "uuid"),
+                [("configuration_id", "uuid"), ("family", "text"),
                  ("object_code", "text")] + SHIFT_BLOCK)
-            structs[doc][f"{doc}_shift_family"] = [
-                ("id", "uuid"), ("code", "text"), ("name", "text"),
-                ("xml_element", "text"), ("key_value_domain_id", "uuid")]
             for suffix, cols in SHIFT_ROWS.items():
                 structs[doc][f"{doc}_{suffix}"] = cols
                 edges.append((doc, f"{doc}_shift", f"{doc}_{suffix}", suffix, "0", "unbounded"))
-            notes.append(f'{doc}_shift : "one relation for {len(rows)} families; '
-                         f'family_id names the XML element"')
-            notes.append(f'{doc}_shift_tenor : "tenor_id references the tenor entity; '
-                         f'ORE writes these as a comma-separated string"')
-            notes.append(f'{doc}_shift_family : "'
-                         + ", ".join(f"{f} → <{e}>" for f, e in rows) + '"')
-
+            notes.append(f'{doc}_shift_config : "one relation for {len(rows)} families. '
+                         f'family holds the code: ' + ", ".join(f for f, _e in rows) + '"')
+            notes.append(f'{doc}_shift_tenor_config : "tenor_id references the tenor '
+                         f'entity; ORE writes these as a comma-separated string"')
+            
         # Rows a parent reaches by one element name are one relation, provided
         # their shapes agree.
         by_element: dict[str, list[str]] = {}
@@ -297,19 +350,18 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
 
 def emit(docs: dict, title: str, include_reporting: bool) -> str:
     structs, edges, notes = build(docs, keep_sets())
+    structs, edges, notes = tidy_all(structs, edges, notes)
     out = ["@startuml", f"title {title}", "hide empty members",
            "skinparam classAttributeIconSize 0", "left to right direction", ""]
     if include_reporting:
         out += [REPORTING, ""]
     out.append('package "ores.analytics" #EAF7EA {')
     for doc in ANALYTICS_DOCUMENTS:
-        out.append(f'  package "{doc}" {{')
         for name in sorted(structs.get(doc, {})):
-            out.append(f'    class "{name}" as {doc}__{name} {{')
+            out.append(f'  class "{name}" as {doc}__{name} {{')
             for member, typ in structs[doc][name]:
                 out.append(f"      {member} : {typ}")
-            out.append("    }")
-        out.append("  }")
+            out.append("  }")
     out.append("}")
     rels = list(REPORTING_RELS) if include_reporting else []
     for doc, src, tgt, label, low, high in edges:

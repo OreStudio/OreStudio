@@ -84,10 +84,11 @@ The seven documents describe 202 classes. They are normalised rather than drawn
 one per class, because two relations with the same shape are one relation:
 
 - *Shift families are one relation.* Sensitivity's twenty-six and stress's ten
-  become =sensitivity_shift= and =stress_shift=, each keyed by a family row. The
-  family row names the XML element the family serialises to — =stressdiscountcurve=
-  is =<discount_curve>=, =stressfxvolatility= is =<fx_volatility>= — so the
-  element is data, not a table name. The grids ORE writes as comma-separated
+  become =sensitivity_shift_config= and =stress_shift_config=. The family is a
+  code column on the shift, and the valid codes are listed in a note on the
+  diagram rather than in a lookup table: a table whose only content is the names
+  of curve families is representation, and the mapper knows which ORE element
+  each one serialises to. The grids ORE writes as comma-separated
   strings — =Shifts=, =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, and the
   =Shifts/Shift= values — are rows: =<doc>_shift_tenor= holds one row per tenor
   and references the tenor entity, =<doc>_shift_strike= one row per strike, and

@@ -151,6 +151,33 @@ That leaves the composition and entry-point files, whose test is the fleet
 starting and whose reason is recorded. The item asks for a test *or* a recorded
 reason for every source file, so it is satisfied.
 
+** The verification round, on the current tree
+
+The first pass verified too little, and the gap is worth recording because it
+looks like success. The build was current, but the fleet was not: the reporting
+service had started at 10:47 and its binary was rebuilt at 11:40, so the running
+process was the previous tree's. Only the four reporting suites had been run,
+the database was 59 SQL files behind, and V04 had been replayed against that
+fleet. Re-done, on the current tree:
+
+| Check | Result |
+|-------+--------|
+| =compass db recreate -y -k= | exit 0; the reporting fixture seeds 5 definitions, a party and a book |
+| =compass services restart= | 25 of 25 running, none stopped or missing. The storage service had been failing on a password for its own database role, because the database predated that role; the recreate fixed it |
+| =cmake --build --preset linux-clang-debug-make= | exit 0, whole tree |
+| =ctest -R reporting= | 4 of 4 |
+| codegen suite (=pytest projects/ores.codegen/tests=) | 824 passed |
+| full =ctest --preset linux-clang-debug-make= | 81 of 86. The five failures are =ores.dq.api.tests=, =ores.dq.core.tests=, =ores.shell.api.tests=, =ores.refdata.core.tests= and =ores.marketdata.core.tests= |
+| V04 replay | unchanged: 35 answered, 16 aborted, the same 16 |
+
+The five failures are not this component's and not this branch's: the branch
+changes thirteen files, all under =projects/ores.reporting/= or =doc/agile/=,
+and none under ores.dq, ores.refdata, ores.marketdata or ores.platform. They
+are captured as [[id:6C0DA430-B5BC-447C-8BBC-72B4DBDE9420][Five test binaries fail on main, and four of them share one cause]].
+
+So V01, V02 and V03 hold for this component, V02's repo-wide half does not, and
+V04's result is reproducible rather than an artifact of a stale fleet.
+
 * Plan
 
 The parent task claimed "a recorded result for all 49 items". It does not

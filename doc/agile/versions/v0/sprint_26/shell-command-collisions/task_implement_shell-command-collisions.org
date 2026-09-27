@@ -56,8 +56,11 @@ Five commits, each verified before the next.
 3. A gate, =check_shell_menu_collisions.py=, plus a CI job that runs its
    self-test before the check.
 4. Fix the provisioning smoke recipe, whose =tenants add= has been aborting.
-5. Route the twenty drifted refdata and synthetic units through the seam without
-   absorbing their model drift.
+5. Stop there, and record what that leaves. Twenty generated units in refdata and
+   synthetic carry their components' own pending model drift, so routing them
+   through the seam would either absorb another component's change or leave a
+   hand-edited generated file, which the codegen sweep refuses. They are left as
+   they are and the gate covers them instead.
 
 * Notes
 
@@ -128,7 +131,18 @@ when the arity did not match; they are one command now. And =tenants add= in
 five-argument form and the type =organisation=, which no tenant type seed
 defines.
 
-What this does not close. The runtime check reads a menu's name through
+What this does not close. Twenty generated units, sixteen in refdata and four in
+synthetic, still insert into the root directly, so they do not claim their names.
+They carry their components' own pending model drift -- a missing party_id
+positional and stale usage text -- and the codegen sweep refuses a generated file
+this branch touches that does not match its template. Routing them through the
+seam therefore meant either absorbing another component's change, which would
+alter those commands' arity without its owner's verification, or hand-editing
+generated output, which the sweep exists to prevent. They are covered by the gate
+until their component's next regeneration, which brings the seam with it. Every
+other generated unit claims its name.
+
+The runtime check reads a menu's name through
 =Menu::Prompt()=, because =cli::Command= keeps the name protected; the gate
 rejects any =cli::Menu= construction that passes a separate prompt, which is what
 holds the two together. The gate reads nested menu constructions as if they were

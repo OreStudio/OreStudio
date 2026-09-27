@@ -326,66 +326,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace eventing #F2F2F2 {
-            class catalog_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +names : vector<string>
-                +tenant_id : string
-            }
-            class change_reason_category_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +category_codes : vector<string>
-                +tenant_id : string
-            }
-            class change_reason_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +reason_codes : vector<string>
-                +tenant_id : string
-            }
-            class coding_scheme_authority_type_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
-            class coding_scheme_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
-            class data_domain_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +names : vector<string>
-                +tenant_id : string
-            }
-            class dataset_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class methodology_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +ids : vector<string>
-                +tenant_id : string
-            }
-            class nature_dimension_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
-            class origin_dimension_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
-            class subject_area_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +keys : vector<string>
-                +tenant_id : string
-            }
-            class treatment_dimension_changed_event <<struct>> {
-                +timestamp : chrono::system_clock::time_point
-                +codes : vector<string>
-                +tenant_id : string
-            }
         }
         namespace messaging #F2F2F2 {
             class get_badge_definitions_request <<struct>> {

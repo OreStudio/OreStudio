@@ -78,6 +78,7 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | nzonia |
 | shibor |
 | tiie |
+| ftiie |
 | taibor |
 
 * Fields

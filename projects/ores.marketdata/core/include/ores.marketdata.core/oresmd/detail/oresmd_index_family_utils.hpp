@@ -33,7 +33,7 @@ namespace ores::marketdata::core::detail {
  * Mirrors the tenor rule of the CHECK constraint on
  * ores_synthetic_ir_curve_generation_configs_tbl
  * (synthetic_ir_curve_generation_configs_create.sql): libor and euribor are the only term families
- * (tenor <> ''); all 20 others are overnight-style (tenor = '').
+ * (tenor <> ''); all 21 others are overnight-style (tenor = '').
  */
 inline bool is_overnight(domain::index_family f) {
     return f != domain::index_family::libor && f != domain::index_family::euribor;

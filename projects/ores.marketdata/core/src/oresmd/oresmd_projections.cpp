@@ -498,12 +498,13 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             // currency and the spot lag, which is the only difference between
             // the two forms ORE writes: ccy/settle/tenor/maturity and
             // ccy/index/settle/tenor/maturity.
-            if (id.index)
+            const auto index = index_token(id);
+            if (!index.empty())
                 return std::format("{}/{}/{}/{}/{}/{}/{}",
                                    ore_type(qt),
                                    ore_metric(m),
                                    id.ccy,
-                                   index_token(id),
+                                   index,
                                    settle,
                                    t,
                                    point);
@@ -1166,11 +1167,17 @@ std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string
     id.metric = *m;
     const auto named_index = parts.size() == 7;
     if (named_index) {
-        const auto idx = parse_index(parts[3]);
-        if (!idx)
-            return std::nullopt;
-        id.index = *idx;
-        record_index_spelling(id, parts[3]);
+        if (const auto idx = parse_index(parts[3])) {
+            id.index = *idx;
+            record_index_spelling(id, parts[3]);
+        } else {
+            // A token that names no benchmark family: the corpus writes
+            // NoDiscount in the index slot, which marks a curve rather than a
+            // rate. There is nothing to classify it with, so the token is
+            // carried whole and emitted whole, the way a basis swap's named
+            // basis is.
+            id.index_spelling = parts[3];
+        }
     }
     const auto settle = named_index ? parts[4] : parts[3];
     if (settle != "2D")

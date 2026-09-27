@@ -93,23 +93,16 @@ mismatch compare_matrices(const creditsimulation& original,
         const auto original_grid = parse_credit_simulation_grid(l.Data);
         const auto exported_grid = parse_credit_simulation_grid(r.Data);
 
-        // The binding drops the document's own comment on load, so the
-        // exported comment is compared against the fixed scale instead.
-        if (exported_grid.labels.size() != credit_rating_scale.size())
+        // The exported document is expected to carry no state comment. The
+        // rating names are held by the type, not by the document, so the mapper
+        // does not write ORE's comment back and the round trip differs from the
+        // original by that comment alone. Asserting the absence here records
+        // the decision instead of hiding it behind a comparison that ignores it.
+        if (exported_grid.labels.size() != 0)
             return {false,
                     describe(path,
-                             "matrix '" + std::string(l.Name) + "' exported label count differs: " +
-                                 std::to_string(exported_grid.labels.size()) + ", expected " +
-                                 std::to_string(credit_rating_scale.size()))};
-        for (std::size_t label = 0; label < credit_rating_scale.size(); ++label) {
-            if (exported_grid.labels[label] != credit_rating_scale[label])
-                return {false,
-                        describe(path,
-                                 "matrix '" + std::string(l.Name) + "' state label " +
-                                     std::to_string(label) + " differs: expected '" +
-                                     std::string(credit_rating_scale[label]) + "', exported '" +
-                                     exported_grid.labels[label] + "'")};
-        }
+                             "matrix '" + std::string(l.Name) + "' exported a state comment of " +
+                                 std::to_string(exported_grid.labels.size()) + " labels, expected none")};
 
         if (original_grid.values.size() != exported_grid.values.size())
             return {false,

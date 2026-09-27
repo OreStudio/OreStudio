@@ -117,11 +117,9 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     const creditsimulation rebuilt = credit_simulation_mapper::reverse(from_database);
     const std::string exported_xml = ores::ore::domain::save_data(rebuilt);
 
-    bool carries_all_labels = true;
-    for (const auto& label : credit_rating_scale)
-        carries_all_labels = carries_all_labels &&
-            exported_xml.find(std::string(label)) != std::string::npos;
-    CHECK(carries_all_labels);
+    // No state comment is written: the ratings come from the type, so the
+    // exported document differs from the original by that comment alone.
+    CHECK(exported_xml.find("<!--") == std::string::npos);
 
     creditsimulation exported;
     ores::ore::domain::load_data(exported_xml, exported);

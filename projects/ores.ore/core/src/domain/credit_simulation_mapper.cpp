@@ -193,7 +193,6 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
         credit_simulation_grid grid;
         grid.values.assign(side * side, 0.0);
         for (std::size_t r = 0; r < side; ++r) {
-            grid.labels.push_back(std::string(credit_rating_scale[r]));
             const double probabilities[rating_count] = {
                 rows[r].p_aaa, rows[r].p_aa,  rows[r].p_a, rows[r].p_baa,
                 rows[r].p_ba,  rows[r].p_b,   rows[r].p_c, rows[r].p_default};

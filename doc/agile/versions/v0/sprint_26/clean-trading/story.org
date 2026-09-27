@@ -488,7 +488,12 @@ row is updated as each PR lands.
   correlations stay =double=, because they are not money. The type lands
   before the columns move, and the generator must first separate an
   entity's type from its domain type, which is the same seam the plain
-  date column needs.
+  date column needs. The wire carries a decimal as its exact text, read
+  and written by a custom =rfl::Reflector= with =ReflType = std::string=,
+  the way dates and uuids already travel. The repository entity keeps a
+  string member, because sqlgen binds a fixed set of types and
+  =boost::multiprecision= is not one of them; the mapper parses and
+  formats at that boundary.
 - *D12, collections.* The trading domain model carries no JSON
   collection. A collection is a child table with a foreign key to its
   parent. The four columns that still hold JSON -- =call_dates_json= on

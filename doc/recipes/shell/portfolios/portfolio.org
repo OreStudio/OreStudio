@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 57D582E9-81E9-5B4C-B129-959A9F584EB6
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the portfolios commands from the shell?
 #+description: Every command the portfolios submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: C65D7B78-A0C0-5E88-98E6-6CCA36FE8459
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the party_id_schemes commands from the shell?
 #+description: Every command the party_id_schemes submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

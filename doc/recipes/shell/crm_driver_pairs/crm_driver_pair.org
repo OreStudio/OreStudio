@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: F78E4F94-8167-534C-B580-B9B8F641794D
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the crm_driver_pairs commands from the shell?
 #+description: Every command the crm_driver_pairs submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

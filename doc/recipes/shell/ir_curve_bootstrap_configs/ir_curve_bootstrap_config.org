@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 64C11727-78BE-5C81-A8AA-73F697FADB33
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the ir_curve_bootstrap_configs commands from the shell?
 #+description: Every command the ir_curve_bootstrap_configs submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

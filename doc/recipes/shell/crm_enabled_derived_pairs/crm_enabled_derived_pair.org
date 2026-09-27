@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 7A3B7648-6664-5E45-A03B-BA62076DFC1A
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the crm_enabled_derived_pairs commands from the shell?
 #+description: Every command the crm_enabled_derived_pairs submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

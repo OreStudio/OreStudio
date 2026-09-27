@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: C1E4FA85-067C-54CE-ACDF-9FE9EA8492F8
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the party_contact_informations commands from the shell?
 #+description: Every command the party_contact_informations submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

@@ -37,8 +37,11 @@ Each item has an identifier, the kind of package it applies to, and the
 evidence that proves it. The kinds are:
 
 - *All*: every TypeScript package in the tree.
-- *Shared*: a package both the browser and the server import, which is
-  =@ores/wire-protocol= and =@ores/contracts=.
+- *Shared*: a package that carries no Node dependency, so both the
+  browser and the server may parse it. That is =@ores/wire-protocol=,
+  through its =/browser= entry, and =@ores/contracts=. Only the BFF
+  imports =@ores/contracts= today, and closing that gap is one of the
+  defects the audit below records.
 - *Browser*: code the browser runs, in =packages/web=.
 - *Server*: code Node runs, in =packages/bff=.
 - *Generated*: a file =ores.codegen= writes into
@@ -179,7 +182,7 @@ value, and there is no second representation downstream.
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
 |-------+------------+------+----------|
-| TS-H01 | All | Formatting is mechanical and gated: the configuration is committed, the whole component passes the check, and the check runs on a pull request. | =prettier --check .=; the CI workflow |
+| TS-H01 | All | Formatting is mechanical and gated: the configuration is committed, the whole component passes the check, and the check runs on a pull request. | =prettier --check .= for the check itself, and the CI workflow once it runs that check. It does not today, so this item needs a configuration, a formatted tree and a workflow step, in that order. |
 | TS-H02 | All | No dead code, no commented-out code, no unused variable or export. | =@typescript-eslint/no-unused-vars=; the census; review |
 | TS-H03 | All | Comments follow the project comment rules: sparse, above the code, no edit history, and no narration of what the next line already says. | A comment review pass |
 | TS-H04 | All | A file that exports one thing is named for it. A boolean reads as a predicate. A type is a noun. | =eslint-plugin-check-file= for the file name; review for the rest |
@@ -196,10 +199,10 @@ value, and there is no second representation downstream.
 | TS-V02 | All | Every package's tests pass. Record the file count and the case count. | =npm test= |
 | TS-V03 | All | The component builds: the browser bundle and the server. | =npm run build= |
 | TS-V04 | All | The format check passes over the whole component, generated files included or excluded by decision rather than by accident. | =npm run format:check= |
-| TS-V05 | All | The lint gate is green: a flat ESLint configuration over the type-checked rule set, with the framework overrides the packages need. | =npm run lint= |
+| TS-V05 | All | The lint gate is green: a flat ESLint configuration over the type-checked rule set, with the framework overrides the packages need. | =npm run lint=. The script does not exist yet, and neither does the configuration, so this item is unproved until both are added; the audit below records that. |
 | TS-V06 | All | The declared engine floor is not below any installed tool's floor. | =node -p= against each tool's =package.json= |
 | TS-V07 | Browser | The client runs against the live fleet: sign in, and the journey under test completes. A mock or a unit test does not prove this. | The verification script against a running stack |
-| TS-V08 | All | Every gate above runs on a pull request that touches the component. | The TypeScript workflow's paths and steps |
+| TS-V08 | All | Every gate above runs on a pull request that touches the component. | The TypeScript workflow runs =typecheck= and =test= on those paths today; =build=, =format:check=, =lint=, coverage and the live-fleet check must be added to it, so this item is met when that workflow names them all. |
 
 ** What the first audit found
 

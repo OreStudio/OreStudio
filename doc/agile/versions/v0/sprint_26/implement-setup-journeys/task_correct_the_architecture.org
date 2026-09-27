@@ -30,7 +30,7 @@ implementation step, because that step decides the journey runtime and
 the step-call contract, and it cannot decide them against documents that
 still contradict each other.
 
-The five decisions being recorded were signed off on 2026-09-27 and are
+The six decisions being recorded were signed off on 2026-09-27 and are
 written out in the audit's =* Decisions signed off= section.
 
 * Status

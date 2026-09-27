@@ -96,13 +96,16 @@ server-side object; its progress is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665]
 and no journey entity is added.
 
 [[id:60088AA3-832B-45F1-91C2-4723C75554EE][ores.web]],
-[[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]],
 [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][the superseded entity specification]]
 and [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]] are
 also accurate, and the superseded specification records its own
 retirement. [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] is
 accurate and its consumer is genuinely absent: the runtime should read
 it before it decides how a journey follows a workflow.
+[[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]]
+is accurate about the shell, the session and the routes it lists, and it
+repeats the =@ores/contracts= error in one row of its package table, so
+it is not counted as clean: see the table below.
 
 ** Seven findings change what the story does next
 
@@ -147,8 +150,9 @@ it before it decides how a journey follows a workflow.
    =packages/contracts/src/index.ts= both claim the browser and the BFF
    share those schemas. They do not.
 5. *Two HTTP surfaces exist and nothing relates them.* =ores.http= is
-   the platform's REST gateway, with generated per-component routes and
-   99 endpoints. It is never mentioned in any =ores.web= document, yet
+   the platform's REST gateway, with routes generated per component from
+   the models that opt in. It is never mentioned in any =ores.web=
+   document, yet
    the site description carries =httpBaseUrl=
    (=packages/contracts/src/site.ts:56=) and the wire client carries
    =discoverHttpBaseUrl()= (=packages/wire-protocol/src/client.ts:430=),
@@ -197,6 +201,7 @@ it before it decides how a journey follows a workflow.
 | [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | Nothing discards a half-provisioned tenant | =iam.v1.system.reset-tenant= exists |
 | [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] and [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey type]] | "The list, detail and history primitives still exist" | Commit =e47043269f= deleted them with the generated screens |
 | =projects/ores.web/README.md= and =packages/contracts/src/index.ts= | The BFF and the browser both parse the =@ores/contracts= schemas | The browser does not depend on the package |
+| [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]], its package table | =@ores/contracts= is "the HTTP shapes that the BFF and the browser both parse" | The same falsification as the row above, in a third document. The package is the BFF's today; the browser parses with =@ores/wire-protocol/browser=. The intended split is real, the tense is wrong. |
 | =projects/ores.web/README.md= | =compass codegen entity generate <entity> --address ores.ts.protocol= | No such subcommand |
 | The three setup journeys, =* Prototype= | =Source :: projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= | The path does not exist on =main=; it survives only on the prototype branches |
 | =doc/plans/2026-03-30-three-level-provisioning-and-workflow-service.md= | Login-triggered tenant and party wizards | Superseded by the accepted contract, and not marked as such |
@@ -207,7 +212,7 @@ it before it decides how a journey follows a workflow.
 | [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] | Its V03 names [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][the superseded entity specification]] as a binding screen rule | That specification is void, and the screen rules a journey follows are the ones it needs to state itself |
 | [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] | =ores.qt= is listed as a client that runs the same server-side operation | =ores.qt= is retired and frozen as reference; the clients are =ores.web= and =ores.shell= |
 | =doc/knowledge/ui/ux_language.org= | Every entity presents the same three windows, and badges resolve through =BadgeCache= | All of it is the removed Qt client; [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] says one screen, not one per entity |
-| =doc/knowledge/ui/icon_reference.org=, =icon_guidelines.org= | 78 icon names; the asset paths "point into the desktop client's =resources/icons/=" and are "not a live path list" | 68 files sit in =packages/web/src/assets/icons/=, and every =proj:= path resolves there |
+| =projects/ores.web/modeling/icon_reference.org=, =doc/knowledge/ui/icon_guidelines.org= | 78 icon names; the asset paths "point into the desktop client's =resources/icons/=" and are "not a live path list" | 68 files sit in =packages/web/src/assets/icons/=, and every =proj:= path resolves there |
 | =doc/knowledge/journeys/entry/journey_sign_up.org= | =POST /api/v1/auth/signup= | The HTTP-routes story records that path as 404ing |
 | =doc/llm/skills/pstack.org=, =skill_verification.org= | "No TypeScript here"; "When a client UI exists (none today)" | =ores.web= is TypeScript and it is the client being built |
 | [[id:60088AA3-832B-45F1-91C2-4723C75554EE][ores.web]] | Depends on TanStack Table and Playwright; follows [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] | Neither is a dependency of the workspace, and that document describes C++ components with CMake targets, which this component has none of |
@@ -274,10 +279,11 @@ it before it decides how a journey follows a workflow.
 2. *Correct the superseded catalogue task in place.* Its items 5 and 6
    must be marked superseded rather than silently ignored, because the
    setup and programme stories both cite that document as a target.
-3. *Correct [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].* Progress
-   streaming exists and retry does not; the document has it the other way
-   round. It is also the right owner for the step vocabulary and for the
-   definition of a human step.
+3. *Correct [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].* The
+   progress *reads* exist, the progress *event payload* does not reach the
+   browser, and retry does not exist at all; the document has the first and
+   the last the other way round. It is also the right owner for the step
+   vocabulary and for the definition of a human step.
 4. *Correct the three setup journeys' `* What is missing` sections, their
    operation tables and their prototype source paths.* The extraction
    story owns those documents, so this is either a task on that story or

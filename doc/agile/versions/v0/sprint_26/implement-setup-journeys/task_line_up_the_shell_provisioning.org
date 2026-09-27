@@ -114,10 +114,16 @@ description of what those wizards did. That makes them evidence as well as
 code: the inventory in step 1 is the record of the wizard behaviour the
 journeys replace, and it should not be deleted with the orchestration.
 
-The Acme script's variant in the same folder,
-=tenant_provisioning-provision-acme-tenant.ores=, drives =--source acme=,
-which is the synchronous =provision-acme= handler. It retires with that
-subject, and its recipe is one of the six.
+The Acme script in the same folder is the sequence, and it is one of the
+six recipes under =doc/recipes/shell/provisioning/=. Two other things in
+the tree drive provisioning, and each retires its own way. The porcelain
+=provision tenant= takes a =--source= flag of =gleif=, =synthetic= or
+=acme=; the Acme script passes =--source synthetic=, so the =acme= value
+is the one that reaches the synchronous =provision-acme= handler and goes
+with it. And =doc/recipes/shell/tenant_provisioning/= carries a recipe
+per command in that submenu, including one that calls
+=tenant_provisioning provision-acme-tenant=; those regenerate from their
+models rather than being edited.
 
 * Test Scenarios
 

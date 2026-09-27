@@ -42,7 +42,7 @@ A step is data, not a component. It carries these fields:
 | =lead= | One sentence above the body, saying what this step is for. |
 | =body= | The step's content, opaque to the runtime. The browser passes a node; a test passes a string. |
 | =next= | The footer's primary action: a label, whether it is enabled, and the work it runs. Absent on a step that advances by itself. |
-| =final= | Whether the person may come back here once they have passed it. |
+| =final= | Whether the person is barred from coming back here once they have passed it. Set it on a step that changed server state, so =true= means the step is a one-way door. |
 
 Two of those carry the load. =next= is the /only/ place a step reaches
 the server, and =final= is the only place a step describes what happened
@@ -193,6 +193,13 @@ because the root carries the Node transport.
 The direction is one way. Nothing imports =@ores/web=, because the
 browser is the end of the chain, and a cycle among these four means one
 of them is doing another's job.
+
+One row of that table is a permission rather than a description.
+=@ores/web= may import =@ores/contracts=, and it does not today: the
+package is the BFF's, and the browser parses with
+=@ores/wire-protocol/browser=. Either the browser starts importing it or
+the package's stated job changes; which one is recorded as a defect in
+[[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][the audit]].
 
 * See also
 

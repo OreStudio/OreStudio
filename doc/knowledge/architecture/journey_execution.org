@@ -174,7 +174,14 @@ it removes the seam rather than policing it.
 | A joined roster read | Missing |
 | A =journey= entity beside =workflow_instance= | Not needed; see the vocabulary above |
 
-Sixteen of the twenty-one journeys are direct or read-only, and need none of this.
+Fifteen of the twenty-one journeys are runs of immediate operations, and
+one, See who has access, is a read model, so sixteen need none of the
+machinery below. The five that do are the three Setup journeys, which are
+workflows, and Bring someone in and Change someone's details, which are
+composite. A journey with several writes is still direct when each write
+is its own step and none has to land with another, which is the shape
+Register a service account has; it is direct for that reason, not because
+its step count is small.
 
 * See also
 

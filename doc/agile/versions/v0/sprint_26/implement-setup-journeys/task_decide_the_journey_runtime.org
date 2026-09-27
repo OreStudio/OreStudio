@@ -65,7 +65,9 @@ into code.
   against, not as a description of the routes that happen to exist.
 - [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] names the step and
   the human step, and its exists-or-missing table says what is actually
-  there: the progress reads and the change event exist, retry does not.
+  there. The progress reads exist and are subscribed; the progress event's
+  subject follows the BFF's convention while its payload does not match
+  what the browser decodes; and retry does not exist at all.
 - [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]] links
   the page.
 - =npm run typecheck= and =npm test= pass.

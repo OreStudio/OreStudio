@@ -663,6 +663,41 @@ Consequences: =observation_lineages.*= and
 =series_classification_rules.*= answer nothing, and =market_fixings.*=
 and =market_series.history= are declared but unserved.
 
+** The failing integration test is a stale generated trigger, not unwired code
+
+Found in PR 2, after the wiring above landed.
+=series_classification_rule_eventing_integration_tests= assembles its own
+DB-notify chain, and that chain breaks before the event bus:
+
+- The committed notify trigger emits the retired payload --
+  ={entity, timestamp, entity_ids, tenant_id}=
+  (=marketdata_series_classification_rules_notify_trigger_create.sql:49=).
+- The shared listener parses every payload as the canonical
+  =entity_event_notification= and returns on a parse failure
+  (=postgres_event_source.cpp:38-52=), so its legacy-mapping branch is unreachable
+  for these channels.
+
+Installing the canonical function the current template renders, with the test
+unmodified, makes it pass; restoring the legacy function makes it fail again on
+every run. The test's own wiring is therefore correct -- channel, subject,
+subscribe-before-write and readiness -- and the payload shape is the sole
+blocker. That excludes the reading V02 recorded, that the test was simply not
+exercising the service's mapping.
+
+The blast radius is wider than the test. **31 generated notify triggers** still
+emit =entity_ids= -- marketdata 6, refdata 15, trading 8, dq 2 -- and the listener
+now drops all of them. Marketdata's rule is the only one with test coverage,
+which is why it is the only visible failure. It also qualifies PR 1's wiring: the
+six generated event-mapping registrars that =application.cpp= now composes are
+the stale legacy ones, so the live service drops every marketdata entity event
+too. The wiring was necessary and is not yet sufficient.
+
+The fix is the regeneration this plan already schedules for PR 3, and it is not a
+test fix. The template has emitted the canonical shape since =d6701b43b6=; the
+committed marketdata triggers predate it. A library-side legacy fallback in the
+listener would be smaller and is the wrong direction: it restores a path that was
+deliberately deleted, and leaves all 31 triggers stale.
+
 ** The permissions gate is vacuous for this component
 
 =check_handler_permissions.py= prints a pass, but =marketdata= is not in

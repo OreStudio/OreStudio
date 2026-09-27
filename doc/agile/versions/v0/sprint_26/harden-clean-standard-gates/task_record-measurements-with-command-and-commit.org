@@ -35,11 +35,11 @@ claim as naming the command and the head.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
-| Now          | Template section and standard wording landed; the verb assessed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -135,3 +135,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A measured number now has somewhere to live and a rule that says what it must
+carry. The task template gained a =* Measurements= section between Plan and Notes
+with a =| What | Value | Command | Commit |= row shape, and the tangled
+=doc_task.org.mustache= moved with it, so the template-drift gate stays green and
+every task scaffolded from now on carries the section. The clean standard's
+Verification preamble now says that a count on its own is not evidence and where
+the number belongs, and B01's evidence cell no longer says "kept on the task".
+
+The capture's optional half is assessed and not built. A =compass task verify=
+that re-runs a record's declared commands would be cheap to write, but the
+records it would read legitimately carry =check_component_drift.py --dry-run=,
+whose non-dry-run form regenerates a component in place and once rewrote 67
+tracked files under =ores.trading=. A verb that runs whatever a document declares
+would eventually run a destructive command where nobody expects to be asked, so
+the verdict is no for now, on safety rather than value. The route that would earn
+its place is a whitelist the gate scripts publish themselves. The decision is in
+the story's Decisions.
+
+Two things this change had to carry that were not obvious. =compass-doc-add='s
+type table is generated from the task template's section list, so adding the
+section made it stale and the doc-lint job failed until it was regenerated.
+And the record itself first published "128 task records" where the tree holds
+148, from an =ls= glob one level deep; independent verification failed the change
+on its own subject, which is the failure it exists to prevent. Both are fixed and
+the second is recorded rather than quietly corrected.
+
+=compass lint= clean, =validate_docs.sh= 40 of 40, the skill type table check
+clean, codegen suite 906 passed.

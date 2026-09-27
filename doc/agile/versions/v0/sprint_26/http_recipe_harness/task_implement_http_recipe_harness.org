@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :http_recipe_harness:sprint_26:v0:
 #+owner: marco
-#+branch: feature/implement-http-recipe-harness
+#+branch: feature/http-recipe-harness
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2DCE17E-03DE-4C3B-A9A7-E5F3605A1FE0][Generate literate HTTP recipes that tangle to runnable Hurl]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every HTTP route the models declare has a generated literate recipe, each recipe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A2DCE17E-03DE-4C3B-A9A7-E5F3605A1FE0][Generate literate HTTP recipes that tangle to runnable Hurl]] |
-| Now          | Not yet started.                       |
+| Now          | The design is recorded; the facet is next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Build the facet, the archetype and the loader context, then prove one recipe. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -42,9 +42,57 @@ Every HTTP route the models declare has a generated literate recipe, each recipe
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Mirror =ores.doc.shell-recipe=, which already gives the shell surface exactly
+what this task wants for HTTP. The shell chain is: a facet page
+(=ores.doc.shell-recipe.org=), one archetype beside it
+(=ores.doc.shell-recipe.recipe.org=) that tangles to
+=shell_recipe.org.mustache=, a context the loader builds
+(=shell_recipe_document=), and the facet named in =generate.py= so the
+renderer knows it. The archetype declares =#+output:=
+=doc/recipes/shell/{shell_menu}/{entity}.org=, =#+model_types:= and
+=#+requires_facet: ores.cpp.shell-command=, so it renders only for a model
+that already renders the unit the recipe documents.
+
+The HTTP chain is the same four pieces, with =hurl= where =ores-shell= was:
+
+1. =ores.doc.http-recipe.org= — the facet page, naming
+   =ores.doc.http-recipe.recipe=.
+2. =ores.doc.http-recipe.recipe.org= — the archetype, with
+   =#+output: doc/recipes/http/{group}/{entity}.org= and
+   =#+requires_facet: ores.cpp.http-route=, tangling to
+   =http_recipe.org.mustache=. Each endpoint's block is
+   =,#+begin_src hurl :tangle <block>.hurl=, so one document exports one
+   Hurl file per endpoint.
+3. =http_recipe_document(...)= in =org_loader.py= — the context, built from
+   the route plan the facet already computes. =entity_http_route_plan= and
+   =operation_http_route_plan= already yield, per route, the =pattern=, the
+   =method=, the =requires_session= position and the keys, so the recipe is a
+   view of the route rather than a second derivation and cannot disagree with
+   it.
+4. =generate.py= — the facet named in the facet list, beside
+   =ores.doc.shell-recipe= at line 154.
+
+Then the harness around it:
+
+5. =projects/ores.http/scripts/library/<group>/<block>.hurl= — the committed
+   tangle output, replayed as-is. The recipes are generated, so a hand edit
+   here is drift and the drift check must catch it.
+6. =check_http_recipes.py= — the runner. It signs in once through the gateway,
+   then runs each =.hurl= with =hurl --test= behind a =--variable token=<jwt>=
+   preamble, so a recipe carries no credential. It classifies the verdict per
+   recipe and writes a TSV and per-recipe logs under =.audit/=, as
+   =check_shell_recipes.py= does.
+7. =regenerate_http_recipe_inventory.py= — the inventory, mirroring
+   =regenerate_shell_recipe_inventory.py=, with =--check= wired into the
+   inventory CI job.
+8. Hurl is installed in the tests CI job the way =clang-format= already is.
+
+Two decisions taken while planning. A recipe states the endpoint and asserts
+its status, not its payload: a payload assertion would pin the recipe to
+whatever the populated database happens to hold. And a recipe that needs a
+session says so through the asserted status, so a 401 and a 200 are both a
+verdict rather than a failure, which is what lets the suite run against a
+database in bootstrap mode.
 
 * Notes
 

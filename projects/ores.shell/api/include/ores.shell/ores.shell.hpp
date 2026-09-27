@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,9 +9,10 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
@@ -20,20 +21,25 @@
 #define ORES_SHELL_ORES_SHELL_HPP
 
 /**
- * @brief Interactive REPL (Read-Eval-Print Loop) or shell for connecting to the
- * ORE Studio server.
+ * @brief The interactive shell: one command tree over every component's
+ * service, driven from a terminal or from a scripted session.
  *
- *  Features include:
+ * The shell is a client, not a service. It owns no subject and stores nothing.
+ * It renders each component's generated command units into one REPL, adds the
+ * hand-written verbs a component's model cannot express, and sends the
+ * canonical NATS requests the services answer.
  *
- * - Interactive command-line interface with command completion
- * - Connection management: connect, disconnect to ORE Studio server
- * - Currency operations: list and retrieve currency data
- * - Account operations: create accounts, login, list accounts, unlock accounts
- * - Auto-connect and auto-login from configuration file
- * - Boost program_options for CLI argument parsing
+ * shell_root_menu owns every name in the command tree. It claims a name once and
+ * refuses a second claim, because cli::Menu answers a duplicated name by first
+ * match and a silent winner hides the other unit's verbs from the help.
+ * insert_menu is the seam a unit inserts through, and extend_menu is how a
+ * hand-written unit contributes verbs to a menu a generated unit owns.
  *
- * The module is organised into namespaces: config (configuration parsing),
- * and app (REPL and application hosting).
+ * The component is split into parts. The application part holds the REPL, the
+ * host and the argument and feedback helpers; the api part holds what the
+ * application and the per-component parts share; and one part per component
+ * holds that component's shell units, generated from its models and rendered
+ * here.
  */
 namespace ores::shell {}
 

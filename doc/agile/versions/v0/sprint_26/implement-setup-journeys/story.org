@@ -48,9 +48,9 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The contract is written, the rail model is in place, and the architecture documents are corrected. Nothing renders yet, because no page has been built on the model. |
+| Now           | The contract is written, the architecture documents are corrected, and the rail renders from =runtime.ts= with the primitives restored. No journey is defined yet, so there is still no screen to open. |
 | Waiting on    | Nothing. |
-| Next          | Restore the UI primitives the reduction commit deleted and port the rail component onto =runtime.ts=. |
+| Next          | Build the application shell, the route table and the bootstrap gate. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -90,7 +90,7 @@ state and the progress are real.
 | [[id:6F644305-4D98-4F58-8BFF-1CF3E8B46427][Correct and add the architecture the journeys depend on]] | DONE | 2026-09-27 | 2026-09-27 | Make the architecture documents true before the first journey task starts: correct the contradictions the audit found, rewrite the stale decision record, and add the page that defines the journey runtime and the BFF boundary. |
 | [[id:8EC41D9E-757B-427B-8E3E-58BC0EA4BEEB][Decide the journey runtime and the step-call contract]] | DONE | 2026-09-27 | 2026-09-27 | Write the contract every journey is built to: what a step definition is, how one page renders the rail from the same list, and how a step reaches the server through a BFF route and a wire-client method. |
 | [[id:946954A3-23B7-43AC-A4AB-42E65698FED7][Line the shell's provisioning up with the journey contract]] | BACKLOG | | | Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the three end-to-end provisioning scripts working through them. |
-| [[id:ADEB07AC-11FC-44B1-958F-D542A32D8E09][Restore the UI primitives and port the journey runtime]] | STARTED | 2026-09-27 | | Restore the primitives, the password field, the password policy and its test, and the brand artwork that e47043269f deleted, and port the prototype's rail and step parts onto journeys/runtime.ts with the simulation removed. |
+| [[id:ADEB07AC-11FC-44B1-958F-D542A32D8E09][Restore the UI primitives and port the journey runtime]] | DONE | 2026-09-27 | 2026-09-27 | Restore the primitives, the password field, the password policy and its test, and the brand artwork that e47043269f deleted, and port the prototype's rail and step parts onto journeys/runtime.ts with the simulation removed. |
 
 * Plan
 

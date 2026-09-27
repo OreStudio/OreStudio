@@ -26,26 +26,51 @@ The story has a rail model and no page that renders it. Restore the UI primitive
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The primitives are restored and the rail renders from =journeys/runtime.ts=. The workspace typechecks, builds and tests green. |
+| Waiting on   | The review round on the change. |
+| Next          | The story's next plan step, the application shell and the bootstrap gate. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
 
 - The primitives, the password field, the password policy and its test, and the brand artwork are restored from =e47043269f^= and pass the checks of the TypeScript Clean Standard.
 - The rail renders from =journeys/runtime.ts=: one page renders any journey as an ordered rail of steps plus the current step, and the rail and the steps cannot disagree.
-- The step parts are ported from =prototype/first-run-journey= with the simulation removed: no stub, no canned profile data and no artificial failure switch remain.
+- The step parts that read no unbuilt contract are ported from =prototype/first-run-journey=, and the simulation is not: no stub, no canned profile data and no artificial failure switch enter the tree. The parts that read the seed-profile and progress contracts land with those contracts, in plan steps 5, 8, 10 and 11.
 - The password rules the field shows are the rules the server enforces in =password_validator=, and the policy test proves each rule.
 - The workspace typechecks, lints and tests green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three units, in one commit each.
+
+** Unit 1 — restore what the reduction deleted
+
+=git checkout e47043269f^ --= for the seven paths: the primitives, the password
+field, the password policy and its test, and the brand artwork. The password
+keys survived in the three catalogues, so only the code comes back. The artwork
+README says the images are back, and =brand.ts= is named as the one place a
+screen reaches an image.
+
+** Unit 2 — port the rail onto the runtime
+
+The prototype's =JourneyPage= becomes a component over =journeys/runtime.ts=.
+The rail is derived with =rail()= from the same list the body comes from, the
+position stays with the caller, and the footer rides the runtime's back rule.
+The runtime gains =stepAt= so the page never indexes the step array, and the
+range guard collapses into one function.
+
+** Unit 3 — tests
+
+The render is tested without a DOM: =react-dom/server= renders the page to
+static markup, and the tests assert the rail's order and states, the current
+step's body, the footer's buttons, and the refusal of a position the journey
+does not have. The runtime's own cases cover the ordering rules.
+
+The journeys module moves to the package's two-space indentation in unit 2. It
+was the only four-space file in the package, because it was written after the
+package's own files were.
 
 * Measurements
 
@@ -59,9 +84,34 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files restored from =e47043269f^= | 7 | =evidence/step2_census.txt= section 1 | =6325b95f64= |
+| Modules with no production importer | 3 | =evidence/step2_census.txt= section 2 | =6325b95f64= |
+| Tests | 100, in 13 files | =evidence/step2_census.txt= section 3 | =6325b95f64= |
+| Browser bundle | 247 modules transformed | =evidence/step2_census.txt= section 4 | =6325b95f64= |
 
 * Notes
+
+- *The prototype's footer made the back rule unreachable.* It rendered Back
+  only on a step that also declared an action, so a step with no action and no
+  =final= predecessor offered no way back at all. The test that asserts a
+  disabled Back button is what found it. The page now renders the footer
+  whenever the step has an action or the runtime allows a move back.
+- *Interaction is not covered.* The package has no DOM test environment, and
+  =scripts/verify-browser.ts= went with the reduction. The one behaviour that
+  a static render cannot reach is the failure path: a rejected action shows a
+  notice and does not advance. It is written and unproven. The browser
+  verification the story's acceptance asks for belongs to its last plan step.
+- *=npm run format:check= is not a gate.* Prettier reports 375 files across the
+  workspace, including generated files and files this task does not touch, so
+  the check cannot pass on trunk. The new files follow the package's own style
+  instead of prettier's defaults.
+- *=tsconfig.json= excludes =src/**/*.test.ts(x)=*, so =npm run typecheck= does
+  not check the new test files; vitest transforms them. That gap is already
+  filed as a capture, and it is why the render test's types are not proven by
+  the type checker.
+- *Three modules have no production importer*: =ui/PasswordField.tsx=,
+  =assets/brand.ts= and =journeys/JourneyPage.tsx=. Each names its intended
+  consumer in its own header, which is what TS-B03 asks for.
 
 * Test Scenarios
 
@@ -87,3 +137,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The primitives, the password field and its policy with its test, and the brand
+artwork are restored, and the rail is a component over the journey runtime.
+
+=JourneyPage= renders any journey from its step list: the rail comes from
+=rail()=, the current step from =stepAt()=, the forward move from
+=nextPosition()= and the back rule from =canGoBack()=. A step's action is the
+only place a step reaches the server, and an action that rejects shows a notice
+and does not advance. The web package's suite is 32 tests in four files, of
+which nine render the page and sixteen cover the runtime.
+
+The step parts that read the seed-profile and progress contracts did not come
+across, and the acceptance says so: porting them now would mean inventing the
+shapes they read. The rail and the primitives need no contract.
+
+Three modules have no production consumer yet, and each names the consumer it
+waits for. Interaction is not covered, because the package has no DOM test
+environment, and that limit is recorded rather than papered over.

@@ -182,6 +182,20 @@ def storage_type(ore_type: str) -> str:
     return "text"
 
 
+REPORTING_RELS = [
+    'report_definition *-- "1" report_type : typed as',
+    'report_definition *-- "0..*" report_configuration : binds',
+    'report_configuration *-- "1" configuration_type : by type',
+    'report_configuration *-- "1" configuration : to',
+    'configuration *-- "1" configuration_type : is one of',
+    'configuration *-- "0..*" configuration_parameter : holds',
+    'configuration_parameter *-- "1" parameter_definition : named by',
+    'parameter_definition *-- "1" value_domain : valued as',
+    'parameter_definition *-- "1" configuration_type : belongs to',
+    'configuration_type *-- "0..*" configuration_xml_element : serialised by',
+    'configuration_xml_element *-- "1" value_domain : valued as',
+]
+
 def load(inventory: Path) -> dict:
     data = json.loads(inventory.read_text())
     return {d["document"]: d for d in data["documents"]}
@@ -311,21 +325,7 @@ def emit(docs: dict, title: str, include_reporting: bool) -> str:
             out.append("    }")
         out.append("  }")
     out.append("}")
-    rels = []
-    if include_reporting:
-        rels = [
-            'report_definition *-- "1" report_type : typed as',
-            'report_definition *-- "0..*" report_configuration : binds',
-            'report_configuration *-- "1" configuration_type : by type',
-            'report_configuration *-- "1" configuration : to',
-            'configuration *-- "1" configuration_type : is one of',
-            'configuration *-- "0..*" configuration_parameter : holds',
-            'configuration_parameter *-- "1" parameter_definition : named by',
-            'parameter_definition *-- "1" value_domain : valued as',
-            'parameter_definition *-- "1" configuration_type : belongs to',
-            'configuration_type *-- "0..*" configuration_xml_element : serialised by',
-            'configuration_xml_element *-- "1" value_domain : valued as',
-        ]
+    rels = list(REPORTING_RELS) if include_reporting else []
     for doc, src, tgt, label, low, high in edges:
         h = "*" if high == "unbounded" else high
         multi = f'"{low}..{h}"' if (h, low) != ("1", "1") else '"1"'
@@ -350,7 +350,11 @@ def main() -> int:
     docs = load(Path(args.inventory))
     text = emit(docs, args.title, include_reporting=(args.half == "reporting"))
     if args.half == "reporting":
-        text = text.split('package "ores.analytics"')[0] + "@enduml\n"
+        body = text.split('package "ores.analytics"')[0].rstrip()
+        # The relationships live after the analytics package, so the split drops
+        # them: put the reporting ones back.
+        text = "\n".join(body.splitlines()[:-1] + [""] + REPORTING_RELS
+                         + ["", "@enduml"]) + "\n"
         name = args.out_name or "configuration_model_reporting.puml"
     else:
         name = args.out_name or "configuration_model_analytics.puml"

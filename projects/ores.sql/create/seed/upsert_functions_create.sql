@@ -157,6 +157,20 @@ create or replace function ores_dq_catalogs_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Catalog name');
 
+    -- The insert trigger owns the version column and refuses a create that
+    -- collides with a live row. It runs before the conflict arbiter, so an
+    -- ON CONFLICT clause cannot make a duplicate create a no-op; the check
+    -- this file's header documents is what does.
+    if exists (
+        select 1 from ores_dq_catalogs_tbl
+        where tenant_id = p_tenant_id
+          and name = p_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Data quality catalog already exists: %', p_name;
+        return;
+    end if;
+
     insert into ores_dq_catalogs_tbl (
         tenant_id, name, version, description, owner,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -165,14 +179,9 @@ begin
         p_tenant_id, p_name, 0, p_description, p_owner,
         current_user, current_user, 'system.new_record', 'System seed data - data quality catalog',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created data quality catalog: %', p_name;
-    else
-        raise debug 'Data quality catalog already exists: %', p_name;
-    end if;
+    raise debug 'Created data quality catalog: %', p_name;
 end;
 $$ language plpgsql;
 

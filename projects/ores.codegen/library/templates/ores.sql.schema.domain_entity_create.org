@@ -40,7 +40,7 @@ The full template source. Edit here and re-tangle with
 
 create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{#domain_entity.primary_key.columns}}
-    "{{column}}" {{type}} not null,
+    "{{column}}" {{type}} not null{{#default}} default {{{default}}}{{/default}},
 {{/domain_entity.primary_key.columns}}
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.sql.system_scope}}

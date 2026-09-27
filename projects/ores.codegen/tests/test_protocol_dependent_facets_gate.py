@@ -61,6 +61,15 @@ SHELL_COMMAND_TEMPLATES = frozenset({
     "cpp_shell_command_tests.cpp.mustache",
 })
 
+# The recipe depends on the protocol facet but lives in the doc space, so a
+# run narrowed to a single technical space never has the protocol in its
+# target. Asking the address rather than the model emptied that run for every
+# component, which is how ten dq recipes came to be missing.
+RECIPE_TEMPLATE = "shell_recipe.org.mustache"
+
+# An entity on the standard stack that keeps its protocol and has a recipe.
+PROTOCOL_KEPT_ENTITY = REPO_ROOT / "projects/ores.dq/modeling/ores.dq.data_domain.org"
+
 # The eventing facets that carry the protocol's key record, and the protocol
 # header itself. All of them are dropped by the same gate.
 PROTOCOL_NAMING_TEMPLATES = SHELL_COMMAND_TEMPLATES | frozenset({
@@ -93,8 +102,15 @@ def test_a_junction_that_suppresses_its_protocol_resolves_no_unit_that_names_it(
     assert model_type == "junction"
     templates = {u["template"] for u in units}
     assert not (PROTOCOL_NAMING_TEMPLATES & templates)
+    assert RECIPE_TEMPLATE not in templates
     # The gate must not over-drop: the junction still resolves its SQL.
     assert SQL_TEMPLATES <= templates
+
+
+def test_a_doc_only_run_keeps_the_recipe_of_a_model_that_keeps_its_protocol():
+    units, _, _ = resolve_targets(PROTOCOL_KEPT_ENTITY, CODEGEN_BASE, address="ores.doc")
+    templates = {u["template"] for u in units}
+    assert RECIPE_TEMPLATE in templates
 
 
 def test_a_junction_that_keeps_its_protocol_keeps_its_shell_unit():

@@ -41,9 +41,45 @@ A report definition reaches a named, reusable configuration through typed entiti
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Five of the seven tables do not exist anywhere in the tree, so this is new
+modelling in =projects/ores.reporting/modeling/=, not an edit. =report_definition=
+and =report_type= already exist; the work on them is the report type foreign key,
+which belongs to /Bind the report types and their taxonomy/.
+
+The target shape, from the reporting half of the model
+(=analysis/configuration_model_reporting.puml=). Org mode is removed from this
+list on purpose: the mappers own the document structure, so a column here is a
+domain fact and never a representation of one.
+
+| Table | Key | Columns beyond the audit block | Foreign keys |
+|-------+-----+---------------------------------+--------------|
+| configuration_type | code | name, display_order | — |
+| configuration | id | name, configuration_type_code, owning_component | configuration_type_code → configuration_types |
+| parameter_definition | id | scope, subtype, name, position, value_domain_code, is_required | value_domain_code → value_domains |
+| configuration_parameter | id | configuration_id, value, position | configuration_id → configurations, parameter_definition_id → parameter_definitions |
+| value_domain | code | name, storage_kind, referenced_entity | — |
+| report_configuration | id | report_definition_id, configuration_type_code, configuration_id | all three |
+
+=scope= and =subtype= together name the block of the run document a parameter
+belongs to (for example =Setup= and =Markets=); =name= is the parameter name
+inside it, and =position= keeps the order the document wrote. A parameter row
+therefore holds one value and points at the definition that says what the value
+means, which is what lets 165 of the 218 observed names belong to exactly one
+analytic kind.
+
+Two rules that the table above encodes and a reviewer should check:
+
+- Every discriminator (=configuration_type_code=, =value_domain_code=,
+  =owning_component=) is a foreign key to a seeded lookup, never a text code.
+- A new kind of configuration adds a row to =configuration_types= and a workflow,
+  never a column on =report_definitions=.
+
+Reporting declares foreign keys in a =* Foreign keys= section, not with
+=:references:= — see =evidence/reporting_model_recon.md= for the block and the
+generated validation it produces. Generate with
+=./compass.sh codegen generate --model <file> --address ores --dry-run= first,
+then without =--dry-run=; apply a fresh schema with =./compass.sh db recreate
+--kill --yes=. The test target is =ores.reporting.api.tests=.
 
 * Measurements
 

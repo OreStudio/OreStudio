@@ -1,0 +1,217 @@
+:PROPERTIES:
+:ID: 6F644305-4D98-4F58-8BFF-1CF3E8B46427
+:END:
+#+title: Task: Correct and add the architecture the journeys depend on
+#+description: Make the architecture documents true before the first journey task starts: correct the contradictions the audit found, rewrite the stale decision record, and add the page that defines the journey runtime and the BFF boundary.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every architecture document the
+[[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][audit]] found stale is corrected, and every
+piece of architecture the audit found written nowhere is written down
+once, on the page that owns it.
+
+This task is documentation only. It runs before the story's first
+implementation step, because that step decides the journey runtime and
+the step-call contract, and it cannot decide them against documents that
+still contradict each other.
+
+The five decisions being recorded were signed off on 2026-09-27 and are
+written out in the audit's =* Decisions signed off= section.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Unit 1 item 1, [[id:CDE625E2-96AE-4644-9921-282339925F3E][the TypeScript standard]], is written. It lands with the change that also carries this story's scaffolding and its first task, because the branch was cut before this task was clocked on. |
+| Waiting on   | Nothing.                               |
+| Next          | Unit 1 items 2 to 7, then units 2 and 3. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Every document the audit lists as stale is either corrected, or
+  explicitly marked as a historical record that no longer describes the
+  system. A reader cannot mistake either for current.
+- The sprint 25 bootstrap catalogue's journey-entity and shell-command
+  items are marked superseded, so no reader can mistake them for the
+  build target.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] states correctly what
+  exists and what does not, and it defines a step and a human step.
+- A knowledge page under =doc/knowledge/architecture/= defines the
+  journey runtime, the step-call contract and the bootstrap gate, and it
+  follows [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][the knowledge document
+  contract]].
+- [[id:CDE625E2-96AE-4644-9921-282339925F3E][The TypeScript Clean
+  Standard]] exists. Every item names the check that proves it, the
+  items whose check does not exist yet say so, and the component's
+  measured baseline is recorded in it.
+- [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]] links that
+  page, states that the BFF is the browser's only HTTP surface, and no
+  longer claims the browser parses =@ores/contracts=.
+- =0001-protocol-types-from-codegen.org= no longer denies the generator,
+  misplaces its output, or calls hand-writing the current state.
+- No document describes a deleted subject — the Qt windows, the entity
+  screens, the generated entity routes — without saying it is deleted.
+- =compass lint= is clean, and the site check renders every page this
+  task touches.
+
+* Plan
+
+Three units, each a state a reviewer can check on its own.
+
+** Unit 1 — the journey and provisioning architecture, and the TypeScript standard
+
+This is the unit that unblocks the story. It carries the standard because
+the story writes TypeScript from its first task onward, and a convention
+recorded after the code it governs is a convention nobody followed.
+
+1. *Write the [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean
+   Standard]].* The
+   [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] governs
+   C++ only, and =ores.web= now has an interface to build. The standard
+   is the sibling checklist for the TypeScript in the tree: the full
+   strictness set, no unchecked escape hatch, parse at the boundary,
+   exhaustive unions, one-way dependencies, no floating promise, and one
+   gate per item. Every item names the check that proves it, and the
+   items whose check does not exist yet say so, because the gap is the
+   work. Its first audit is recorded in the standard itself. Point the
+   [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]
+   at it in the same change, so that the reader of either finds the
+   other; the two standards answer the same question for different
+   languages.
+2. [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][Decide the bootstrap workflow
+   catalogue]]: mark item 5, the journey entity, and item 6, the shell
+   journey commands, as superseded, with a pointer to the decision that
+   supersedes them. Items 1 to 4 and 7 stand.
+3. [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] and
+   [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]: the
+   list, detail and history primitives were deleted by =e47043269f= and
+   do not exist. Say what replaces them.
+4. The three setup journeys: re-measure every =* Operations and
+   messages= row and every =* What is missing= item against the code,
+   drop the retired =iam.v1.journeys.get-active= candidate, replace the
+   two retired provision subjects with the generic request, fix the
+   =party_essentials= claim, and correct the dead =Prototype Source ::=
+   paths.
+5. [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access
+   Management]]: state that a seed profile is registered data with a
+   declared parameter schema, and take =ores.qt= out of the client list.
+6. =web_iam_journeys/story.org=: annotate the old server-stateful journey
+   definition as superseded.
+7. =doc/plans/2026-03-30-three-level-provisioning-and-workflow-service.md=:
+   mark the login-triggered wizard triggers superseded.
+
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] is /not/ corrected
+here. Adding the step and human-step vocabulary and fixing its
+exists-or-missing table is the story's first task, because that document
+is the journey contract and the task is what writes it.
+
+The shell recipes for the two retired subjects are /not/ edited here.
+They are generated, so they change when the subjects are removed, in the
+task that removes them.
+
+** Unit 2 — the client architecture and its boundary
+
+The page that defines the journey runtime and the step-call contract is
+/not/ written here. It is the story's own first task, because a contract
+is written by the work that must obey it, and writing it twice would
+give the tree two answers. This unit does everything around it.
+
+1. [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]]:
+   correct the =@ores/contracts= claim, link the runtime page the
+   story's first task writes, and record
+   that the browser has one HTTP surface.
+2. =0001-protocol-types-from-codegen.org=: rewrite the status, the
+   output location and the operation-model section. It is the anchor for
+   the wire types, and it currently tells a reader to hand-write what
+   the generator produces.
+3. =projects/ores.web/README.md=: correct the =@ores/contracts= row and
+   the invalid =compass codegen entity generate= command.
+4. =component_overview.org=: correct the dependency list and the
+   Component architecture link, which points at a C++ layout this
+   component does not follow.
+
+** Unit 3 — the pages that describe a deleted subject
+
+1. =doc/knowledge/ui/ux_language.org=: the MDI list window, the detail
+   dialog, the history dialog and =BadgeCache= are all the removed Qt
+   client. Replace them with the journey and step screen language, which
+   is what the interface now is.
+2. The two icon documents: reconcile the inventory against
+   =packages/web/src/assets/icons/=, and remove the claim that the paths
+   are not live.
+3. [[id:E2521A56-E053-4FDC-A9F3-AAE47918241B][Entity Addressing]]: delete
+   the retired BFF-route and browser-path material, including the
+   description text, or the document keeps contradicting itself.
+4. =entry/journey_sign_up.org=: the named HTTP route 404s.
+5. =doc/llm/skills/pstack.org= and =skill_verification.org=: both state
+   there is no TypeScript and no client UI.
+6. The =@ores/contracts= claim in =packages/contracts/src/index.ts=,
+   which is a comment and belongs with the rest of the correction.
+
+** Follow-ups this task records but does not do
+
+- Removing =httpBaseUrl= and =discoverHttpBaseUrl()= is a code change,
+  and it belongs with the implementation rather than in a documentation
+  change. It becomes its own task when the story starts.
+- =ores.web= has no standard of its own. The Component Clean Standard
+  governs C++, so this task leaves the TypeScript to the conventions the
+  new runtime page states.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

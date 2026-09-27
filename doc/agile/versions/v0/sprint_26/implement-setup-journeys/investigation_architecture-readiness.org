@@ -1,0 +1,356 @@
+:PROPERTIES:
+:ID: FC08DD66-DB25-4B4F-8A26-572A513393FF
+:END:
+#+title: Investigation: Audit the journey, provisioning and web-client architecture before the first implementation story
+#+description: A point-in-time audit of every document describing the journey, provisioning and web-client architecture: what is accurate, what is stale against the code, what contradicts the accepted decisions, and what is written nowhere.
+#+type: investigation
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A point-in-time record, written while the story that commissioned it was
+still open, of an audit of the documentation that describes how a
+[[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] is built, provisioned and served to a
+browser.
+
+It is a snapshot, not a description of the system. Whatever it concludes
+that the code must keep doing belongs on the page that owns the subject;
+cite that page from code, recipes and models, not this one.
+
+* Context
+
+[[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]]
+is ready to start, and its first task is to settle the journey runtime
+and the step-call contract. The story states that the build targets two
+contracts accepted in sprint 25:
+[[id:94C3AE99-8642-4418-982D-92C5FD805CCB][the seed profile contract]] and
+[[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][the bootstrap workflow catalogue]].
+
+Both were accepted on 2026-09-22. One day later
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] redefined the
+vocabulary and called one of their decisions redundant. Nothing was
+changed in the older documents. So the story was about to build against
+a target that contradicts itself, and against a corpus of journey
+documents whose `* What is missing` sections had not been re-measured
+since.
+
+The question this audit answers: which of these documents still describe
+the system, which are stale against the code, and what architecture is
+load-bearing but written nowhere?
+
+* Methodology
+
+Two sweeps, one over the client-side architecture and one over the
+journey and provisioning architecture. Every claim below was checked
+against the code by reading it, not by trusting a document.
+
+Trees read, in full or in the relevant part:
+
+- =doc/meta/= — the document-type contracts, including
+  [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey]].
+- =doc/knowledge/= — =architecture/=, =journeys/=, =security/=, =ui/=,
+  =domain/=, and the root index.
+- =doc/plans/=, =doc/llm/= (skills, runbooks, memory), =doc/recipes/shell/=.
+- =projects/ores.web/= — =README.md=, =modeling/=, and all four packages
+  under =packages/=.
+- =projects/ores.http/modeling/=, =projects/ores.iam/{modeling,core}/=,
+  =projects/ores.workflow/{api,core,service}/=, =projects/ores.sql/=.
+- The sprint 25 stories =web_bootstrap_prototype= and =web_iam_journeys=,
+  and the sprint 26 stories =component-clean-program=,
+  =codegen-http-routes=, =extract-user-journeys=, and the two new
+  stories.
+
+Tools: =ripgrep= for discovery, =read= for the documents themselves, and
+=git show= / =git ls-tree= for the prototype branches, which were never
+checked out because this worktree is shared.
+
+Head at the time of writing: =ef8df25c61=. Every number and every line
+reference below is that day's state.
+
+* Paths taken
+
+Three approaches were tried, and the first two failed.
+
+1. *Trust the journey documents.* Abandoned. Three of their
+   =* What is missing= items are false against the code, and every one of
+   them names a subject that the current decisions retire.
+2. *Trust the sprint 25 contracts.* Abandoned. The seed profile contract
+   survives, but the workflow catalogue's items 5 and 6 specify a
+   =/journey/= entity and shell journey commands that the vocabulary
+   document and the new story both drop.
+3. *Read the code and treat the documents as claims.* Kept. This is the
+   method above, and it is what produced the findings below.
+
+* Conclusions
+
+** The vocabulary is settled and consistent
+
+Four documents agree, and none of them needs to change:
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]],
+[[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]],
+[[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]], and the
+Journey term in [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]. They
+say the same three things: a journey is a definition and not a
+server-side object; its progress is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]];
+and no journey entity is added.
+
+[[id:60088AA3-832B-45F1-91C2-4723C75554EE][ores.web]],
+[[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]],
+[[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][the superseded entity specification]]
+and [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]] are
+also accurate, and the superseded specification records its own
+retirement. [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] is
+accurate and its consumer is genuinely absent: the runtime should read
+it before it decides how a journey follows a workflow.
+
+** Six findings change what the story does next
+
+1. *The progress channel already exists, end to end.*
+   =ores.workflow.workflow_instance_changed= is published by the engine
+   on every state change (=projects/ores.workflow/core/src/service/workflow_engine.cpp:98=).
+   That subject has exactly the shape the BFF's change-notification
+   channel already subscribes to — =<component>.<entity>_changed=,
+   built at =projects/ores.web/packages/bff/src/change-events.ts:67= —
+   and the browser already reaches it through =GET /api/events= and
+   =POST /api/events/watch=. So provisioning progress needs no new
+   channel, no polling and no new event. The event carries identifiers
+   and a time and no state, so the page re-reads the instance's steps
+   after each event, which does need a route.
+2. *A party-provisioning workflow already exists.*
+   =workflow.v1.parties.provision= takes a list of parties, returns the
+   party ids and one workflow instance id per party immediately, and
+   runs a three-step saga — =refdata.v1.parties.save=,
+   =iam.v1.accounts.save=, =iam.v1.account_parties.save= — with
+   compensation on failure
+   (=projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_protocol.hpp:66=).
+   The new-party journey records this as missing. The real gap is a
+   mismatch: it creates accounts with passwords and does not take an
+   existing party plus chosen accounts, and it does not activate,
+   onboard or publish bundles.
+3. *A retry verb is genuinely absent.* No retry, resume or abandon
+   subject exists anywhere in =ores.workflow=. The only recovery is
+   =workflow_engine::recover_in_progress()=, run once at service start.
+   This is the one provisioning gap the journey documents state
+   correctly.
+4. *The browser does not use =@ores/contracts=.*
+   =projects/ores.web/packages/web/package.json= does not depend on it
+   and no file under =packages/web/= imports it; the browser parses with
+   =@ores/wire-protocol/browser=
+   (=packages/web/src/api/transport.ts=). =README.md= and
+   =packages/contracts/src/index.ts= both claim the browser and the BFF
+   share those schemas. They do not.
+5. *Two HTTP surfaces exist and nothing relates them.* =ores.http= is
+   the platform's REST gateway, with generated per-component routes and
+   99 endpoints. It is never mentioned in any =ores.web= document, yet
+   the site description carries =httpBaseUrl=
+   (=packages/contracts/src/site.ts:56=) and the wire client carries
+   =discoverHttpBaseUrl()= (=packages/wire-protocol/src/client.ts:430=),
+   which has no caller anywhere. Nothing states whether the gateway and
+   the BFF are alternatives or layers.
+6. *The decision record behind the generated wire types is wrong in four
+   ways, and it is the page that anchors the work the first task does.*
+   =projects/ores.web/modeling/0001-protocol-types-from-codegen.org=
+   says the codegen template is not built (the templates exist and the
+   output is committed), that the artefact lives in the C++ repository
+   (it lives under =packages/wire-protocol/src/generated/=), that the
+   =ores.codegen.operation= model is deferred (26 models use it), and
+   that hand-writing the TypeScript schemas is the current state. It is
+   the See-also of the component specification, so whoever adds the
+   journey client methods reads it first and is told to hand-write what
+   the generator already produces.
+
+** Stale documents, with the evidence
+
+#+ATTR_HTML: :class hug-leading
+| Document | Claim that is no longer true | Evidence |
+|----------+------------------------------+----------|
+| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][bootstrap workflow catalogue]], item 5 | A =/journey/= entity belongs in =ores.workflow=, beside =workflow_instance=, with kind, current step, subjects and resume actors | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] calls it redundant; the setup story says no journey entity is added |
+| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][bootstrap workflow catalogue]], item 6 | The shell gains =journey start/status/next/abandon= | No such command exists in =ores.shell=, and the setup story lists no shell task |
+| [[id:DDCB8562-405D-4D16-8C82-0144CBAB3612][bootstrap workflow catalogue]], items 5–6 | Human steps, and a list of actors who may resume | =workflow_instance= carries no human-step or resume-actor field (=projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp:44=) |
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]], [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | "No =ores.workflow= component and no journey subject exist today" | The component exists, with entities, services and subjects |
+| The same three journeys | The candidate is =iam.v1.journeys.get-active= | Retired by the vocabulary; no journey entity is needed |
+| The same three journeys | =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= are the working path | The setup story retires both for a generic =iam.v1.tenants.provision= |
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | "No streamed progress"; the candidates are a =workflow_instance_changed= event or an =iam.v1.workflow_instances.get= read | The event is already published; =workflow.v1.instances.steps= and =workflow.v1.instances.list= already exist and are subscribed |
+| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | "Start the provision-party workflow | none | missing" | =workflow.v1.parties.provision= exists and returns instance ids |
+| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | =party_essentials= exists and "only the ACME handler publishes it today" | =party_essentials= occurs nowhere under =projects/=; it is a bundle the contract proposes, not one that exists |
+| [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | Nothing discards a half-provisioned tenant | =iam.v1.system.reset-tenant= exists |
+| [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] and [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey type]] | "The list, detail and history primitives still exist" | Commit =e47043269f= deleted them with the generated screens |
+| =projects/ores.web/README.md= and =packages/contracts/src/index.ts= | The BFF and the browser both parse the =@ores/contracts= schemas | The browser does not depend on the package |
+| =projects/ores.web/README.md= | =compass codegen entity generate <entity> --address ores.ts.protocol= | No such subcommand |
+| The three setup journeys, =* Prototype= | =Source :: projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= | The path does not exist on =main=; it survives only on the prototype branches |
+| =doc/plans/2026-03-30-three-level-provisioning-and-workflow-service.md= | Login-triggered tenant and party wizards | Superseded by the accepted contract, and not marked as such |
+| =doc/agile/.../web_iam_journeys/story.org= | =/journey/= means a server-stateful guided path | Contradicts [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] |
+| =doc/recipes/shell/bootstrap/= and =.../tenant_provisioning/= | Recipes for the two retired subjects | They break the day the subjects are removed |
+| =projects/ores.web/modeling/0001-protocol-types-from-codegen.org= | Status "Proposed … not built"; the output "lives in the C++ repository"; the operation model is "deferred"; and "hand-write the TypeScript schemas. The current state." | The templates exist and the output is committed under =packages/wire-protocol/src/generated/=, and 26 models use =ores.codegen.operation= |
+| [[id:E2521A56-E053-4FDC-A9F3-AAE47918241B][Entity Addressing]] | Its description and lines 5, 17 and 54 present BFF entity routes and a browser =entityRecordPath= as live | The same document at lines 87–94 records both retired on 2026-09-23, and neither exists in the code. It contradicts itself, so a reader cannot tell which half is current |
+| [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] | Its V03 names [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][the superseded entity specification]] as a binding screen rule | That specification is void, and the screen rules a journey follows are the ones it needs to state itself |
+| [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] | =ores.qt= is listed as a client that runs the same server-side operation | =ores.qt= is retired and frozen as reference; the clients are =ores.web= and =ores.shell= |
+| =doc/knowledge/ui/ux_language.org= | Every entity presents the same three windows, and badges resolve through =BadgeCache= | All of it is the removed Qt client; [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] says one screen, not one per entity |
+| =doc/knowledge/ui/icon_reference.org=, =icon_guidelines.org= | 78 icon names; the asset paths "point into the desktop client's =resources/icons/=" and are "not a live path list" | 68 files sit in =packages/web/src/assets/icons/=, and every =proj:= path resolves there |
+| =doc/knowledge/journeys/entry/journey_sign_up.org= | =POST /api/v1/auth/signup= | The HTTP-routes story records that path as 404ing |
+| =doc/llm/skills/pstack.org=, =skill_verification.org= | "No TypeScript here"; "When a client UI exists (none today)" | =ores.web= is TypeScript and it is the client being built |
+| [[id:60088AA3-832B-45F1-91C2-4723C75554EE][ores.web]] | Depends on TanStack Table and Playwright; follows [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] | Neither is a dependency of the workspace, and that document describes C++ components with CMake targets, which this component has none of |
+
+** Architecture that is load-bearing and written nowhere
+
+1. *The client-side journey runtime.* No document defines a step
+   definition: its fields, its declared inputs, which subject it calls,
+   which steps are final, or how one journey inlines another's steps.
+   [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] and
+   [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][the document type]] both name "an ordered
+   list of steps" and stop there. The only implementation is on a
+   throwaway branch, and its source path on =main= is dead.
+2. *The step-call contract.* How a step reaches a subject — which BFF
+   route, which wire-client method, and what a route may not do — is
+   stated nowhere. [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component
+   specification]] lists the routes that exist today and says only that
+   "a journey screen adds the call it needs".
+3. *The bootstrap gate.* The setup story requires that =/setup= is the
+   only page while =system.bootstrap_mode= is set. No architecture
+   document describes that gate.
+4. *The two HTTP surfaces.* See finding 5 above.
+5. *The ownership of seed-profile data and the step-kind catalogue.* The
+   seed profile contract fixes the step kinds and says a profile is rows,
+   and names neither an owning component, a model, nor a codegen path.
+6. *Where the provision-tenant workflow definition lives and how it
+   registers.* The only account of definition registration is in
+   =doc/plans/2026-05-14-workflow-engine-hardening.org=, not in
+   =doc/knowledge/architecture/=.
+7. *What carries the rail position for the human steps.* A workflow
+   journey's server work is resumable, but the steps around it — sign in,
+   choose a party, set a password — are not, and nothing states whether
+   the person can leave and come back to them. The prototype held the
+   position in memory.
+8. *Which standard governs the TypeScript client.* The
+   [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] names no
+   TypeScript item, and the clean-standard programme story records that
+   "the TypeScript UI is retired". That is true of the generated entity
+   screens and of the TypeScript UI codegen, and false of =ores.web=,
+   which is now the interface being built.
+9. *The mapping rule from a browser request to a NATS subject.* The BFF
+   is hand-mapped: each handler calls
+   =session.client.callAuthenticated(subject, schema)=, and there is no
+   generic forwarding proxy. Nothing states the rule, what the BFF may
+   not do, or how a route is added. This is the second half of the
+   step-call contract, and the first task cannot settle one half without
+   the other.
+10. *The dependency direction between the four packages,* and why the
+    browser must import =@ores/wire-protocol/browser= rather than the
+    package root. The component specification gives each package a job
+    and states no direction between them.
+11. *The end-to-end path from a model to a validated browser response* —
+    model, to facet, to =src/generated/=, to the browser entry point, to
+    the BFF reply, to the Zod parse. It is covered in three places and
+    in none of them whole, and the decision record that should anchor it
+    describes a state that no longer exists.
+
+* Recommendations
+
+1. *Sign the architecture off before the first task starts.* The
+   decisions below are the ones the first task would otherwise make in
+   code, and three of them are irreversible enough to be worth an
+   explicit answer.
+2. *Correct the superseded catalogue task in place.* Its items 5 and 6
+   must be marked superseded rather than silently ignored, because the
+   setup and programme stories both cite that document as a target.
+3. *Correct [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].* Progress
+   streaming exists and retry does not; the document has it the other way
+   round. It is also the right owner for the step vocabulary and for the
+   definition of a human step.
+4. *Correct the three setup journeys' `* What is missing` sections, their
+   operation tables and their prototype source paths.* The extraction
+   story owns those documents, so this is either a task on that story or
+   an explicit delegation to this one.
+5. *Grow [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]]
+   with the journey runtime, the step-call contract, the bootstrap gate
+   and the new routes.* That document is the natural owner, and the first
+   task's output belongs in it. A client-runtime page that both clients
+   could read also belongs in =doc/knowledge/architecture/=, and it must
+   follow [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][the knowledge document contract]]:
+   a three-to-five sentence blurb and then =* Detail=, with no separate
+   =* Summary=. The =ores.web= =modeling/= pages already deviate from
+   that contract, so this is a chance to stop the drift rather than
+   continue it.
+6. *Rewrite =0001-protocol-types-from-codegen.org=.* It is the anchor for
+   the generated wire types, and it currently denies the generator and
+   points at the wrong repository. Nothing in the first task can be
+   trusted until it is corrected.
+7. *Correct the pages whose subject no longer exists:*
+   [[id:E2521A56-E053-4FDC-A9F3-AAE47918241B][Entity Addressing]] (it
+   contradicts itself), =ux_language.org= (Qt windows and =BadgeCache=),
+   the two icon documents, =component_overview.org=, =README.md=, and the
+   two =doc/llm= skills that state there is no TypeScript or client UI.
+   A page that describes a deleted subject is not history; it is a wrong
+   answer to a question a reader is entitled to ask.
+8. *State the two HTTP surfaces once,* and resolve =httpBaseUrl= and
+   =discoverHttpBaseUrl=, which are declared and unused.
+9. *Correct or wire =@ores/contracts=.* A package whose stated job is
+   false is worse than a package that is not used.
+10. *Correct the dead prototype source paths and the shell recipes, or
+    delete them.* A path a reader cannot follow is a broken link with
+    extra steps.
+11. *Reconcile the knowledge template with the knowledge contract.*
+    [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][The knowledge document contract]]
+    is explicit that a knowledge page carries a blurb and =* Detail= and
+    no separate =* Summary=, "the summary is the blurb". The scaffold
+    =compass add knowledge= emits has a =* Summary= and no blurb, and the
+    [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]
+    follows the scaffold. So the template and the contract disagree, and
+    every knowledge page written from the template inherits the
+    disagreement. It is a one-line fix in the template, and it is not
+    this task's, but it is why
+    [[id:CDE625E2-96AE-4644-9921-282339925F3E][the new standard]] has a
+    blurb where its sibling has a =Summary= heading.
+
+* Decisions signed off
+
+Signed off by the user on 2026-09-27, before any implementation started.
+These are the answers the architecture documents must now state.
+
+1. *A journey step reaches the server through one hand-written BFF route
+   per step.* Each route parses a generated schema, and each is listed in
+   [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]].
+   There is no generic forwarding route, so the browser cannot name a
+   subject. This keeps the BFF an allow-list boundary, which is the whole
+   reason it exists.
+2. *The BFF is the browser's only HTTP surface.* =ores.http= serves
+   external API clients and the HTTP recipes, and the browser never
+   reaches it. =httpBaseUrl= and =discoverHttpBaseUrl()= are therefore
+   removed rather than documented, because a declared-but-unused path is
+   a decision nobody made.
+3. *Only the server-side workflow resumes.* The steps around it hold no
+   server state, so losing them costs a person nothing but re-entry, and
+   the screen states the limit. A journey progress record is therefore
+   not added, and the decision that no journey entity is needed stands.
+4. *ores.iam owns the seed profile, its parameter schema and the
+   step-kind catalogue.* The tenant lifecycle is IAM's, the subjects are
+   =iam.v1.seed_profiles.*=, and the profile orders steps that IAM and
+   the workflow engine run.
+5. *The corrections land as their own change, before the story starts.*
+   Documentation only, so the first implementation task decides against
+   pages that are true.
+
+6. *=ores.web= gets its own standard.* The
+   [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]
+   is written around SQL, a repository, a service and a generated
+   registrar, and the TypeScript packages have none of those, so it
+   cannot govern them. The
+   [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]]
+   is written as its sibling: the same shape, one item per convention,
+   and every item naming the check that proves it. It is written with
+   this unit rather than after it, because the story writes TypeScript
+   from its first task onward.
+
+* See also
+
+- [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] —
+  the story this audit gates.
+- [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] —
+  the programme story that orders the groups.
+- [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] —
+  the story that owns the journey documents.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — the
+  composition classes and the vocabulary.
+- [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]] —
+  where the client-side contract belongs.

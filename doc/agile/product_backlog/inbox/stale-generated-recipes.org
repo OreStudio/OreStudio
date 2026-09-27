@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: C0C0A800-51E1-4DC9-BF15-7C346AEEEE2F
+:END:
+#+title: Fifty-eight generated recipes are stale against the template…
+#+description: Fifty-eight generated recipes are stale against the template that produces them, and nobody could see it because the drift gate rendered per technical space and never produced a recipe at all.
+
+Every one of the 58 differs in the same way and only in the same way: inside its #+begin_src ores-shell :tangle ... blocks, an argument placeholder that the committed file writes as __none__ is a hyphen in the current render, and sometimes the render also carries trailing entries the committed file does not. Not one byte of prose differs, so these are stale rather than hand-edited, and the direction is a question for the shell's owner: either the recipes are behind the template and want regenerating, or the template is ahead of the shell and wants correcting.
+
+The numbers, measured at the head that added the marker. A whole-address render produces 185 recipe files: 113 now carry the generated marker and agree with their models, 58 differ by more than the marker, and 14 the render produces are absent from the tree. A further 62 files sit at the generated recipe path shape with no model producing them at all; nothing deletes them, because a clean-up that removed files no render produces would delete whatever a hand-written nested recipe looks like.
+
+The gate now reaches recipes: check_component_drift.py --sweep renders the whole ores address and reports them, so this debt cannot grow silently on another branch. It is green today because none of the drift is a branch's.
+
+See also: doc/agile/versions/v0/sprint_26/harden-clean-standard-gates/task_mark-generated-recipes.org, which measured this, and doc/recipes/shell/, where 58 of the 59 affected directories live.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -47,3 +47,10 @@
 
 \echo '--- Infrastructure Account Role Assignments ---'
 \ir iam_infrastructure_accounts_populate.sql
+
+-- =============================================================================
+-- Seed Profiles (the starting points tenant provisioning offers)
+-- =============================================================================
+
+\echo '--- IAM Seed Profiles ---'
+\ir iam_seed_profiles_populate.sql

@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 91C87FA0-E118-425C-804A-34E69BBE95F2
+:END:
+#+title: ores.iam.seed_profile_step
+#+description: Codegen entity model for the iam seed_profile_step table. Drives the C++ domain class, mapper, repository, service, handler, protocol and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: seed_profile_step
+#+entity_plural: seed_profile_steps
+#+entity_title: Seed Profile Step
+#+brief: One step kind a seed profile orders.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A seed profile's steps, in the order provisioning runs them. The row names
+a step kind from the catalogue in code and supplies the arguments that
+kind consumes, so a profile states the same step with different bundles
+without a code change.
+
+The catalogue is fixed: =publish_bundle=, =import_lei_hierarchy=,
+=provision_party=, =load_staff=, =attach_photos= and
+=start_market_feeds=. A step kind that is not in the catalogue is a code
+change, because one new kind means one new step handler.
+
+The pair =(seed_profile_id, step_kind)= is the identity: a profile runs a
+kind once. Steps are idempotent, and a failed step stops the provisioned
+instance at that step.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:END:
+
+Surrogate identifier for the step row.
+
+** seed_profile_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+Profile this step belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** step_kind
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+Step kind from the fixed catalogue, for example =publish_bundle= or
+=provision_party=.
+
+#+begin_src cpp :name generator
+std::string("publish_bundle")
+#+end_src
+
+** arguments_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Arguments the step kind consumes, as a JSON object. The step kind fixes the
+shape of the arguments in code and the profile supplies the values; an
+empty object states that the kind takes none. A profile that orders
+=publish_bundle= names its bundles here, because which bundles a profile
+publishes is profile data and not a step-kind constant.
+
+#+begin_src cpp :name generator
+std::string("{}")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order provisioning runs this step in. Lower numbers run first.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:    ores_iam_seed_profile_steps_tbl
+:system_scope: true
+:END:
+
+** Checks
+
+| expression        |
+|-------------------|
+| "step_kind" <> '' |
+
+* Foreign keys
+
+** seed_profile_id
+:PROPERTIES:
+:table:              ores_iam_seed_profiles_tbl
+:parent_entity:      seed_profile
+:nullable:           false
+:error_message:      Invalid seed_profile_id: %. No active seed profile found with this id.
+:list_by:            true
+:list_by_order_by:   display_order
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: seed_profile_step
+:entity_plural_short:   seed_profile_steps
+:entity_singular_words: seed profile step
+:entity_plural_words:   seed profile steps
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sps
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| step_kind     | Step        |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Paste blocks
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
+- [[id:25B5DE96-7E9E-4713-92D7-F286BB41C855][ores.iam.seed_profile]] — the profile these steps belong to.

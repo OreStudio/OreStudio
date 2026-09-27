@@ -1,0 +1,314 @@
+:PROPERTIES:
+:ID: 25B5DE96-7E9E-4713-92D7-F286BB41C855
+:END:
+#+title: ores.iam.seed_profile
+#+description: Codegen entity model for the iam seed_profile table. Drives the C++ domain class, mapper, repository, service, handler, protocol and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: seed_profile
+#+entity_plural: seed_profiles
+#+entity_title: Seed Profile
+#+brief: A starting point a new tenant is provisioned from.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A seed profile is the data set that provisioning gives a new tenant. One
+row orders step kinds from the catalogue in code, declares the parameters
+its form takes, and carries the tenant details it prefills.
+
+A new profile is a row, so an operator adds one with no code change. A new
+step kind is code. The accepted seed profile contract fixes both lists,
+and the first two rows are:
+
+- =empty_operational=: the production starting point. It publishes the
+  =base= bundle, takes a counterparty count and a GLEIF root LEI to
+  import, and creates no test data.
+- =acme_demo=: the Acme Corporation holding group, with its staff, books
+  and market data. Every test datum lives here.
+
+A profile is system-owned registered data. The =system_scope= flag states
+that the table stores it under the system tenant and that the insert
+trigger forces that tenant. Provisioning reads a profile before the tenant
+it creates exists, so a profile cannot belong to the tenant being made.
+
+The profile the model binds is =uuid-identified-lookup=, the one its
+sibling =ores.iam.tenant= binds, because that profile leaves
+=system_scope= to the model. =uuid-surrogate-lookup= fixes it to =false=,
+which a row the platform owns cannot be.
+
+The ordered steps are rows of =ores.iam.seed_profile_step=, and the form
+schema is rows of =ores.iam.seed_profile_parameter=. Both are children of
+this entity.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:END:
+
+Surrogate identifier for the profile. Provisioning names a profile by its
+=code=, so the surrogate exists for referential stability only.
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+Stable code the request names the profile by. The unique index states the
+code once, because a profile is one row per deployment and not one row per
+tenant.
+
+Examples: 'empty_operational', 'acme_demo'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_profile"
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name shown on the starting-point card.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Profile"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the profile creates, in the words the card shows.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** audience
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Short line under the name that says who the profile is for, for example
+"For production" or "For demonstration".
+
+#+begin_src cpp :name generator
+std::string("For ") + std::string(faker::word::noun())
+#+end_src
+
+** tenant_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Tenant display name the profile prefills. An empty value states that the
+form starts blank and the administrator supplies the name.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName())
+#+end_src
+
+** tenant_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Tenant code the profile prefills. Together with the hostname it is what a
+later sign-in principal names.
+
+#+begin_src cpp :name generator
+faker::word::noun()
+#+end_src
+
+** tenant_hostname
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Hostname the profile prefills. A principal of the form
+=username@hostname= resolves its tenant through this value, so a profile
+that prefills one makes the tenant reachable without further input.
+
+#+begin_src cpp :name generator
+faker::internet::domainName()
+#+end_src
+
+** admin_username
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Username the profile prefills for the tenant administrator.
+
+#+begin_src cpp :name generator
+std::string("tenant_admin_") + std::to_string(idx)
+#+end_src
+
+** admin_email
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+Email the profile prefills for the tenant administrator.
+
+#+begin_src cpp :name generator
+std::string("admin@") + faker::internet::domainName()
+#+end_src
+
+** inherits_admin_password
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether the tenant administrator starts with the password of the
+administrator who runs the provisioning. A demonstration profile sets it,
+so its journey asks for no password; a production profile does not.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+** force_password_change
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether the tenant administrator must set a password of their own at first
+sign-in.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order the cards are offered in. Lower numbers appear first.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:    ores_iam_seed_profiles_tbl
+:system_scope: true
+:END:
+
+** Checks
+
+| expression   |
+|--------------|
+| "code" <> '' |
+| "name" <> '' |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: seed_profile
+:entity_plural_short:   seed_profiles
+:entity_singular_words: seed profile
+:entity_plural_words:   seed profiles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sp
+:END:
+
+** Table display
+
+| column        | header       |
+|---------------+--------------|
+| code          | Code         |
+| name          | Name         |
+| audience      | Audience     |
+| display_order | Order        |
+| modified_by   | Modified By  |
+| version       | Version      |
+
+** Paste blocks
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
+- [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Task: Decide the seed profile contract]] — the accepted contract these rows implement.
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the tenant lifecycle, and the seed profile term.

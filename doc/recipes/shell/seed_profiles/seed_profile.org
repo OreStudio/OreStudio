@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 449D18D1-633D-52B3-85A3-4E2240CA46F0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the seed_profiles commands from the shell?
+#+description: Every command the seed_profiles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:seed_profiles:
+
+This file documents the seed_profiles resource at the shell, one section per command. Every command is a subcommand of =seed_profiles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A344807E-E4BC-502D-B7D3-C54657ECADFD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.list=.
+
+#+name: seed_profiles-list
+#+begin_src ores-shell :tangle seed_profiles-list.ores :exports none
+seed_profiles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D0922DE5-13EA-5BCF-AC0F-5E38EA6254DE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles get <id>
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.get=.
+
+#+name: seed_profiles-get
+#+begin_src ores-shell :tangle seed_profiles-get.ores :exports none
+seed_profiles get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 02B333D9-FE38-51E8-8850-CDD4E88B9C67
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles get-many <id>
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.get_many=.
+
+#+name: seed_profiles-get-many
+#+begin_src ores-shell :tangle seed_profiles-get-many.ores :exports none
+seed_profiles get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FE1E9CFC-09A1-52FE-A02E-D79CE0C16997
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles add <code> <name> <description> <audience> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.put=.
+
+#+name: seed_profiles-add
+#+begin_src ores-shell :tangle seed_profiles-add.ores :exports none
+seed_profiles add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 34988B42-C3EA-5143-BB44-3DEEDEBA68EF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles set <id> <code> <name> <description> <audience> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.put=.
+
+#+name: seed_profiles-set
+#+begin_src ores-shell :tangle seed_profiles-set.ores :exports none
+seed_profiles set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 8B07B9A0-CA82-5EEC-A4D8-513C06FBDFD4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles put-many --count <n> <id> <code> <name> <description> <audience> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.put_many=.
+
+#+name: seed_profiles-put-many
+#+begin_src ores-shell :tangle seed_profiles-put-many.ores :exports none
+seed_profiles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B590A6B0-BDD3-59BA-AFF7-BA5ADBC010AE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.delete=.
+
+#+name: seed_profiles-delete
+#+begin_src ores-shell :tangle seed_profiles-delete.ores :exports none
+seed_profiles delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8CFD960C-19E1-500F-BDF2-264250D4E683
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles.delete_many=.
+
+#+name: seed_profiles-delete-many
+#+begin_src ores-shell :tangle seed_profiles-delete-many.ores :exports none
+seed_profiles delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 755E9F7B-7263-5A8F-A8D3-B6B0286BEF46
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles_versions.list=.
+
+#+name: seed_profiles-versions
+#+begin_src ores-shell :tangle seed_profiles-versions.ores :exports none
+seed_profiles versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B8E20581-DDFB-5CC2-A72F-D4C7A279B70C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+seed_profiles version <id> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.seed_profiles_versions.get=.
+
+#+name: seed_profiles-version
+#+begin_src ores-shell :tangle seed_profiles-version.ores :exports none
+seed_profiles version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 4F7A8070-5D33-4787-898F-AC024FC06A1D
+:END:
+#+title: The generated shell get, delete, versions and version never read a minted UUID key
+#+description: The shell-command template fills a positional key only for a column the caller supplies on a write; a surrogate UUID is minted, so get, delete, versions and version emit the arity check and read nothing, and every one of them sends a default key.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:generator-defect:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/library/templates/cpp_shell_command_impl.cpp.mustache=
+fills a positional argument into the request through a loop gated on both the
+key column and an =is_user= flag:
+
+#+begin_src mustache
+{{#keys}}
+{{#is_user}}
+    read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
+{{/is_user}}
+{{/keys}}
+#+end_src
+
+=is_user= states whether the caller supplies the column on a *write*. An
+entity's surrogate UUID is minted rather than supplied, so =id= carries
+=is_user = false= — correctly, because =put= mints it. The key-read blocks
+reuse the same gate, and for an entity whose whole key is that UUID the loop
+body is empty: =get=, =delete=, =versions= and =version= check the positional
+count, read no token, and send a default-constructed (=nil=) key.
+
+The commands that do work fill the key through their own blocks: =get-many=
+and =delete-many= read =key.id= positionally, =add= and =set= read the write
+record, and the parent-scoped read reads its filter column.
+
+* Why
+
+The subject answers and the service reads correctly; the caller asks for the
+wrong row. Measured on the seed profile entity, whose key is its minted =id=,
+in one authenticated shell session against the live service:
+
+#+begin_example
+seed_profiles list --limit 10
+  {"outcome":"ok", ... "code":"empty_operational" ... , "code":"acme_demo" ...}
+seed_profiles get-many 1bf0711f-ea4d-4465-87f3-54601f68ee4c
+  {"outcome":"ok", "entries":[{"seed_profile":{"code":"empty_operational" ...}}]}
+seed_profiles get 1bf0711f-ea4d-4465-87f3-54601f68ee4c
+  {"outcome":"missing","code":"not_found"}
+seed_profiles delete <id> system.new_record commentary
+  (reads no key: the delete addresses the nil UUID)
+#+end_example
+
+The last line is the one that matters beyond a failed read: a generated
+=delete= for this shape reports on a row nobody named, so a caller that
+believes it removed a row removed nothing. =get= is the canonical single-row
+read the component standard's P01 names, so an entity of this shape has no
+working single-row read from the shell at all.
+
+It is not specific to ores.iam. Every generated shell unit for an entity whose
+key is a minted UUID carries the shape: =ores.dq.publication=,
+=ores.compute.result=, =ores.compute.workunit=, the seven =ores.synthetic=
+generation configs, and every trading instrument. Only the natural-key entities
+(=role=, =tenant_type=, =dataset_bundle=) fill their key today.
+
+The fix belongs in the template, not in the generated files: a key read states
+the columns the *caller* names, and a minted UUID is one of them — minting is a
+write-time property. Either =is_user= splits into a write flag and a key flag,
+or the key-read blocks read ={{name}}= unconditionally. Whichever it is, the
+change regenerates every id-keyed shell unit in the tree, so it wants its own
+piece of work rather than a hand edit here.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_shell_command_impl.cpp.mustache:193= — the =is_key_read= block whose key loop reads nothing for a minted key.
+- =projects/ores.codegen/library/templates/cpp_shell_command_impl.cpp.mustache:221= — the =is_put= block, where =id= is correctly minted or supplied.
+- =projects/ores.shell/iam/src/app/commands/iam/seed_profile_commands.cpp:245= — the generated =process_get=: arity check, no =read_token=.
+- =projects/ores.shell/dq/src/app/commands/dq/publication_commands.cpp= — the same hole on a component that has never been through this shell path.
+- =projects/ores.iam/core/tests/seed_profile_eventing_integration_tests.cpp= — the generated test that reads the same row by id through the service, which is why the defect is the caller's and not the read's.
+
+* See also
+
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — P01, the canonical entity protocol whose =get= this reaches.
+- [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] — the facet the template belongs to.

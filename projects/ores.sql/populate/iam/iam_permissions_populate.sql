@@ -78,6 +78,17 @@ BEGIN
     -- Login info permissions (read-only audit data)
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::login_info:read', 'View login history and info');
 
+    -- Seed profile permissions. The generated handlers check these two codes:
+    -- a read carries no permission check, the same as every other entity's
+    -- derived read. The steps and the parameters are what a write to a profile
+    -- reaches, so they carry their own pair rather than sharing the profile's.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profiles:write', 'Create and modify seed profiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profiles:delete', 'Delete seed profiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_steps:write', 'Create and modify the step kinds a seed profile orders');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_steps:delete', 'Delete a step kind from a seed profile');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:write', 'Create and modify the parameters a seed profile declares');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:delete', 'Delete a parameter from a seed profile');
+
     -- IAM component wildcard
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::*', 'Full access to all IAM operations');
 

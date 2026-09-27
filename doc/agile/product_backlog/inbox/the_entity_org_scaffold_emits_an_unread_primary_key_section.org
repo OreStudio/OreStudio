@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2BD2E2E4-2F11-4622-B2C4-93F43EB79277
+:END:
+#+title: The entity_org scaffold writes a Primary key section the entity loader does not read
+#+description: compass add entity_org scaffolds a model whose id column sits under a Primary key heading; ores.codegen.entity reads the key from Columns, so the first regeneration refuses the model it just wrote.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:defect:scaffold:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass add entity_org= renders
+=projects/ores.codegen/library/templates/doc_entity_org.org.mustache=, which
+writes the surrogate key as a =* Primary key= section carrying
+=:column:/:type:/:cpp_type:=. Every other section of the scaffold is the shape
+the entity loader parses.
+
+=ores.codegen.entity= does not read that section. =org_loader.py= reads
+=* Primary key= on the *lookup_entity* path only
+(=_load_lookup_entity=, beside the comment that says a lookup declares its
+single-column key on the heading), and the entity path collects the key from
+=* Columns=, where the primary key is the =**= sub-heading flagged
+=:primary_key: true=. So a freshly scaffolded entity model fails its first
+regeneration with:
+
+#+begin_src text
+Missing primary key: no field in 'Columns' is flagged :primary_key: true --
+or state :no_primary_key: true if the record carries no key
+#+end_src
+
+The author's first act on every new entity is therefore to move =id= out of the
+scaffold's section and into =* Columns=, and to delete the heading. Only the
+surrogate-keyed shapes are affected; a model that declares =:no_primary_key:=
+is untouched.
+
+* Why
+
+The scaffold exists so that a new entity starts on the current format, and its
+whole value is that the file it writes regenerates. Today the file it writes is
+rejected by the generator before any of the author's own content is reached, and
+the error names a section the author is looking at and believes is correct.
+
+The two loaders disagreeing about one heading is the real defect. Either the
+entity loader reads =* Primary key=, or the entity scaffold stops writing it;
+the second is the smaller change and keeps one key convention per model type.
+
+* References
+
+- =projects/ores.codegen/library/templates/doc_entity_org.org.mustache:42= — the =* Primary key= section the scaffold writes.
+- =projects/ores.codegen/src/codegen/org_loader.py:5292= — the lookup_entity reader, the only reader of that heading.
+- =projects/ores.codegen/src/codegen/org_loader.py:1876= — the entity validation that refuses the scaffolded file.
+- =projects/ores.iam/modeling/ores.iam.seed_profile.org= — an entity commissioned through the scaffold, where this was hit.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the file shape both readers implement.
+- [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][Codegen entity — post-generation checklist]] — what a new entity also needs by hand, beside the model.

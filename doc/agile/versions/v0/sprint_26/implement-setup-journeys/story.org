@@ -95,6 +95,7 @@ state and the progress are real.
 | [[id:6D345419-B3C5-4B20-BE04-126807CC4641][Give the setup screen its banner and its copy]] | DONE | 2026-09-27 | 2026-09-27 | The setup screen is the first thing an empty installation shows, so it carries the ORE Studio banner, and its copy states the mode and the next action without the conversational filler. |
 | [[id:549C5E75-56B8-47B9-B365-9B9FC0F8D023][Create the first administrator from the setup screen]] | DONE | 2026-09-27 | 2026-09-27 | The setup screen creates the first administrator with no session, through a hand-written BFF route and a wire-client method, and the server closes bootstrap mode when it succeeds. |
 | [[id:F22E12E7-C099-4B6F-BD7A-024448F015A8][Default the administrator's identity on the setup screen]] | DONE | 2026-09-27 | 2026-09-27 | The setup form proposes super_admin and its system-scope address, so an empty installation needs only a password, and both fields stay editable. |
+| [[id:2888E3D3-CCC0-43B5-AEB4-6A20A5298188][Model the seed profile and seed the two profiles]] | STARTED | 2026-09-27 | | The seed profile is registered data: a row orders step kinds from a fixed catalogue and declares the parameters its form takes. Empty operational and ACME demo become rows. |
 
 * Plan
 

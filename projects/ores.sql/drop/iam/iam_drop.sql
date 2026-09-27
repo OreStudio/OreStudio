@@ -57,6 +57,14 @@
 \ir ./iam_account_types_notify_trigger_drop.sql
 \ir ./iam_account_types_drop.sql
 
+-- Seed profiles (children first - they depend on the profile)
+\ir ./iam_seed_profile_steps_notify_trigger_drop.sql
+\ir ./iam_seed_profile_steps_drop.sql
+\ir ./iam_seed_profile_parameters_notify_trigger_drop.sql
+\ir ./iam_seed_profile_parameters_drop.sql
+\ir ./iam_seed_profiles_notify_trigger_drop.sql
+\ir ./iam_seed_profiles_drop.sql
+
 -- Population functions
 \ir ./iam_population_functions_drop.sql
 

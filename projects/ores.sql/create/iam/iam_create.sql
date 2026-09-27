@@ -41,6 +41,15 @@
 \ir ./iam_account_contact_informations_create.sql
 \ir ./iam_account_contact_informations_notify_trigger_create.sql
 
+-- Seed profiles (system-owned registered data; the step and parameter
+-- children depend on the profile)
+\ir ./iam_seed_profiles_create.sql
+\ir ./iam_seed_profiles_notify_trigger_create.sql
+\ir ./iam_seed_profile_steps_create.sql
+\ir ./iam_seed_profile_steps_notify_trigger_create.sql
+\ir ./iam_seed_profile_parameters_create.sql
+\ir ./iam_seed_profile_parameters_notify_trigger_create.sql
+
 -- Sessions
 \ir ./iam_sessions_create.sql
 \ir ./iam_sessions_notify_trigger_create.sql

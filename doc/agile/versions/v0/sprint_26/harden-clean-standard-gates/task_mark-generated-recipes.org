@@ -35,11 +35,11 @@ recipe facets need a facet from another space.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
-| Now          | Marker emitted, rollout applied, recording the two findings. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The recipe staleness, which needs its owner. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -168,3 +168,38 @@ recipes end to end, and the tests constrain in both directions.
 | 5 | The CI sweep job fails on =lei_entity.org= and =lei_relationship.org=. Rendering after a rebase produces 77 lines where the tree holds 224, so main's staging-only change left both recipes stale, and this branch had touched them with the marker. | =doc/recipes/shell/lei_*/= | Reverted, recorded | The marker was reverted on those two so the change stays purely additive. Regenerating would delete 147 lines of generated content, and whether a staging shim keeps a recipe at all is the =dq= owner's call, so it is filed rather than guessed at. |
 
 * Result
+
+Generated org output now carries the codegen marker every other generated kind
+already carried. The recipe templates had one, but as a Mustache comment, and
+Mustache comments emit nothing, so no generated recipe ever reached the tree
+with one: 247 files sit at the generated recipe path shape and 172 carry the
+=tangle= block a generated recipe exports, against 6,478 tracked C++ files that
+name their template.
+
+The marker is emitted at the render seam as a =#+generated:= keyword placed
+immediately after the frontmatter drawer. The placement is measured rather than
+chosen for looks: the doc index reads the drawer from the first line and folds
+whatever precedes it into the blurb that =compass show= prints, and the blurb
+skips =#+= lines and blank lines and stops at anything else, so a marker above
+the drawer corrupts the blurb in either spelling. All 281 org files under the two
+recipe directories load with a non-empty blurb and none with the marker in it.
+
+The rollout rewrote existing files, so it wrote a recipe only where the marker
+was the sole difference: 111 files changed, 111 lines added, 0 removed, every
+added line a marker, and nothing but the marker in any of them. Two further
+recipes the marker pass had touched were reverted when the rebase showed main's
+staging-only change now renders them with no command sections, because deleting
+147 lines of generated content is the =dq= owner's call and not a marker pass's.
+
+The sweep renders the whole =ores= address now, so the recipe facets fire and the
+generated recipes have a gate for the first time. It reports 857 files drifting
+elsewhere in the catalogue where it reported 645 before, and stays green because
+none of that drift is a branch's. Proven end to end: appending a line to a
+generated recipe makes the sweep exit 1 and name it, where before the change it
+could not see a recipe at all.
+
+Three findings are filed rather than fixed: 58 recipes are stale by =__none__=
+becoming a hyphen, the two staging-shim recipes above, and 76 files at the
+generated path shape with no model behind them. Codegen suite 906 passed,
+=compass lint= clean, =validate_docs.sh= 40 of 40, and all eleven CI checks pass
+including the new sweep job.

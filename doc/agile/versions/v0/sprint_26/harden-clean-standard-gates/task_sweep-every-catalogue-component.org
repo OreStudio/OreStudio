@@ -33,11 +33,11 @@ has no gate at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
-| Now          | Writing the sweep and its tests.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Verify the sweep catches the measured case end to end. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -176,3 +176,32 @@ Second round, on the head the first round's fixes produced:
 | 9 | The deletion residue is wider than the record says: the rule catches a deletion only while some model still produces the path, and a committed deletion of a path no model produces is silent. | task doc | Fixed | Both the limit and the acceptance bullet now say that, and name it as the shape a cross-component rename leaves behind. |
 
 * Result
+
+=check_component_drift.py --sweep= renders every catalogue component that owns a
+modeling directory, twenty of them, into a temporary root and compares the result
+against the repository. It reaches the two kinds of generated output the registry
+cannot: a component waiting its turn, and output an archetype routes into another
+component's tree. Rendering =ores.trading= at the =ores.cpp= address writes 66
+files under =projects/ores.shell/trading/=, and no run of =ores.shell= can reach
+them.
+
+It fails only on a path it would change that the branch also touched, because 645
+files would change across the catalogue today and that debt belongs to each
+component's own clean-up. The base is the merge base with =origin/main=, and the
+sweep refuses when it cannot resolve one rather than reading every component's
+debt as a failure. It renders and compares only, so it writes nothing and is safe
+on a branch whose templates are older than main's.
+
+It runs in its own workflow, =codegen-sweep.yml=, which fires on any change under
+=projects/= because the measured case touched no model at all. A full sweep takes
+about a minute, 74 seconds measured here and 61 on the reviewing machine, and the
+job is 2 minutes with its setup. It is named in V05 of the Component Clean
+Standard and in the =compass-pr-raise= gate roster. Thirteen tests drive the rule
+against a throw-away tree with the render stubbed, and the codegen suite is 887
+passed.
+
+Two limits are recorded rather than closed, and both are the price of rendering
+per technical space: the recipe facets fire only at the whole =ores= address, so
+the 247 files at the generated recipe path shape have no gate; and the comparison
+walks the render's output, so a committed deletion of a path no model produces any
+more is silent.

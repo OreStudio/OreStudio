@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/fix-lei-staging-entities
-#+pr: 2268
+#+pr: 2270
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -151,6 +151,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2270][#2270]] | [agile] Close the LEI staging-entity task |
 | [[https://github.com/OreStudio/OreStudio/pull/2268][#2268]] | [dq] Point the LEI staging entities at the table they read |
 | [[https://github.com/OreStudio/OreStudio/pull/2253][#2253]] | [dq] Scaffold the LEI staging-entity task with its diagnosis |
 

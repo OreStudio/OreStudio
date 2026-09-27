@@ -309,7 +309,12 @@ domain::{{entity_singular}}
 {{/is_enum}}
 {{/render_is_enum}}
 {{#is_simple}}
+{{#no_wire}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.value();
+{{/no_wire}}
+{{^no_wire}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
+{{/no_wire}}
 {{/is_simple}}
 {{/sql_only}}
 {{/columns}}

@@ -103,7 +103,9 @@ export interface {{entity_pascal}} {
 {{#columns}}
 {{^is_identity_group_column}}
 {{^sql_only}}
+{{^no_wire}}
     {{name}}: {{ts_type}};
+{{/no_wire}}
 {{/sql_only}}
 {{/is_identity_group_column}}
 {{/columns}}

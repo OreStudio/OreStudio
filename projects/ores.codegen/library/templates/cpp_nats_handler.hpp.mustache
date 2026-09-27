@@ -77,12 +77,12 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-{{#is_write}}
+{{#is_guarded}}
         if (!has_permission(req_ctx, "{{component}}::{{entity_plural}}:{{permission}}")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-{{/is_write}}
+{{/is_guarded}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
@@ -198,12 +198,12 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-{{#is_write}}
+{{#is_guarded}}
         if (!has_permission(req_ctx, "{{component}}::{{name}}:{{permission}}")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-{{/is_write}}
+{{/is_guarded}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
             BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)

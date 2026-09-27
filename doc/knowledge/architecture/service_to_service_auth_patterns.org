@@ -150,8 +150,62 @@ prompt to add a typed client library for the owned service (see
 =ores.marketdata.client= as the reference pattern), not a reason to reach
 around the service boundary.
 
+** Across the HTTP edge, and what storage adds
+
+Everything above is about NATS, but the same question is asked at the HTTP
+boundary and the answer is the same: *a route has a caller, so it acts as that
+caller*. The generated routes do it for their author rather than trusting them
+to remember -- the route templates build
+
+#+begin_src cpp
+auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+#+end_src
+
+so every modelled route relays the caller's identity to the service that serves
+it, and a route that a hand-written handler backs follows the same rule.
+
+Byte movement is where this becomes visible, because object storage answers on
+both interfaces. =storage_transfer= takes a bearer token as a *required*
+parameter, and the callers that have a caller to forward pass that caller's
+token -- =extract_bearer(msg)= off an inbound NATS message, or a token carried in
+the request itself. The token is the end user's, not the relaying service's, and
+storage authorises against it.
+
+Two consequences follow, and both were learned the hard way:
+
+- The HTTP boundary must verify the tokens the platform actually issues. IAM
+  signs the session tokens (RS256, published through its JWKS); if the edge
+  verifies a different algorithm, every delegated call dies at the boundary on
+  the algorithm rather than on a permission, and the failure looks like an
+  authorisation bug in a service that is behaving correctly.
+- Where no caller exists there is nothing to forward. A timer, a scheduled
+  publish or a startup task acts as the service, with the client-credentials
+  identity built once from =svc_nats=; a workflow step acts as the caller only
+  when the request that dispatched it carried that caller's token.
+
+A token that travels inside a request is a short-lived credential, not durable
+state. It may be relayed through a message; it must not become a stored
+credential, and a row, a queue archive or a workflow instance that retains one
+past the request is a defect worth reporting. *Open question:* the ORE import
+request carries =bearer_token=, and the workflow instance is persisted, so
+whether that token is stored with it needs checking -- the policy above says it
+must not be.
+
+By layer, then:
+
+| Layer                        | Acts as                        | Mechanism                                |
+|------------------------------+--------------------------------+------------------------------------------|
+| UI, CLI, =ores.shell=        | The signed-in user             | Session token on every call              |
+| HTTP edge (generated routes) | The caller, always             | =with_delegation(req.get_bearer_token())= |
+| Domain service handler       | The caller, for user-shaped work | Forward the inbound bearer             |
+| Domain service, own work     | Itself                         | Client credentials built once (=svc_nats=) |
+| Workflow step or timer       | Itself, unless dispatched with a bearer | Client credentials, or the dispatched token |
+| Orchestrator, internal actor | A specific end user, no client | Self-minted impersonation, last resort   |
+
 * See also
 
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the
+  bucket and key protocol, and the delegated bearer the storage interfaces take.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — "Calling another service: mint or delegate", the
   mechanics this doc names and expands on.

@@ -42,6 +42,7 @@ set(files
     "methodology_commands_tests.cpp"
     "nature_dimension_commands_tests.cpp"
     "origin_dimension_commands_tests.cpp"
+    "publication_commands_tests.cpp"
     "subject_area_commands_tests.cpp"
     "synthetic_fx_spot_config_commands_tests.cpp"
     "treatment_dimension_commands_tests.cpp"

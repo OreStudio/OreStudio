@@ -813,3 +813,7 @@ tangled into the runnable script library
 * Subject Areas
 
 - [[id:BEFE8DA0-ABAD-5C04-9163-EE52A13EDDFC][How do I run the subject_areas commands from the shell?]]
+
+* Publications
+
+- [[id:924F7A20-A61E-52A4-B2CE-951A084C6216][How do I run the publications commands from the shell?]]

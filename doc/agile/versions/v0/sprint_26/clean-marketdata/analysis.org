@@ -351,21 +351,24 @@ commodity one, 426 by the basis swap's named form, 205 by the security class,
 171 by the shape-profile one and 128 by the rating one. The shape record is down
 to CPR alone, and 99.99% of the corpus is named.
 
-What is left is 46 keys, and nothing in it is a shape defect:
+The corpus is named in full. 485,606 of 485,606 keys project to an oresmd
+identifier and every one of them reads back as itself, so there is no coverage
+gap left to close or to record.
 
-- =IR_SWAP= (42) and =MM= (4) are F-TIIE. The family list holds =tiie= and not
-  =ftiie=, and F-TIIE is a second Mexican benchmark rather than a spelling, so
-  closing it means widening a CHECK constraint on an ores table. That is a domain
-  decision, not a key grammar, and it has its own capture.
+PR 2 closed the last two by the records rather than by the shapes, and neither
+was a shape defect:
 
-=CPR= was the last entry in the shape record beside it, and PR 2 closed it by
-moving the type to the =security= class, where its ISIN-keyed shape belongs. The
-shape-mismatch record and the test-coverage exemption list are both empty now --
-the second and third exception lists this work has emptied rather than shortened.
+- =CPR= moved from commodity to the =security= class. It was the last entry in
+  the shape-mismatch record and the only entry in the test-coverage exemption
+  list, and both are now empty.
+- =F-TIIE= joined =index_family= as an overnight benchmark, which meant widening
+  both CHECK constraints on =ores_synthetic_ir_curve_generation_configs_tbl= and
+  adding a one-shot migration. The 46 MXN keys it unblocked were the last ones.
 
-Every ORE series type is now either represented or recorded with its reason, the
-corpus names every key of every type but F-TIIE, and the gate fails if a gap goes
-unrecorded.
+Two further index tokens needed no family at all: a basis swap names the basis
+itself and a swap may name a curve marker rather than a benchmark. Both ride in
+=index_spelling=, the field that already carries a producer's spelling, and are
+emitted whole.
 
 ** The security class exposed two generator defects
 

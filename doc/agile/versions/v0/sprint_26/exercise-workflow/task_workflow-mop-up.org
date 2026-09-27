@@ -8,7 +8,7 @@
 #+filetags: :exercise-workflow:sprint_26:v0:
 #+owner: marco
 #+branch: feature/workflow-configurations
-#+pr: 2207
+#+pr: 2225
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -156,6 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2225][#2225]] | [shell] Add the identity workflow configurations |
 | [[https://github.com/OreStudio/OreStudio/pull/2207][#2207]] | [workflow] Serialise the engine handlers; wake the test watchdog |
 
 * Review

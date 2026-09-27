@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/fix-artefact-schema-defects
-#+pr:
+#+pr: 2233
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -66,7 +66,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2233][#2233]] | [dq] Emit the artefact key index once, and give tags an arbiter |
 
 * Review
 

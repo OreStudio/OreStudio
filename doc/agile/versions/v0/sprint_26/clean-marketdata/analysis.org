@@ -975,6 +975,31 @@ hand-written lines. Nothing imports a real ORE sample file and asserts the
 rows. So "every sample file reads into the database correctly" is unmeasured
 rather than unfinished. That test is the first thing PR 4 builds.
 
+*Update: it is built, and the answer is yes.* =service_corpus_import_tests.cpp=
+imports every market payload under =external/ore/examples= -- 118 files -- and
+reads the rows back, and all of them pass. It found three defects on the way
+that this analysis had recorded as fixed in PR 2, which is the argument for
+having built it before touching the import boundary:
+
+- =parse_date= read two of the five date formats the corpus uses.
+  =DD-MM-YYYY= (9,302 lines), =DD.MM.YY= (96) and =DD.MM.YYYY= (25) all threw
+  =unrecognised date format=, so two 4,652-line files could not be imported at
+  all. Ten characters is not enough to tell =DD-MM-YYYY= from =YYYY-MM-DD=;
+  the separator positions decide.
+- The tokeniser took its comma path only when a line held two commas or more,
+  so a line like =2025-02-10,RECOVERY_RATE/RATE/BANK/SR/EUR 0.4= -- one comma,
+  a space before the value -- fell through to the whitespace path and aborted
+  its whole file.
+- ORE's own examples repeat (date, key) pairs, and the import de-duplicates
+  them by last-line-wins and reports each as a warning. The first draft of the
+  test read that as data loss, which is a reminder that the expectation has to
+  be the contract rather than the line count.
+
+So the distance to "reads every sample file into the database" was three
+defects, not a programme of work. What remains for PR 4 is the boundary
+itself: oresmd is still not the thing at the write edge, so the rows are
+correct but not *canonically* named, and the export still has nowhere to stand.
+
 The line counts, for the record and for the two bases they are quoted on:
 the corpus is 511,002 lines, 486,436 of them (95.2%) on modelled types. The
 remainder are lines whose first token is not a series type at all

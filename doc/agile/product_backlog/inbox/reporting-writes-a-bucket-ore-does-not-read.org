@@ -13,16 +13,51 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+=ores.reporting= gathers a report's inputs by asking =ores.trading= and
+=ores.marketdata= to write them to object storage. It hands both of them the
+bucket and the key, so neither handler owns either: the bucket comes from
+=service::report_data_bucket=, which is =report-data=, and the key is
+=report_instance_id + "/trades.msgpack"=.
+
+=ores.ore= then reads those same blobs when it packages the report, but it
+reads them from =object_keys::ores_bucket=, which is =ores=, and it receives the
+keys the writer echoed back. So the writer and the reader of one object disagree
+about the bucket, and the read cannot find what the write stored.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The interface task migrated the consumers onto the protocol in
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] and recorded
+"the =compute=, =ore-imports= and =report-data= names are gone". That is true of
+=compute= and of =ore=, and false of =reporting=: =report_data_bucket= is still
+=report-data=. The migration also left the key as two segments, where the
+protocol is =<service>/<purpose>/<id>[/<name>]=; the protocol's own comment on
+the trading request already names the intended shape,
+=reporting/runs/{instance_id}/trades.msgpack=.
+
+The two spellings agreeing is what the header comment claims: "the ore service
+names the same bucket for the packaging step, and the two spellings have to
+agree". They do not.
+
+Nothing catches it because the server keeps no bucket allow-list -- it creates a
+bucket on first write -- so the write succeeds into =report-data= and only the
+later read fails. That is the shape of the class: with no list to fall behind,
+the only signal is the read.
+
+Found while researching what "the trading and marketdata export handlers are
+main's own and were untouched" meant, as part of
+[[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface
+leftovers]]. Not fixed there: reporting is another environment's live work.
 
 * References
 
--
+- =projects/ores.reporting/core/include/ores.reporting.core/service/execution_storage_plan.hpp:37= — =report_data_bucket = "report-data"=
+- =projects/ores.reporting/core/src/service/execution_storage_plan.cpp:25= — =report_instance_id + "/trades.msgpack"=
+- =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:180= — the bucket handed to trading
+- =projects/ores.ore/service/src/messaging/report_package_handler.cpp:40= — the bucket the reader uses
+- =projects/ores.reporting/core/tests/service_execution_storage_plan_tests.cpp:35= — the test that pins the retired name
 
 * See also
 
--
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the protocol the write path does not follow.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the other large consumer, which does follow it.

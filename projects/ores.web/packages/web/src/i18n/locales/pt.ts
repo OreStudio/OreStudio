@@ -447,7 +447,13 @@ const pt: SourceCatalogue = {
         title: 'Configurar esta instalação',
         bootstrapMode:
             'Esta instalação ainda não tem uma conta de administrador e está em modo de arranque. Ninguém pode iniciar sessão enquanto não existir um administrador.',
-        next: 'O processo de configuração começa com a criação da primeira conta de administrador.',
+        next: 'Crie a primeira conta de administrador para começar.',
+        username: 'Nome de utilizador do administrador',
+        email: 'Email do administrador',
+        password: 'Palavra-passe do administrador',
+        create: 'Criar administrador',
+        creating: 'A criar...',
+        failed: 'O administrador não foi criado:',
     },
 
     gate: {

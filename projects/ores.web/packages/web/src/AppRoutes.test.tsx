@@ -72,6 +72,7 @@ function render(
                     onChooseParty={async () => undefined}
                     onSignOut={() => undefined}
                     onRetryBootstrap={() => undefined}
+                    onCreateAdministrator={async () => undefined}
                     {...overrides}
                 />
             </MemoryRouter>
@@ -80,14 +81,24 @@ function render(
 }
 
 describe('the bootstrap gate', () => {
-    it('renders the setup page and no sign-in for any path while the flag is set', () => {
+    it('renders the setup page, and no sign-in, for any path while the flag is set', () => {
         const html = render('/iam/account', inBootstrap, anonymous);
 
         expect(html).toContain('Set up this installation');
         expect(html).toContain('does not have an administrator account yet');
         expect(html).toContain('This deployment has not been provisioned.');
-        expect(html).not.toContain('Username');
-        expect(html).not.toContain('type="password"');
+        // The setup form asks for a new password; the sign-in form is the one
+        // that would ask for an existing one, and it is not offered.
+        expect(html).toContain('new-password');
+        expect(html).not.toContain('current-password');
+    });
+
+    it('offers the action that closes bootstrap mode', () => {
+        const html = render('/', inBootstrap, anonymous);
+
+        expect(html).toContain('Create administrator');
+        expect(html).toContain('Administrator username');
+        expect(html).toContain('Administrator email');
     });
 
     it('carries the banner, so the first screen of an installation looks like the product', () => {
@@ -96,11 +107,11 @@ describe('the bootstrap gate', () => {
         expect(html).toContain('ore-studio-splash');
     });
 
-    it('renders the setup page at the sign-in path too, so the form is never offered', () => {
+    it('renders the setup page at the sign-in path too, so signing in is never offered', () => {
         const html = render('/login', inBootstrap, anonymous);
 
         expect(html).toContain('Set up this installation');
-        expect(html).not.toContain('type="password"');
+        expect(html).not.toContain('current-password');
     });
 });
 
@@ -140,6 +151,6 @@ describe('a server that does not answer', () => {
         expect(html).toContain('The server did not answer');
         expect(html).toContain('503: no broker');
         expect(html).toContain('Try again');
-        expect(html).not.toContain('Username');
+        expect(html).not.toContain('Create administrator');
     });
 });

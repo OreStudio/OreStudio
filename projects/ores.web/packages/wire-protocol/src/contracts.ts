@@ -95,6 +95,26 @@ export const bootstrapStatusSchema = z.object({
 export type BootstrapStatus = z.infer<typeof bootstrapStatusSchema>;
 
 /**
+ * Creating the first administrator.
+ *
+ * The one request the browser sends with no session, because the deployment has
+ * no account to sign in with. What comes back is the account, not a session:
+ * the person signs in with it next, which is the point of the setup screen.
+ */
+export const createAdministratorRequestSchema = z.object({
+    principal: z.string().min(1),
+    password: z.string().min(1),
+    email: z.string().min(1),
+});
+export type CreateAdministratorRequest = z.infer<typeof createAdministratorRequestSchema>;
+
+export const initialAdministratorSchema = z.object({
+    accountId: z.string(),
+    tenantId: z.string(),
+});
+export type InitialAdministrator = z.infer<typeof initialAdministratorSchema>;
+
+/**
  * Where to connect, and who to connect as.
  *
  * The endpoint comes from the connections store rather than from this server's
@@ -134,6 +154,7 @@ export const apiErrorSchema = z.object({
         'forbidden',
         'invalid-request',
         'bootstrap-mode',
+        'bootstrap-complete',
         'upstream-unavailable',
         'upstream-timeout',
         'internal',

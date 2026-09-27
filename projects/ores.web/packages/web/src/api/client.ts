@@ -21,9 +21,12 @@
 
 import {
     bootstrapStatusSchema,
+    initialAdministratorSchema,
     loginResultSchema,
     sessionViewSchema,
     type BootstrapStatus,
+    type CreateAdministratorRequest,
+    type InitialAdministrator,
     type LoginResult,
     type SessionView,
 } from '@ores/wire-protocol/browser';
@@ -54,6 +57,22 @@ export const api = {
      */
     async bootstrapStatus(): Promise<BootstrapStatus> {
         return bootstrapStatusSchema.parse(await request('/api/bootstrap', { method: 'GET' }));
+    },
+
+    /**
+     * Creates the first administrator, which closes bootstrap mode.
+     *
+     * The one write sent with no session, because the deployment has no account
+     * to sign in with. What comes back is the account rather than a session:
+     * the person signs in with it next.
+     */
+    async createAdministrator(request_: CreateAdministratorRequest): Promise<InitialAdministrator> {
+        const payload = await request('/api/bootstrap/administrator', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(request_),
+        });
+        return initialAdministratorSchema.parse(payload);
     },
 
     async login(credentials: Credentials): Promise<LoginResult> {

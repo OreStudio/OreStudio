@@ -157,6 +157,8 @@ export type { AuthenticatedCaller } from './account-operations.js';
 export {
     apiErrorSchema,
     bootstrapStatusSchema,
+    createAdministratorRequestSchema,
+    initialAdministratorSchema,
     loginRequestSchema as httpLoginRequestSchema,
     loginResultSchema,
     loginSuccessSchema,
@@ -168,6 +170,8 @@ export {
 export type {
     ApiError,
     BootstrapStatus,
+    CreateAdministratorRequest,
+    InitialAdministrator,
     LoginResult,
     LoginSuccess,
     PartyChoice,

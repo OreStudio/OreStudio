@@ -17,21 +17,11 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-# Template: cmake_composite_root.mustache
+# Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/trading)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/iam)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/refdata)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/marketdata)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/dq)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/analytics)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/assets)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/compute)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/synthetic)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/workflow)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/variability)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/storage)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/reporting)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/application)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+set(files
+    "main.cpp"
+    "market_series_commands_tests.cpp"
+    "observation_lineage_commands_tests.cpp"
+    "series_classification_rule_commands_tests.cpp"
+)

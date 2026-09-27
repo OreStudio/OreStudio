@@ -22,6 +22,9 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/marketdata/market_series_commands.hpp"
+#include "ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
+#include "ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -57,6 +60,14 @@ std::optional<std::string> read_file(const std::string& path) {
 }
 
 void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    // Generated per-entity command units. Each projects one market-data
+    // entity onto the REPL as a top-level menu of its own, so the commands a
+    // user can type cannot drift from the operations the service offers.
+    market_series_commands::register_commands(root_menu, session);
+    observation_lineage_commands::register_commands(root_menu, session);
+    series_classification_rule_commands::register_commands(root_menu, session);
+
+    // Import has no modelled operation family yet, so it stays hand-written.
     auto marketdata_menu = std::make_unique<cli::Menu>("marketdata");
 
     marketdata_menu->Insert(

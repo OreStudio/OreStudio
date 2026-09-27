@@ -7,7 +7,7 @@
 #+description: Interactive REPL for connecting to ORE Studio via NATS — currency queries, account management, and auto-login.
 #+type: ores.codegen.component
 #+component_kind: composite
-#+parts: api trading iam refdata dq analytics assets compute synthetic workflow variability storage reporting application modeling
+#+parts: api trading iam refdata marketdata dq analytics assets compute synthetic workflow variability storage reporting application modeling
 #+level: cross
 #+filetags: :shell:repl:tool:component:
 #+created: 2026-05-20
@@ -37,11 +37,16 @@ directory adds its parts. The parts are:
 | =trading= | Generated command units projecting the trading domain onto the REPL menu. |
 | =iam= | Generated command units projecting the IAM domain onto the REPL menu. |
 | =refdata= | Generated command units projecting the reference-data domain onto the REPL menu. |
+| =marketdata= | Generated command units projecting the market-data domain onto the REPL menu. |
+| =dq= | Generated command units projecting the data-quality domain onto the REPL menu. |
 | =analytics= | Generated command units projecting the analytics domain onto the REPL menu. |
 | =assets= | Generated command units projecting the assets domain onto the REPL menu. |
 | =compute= | Generated command units projecting the compute domain onto the REPL menu. |
 | =synthetic= | Generated command units projecting the synthetic domain onto the REPL menu. |
 | =workflow= | Generated command units projecting the workflow domain onto the REPL menu, plus the one blocking operation no entity verb expresses. |
+| =variability= | Generated command units projecting the variability domain onto the REPL menu. |
+| =storage= | Generated command units projecting the storage domain onto the REPL menu. |
+| =reporting= | Generated command units projecting the reporting domain onto the REPL menu. |
 | =application= | The runnable host: process entry point, config parsing, REPL loop, script runner, the hand-written command units, and the per-domain aggregators. Builds =ores.shell.exe=. |
 | =modeling= | Component documentation and the PlantUML diagram target. Not a compilable library. |
 

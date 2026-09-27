@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 753E0E14-FDCE-46B5-86AD-0F4AF6721CA3
+:END:
+#+title: Story: Format the generated TypeScript with prettier
+#+description: Make prettier the second step of the TypeScript render, exactly as clang-format is for C++, commit the style as a configuration, format the tree once, and gate the check on a pull request.
+#+type: story
+#+level: s2
+#+filetags: :codegen:typescript:gates:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The TypeScript render emits a tree that no formatter owns, so the format check named in package.json has never passed and never run: there is no prettier configuration in the repository at all. The C++ render already runs clang-format over its output as a second step, and the drift gate depends on that, so the generated C++ is byte-identical to clang-format output. The TypeScript facets need the same second step, a committed style, and a workflow that runs the check.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The story is scaffolded. Nothing is formatted yet: the check is red on every generated file and no configuration exists. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit the style, add the render step, format the tree, and gate the check. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- A prettier configuration is committed and states the house style: 4-space indentation, single quotes, 100 columns, with JSON, Markdown and CSS at 2 spaces because that is their convention.
+- The TypeScript render runs prettier over its own output, as the C++ render runs clang-format, so the generator and the drift gate agree byte for byte and no generated file is hand-formatted.
+- package-lock.json is excluded, because npm owns the file.
+- The generated tree and the hand-written tree both pass prettier --check.
+- The TypeScript workflow runs the format check, and the codegen-drift workflow installs the same pinned prettier the workspace declares, because the drift gate reads every generated file as drifted without it.
+- The TypeScript Clean Standard records what changed against its first audit, with the numbers re-measured at the commit that lands this.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:06C72448-F226-4D00-9C29-A1A09A38FFCB][Scaffold story: Format the generated TypeScript with prettier]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E2916B0D-F652-4F9D-B664-A828F10916D6][Format the generated TypeScript with prettier]] | BACKLOG | | | Commit the prettier style, run prettier from the TypeScript render the way the C++ render runs clang-format, format the tree once, and gate the check in CI. |
+
+* Decisions
+
+- *The house style is the C++ style.* Four spaces, single quotes and 100
+  columns, matching =.clang-format= (=IndentWidth: 4=, =ColumnLimit: 100=), so
+  one style governs both languages. JSON, Markdown and CSS stay at two spaces,
+  because that is the convention for those formats, and the configuration says
+  so in an override rather than leaving it to a default.
+- *The generator formats its own output.* The alternative was to exclude
+  =src/generated/= from prettier and leave the templates as they are. Running
+  prettier inside the render is what
+  [[id:CDE625E2-96AE-4644-9921-282339925F3E][the TypeScript Clean Standard]]'s
+  TS-R02 prefers, and it keeps the drift gate meaningful: the gate compares
+  rendered bytes, so the render and the check have to format identically. It is
+  also why no generated file is ever hand-formatted — the next regeneration
+  would undo it.
+- *One pinned prettier.* The workspace declares =3.9.8=, and the drift job
+  installs the same version. A different prettier would read every generated
+  file as drifted, which is the failure the clang-format install in that
+  workflow already warns about.
+- *=package-lock.json= is excluded.* npm owns the file. Reformatting it would
+  add noise to every dependency change and could be undone by the next =npm
+  install=.
+
+* Out of scope
+
+- The lint gate (TS-V05), coverage, and the live-fleet check (TS-V07). Each is
+  its own item in the standard, and this story only closes the formatting ones.
+- The C++ tree, which clang-format and =nightly-format.yml= already own.
+- The templates' own whitespace. The formatter normalises the output, so a
+  template that emits ragged indentation stops mattering.

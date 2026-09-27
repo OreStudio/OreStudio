@@ -186,3 +186,27 @@ TEST_CASE("to_local_display_string_default_format_is_fixed_width", tags) {
 TEST_CASE("k_timestamp_format_is_the_local_display_format", tags) {
     CHECK(std::string(ores::platform::time::k_timestamp_format) == "%Y-%m-%d %H:%M:%S");
 }
+
+TEST_CASE("from_db_string_reads_what_to_db_string_writes", tags) {
+    const auto tp = make_utc(2026, 9, 27, 12, 15, 14);
+    CHECK(datetime::from_db_string(datetime::to_db_string(tp)) == tp);
+}
+
+TEST_CASE("from_db_string_accepts_the_relaxed_and_the_iso_separator", tags) {
+    const auto expected = make_utc(2026, 4, 8, 10, 30, 0);
+    CHECK(datetime::from_db_string("2026-04-08 10:30:00") == expected);
+    CHECK(datetime::from_db_string("2026-04-08T10:30:00") == expected);
+}
+
+TEST_CASE("from_db_string_tolerates_a_designator", tags) {
+    const auto expected = make_utc(2026, 4, 8, 10, 30, 0);
+    CHECK(datetime::from_db_string("2026-04-08 10:30:00Z") == expected);
+    CHECK(datetime::from_db_string("2026-04-08T10:30:00+00:00") == expected);
+}
+
+TEST_CASE("from_iso8601_utc_still_refuses_the_designatorless_form", tags) {
+    // The database form is not the wire form, and the reader that requires a
+    // designator must keep requiring it: that check is what stops an ambiguous
+    // local time being read as UTC.
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:00"), std::invalid_argument);
+}

@@ -88,7 +88,10 @@ std::string display_iso(std::string_view iso) {
     if (iso.empty())
         return std::string(iso);
     try {
-        return display_time(ores::platform::time::datetime::from_iso8601_utc(std::string(iso)));
+        // Either form: an operation read states its designator and a stored
+        // timestamp does not. from_db_string takes both, so a stored value
+        // renders where it used to fall through to the raw string.
+        return display_time(ores::platform::time::datetime::from_db_string(std::string(iso)));
     } catch (const std::exception&) {
         return std::string(iso);
     }

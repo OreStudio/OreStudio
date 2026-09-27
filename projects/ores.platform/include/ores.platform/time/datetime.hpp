@@ -83,6 +83,22 @@ public:
     static std::string to_db_string(const std::chrono::system_clock::time_point& tp);
 
     /**
+     * @brief Parses the form to_db_string writes: either separator, no
+     * designator required.
+     *
+     * This is the inverse of to_db_string and the reader for an instant held in
+     * a text column, which is the shape a timestamp takes once it has been
+     * stored: PostgreSQL returns "YYYY-MM-DD HH:MM:SS" for a TIMESTAMPTZ column
+     * in a UTC session, with no designator, so from_iso8601_utc refuses it.
+     * A designator is tolerated when the caller happens to hold one.
+     *
+     * @param str String to parse.
+     * @return Parsed time point.
+     * @throws std::invalid_argument if the string cannot be parsed.
+     */
+    static std::chrono::system_clock::time_point from_db_string(const std::string& str);
+
+    /**
      * @brief Formats a time point as a human-readable local-time string.
      *
      * Intended for display only (UI, CLI output). Do NOT use for wire

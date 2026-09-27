@@ -166,8 +166,26 @@ task and name that file in the Command column.
   [[id:6C0DA430-B5BC-447C-8BBC-72B4DBDE9420][Five test binaries fail on main, and four of them share one …]],
   records the same failures. This branch's run puts four of those five
   back in the green and leaves only refdata, which the capture now
-  records. It is the one thing left between this PR and a green Linux
-  test phase.
+  records. It is the one thing left between this PR and a green local
+  test run.
+- The refdata cause was found by experiment, and the obvious fix was
+  tried and rejected. A second session listening on the channel while the
+  business_unit test ran received the notification, so the trigger is
+  correct: it announces the declared key =unit_code=, which is what the
+  model declares. The checked-in C++ still declares
+  =business_unit_key{ boost::uuids::uuid id; }=, so the payload does not
+  decode, the event keeps a nil key, the test's =key.id == v.id= never
+  matches, and the test re-drives until the store refuses the duplicate
+  create. The C++ and the eventing tests are stale while the SQL is
+  current; refdata is one of the components the drift gate does not cover.
+  Regenerating it produces 499 files and cannot be committed as it
+  stands: it reverts the hand-written tenant-isolation filter in the
+  generated =party_cache.hpp=, and it breaks two hand-written
+  =push_back= sites in =ores.ore/service/src/messaging/
+  ore_import_execute_handler.cpp=. Both facts are in the capture. The
+  fix is a refdata migration, not a hotfix line, and the test cannot be
+  fixed alone because its comparison and the key type it compares against
+  come from the same codegen.
 
 * PRs
 
@@ -205,9 +223,14 @@ against a standard library with no =atomic<shared_ptr>=; =compass db
 recreate= completes and the storage service account exists; and the site
 publishes every page, the dq artefact page included.
 
-Two things are deliberately not done here. Continuous Windows stays red
-on the =ores.shell.trading= translation unit, by agreement. And
-=ores.refdata.core.tests= fails on the condition the five-binaries
-capture owns, which is 1 of 87 ctest targets and the only thing keeping
-the Linux test phase red after this branch; it needs one decision about
-test semantics across ten assertions, not a hotfix line.
+Three things are deliberately not done here. Continuous Windows may stay
+red on the =ores.shell.trading= translation unit, by agreement -- this
+branch fixes the other Windows blocker, the missing =<string>= include in
+=jetstream_admin.hpp= that stopped every Windows job before it could
+reach the translation unit. =ores.refdata.core.tests= fails on the
+condition the five-binaries capture owns, which is 1 of 87 ctest targets
+and the only red left locally; its cause is now established and its fix
+is a 499-file refdata regeneration that first has to reconcile a
+hand-written security filter and migrate the =ores.ore= callers. And
+=regenerate_cmake_component_files.py --all --check= stays red and
+ungated, captured separately.

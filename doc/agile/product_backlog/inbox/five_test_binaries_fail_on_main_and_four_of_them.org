@@ -46,32 +46,61 @@ pass and the only failure is =ores.refdata.core.tests=. =ores.dq.core.tests=,
 are green, so the four causes behind them were fixed by the work that
 landed in between.
 
-=ores.refdata.core.tests= still fails, and it fails in isolation as well
-as in the full run, at ten assertions across the eventing integration
-tests: =business_unit=, =book=, =portfolio=, =party_identifier=,
-=party_contact_information= (a write refused) and =counterparty=,
-=counterparty_identifier=, =counterparty_contact_information=, =party=,
-=crm_topology_config= (a changed event never seen).
-
-The assertions are ten, across the eventing integration tests:
+=ores.refdata.core.tests= still fails, in isolation as well as in the full
+run, at ten assertions across ten eventing integration tests:
 =business_unit=, =book=, =portfolio=, =party_identifier= and
 =party_contact_information= report a refused write; =counterparty=,
 =counterparty_identifier=, =counterparty_contact_information=, =party=
 and =crm_topology_config= report a changed event that never arrived.
 
-What the run establishes: the tests write one entity, poll up to ten
-seconds for its notification, and, when none arrives, re-drive the write
-with the same version-0 object. The re-drive is a create against a row
-the first write left live, which the store refuses with 'Row already
-exists: a create cannot replace it'. Before =4d36229a81= that duplicate
-replaced the row and the tests passed.
+**The cause, established by direct experiment.** The notification itself is
+correct and does arrive. A second session listening on
+=ores_refdata_business_units= while the business_unit test ran received it:
 
-What the run does not establish is which of the two is cause and which is
-effect. The capture above reads the missing event as a consequence of the
-refused write; the test's own retry comment reads the refused write as a
-consequence of a missing event, and the retry window is an order of
-magnitude longer than the chain it waits on, so a lost notification is
-not the obvious explanation either. Whoever takes this decides between
-the two, and the decision is one for all ten assertions rather than per
-file: either the tests write version-aware, or the notification chain is
-what needs the work.
+#+begin_src text
+Asynchronous notification "ores_refdata_business_units" with payload
+{"key": "{\"unit_code\": \"DESK0\"}", "action": "created",
+ "entity": "ores.refdata.business_unit", "version": 1, ...}
+#+end_src
+
+The trigger therefore announces the *declared* key, =unit_code=, which is
+what the model declares (=:key_field: unit_code=) and what the current
+notify-trigger template builds. The checked-in C++ disagrees with it:
+=ores.refdata.api/messaging/business_unit_protocol.hpp= still declares
+=struct business_unit_key { boost::uuids::uuid id; }=, so
+=rfl::json::read<business_unit_key>= fails on that payload, the decoded
+event keeps a nil key, and the test's =decoded->key.id == v.id= never
+matches. After ten seconds of polling the test re-drives the write with
+the same version-0 object, which the store refuses -- the refusal is the
+second failure, not the first.
+
+So the refdata C++ and its eventing tests are stale, while the SQL is
+current: regenerating the entity yields =business_unit_key{
+std::string unit_code; }= and a test that compares =key.unit_code=, which
+is the agreement the installed trigger already implements. That is the
+same class as the other four targets: generated output that moved on and
+was never regenerated. Refdata is one of the components the drift gate
+does not cover.
+
+**Why it is not a one-line regeneration.** Regenerating refdata onto the
+current models produces 499 files, and two of them say it cannot be
+committed blind:
+
+1. It reverts a deliberate change. =ores.iam.core/service/cache/
+   party_cache.hpp= is generated from the refdata =party= model, and the
+   checked-in copy carries a hand-written tenant-isolation filter ("only
+   this partition's rows may enter it"); the regenerated copy drops the
+   filter and the counter that goes with it. Committing the regeneration
+   would silently reopen that hole.
+2. It does not compile. The regenerated refdata removal type breaks two
+   hand-written call sites in =ores.ore/service/src/messaging/
+   ore_import_execute_handler.cpp= (lines 2049 and 2071, =push_back= into
+   =del_req.removals=), so the regeneration is a migration of refdata and
+   its consumers, not a regeneration.
+
+The eventing tests cannot be fixed on their own: the test's comparison and
+the key type it compares against are emitted by the same codegen, so
+fixing one without the other leaves the payload undecodable. Whoever
+takes this does the regeneration, re-expresses or re-applies the party
+cache filter, migrates the =ores.ore= callers, and then adds refdata to
+the drift gate so the next 499 files cannot accumulate unnoticed.

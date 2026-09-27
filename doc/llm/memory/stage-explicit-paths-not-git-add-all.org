@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: BDFD020D-7AB6-48B7-9D42-13FA472ACBBB
+:END:
+#+title: Stage explicit paths, never git add -A, while a subagent shares the worktree
+#+description: Stage explicit paths, never git add -A, while a subagent shares the worktree, because scratch a subagent writes inside the checkout is not ignored and gets committed into the pull request.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Stage explicit paths, never git add -A, while a subagent shares the worktree. A subagent that writes scratch files inside the checkout gets them swept into the parent's commit by git add -A, and they appear in the pull request diff as if they were part of the change.
+
+*Why:* On the gate-dead-test-cases branch an independent verifier wrote probe files under build/verify_scratch/ and ran the gate against them. The parent then committed with git add -A, which put 18 scratch files into the branch. .gitignore lists build/output and other paths individually rather than build/ as a whole, because build/scripts/ is tracked, so scratch under build/ is not ignored. The verifier caught it and reported it; the branch had to be rewritten with git reset --soft and force-pushed.
+
+*How to apply:* Whenever a subagent is running in the same checkout, or any tool may have written scratch into the tree, stage the paths you intend to commit by name. Check git status --short and confirm every staged path is yours before committing. If scratch is already committed, rewrite the commit rather than adding a revert on top.

@@ -154,7 +154,7 @@ struct put_diary_entry_type_request {
 
 struct put_diary_entry_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::diary_entry_type diary_entry_type;
+    std::optional<ores::refdata::domain::diary_entry_type> diary_entry_type;
 };
 
 struct put_many_diary_entry_types_request {
@@ -250,7 +250,7 @@ struct get_diary_entry_type_version_request {
 
 struct get_diary_entry_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::diary_entry_type version;
+    std::optional<ores::refdata::domain::diary_entry_type> version;
 };
 
 /**

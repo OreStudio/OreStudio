@@ -110,7 +110,7 @@ export interface PutBatchRequest {
 
 export interface PutBatchResponse {
     result: Result;
-    batch: Batch;
+    batch: Batch | null;
 }
 
 export interface PutManyBatchesRequest {
@@ -161,7 +161,7 @@ export interface GetBatchVersionRequest {
 
 export interface GetBatchVersionResponse {
     result: Result;
-    version: Batch;
+    version: Batch | null;
 }
 
 export const subjects = {

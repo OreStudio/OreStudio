@@ -159,7 +159,7 @@ struct get_account_version_request {
 
 struct get_account_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::account version;
+    std::optional<ores::iam::domain::account> version;
 };
 
 /**

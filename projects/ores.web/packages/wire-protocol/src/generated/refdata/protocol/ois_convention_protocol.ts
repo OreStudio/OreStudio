@@ -120,7 +120,7 @@ export interface PutOisConventionRequest {
 
 export interface PutOisConventionResponse {
     result: Result;
-    ois_convention: OisConvention;
+    ois_convention: OisConvention | null;
 }
 
 export interface PutManyOisConventionsRequest {
@@ -171,7 +171,7 @@ export interface GetOisConventionVersionRequest {
 
 export interface GetOisConventionVersionResponse {
     result: Result;
-    version: OisConvention;
+    version: OisConvention | null;
 }
 
 export const subjects = {

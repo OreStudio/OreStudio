@@ -155,7 +155,7 @@ struct put_regulatory_book_type_request {
 
 struct put_regulatory_book_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::regulatory_book_type regulatory_book_type;
+    std::optional<ores::refdata::domain::regulatory_book_type> regulatory_book_type;
 };
 
 struct put_many_regulatory_book_types_request {
@@ -253,7 +253,7 @@ struct get_regulatory_book_type_version_request {
 
 struct get_regulatory_book_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::regulatory_book_type version;
+    std::optional<ores::refdata::domain::regulatory_book_type> version;
 };
 
 /**

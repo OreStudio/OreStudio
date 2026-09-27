@@ -138,7 +138,7 @@ struct put_currency_currency_group_request {
 
 struct put_currency_currency_group_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_currency_group currency_currency_group;
+    std::optional<ores::refdata::domain::currency_currency_group> currency_currency_group;
 };
 
 struct put_many_currency_currency_groups_request {

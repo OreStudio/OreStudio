@@ -96,7 +96,7 @@ export interface PutCurrencyCurrencyGroupRequest {
 
 export interface PutCurrencyCurrencyGroupResponse {
     result: Result;
-    currency_currency_group: CurrencyCurrencyGroup;
+    currency_currency_group: CurrencyCurrencyGroup | null;
 }
 
 export interface PutManyCurrencyCurrencyGroupsRequest {

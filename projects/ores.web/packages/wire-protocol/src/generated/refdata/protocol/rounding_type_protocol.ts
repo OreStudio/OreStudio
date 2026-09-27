@@ -111,7 +111,7 @@ export interface PutRoundingTypeRequest {
 
 export interface PutRoundingTypeResponse {
     result: Result;
-    rounding_type: RoundingType;
+    rounding_type: RoundingType | null;
 }
 
 export interface PutManyRoundingTypesRequest {
@@ -162,7 +162,7 @@ export interface GetRoundingTypeVersionRequest {
 
 export interface GetRoundingTypeVersionResponse {
     result: Result;
-    version: RoundingType;
+    version: RoundingType | null;
 }
 
 export const subjects = {

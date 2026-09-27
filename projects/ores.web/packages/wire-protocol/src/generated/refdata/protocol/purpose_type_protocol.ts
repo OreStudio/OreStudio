@@ -111,7 +111,7 @@ export interface PutPurposeTypeRequest {
 
 export interface PutPurposeTypeResponse {
     result: Result;
-    purpose_type: PurposeType;
+    purpose_type: PurposeType | null;
 }
 
 export interface PutManyPurposeTypesRequest {
@@ -162,7 +162,7 @@ export interface GetPurposeTypeVersionRequest {
 
 export interface GetPurposeTypeVersionResponse {
     result: Result;
-    version: PurposeType;
+    version: PurposeType | null;
 }
 
 export const subjects = {

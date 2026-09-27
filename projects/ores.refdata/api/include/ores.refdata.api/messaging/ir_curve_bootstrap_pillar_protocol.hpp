@@ -158,7 +158,7 @@ struct put_ir_curve_bootstrap_pillar_request {
 
 struct put_ir_curve_bootstrap_pillar_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::ir_curve_bootstrap_pillar ir_curve_bootstrap_pillar;
+    std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> ir_curve_bootstrap_pillar;
 };
 
 struct put_many_ir_curve_bootstrap_pillars_request {
@@ -258,7 +258,7 @@ struct get_ir_curve_bootstrap_pillar_version_request {
 
 struct get_ir_curve_bootstrap_pillar_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::ir_curve_bootstrap_pillar version;
+    std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> version;
 };
 
 /**

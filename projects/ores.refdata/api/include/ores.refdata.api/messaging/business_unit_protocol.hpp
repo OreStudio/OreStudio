@@ -158,7 +158,7 @@ struct put_business_unit_request {
 
 struct put_business_unit_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_unit business_unit;
+    std::optional<ores::refdata::domain::business_unit> business_unit;
 };
 
 struct put_many_business_units_request {
@@ -254,7 +254,7 @@ struct get_business_unit_version_request {
 
 struct get_business_unit_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_unit version;
+    std::optional<ores::refdata::domain::business_unit> version;
 };
 
 /**

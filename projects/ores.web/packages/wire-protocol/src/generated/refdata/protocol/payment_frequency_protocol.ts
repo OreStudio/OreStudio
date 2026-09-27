@@ -113,7 +113,7 @@ export interface PutPaymentFrequencyRequest {
 
 export interface PutPaymentFrequencyResponse {
     result: Result;
-    payment_frequency: PaymentFrequency;
+    payment_frequency: PaymentFrequency | null;
 }
 
 export interface PutManyPaymentFrequenciesRequest {
@@ -164,7 +164,7 @@ export interface GetPaymentFrequencyVersionRequest {
 
 export interface GetPaymentFrequencyVersionResponse {
     result: Result;
-    version: PaymentFrequency;
+    version: PaymentFrequency | null;
 }
 
 export const subjects = {

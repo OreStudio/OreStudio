@@ -153,7 +153,7 @@ struct put_app_request {
 
 struct put_app_response {
     ores::utility::domain::result result;
-    ores::compute::domain::app app;
+    std::optional<ores::compute::domain::app> app;
 };
 
 struct put_many_apps_request {
@@ -249,7 +249,7 @@ struct get_apps_version_request {
 
 struct get_apps_version_response {
     ores::utility::domain::result result;
-    ores::compute::domain::app version;
+    std::optional<ores::compute::domain::app> version;
 };
 
 /**

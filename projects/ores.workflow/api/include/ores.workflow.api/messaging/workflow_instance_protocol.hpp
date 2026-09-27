@@ -163,7 +163,7 @@ struct put_workflow_instance_request {
 
 struct put_workflow_instance_response {
     ores::utility::domain::result result;
-    ores::workflow::domain::workflow_instance workflow_instance;
+    std::optional<ores::workflow::domain::workflow_instance> workflow_instance;
 };
 
 struct put_many_workflow_instances_request {
@@ -259,7 +259,7 @@ struct get_workflow_instance_version_request {
 
 struct get_workflow_instance_version_response {
     ores::utility::domain::result result;
-    ores::workflow::domain::workflow_instance version;
+    std::optional<ores::workflow::domain::workflow_instance> version;
 };
 
 /**

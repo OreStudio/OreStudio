@@ -109,7 +109,7 @@ export interface PutFraConventionRequest {
 
 export interface PutFraConventionResponse {
     result: Result;
-    fra_convention: FraConvention;
+    fra_convention: FraConvention | null;
 }
 
 export interface PutManyFraConventionsRequest {
@@ -160,7 +160,7 @@ export interface GetFraConventionVersionRequest {
 
 export interface GetFraConventionVersionResponse {
     result: Result;
-    version: FraConvention;
+    version: FraConvention | null;
 }
 
 export const subjects = {

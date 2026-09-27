@@ -163,7 +163,7 @@ struct put_workunit_request {
 
 struct put_workunit_response {
     ores::utility::domain::result result;
-    ores::compute::domain::workunit workunit;
+    std::optional<ores::compute::domain::workunit> workunit;
 };
 
 struct put_many_workunits_request {
@@ -283,7 +283,7 @@ struct get_workunit_version_request {
 
 struct get_workunit_version_response {
     ores::utility::domain::result result;
-    ores::compute::domain::workunit version;
+    std::optional<ores::compute::domain::workunit> version;
 };
 
 /**

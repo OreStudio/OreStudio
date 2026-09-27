@@ -155,7 +155,7 @@ struct put_book_status_request {
 
 struct put_book_status_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::book_status book_status;
+    std::optional<ores::refdata::domain::book_status> book_status;
 };
 
 struct put_many_book_statuses_request {
@@ -251,7 +251,7 @@ struct get_book_status_version_request {
 
 struct get_book_status_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::book_status version;
+    std::optional<ores::refdata::domain::book_status> version;
 };
 
 /**

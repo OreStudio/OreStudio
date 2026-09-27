@@ -113,7 +113,7 @@ export interface PutPricingModelProductParameterRequest {
 
 export interface PutPricingModelProductParameterResponse {
     result: Result;
-    pricing_model_product_parameter: PricingModelProductParameter;
+    pricing_model_product_parameter: PricingModelProductParameter | null;
 }
 
 export interface PutManyPricingModelProductParametersRequest {
@@ -164,7 +164,7 @@ export interface GetPricingModelProductParameterVersionRequest {
 
 export interface GetPricingModelProductParameterVersionResponse {
     result: Result;
-    version: PricingModelProductParameter;
+    version: PricingModelProductParameter | null;
 }
 
 export const subjects = {

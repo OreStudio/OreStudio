@@ -96,7 +96,7 @@ export interface PutAccountPartyRequest {
 
 export interface PutAccountPartyResponse {
     result: Result;
-    account_party: AccountParty;
+    account_party: AccountParty | null;
 }
 
 export interface PutManyAccountPartiesRequest {

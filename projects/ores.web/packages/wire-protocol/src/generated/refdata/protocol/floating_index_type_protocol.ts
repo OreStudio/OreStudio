@@ -109,7 +109,7 @@ export interface PutFloatingIndexTypeRequest {
 
 export interface PutFloatingIndexTypeResponse {
     result: Result;
-    floating_index_type: FloatingIndexType;
+    floating_index_type: FloatingIndexType | null;
 }
 
 export interface PutManyFloatingIndexTypesRequest {
@@ -160,7 +160,7 @@ export interface GetFloatingIndexTypeVersionRequest {
 
 export interface GetFloatingIndexTypeVersionResponse {
     result: Result;
-    version: FloatingIndexType;
+    version: FloatingIndexType | null;
 }
 
 export const subjects = {

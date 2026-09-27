@@ -125,7 +125,7 @@ export interface PutPartyContactInformationRequest {
 
 export interface PutPartyContactInformationResponse {
     result: Result;
-    party_contact_information: PartyContactInformation;
+    party_contact_information: PartyContactInformation | null;
 }
 
 export interface PutManyPartyContactInformationsRequest {
@@ -191,7 +191,7 @@ export interface GetPartyContactInformationVersionRequest {
 
 export interface GetPartyContactInformationVersionResponse {
     result: Result;
-    version: PartyContactInformation;
+    version: PartyContactInformation | null;
 }
 
 export const subjects = {

@@ -158,7 +158,7 @@ struct put_currency_pair_convention_request {
 
 struct put_currency_pair_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair_convention currency_pair_convention;
+    std::optional<ores::refdata::domain::currency_pair_convention> currency_pair_convention;
 };
 
 struct put_many_currency_pair_conventions_request {
@@ -258,7 +258,7 @@ struct get_currency_pair_convention_version_request {
 
 struct get_currency_pair_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair_convention version;
+    std::optional<ores::refdata::domain::currency_pair_convention> version;
 };
 
 /**

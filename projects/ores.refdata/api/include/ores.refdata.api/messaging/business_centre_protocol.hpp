@@ -156,7 +156,7 @@ struct put_business_centre_request {
 
 struct put_business_centre_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_centre business_centre;
+    std::optional<ores::refdata::domain::business_centre> business_centre;
 };
 
 struct put_many_business_centres_request {
@@ -252,7 +252,7 @@ struct get_business_centre_version_request {
 
 struct get_business_centre_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_centre version;
+    std::optional<ores::refdata::domain::business_centre> version;
 };
 
 /**

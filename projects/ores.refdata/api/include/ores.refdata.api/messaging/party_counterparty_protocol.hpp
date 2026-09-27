@@ -138,7 +138,7 @@ struct put_party_counterparty_request {
 
 struct put_party_counterparty_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_counterparty party_counterparty;
+    std::optional<ores::refdata::domain::party_counterparty> party_counterparty;
 };
 
 struct put_many_party_counterparties_request {

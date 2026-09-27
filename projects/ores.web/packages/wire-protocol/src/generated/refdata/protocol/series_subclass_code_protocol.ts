@@ -111,7 +111,7 @@ export interface PutSeriesSubclassCodeRequest {
 
 export interface PutSeriesSubclassCodeResponse {
     result: Result;
-    series_subclass_code: SeriesSubclassCode;
+    series_subclass_code: SeriesSubclassCode | null;
 }
 
 export interface PutManySeriesSubclassCodesRequest {
@@ -162,7 +162,7 @@ export interface GetSeriesSubclassCodeVersionRequest {
 
 export interface GetSeriesSubclassCodeVersionResponse {
     result: Result;
-    version: SeriesSubclassCode;
+    version: SeriesSubclassCode | null;
 }
 
 export const subjects = {

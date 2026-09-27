@@ -160,7 +160,7 @@ struct put_calendar_exception_request {
 
 struct put_calendar_exception_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::calendar_exception calendar_exception;
+    std::optional<ores::refdata::domain::calendar_exception> calendar_exception;
 };
 
 struct put_many_calendar_exceptions_request {
@@ -281,7 +281,7 @@ struct get_calendar_exception_version_request {
 
 struct get_calendar_exception_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::calendar_exception version;
+    std::optional<ores::refdata::domain::calendar_exception> version;
 };
 
 /**

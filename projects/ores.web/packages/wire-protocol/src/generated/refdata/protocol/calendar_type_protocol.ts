@@ -111,7 +111,7 @@ export interface PutCalendarTypeRequest {
 
 export interface PutCalendarTypeResponse {
     result: Result;
-    calendar_type: CalendarType;
+    calendar_type: CalendarType | null;
 }
 
 export interface PutManyCalendarTypesRequest {
@@ -162,7 +162,7 @@ export interface GetCalendarTypeVersionRequest {
 
 export interface GetCalendarTypeVersionResponse {
     result: Result;
-    version: CalendarType;
+    version: CalendarType | null;
 }
 
 export const subjects = {

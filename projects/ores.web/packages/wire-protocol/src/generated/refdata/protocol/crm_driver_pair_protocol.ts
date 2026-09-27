@@ -113,7 +113,7 @@ export interface PutCrmDriverPairRequest {
 
 export interface PutCrmDriverPairResponse {
     result: Result;
-    crm_driver_pair: CrmDriverPair;
+    crm_driver_pair: CrmDriverPair | null;
 }
 
 export interface PutManyCrmDriverPairsRequest {
@@ -164,7 +164,7 @@ export interface GetCrmDriverPairVersionRequest {
 
 export interface GetCrmDriverPairVersionResponse {
     result: Result;
-    version: CrmDriverPair;
+    version: CrmDriverPair | null;
 }
 
 export const subjects = {

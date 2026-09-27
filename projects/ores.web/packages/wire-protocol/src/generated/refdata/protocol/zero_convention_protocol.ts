@@ -117,7 +117,7 @@ export interface PutZeroConventionRequest {
 
 export interface PutZeroConventionResponse {
     result: Result;
-    zero_convention: ZeroConvention;
+    zero_convention: ZeroConvention | null;
 }
 
 export interface PutManyZeroConventionsRequest {
@@ -168,7 +168,7 @@ export interface GetZeroConventionVersionRequest {
 
 export interface GetZeroConventionVersionResponse {
     result: Result;
-    version: ZeroConvention;
+    version: ZeroConvention | null;
 }
 
 export const subjects = {

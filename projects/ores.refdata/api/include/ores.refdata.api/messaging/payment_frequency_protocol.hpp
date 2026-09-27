@@ -156,7 +156,7 @@ struct put_payment_frequency_request {
 
 struct put_payment_frequency_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::payment_frequency payment_frequency;
+    std::optional<ores::refdata::domain::payment_frequency> payment_frequency;
 };
 
 struct put_many_payment_frequencies_request {
@@ -252,7 +252,7 @@ struct get_payment_frequency_version_request {
 
 struct get_payment_frequency_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::payment_frequency version;
+    std::optional<ores::refdata::domain::payment_frequency> version;
 };
 
 /**

@@ -118,7 +118,7 @@ export interface PutCalendarExceptionRequest {
 
 export interface PutCalendarExceptionResponse {
     result: Result;
-    calendar_exception: CalendarException;
+    calendar_exception: CalendarException | null;
 }
 
 export interface PutManyCalendarExceptionsRequest {
@@ -184,7 +184,7 @@ export interface GetCalendarExceptionVersionRequest {
 
 export interface GetCalendarExceptionVersionResponse {
     result: Result;
-    version: CalendarException;
+    version: CalendarException | null;
 }
 
 export const subjects = {

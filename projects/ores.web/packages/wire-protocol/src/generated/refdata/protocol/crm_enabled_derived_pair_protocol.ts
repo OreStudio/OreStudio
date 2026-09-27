@@ -113,7 +113,7 @@ export interface PutCrmEnabledDerivedPairRequest {
 
 export interface PutCrmEnabledDerivedPairResponse {
     result: Result;
-    crm_enabled_derived_pair: CrmEnabledDerivedPair;
+    crm_enabled_derived_pair: CrmEnabledDerivedPair | null;
 }
 
 export interface PutManyCrmEnabledDerivedPairsRequest {
@@ -164,7 +164,7 @@ export interface GetCrmEnabledDerivedPairVersionRequest {
 
 export interface GetCrmEnabledDerivedPairVersionResponse {
     result: Result;
-    version: CrmEnabledDerivedPair;
+    version: CrmEnabledDerivedPair | null;
 }
 
 export const subjects = {

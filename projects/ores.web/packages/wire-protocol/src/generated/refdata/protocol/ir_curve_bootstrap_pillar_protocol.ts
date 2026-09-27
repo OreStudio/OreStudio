@@ -114,7 +114,7 @@ export interface PutIrCurveBootstrapPillarRequest {
 
 export interface PutIrCurveBootstrapPillarResponse {
     result: Result;
-    ir_curve_bootstrap_pillar: IrCurveBootstrapPillar;
+    ir_curve_bootstrap_pillar: IrCurveBootstrapPillar | null;
 }
 
 export interface PutManyIrCurveBootstrapPillarsRequest {
@@ -165,7 +165,7 @@ export interface GetIrCurveBootstrapPillarVersionRequest {
 
 export interface GetIrCurveBootstrapPillarVersionResponse {
     result: Result;
-    version: IrCurveBootstrapPillar;
+    version: IrCurveBootstrapPillar | null;
 }
 
 export const subjects = {

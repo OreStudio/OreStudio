@@ -172,7 +172,7 @@ struct put_workflow_step_request {
 
 struct put_workflow_step_response {
     ores::utility::domain::result result;
-    ores::workflow::domain::workflow_step workflow_step;
+    std::optional<ores::workflow::domain::workflow_step> workflow_step;
 };
 
 struct put_many_workflow_steps_request {
@@ -293,7 +293,7 @@ struct get_workflow_step_version_request {
 
 struct get_workflow_step_version_response {
     ores::utility::domain::result result;
-    ores::workflow::domain::workflow_step version;
+    std::optional<ores::workflow::domain::workflow_step> version;
 };
 
 /**

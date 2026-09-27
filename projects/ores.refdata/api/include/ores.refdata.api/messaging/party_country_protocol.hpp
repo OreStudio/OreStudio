@@ -138,7 +138,7 @@ struct put_party_country_request {
 
 struct put_party_country_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_country party_country;
+    std::optional<ores::refdata::domain::party_country> party_country;
 };
 
 struct put_many_party_countries_request {

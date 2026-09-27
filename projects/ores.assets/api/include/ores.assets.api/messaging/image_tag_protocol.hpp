@@ -140,7 +140,7 @@ struct put_image_tag_request {
 
 struct put_image_tag_response {
     ores::utility::domain::result result;
-    ores::assets::domain::image_tag image_tag;
+    std::optional<ores::assets::domain::image_tag> image_tag;
 };
 
 struct put_many_image_tags_request {

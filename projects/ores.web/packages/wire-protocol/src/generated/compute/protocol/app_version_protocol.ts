@@ -112,7 +112,7 @@ export interface PutAppVersionRequest {
 
 export interface PutAppVersionResponse {
     result: Result;
-    app_version: AppVersion;
+    app_version: AppVersion | null;
 }
 
 export interface PutManyAppVersionsRequest {
@@ -163,7 +163,7 @@ export interface GetAppVersionVersionRequest {
 
 export interface GetAppVersionVersionResponse {
     result: Result;
-    version: AppVersion;
+    version: AppVersion | null;
 }
 
 export const subjects = {

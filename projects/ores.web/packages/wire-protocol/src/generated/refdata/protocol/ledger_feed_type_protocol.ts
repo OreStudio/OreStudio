@@ -111,7 +111,7 @@ export interface PutLedgerFeedTypeRequest {
 
 export interface PutLedgerFeedTypeResponse {
     result: Result;
-    ledger_feed_type: LedgerFeedType;
+    ledger_feed_type: LedgerFeedType | null;
 }
 
 export interface PutManyLedgerFeedTypesRequest {
@@ -162,7 +162,7 @@ export interface GetLedgerFeedTypeVersionRequest {
 
 export interface GetLedgerFeedTypeVersionResponse {
     result: Result;
-    version: LedgerFeedType;
+    version: LedgerFeedType | null;
 }
 
 export const subjects = {

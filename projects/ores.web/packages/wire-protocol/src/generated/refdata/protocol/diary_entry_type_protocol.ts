@@ -111,7 +111,7 @@ export interface PutDiaryEntryTypeRequest {
 
 export interface PutDiaryEntryTypeResponse {
     result: Result;
-    diary_entry_type: DiaryEntryType;
+    diary_entry_type: DiaryEntryType | null;
 }
 
 export interface PutManyDiaryEntryTypesRequest {
@@ -162,7 +162,7 @@ export interface GetDiaryEntryTypeVersionRequest {
 
 export interface GetDiaryEntryTypeVersionResponse {
     result: Result;
-    version: DiaryEntryType;
+    version: DiaryEntryType | null;
 }
 
 export const subjects = {

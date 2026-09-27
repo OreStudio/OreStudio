@@ -96,7 +96,7 @@ export interface PutPartyCurrencyRequest {
 
 export interface PutPartyCurrencyResponse {
     result: Result;
-    party_currency: PartyCurrency;
+    party_currency: PartyCurrency | null;
 }
 
 export interface PutManyPartyCurrenciesRequest {

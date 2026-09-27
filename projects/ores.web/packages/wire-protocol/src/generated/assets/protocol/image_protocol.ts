@@ -112,7 +112,7 @@ export interface PutImageRequest {
 
 export interface PutImageResponse {
     result: Result;
-    image: Image;
+    image: Image | null;
 }
 
 export interface PutManyImagesRequest {
@@ -163,7 +163,7 @@ export interface GetImageVersionRequest {
 
 export interface GetImageVersionResponse {
     result: Result;
-    version: Image;
+    version: Image | null;
 }
 
 export const subjects = {

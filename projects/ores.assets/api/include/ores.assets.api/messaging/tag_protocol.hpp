@@ -153,7 +153,7 @@ struct put_tag_request {
 
 struct put_tag_response {
     ores::utility::domain::result result;
-    ores::assets::domain::tag tag;
+    std::optional<ores::assets::domain::tag> tag;
 };
 
 struct put_many_tags_request {
@@ -249,7 +249,7 @@ struct get_tag_version_request {
 
 struct get_tag_version_response {
     ores::utility::domain::result result;
-    ores::assets::domain::tag version;
+    std::optional<ores::assets::domain::tag> version;
 };
 
 /**

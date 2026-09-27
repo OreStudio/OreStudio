@@ -110,7 +110,7 @@ export interface PutTenorAnchorRequest {
 
 export interface PutTenorAnchorResponse {
     result: Result;
-    tenor_anchor: TenorAnchor;
+    tenor_anchor: TenorAnchor | null;
 }
 
 export interface PutManyTenorAnchorsRequest {
@@ -161,7 +161,7 @@ export interface GetTenorAnchorVersionRequest {
 
 export interface GetTenorAnchorVersionResponse {
     result: Result;
-    version: TenorAnchor;
+    version: TenorAnchor | null;
 }
 
 export const subjects = {

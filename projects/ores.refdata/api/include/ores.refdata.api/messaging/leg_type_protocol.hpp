@@ -152,7 +152,7 @@ struct put_leg_type_request {
 
 struct put_leg_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::leg_type leg_type;
+    std::optional<ores::refdata::domain::leg_type> leg_type;
 };
 
 struct put_many_leg_types_request {
@@ -248,7 +248,7 @@ struct get_leg_type_version_request {
 
 struct get_leg_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::leg_type version;
+    std::optional<ores::refdata::domain::leg_type> version;
 };
 
 /**

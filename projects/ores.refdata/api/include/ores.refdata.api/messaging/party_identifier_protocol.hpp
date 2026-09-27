@@ -160,7 +160,7 @@ struct put_party_identifier_request {
 
 struct put_party_identifier_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_identifier party_identifier;
+    std::optional<ores::refdata::domain::party_identifier> party_identifier;
 };
 
 struct put_many_party_identifiers_request {
@@ -281,7 +281,7 @@ struct get_party_identifier_version_request {
 
 struct get_party_identifier_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_identifier version;
+    std::optional<ores::refdata::domain::party_identifier> version;
 };
 
 /**

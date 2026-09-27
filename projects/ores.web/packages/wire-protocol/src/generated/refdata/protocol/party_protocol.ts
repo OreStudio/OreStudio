@@ -120,7 +120,7 @@ export interface PutPartyRequest {
 
 export interface PutPartyResponse {
     result: Result;
-    party: Party;
+    party: Party | null;
 }
 
 export interface PutManyPartiesRequest {
@@ -171,7 +171,7 @@ export interface GetPartyVersionRequest {
 
 export interface GetPartyVersionResponse {
     result: Result;
-    version: Party;
+    version: Party | null;
 }
 
 /**

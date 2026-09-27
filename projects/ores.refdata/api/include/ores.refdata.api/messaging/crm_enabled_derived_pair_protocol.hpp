@@ -157,7 +157,7 @@ struct put_crm_enabled_derived_pair_request {
 
 struct put_crm_enabled_derived_pair_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::crm_enabled_derived_pair crm_enabled_derived_pair;
+    std::optional<ores::refdata::domain::crm_enabled_derived_pair> crm_enabled_derived_pair;
 };
 
 struct put_many_crm_enabled_derived_pairs_request {
@@ -257,7 +257,7 @@ struct get_crm_enabled_derived_pair_version_request {
 
 struct get_crm_enabled_derived_pair_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::crm_enabled_derived_pair version;
+    std::optional<ores::refdata::domain::crm_enabled_derived_pair> version;
 };
 
 /**

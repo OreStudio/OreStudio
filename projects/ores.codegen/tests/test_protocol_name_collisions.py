@@ -242,12 +242,13 @@ def test_a_result_entity_response_has_no_duplicate_member(tmp_path):
     header = _protocol_for(
         tmp_path, {"result": _entity_model("result", "results", "Result", "B1")},
         "result")
-    assert ("    ores::utility::domain::result result;\n"
-            "    std::optional<ores::testcomp::domain::result> result_value;\n"
-            in header)
-    assert ("    ores::utility::domain::result result;\n"
-            "    ores::testcomp::domain::result result_value;\n"
-            in header)
+    # The payload member is renamed after the entity so it cannot collide with
+    # the result member the envelope carries, and both responses that carry a
+    # row state it optionally.
+    assert header.count(
+        "    ores::utility::domain::result result;\n"
+        "    std::optional<ores::testcomp::domain::result> result_value;\n") >= 2
+    assert "ores::testcomp::domain::result result_value;" not in header
 
 
 def test_an_ordinary_entity_keeps_its_own_payload_member_name(tmp_path):

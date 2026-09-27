@@ -112,7 +112,7 @@ export interface PutRegulatoryBookTypeRequest {
 
 export interface PutRegulatoryBookTypeResponse {
     result: Result;
-    regulatory_book_type: RegulatoryBookType;
+    regulatory_book_type: RegulatoryBookType | null;
 }
 
 export interface PutManyRegulatoryBookTypesRequest {
@@ -163,7 +163,7 @@ export interface GetRegulatoryBookTypeVersionRequest {
 
 export interface GetRegulatoryBookTypeVersionResponse {
     result: Result;
-    version: RegulatoryBookType;
+    version: RegulatoryBookType | null;
 }
 
 export const subjects = {

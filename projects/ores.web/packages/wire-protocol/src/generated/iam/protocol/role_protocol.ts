@@ -110,7 +110,7 @@ export interface PutRoleRequest {
 
 export interface PutRoleResponse {
     result: Result;
-    role: Role;
+    role: Role | null;
 }
 
 export interface PutManyRolesRequest {
@@ -161,7 +161,7 @@ export interface GetRoleVersionRequest {
 
 export interface GetRoleVersionResponse {
     result: Result;
-    version: Role;
+    version: Role | null;
 }
 
 export const subjects = {

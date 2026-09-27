@@ -138,7 +138,7 @@ struct put_currency_country_request {
 
 struct put_currency_country_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_country currency_country;
+    std::optional<ores::refdata::domain::currency_country> currency_country;
 };
 
 struct put_many_currency_countries_request {

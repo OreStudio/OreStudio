@@ -122,7 +122,7 @@ export interface PutResultRequest {
 
 export interface PutResultResponse {
     result: Result;
-    result_value: ResultEntity;
+    result_value: ResultEntity | null;
 }
 
 export interface PutManyResultsRequest {
@@ -188,7 +188,7 @@ export interface GetResultVersionRequest {
 
 export interface GetResultVersionResponse {
     result: Result;
-    version: ResultEntity;
+    version: ResultEntity | null;
 }
 
 export const subjects = {

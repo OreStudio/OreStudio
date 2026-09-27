@@ -110,7 +110,7 @@ export interface PutTagRequest {
 
 export interface PutTagResponse {
     result: Result;
-    tag: Tag;
+    tag: Tag | null;
 }
 
 export interface PutManyTagsRequest {
@@ -161,7 +161,7 @@ export interface GetTagVersionRequest {
 
 export interface GetTagVersionResponse {
     result: Result;
-    version: Tag;
+    version: Tag | null;
 }
 
 export const subjects = {

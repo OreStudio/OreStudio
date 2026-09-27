@@ -145,7 +145,8 @@ struct put_currency_pair_convention_calendar_request {
 
 struct put_currency_pair_convention_calendar_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair_convention_calendar currency_pair_convention_calendar;
+    std::optional<ores::refdata::domain::currency_pair_convention_calendar>
+        currency_pair_convention_calendar;
 };
 
 struct put_many_currency_pair_convention_calendars_request {

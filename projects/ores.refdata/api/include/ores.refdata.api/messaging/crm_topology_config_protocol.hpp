@@ -155,7 +155,7 @@ struct put_crm_topology_config_request {
 
 struct put_crm_topology_config_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::crm_topology_config crm_topology_config;
+    std::optional<ores::refdata::domain::crm_topology_config> crm_topology_config;
 };
 
 struct put_many_crm_topology_configs_request {
@@ -252,7 +252,7 @@ struct get_crm_topology_config_version_request {
 
 struct get_crm_topology_config_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::crm_topology_config version;
+    std::optional<ores::refdata::domain::crm_topology_config> version;
 };
 
 /**

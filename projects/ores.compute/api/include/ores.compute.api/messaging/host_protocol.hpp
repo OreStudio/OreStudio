@@ -159,7 +159,7 @@ struct put_host_request {
 
 struct put_host_response {
     ores::utility::domain::result result;
-    ores::compute::domain::host host;
+    std::optional<ores::compute::domain::host> host;
 };
 
 struct put_many_hosts_request {
@@ -255,7 +255,7 @@ struct get_host_version_request {
 
 struct get_host_version_response {
     ores::utility::domain::result result;
-    ores::compute::domain::host version;
+    std::optional<ores::compute::domain::host> version;
 };
 
 /**

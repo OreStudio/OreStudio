@@ -115,7 +115,7 @@ export interface PutCalendarRequest {
 
 export interface PutCalendarResponse {
     result: Result;
-    calendar: Calendar;
+    calendar: Calendar | null;
 }
 
 export interface PutManyCalendarsRequest {
@@ -166,7 +166,7 @@ export interface GetCalendarVersionRequest {
 
 export interface GetCalendarVersionResponse {
     result: Result;
-    version: Calendar;
+    version: Calendar | null;
 }
 
 export const subjects = {

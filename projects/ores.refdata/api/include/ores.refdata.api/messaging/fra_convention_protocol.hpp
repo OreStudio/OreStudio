@@ -152,7 +152,7 @@ struct put_fra_convention_request {
 
 struct put_fra_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::fra_convention fra_convention;
+    std::optional<ores::refdata::domain::fra_convention> fra_convention;
 };
 
 struct put_many_fra_conventions_request {
@@ -248,7 +248,7 @@ struct get_fra_convention_version_request {
 
 struct get_fra_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::fra_convention version;
+    std::optional<ores::refdata::domain::fra_convention> version;
 };
 
 /**

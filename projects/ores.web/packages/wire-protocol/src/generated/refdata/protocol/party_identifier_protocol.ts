@@ -118,7 +118,7 @@ export interface PutPartyIdentifierRequest {
 
 export interface PutPartyIdentifierResponse {
     result: Result;
-    party_identifier: PartyIdentifier;
+    party_identifier: PartyIdentifier | null;
 }
 
 export interface PutManyPartyIdentifiersRequest {
@@ -184,7 +184,7 @@ export interface GetPartyIdentifierVersionRequest {
 
 export interface GetPartyIdentifierVersionResponse {
     result: Result;
-    version: PartyIdentifier;
+    version: PartyIdentifier | null;
 }
 
 export const subjects = {

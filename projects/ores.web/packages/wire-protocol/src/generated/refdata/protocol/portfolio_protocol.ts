@@ -117,7 +117,7 @@ export interface PutPortfolioRequest {
 
 export interface PutPortfolioResponse {
     result: Result;
-    portfolio: Portfolio;
+    portfolio: Portfolio | null;
 }
 
 export interface PutManyPortfoliosRequest {
@@ -168,7 +168,7 @@ export interface GetPortfolioVersionRequest {
 
 export interface GetPortfolioVersionResponse {
     result: Result;
-    version: Portfolio;
+    version: Portfolio | null;
 }
 
 export const subjects = {

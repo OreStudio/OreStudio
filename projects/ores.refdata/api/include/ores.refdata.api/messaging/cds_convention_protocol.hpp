@@ -161,7 +161,7 @@ struct put_cds_convention_request {
 
 struct put_cds_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::cds_convention cds_convention;
+    std::optional<ores::refdata::domain::cds_convention> cds_convention;
 };
 
 struct put_many_cds_conventions_request {
@@ -257,7 +257,7 @@ struct get_cds_convention_version_request {
 
 struct get_cds_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::cds_convention version;
+    std::optional<ores::refdata::domain::cds_convention> version;
 };
 
 /**

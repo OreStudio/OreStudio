@@ -96,7 +96,7 @@ export interface PutPartyCounterpartyRequest {
 
 export interface PutPartyCounterpartyResponse {
     result: Result;
-    party_counterparty: PartyCounterparty;
+    party_counterparty: PartyCounterparty | null;
 }
 
 export interface PutManyPartyCounterpartiesRequest {

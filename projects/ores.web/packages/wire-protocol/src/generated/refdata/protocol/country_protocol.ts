@@ -115,7 +115,7 @@ export interface PutCountryRequest {
 
 export interface PutCountryResponse {
     result: Result;
-    country: Country;
+    country: Country | null;
 }
 
 export interface PutManyCountriesRequest {
@@ -166,7 +166,7 @@ export interface GetCountryVersionRequest {
 
 export interface GetCountryVersionResponse {
     result: Result;
-    version: Country;
+    version: Country | null;
 }
 
 export const subjects = {

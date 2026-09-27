@@ -160,7 +160,7 @@ struct put_portfolio_request {
 
 struct put_portfolio_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::portfolio portfolio;
+    std::optional<ores::refdata::domain::portfolio> portfolio;
 };
 
 struct put_many_portfolios_request {
@@ -256,7 +256,7 @@ struct get_portfolio_version_request {
 
 struct get_portfolio_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::portfolio version;
+    std::optional<ores::refdata::domain::portfolio> version;
 };
 
 /**

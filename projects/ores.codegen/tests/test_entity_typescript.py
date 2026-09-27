@@ -270,7 +270,7 @@ def test_a_version_is_the_domain_row_itself():
     assert messages["list_tenant_type_versions_response"]["fields"][1][
         "ts_type"] == "TenantType[]"
     assert messages["get_tenant_type_version_response"]["fields"][1][
-        "cpp_type"] == "ores::iam::domain::tenant_type"
+        "cpp_type"] == "std::optional<ores::iam::domain::tenant_type>"
 
 
 def test_a_batch_is_the_same_element_repeated():
@@ -362,8 +362,13 @@ def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):
     protocol = (tmp_path / "tenant_type_protocol.ts").read_text(encoding="utf-8")
     assert ("import type { TenantType } from '../domain/tenant_type.js';"
             in protocol)
+    # Every response that can carry the row states it optionally, because a
+    # refused change and an absent version both have no row to state. A
+    # non-optional member would serialize a default row -- a zero date, a zero
+    # timestamp -- and the client would refuse the response before it could
+    # read the outcome.
     assert "tenant_type: TenantType | null;" in protocol
-    assert "tenant_type: TenantType;" in protocol
+    assert "tenant_type: TenantType;" not in protocol
     assert "types: TenantType[];" in protocol
     assert "type: string;" in protocol
     assert 'list_tenant_types_request: "iam.v1.tenant_types.list",' in protocol

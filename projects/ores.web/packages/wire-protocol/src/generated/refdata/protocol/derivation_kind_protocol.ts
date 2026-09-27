@@ -111,7 +111,7 @@ export interface PutDerivationKindRequest {
 
 export interface PutDerivationKindResponse {
     result: Result;
-    derivation_kind: DerivationKind;
+    derivation_kind: DerivationKind | null;
 }
 
 export interface PutManyDerivationKindsRequest {
@@ -162,7 +162,7 @@ export interface GetDerivationKindVersionRequest {
 
 export interface GetDerivationKindVersionResponse {
     result: Result;
-    version: DerivationKind;
+    version: DerivationKind | null;
 }
 
 export const subjects = {

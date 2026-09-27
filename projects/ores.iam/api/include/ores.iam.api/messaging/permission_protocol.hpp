@@ -142,7 +142,7 @@ struct put_permission_request {
 
 struct put_permission_response {
     ores::utility::domain::result result;
-    ores::iam::domain::permission permission;
+    std::optional<ores::iam::domain::permission> permission;
 };
 
 struct put_many_permissions_request {

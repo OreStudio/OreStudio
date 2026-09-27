@@ -96,7 +96,7 @@ export interface PutCurrencyCalendarRequest {
 
 export interface PutCurrencyCalendarResponse {
     result: Result;
-    currency_calendar: CurrencyCalendar;
+    currency_calendar: CurrencyCalendar | null;
 }
 
 export interface PutManyCurrencyCalendarsRequest {

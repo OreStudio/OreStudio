@@ -154,7 +154,7 @@ struct put_purpose_type_request {
 
 struct put_purpose_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::purpose_type purpose_type;
+    std::optional<ores::refdata::domain::purpose_type> purpose_type;
 };
 
 struct put_many_purpose_types_request {
@@ -250,7 +250,7 @@ struct get_purpose_type_version_request {
 
 struct get_purpose_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::purpose_type version;
+    std::optional<ores::refdata::domain::purpose_type> version;
 };
 
 /**

@@ -158,7 +158,7 @@ struct put_calendar_request {
 
 struct put_calendar_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::calendar calendar;
+    std::optional<ores::refdata::domain::calendar> calendar;
 };
 
 struct put_many_calendars_request {
@@ -254,7 +254,7 @@ struct get_calendar_version_request {
 
 struct get_calendar_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::calendar version;
+    std::optional<ores::refdata::domain::calendar> version;
 };
 
 /**

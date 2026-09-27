@@ -154,7 +154,7 @@ struct put_rounding_type_request {
 
 struct put_rounding_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::rounding_type rounding_type;
+    std::optional<ores::refdata::domain::rounding_type> rounding_type;
 };
 
 struct put_many_rounding_types_request {
@@ -250,7 +250,7 @@ struct get_rounding_type_version_request {
 
 struct get_rounding_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::rounding_type version;
+    std::optional<ores::refdata::domain::rounding_type> version;
 };
 
 /**

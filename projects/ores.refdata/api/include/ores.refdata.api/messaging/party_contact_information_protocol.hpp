@@ -168,7 +168,7 @@ struct put_party_contact_information_request {
 
 struct put_party_contact_information_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_contact_information party_contact_information;
+    std::optional<ores::refdata::domain::party_contact_information> party_contact_information;
 };
 
 struct put_many_party_contact_informations_request {
@@ -293,7 +293,7 @@ struct get_party_contact_information_version_request {
 
 struct get_party_contact_information_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_contact_information version;
+    std::optional<ores::refdata::domain::party_contact_information> version;
 };
 
 /**

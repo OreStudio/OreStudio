@@ -116,7 +116,7 @@ export interface PutHostRequest {
 
 export interface PutHostResponse {
     result: Result;
-    host: Host;
+    host: Host | null;
 }
 
 export interface PutManyHostsRequest {
@@ -167,7 +167,7 @@ export interface GetHostVersionRequest {
 
 export interface GetHostVersionResponse {
     result: Result;
-    version: Host;
+    version: Host | null;
 }
 
 export const subjects = {

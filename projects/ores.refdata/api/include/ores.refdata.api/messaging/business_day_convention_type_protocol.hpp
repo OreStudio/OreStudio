@@ -156,7 +156,7 @@ struct put_business_day_convention_type_request {
 
 struct put_business_day_convention_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_day_convention_type business_day_convention_type;
+    std::optional<ores::refdata::domain::business_day_convention_type> business_day_convention_type;
 };
 
 struct put_many_business_day_convention_types_request {
@@ -257,7 +257,7 @@ struct get_business_day_convention_type_version_request {
 
 struct get_business_day_convention_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_day_convention_type version;
+    std::optional<ores::refdata::domain::business_day_convention_type> version;
 };
 
 /**

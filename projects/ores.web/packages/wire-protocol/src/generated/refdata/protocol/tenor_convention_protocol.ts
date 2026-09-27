@@ -111,7 +111,7 @@ export interface PutTenorConventionRequest {
 
 export interface PutTenorConventionResponse {
     result: Result;
-    tenor_convention: TenorConvention;
+    tenor_convention: TenorConvention | null;
 }
 
 export interface PutManyTenorConventionsRequest {
@@ -162,7 +162,7 @@ export interface GetTenorConventionVersionRequest {
 
 export interface GetTenorConventionVersionResponse {
     result: Result;
-    version: TenorConvention;
+    version: TenorConvention | null;
 }
 
 export const subjects = {

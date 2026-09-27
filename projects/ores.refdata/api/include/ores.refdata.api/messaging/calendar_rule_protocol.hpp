@@ -166,7 +166,7 @@ struct put_calendar_rule_request {
 
 struct put_calendar_rule_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::calendar_rule calendar_rule;
+    std::optional<ores::refdata::domain::calendar_rule> calendar_rule;
 };
 
 struct put_many_calendar_rules_request {
@@ -287,7 +287,7 @@ struct get_calendar_rule_version_request {
 
 struct get_calendar_rule_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::calendar_rule version;
+    std::optional<ores::refdata::domain::calendar_rule> version;
 };
 
 /**

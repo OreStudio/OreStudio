@@ -96,7 +96,7 @@ export interface PutCurrencyPairConventionCalendarRequest {
 
 export interface PutCurrencyPairConventionCalendarResponse {
     result: Result;
-    currency_pair_convention_calendar: CurrencyPairConventionCalendar;
+    currency_pair_convention_calendar: CurrencyPairConventionCalendar | null;
 }
 
 export interface PutManyCurrencyPairConventionCalendarsRequest {

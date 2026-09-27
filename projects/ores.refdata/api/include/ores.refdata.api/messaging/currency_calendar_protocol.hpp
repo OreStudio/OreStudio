@@ -138,7 +138,7 @@ struct put_currency_calendar_request {
 
 struct put_currency_calendar_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_calendar currency_calendar;
+    std::optional<ores::refdata::domain::currency_calendar> currency_calendar;
 };
 
 struct put_many_currency_calendars_request {

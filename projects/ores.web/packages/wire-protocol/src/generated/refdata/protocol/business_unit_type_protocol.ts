@@ -113,7 +113,7 @@ export interface PutBusinessUnitTypeRequest {
 
 export interface PutBusinessUnitTypeResponse {
     result: Result;
-    business_unit_type: BusinessUnitType;
+    business_unit_type: BusinessUnitType | null;
 }
 
 export interface PutManyBusinessUnitTypesRequest {
@@ -164,7 +164,7 @@ export interface GetBusinessUnitTypeVersionRequest {
 
 export interface GetBusinessUnitTypeVersionResponse {
     result: Result;
-    version: BusinessUnitType;
+    version: BusinessUnitType | null;
 }
 
 export const subjects = {

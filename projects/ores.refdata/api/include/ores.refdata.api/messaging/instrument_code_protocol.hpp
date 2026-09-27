@@ -157,7 +157,7 @@ struct put_instrument_code_request {
 
 struct put_instrument_code_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::instrument_code instrument_code;
+    std::optional<ores::refdata::domain::instrument_code> instrument_code;
 };
 
 struct put_many_instrument_codes_request {
@@ -253,7 +253,7 @@ struct get_instrument_code_version_request {
 
 struct get_instrument_code_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::instrument_code version;
+    std::optional<ores::refdata::domain::instrument_code> version;
 };
 
 /**

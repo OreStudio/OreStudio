@@ -158,7 +158,7 @@ struct put_deposit_convention_request {
 
 struct put_deposit_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::deposit_convention deposit_convention;
+    std::optional<ores::refdata::domain::deposit_convention> deposit_convention;
 };
 
 struct put_many_deposit_conventions_request {
@@ -254,7 +254,7 @@ struct get_deposit_convention_version_request {
 
 struct get_deposit_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::deposit_convention version;
+    std::optional<ores::refdata::domain::deposit_convention> version;
 };
 
 /**

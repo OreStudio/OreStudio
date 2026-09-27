@@ -163,7 +163,7 @@ struct put_tenor_schedule_request {
 
 struct put_tenor_schedule_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_schedule tenor_schedule;
+    std::optional<ores::refdata::domain::tenor_schedule> tenor_schedule;
 };
 
 struct put_many_tenor_schedules_request {
@@ -309,7 +309,7 @@ struct get_tenor_schedule_version_request {
 
 struct get_tenor_schedule_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_schedule version;
+    std::optional<ores::refdata::domain::tenor_schedule> version;
 };
 
 /**

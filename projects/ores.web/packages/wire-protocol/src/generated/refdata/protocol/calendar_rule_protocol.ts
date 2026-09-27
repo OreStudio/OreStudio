@@ -124,7 +124,7 @@ export interface PutCalendarRuleRequest {
 
 export interface PutCalendarRuleResponse {
     result: Result;
-    calendar_rule: CalendarRule;
+    calendar_rule: CalendarRule | null;
 }
 
 export interface PutManyCalendarRulesRequest {
@@ -190,7 +190,7 @@ export interface GetCalendarRuleVersionRequest {
 
 export interface GetCalendarRuleVersionResponse {
     result: Result;
-    version: CalendarRule;
+    version: CalendarRule | null;
 }
 
 export const subjects = {

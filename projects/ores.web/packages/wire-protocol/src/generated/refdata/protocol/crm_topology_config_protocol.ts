@@ -112,7 +112,7 @@ export interface PutCrmTopologyConfigRequest {
 
 export interface PutCrmTopologyConfigResponse {
     result: Result;
-    crm_topology_config: CrmTopologyConfig;
+    crm_topology_config: CrmTopologyConfig | null;
 }
 
 export interface PutManyCrmTopologyConfigsRequest {
@@ -163,7 +163,7 @@ export interface GetCrmTopologyConfigVersionRequest {
 
 export interface GetCrmTopologyConfigVersionResponse {
     result: Result;
-    version: CrmTopologyConfig;
+    version: CrmTopologyConfig | null;
 }
 
 export const subjects = {

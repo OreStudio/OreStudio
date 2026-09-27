@@ -115,7 +115,7 @@ export interface PutPlatformRequest {
 
 export interface PutPlatformResponse {
     result: Result;
-    platform: Platform;
+    platform: Platform | null;
 }
 
 export interface PutManyPlatformsRequest {
@@ -166,7 +166,7 @@ export interface GetPlatformVersionRequest {
 
 export interface GetPlatformVersionResponse {
     result: Result;
-    version: Platform;
+    version: Platform | null;
 }
 
 export const subjects = {

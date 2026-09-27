@@ -156,7 +156,7 @@ struct put_ibor_index_convention_request {
 
 struct put_ibor_index_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::ibor_index_convention ibor_index_convention;
+    std::optional<ores::refdata::domain::ibor_index_convention> ibor_index_convention;
 };
 
 struct put_many_ibor_index_conventions_request {
@@ -255,7 +255,7 @@ struct get_ibor_index_convention_version_request {
 
 struct get_ibor_index_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::ibor_index_convention version;
+    std::optional<ores::refdata::domain::ibor_index_convention> version;
 };
 
 /**

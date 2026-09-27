@@ -115,7 +115,7 @@ export interface PutDepositConventionRequest {
 
 export interface PutDepositConventionResponse {
     result: Result;
-    deposit_convention: DepositConvention;
+    deposit_convention: DepositConvention | null;
 }
 
 export interface PutManyDepositConventionsRequest {
@@ -166,7 +166,7 @@ export interface GetDepositConventionVersionRequest {
 
 export interface GetDepositConventionVersionResponse {
     result: Result;
-    version: DepositConvention;
+    version: DepositConvention | null;
 }
 
 export const subjects = {

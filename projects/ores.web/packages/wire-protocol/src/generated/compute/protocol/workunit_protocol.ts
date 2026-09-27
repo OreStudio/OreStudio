@@ -121,7 +121,7 @@ export interface PutWorkunitRequest {
 
 export interface PutWorkunitResponse {
     result: Result;
-    workunit: Workunit;
+    workunit: Workunit | null;
 }
 
 export interface PutManyWorkunitsRequest {
@@ -187,7 +187,7 @@ export interface GetWorkunitVersionRequest {
 
 export interface GetWorkunitVersionResponse {
     result: Result;
-    version: Workunit;
+    version: Workunit | null;
 }
 
 export const subjects = {

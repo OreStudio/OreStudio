@@ -118,7 +118,7 @@ export interface PutCounterpartyIdentifierRequest {
 
 export interface PutCounterpartyIdentifierResponse {
     result: Result;
-    counterparty_identifier: CounterpartyIdentifier;
+    counterparty_identifier: CounterpartyIdentifier | null;
 }
 
 export interface PutManyCounterpartyIdentifiersRequest {
@@ -184,7 +184,7 @@ export interface GetCounterpartyIdentifierVersionRequest {
 
 export interface GetCounterpartyIdentifierVersionResponse {
     result: Result;
-    version: CounterpartyIdentifier;
+    version: CounterpartyIdentifier | null;
 }
 
 export const subjects = {

@@ -166,7 +166,7 @@ struct put_account_contact_information_request {
 
 struct put_account_contact_information_response {
     ores::utility::domain::result result;
-    ores::iam::domain::account_contact_information account_contact_information;
+    std::optional<ores::iam::domain::account_contact_information> account_contact_information;
 };
 
 struct put_many_account_contact_informations_request {
@@ -290,7 +290,7 @@ struct get_account_contact_information_version_request {
 
 struct get_account_contact_information_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::account_contact_information version;
+    std::optional<ores::iam::domain::account_contact_information> version;
 };
 
 /**

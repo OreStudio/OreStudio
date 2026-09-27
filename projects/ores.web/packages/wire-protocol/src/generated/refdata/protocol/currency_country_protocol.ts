@@ -96,7 +96,7 @@ export interface PutCurrencyCountryRequest {
 
 export interface PutCurrencyCountryResponse {
     result: Result;
-    currency_country: CurrencyCountry;
+    currency_country: CurrencyCountry | null;
 }
 
 export interface PutManyCurrencyCountriesRequest {

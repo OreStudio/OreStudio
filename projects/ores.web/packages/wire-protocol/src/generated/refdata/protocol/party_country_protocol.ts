@@ -96,7 +96,7 @@ export interface PutPartyCountryRequest {
 
 export interface PutPartyCountryResponse {
     result: Result;
-    party_country: PartyCountry;
+    party_country: PartyCountry | null;
 }
 
 export interface PutManyPartyCountriesRequest {

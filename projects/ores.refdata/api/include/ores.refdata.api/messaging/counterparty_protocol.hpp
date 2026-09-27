@@ -161,7 +161,7 @@ struct put_counterparty_request {
 
 struct put_counterparty_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty counterparty;
+    std::optional<ores::refdata::domain::counterparty> counterparty;
 };
 
 struct put_many_counterparties_request {
@@ -257,7 +257,7 @@ struct get_counterparty_version_request {
 
 struct get_counterparty_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty version;
+    std::optional<ores::refdata::domain::counterparty> version;
 };
 
 /**

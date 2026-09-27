@@ -111,7 +111,7 @@ export interface PutAccountTypeRequest {
 
 export interface PutAccountTypeResponse {
     result: Result;
-    account_type: AccountType;
+    account_type: AccountType | null;
 }
 
 export interface PutManyAccountTypesRequest {
@@ -162,7 +162,7 @@ export interface GetAccountTypeVersionRequest {
 
 export interface GetAccountTypeVersionResponse {
     result: Result;
-    version: AccountType;
+    version: AccountType | null;
 }
 
 export const subjects = {

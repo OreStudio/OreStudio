@@ -111,7 +111,7 @@ export interface PutTenorKindRequest {
 
 export interface PutTenorKindResponse {
     result: Result;
-    tenor_kind: TenorKind;
+    tenor_kind: TenorKind | null;
 }
 
 export interface PutManyTenorKindsRequest {
@@ -162,7 +162,7 @@ export interface GetTenorKindVersionRequest {
 
 export interface GetTenorKindVersionResponse {
     result: Result;
-    version: TenorKind;
+    version: TenorKind | null;
 }
 
 export const subjects = {

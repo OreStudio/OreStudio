@@ -111,7 +111,7 @@ export interface PutContactTypeRequest {
 
 export interface PutContactTypeResponse {
     result: Result;
-    contact_type: ContactType;
+    contact_type: ContactType | null;
 }
 
 export interface PutManyContactTypesRequest {
@@ -162,7 +162,7 @@ export interface GetContactTypeVersionRequest {
 
 export interface GetContactTypeVersionResponse {
     result: Result;
-    version: ContactType;
+    version: ContactType | null;
 }
 
 export const subjects = {

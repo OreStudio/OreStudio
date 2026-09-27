@@ -126,7 +126,7 @@ export interface PutBookRequest {
 
 export interface PutBookResponse {
     result: Result;
-    book: Book;
+    book: Book | null;
 }
 
 export interface PutManyBooksRequest {
@@ -192,7 +192,7 @@ export interface GetBookVersionRequest {
 
 export interface GetBookVersionResponse {
     result: Result;
-    version: Book;
+    version: Book | null;
 }
 
 export const subjects = {

@@ -632,7 +632,8 @@ void workflow_engine::recover_in_progress() {
     const auto compensating_id = instance_states_.require("compensating");
 
     // The generated repository has no find-by-state read, so the recovery pass
-    // reads the tenant's instances once and splits them by state in memory.
+    // reads every tenant's instances once and splits them by state in memory.
+    // The context is the system tenant, so the run of any tenant is in reach.
     const auto all_instances = instance_repo_.read_latest(ctx_);
     std::vector<domain::workflow_instance> instances;
     std::vector<domain::workflow_instance> compensating;

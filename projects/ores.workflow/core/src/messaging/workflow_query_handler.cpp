@@ -22,6 +22,7 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <boost/lexical_cast.hpp>
@@ -181,7 +182,10 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         return;
     }
 
-    // Load the instance (service-account context — no tenant filter).
+    // The instance is read through the service's own context, which reaches
+    // every tenant, and the guard below is what confines the answer to the
+    // caller's. The steps are then read through the caller's context, so they
+    // need no guard of their own.
     const auto instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
     if (instances.empty()) {
         reply(nats_,
@@ -203,8 +207,8 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
 
     // Load the steps, ordered by step_index ascending by the repository. A
     // workflow's step count is bounded by its definition, so one page covers it.
-    const auto raw_steps =
-        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance_id), 0, 1000);
+    const auto raw_steps = step_repo_.read_latest_by_workflow_id(
+        req_ctx, boost::uuids::to_string(instance_id), 0, 1000);
 
     get_workflow_steps_response resp;
     resp.success = true;
@@ -289,7 +293,7 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), debug) << "get_step_result request received";
 
     auto req = decode<get_step_result_request>(msg);
-    if (!req || req->step_id.empty()) {
+    if (!req || req->step_id.empty() || req->tenant_id.empty()) {
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }
@@ -302,12 +306,38 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
         return;
     }
 
-    const auto steps = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_uuid));
+    // The caller names the tenant the step belongs to, and the read is scoped to
+    // it. This path serves a workflow command's idempotency question -- the
+    // engine gave the caller that tenant in the command's X-Tenant-Id header --
+    // so the answer must stay inside it: the service's own context would reach
+    // every tenant's steps, and this reply carries the step's result, error and
+    // log.
+    //
+    // The id is parsed rather than resolved. There is no code to look up, because
+    // the engine minted the value it put in the header, and a request naming a
+    // tenant that does not exist can only be asking for rows the policy will not
+    // show it, so the read below answers found = false without an extra query.
+    // This runs on every step dispatch, so it stays off the database.
+    const auto tenant = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
+    if (!tenant) {
+        BOOST_LOG_SEV(lg(), warn) << "get_step_result names tenant '" << req->tenant_id
+                                  << "', which is not a tenant id.";
+        reply(nats_, msg, get_step_result_response{.found = false});
+        return;
+    }
+    const auto req_ctx = ctx_.with_tenant(*tenant, ctx_.actor());
+
+    const auto steps = step_repo_.read_latest(req_ctx, boost::uuids::to_string(step_uuid));
     if (steps.empty()) {
         reply(nats_, msg, get_step_result_response{.found = false});
         return;
     }
     const auto* step = &steps.front();
+
+    if (step->tenant_id != req_ctx.tenant_id()) {
+        reply(nats_, msg, get_step_result_response{.found = false});
+        return;
+    }
 
     // Return cached result only for terminal states; in_progress means the
     // previous execution is still in flight (or was interrupted mid-publish).

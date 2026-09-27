@@ -187,7 +187,7 @@ public:
             const auto tenant_id = extract_workflow_header(msg, tenant_id_header);
 
             // Idempotency guard: replay cached result if this step already completed.
-            if (auto cached = check_step_idempotency(nats_, step_id)) {
+            if (auto cached = check_step_idempotency(nats_, step_id, tenant_id)) {
                 publish_step_completion(nats_,
                                         step_id,
                                         inst_id,

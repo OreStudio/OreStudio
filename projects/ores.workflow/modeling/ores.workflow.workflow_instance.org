@@ -158,8 +158,12 @@ Timestamp of the most recent step-completed event processed.
 
 * Indexes
 
-The list query filters by state and orders by type, and the engine's recovery
-pass reads every instance for a tenant, so the tenant index is the hot path.
+The list query filters by state and orders by type, and a lookup names one
+instance, so the tenant index and the tenant-scoped unique index are the hot
+paths. The engine's own list read is not: it spans every tenant, so it cannot
+use a leading =tenant_id=, and it reads the open rows in one pass at startup.
+That pass is bounded by the runs in flight rather than by the table, so a scan
+is the honest cost of recovering all of them.
 
 ** tenant_id
 :PROPERTIES:
@@ -185,11 +189,24 @@ pass reads every instance for a tenant, so the tenant index is the hot path.
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope:        shared
 :entity_singular_short: instance
 :entity_plural_short:   instances
 :entity_singular_words: workflow instance
 :entity_plural_words:   workflow instances
 :END:
+
+Reads rely on the row-level security policy instead of an application-level
+=tenant_id= predicate. That policy admits a row to its own tenant, and to a
+system-tenant session it admits every tenant's rows.
+
+The engine is a cross-tenant service. It holds the system tenant and drives runs
+that belong to whoever asked for them, so a =tenant_id = ctx.tenant_id()=
+predicate on top of the policy hides every other tenant's run from the engine.
+A run it cannot read back is a run it cannot advance or recover: the step insert
+is refused, the published marker and the step progress become silent no-ops, and
+the completion event finds no step. A tenant session still reads only its own
+rows, because the policy is what draws that line.
 
 ** Domain includes
 

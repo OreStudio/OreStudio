@@ -216,16 +216,21 @@ struct cached_step_result {
  * Fails open: returns std::nullopt on timeout or transport error so the caller
  * proceeds with normal execution rather than blocking the workflow.
  *
- * @param nats    NATS client used to make the synchronous request.
- * @param step_id UUID string echoed from the X-Workflow-Step-Id header.
+ * @param nats      NATS client used to make the synchronous request.
+ * @param step_id   UUID string echoed from the X-Workflow-Step-Id header.
+ * @param tenant_id Tenant the step belongs to, echoed from X-Tenant-Id. The
+ *                  engine scopes the lookup to it and reports a step in any
+ *                  other tenant as not found.
  * @return Cached result if the step already completed; std::nullopt otherwise.
  */
-inline std::optional<cached_step_result> check_step_idempotency(ores::nats::service::client& nats,
-                                                                const std::string& step_id) {
+inline std::optional<cached_step_result>
+check_step_idempotency(ores::nats::service::client& nats,
+                       const std::string& step_id,
+                       const std::string& tenant_id) {
 
     using namespace ores::workflow::messaging;
 
-    const get_step_result_request req{.step_id = step_id};
+    const get_step_result_request req{.step_id = step_id, .tenant_id = tenant_id};
     const auto data = ores::nats::default_wire_codec().encode(req);
 
     try {

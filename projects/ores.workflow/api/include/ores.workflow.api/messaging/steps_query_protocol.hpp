@@ -38,8 +38,12 @@ namespace ores::workflow::messaging {
  * If the step already completed (e.g. the command was re-dispatched after a
  * restart), the handler can replay the cached result without re-executing.
  *
- * No authentication required — the step ID is treated as an opaque
- * idempotency key; the response carries no tenant-sensitive data.
+ * No authentication required: the step ID is an opaque idempotency key and the
+ * reply is confined to the tenant the request names. The engine hands the
+ * caller that tenant in the X-Tenant-Id header of the command it dispatched,
+ * and the caller echoes it back, so the query stays inside the tenant the step
+ * belongs to. A request that names no tenant is answered with found = false,
+ * because there is no tenant whose data it could be entitled to.
  */
 struct get_step_result_request {
     using response_type = struct get_step_result_response;
@@ -49,6 +53,14 @@ struct get_step_result_request {
      * @brief UUID of the workflow step to look up, echoed from X-Workflow-Step-Id.
      */
     std::string step_id;
+
+    /**
+     * @brief The tenant the step belongs to, echoed from X-Tenant-Id.
+     *
+     * The lookup is scoped to it, so a step in another tenant reads as not
+     * found rather than being returned.
+     */
+    std::string tenant_id;
 };
 
 struct get_step_result_response {

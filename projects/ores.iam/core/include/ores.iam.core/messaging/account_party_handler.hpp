@@ -486,7 +486,7 @@ private:
         const auto inst_id = extract_workflow_header(msg, instance_id_header);
         const auto tenant_id = extract_workflow_header(msg, tenant_id_header);
 
-        if (auto cached = check_step_idempotency(nats_, step_id)) {
+        if (auto cached = check_step_idempotency(nats_, step_id, tenant_id)) {
             publish_step_completion(nats_,
                                     step_id,
                                     inst_id,

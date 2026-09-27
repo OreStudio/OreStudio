@@ -226,11 +226,17 @@ parent-scoped list's filter, so this index is its hot path.
 
 ** Repository
 :PROPERTIES:
+:tenant_read_scope:     shared
 :entity_singular_short: step
 :entity_plural_short:   steps
 :entity_singular_words: workflow step
 :entity_plural_words:   workflow steps
 :END:
+
+Reads rely on the row-level security policy instead of an application-level
+=tenant_id= predicate, for the reason the instance model states: the engine
+holds the system tenant and must read back the steps it wrote for another
+tenant's run, and the policy is what keeps one tenant out of another's steps.
 
 ** Domain includes
 

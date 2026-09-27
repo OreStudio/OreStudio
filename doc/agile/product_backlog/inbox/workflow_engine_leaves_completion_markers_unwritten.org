@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: E296B5EC-F01B-4664-9DE1-E5EFCE6E123C
+:END:
+#+title: The workflow engine leaves completed_at and the published marker unwritten
+#+description: workflow_instance.completed_at and .last_event_at are never written by the engine or by any trigger, and recover_in_progress re-dispatches a step without stamping command_published_at. The shell's workflow summary therefore always reports no completion time, and the published marker says a recovered step never went out.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:engine:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two markers the workflow tables carry are never written.
+
+- =workflow_instance.completed_at= and =workflow_instance.last_event_at=: the
+  engine's =set_instance_state= writes only =state_id=, =result_json= and
+  =error=, and no trigger touches either column, so both stay null for every
+  run that has ever completed.
+- =workflow_step.command_published_at= after a recovery: the start and the
+  next-step dispatch both call =stamp_command_published=, and
+  =recover_in_progress= does not, so a step that a restart put back on the wire
+  reads as never published.
+
+* Why
+
+The shell's =workflow list= reports =completed_at= from
+=workflow_instance_summary=, so an operator sees a completed run with no
+completion time, and =workflow wait= can only poll the state rather than the
+timestamp. Someone reading the step rows to answer "did this step's command ever
+go out" gets "no" for a step the engine has in fact dispatched twice.
+
+The columns exist, are documented in the model, and are read by the query path.
+Either the engine should write them at the transitions it already knows about,
+or the model should drop them and the summary should stop reporting them. Both
+are defensible; leaving the read path promising a value nobody writes is not.
+
+* References
+
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp= —
+  =set_instance_state=, =stamp_command_published=, =recover_in_progress=.
+- =projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp=
+  — the two instance columns.
+- Verified on 2026-09-27: =grep= for =completed_at= finds no write in
+  =projects/ores.sql/create/workflow/= and none in the workflow C++, while the
+  reporting and scheduler components do write their own.
+
+* See also
+
+- [[id:0F5115A5-05FA-4A0E-A24B-1305F6DBC41B][Workflow tests leave in-progress
+  runs behind in every database they touch]] — the rows this pass re-dispatches.

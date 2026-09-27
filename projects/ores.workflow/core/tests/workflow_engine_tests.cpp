@@ -22,18 +22,22 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.workflow.core/messaging/workflow_query_handler.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <memory>
@@ -42,17 +46,23 @@
 #include <thread>
 #include <vector>
 
-// The four engine paths a shell script cannot reach. A script can only start a
-// run and watch it, so a start the engine refuses, a completion delivered
-// twice, and a recovery pass have no configuration that covers them. Here the
-// handlers are called directly, with the real store and the real bus either
-// side of them.
+// The engine paths a shell script cannot reach. A script can only start a run
+// and watch it, so a start the engine refuses, a completion delivered twice, a
+// recovery pass, and a run that belongs to a tenant other than the service's
+// own have no configuration that covers them. Here the handlers are called
+// directly, with the real store and the real bus either side of them.
 //
 // The engine is wired the way ores.workflow.service wires it, with one
 // difference: the run lives in the test tenant, so a case writes rows nobody
 // else reads. The state ids come from the system tenant, where dq seeds them,
 // and they carry no foreign key to a machine, so the two halves do not have to
 // agree on a tenant.
+//
+// There are two arrangements, picked per case by the fixture. Most cases run
+// the engine in the tenant the run belongs to. The cross-tenant cases run it in
+// the system tenant, which is what a deployed service holds, so the run and the
+// engine's own context are in different tenants and every read crosses the
+// boundary.
 
 namespace {
 
@@ -65,6 +75,18 @@ const std::string tags("[engine][integration]");
 // a command the engine publishes here cannot reach a service.
 const std::string step_subject("test.workflow.engine.step");
 const std::string compensation_subject("test.workflow.engine.compensate");
+
+// Where the query handler's answer lands in the case that calls it directly.
+const std::string reply_subject("test.workflow.step-result.reply");
+
+/**
+ * @brief Which tenant the engine holds.
+ *
+ * A deployed service holds the system tenant and drives runs that belong to
+ * whoever asked for it; a case that is not about the boundary keeps the engine
+ * in the run's own tenant so the two cannot be confused.
+ */
+enum class engine_tenant { run, service };
 
 using ores::nats::service::client;
 using ores::workflow::messaging::start_workflow_message;
@@ -90,16 +112,21 @@ struct fixture {
     fsm_state_map instance_states;
     fsm_state_map step_states;
 
-    fixture() {
+    /**
+     * @param where Which tenant the engine holds. engine_tenant::service is
+     * the arrangement a deployed service runs with: the engine holds the system
+     * tenant while the run belongs to whoever asked for it.
+     */
+    explicit fixture(engine_tenant where = engine_tenant::run) {
         nats.connect();
         // The machine's states are dq's seed data, in the system tenant. The
         // run's rows are this case's own, in the test tenant.
-        const auto sys_ctx =
-            ores::database::service::tenant_context::with_system_tenant(h.context());
-        instance_states = load_fsm_states(sys_ctx, "workflow_instance");
-        step_states = load_fsm_states(sys_ctx, "workflow_step");
+        instance_states = load_fsm_states(service_context(), "workflow_instance");
+        step_states = load_fsm_states(service_context(), "workflow_step");
         engine = std::make_shared<workflow_engine>(nats,
-                                                   h.context(),
+                                                   where == engine_tenant::service ?
+                                                       service_context() :
+                                                       h.context(),
                                                    registry,
                                                    instance_states,
                                                    step_states,
@@ -113,6 +140,22 @@ struct fixture {
     /** @brief The tenant a run started here belongs to. */
     std::string tenant() {
         return h.context().tenant_id().to_string();
+    }
+
+    /**
+     * @brief The context the deployed service runs with: the system tenant.
+     *
+     * A read through it sees every tenant's rows, which is what lets a case
+     * tell "the engine wrote this run somewhere" from "the engine can find it
+     * again".
+     */
+    ores::database::context service_context() {
+        return ores::database::service::tenant_context::with_system_tenant(h.context());
+    }
+
+    /** @brief The tenant the service itself runs in: the system tenant. */
+    std::string service_tenant_id() {
+        return service_context().tenant_id().to_string();
     }
 
     void register_steps(const std::string& type, const std::vector<std::string>& names) {
@@ -208,6 +251,29 @@ std::vector<ores::nats::message> wait_for_instance(ores::nats::service::buffered
         mine = commands_for(sub, instance_id);
     }
     return mine;
+}
+
+/**
+ * @brief Polls for the reply that arrives after @p from messages, or gives up.
+ *
+ * A handler answers by publishing to the request's reply subject, so a case
+ * that calls one directly reads its answer back off the bus.
+ */
+template <typename Response>
+std::optional<Response> await_reply(ores::nats::service::buffered_subscription& sub,
+                                    std::size_t from,
+                                    std::chrono::milliseconds timeout) {
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    while (std::chrono::steady_clock::now() < deadline) {
+        const auto all = sub.snapshot();
+        if (all.size() > from) {
+            const auto decoded = ores::nats::default_wire_codec().decode<Response>(all.back().data);
+            if (decoded)
+                return *decoded;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+    return std::nullopt;
 }
 
 } // namespace
@@ -341,4 +407,232 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     CHECK(rows.size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched step " << step_id;
+}
+
+TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_cross_tenant_workflow", {"one", "two"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto run_tenant = f.tenant();
+    // Without this the case would assert nothing: if the test tenant were the
+    // system tenant, the engine and the run would share a tenant and every
+    // boundary below would be imaginary.
+    REQUIRE(run_tenant != f.service_tenant_id());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 1000);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_cross_tenant_workflow", run_tenant, instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // The engine holds the system tenant, so the rows it wrote belong to the
+    // run's tenant. Reading them back through the engine's own context is what
+    // every later step of the run depends on: the published marker, the step
+    // progress and the completion.
+    const auto service_ctx = f.service_context();
+    workflow_instance_repository instances;
+    workflow_step_repository steps;
+
+    auto instance_rows = instances.read_latest(service_ctx, instance_id);
+    REQUIRE(instance_rows.size() == 1);
+    CHECK(instance_rows.front().tenant_id == f.h.context().tenant_id());
+
+    auto step_rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
+    REQUIRE(step_rows.size() == 1);
+
+    // A start is done only once the instance, its first step and the step's
+    // published marker are all written.
+    CHECK(step_rows.front().command_published_at.has_value());
+
+    const auto first_step_id = boost::uuids::to_string(step_rows.front().id);
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    instance_rows = instances.read_latest(service_ctx, instance_id);
+    REQUIRE(instance_rows.size() == 1);
+    CHECK(instance_rows.front().current_step_index == 1);
+
+    step_rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
+    REQUIRE(step_rows.size() == 2);
+
+    // The second step is the last, so completing it ends the run.
+    const auto second_step_id = boost::uuids::to_string(step_rows.back().id);
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+
+    instance_rows = instances.read_latest(service_ctx, instance_id);
+    REQUIRE(instance_rows.size() == 1);
+    CHECK(instance_rows.front().state_id == f.instance_states.require("completed"));
+
+    // Two steps, two commands: running to the end must not mean running twice.
+    CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::milliseconds(300)).size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "Cross-tenant run completed.";
+}
+
+TEST_CASE("workflow_engine recovery finds a run in another tenant", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_cross_tenant_recovery_workflow", {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    REQUIRE(f.tenant() != f.service_tenant_id());
+
+    // A recovery pass re-dispatches every in-progress step it can see, and the
+    // buffer drops the oldest message once it is full, so it has to hold the
+    // whole pass rather than the few messages this case is about.
+    auto commands = f.nats.subscribe_buffered(step_subject, 1000);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_cross_tenant_recovery_workflow", f.tenant(), instance_id)));
+    const auto first = wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5));
+    REQUIRE(first.size() == 1);
+    const auto step_id =
+        first.front().headers.at(std::string(ores::workflow::messaging::step_id_header));
+
+    // Nothing answered the first dispatch, which is the state a service restart
+    // leaves behind: the run is in progress and its step is in progress.
+    f.engine->recover_in_progress();
+
+    const auto after = wait_for_instance(commands, instance_id, 2, std::chrono::seconds(10));
+    REQUIRE(after.size() == 2);
+
+    // The re-dispatch carries the same step id, the idempotency key a service
+    // deduplicates on, so the pass re-asked for the same work rather than
+    // starting a second one.
+    const auto redispatched =
+        after.back().headers.at(std::string(ores::workflow::messaging::step_id_header));
+    CHECK(redispatched == step_id);
+
+    // The run the pass found is the other tenant's row, read here through the
+    // engine's own context.
+    workflow_instance_repository instances;
+    const auto rows = instances.read_latest(f.service_context(), instance_id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().tenant_id == f.h.context().tenant_id());
+    BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched " << step_id << " in another tenant.";
+}
+
+TEST_CASE("workflow_query_handler answers for the tenant a request names", tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::workflow::messaging::get_step_result_request;
+    using ores::workflow::messaging::get_step_result_response;
+    using ores::workflow::messaging::workflow_query_handler;
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_step_result_workflow", {"one", "two"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_step_result_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // Complete the first step, so the run has a terminal step result to find.
+    workflow_step_repository steps;
+    const auto first = steps.read_latest_by_workflow_id(f.service_context(), instance_id, 0, 100);
+    REQUIRE(first.size() == 1);
+    const auto step_id = boost::uuids::to_string(first.front().id);
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, step_id, step_outcome::completed)));
+
+    // The handler holds the service's own context, which reaches every tenant's
+    // steps. What confines the answer is the tenant the request names, and this
+    // case is the one that holds it to that. The handler never reads the
+    // verifier on this path, so an unconfigured one is enough to build it.
+    auto handler = std::make_shared<workflow_query_handler>(
+        f.nats,
+        f.service_context(),
+        ores::security::jwt::jwt_authenticator::create_hs256(""),
+        f.instance_states,
+        f.step_states,
+        f.registry);
+
+    auto replies = f.nats.subscribe_buffered(reply_subject, 10);
+    const auto ask = [&](const std::string& tenant) {
+        get_step_result_request req;
+        req.step_id = step_id;
+        req.tenant_id = tenant;
+        const auto before = replies.size();
+        ores::nats::message msg;
+        msg.data = ores::nats::default_wire_codec().encode(req);
+        msg.reply_subject = reply_subject;
+        handler->get_step_result(std::move(msg));
+        return await_reply<get_step_result_response>(
+            replies, before, std::chrono::seconds(5));
+    };
+
+    // The step belongs to the run's tenant, so naming that tenant finds it.
+    const auto mine = ask(f.tenant());
+    REQUIRE(mine.has_value());
+    CHECK(mine->found);
+    CHECK(mine->success);
+    CHECK(mine->outcome == step_outcome::completed);
+
+    // Naming another tenant must not disclose the step, and naming none at all
+    // must not fall back to the service's own.
+    const auto other = ask(f.service_tenant_id());
+    REQUIRE(other.has_value());
+    CHECK_FALSE(other->found);
+
+    const auto unnamed = ask("");
+    REQUIRE(unnamed.has_value());
+    CHECK_FALSE(unnamed->found);
+    BOOST_LOG_SEV(lg, debug) << "Step result confined to the requested tenant.";
+}
+
+TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for the service",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_list_scope_workflow", {"one"});
+
+    // Two runs: one in the test tenant, one in the tenant the service itself
+    // holds. The second is what tells the two read scopes apart, because only a
+    // system-tenant session can see it.
+    const auto run_tenant = f.tenant();
+    const auto service_tenant = f.service_tenant_id();
+    REQUIRE(run_tenant != service_tenant);
+    const auto run_in_tenant = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto run_in_service = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 1000);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_list_scope_workflow", run_tenant, run_in_tenant)));
+    f.engine->on_start_workflow(
+        as_message(start_for("test_list_scope_workflow", service_tenant, run_in_service)));
+    REQUIRE(wait_for_instance(commands, run_in_tenant, 1, std::chrono::seconds(5)).size() == 1);
+    REQUIRE(wait_for_instance(commands, run_in_service, 1, std::chrono::seconds(5)).size() == 1);
+
+    const auto has = [](const std::vector<ores::workflow::domain::workflow_instance>& rows,
+                        const std::string& id) {
+        return std::ranges::any_of(rows, [&](const auto& row) {
+            return boost::uuids::to_string(row.id) == id;
+        });
+    };
+
+    workflow_instance_repository instances;
+
+    // The service's own context is the platform-wide view: the generic list and
+    // count that the generated service exposes reach every tenant's runs. This
+    // is the widening the shared read scope buys, and it is what the engine
+    // needs; nothing else in the component depends on the older, narrower view.
+    const auto all = instances.read_latest(f.service_context(), 0, 1000);
+    CHECK(has(all, run_in_tenant));
+    CHECK(has(all, run_in_service));
+
+    // A tenant's own context still reaches its runs and only its runs. The
+    // workflow tables' policy is own-tenant-or-system-*session*, so a tenant
+    // never inherits the service's rows the way a shared reference table's
+    // rows would be inherited, and a list cannot show a run twice.
+    const auto own = instances.read_latest(f.h.context(), 0, 1000);
+    CHECK(has(own, run_in_tenant));
+    CHECK_FALSE(has(own, run_in_service));
+
+    // The count follows the list, so the wider view is not list-only.
+    CHECK(instances.get_total_instance_count(f.service_context()) >
+          instances.get_total_instance_count(f.h.context()));
+    BOOST_LOG_SEV(lg, debug) << "List and count follow the reading tenant.";
 }

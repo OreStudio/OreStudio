@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0F5115A5-05FA-4A0E-A24B-1305F6DBC41B
+:END:
+#+title: Workflow tests leave in-progress runs behind in every database they touch
+#+description: The workflow test suites create runs in a per-run tenant and never remove them; terminating the tenant closes the tenant row but leaves its workflow instances and steps in progress. The dev database had 102 such runs, and every workflow service restart re-dispatches all of them.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:tests:hygiene:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The workflow test suites create runs in the tenant the Catch2 lifecycle listener
+provisions for the run, and nothing removes them afterwards. The listener
+terminates that tenant in =testRunEnded=, which closes the tenant row, but the
+run's =workflow_instance= and =workflow_step= rows stay open and =in_progress=.
+
+* Why
+
+The rows are not inert. Every workflow service restart runs
+=recover_in_progress=, which is now cross-tenant, so it reads all of them and
+re-publishes a command for each in-progress step. Measured on 2026-09-27
+against =ores_dev_brave_hopper=: the startup line read =Found 102 recoverable
+workflow instance(s)=, and every one of the 101 runs that was not part of a live
+check was a leftover test run. The re-dispatch is harmless in itself, because
+the test subjects (=test.workflow.engine.step=) have no production subscriber,
+but it makes the pass slow, fills the log with work nobody asked for, and hides
+a real stalled run among the noise.
+
+It also breaks the assertion the recovery test wants to make. That test cannot
+say "recovery found my run" without first accepting that it may also have found
+a hundred others, and it has to size its NATS buffer for the whole pass rather
+than for the three messages it is about.
+
+* References
+
+- =projects/ores.testing/src/database_lifecycle_listener.cpp= provisions and
+  terminates the per-run tenant.
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp= —
+  =recover_in_progress=.
+- Found while adding the cross-tenant engine tests on task
+  02AB0E19-9F53-4DD4-B609-A2DED9824EA5.
+
+* See also
+
+- [[id:E296B5EC-F01B-4664-9DE1-E5EFCE6E123C][The workflow engine leaves
+  completed_at and the published marker unwritten]] — the same recovery pass,
+  the markers it does not write.

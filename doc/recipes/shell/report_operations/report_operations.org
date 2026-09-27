@@ -243,3 +243,45 @@ It is addressed at =reporting.v1.report.fail=.
 report_operations fail-report __none__ __none__ __none__ __none__
 #+end_src
 
+** =resolve-prepared-input=
+:PROPERTIES:
+:ID: 70977076-D0FE-5D75-A5C3-28D6C6FB292C
+:END:
+
+Sends =resolve_prepared_input_request= and prints =prepare_ore_package_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =prepared_input_key=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations resolve-prepared-input <report_instance_id> <tenant_id> <correlation_id> <prepared_input_key>
+#+end_example
+
+It is addressed at =reporting.v1.report.resolve-prepared-input=.
+
+#+name: report_operations-resolve-prepared-input
+#+begin_src ores-shell :tangle report_operations-resolve-prepared-input.ores :exports none
+report_operations resolve-prepared-input __none__ __none__ __none__ __none__
+#+end_src
+
+** =ignore-compute-results=
+:PROPERTIES:
+:ID: B10D2B61-30B5-576D-AF52-98E7EFD40E31
+:END:
+
+Sends =ignore_compute_results_request= and prints =collect_compute_results_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =batch_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations ignore-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+#+end_example
+
+It is addressed at =reporting.v1.report.ignore-compute-results=.
+
+#+name: report_operations-ignore-compute-results
+#+begin_src ores-shell :tangle report_operations-ignore-compute-results.ores :exports none
+report_operations ignore-compute-results __none__ __none__ __none__ __none__
+#+end_src
+

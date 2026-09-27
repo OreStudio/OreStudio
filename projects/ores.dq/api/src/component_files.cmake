@@ -321,5 +321,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/subject_area_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/synthetic_fx_spot_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/treatment_dimension_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/ores.dq.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/workflow/bundle_publish_workflow.hpp"
 )

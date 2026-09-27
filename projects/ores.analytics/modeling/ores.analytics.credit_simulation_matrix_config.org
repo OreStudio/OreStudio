@@ -51,6 +51,26 @@ Surrogate key for the matrix.
 The name an entity uses to refer to this matrix, and the natural key
 within a configuration.
 
+** t0
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The lower bound ORE writes on the matrix Data element, 0.0 in every
+shipped example.
+
+** t1
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The upper bound ORE writes on the matrix Data element, 1.0 in every
+shipped example.
+
 * SQL
 
 ** Flags

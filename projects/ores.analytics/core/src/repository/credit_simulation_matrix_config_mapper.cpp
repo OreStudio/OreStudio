@@ -43,6 +43,8 @@ credit_simulation_matrix_config_mapper::map(const credit_simulation_matrix_confi
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
+    r.t0 = v.t0;
+    r.t1 = v.t1;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -63,6 +65,8 @@ credit_simulation_matrix_config_mapper::map(const domain::credit_simulation_matr
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.name = v.name;
+    r.t0 = v.t0;
+    r.t1 = v.t1;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

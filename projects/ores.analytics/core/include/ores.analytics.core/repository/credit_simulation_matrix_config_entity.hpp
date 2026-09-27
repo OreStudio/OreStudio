@@ -47,6 +47,8 @@ struct credit_simulation_matrix_config_entity {
     std::string workspace_id;
     int version = 0;
     std::string name;
+    double t0;
+    double t1;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

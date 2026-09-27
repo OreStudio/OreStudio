@@ -36,6 +36,8 @@ render_credit_simulation_matrix_config_fields(const domain::credit_simulation_ma
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back({.name = "T0", .value = std::to_string(v.t0)});
+    fields.push_back({.name = "T1", .value = std::to_string(v.t1)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

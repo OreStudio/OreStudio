@@ -42,6 +42,8 @@ struct credit_simulation_matrix_config_key {
 struct credit_simulation_matrix_config_write {
     boost::uuids::uuid id;
     std::string name;
+    double t0;
+    double t1;
 };
 
 struct credit_simulation_matrix_config_change {

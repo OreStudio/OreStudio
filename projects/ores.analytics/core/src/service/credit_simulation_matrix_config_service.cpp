@@ -87,6 +87,8 @@ to_domain(const messaging::credit_simulation_matrix_config_write& write) {
     domain::credit_simulation_matrix_config v;
     v.id = write.id;
     v.name = write.name;
+    v.t0 = write.t0;
+    v.t1 = write.t1;
     return v;
 }
 

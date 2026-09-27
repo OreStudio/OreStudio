@@ -35,6 +35,8 @@ export interface CreditSimulationMatrixConfigKey {
 export interface CreditSimulationMatrixConfigWrite {
     id: string;
     name: string;
+    t0: number;
+    t1: number;
 }
 
 export interface CreditSimulationMatrixConfigChange {

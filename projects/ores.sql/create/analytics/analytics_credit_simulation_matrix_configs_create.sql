@@ -36,6 +36,8 @@ create table if not exists "ores_analytics_credit_simulation_matrices_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "name" text not null,
+    "t0" double precision not null,
+    "t1" double precision not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,

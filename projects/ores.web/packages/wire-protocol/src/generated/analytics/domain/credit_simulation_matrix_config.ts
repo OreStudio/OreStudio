@@ -36,6 +36,8 @@ export interface CreditSimulationMatrixConfig {
     workspace_id: string;
     id: string;
     name: string;
+    t0: number;
+    t1: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

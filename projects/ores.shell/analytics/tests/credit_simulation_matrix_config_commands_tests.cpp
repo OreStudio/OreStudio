@@ -159,7 +159,7 @@ TEST_CASE("credit_simulation_matrix_config_commands_process_add_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_config_commands::process_add(out, session, tokens(2));
+    credit_simulation_matrix_config_commands::process_add(out, session, tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -193,7 +193,7 @@ TEST_CASE("credit_simulation_matrix_config_commands_process_set_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_config_commands::process_set(out, session, tokens(2));
+    credit_simulation_matrix_config_commands::process_set(out, session, tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -227,7 +227,7 @@ TEST_CASE("credit_simulation_matrix_config_commands_process_put_many_requires_a_
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_config_commands::process_put_many(out, session, tokens(2));
+    credit_simulation_matrix_config_commands::process_put_many(out, session, tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

@@ -22,12 +22,12 @@
 
 #include "ores.analytics.api/domain/credit_simulation_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_entity_config.hpp"
-#include "ores.analytics.api/domain/credit_simulation_matrix_cell_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_config.hpp"
-#include "ores.analytics.api/domain/credit_simulation_matrix_state_config.hpp"
+#include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include <array>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -35,20 +35,29 @@
 namespace ores::ore::domain {
 
 /**
+ * @brief The eight ratings every ORE transition matrix is laid out on.
+ *
+ * The document names them in a comment inside each Data element, but the
+ * binding does not carry that comment, so the scale is held here. The order is
+ * the row and column order of the matrix, and it matches the seeded ratings.
+ */
+inline constexpr std::array<std::string_view, 8> credit_rating_scale = {
+    "Aaa", "Aa", "A", "Baa", "Ba", "B", "C", "Default"};
+
+/**
  * @brief One ORE CreditSimulation document, mapped to the analytics entities.
  *
- * The five entity lists are the tables a document decomposes into: the root
+ * The four entity lists are the tables a document decomposes into: the root
  * configuration with its Risk block, the entities that migrate, the named
- * matrices with their bounds, the states each matrix spans and the matrix
- * cells. The netting set ids have no column of their own and ride beside the
- * entities.
+ * matrices with their bounds, and one row per source rating carrying the eight
+ * target probabilities. The netting set ids have no column of their own and
+ * ride beside the entities.
  */
 struct mapped_credit_simulation {
     analytics::domain::credit_simulation_config config;
     std::vector<analytics::domain::credit_simulation_entity_config> entities;
     std::vector<analytics::domain::credit_simulation_matrix_config> matrices;
-    std::vector<analytics::domain::credit_simulation_matrix_state_config> states;
-    std::vector<analytics::domain::credit_simulation_matrix_cell_config> cells;
+    std::vector<analytics::domain::credit_simulation_matrix_row_config> rows;
     std::string netting_set_ids;
 };
 
@@ -56,11 +65,10 @@ struct mapped_credit_simulation {
  * @brief Maps between an ORE CreditSimulation XML document and the analytics
  * credit simulation entities.
  *
- * Import turns each matrix's Data grid into a matrix row, one state row per
- * label the grid's comment names, and one cell row per entry, keyed to the
- * matrix and the (from_state, to_state) pair; an entity refers to its matrix
- * by id, never by text. Export reassembles the grid from the state and cell
- * rows, so the document comes back cell for cell and label for label.
+ * Import turns each matrix's Data grid into a matrix row and one row per
+ * source rating; an entity refers to its matrix by id, never by text. Export
+ * reassembles the grid from the rows, so the document comes back cell for cell
+ * and label for label.
  */
 class ORES_ORE_CORE_EXPORT credit_simulation_mapper {
 private:
@@ -79,16 +87,16 @@ public:
     /**
      * @brief Maps an ORE CreditSimulation document to the analytics entities.
      *
-     * Every matrix becomes a matrix row plus a state row per label and a cell
-     * row per grid entry, and every entity points at the matrix id its
-     * TransitionMatrix name resolves to.
+     * Every matrix becomes a matrix row plus one row per source rating, and
+     * every entity points at the matrix id its TransitionMatrix name resolves
+     * to.
      */
     static mapped_credit_simulation map(const creditsimulation& v);
 
     /**
      * @brief Reconstructs an ORE CreditSimulation document from mapped entities.
      *
-     * Each matrix's grid is reassembled from its state and cell rows.
+     * Each matrix's grid is reassembled from its rating rows.
      */
     static creditsimulation reverse(const mapped_credit_simulation& v);
 };

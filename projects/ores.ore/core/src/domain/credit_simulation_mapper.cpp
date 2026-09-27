@@ -21,7 +21,6 @@
 #include "ores.ore.core/domain/credit_simulation_grid.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <charconv>
 #include <cstddef>
 #include <stdexcept>
@@ -36,6 +35,7 @@ namespace {
 constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
 constexpr std::string_view audit_commentary = "Imported from ORE XML";
+constexpr std::size_t rating_count = 8;
 
 boost::uuids::uuid new_uuid() {
     static thread_local ores::utility::uuid::uuid_v7_generator generator;
@@ -128,26 +128,26 @@ mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v
 
         const auto grid = parse_credit_simulation_grid(tm.Data);
         const auto side = grid.side();
-        for (std::size_t position = 0; position < grid.labels.size(); ++position) {
-            analytics::domain::credit_simulation_matrix_state_config state;
-            state.id = new_uuid();
-            state.transition_matrix_id = matrix.id;
-            state.position = static_cast<int>(position);
-            state.credit_rating_code = grid.labels[position];
-            set_audit(state);
-            mapped.states.push_back(std::move(state));
-        }
-        for (std::size_t row = 0; row < side; ++row) {
-            for (std::size_t col = 0; col < side; ++col) {
-                analytics::domain::credit_simulation_matrix_cell_config cell;
-                cell.id = new_uuid();
-                cell.transition_matrix_id = matrix.id;
-                cell.from_state = static_cast<int>(row);
-                cell.to_state = static_cast<int>(col);
-                cell.probability = grid.values[row * side + col];
-                set_audit(cell);
-                mapped.cells.push_back(std::move(cell));
-            }
+        if (side != rating_count)
+            throw std::runtime_error("A transition matrix is not eight by eight, so it has no "
+                                     "rating rows: " +
+                                     std::string(tm.Name));
+
+        for (std::size_t r = 0; r < side; ++r) {
+            analytics::domain::credit_simulation_matrix_row_config row;
+            row.id = new_uuid();
+            row.transition_matrix_id = matrix.id;
+            row.from_rating = std::string(credit_rating_scale[r]);
+            row.p_aaa = grid.values[r * side + 0];
+            row.p_aa = grid.values[r * side + 1];
+            row.p_a = grid.values[r * side + 2];
+            row.p_baa = grid.values[r * side + 3];
+            row.p_ba = grid.values[r * side + 4];
+            row.p_b = grid.values[r * side + 5];
+            row.p_c = grid.values[r * side + 6];
+            row.p_default = grid.values[r * side + 7];
+            set_audit(row);
+            mapped.rows.push_back(std::move(row));
         }
 
         mapped.matrices.push_back(std::move(matrix));
@@ -180,40 +180,25 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
     for (const auto& matrix : v.matrices) {
         matrix_names[boost::uuids::to_string(matrix.id)] = matrix.name;
 
-        std::vector<analytics::domain::credit_simulation_matrix_state_config> states;
-        for (const auto& state : v.states) {
-            if (state.transition_matrix_id == matrix.id)
-                states.push_back(state);
+        std::vector<analytics::domain::credit_simulation_matrix_row_config> rows;
+        for (const auto& row : v.rows) {
+            if (row.transition_matrix_id == matrix.id)
+                rows.push_back(row);
         }
-        std::sort(states.begin(), states.end(), [](const auto& lhs, const auto& rhs) {
-            return lhs.position < rhs.position;
-        });
 
-        std::vector<analytics::domain::credit_simulation_matrix_cell_config> cells;
-        for (const auto& cell : v.cells) {
-            if (cell.transition_matrix_id == matrix.id)
-                cells.push_back(cell);
-        }
-        std::sort(cells.begin(), cells.end(), [](const auto& lhs, const auto& rhs) {
-            if (lhs.from_state != rhs.from_state)
-                return lhs.from_state < rhs.from_state;
-            return lhs.to_state < rhs.to_state;
-        });
-
-        std::size_t side = states.size();
-        for (const auto& cell : cells)
-            side = std::max(
-                side, static_cast<std::size_t>(std::max(cell.from_state, cell.to_state)) + 1);
-
+        const std::size_t side = rows.size();
+        if (side != rating_count)
+            throw std::runtime_error("A transition matrix needs eight rating rows: " +
+                                     matrix.name);
         credit_simulation_grid grid;
         grid.values.assign(side * side, 0.0);
-        for (const auto& state : states)
-            grid.labels.push_back(state.credit_rating_code);
-        for (const auto& cell : cells) {
-            if (cell.from_state < 0 || cell.to_state < 0)
-                throw std::runtime_error("A transition matrix cell carries a negative state");
-            grid.values[static_cast<std::size_t>(cell.from_state) * side +
-                        static_cast<std::size_t>(cell.to_state)] = cell.probability;
+        for (std::size_t r = 0; r < side; ++r) {
+            grid.labels.push_back(std::string(credit_rating_scale[r]));
+            const double probabilities[rating_count] = {
+                rows[r].p_aaa, rows[r].p_aa,  rows[r].p_a, rows[r].p_baa,
+                rows[r].p_ba,  rows[r].p_b,   rows[r].p_c, rows[r].p_default};
+            for (std::size_t c = 0; c < rating_count; ++c)
+                grid.values[r * side + c] = probabilities[c];
         }
 
         domain::transitionmatrix tm;

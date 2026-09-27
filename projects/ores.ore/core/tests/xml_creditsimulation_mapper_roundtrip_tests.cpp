@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_grid.hpp"
 #include "ores.ore.core/domain/credit_simulation_mapper.hpp"
@@ -24,8 +25,10 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -36,6 +39,8 @@ std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
 }
 
+using ores::analytics::domain::credit_simulation_matrix_row_config;
+using ores::ore::domain::credit_rating_scale;
 using ores::ore::domain::credit_simulation_mapper;
 using ores::ore::domain::creditsimulation;
 using ores::ore::domain::mapped_credit_simulation;
@@ -88,21 +93,10 @@ mismatch compare_matrices(const creditsimulation& original,
         const auto original_grid = parse_credit_simulation_grid(l.Data);
         const auto exported_grid = parse_credit_simulation_grid(r.Data);
 
-        if (original_grid.labels.size() != exported_grid.labels.size())
-            return {false,
-                    describe(path,
-                             "matrix '" + std::string(l.Name) + "' label count differs: original " +
-                                 std::to_string(original_grid.labels.size()) + ", exported " +
-                                 std::to_string(exported_grid.labels.size()))};
-        for (std::size_t label = 0; label < original_grid.labels.size(); ++label) {
-            if (original_grid.labels[label] != exported_grid.labels[label])
-                return {false,
-                        describe(path,
-                                 "matrix '" + std::string(l.Name) + "' state label " +
-                                     std::to_string(label) + " differs: original '" +
-                                     original_grid.labels[label] + "', exported '" +
-                                     exported_grid.labels[label] + "'")};
-        }
+        // The state labels cannot be compared here. The binding strips XML
+        // comments when it loads a document, so a grid parsed out of either
+        // side never carries labels at all; the comment the mapper writes is
+        // checked against the serialised text in require_in_memory_roundtrip.
 
         if (original_grid.values.size() != exported_grid.values.size())
             return {false,
@@ -190,6 +184,76 @@ mismatch compare(const creditsimulation& original,
     return {};
 }
 
+mismatch compare_mapped_rows(const creditsimulation& original,
+                             const mapped_credit_simulation& mapped,
+                             const std::string& path) {
+    const auto& matrices = original.TransitionMatrices.TransitionMatrix;
+    if (mapped.matrices.size() != matrices.size())
+        return {false,
+                describe(path,
+                         "mapped matrix count differs: document " +
+                             std::to_string(matrices.size()) + ", mapped " +
+                             std::to_string(mapped.matrices.size()))};
+
+    for (std::size_t i = 0; i < matrices.size(); ++i) {
+        const auto& document_matrix = matrices.at(i);
+        const auto& mapped_matrix = mapped.matrices.at(i);
+        if (std::string(document_matrix.Name) != mapped_matrix.name)
+            return {false,
+                    describe(path,
+                             "matrix " + std::to_string(i) + " mapped name differs: document '" +
+                                 std::string(document_matrix.Name) + "', mapped '" +
+                                 mapped_matrix.name + "'")};
+
+        if (!document_matrix.Data.t0 || !document_matrix.Data.t1)
+            return {false, describe(path, "matrix '" + mapped_matrix.name + "' lost a bound")};
+        if (std::stod(*document_matrix.Data.t0) != mapped_matrix.t0 ||
+            std::stod(*document_matrix.Data.t1) != mapped_matrix.t1)
+            return {false,
+                    describe(path, "matrix '" + mapped_matrix.name + "' mapped bounds differ")};
+
+        const auto grid = parse_credit_simulation_grid(document_matrix.Data);
+        const auto side = grid.side();
+
+        std::vector<credit_simulation_matrix_row_config> rows;
+        for (const auto& row : mapped.rows) {
+            if (row.transition_matrix_id == mapped_matrix.id)
+                rows.push_back(row);
+        }
+        if (rows.size() != side)
+            return {false,
+                    describe(path,
+                             "matrix '" + mapped_matrix.name +
+                                 "' mapped row count differs: grid " + std::to_string(side) +
+                                 ", mapped " + std::to_string(rows.size()))};
+
+        for (std::size_t r = 0; r < side; ++r) {
+            if (rows[r].from_rating != credit_rating_scale[r])
+                return {false,
+                        describe(path,
+                                 "matrix '" + mapped_matrix.name + "' mapped state label " +
+                                     std::to_string(r) + " differs: expected '" +
+                                     std::string(credit_rating_scale[r]) + "', mapped '" +
+                                     rows[r].from_rating + "'")};
+
+            const double probabilities[] = {rows[r].p_aaa, rows[r].p_aa,  rows[r].p_a,
+                                            rows[r].p_baa, rows[r].p_ba,  rows[r].p_b,
+                                            rows[r].p_c,   rows[r].p_default};
+            for (std::size_t c = 0; c < 8; ++c) {
+                if (probabilities[c] != grid.values[r * side + c])
+                    return {false,
+                            describe(path,
+                                     "matrix '" + mapped_matrix.name + "' mapped cell (row " +
+                                         std::to_string(r) + ", col " + std::to_string(c) +
+                                         ") differs: grid " +
+                                         std::to_string(grid.values[r * side + c]) + ", mapped " +
+                                         std::to_string(probabilities[c]))};
+            }
+        }
+    }
+    return {};
+}
+
 void require_in_memory_roundtrip(const std::string& relative_path) {
     auto lg(make_logger(test_suite));
 
@@ -201,8 +265,22 @@ void require_in_memory_roundtrip(const std::string& relative_path) {
     ores::ore::domain::load_data(content, original);
 
     const mapped_credit_simulation mapped = credit_simulation_mapper::map(original);
+    const auto mapped_result = compare_mapped_rows(original, mapped, f.string());
+    INFO(mapped_result.message);
+    CHECK(mapped_result.equal);
+
     const creditsimulation rebuilt = credit_simulation_mapper::reverse(mapped);
     const std::string exported_xml = ores::ore::domain::save_data(rebuilt);
+
+    // The comment naming the states is part of the document, but the binding
+    // drops comments on load, so it is asserted against the serialised text
+    // rather than through a re-parse.
+    bool carries_all_labels = true;
+    for (const auto label : credit_rating_scale)
+        carries_all_labels = carries_all_labels &&
+            exported_xml.find(std::string(label)) != std::string::npos;
+    INFO("exported document starts: " << exported_xml.substr(0, 300));
+    CHECK(carries_all_labels);
 
     creditsimulation exported;
     ores::ore::domain::load_data(exported_xml, exported);

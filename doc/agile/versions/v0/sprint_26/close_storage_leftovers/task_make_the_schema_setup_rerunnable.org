@@ -8,7 +8,7 @@
 #+filetags: :close_storage_leftovers:sprint_26:v0:
 #+owner: marco
 #+branch: feature/close-storage-leftovers
-#+pr:
+#+pr: 2250
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -28,11 +28,11 @@ data instead of stopping on the first row it already wrote.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] |
-| Now          | Implementation complete; the double run is green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge with the story branch.           |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -75,7 +75,7 @@ data instead of stopping on the first row it already wrote.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2250][#2250]] | [storage] Add the raw shell surface and make the schema setup re-runnable |
 
 * Review
 

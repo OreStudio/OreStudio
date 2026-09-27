@@ -8,7 +8,7 @@
 #+filetags: :close_storage_leftovers:sprint_26:v0:
 #+owner: marco
 #+branch: feature/close-storage-leftovers
-#+pr:
+#+pr: 2250
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -26,11 +26,11 @@ The story, its tasks and its sprint wiring exist, and the branch carries them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] |
-| Now          | Scaffolding is done and rides this branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Close before the story PR merges.      |
+| Next          | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ task= so both share the story branch.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2250][#2250]] | [storage] Add the raw shell surface and make the schema setup re-runnable |
 
 * Review
 

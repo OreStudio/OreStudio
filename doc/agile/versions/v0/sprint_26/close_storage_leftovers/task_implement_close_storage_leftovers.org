@@ -29,11 +29,11 @@ domain verb to put bytes away.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] |
-| Now          | Implementation complete; verified live. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge with the story branch.           |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

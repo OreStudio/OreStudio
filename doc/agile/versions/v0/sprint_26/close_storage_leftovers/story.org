@@ -32,12 +32,13 @@ of the same kind cannot arrive unnoticed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Both tasks are implemented and verified; the PR carries them. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Raise and merge the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-09-27                               |
+| End           | 2026-09-27                               |
 
 * Acceptance
 
@@ -52,9 +53,9 @@ of the same kind cannot arrive unnoticed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EF8FC74D-BCD2-4C82-8ABB-E6CD8B2712FE][Scaffold story: Close the object storage interface leftovers]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8B82EA9B-0D2E-4D1D-B463-FD01C91F9717][Give the shell a raw storage surface over a local path]] | STARTED | 2026-09-27 | | A shell menu whose verbs are a bucket, a key and a local path, over the storage HTTP interface. |
-| [[id:BF1538E1-74C1-41E3-A9E4-40E475BB0C7C][Make the schema setup re-runnable]] | STARTED | 2026-09-27 | | Make the create and populate phases re-runnable, gate the class, and prove a clean second run. |
+| [[id:EF8FC74D-BCD2-4C82-8ABB-E6CD8B2712FE][Scaffold story: Close the object storage interface leftovers]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8B82EA9B-0D2E-4D1D-B463-FD01C91F9717][Give the shell a raw storage surface over a local path]] | DONE | 2026-09-27 | 2026-09-27 | A shell menu whose verbs are a bucket, a key and a local path, over the storage HTTP interface. |
+| [[id:BF1538E1-74C1-41E3-A9E4-40E475BB0C7C][Make the schema setup re-runnable]] | DONE | 2026-09-27 | 2026-09-27 | Make the create and populate phases re-runnable, gate the class, and prove a clean second run. |
 
 * Decisions
 
@@ -97,3 +98,35 @@ of the same kind cannot arrive unnoticed.
   a bucket ore does not read]].
 - =HEAD= on the client. Existence stays a read, which is what the protocol
   declares.
+
+* Result
+
+Both leftovers are closed on PR
+[[https://github.com/OreStudio/OreStudio/pull/2250][#2250]], with all nine
+checks green.
+
+*The raw surface.* The shell has a =storage= menu whose verbs are =put=, =get=,
+=delete= and =list=, over HTTP, beside the generated =objects= menu that speaks
+NATS. Both interfaces are therefore exercisable by hand, which is what the
+interface story set out to do. The client grew the operations the surface
+needed -- a body-returning GET and DELETE -- and the transfer helper and the URL
+contract grew with it. The shell's two identical copies of the storage base URL
+collapsed into one, and the routes now compose their patterns from the declared
+prefix.
+
+*The schema setup.* The create scripts needed one word: =create or replace
+trigger= in a single hand-written file. The populate phase needed the reseed
+declaration its own version gate documents, which closes 53 files at once.
+=check_sql_hygiene.py= now reports DDL a second run cannot repeat, so the class
+is gated rather than the instance.
+
+*Cost paid, recorded.* A re-run re-asserts every seeded row at a new version
+instead of skipping it, so the version history grows with each setup run. That
+is the price of declaring the run a reseed, and it is the behaviour the gate's
+own documentation asks for.
+
+*Found, not fixed.* The research the story commissioned established what the
+interface task's note about the trading and marketdata export handlers meant:
+those handlers own no bucket, =ores.reporting= names one for them, and it names
+=report-data= while =ores.ore= reads =ores=. The capture carries the finding and
+the lines that prove it.

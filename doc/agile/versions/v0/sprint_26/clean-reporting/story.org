@@ -23,10 +23,10 @@ ores.reporting meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing. |
+| Now           | The ores.reporting checklist record is being completed: the nineteen unrecorded items are recorded, G08 and H03 are fixed, V08 is closed and V04 is measured at thirty-five of fifty-one commands. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing. |
-| Last touched  | 2026-09-23                               |
+| Next          | Resolve the =report_definitions= shell menu collision, then P01, S01, G04, H01, M04, M08 and V04's remaining causes. |
+| Last touched  | 2026-09-27                               |
 
 * Acceptance
 

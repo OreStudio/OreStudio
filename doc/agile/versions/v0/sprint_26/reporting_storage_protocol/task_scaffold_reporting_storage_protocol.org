@@ -26,11 +26,11 @@ The story, its tasks and its sprint wiring exist, and the branch carries them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] |
-| Now          | Scaffolding is done and rides this branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Close before the story PR merges.      |
+| Next          | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

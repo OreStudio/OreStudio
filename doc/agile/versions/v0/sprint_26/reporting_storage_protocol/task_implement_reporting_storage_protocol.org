@@ -29,11 +29,11 @@ new keys against the current tree.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] |
-| Now          | Implementation complete; compute and ORE verified live. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge with the story branch.           |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

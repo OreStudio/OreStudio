@@ -33,12 +33,13 @@ leave this one behind, and why the work is in the caller.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Implemented and verified; the PR carries it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Raise and merge the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-09-27                               |
+| End           | 2026-09-27                               |
 
 * Acceptance
 
@@ -53,8 +54,8 @@ leave this one behind, and why the work is in the caller.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B5A29D31-8D5E-4F12-B431-876453E8CA8B][Scaffold story: Move reporting's write path onto the storage protocol]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F6D0ED49-27B2-4CA0-9EA5-139E3CAFBA06][Point the reporting storage plan at the bucket and key protocol]] | STARTED | 2026-09-27 | | Point the plan at the protocol bucket, build both keys with object_keys::make, and verify compute and ORE on the current tree. |
+| [[id:B5A29D31-8D5E-4F12-B431-876453E8CA8B][Scaffold story: Move reporting's write path onto the storage protocol]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F6D0ED49-27B2-4CA0-9EA5-139E3CAFBA06][Point the reporting storage plan at the bucket and key protocol]] | DONE | 2026-09-27 | 2026-09-27 | Point the plan at the protocol bucket, build both keys with object_keys::make, and verify compute and ORE on the current tree. |
 
 * Decisions
 

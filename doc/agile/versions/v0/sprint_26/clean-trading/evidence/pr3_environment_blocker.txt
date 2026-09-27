@@ -128,3 +128,34 @@ was visible on the last attempt is exact:
 
 That is why the trading core suite reports 103 cases with 99 failed: not
 the commodity port, and not only missing rows.
+
+Defect 5 is fixed, and defect 6 stands behind it
+------------------------------------------------
+Defect 5 is fixed on its own branch and raised as PR #2232,
+[fix/seed-catalog-upsert-idempotence]. The root cause was not the seeds:
+=ores_dq_catalogs_upsert_fn= relied on an ON CONFLICT clause, but the
+catalogs insert trigger owns the version column and refuses a version-0
+create when a live row exists, and a BEFORE INSERT trigger runs before
+the conflict arbiter, so the clause never fired. The helper now makes the
+existence check its file's header documents, and the dead clause is gone.
+
+Verified: the helper called twice in a row against the rebuilt database
+returns quietly both times with exactly one live row, where the populate
+log shows the old code raising on the second call.
+=evidence/pr3_environment_blocker.txt= records the reproduction; PR #2232
+carries it with the newly found defect below.
+
+The populate then advances past the synthetic step and stops in the fpml
+step, on a sixth defect of the same class but a different mechanism:
+
+    psql:populate/fpml/fpml_populate.sql:43:
+    ERROR: Row already exists: a create cannot replace it.
+    CONTEXT: PL/pgSQL function ores_dq_coding_schemes_insert_fn()
+    ... ores_dq_coding_schemes_publish_fn(...) line 66
+
+=ores_dq_coding_schemes_publish_fn= publishes a dataset's rows with
+version 0, and the insert trigger refuses when the natural key exists, so
+a dataset whose key is already published aborts the populate. It is
+generated SQL, so the fix belongs in the dq model or the publish
+template. It is recorded in PR #2232 for that owner, and the environment
+still cannot be rebuilt end to end until it lands with the other four.

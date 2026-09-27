@@ -497,7 +497,7 @@ the order below, because each makes the next smaller.
 |---+--------+-------|
 | 17 | The trade's declared key is nullable | Closed |
 | 2 | Dates held as text, 58 fields | Closed |
-| 3 | Monetary amounts held as double, 18 fields | Pending |
+| 3 | Monetary amounts held as double, 18 fields | Capability done, 86 columns pending |
 | 6 | One concept under two names | Pending |
 | 5 | Code fields whose reference table does not exist | Pending |
 | 4 | Enumerations held as free text with no reference table | Pending |
@@ -528,7 +528,7 @@ and D13.
 | Unit | Defect | What it delivers |
 |------+--------+------------------|
 | U1, dates | 2 | Closed. The generator expresses a plain date column, the 64 columns across 36 models carry typed members, and the 49 hand-written consumers convert at each boundary. |
-| U2, decimal | 3 | A decimal domain type over =boost::multiprecision=, with JSON, table and SQL =numeric= I/O, and the generator seam that separates an entity's type from its domain type. Then the 87 =double= money columns move; rates, volatilities and correlations stay double. |
+| U2, decimal | 3 | The type, the reflector and the generator projection are done and proven on =bond_leg_amount.value=. The 86 remaining =double= money columns move next; rates, volatilities and correlations stay double. |
 | U3, collections | 1 | The four JSON columns become child tables with foreign keys: =callable_swap_instrument.call_dates_json=, =commodity_instrument.basket_json=, =equity_swap_instrument.basket_json= and =equity_position_instrument.option_data_json=, plus anything else the census finds. |
 | U4, enumerations | 4, 5, 8 | A reference table and a foreign key per closed set, the checks move from PL/pgSQL to the schema, and the missing reference tables are populated from FpML or ORE. |
 
@@ -557,6 +557,19 @@ source with a test rather than worked around:
   variants and the bond future export, and it is why the earlier attempt
   at this defect looked like a type regression. The sentinel is now the
   empty string.
+
+** 5d. What the decimal unit found
+
+- =numeric(28, 10)= holds at most eighteen integer digits. The type holds
+  a wider value exactly, and the store refuses it with
+  =numeric field overflow=; the repository test pins that refusal rather
+  than hiding it. Every money column is =numeric(28, 10)= or
+  =numeric(18, 10)=, so the ceiling is the schema's, not the type's.
+- =bond_leg_amount.value= carries all six amount roles, so its =rate= rows
+  move to the decimal with its =notional= rows. "Rates stay double" is a
+  statement about a column's role, not about a column, and this table
+  cannot honour it without normalisation. The model records the finding,
+  and D12 and D13 own the shape that would fix it.
 
 ** 6. Regenerate and prove
 

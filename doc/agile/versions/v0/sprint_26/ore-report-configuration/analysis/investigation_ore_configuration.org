@@ -86,6 +86,14 @@ model]] — what a definition owns, what it references, how a kind of report
 selects its workflow, and the decisions still open. Read it last; it is the one
 page here that states a design rather than a fact about ORE.
 
+** The model that follows from it
+
+[[id:D8996E23-B910-4A87-AED5-1133B956509C][The ORE configuration object
+model]] — the structs this story is deciding: the named configurations, the
+binding a report carries, and the parameter vocabulary in reporting; the
+configuration types themselves in analytics. Read it last, and read it as the
+proposal rather than the conclusion: it supersedes the target model above.
+
 ** What was proposed before this
 
 [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model

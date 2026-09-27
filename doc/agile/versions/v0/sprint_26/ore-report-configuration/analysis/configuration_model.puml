@@ -1,0 +1,1141 @@
+@startuml
+title ORE configuration object model
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 10
+skinparam ranksep 22
+left to right direction
+
+
+package "ores.reporting" #E8F4FF {
+  class report_type {
+    id : uuid
+    code : text
+    name : text
+    description : text
+    display_order : integer
+  }
+
+  class report_definition {
+    id : uuid
+    name : text
+    report_type_id : uuid
+    party_id : uuid
+    description : text
+    schedule_expression : text
+    concurrency_policy : text
+    fsm_state_id : uuid
+    scheduler_job_id : uuid
+    workspace_id : uuid
+    audit : audit_envelope
+  }
+
+  class configuration_type {
+    id : uuid
+    code : text
+    name : text
+    owning_component : text
+    parameterised : boolean
+  }
+
+  class configuration {
+    id : uuid
+    name : text
+    configuration_type_id : uuid
+    party_id : uuid
+    description : text
+    workspace_id : uuid
+    audit : audit_envelope
+  }
+
+  class report_configuration {
+    report_definition_id : uuid
+    configuration_type_id : uuid
+    configuration_id : uuid
+  }
+
+  class value_domain {
+    id : uuid
+    code : text
+    storage_type : text
+    referenced_entity : text
+  }
+
+  class parameter_definition {
+    id : uuid
+    configuration_type_id : uuid
+    subtype : text
+    name : text
+    value_domain_id : uuid
+    required : boolean
+    display_order : integer
+  }
+
+  class configuration_parameter {
+    configuration_id : uuid
+    parameter_definition_id : uuid
+    position : integer
+    value : text
+  }
+}
+
+package "ores.analytics" #EAF7EA {
+  package "stress" {
+    class "stresscapfloorvolatilities" as stress__stresscapfloorvolatilities {
+    }
+    class "stresscapfloorvolatility" as stress__stresscapfloorvolatility {
+      shift_type : text
+      shift_expiries : text
+      shift_strikes : text
+      index : text /* coded */
+      is_relative : boolean
+      key : text
+      ccy : text /* coded */
+    }
+    class "stresscapfloorvolatility_Shifts" as stress__stresscapfloorvolatility_Shifts {
+    }
+    class "stresscapfloorvolatility_Shifts_Shift" as stress__stresscapfloorvolatility_Shifts_Shift {
+      tenor : text
+    }
+    class "stresscommoditycurve" as stress__stresscommoditycurve {
+      currency : text /* coded */
+      shift_type : text
+      shifts : text
+      shift_tenors : text
+      commodity : text
+    }
+    class "stresscommoditycurves" as stress__stresscommoditycurves {
+    }
+    class "stresscommodityvolatilities" as stress__stresscommodityvolatilities {
+    }
+    class "stresscommodityvolatility" as stress__stresscommodityvolatility {
+      shift_type : text
+      shifts : text
+      shift_expiries : text
+      shift_moneyness : text
+      commodity : text
+    }
+    class "stressdiscountcurve" as stress__stressdiscountcurve {
+      shift_type : text
+      shifting_zeros : boolean
+      shift_size : text
+      shifts : text
+      shift_scheme : text
+      shift_tenors : text
+      par_conversion : text
+      ccy : text /* coded */
+    }
+    class "stressdiscountcurves" as stress__stressdiscountcurves {
+    }
+    class "stressfxvolatilities" as stress__stressfxvolatilities {
+    }
+    class "stressfxvolatility" as stress__stressfxvolatility {
+      shift_type : text
+      shifts : text
+      shift_expiries : text
+      ccypair : text /* coded */
+    }
+    class "stressindexcurve" as stress__stressindexcurve {
+      shift_type : text
+      shifting_zeros : boolean
+      shift_size : text
+      shifts : text
+      shift_scheme : text
+      shift_tenors : text
+      par_conversion : text
+      index : text /* coded */
+    }
+    class "stressindexcurves" as stress__stressindexcurves {
+    }
+    class "stressintradaypowercurve" as stress__stressintradaypowercurve {
+      shift_type : text
+      shifts : text
+      shift_tenors : text
+      name : text
+    }
+    class "stressintradaypowercurves" as stress__stressintradaypowercurves {
+    }
+    class "stresssurvivalprobability" as stress__stresssurvivalprobability {
+      shift_type : text
+      shifting_zeros : boolean
+      shift_size : text
+      shifts : text
+      shift_scheme : text
+      shift_tenors : text
+      par_conversion : text
+      name : text
+    }
+    class "stressswaptionvolatilities" as stress__stressswaptionvolatilities {
+    }
+    class "stressswaptionvolatility" as stress__stressswaptionvolatility {
+      shift_type : text
+      shift_expiries : text
+      shift_terms : text
+      key : text
+      ccy : text
+    }
+    class "stressswaptionvolatility_Shifts" as stress__stressswaptionvolatility_Shifts {
+    }
+    class "stressswaptionvolatility_Shifts_Shift" as stress__stressswaptionvolatility_Shifts_Shift {
+      expiry : text
+      term : text
+    }
+    class "stresstest" as stress__stresstest {
+      date : text
+      fx_spots : text
+      equity_spots : text
+      equity_volatilities : text
+      security_spreads : text
+      recovery_rates : text
+      survival_probabilities : text
+      id : text
+    }
+    class "stresstesting" as stress__stresstesting {
+      use_spreaded_term_structures : boolean
+    }
+    class "stressyieldcurve" as stress__stressyieldcurve {
+      curve_type : text
+      shift_type : text
+      shifting_zeros : boolean
+      shift_size : text
+      shifts : text
+      shift_scheme : text
+      shift_tenors : text
+      par_conversion : text
+      name : text
+    }
+    class "stressyieldcurves" as stress__stressyieldcurves {
+    }
+  }
+  package "simmcalibration" {
+    class "commodity" as simmcalibration__commodity {
+    }
+    class "commodity_Correlations" as simmcalibration__commodity_Correlations {
+    }
+    class "commodity_Correlations_InterBucket" as simmcalibration__commodity_Correlations_InterBucket {
+    }
+    class "commodity_Correlations_InterBucket_Correlation" as simmcalibration__commodity_Correlations_InterBucket_Correlation {
+      label1 : integer
+      label2 : integer
+    }
+    class "commodity_Correlations_IntraBucket" as simmcalibration__commodity_Correlations_IntraBucket {
+    }
+    class "commodity_Correlations_IntraBucket_Correlation" as simmcalibration__commodity_Correlations_IntraBucket_Correlation {
+      bucket : text
+    }
+    class "commodity_RiskWeights" as simmcalibration__commodity_RiskWeights {
+    }
+    class "commodity_RiskWeights_Delta" as simmcalibration__commodity_RiskWeights_Delta {
+      mpor_days : integer
+    }
+    class "commodity_RiskWeights_Delta_Weight" as simmcalibration__commodity_RiskWeights_Delta_Weight {
+      bucket : text
+    }
+    class "concentrationThresholds" as simmcalibration__concentrationThresholds {
+    }
+    class "concentrationThresholds_Delta" as simmcalibration__concentrationThresholds_Delta {
+    }
+    class "concentrationThresholds_Delta_Threshold" as simmcalibration__concentrationThresholds_Delta_Threshold {
+      bucket : text
+    }
+    class "concentrationThresholds_Vega" as simmcalibration__concentrationThresholds_Vega {
+    }
+    class "concentrationThresholds_Vega_Threshold" as simmcalibration__concentrationThresholds_Vega_Threshold {
+      bucket : text
+    }
+    class "creditNonQualifying" as simmcalibration__creditNonQualifying {
+    }
+    class "creditNonQualifying_Correlations" as simmcalibration__creditNonQualifying_Correlations {
+    }
+    class "creditNonQualifying_Correlations_InterBucket" as simmcalibration__creditNonQualifying_Correlations_InterBucket {
+    }
+    class "creditNonQualifying_Correlations_InterBucket_Correlation" as simmcalibration__creditNonQualifying_Correlations_InterBucket_Correlation {
+      label1 : integer
+      label2 : integer
+    }
+    class "creditNonQualifying_Correlations_IntraBucket" as simmcalibration__creditNonQualifying_Correlations_IntraBucket {
+    }
+    class "creditNonQualifying_Correlations_IntraBucket_Correlation" as simmcalibration__creditNonQualifying_Correlations_IntraBucket_Correlation {
+      label1 : text
+      label2 : text
+    }
+    class "creditNonQualifying_RiskWeights" as simmcalibration__creditNonQualifying_RiskWeights {
+    }
+    class "creditNonQualifying_RiskWeights_Delta" as simmcalibration__creditNonQualifying_RiskWeights_Delta {
+      mpor_days : integer
+    }
+    class "creditNonQualifying_RiskWeights_Delta_Weight" as simmcalibration__creditNonQualifying_RiskWeights_Delta_Weight {
+      bucket : text
+    }
+    class "creditQualifying" as simmcalibration__creditQualifying {
+    }
+    class "creditQualifying_Correlations" as simmcalibration__creditQualifying_Correlations {
+      base_correlation : numeric
+    }
+    class "creditQualifying_Correlations_InterBucket" as simmcalibration__creditQualifying_Correlations_InterBucket {
+    }
+    class "creditQualifying_Correlations_InterBucket_Correlation" as simmcalibration__creditQualifying_Correlations_InterBucket_Correlation {
+      label1 : integer
+      label2 : integer
+    }
+    class "creditQualifying_Correlations_IntraBucket" as simmcalibration__creditQualifying_Correlations_IntraBucket {
+    }
+    class "creditQualifying_Correlations_IntraBucket_Correlation" as simmcalibration__creditQualifying_Correlations_IntraBucket_Correlation {
+      label1 : text
+      label2 : text
+    }
+    class "creditQualifying_RiskWeights" as simmcalibration__creditQualifying_RiskWeights {
+    }
+    class "creditQualifying_RiskWeights_BaseCorrelation" as simmcalibration__creditQualifying_RiskWeights_BaseCorrelation {
+      mpor_days : integer
+    }
+    class "creditQualifying_RiskWeights_Delta" as simmcalibration__creditQualifying_RiskWeights_Delta {
+      mpor_days : integer
+    }
+    class "creditQualifying_RiskWeights_Delta_Weight" as simmcalibration__creditQualifying_RiskWeights_Delta_Weight {
+      bucket : text
+    }
+    class "currencyLists" as simmcalibration__currencyLists {
+    }
+    class "currencyLists_Currency" as simmcalibration__currencyLists_Currency {
+      bucket : integer
+    }
+    class "equity" as simmcalibration__equity {
+    }
+    class "equity_Correlations" as simmcalibration__equity_Correlations {
+    }
+    class "equity_Correlations_InterBucket" as simmcalibration__equity_Correlations_InterBucket {
+    }
+    class "equity_Correlations_InterBucket_Correlation" as simmcalibration__equity_Correlations_InterBucket_Correlation {
+      label1 : integer
+      label2 : integer
+    }
+    class "equity_Correlations_IntraBucket" as simmcalibration__equity_Correlations_IntraBucket {
+    }
+    class "equity_Correlations_IntraBucket_Correlation" as simmcalibration__equity_Correlations_IntraBucket_Correlation {
+      bucket : text
+    }
+    class "equity_RiskWeights" as simmcalibration__equity_RiskWeights {
+    }
+    class "equity_RiskWeights_Delta" as simmcalibration__equity_RiskWeights_Delta {
+      mpor_days : integer
+    }
+    class "equity_RiskWeights_Delta_Weight" as simmcalibration__equity_RiskWeights_Delta_Weight {
+      bucket : text
+    }
+    class "equity_RiskWeights_HistoricalVolatilityRatio" as simmcalibration__equity_RiskWeights_HistoricalVolatilityRatio {
+      mpor_days : integer
+    }
+    class "equity_RiskWeights_Vega" as simmcalibration__equity_RiskWeights_Vega {
+      mpor_days : integer
+    }
+    class "equity_RiskWeights_Vega_Weight" as simmcalibration__equity_RiskWeights_Vega_Weight {
+      bucket : text
+    }
+    class "fx" as simmcalibration__fx {
+    }
+    class "fx_Correlations" as simmcalibration__fx_Correlations {
+      volatility : numeric
+    }
+    class "fx_Correlations_IntraBucket" as simmcalibration__fx_Correlations_IntraBucket {
+    }
+    class "fx_Correlations_IntraBucket_Correlation" as simmcalibration__fx_Correlations_IntraBucket_Correlation {
+      bucket : integer
+      label1 : integer
+      label2 : integer
+    }
+    class "fx_RiskWeights" as simmcalibration__fx_RiskWeights {
+    }
+    class "fx_RiskWeights_Delta" as simmcalibration__fx_RiskWeights_Delta {
+      mpor_days : integer
+    }
+    class "fx_RiskWeights_Delta_Weight" as simmcalibration__fx_RiskWeights_Delta_Weight {
+      label1 : integer
+      label2 : integer
+    }
+    class "fx_RiskWeights_HistoricalVolatilityRatio" as simmcalibration__fx_RiskWeights_HistoricalVolatilityRatio {
+      mpor_days : integer
+    }
+    class "interestRate" as simmcalibration__interestRate {
+    }
+    class "interestRate_Correlations" as simmcalibration__interestRate_Correlations {
+      sub_curves : numeric
+      inflation : numeric
+      x_ccy_basis : numeric
+      outer : numeric
+    }
+    class "interestRate_Correlations_IntraBucket" as simmcalibration__interestRate_Correlations_IntraBucket {
+    }
+    class "interestRate_Correlations_IntraBucket_Correlation" as simmcalibration__interestRate_Correlations_IntraBucket_Correlation {
+      label1 : text
+      label2 : text
+    }
+    class "interestRate_RiskWeights" as simmcalibration__interestRate_RiskWeights {
+    }
+    class "interestRate_RiskWeights_Delta" as simmcalibration__interestRate_RiskWeights_Delta {
+      mpor_days : integer
+    }
+    class "interestRate_RiskWeights_Delta_Weight" as simmcalibration__interestRate_RiskWeights_Delta_Weight {
+      bucket : integer
+      label1 : text
+    }
+    class "interestRate_RiskWeights_HistoricalVolatilityRatio" as simmcalibration__interestRate_RiskWeights_HistoricalVolatilityRatio {
+      mpor_days : integer
+    }
+    class "irfxConcentrationThresholds" as simmcalibration__irfxConcentrationThresholds {
+    }
+    class "simmCalibration" as simmcalibration__simmCalibration {
+      id : text
+    }
+    class "simmCalibration_RiskClassCorrelations" as simmcalibration__simmCalibration_RiskClassCorrelations {
+    }
+    class "simmCalibration_RiskClassCorrelations_Correlation" as simmcalibration__simmCalibration_RiskClassCorrelations_Correlation {
+      label1 : text
+      label2 : text
+    }
+  }
+  package "sensitivity" {
+    class "basecorrelation" as sensitivity__basecorrelation {
+      shifts : text
+      shift_loss_levels : text
+      shift_terms : text
+      index_name : text
+    }
+    class "basecorrelations" as sensitivity__basecorrelations {
+    }
+    class "capfloorvolatilities" as sensitivity__capfloorvolatilities {
+    }
+    class "capfloorvolatility" as sensitivity__capfloorvolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      index : text /* coded */
+      is_relative : boolean
+      key : text
+      ccy : text /* coded */
+    }
+    class "cdsvolatilities" as sensitivity__cdsvolatilities {
+    }
+    class "cdsvolatility" as sensitivity__cdsvolatility {
+      shifts : text
+      shift_expiries : text
+      name : text
+    }
+    class "commodityCurve" as sensitivity__commodityCurve {
+      currency : text /* coded */
+      shifts : text
+      shift_tenors : text
+      calendar : text /* coded */
+      business_day_convention : text /* coded */
+      name : text
+    }
+    class "commodityCurves" as sensitivity__commodityCurves {
+    }
+    class "commodityvolatilities" as sensitivity__commodityvolatilities {
+    }
+    class "commodityvolatility" as sensitivity__commodityvolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      name : text
+    }
+    class "correlationcurve" as sensitivity__correlationcurve {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      index1 : text
+      index2 : text
+    }
+    class "correlationcurves" as sensitivity__correlationcurves {
+    }
+    class "cpicapfloorvolatilities" as sensitivity__cpicapfloorvolatilities {
+    }
+    class "cpicapfloorvolatility" as sensitivity__cpicapfloorvolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      index : text
+    }
+    class "creditcurve" as sensitivity__creditcurve {
+      currency : text /* coded */
+      shifts : text
+      shift_tenors : text
+      name : text
+    }
+    class "creditcurves" as sensitivity__creditcurves {
+    }
+    class "discountcurve" as sensitivity__discountcurve {
+      shifts : text
+      shift_tenors : text
+      ccy : text /* coded */
+    }
+    class "discountcurves" as sensitivity__discountcurves {
+    }
+    class "dividendyield" as sensitivity__dividendyield {
+      shifts : text
+      shift_tenors : text
+      equity : text
+    }
+    class "dividendyields" as sensitivity__dividendyields {
+    }
+    class "equityspot" as sensitivity__equityspot {
+      shifts : text
+      equity : text
+    }
+    class "equityspots" as sensitivity__equityspots {
+    }
+    class "equityvolatilities" as sensitivity__equityvolatilities {
+    }
+    class "equityvolatility" as sensitivity__equityvolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      equity : text
+    }
+    class "fxspot" as sensitivity__fxspot {
+      shifts : text
+      ccypair : text /* coded */
+    }
+    class "fxspots" as sensitivity__fxspots {
+    }
+    class "fxvolatilities" as sensitivity__fxvolatilities {
+    }
+    class "fxvolatility" as sensitivity__fxvolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      ccypair : text /* coded */
+    }
+    class "indexcurve" as sensitivity__indexcurve {
+      shifts : text
+      shift_tenors : text
+      index : text /* coded */
+    }
+    class "indexcurves" as sensitivity__indexcurves {
+    }
+    class "intradaypowercurve" as sensitivity__intradaypowercurve {
+      shifts : text
+      shift_tenors : text
+      name : text
+    }
+    class "intradaypowercurves" as sensitivity__intradaypowercurves {
+    }
+    class "parconversion" as sensitivity__parconversion {
+      instruments : text
+      single_curve : boolean
+      discount_curve : text
+      other_currency : text /* coded */
+      rate_computation_period : text
+    }
+    class "parconversion_Conventions" as sensitivity__parconversion_Conventions {
+    }
+    class "parconversion_Conventions_Convention" as sensitivity__parconversion_Conventions_Convention {
+      id : text
+    }
+    class "recoveryrate" as sensitivity__recoveryrate {
+      shifts : text
+      name : text
+    }
+    class "securityspread" as sensitivity__securityspread {
+      shifts : text
+      security : text
+    }
+    class "securityspreads" as sensitivity__securityspreads {
+    }
+    class "sensiBondFutureVolatilities" as sensitivity__sensiBondFutureVolatilities {
+    }
+    class "sensiBondFutureVolatility" as sensitivity__sensiBondFutureVolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      name : text
+    }
+    class "sensitivityanalysis" as sensitivity__sensitivityanalysis {
+      par_sensi_remove_fixing : text
+      par_conversion_matrix_regularisation : text
+      par_conversion : boolean
+      compute_gamma : boolean
+      theta_period : text
+      use_spreaded_term_structures : boolean
+    }
+    class "shiftSchemeEntry" as sensitivity__shiftSchemeEntry {
+      key : text
+    }
+    class "shiftSizeEntry" as sensitivity__shiftSizeEntry {
+      key : text
+    }
+    class "shiftTypeEntry" as sensitivity__shiftTypeEntry {
+      key : text
+    }
+    class "survivalprobability" as sensitivity__survivalprobability {
+      shifts : text
+      shift_tenors : text
+      name : text
+    }
+    class "swaptionvolatilities" as sensitivity__swaptionvolatilities {
+    }
+    class "swaptionvolatility" as sensitivity__swaptionvolatility {
+      shift_expiries : text
+      shift_strikes : text
+      shift_terms : text
+      key : text
+      ccy : text /* coded */
+    }
+    class "swaptionvolatility_Shifts" as sensitivity__swaptionvolatility_Shifts {
+    }
+    class "swaptionvolatility_Shifts_Shift" as sensitivity__swaptionvolatility_Shifts_Shift {
+      expiry : text
+      term : text
+    }
+    class "yieldcurve" as sensitivity__yieldcurve {
+      curve_type : text
+      shifts : text
+      shift_tenors : text
+      name : text
+    }
+    class "yieldcurves" as sensitivity__yieldcurves {
+    }
+    class "yieldvolatilities" as sensitivity__yieldvolatilities {
+    }
+    class "yieldvolatility" as sensitivity__yieldvolatility {
+      shift_expiries : text
+      shift_terms : text
+      name : text
+    }
+    class "yieldvolatility_Shifts" as sensitivity__yieldvolatility_Shifts {
+    }
+    class "yieldvolatility_Shifts_Shift" as sensitivity__yieldvolatility_Shifts_Shift {
+      expiry : text
+      term : text
+    }
+    class "yycapfloorvolatilities" as sensitivity__yycapfloorvolatilities {
+    }
+    class "yycapfloorvolatility" as sensitivity__yycapfloorvolatility {
+      shifts : text
+      shift_expiries : text
+      shift_strikes : text
+      index : text
+    }
+    class "yyinflationindexcurve" as sensitivity__yyinflationindexcurve {
+      shifts : text
+      shift_tenors : text
+      index : text
+    }
+    class "yyinflationindexcurves" as sensitivity__yyinflationindexcurves {
+    }
+    class "zeroinflationindexcurve" as sensitivity__zeroinflationindexcurve {
+      shifts : text
+      shift_tenors : text
+      index : text
+    }
+    class "zeroinflationindexcurves" as sensitivity__zeroinflationindexcurves {
+    }
+  }
+  package "simulation" {
+    class "boundaryConstraint" as simulation__boundaryConstraint {
+      lower_bound : numeric
+      upper_bound : numeric
+      parameter : text
+    }
+    class "calibrationBasket" as simulation__calibrationBasket {
+      parameter : text
+    }
+    class "calibrationConfiguration" as simulation__calibrationConfiguration {
+      rmse_tolerance : text
+      max_iterations : integer
+    }
+    class "calibrationConfiguration_Constraints" as simulation__calibrationConfiguration_Constraints {
+    }
+    class "calibrationCpiCapFloor" as simulation__calibrationCpiCapFloor {
+      type : text
+      maturity : text
+      strike : text
+    }
+    class "calibrationYoYCapFloor" as simulation__calibrationYoYCapFloor {
+      type : text
+      tenor : text
+      strike : text
+    }
+    class "calibrationYoYSwap" as simulation__calibrationYoYSwap {
+      tenor : text
+    }
+    class "cir" as simulation__cir {
+      currency : text /* coded */
+      calibration_type : text /* coded */
+      calibration_strategy : text
+      start_value : numeric
+      reversion_value : numeric
+      long_term_value : numeric
+      volatility : numeric
+      relaxed_feller : boolean
+      feller_factor : numeric
+      tolerance : numeric
+    }
+    class "commoditySchwartz" as simulation__commoditySchwartz {
+      currency : text /* coded */
+      calibration_type : text
+      drift_free_state : boolean
+      name : text
+    }
+    class "crlgm" as simulation__crlgm {
+      currency : text /* coded */
+      calibration_type : text /* coded */
+      float_spread_mapping : text /* coded */
+      name : text
+    }
+    class "crossAssetLGM" as simulation__crossAssetLGM {
+      currency : text /* coded */
+      calibration_type : text
+      name : text
+    }
+    class "crossAssetModel" as simulation__crossAssetModel {
+      domestic_ccy : text /* coded */
+      bootstrap_tolerance : numeric
+      measure : text /* coded */
+      discretization : text /* coded */
+      salvaging_algorithm : text /* coded */
+      integration_policy : text
+      piecewise_integration : boolean
+    }
+    class "crossAssetModel_Commodities" as simulation__crossAssetModel_Commodities {
+      commodity : text
+    }
+    class "crossAssetModel_CommodityModels" as simulation__crossAssetModel_CommodityModels {
+    }
+    class "crossAssetModel_CreditModels" as simulation__crossAssetModel_CreditModels {
+    }
+    class "crossAssetModel_CreditNames" as simulation__crossAssetModel_CreditNames {
+      credit_name : text
+    }
+    class "crossAssetModel_CreditStates" as simulation__crossAssetModel_CreditStates {
+      number_of_factors : integer
+    }
+    class "crossAssetModel_Currencies" as simulation__crossAssetModel_Currencies {
+      currency : text /* coded */
+    }
+    class "crossAssetModel_Equities" as simulation__crossAssetModel_Equities {
+      equity : text
+    }
+    class "crossAssetModel_EquityModels" as simulation__crossAssetModel_EquityModels {
+    }
+    class "crossAssetModel_ForeignExchangeModels" as simulation__crossAssetModel_ForeignExchangeModels {
+    }
+    class "crossAssetModel_InflationIndexModels" as simulation__crossAssetModel_InflationIndexModels {
+    }
+    class "crossAssetModel_InflationIndices" as simulation__crossAssetModel_InflationIndices {
+      inflation_index : text
+    }
+    class "crossAssetModel_InstantaneousCorrelations" as simulation__crossAssetModel_InstantaneousCorrelations {
+    }
+    class "crossAssetModel_InstantaneousCorrelations_Correlation" as simulation__crossAssetModel_InstantaneousCorrelations_Correlation {
+      factor1 : text
+      factor2 : text
+      index1 : text
+      index2 : text
+    }
+    class "crossAssetModel_InterestRateModels" as simulation__crossAssetModel_InterestRateModels {
+    }
+    class "crossCurrencyLGM" as simulation__crossCurrencyLGM {
+      domestic_ccy : text /* coded */
+      calibration_type : text
+      foreign_ccy : text
+    }
+    class "dodgsonKainth" as simulation__dodgsonKainth {
+      currency : text /* coded */
+      calibration_type : text /* coded */
+      index : text
+    }
+    class "dodgsonKainth_CalibrationBaskets" as simulation__dodgsonKainth_CalibrationBaskets {
+    }
+    class "hw" as simulation__hw {
+      currency : text /* coded */
+      calibration_type : text /* coded */
+      pca_sigma_ratios : text
+      ccy : text
+      index : text
+      key : text
+    }
+    class "hw_Reversion" as simulation__hw_Reversion {
+      calibrate : boolean
+      reversion_type : text /* coded */
+      param_type : text /* coded */
+      time_grid : text
+    }
+    class "hw_Volatility" as simulation__hw_Volatility {
+      calibrate : boolean
+      volatility_type : text /* coded */
+      param_type : text /* coded */
+      time_grid : text
+    }
+    class "hw_Volatility_InitialValue" as simulation__hw_Volatility_InitialValue {
+    }
+    class "hw_Volatility_InitialValue_Sigma" as simulation__hw_Volatility_InitialValue_Sigma {
+      row : text
+    }
+    class "jarrowYildrim" as simulation__jarrowYildrim {
+      currency : text /* coded */
+      calibration_type : text /* coded */
+      index : text
+    }
+    class "jarrowYildrim_CalibrationBaskets" as simulation__jarrowYildrim_CalibrationBaskets {
+    }
+    class "jarrowYildrim_Index" as simulation__jarrowYildrim_Index {
+    }
+    class "jarrowYildrim_RealRate" as simulation__jarrowYildrim_RealRate {
+    }
+    class "lgm" as simulation__lgm {
+      currency : text /* coded */
+      calibration_type : text /* coded */
+      float_spread_mapping : text /* coded */
+      ccy : text
+      index : text
+      key : text
+    }
+    class "lgm_CalibrationBaskets" as simulation__lgm_CalibrationBaskets {
+    }
+    class "localVol" as simulation__localVol {
+      domestic_ccy : text /* coded */
+      model : text
+      stochastic_rates_correction : text
+      calibration_moneyness : text
+      calibration_grid : text
+      foreign_ccy : text
+    }
+    class "simulation" as simulation__simulation {
+    }
+  }
+  package "creditsimulation" {
+    class "creditsimulation" as creditsimulation__creditsimulation {
+      netting_set_ids : text
+    }
+    class "entities" as creditsimulation__entities {
+    }
+    class "entity" as creditsimulation__entity {
+      name : text
+      factor_loadings : text
+      transition_matrix : text
+      initial_state : integer
+    }
+    class "transitionmatrices" as creditsimulation__transitionmatrices {
+    }
+    class "transitionmatrix" as creditsimulation__transitionmatrix {
+      name : text
+    }
+  }
+  package "historicalreturnconfig" {
+    class "ReturnType" as historicalreturnconfig__ReturnType {
+      type : text
+      displacement : numeric
+      key : text
+    }
+  }
+  package "baselTrafficLightconfig" {
+    class "BaselTrafficLightConfig_Configuration" as baselTrafficLightconfig__BaselTrafficLightConfig_Configuration {
+      mpor_days : text
+    }
+  }
+}
+
+configuration "1" -- "0..*" baselTrafficLightconfig__BaselTrafficLightConfig : detail
+configuration "1" -- "0..*" creditsimulation__creditsimulation : detail
+configuration "1" -- "0..*" historicalreturnconfig__ReturnConfiguration : detail
+configuration "1" -- "0..*" sensitivity__sensitivityanalysis : detail
+configuration "1" -- "0..*" simmcalibration__SIMMCalibrationData : detail
+configuration "1" -- "0..*" simulation__simulation : detail
+configuration "1" -- "0..*" stress__stresstesting : detail of a stress configuration
+configuration *-- "0..*" configuration_parameter : holds
+configuration *-- "1" configuration_type : is one of
+configuration_parameter *-- "1" parameter_definition : named by
+creditsimulation__creditsimulation *-- "1" creditsimulation__entities : entities
+creditsimulation__creditsimulation *-- "1" creditsimulation__transitionmatrices : transition_matrices
+creditsimulation__entities *-- "1..*" creditsimulation__entity : entity
+creditsimulation__transitionmatrices *-- "1..*" creditsimulation__transitionmatrix : transition_matrix
+parameter_definition *-- "1" configuration_type : belongs to
+parameter_definition *-- "1" value_domain : valued as
+report_configuration *-- "1" configuration : to
+report_configuration *-- "1" configuration_type : by type
+report_definition *-- "0..*" report_configuration : binds
+report_definition *-- "1" report_type : typed as
+sensitivity__basecorrelation *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__basecorrelation *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__basecorrelation *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__basecorrelations *-- "0..*" sensitivity__basecorrelation : base_correlation
+sensitivity__capfloorvolatilities *-- "0..*" sensitivity__capfloorvolatility : cap_floor_volatility
+sensitivity__capfloorvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__capfloorvolatility *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__capfloorvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__capfloorvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__cdsvolatilities *-- "0..*" sensitivity__cdsvolatility : cds_volatility
+sensitivity__cdsvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__cdsvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__cdsvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__commodityCurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__commodityCurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__commodityCurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__commodityCurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__commodityCurves *-- "0..*" sensitivity__commodityCurve : commodity_curve
+sensitivity__commodityvolatilities *-- "0..*" sensitivity__commodityvolatility : commodity_volatility
+sensitivity__commodityvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__commodityvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__commodityvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__correlationcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__correlationcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__correlationcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__correlationcurves *-- "0..*" sensitivity__correlationcurve : correlation
+sensitivity__cpicapfloorvolatilities *-- "0..*" sensitivity__cpicapfloorvolatility : cpi_cap_floor_volatility
+sensitivity__cpicapfloorvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__cpicapfloorvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__cpicapfloorvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__creditcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__creditcurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__creditcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__creditcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__creditcurves *-- "0..*" sensitivity__creditcurve : credit_curve
+sensitivity__discountcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__discountcurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__discountcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__discountcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__discountcurves *-- "0..*" sensitivity__discountcurve : discount_curve
+sensitivity__dividendyield *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__dividendyield *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__dividendyield *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__dividendyields *-- "0..*" sensitivity__dividendyield : dividend_yield_curve
+sensitivity__equityspot *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__equityspot *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__equityspot *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__equityspots *-- "0..*" sensitivity__equityspot : equity_spot
+sensitivity__equityvolatilities *-- "0..*" sensitivity__equityvolatility : equity_volatility
+sensitivity__equityvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__equityvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__equityvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__fxspot *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__fxspot *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__fxspot *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__fxspots *-- "0..*" sensitivity__fxspot : fx_spot
+sensitivity__fxvolatilities *-- "0..*" sensitivity__fxvolatility : fx_volatility
+sensitivity__fxvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__fxvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__fxvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__indexcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__indexcurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__indexcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__indexcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__indexcurves *-- "0..*" sensitivity__indexcurve : index_curve
+sensitivity__intradaypowercurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__intradaypowercurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__intradaypowercurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__intradaypowercurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__intradaypowercurves *-- "0..*" sensitivity__intradaypowercurve : intraday_power_curve
+sensitivity__parconversion *-- "0..1" sensitivity__parconversion_Conventions : conventions
+sensitivity__parconversion_Conventions *-- "0..*" sensitivity__parconversion_Conventions_Convention : convention
+sensitivity__recoveryrate *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__recoveryrate *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__recoveryrate *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__securityspread *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__securityspread *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__securityspread *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__securityspreads *-- "0..*" sensitivity__securityspread : security_spread
+sensitivity__sensiBondFutureVolatilities *-- "0..*" sensitivity__sensiBondFutureVolatility : bond_future_volatility
+sensitivity__sensiBondFutureVolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__sensiBondFutureVolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__sensiBondFutureVolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__basecorrelations : base_correlations
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__capfloorvolatilities : cap_floor_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__cdsvolatilities : cds_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__commodityCurves : commodity_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__commodityvolatilities : commodity_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__correlationcurves : correlations
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__cpicapfloorvolatilities : cpi_cap_floor_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__creditcurves : credit_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__discountcurves : discount_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__dividendyields : dividend_yield_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__equityspots : equity_spots
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__equityvolatilities : equity_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__fxspots : fx_spots
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__fxvolatilities : fx_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__indexcurves : index_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__intradaypowercurves : intraday_power_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__securityspreads : security_spreads
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__sensiBondFutureVolatilities : bond_future_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__swaptionvolatilities : swaption_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yieldcurves : yield_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yieldvolatilities : yield_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yycapfloorvolatilities : yy_cap_floor_volatilities
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__yyinflationindexcurves : yy_inflation_index_curves
+sensitivity__sensitivityanalysis *-- "0..1" sensitivity__zeroinflationindexcurves : zero_inflation_index_curves
+sensitivity__survivalprobability *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__survivalprobability *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__survivalprobability *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__survivalprobability *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__swaptionvolatilities *-- "0..*" sensitivity__swaptionvolatility : swaption_volatility
+sensitivity__swaptionvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__swaptionvolatility *-- "1" sensitivity__swaptionvolatility_Shifts : shifts
+sensitivity__swaptionvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__swaptionvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__swaptionvolatility_Shifts *-- "0..*" sensitivity__swaptionvolatility_Shifts_Shift : shift
+sensitivity__yieldcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__yieldcurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__yieldcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__yieldcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__yieldcurves *-- "0..*" sensitivity__yieldcurve : yield_curve
+sensitivity__yieldvolatilities *-- "0..*" sensitivity__yieldvolatility : yield_volatility
+sensitivity__yieldvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__yieldvolatility *-- "1" sensitivity__yieldvolatility_Shifts : shifts
+sensitivity__yieldvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__yieldvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__yieldvolatility_Shifts *-- "0..*" sensitivity__yieldvolatility_Shifts_Shift : shift
+sensitivity__yycapfloorvolatilities *-- "0..*" sensitivity__yycapfloorvolatility : yy_cap_floor_volatility
+sensitivity__yycapfloorvolatility *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__yycapfloorvolatility *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__yycapfloorvolatility *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__yyinflationindexcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__yyinflationindexcurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__yyinflationindexcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__yyinflationindexcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__yyinflationindexcurves *-- "0..*" sensitivity__yyinflationindexcurve : yy_inflation_index_curve
+sensitivity__zeroinflationindexcurve *-- "0..*" sensitivity__shiftSchemeEntry : shift_scheme
+sensitivity__zeroinflationindexcurve *-- "0..1" sensitivity__parconversion : par_conversion
+sensitivity__zeroinflationindexcurve *-- "1..*" sensitivity__shiftSizeEntry : shift_size
+sensitivity__zeroinflationindexcurve *-- "1..*" sensitivity__shiftTypeEntry : shift_type
+sensitivity__zeroinflationindexcurves *-- "0..*" sensitivity__zeroinflationindexcurve : zero_inflation_index_curve
+simmcalibration__commodity *-- "1" simmcalibration__commodity_Correlations : correlations
+simmcalibration__commodity *-- "1" simmcalibration__commodity_RiskWeights : risk_weights
+simmcalibration__commodity *-- "1" simmcalibration__concentrationThresholds : concentration_thresholds
+simmcalibration__commodity_Correlations *-- "1" simmcalibration__commodity_Correlations_InterBucket : inter_bucket
+simmcalibration__commodity_Correlations *-- "1" simmcalibration__commodity_Correlations_IntraBucket : intra_bucket
+simmcalibration__commodity_Correlations_InterBucket *-- "1..*" simmcalibration__commodity_Correlations_InterBucket_Correlation : correlation
+simmcalibration__commodity_Correlations_IntraBucket *-- "1..*" simmcalibration__commodity_Correlations_IntraBucket_Correlation : correlation
+simmcalibration__commodity_RiskWeights *-- "1" simmcalibration__commodity_RiskWeights_Delta : delta
+simmcalibration__commodity_RiskWeights_Delta *-- "1..*" simmcalibration__commodity_RiskWeights_Delta_Weight : weight
+simmcalibration__concentrationThresholds *-- "1" simmcalibration__concentrationThresholds_Delta : delta
+simmcalibration__concentrationThresholds *-- "1" simmcalibration__concentrationThresholds_Vega : vega
+simmcalibration__concentrationThresholds_Delta *-- "1..*" simmcalibration__concentrationThresholds_Delta_Threshold : threshold
+simmcalibration__concentrationThresholds_Vega *-- "1..*" simmcalibration__concentrationThresholds_Vega_Threshold : threshold
+simmcalibration__creditNonQualifying *-- "1" simmcalibration__concentrationThresholds : concentration_thresholds
+simmcalibration__creditNonQualifying *-- "1" simmcalibration__creditNonQualifying_Correlations : correlations
+simmcalibration__creditNonQualifying *-- "1" simmcalibration__creditNonQualifying_RiskWeights : risk_weights
+simmcalibration__creditNonQualifying_Correlations *-- "1" simmcalibration__creditNonQualifying_Correlations_InterBucket : inter_bucket
+simmcalibration__creditNonQualifying_Correlations *-- "1" simmcalibration__creditNonQualifying_Correlations_IntraBucket : intra_bucket
+simmcalibration__creditNonQualifying_Correlations_InterBucket *-- "1..*" simmcalibration__creditNonQualifying_Correlations_InterBucket_Correlation : correlation
+simmcalibration__creditNonQualifying_Correlations_IntraBucket *-- "1..*" simmcalibration__creditNonQualifying_Correlations_IntraBucket_Correlation : correlation
+simmcalibration__creditNonQualifying_RiskWeights *-- "1" simmcalibration__creditNonQualifying_RiskWeights_Delta : delta
+simmcalibration__creditNonQualifying_RiskWeights_Delta *-- "1..*" simmcalibration__creditNonQualifying_RiskWeights_Delta_Weight : weight
+simmcalibration__creditQualifying *-- "1" simmcalibration__concentrationThresholds : concentration_thresholds
+simmcalibration__creditQualifying *-- "1" simmcalibration__creditQualifying_Correlations : correlations
+simmcalibration__creditQualifying *-- "1" simmcalibration__creditQualifying_RiskWeights : risk_weights
+simmcalibration__creditQualifying_Correlations *-- "1" simmcalibration__creditQualifying_Correlations_InterBucket : inter_bucket
+simmcalibration__creditQualifying_Correlations *-- "1" simmcalibration__creditQualifying_Correlations_IntraBucket : intra_bucket
+simmcalibration__creditQualifying_Correlations_InterBucket *-- "1..*" simmcalibration__creditQualifying_Correlations_InterBucket_Correlation : correlation
+simmcalibration__creditQualifying_Correlations_IntraBucket *-- "1..*" simmcalibration__creditQualifying_Correlations_IntraBucket_Correlation : correlation
+simmcalibration__creditQualifying_RiskWeights *-- "1" simmcalibration__creditQualifying_RiskWeights_Delta : delta
+simmcalibration__creditQualifying_RiskWeights *-- "1..*" simmcalibration__creditQualifying_RiskWeights_BaseCorrelation : base_correlation
+simmcalibration__creditQualifying_RiskWeights_Delta *-- "1..*" simmcalibration__creditQualifying_RiskWeights_Delta_Weight : weight
+simmcalibration__currencyLists *-- "1..*" simmcalibration__currencyLists_Currency : currency
+simmcalibration__equity *-- "1" simmcalibration__concentrationThresholds : concentration_thresholds
+simmcalibration__equity *-- "1" simmcalibration__equity_Correlations : correlations
+simmcalibration__equity *-- "1" simmcalibration__equity_RiskWeights : risk_weights
+simmcalibration__equity_Correlations *-- "1" simmcalibration__equity_Correlations_InterBucket : inter_bucket
+simmcalibration__equity_Correlations *-- "1" simmcalibration__equity_Correlations_IntraBucket : intra_bucket
+simmcalibration__equity_Correlations_InterBucket *-- "1..*" simmcalibration__equity_Correlations_InterBucket_Correlation : correlation
+simmcalibration__equity_Correlations_IntraBucket *-- "1..*" simmcalibration__equity_Correlations_IntraBucket_Correlation : correlation
+simmcalibration__equity_RiskWeights *-- "1" simmcalibration__equity_RiskWeights_Delta : delta
+simmcalibration__equity_RiskWeights *-- "1" simmcalibration__equity_RiskWeights_Vega : vega
+simmcalibration__equity_RiskWeights *-- "1..*" simmcalibration__equity_RiskWeights_HistoricalVolatilityRatio : historical_volatility_ratio
+simmcalibration__equity_RiskWeights_Delta *-- "1..*" simmcalibration__equity_RiskWeights_Delta_Weight : weight
+simmcalibration__equity_RiskWeights_Vega *-- "1..*" simmcalibration__equity_RiskWeights_Vega_Weight : weight
+simmcalibration__fx *-- "1" simmcalibration__fx_Correlations : correlations
+simmcalibration__fx *-- "1" simmcalibration__fx_RiskWeights : risk_weights
+simmcalibration__fx *-- "1" simmcalibration__irfxConcentrationThresholds : concentration_thresholds
+simmcalibration__fx_Correlations *-- "1" simmcalibration__fx_Correlations_IntraBucket : intra_bucket
+simmcalibration__fx_Correlations_IntraBucket *-- "1..*" simmcalibration__fx_Correlations_IntraBucket_Correlation : correlation
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__currencyLists : currency_lists
+simmcalibration__fx_RiskWeights *-- "1" simmcalibration__fx_RiskWeights_Delta : delta
+simmcalibration__fx_RiskWeights *-- "1..*" simmcalibration__fx_RiskWeights_HistoricalVolatilityRatio : historical_volatility_ratio
+simmcalibration__fx_RiskWeights_Delta *-- "1..*" simmcalibration__fx_RiskWeights_Delta_Weight : weight
+simmcalibration__interestRate *-- "1" simmcalibration__interestRate_Correlations : correlations
+simmcalibration__interestRate *-- "1" simmcalibration__interestRate_RiskWeights : risk_weights
+simmcalibration__interestRate *-- "1" simmcalibration__irfxConcentrationThresholds : concentration_thresholds
+simmcalibration__interestRate_Correlations *-- "1" simmcalibration__interestRate_Correlations_IntraBucket : intra_bucket
+simmcalibration__interestRate_Correlations_IntraBucket *-- "1..*" simmcalibration__interestRate_Correlations_IntraBucket_Correlation : correlation
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__currencyLists : currency_lists
+simmcalibration__interestRate_RiskWeights *-- "1" simmcalibration__interestRate_RiskWeights_Delta : delta
+simmcalibration__interestRate_RiskWeights *-- "1..*" simmcalibration__interestRate_RiskWeights_HistoricalVolatilityRatio : historical_volatility_ratio
+simmcalibration__interestRate_RiskWeights_Delta *-- "1..*" simmcalibration__interestRate_RiskWeights_Delta_Weight : weight
+simmcalibration__irfxConcentrationThresholds *-- "1" simmcalibration__currencyLists : currency_lists
+simmcalibration__simmCalibration *-- "1" simmcalibration__commodity : commodity
+simmcalibration__simmCalibration *-- "1" simmcalibration__creditNonQualifying : credit_non_qualifying
+simmcalibration__simmCalibration *-- "1" simmcalibration__creditQualifying : credit_qualifying
+simmcalibration__simmCalibration *-- "1" simmcalibration__equity : equity
+simmcalibration__simmCalibration *-- "1" simmcalibration__fx : fx
+simmcalibration__simmCalibration *-- "1" simmcalibration__interestRate : interest_rate
+simmcalibration__simmCalibration *-- "1" simmcalibration__simmCalibration_RiskClassCorrelations : risk_class_correlations
+simmcalibration__simmCalibration_RiskClassCorrelations *-- "1..*" simmcalibration__simmCalibration_RiskClassCorrelations_Correlation : correlation
+simulation__calibrationBasket *-- "1..*" simulation__calibrationCpiCapFloor : cpi_cap_floor
+simulation__calibrationBasket *-- "1..*" simulation__calibrationYoYCapFloor : yo_y_cap_floor
+simulation__calibrationBasket *-- "1..*" simulation__calibrationYoYSwap : yo_y_swap
+simulation__calibrationConfiguration *-- "0..1" simulation__calibrationConfiguration_Constraints : constraints
+simulation__calibrationConfiguration_Constraints *-- "0..*" simulation__boundaryConstraint : boundary_constraint
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_Commodities : commodities
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CommodityModels : commodity_models
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CreditModels : credit_models
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CreditNames : credit_names
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_CreditStates : credit_states
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_Equities : equities
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_EquityModels : equity_models
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_ForeignExchangeModels : foreign_exchange_models
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_InflationIndexModels : inflation_index_models
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_InflationIndices : inflation_indices
+simulation__crossAssetModel *-- "0..1" simulation__crossAssetModel_InstantaneousCorrelations : instantaneous_correlations
+simulation__crossAssetModel *-- "1" simulation__crossAssetModel_Currencies : currencies
+simulation__crossAssetModel *-- "1" simulation__crossAssetModel_InterestRateModels : interest_rate_models
+simulation__crossAssetModel_CommodityModels *-- "0..*" simulation__commoditySchwartz : commodity_schwartz
+simulation__crossAssetModel_CreditModels *-- "1" simulation__cir : cir
+simulation__crossAssetModel_CreditModels *-- "1" simulation__crlgm : lgm
+simulation__crossAssetModel_EquityModels *-- "0..*" simulation__crossAssetLGM : cross_asset_lgm
+simulation__crossAssetModel_ForeignExchangeModels *-- "0..*" simulation__crossCurrencyLGM : cross_ccy_lgm
+simulation__crossAssetModel_ForeignExchangeModels *-- "0..*" simulation__localVol : local_vol
+simulation__crossAssetModel_InflationIndexModels *-- "1" simulation__dodgsonKainth : dodgson_kainth
+simulation__crossAssetModel_InflationIndexModels *-- "1" simulation__jarrowYildrim : jarrow_yildirim
+simulation__crossAssetModel_InflationIndexModels *-- "1" simulation__lgm : lgm
+simulation__crossAssetModel_InstantaneousCorrelations *-- "0..*" simulation__crossAssetModel_InstantaneousCorrelations_Correlation : correlation
+simulation__crossAssetModel_InterestRateModels *-- "0..*" simulation__hw : hw_model
+simulation__crossAssetModel_InterestRateModels *-- "0..*" simulation__lgm : lgm
+simulation__dodgsonKainth *-- "0..1" simulation__calibrationConfiguration : calibration_configuration
+simulation__dodgsonKainth *-- "0..1" simulation__dodgsonKainth_CalibrationBaskets : calibration_baskets
+simulation__dodgsonKainth_CalibrationBaskets *-- "1..*" simulation__calibrationBasket : calibration_basket
+simulation__hw *-- "0..1" simulation__hw_Volatility : volatility
+simulation__hw *-- "1" simulation__hw_Reversion : reversion
+simulation__hw_Volatility *-- "1" simulation__hw_Volatility_InitialValue : initial_value
+simulation__hw_Volatility_InitialValue *-- "1..*" simulation__hw_Volatility_InitialValue_Sigma : sigma
+simulation__jarrowYildrim *-- "0..1" simulation__calibrationConfiguration : calibration_configuration
+simulation__jarrowYildrim *-- "0..1" simulation__jarrowYildrim_CalibrationBaskets : calibration_baskets
+simulation__jarrowYildrim *-- "1" simulation__jarrowYildrim_Index : index
+simulation__jarrowYildrim *-- "1" simulation__jarrowYildrim_RealRate : real_rate
+simulation__jarrowYildrim_CalibrationBaskets *-- "1..*" simulation__calibrationBasket : calibration_basket
+simulation__lgm *-- "0..1" simulation__lgm_CalibrationBaskets : calibration_baskets
+simulation__lgm_CalibrationBaskets *-- "1..*" simulation__calibrationBasket : calibration_basket
+simulation__simulation *-- "0..1" simulation__crossAssetModel : cross_asset_model
+stress__stresscapfloorvolatilities *-- "0..*" stress__stresscapfloorvolatility : cap_floor_volatility
+stress__stresscapfloorvolatility *-- "1" stress__stresscapfloorvolatility_Shifts : shifts
+stress__stresscapfloorvolatility_Shifts *-- "0..*" stress__stresscapfloorvolatility_Shifts_Shift : shift
+stress__stresscommoditycurves *-- "0..*" stress__stresscommoditycurve : commodity_curve
+stress__stresscommodityvolatilities *-- "0..*" stress__stresscommodityvolatility : commodity_volatility
+stress__stressdiscountcurves *-- "0..*" stress__stressdiscountcurve : discount_curve
+stress__stressfxvolatilities *-- "0..*" stress__stressfxvolatility : fx_volatility
+stress__stressindexcurves *-- "0..*" stress__stressindexcurve : index_curve
+stress__stressintradaypowercurves *-- "0..*" stress__stressintradaypowercurve : intraday_power_curve
+stress__stressswaptionvolatilities *-- "0..*" stress__stressswaptionvolatility : swaption_volatility
+stress__stressswaptionvolatility *-- "1" stress__stressswaptionvolatility_Shifts : shifts
+stress__stressswaptionvolatility_Shifts *-- "0..*" stress__stressswaptionvolatility_Shifts_Shift : shift
+stress__stresstest *-- "0..1" stress__stresscapfloorvolatilities : cap_floor_volatilities
+stress__stresstest *-- "0..1" stress__stresscommoditycurves : commodity_curves
+stress__stresstest *-- "0..1" stress__stresscommodityvolatilities : commodity_volatilities
+stress__stresstest *-- "0..1" stress__stressdiscountcurves : discount_curves
+stress__stresstest *-- "0..1" stress__stressfxvolatilities : fx_volatilities
+stress__stresstest *-- "0..1" stress__stressindexcurves : index_curves
+stress__stresstest *-- "0..1" stress__stressintradaypowercurves : intraday_power_curves
+stress__stresstest *-- "0..1" stress__stressswaptionvolatilities : swaption_volatilities
+stress__stresstest *-- "0..1" stress__stressyieldcurves : yield_curves
+stress__stresstesting *-- "1..*" stress__stresstest : stress_test
+stress__stressyieldcurves *-- "0..*" stress__stressyieldcurve : yield_curve
+@enduml

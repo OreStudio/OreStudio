@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: D8996E23-B910-4A87-AED5-1133B956509C
+:END:
+#+title: Investigation: the ORE configuration object model
+#+description: The designed structs: named configurations and the ORE run parameter vocabulary in reporting, the configuration types themselves in analytics, and how a report binds to them by type.
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A point-in-time record, written on 2026-09-27, of the object model this story is
+deciding. It is data-oriented, so it carries structs and their members and
+nothing else. The analytics half is generated from the schemas by
+=build/scripts/ore_configuration_model.py=; the reporting half is written in that
+script, because it is a design and no schema states it.
+
+* The two halves
+
+The split follows the components:
+
+| Half | Owner | What it holds |
+|------+-------+---------------|
+| The configuration registry | =ores.reporting= | a named configuration, its type, the binding from a report definition, and the parameter vocabulary that describes an ORE run document |
+| The configuration types | =ores.analytics= | what a stress test, a SIMM calibration, a sensitivity analysis, a simulation, a credit simulation, a historical return configuration or a Basel traffic light configuration is made of |
+
+The reason for the split is reuse. A stress library is not the property of one
+report; several reports bind to the same one, and nothing about it is
+report-specific. The registry, by contrast, exists so that a report can name it.
+
+* The reporting half
+
+#+caption: The registry, the binding, and the parameter vocabulary. One row per named configuration; the vocabulary says which names a type and subtype accept and what domain each value has.
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/configuration_model_reporting.png]]
+
+Source: =configuration_model_reporting.puml=.
+
+| Struct | Key | Holds |
+|--------+-----+-------|
+| =report_definition= | id | the report, its type, its schedule and its concurrency policy |
+| =report_type= | id | our own classification, since report types are outside ORE |
+| =report_configuration= | definition + type | the list a report carries: a configuration type and the configuration it binds to |
+| =configuration_type= | id | *Stress Testing*, *Simulation*, *Sensitivity*, … and which component owns the detail |
+| =configuration= | id | **the named configuration**: the name is ours, and one row is what a report binds to |
+| =configuration_parameter= | configuration + definition | one value |
+| =parameter_definition= | id | the vocabulary: for a type and subtype, the names it accepts, and the domain of each |
+| =value_domain= | id | what the value is — currency, date, boolean, integer, tenor, document, list — and, for the ones that name something, the entity it refers to |
+
+The vocabulary is per type *and* subtype, because the measurement says so: of the
+218 parameter names the shipped run documents use, 165 are used by exactly one
+analytic type, and only =active= is used by all 35. A single global name list
+would accept nonsense.
+
+The domain is declared here rather than inferred from values, because the values
+lie: =mporCalendar= holds =EUR= and =US= — calendar names, not currencies —
+=asofDate= holds both ISO dates and integers, booleans appear as =Y/N= and as
+=true/false=, and =scenariodump= is sometimes a boolean and sometimes a path.
+
+* The analytics half
+
+#+caption: The whole model in one diagram: the reporting registry at the top left, then one package per configuration type. 210 structs, 304 relationships. Generated from the schemas.
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/configuration_model.png]]
+
+Source: =configuration_model.puml=. The image is 4408 by 10909 pixels, so read it
+by package rather than whole.
+
+Each document yields one configuration, whose contents are the file's own
+structure:
+
+| Configuration type | Its composed children |
+|--------------------+-----------------------|
+| *Stress Testing* | =StressTest= by id (=eur_6m_up=), each with its par shifts and eleven shift families |
+| *SIMM Calibration* | =SIMMCalibration= by id, each with six risk classes of weights, correlations and thresholds |
+| *Sensitivity* | 26 shift families keyed by currency, index, name or equity |
+| *Simulation* | one parameters block, and the cross-asset model families keyed by currency or name |
+| *Credit Simulation* | transition matrices and entities by name, plus the risk settings |
+| *Historical Return* | the return type and displacement per key |
+| *Basel Traffic Light* | observation thresholds per MPOR bucket |
+
+* What this model does not settle
+
+1. *Repetition inside a parameterised type.* =ore.xml= never repeats a parameter
+   name, so =configuration_parameter= needs no more than =position=. A future
+   parameterised type that repeats would need an item row; none does today.
+2. *Shift blocks.* Eleven of stress's tables have identical columns and differ
+   only in key, and the same shape repeats in sensitivity. Either one narrow
+   table per family — what the data-oriented design page asks for — or one table
+   with a family discriminator, whose key then stops being constrainable.
+3. *Where the vocabulary is seeded.* Roughly 1,500 =(subtype, name)= pairs across
+   the documents. Seeded rows, generated from the schemas, or declared in code
+   beside the workflow that reads it.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][Investigation: the ORE report configuration vocabulary]] — the index of this investigation, and where to read this page in it.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the earlier proposal this model answers, and where two of its layers landed.

@@ -137,37 +137,35 @@ TEST_CASE("write_result_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto workunit_id_parent = ores::compute::generators::generate_synthetic_workunit(ctx);
     workunit_id_parent.change_reason_code = "system.test";
-    auto workunit_id_parent_batch_id_parent =
-        ores::compute::generators::generate_synthetic_batch(ctx);
-    workunit_id_parent_batch_id_parent.change_reason_code = "system.test";
-    auto workunit_id_parent_app_version_id_parent_app_id_parent =
+    auto workunit_id_parent_batch_parent = ores::compute::generators::generate_synthetic_batch(ctx);
+    workunit_id_parent_batch_parent.change_reason_code = "system.test";
+    auto workunit_id_parent_app_version_parent_app_parent =
         ores::compute::generators::generate_synthetic_app(ctx);
-    workunit_id_parent_app_version_id_parent_app_id_parent.change_reason_code = "system.test";
-    auto workunit_id_parent_app_version_id_parent =
+    workunit_id_parent_app_version_parent_app_parent.change_reason_code = "system.test";
+    auto workunit_id_parent_app_version_parent =
         ores::compute::generators::generate_synthetic_app_version(ctx);
-    workunit_id_parent_app_version_id_parent.change_reason_code = "system.test";
+    workunit_id_parent_app_version_parent.change_reason_code = "system.test";
     // Seed the active batch row ores_compute_batches_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::compute::repository::batch_repository workunit_id_parent_batch_id_parent_repo;
-    workunit_id_parent_batch_id_parent_repo.write(party_ctx, workunit_id_parent_batch_id_parent);
-    workunit_id_parent.batch_id = workunit_id_parent_batch_id_parent.id;
+    ores::compute::repository::batch_repository workunit_id_parent_batch_parent_repo;
+    workunit_id_parent_batch_parent_repo.write(party_ctx, workunit_id_parent_batch_parent);
+    workunit_id_parent.batch_id = workunit_id_parent_batch_parent.id;
     // Seed the active app row ores_compute_apps_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::compute::repository::app_repository
-        workunit_id_parent_app_version_id_parent_app_id_parent_repo;
-    workunit_id_parent_app_version_id_parent_app_id_parent_repo.write(
-        party_ctx, workunit_id_parent_app_version_id_parent_app_id_parent);
-    workunit_id_parent_app_version_id_parent.app_id =
-        workunit_id_parent_app_version_id_parent_app_id_parent.id;
+    ores::compute::repository::app_repository workunit_id_parent_app_version_parent_app_parent_repo;
+    workunit_id_parent_app_version_parent_app_parent_repo.write(
+        party_ctx, workunit_id_parent_app_version_parent_app_parent);
+    workunit_id_parent_app_version_parent.app_id =
+        workunit_id_parent_app_version_parent_app_parent.id;
     // Seed the active app_version row ores_compute_app_versions_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::compute::repository::app_version_repository workunit_id_parent_app_version_id_parent_repo;
-    workunit_id_parent_app_version_id_parent_repo.write(party_ctx,
-                                                        workunit_id_parent_app_version_id_parent);
-    workunit_id_parent.app_version_id = workunit_id_parent_app_version_id_parent.id;
+    ores::compute::repository::app_version_repository workunit_id_parent_app_version_parent_repo;
+    workunit_id_parent_app_version_parent_repo.write(party_ctx,
+                                                     workunit_id_parent_app_version_parent);
+    workunit_id_parent.app_version_id = workunit_id_parent_app_version_parent.id;
     ores::compute::repository::workunit_repository workunit_id_repo;
     workunit_id_repo.write(party_ctx, workunit_id_parent);
     v.workunit_id = workunit_id_parent.id;

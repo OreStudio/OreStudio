@@ -138,22 +138,21 @@ TEST_CASE("write_currency_pair_convention_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto pair_code_parent = ores::refdata::generators::generate_synthetic_currency_pair(ctx);
     pair_code_parent.change_reason_code = "system.test";
-    auto pair_code_parent_base_currency_parent =
+    auto pair_code_parent_currency_parent =
         ores::refdata::generators::generate_synthetic_currency(ctx);
-    pair_code_parent_base_currency_parent.change_reason_code = "system.test";
+    pair_code_parent_currency_parent.change_reason_code = "system.test";
     auto pair_code_parent_quote_currency_parent =
         ores::refdata::generators::generate_synthetic_currency(ctx);
     pair_code_parent_quote_currency_parent.change_reason_code = "system.test";
-    auto pair_code_parent_classification_parent =
+    auto pair_code_parent_currency_pair_classification_parent =
         ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
-    pair_code_parent_classification_parent.change_reason_code = "system.test";
+    pair_code_parent_currency_pair_classification_parent.change_reason_code = "system.test";
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    ores::refdata::repository::currency_repository pair_code_parent_base_currency_parent_repo;
-    pair_code_parent_base_currency_parent_repo.write(party_ctx,
-                                                     pair_code_parent_base_currency_parent);
-    pair_code_parent.base_currency = pair_code_parent_base_currency_parent.iso_code;
+    ores::refdata::repository::currency_repository pair_code_parent_currency_parent_repo;
+    pair_code_parent_currency_parent_repo.write(party_ctx, pair_code_parent_currency_parent);
+    pair_code_parent.base_currency = pair_code_parent_currency_parent.iso_code;
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
@@ -165,10 +164,10 @@ TEST_CASE("write_currency_pair_convention_publishes_an_event", tags) {
     // ores_refdata_currency_pair_classifications_tbl references: the referencing row's insert
     // trigger rejects a synthetic key that matches no active row, so it must be written first.
     ores::refdata::repository::currency_pair_classification_repository
-        pair_code_parent_classification_parent_repo;
-    pair_code_parent_classification_parent_repo.write(party_ctx,
-                                                      pair_code_parent_classification_parent);
-    pair_code_parent.classification = pair_code_parent_classification_parent.code;
+        pair_code_parent_currency_pair_classification_parent_repo;
+    pair_code_parent_currency_pair_classification_parent_repo.write(
+        party_ctx, pair_code_parent_currency_pair_classification_parent);
+    pair_code_parent.classification = pair_code_parent_currency_pair_classification_parent.code;
     ores::refdata::repository::currency_pair_repository pair_code_repo;
     pair_code_repo.write(party_ctx, pair_code_parent);
     v.pair_code = pair_code_parent.pair_code;

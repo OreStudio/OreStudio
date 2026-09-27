@@ -157,7 +157,10 @@ def test_an_unstated_scoped_relation_is_refused(tmp_path):
 
 # An entity whose parent has two mandatory FKs onto one table seeds that
 # ancestor twice, once per leg. Naming the ancestor after the entity alone
-# declared the same variable twice, which does not compile.
+# declared the same variable twice, which does not compile: currency_pair's
+# base and quote legs both reach currency. The first leg keeps the entity name
+# and the colliding leg falls back to its FK column, so the pair is seeded with
+# a currency of its own on each side.
 #
 # The committed artefact is asserted rather than a single-model render: the
 # parent chain is resolved by scanning every component's models, which a model
@@ -177,7 +180,7 @@ def test_a_parent_reached_twice_seeds_one_ancestor_per_leg():
         r"auto (\w+) =\s+ores::\w+::\w+::generate_synthetic_", rendered)
     assert declared, "the test seeds no parent"
     assert len(declared) == len(set(declared)), f"a seed is declared twice: {declared}"
-    assert "pair_code_parent_base_currency_parent" in declared
+    assert "pair_code_parent_currency_parent" in declared
     assert "pair_code_parent_quote_currency_parent" in declared
 
 

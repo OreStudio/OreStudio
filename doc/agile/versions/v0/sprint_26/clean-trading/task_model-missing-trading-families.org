@@ -38,7 +38,7 @@ to the reference-data work and are out of scope, per decision D5.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | The commodity family is ported and proven end to end. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
 | Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
-| Next         | Close the type defects (plan step 5), then regenerate and prove the component once more (step 6), update the story's checklist rows (step 7), and raise PR 3. |
+| Next         | U2, the decimal amount type, then U3 the collections and U4 the enumerations; then regenerate and prove the component once more, update the story's checklist rows, and raise PR 3. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -496,7 +496,7 @@ the order below, because each makes the next smaller.
 | # | Defect | State |
 |---+--------+-------|
 | 17 | The trade's declared key is nullable | Closed |
-| 2 | Dates held as text, 58 fields | Next |
+| 2 | Dates held as text, 58 fields | Closed |
 | 3 | Monetary amounts held as double, 18 fields | Pending |
 | 6 | One concept under two names | Pending |
 | 5 | Code fields whose reference table does not exist | Pending |
@@ -527,7 +527,7 @@ and D13.
 
 | Unit | Defect | What it delivers |
 |------+--------+------------------|
-| U1, dates | 2 | The generator expresses a plain date column: the entity member stays a string, the domain member is =std::chrono::year_month_day=, and the mapper and history field mapper convert it. Then the 64 columns across 35 models move, with 49 hand-written consumers. |
+| U1, dates | 2 | Closed. The generator expresses a plain date column, the 64 columns across 36 models carry typed members, and the 49 hand-written consumers convert at each boundary. |
 | U2, decimal | 3 | A decimal domain type over =boost::multiprecision=, with JSON, table and SQL =numeric= I/O, and the generator seam that separates an entity's type from its domain type. Then the 87 =double= money columns move; rates, volatilities and correlations stay double. |
 | U3, collections | 1 | The four JSON columns become child tables with foreign keys: =callable_swap_instrument.call_dates_json=, =commodity_instrument.basket_json=, =equity_swap_instrument.basket_json= and =equity_position_instrument.option_data_json=, plus anything else the census finds. |
 | U4, enumerations | 4, 5, 8 | A reference table and a foreign key per closed set, the checks move from PL/pgSQL to the schema, and the missing reference tables are populated from FpML or ORE. |
@@ -535,6 +535,28 @@ and D13.
 U1 is in flight. U2 follows it, because both need the same generator
 seam, and two writers must not hold the templates at once. U3 and U4
 each need the enumeration and collection census before they start.
+
+** 5c. What the date unit found on the way
+
+Two generator defects and two shared root causes, each fixed at its
+source with a test rather than worked around:
+
+- The generator knew dates only as keys and timestamps. A plain date
+  column put the domain type into the sqlgen entity, which its parser
+  rejects with a static assert, and the history field mapper dropped the
+  field. The projection and its regression test are committed.
+- A grouped column's write record is text while its domain member is
+  typed, so the generated service emitted an assignment between them and
+  did not compile. The conversion and its regression test are committed.
+- =from_iso8601_date= rejected the ISO 8601 basic form. The ORE corpus
+  states 32 dates that way, and the six ORE mappers and the planner threw
+  on them. The parser now accepts both forms.
+- The =year_month_day= reflector wrote the default-constructed sentinel as
+  =0000-00-00=, which its own parser rejected, so a default date could not
+  survive a JSON round trip. That is what failed the instrument payload
+  variants and the bond future export, and it is why the earlier attempt
+  at this defect looked like a type regression. The sentinel is now the
+  empty string.
 
 ** 6. Regenerate and prove
 

@@ -26,6 +26,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/party_provisioning_plan.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"

@@ -20,6 +20,7 @@
 #ifndef ORES_DQ_CORE_MESSAGING_DATASET_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_DATASET_HANDLER_HPP
 
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"

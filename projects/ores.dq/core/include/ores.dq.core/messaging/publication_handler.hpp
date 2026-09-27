@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.dq.core/service/publication_service.hpp"
@@ -157,7 +158,7 @@ public:
 
             // Build workflow request
             const auto tenant_id_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
-            const std::string mode_str = to_string(req->mode);
+            const std::string mode_str = req->mode;
             const std::string params = req->params_json.empty() ? "{}" : req->params_json;
 
             ores::dq::workflow::bundle_publish_workflow_request wf_req;

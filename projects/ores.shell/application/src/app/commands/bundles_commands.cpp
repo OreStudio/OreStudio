@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/bundles_commands.hpp"
 #include "ores.dq.api/domain/dataset_bundle_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
@@ -135,7 +136,7 @@ void bundles_commands::process_publish(std::ostream& out,
 
     dq::messaging::publish_bundle_request req;
     req.bundle_code = code;
-    req.mode = dq::domain::publication_mode::upsert;
+    req.mode = "upsert";
     req.published_by = session.auth().username;
     req.atomic = true;
     const bool has_params = !params.opted_in_datasets.empty() || params.lei_parties.has_value() ||

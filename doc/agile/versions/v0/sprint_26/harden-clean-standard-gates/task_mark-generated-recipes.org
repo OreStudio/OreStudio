@@ -2,7 +2,7 @@
 :ID: 922962C6-FC22-42D9-9DAD-3F9280F7DD88
 :END:
 #+title: Task: Mark generated recipes, and give them a gate
-#+description: The recipe templates carry a codegen marker as a Mustache comment, which Mustache strips, so no generated recipe reaches the tree with one: 247 files sit at the generated recipe path shape and 172 carry the tangle block a generated recipe exports, none carries a marker, against 7,854 C++ files that do. The sweep renders per technical space, so it never produces a recipe and cannot cover them either. Emit the marker at the render seam and render the whole ores address.
+#+description: The recipe templates carry a codegen marker as a Mustache comment, which Mustache strips, so no generated recipe reaches the tree with one: 247 files sit at the generated recipe path shape and 172 carry the tangle block a generated recipe exports, none carries a marker, against 6,478 tracked C++ files that do. The sweep renders per technical space, so it never produces a recipe and cannot cover them either. Emit the marker at the render seam and render the whole ores address.
 #+type: task
 #+level: s1
 #+filetags: :harden-clean-standard-gates:sprint_26:v0:
@@ -26,7 +26,7 @@ carries, and give the generated recipes the gate they have never had.
 The recipe templates do carry a marker, but as a Mustache comment, and Mustache
 comments produce no output. So no generated recipe reached the tree with one:
 247 files sit at the generated recipe path shape and 172 carry the =:tangle=
-block a generated recipe exports, against 7,854 C++ files that name their
+block a generated recipe exports, against 6,478 tracked C++ files that name their
 template. Nothing could tell a generated recipe from a hand-written one, and
 nothing checked either, because the sweep rendered per technical space and the
 recipe facets need a facet from another space.
@@ -83,36 +83,53 @@ is what keeps a hand edit from being overwritten by a marker pass.
 
 * Notes
 
-*Measured at this head.*
+*Measured at the rebased head.*
 
-- The whole-address render produces 185 recipe files. 113 took the marker with
-  nothing else changed, 58 differ by more than the marker and were left alone,
+- The whole-address render produces 185 recipe files. 111 took the marker with
+  nothing else changed, 60 differ by more than the marker and were left alone,
   and 14 the render produces are absent from the tree entirely.
 - The rollout is exactly additive: 113 files changed, 113 lines added, 0 removed,
-  and every added line is a =#+generated:= line. Re-running the pass applies 0.
+  and every added line is a =#+generated:= line, over the 113 the marker pass
+  wrote. Two of those were reverted when the rebase moved them into the stale
+  set, so the branch carries 111 and =git grep -l "^#+generated:" -- '*.org'=
+  finds 111 tracked org files carrying it.
 - The canonical doc index loads all 281 org files under =doc/recipes/shell/= and
   =doc/recipes/http/=, every one with a non-empty blurb, and none with the marker
   in its blurb.
-- The sweep renders the whole address now and reports 969 files drifting across
-  the catalogue rather than 645, because it reaches the recipes. It takes about
-  a minute and stays green: none of that drift is this branch's.
+- 6,478 tracked =.cpp= and =.hpp= files carry the C++ marker, measured with
+  =git grep -l "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY" -- '*.cpp' '*.hpp'=.
+  That is the figure the comparison is against, and it is smaller than the number
+  of files on disk because generated trees outside version control do not count.
+- The sweep renders the whole address now and reports 858 files drifting across
+  the catalogue, against 645 before it reached the recipes. It takes about a
+  minute and stays green: none of that drift is this branch's.
 - Proved end to end: appending a line to
   =doc/recipes/shell/trade_types/trade_type.org= makes the sweep exit 1 and name
   that file, where before the change it could not see a recipe at all.
-- Codegen suite 901 passed; =compass lint= clean; =validate_docs.sh= 40 of 40.
+- Codegen suite 906 passed; =compass lint= clean; =validate_docs.sh= 40 of 40.
 
-*Two findings the rollout exposed, neither fixed here.*
+*What the rollout exposed, none of it fixed here.*
 
-1. *58 recipes are stale against their template.* They differ only inside their
-   =#+begin_src ores-shell :tangle ...= blocks, and only by =__none__= becoming
-   =-= in the placeholder positions; no prose changed, so they are stale rather
-   than hand-edited. Which of the two the shell actually accepts is the shell
-   owner's call, so this task leaves them and records them.
-2. *62 files sit at the generated recipe path shape that no render produces.*
-   Fourteen the render produces are missing from the tree; the rest are files
-   with no model behind them, which is what a retired or renamed template leaves.
-   Nothing deletes them, and nothing should: a clean-up that removed files no
-   render produces would delete whatever a hand-written nested recipe looks like.
+1. *60 recipes are stale against their template.* Fifty-eight differ only inside
+   their =#+begin_src ores-shell :tangle ...= blocks, and only by =__none__=
+   becoming =-= in the placeholder positions, with no prose changed, so they are
+   stale rather than hand-edited. Which of the two the shell accepts is the shell
+   owner's call, and the staleness is filed as a capture.
+2. *Two more the rebase exposed, and the reason the branch carries 111 rather
+   than 113.* =doc/recipes/shell/lei_entities/lei_entity.org= and
+   =doc/recipes/shell/lei_relationships/lei_relationship.org= are staging shims,
+   and main's staging-only change means the generator now renders them with no
+   command sections at all: 77 lines where the tree holds 224. Regenerating them
+   would delete 147 lines of generated recipe content, and whether a staging shim
+   should keep a recipe at all is the =dq= owner's call, not a marker pass's. The
+   marker was reverted on those two so this change stays purely additive, and the
+   finding is filed with the staleness.
+3. *76 files sit at the generated recipe path shape that no render produces.*
+   The shape holds 247; the render accounts for 171 of them once the 14 it
+   produces but the tree lacks are set aside, leaving 76 with no model behind
+   them, which is what a retired or renamed template leaves. Nothing deletes
+   them, and nothing should: a clean-up that removed files no render produces
+   would delete whatever a hand-written nested recipe looks like.
 
 * Test Scenarios
 
@@ -133,8 +150,19 @@ via its "Verifies task" field.
 
 * Review
 
+Independent verification of PR #2271 at head =d2a71283c9=, patch-id
+=dda645468331431c700c7ec56a55c6eac7679e95=, verdict FAIL confined to the record's
+numbers. Every substantive claim passed: the rollout is purely additive (113
+insertions, 0 deletions, every added line a marker), the placement is sound
+against the canonical parser with both counterfactuals measured, coverage reaches
+recipes end to end, and the tests constrain in both directions.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "the sweep reports 969 files drifting" sits under a heading that says measured at this head, and measures 856. 856 + 113 = 969, so it was taken before the rollout and never re-measured. | task doc | Fixed | The sweep reports 858 at the rebased head, and the figure is named as such. |
+| 2 | "7,854 C++ files" carrying the marker does not reproduce: 6,494 tracked =.cpp=/=.hpp= on the verifier's count, 6,478 by =git grep -l= over the index here. | task doc, story | Fixed | The claim now names its command and the figure that command returns, 6,478. |
+| 3 | The arithmetic is inconsistent: 247 = 185 + 62, yet 14 of the 185 are absent from the tree, which leaves 76 files with no model behind them, not 62. | task doc | Fixed | Corrected to 76: the shape holds 247, the render accounts for 171 of them, and 76 have no model behind them. |
+| 4 | The 185/58/14 split was not re-measured for want of budget. | task doc | Fixed | Re-measured, and it moved: 111 marked, 60 stale, 14 absent. |
+| 5 | The CI sweep job fails on =lei_entity.org= and =lei_relationship.org=. Rendering after a rebase produces 77 lines where the tree holds 224, so main's staging-only change left both recipes stale, and this branch had touched them with the marker. | =doc/recipes/shell/lei_*/= | Reverted, recorded | The marker was reverted on those two so the change stays purely additive. Regenerating would delete 147 lines of generated content, and whether a staging shim keeps a recipe at all is the =dq= owner's call, so it is filed rather than guessed at. |
 
 * Result

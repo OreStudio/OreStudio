@@ -39,12 +39,14 @@ export default defineConfig(({ mode }) => {
    * so they are read from the file directly. The directory is derived from this
    * file rather than from the working directory, because npm runs the workspace
    * script from the package and the file is four levels up.
+   *
+   * An empty prefix also makes `loadEnv` merge the whole of `process.env` into
+   * its result, and merge it last, so a variable exported by the caller wins
+   * over the file. Reading `process.env` again here would be dead code.
    */
   const env = loadEnv(mode, resolve(import.meta.dirname, '../../../..'), '');
-  const BFF_PORT = env['ORES_WEB_PORT'] ?? process.env['ORES_WEB_PORT'] ?? '8080';
-  const WEB_PORT = Number(
-    env['ORES_WEB_DEV_PORT'] ?? process.env['ORES_WEB_DEV_PORT'] ?? '5173',
-  );
+  const BFF_PORT = env['ORES_WEB_PORT'] ?? '8080';
+  const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
 
   return {
     plugins: [react(), tailwindcss()],

@@ -134,6 +134,6 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The middle =process.env[...]= fallback in the two port reads is probably dead, since =loadEnv= with an empty prefix already merges =process.env= | =packages/web/vite.config.ts= | Accept | Confirmed in the installed Vite rather than from memory: =loadEnv= ends with a loop that copies every =process.env= key whose name starts with a prefix, so an empty prefix copies them all, and it runs last, which means it also overrides the file. The fallback could never run. Dropping it leaves one source for each port instead of three, and the reason is now in the comment so the next reader does not put it back. |
 
 * Result

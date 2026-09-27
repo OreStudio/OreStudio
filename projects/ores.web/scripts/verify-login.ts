@@ -30,8 +30,8 @@
  * response schema.
  *
  * Prerequisites:
- *   scripts/dev-stack.sh start           (NATS, IAM and refdata in another shell)
- *   scripts/seed-test-account.sh         (creates the login used below)
+ *   compass services start             (the fleet, in another shell)
+ *   scripts/seed-test-account.sh       (creates the login used below)
  *
  * Run:
  *   npx tsx scripts/verify-login.ts

@@ -23,8 +23,7 @@
     "verify:login": "tsx scripts/verify-login.ts",
     "seed:account": "bash scripts/seed-test-account.sh",
     "ir:protocol": "python3 scripts/emit_protocol_ir.py --all --out .runtime/ir/protocol.ir.json",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/tsconfig.tsbuildinfo",
-    "stack": "bash scripts/dev-stack.sh"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/tsconfig.tsbuildinfo"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",

@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-dq-artefact-tables
-#+pr:
+#+pr: 2231
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -986,6 +986,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2231][#2231]] | [dq] Move the publish verbs into a handler of their own |
 | https://github.com/OreStudio/OreStudio/pull/2189 | [dq] Generate the ores.dq artefact tables from the entity models |
 | https://github.com/OreStudio/OreStudio/pull/2190 | [dq] Put the badge family on the generated stack and wire its history |
 | https://github.com/OreStudio/OreStudio/pull/2193 | [dq] Migrate the last three entities and wire the shell adapter |

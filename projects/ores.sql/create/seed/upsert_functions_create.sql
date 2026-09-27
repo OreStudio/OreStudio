@@ -236,6 +236,18 @@ create or replace function ores_dq_origin_dimensions_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Origin dimension code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_origin_dimensions_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Data quality origin already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_origin_dimensions_tbl (
         tenant_id, code, version, name, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -244,14 +256,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - data quality origin dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created data quality origin: %', p_code;
-    else
-        raise debug 'Data quality origin already exists: %', p_code;
-    end if;
+    raise debug 'Created data quality origin: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -267,6 +274,18 @@ create or replace function ores_dq_nature_dimensions_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Nature dimension code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_nature_dimensions_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Data quality nature already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_nature_dimensions_tbl (
         tenant_id, code, version, name, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -275,14 +294,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - data quality nature dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created data quality nature: %', p_code;
-    else
-        raise debug 'Data quality nature already exists: %', p_code;
-    end if;
+    raise debug 'Created data quality nature: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -298,6 +312,18 @@ create or replace function ores_dq_treatment_dimensions_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Treatment dimension code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_treatment_dimensions_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Data quality treatment already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_treatment_dimensions_tbl (
         tenant_id, code, version, name, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -306,14 +332,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - data quality treatment dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created data quality treatment: %', p_code;
-    else
-        raise debug 'Data quality treatment already exists: %', p_code;
-    end if;
+    raise debug 'Created data quality treatment: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -393,6 +414,18 @@ create or replace function ores_dq_coding_scheme_authority_types_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Coding scheme authority type code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_coding_scheme_authority_types_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Coding scheme authority type already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_coding_scheme_authority_types_tbl (
         tenant_id, code, version, name, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -401,14 +434,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - coding scheme authority type',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created coding scheme authority type: %', p_code;
-    else
-        raise debug 'Coding scheme authority type already exists: %', p_code;
-    end if;
+    raise debug 'Created coding scheme authority type: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -428,6 +456,18 @@ create or replace function ores_dq_coding_schemes_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Coding scheme code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Coding scheme already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_coding_schemes_tbl (
         tenant_id, code, version, name, authority_type, subject_area_name, domain_name, uri, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -436,14 +476,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - coding scheme',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created coding scheme: %', p_code;
-    else
-        raise debug 'Coding scheme already exists: %', p_code;
-    end if;
+    raise debug 'Created coding scheme: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -464,6 +499,18 @@ create or replace function ores_dq_methodologies_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Methodology name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_methodologies_tbl
+        where tenant_id = p_tenant_id
+          and name = p_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'dq_methodologies already exists: %', p_name;
+        return;
+    end if;
+
     insert into ores_dq_methodologies_tbl (
         tenant_id, id, version, name, description, logic_reference, implementation_details,
         modified_by, performed_by, change_reason_code, change_commentary,
@@ -473,14 +520,9 @@ begin
         p_tenant_id, gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
         current_user, current_user, 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created dq_methodologies: %', p_name;
-    else
-        raise debug 'dq_methodologies already exists: %', p_name;
-    end if;
+    raise debug 'Created dq_methodologies: %', p_name;
 end;
 $$ language plpgsql;
 

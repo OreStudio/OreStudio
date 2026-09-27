@@ -155,6 +155,20 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
             request_verifier_ && request_verifier_->is_configured();
         auto* effective = prefer_session_verifier ? request_verifier_.get()
                                                   : authenticator_.get();
+        if (effective == nullptr || !effective->is_configured()) {
+            // A route that requires authentication fails closed. If the server
+            // cannot verify anybody -- no verifier configured, or the public key
+            // failed to load -- it must not serve anybody.
+            BOOST_LOG_SEV(lg(), error) << "Route requires authentication but no JWT verifier is "
+                                       << "configured; refusing " << matched->pattern << " from "
+                                       << remote_address_;
+            auto unauthorized = domain::http_response::unauthorized(
+                "Authentication is not configured on this server");
+            auto beast_resp = convert_response(unauthorized, req.version(), req.keep_alive());
+            co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            co_return;
+        }
+
         if (effective != nullptr && effective->is_configured()) {
             auto claims_result = effective->validate(*token);
             if (!claims_result && prefer_session_verifier && authenticator_ &&

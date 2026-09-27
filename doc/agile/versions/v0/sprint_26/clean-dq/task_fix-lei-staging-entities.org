@@ -13,37 +13,128 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The two LEI staging entities describe the table they actually read. Both bind
+=artefact-staging-only=, so their real store is the DQ artefact table and no
+same-component main table exists. Their generated C++ surface named
+=ores_dq_lei_entities_tbl= and =ores_dq_lei_relationships_tbl= instead -- tables
+the same profile refuses to create -- so every read and write through the
+generated repository failed with "relation does not exist". Both entities also
+claimed an event and a history contract that no trigger on the staging table can
+honour.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Diagnosed; not started.                |
+| Now          | Implemented and verified; three commits on =feature/fix-lei-staging-entities=, PR to raise. dq is green. |
 | Waiting on   | Nothing.                               |
-| Next         | Work the four corrections in * Plan.   |
+| Next         | Raise the PR, then return to the story's remaining tail. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
 
--
+- Both models name the artefact table they read, and the generated =tablename=
+  equals the table the staging profile actually creates.
+- Both entities bind the read-only current-state shape, so the generated column
+  set matches the staging table: no audit tail and no validity window.
+- Neither entity renders an event, an event registrar or an eventing integration
+  test, because =artefact-staging-only= withdraws the notify trigger that would
+  feed them.
+- =ores.dq.core.tests= passes, and =ores.dq.api.tests=, =ores.dq.service.tests=
+  and =ores.shell.dq.tests= stay green.
+- =check_component_drift.py --component dq= reports no drift, twice in a row.
+- Any generator or profile defect found is fixed at its source, with a
+  regression test in the codegen suite.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Point both models' =:tablename:= at the artefact table they read. Checked
+   safe first: the artefact table's own name is composed from =entity_plural=
+   (=ores_dq_<plural>_artefact_tbl=) and not from =:tablename:=, so the staging
+   table does not move when the entity's read target changes.
+2. Bind =read-only-current-state= alongside the existing shape profile, so the
+   entity drops the audit tail and the validity window the staging table does
+   not have. The reference entity for that profile is =ores.iam.login_info=.
+3. Withdraw the notify trigger, so withdraw the event. The three eventing facets
+   go for every entity that binds =artefact-staging-only=. They cannot go in the
+   profile's Physical space: a shape profile fixes
+   =ores.cpp.eventing-integration-test= to true, and the loader refuses a binding
+   where two profiles fix one address differently rather than picking a winner.
+   A hard gate in =resolve_targets=, beside the shell gate, carries it instead.
+4. Drop =modified_by= from both =** Table display= drawers.
+5. Regenerate, and delete whatever the facets stop emitting.
+6. Build, run the four dq suites and the gates, then raise the PR.
 
 * Notes
+
+** How the two entities came to name a table that does not exist
+
+The timeline, from the git history:
+
+| Date       | Event |
+|------------+-------|
+| 2026-08-04 | =lei_entity= is modelled and gains the artefact-table hook |
+| 2026-08-05 | =artefact-staging-only= is bound, which switches off =domain_entity_create=, =domain_entity_drop= and both notify-trigger facets |
+| 2026-08-06 | a commit commissions the full C++ surface for =lei_entity=, =lei_relationship=, =report_definition= and =synthetic_fx_spot_config= |
+| 2026-09-26 | the protocol migration adds an eventing integration test per entity, including both LEI ones |
+
+The main table was withdrawn *before* the C++ surface was commissioned, and the
+eventing tests arrived three weeks later still assuming it. They have never been
+able to pass. The staging tables carry no trigger at all -- not the notify
+trigger, and not the insert trigger the rest of the schema has -- which is what
+makes the event chain in those tests unsatisfiable rather than merely late.
+
+The dead surface was not unique to the LEI pair. =report_definition= and
+=synthetic_fx_spot_config= bind the same profile and generated the same event
+registrar and history field mapper. Neither has a test that drives them, so only
+the LEI pair ever failed; the gate withdraws all four.
+
+** The defect that hid this one
+
+The first attempt put the eventing rows in =artefact-staging-only='s Physical
+space. That conflicts with =simple-lookup=, which fixes
+=ores.cpp.eventing-integration-test= to true, and =read_physical_space_overrides=
+raises on the conflict -- while it is *merging* the overrides.
+=_read_drawer_properties= caught the raise and returned ={}=, discarding every
+override with it, so the staging shims silently regained the main table their
+profile had withdrawn. The drift check then reported eight spurious file
+creations, which is how it surfaced.
+
+That swallow is fixed at its source in its own commit, with a regression test.
+It is worth recording as a class: a broad =except= around a merge turns a
+reported defect into a wrong answer that looks valid.
+
+** The trap avoided in step 1
+
+=:tablename:= looks like it names the entity's table, and it does -- but the
+artefact table is a *second* table whose name comes from =entity_plural=. Had
+the artefact name been derived from =:tablename:=, pointing the entity at the
+staging table would have renamed the staging table to
+=..._artefact_artefact_tbl=. Checking the template before editing is what
+settled it, and the drift gate afterwards confirms no SQL file moved.
+
+** Deliberately not modelled
+
+The staging tables carry =dataset_id=, =tenant_id= and a =version= that the
+entity does not model. An explicit-column read never sees them; the entity
+describes what it reads, not everything the table stores.
+
+** Known follow-up, out of scope here
+
+=report_definition= and =synthetic_fx_spot_config= keep the audit tail and the
+validity window in their generated entities, so they carry the same
+table-shape mismatch the LEI pair had. Neither has a test, so nothing is red.
+They belong to the same decision and should bind =read-only-current-state= too,
+or record why not.
 
 * Test Scenarios
 
@@ -69,3 +160,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both entities now read the table they always meant to read, and dq has no
+failing test case left.
+
+| Suite | Before | After |
+|-------+--------+-------|
+| =ores.dq.core.tests= | 109 of 111 | 109 of 109 |
+| =ores.dq.api.tests= | 50 of 50 | 50 of 50 |
+| =ores.dq.service.tests= | 10 of 10 | 10 of 10 |
+| =ores.shell.dq.tests= | 331 of 331 | 331 of 331 |
+
+Run against a freshly recreated database (=compass db recreate -y -k=, exit 0,
+ACME provisioning complete). =check_component_drift.py --component dq= reports
+no drift twice in a row, =check_model_drift.py= reports no drift, the codegen
+suite passes 887, =validate_docs.sh= passes all 40 components, and =compass
+lint= is clean.
+
+Three commits, each a verifiable unit:
+
+1. the loud profile conflict, with its regression test;
+2. the staging-only eventing gate, with four tests;
+3. the two models, their regenerated surface, sixteen deletions, and the two
+   hand-written aggregators that named them.
+
+Two defects were fixed at source rather than worked around: the swallowed
+profile-binding error, and the missing eventing gate. Both carry regression
+tests that were mutation-proven.

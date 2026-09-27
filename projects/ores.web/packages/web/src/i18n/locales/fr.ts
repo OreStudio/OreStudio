@@ -390,6 +390,11 @@ const fr: SourceCatalogue = {
     noneAvailable: 'Aucune image n’est disponible dans ce locataire.',
   },
 
+  journey: {
+    steps: 'Étapes du parcours',
+    actionFailed: "L'étape a échoué : {message}",
+  },
+
   common: {
     loading: 'Chargement...',
     all: 'Tous',

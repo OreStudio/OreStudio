@@ -395,6 +395,11 @@ const pt: SourceCatalogue = {
     noneAvailable: 'Não existem imagens disponíveis neste inquilino.',
   },
 
+  journey: {
+    steps: 'Passos do percurso',
+    actionFailed: 'O passo falhou: {message}',
+  },
+
   common: {
     loading: 'A carregar...',
     all: 'Todos',

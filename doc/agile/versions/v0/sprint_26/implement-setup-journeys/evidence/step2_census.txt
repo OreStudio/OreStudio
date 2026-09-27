@@ -1,0 +1,40 @@
+# Task ADEB07AC - Restore the UI primitives and port the journey runtime
+# Measured at commit 6325b95f64, the branch's content commit.
+
+# 1. Files restored from e47043269f^
+# Command: git checkout e47043269f^ -- <the paths below>
+projects/ores.web/packages/web/src/ui/Primitives.tsx
+projects/ores.web/packages/web/src/ui/PasswordField.tsx
+projects/ores.web/packages/web/src/ui/passwordPolicy.ts
+projects/ores.web/packages/web/src/ui/passwordPolicy.test.ts
+projects/ores.web/packages/web/src/assets/brand.ts
+projects/ores.web/packages/web/src/assets/ore-studio-icon.png
+projects/ores.web/packages/web/src/assets/ore-studio-splash.png
+# 7 files. All seven are present in 6325b95f64, checked with git cat-file -e.
+
+# 2. Consumer census for every module this task adds or restores
+# Command, run from projects/ores.web, once per module name:
+#   grep -rln "from '[^']*<module>\.js'" packages/*/src --include='*.ts' --include='*.tsx'
+ui/Primitives.tsx        ui/PasswordField.tsx, journeys/JourneyPage.tsx
+ui/PasswordField.tsx     none
+ui/passwordPolicy.ts     ui/PasswordField.tsx
+assets/brand.ts          none
+journeys/JourneyPage.tsx none
+journeys/runtime.ts      journeys/JourneyPage.tsx
+# The three modules with no production importer name their intended consumer in
+# their own header comment, which is what TS-B03 asks for.
+
+# 3. Tests
+# Command: npm test   (from projects/ores.web, all workspaces)
+@ores/bff             5 files, 32 tests
+@ores/web             4 files, 32 tests
+@ores/wire-protocol   4 files, 36 tests
+# 13 files and 100 tests in total. The web package's four files are
+# passwordPolicy (5), runtime (16), JourneyPage (9) and the i18n catalogue (2).
+# Before this task the package had 16 tests in 2 files.
+
+# 4. Typecheck and build
+# Command: npm run typecheck   (from projects/ores.web)
+# clean, across the four packages.
+# Command: npm run build       (from projects/ores.web/packages/web)
+# 247 modules transformed, built in 973ms.

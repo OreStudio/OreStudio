@@ -399,6 +399,11 @@ export const en: SourceCatalogue = {
     noneAvailable: 'No images are available in this tenant.',
   },
 
+  journey: {
+    steps: 'Journey steps',
+    actionFailed: 'The step failed: {message}',
+  },
+
   common: {
     loading: 'Loading...',
     all: 'All',

@@ -45,6 +45,9 @@
 \ir ./reporting_configuration_types_notify_trigger_drop.sql
 \ir ./reporting_configuration_types_drop.sql
 
+\ir ./reporting_configuration_parameters_notify_trigger_drop.sql
+\ir ./reporting_configuration_parameters_drop.sql
+
 \ir ./reporting_parameter_definitions_notify_trigger_drop.sql
 \ir ./reporting_parameter_definitions_drop.sql
 

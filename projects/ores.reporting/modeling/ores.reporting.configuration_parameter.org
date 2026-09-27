@@ -1,0 +1,200 @@
+:PROPERTIES:
+:ID: 5B7E2C94-8A13-4F60-B9D7-1E4C8A3F5026
+:END:
+#+title: ores.reporting.configuration_parameter
+#+description: Codegen entity model for the reporting =configuration_parameter= table. One value on one configuration, with the definition that says what it means.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One value on a configuration.
+#+entity_singular: configuration_parameter
+#+entity_plural: configuration_parameters
+#+entity_title: Configuration Parameter
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+One value. The value is text because the definition says what it is: the
+value domain on =parameter_definition= decides whether this is a currency, a
+date, a boolean, a tenor or a reference, and the mapper writes it into the
+document accordingly. Storing it as text is not the same as storing an
+untyped blob, because the meaning comes from a foreign key rather than from
+the shape of the row.
+
+=position= keeps the order the document wrote the parameters in.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: reporting
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   uuid-identified-lookup
+:tablename: ores_reporting_configuration_parameters_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the value.
+
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The configuration the value belongs to.
+
+** parameter_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The definition that says what this value means.
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The value, whose type comes from the definition's value domain.
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the parameter in.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_configuration_parameters_tbl
+:END:
+
+* Foreign keys
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      false
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
+:list_by:       true
+:END:
+
+** parameter_definition_id
+:PROPERTIES:
+:table:         ores_reporting_parameter_definitions_tbl
+:target_column: id
+:parent_entity: parameter_definition
+:nullable:      false
+:error_message: Invalid parameter_definition_id: %. No active parameter definition found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parameter_value
+:entity_plural_short:   parameter_values
+:entity_singular_words: configuration parameter
+:entity_plural_words:   configuration parameters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cp
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| value  | Value  |
+| position | Position |
+| modified_by | Modified By |
+| version | Version |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/configuration_parameter.hpp
+:domain_class:           reporting::domain::configuration_parameter
+:protocol_include:       ores.reporting.api/messaging/configuration_parameter_protocol.hpp
+:collection_name:        parameter_values
+:key_field:              value
+:get_request_class:      reporting::messaging::get_configuration_parameters_request
+:get_response_class:     reporting::messaging::get_configuration_parameters_response
+:get_message_type:       get_configuration_parameters_request
+:save_request_class:     reporting::messaging::save_configuration_parameter_request
+:save_response_class:    reporting::messaging::save_configuration_parameter_response
+:save_message_type:      save_configuration_parameter_request
+:delete_request_class:   reporting::messaging::delete_configuration_parameter_request
+:delete_response_class:  reporting::messaging::delete_configuration_parameter_response
+:delete_message_type:    delete_configuration_parameter_request
+:parent_entity_singular:  configuration
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|
+| value | Value | line_edit | true | true | Enter value |
+| position | Position | spin_edit | | true | Enter position |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Value | value | Value | string | 240 |
+| Position | position | Position | int | 90 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

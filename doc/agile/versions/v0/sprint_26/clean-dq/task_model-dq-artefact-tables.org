@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-dq-artefact-tables
-#+pr: 2244
+#+pr: 2248
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -1125,6 +1125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2248][#2248]] | [dq] Stop a staging shim from owning another component's shell menu |
 | [[https://github.com/OreStudio/OreStudio/pull/2244][#2244]] | [dq] Model the publication run log and split out the publish service |
 | [[https://github.com/OreStudio/OreStudio/pull/2239][#2239]] | [dq] Model the dataset entity and retire its hand-written layer |
 | [[https://github.com/OreStudio/OreStudio/pull/2237][#2237]] | [memory] Never regenerate the whole tree while components have drifted |

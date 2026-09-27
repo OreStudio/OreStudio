@@ -89,82 +89,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
-The consumers write the platform protocol, and the database rebuilds on the path
-to it.
-
-**What it delivers**
-
-- One bucket, =ores=, and a key of the form =service/purpose/id[/name]=, stated in
-  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] and built and parsed
-  by =ores.storage.api/net/object_keys.hpp=. An id may carry dots, so a UUID plus
-  its extension stays one segment; an empty segment, dot, dot dot and a space are
-  refused, and a service never writes under another's segment.
-- compute writes =compute/packages=, =input=, =config= and =output=, with the
-  per-platform bundle keyed by app-version and named by its file, and a batch
-  input key the shell used to hand-build. ore writes
-  =ore/imports/{request_id}.tar.gz= and
-  =ore/packages/{instance_id}/ore_package.tar.gz=. reporting writes
-  =reporting/runs/{instance_id}/trades.msgpack= and =market_data.msgpack=, and the
-  =report-data= literal both components kept is gone. The seeded compute package
-  URIs move with them.
-- The storage component's own fixtures speak the protocol, and the api suite
-  covers the dotted id, the round trip, and the refusals.
-
-**What is left**
-
-- The trading and marketdata handlers hold a raw =nats_client= with no token, so
-  their export transfers answer 401. Each service application has to create an
-  outbound =nats_client=, the way =ores.ore= does, and thread it through the
-  registrar to the handler, which then asks it for a token per use. Their base
-  URLs are already right: trading's was passed to the registrar and dropped by the
-  seven lambdas that built handlers without it (fixed), and marketdata's arrives
-  as a parameter. The token is the only thing between them and a stored object.
-- The raw shell surface -- a bucket, a key and a path -- is not built, so the
-  consumer verbs remain the only way to reach storage from the shell.
-- Two input-shape findings, neither about storage: an imported ORE tree whose book
-  has no portfolio above it needs =--parent-portfolio-name=, and the MinimalSetup
-  example has 20 swaptions refused by
-  =ores_trading_swaption_instruments_tbl_long_short_check=.
-
-**Evidence**
-
-- Live, with the protocol keys and the new token chain:
-  =compute publish-package ORE 1.8.17.0 x64-linux= uploaded
-  =ores/compute/packages/ORE-1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz= and reported
-  its sha256; the row's =package_uri= is that path and a HEAD answers 200.
-  =ore upload external/ore/examples/MinimalSetup= reported
-  =ores/ore/imports/<request_id>.tar.gz= and a HEAD answers 200. =ore import= then
-  completed (completed_with_warnings) and saved 20 trades, having downloaded the
-  tarball with the service's own token and permission.
-- The authentication work that made those work: the HTTP boundary verifies the
-  platform's RS256 session tokens (with the symmetric authenticator kept for the
-  login token), =nats_client::token()= gives the service path a bearer,
-  ReportingService, ComputeService, OreService and MarketdataService hold
-  =storage::objects:read= and =write= (1008 role-permission assignments when the
-  seed was reapplied), and =ore upload= captures the session.
-- Suites: storage api and core, compute api and core, http api, ore api, core and
-  service, shell storage and application.
-- =check_component_drift.py --all= reports no drift, and the codegen unit suite is
-  706 passed.
-- Every transfer that has been wired carries a bearer: the shell's four sites, the
-  compute publisher, the ore import handler, and the ore report package handler,
-  whose registrar copies the outbound client before the execute handler takes it
-  by value and moves out of it.
-- A second =register_trade_handlers=, unreferenced and without a base URL, was
-  deleted rather than fixed; it is what made an earlier reading of the trading
-  export path point at the wrong line.
-
-**Defects repaired on the way**
-
-The branch also fixes what blocked the database and the generator: five DQ staging
-files with an unterminated licence comment, an artefact template that emitted one
-index per column, an api template that could not build a headers-only part,
-twelve seed helpers that could not seed a row twice against the generated insert
-trigger, and the service variables and IAM rows the storage service's registry
-entry had outgrown.
-
 The platform writes one bucket and one key grammar, and the HTTP boundary verifies
 the tokens the platform issues.
 
@@ -196,8 +120,8 @@ commits were dropped in the rebase rather than merged twice.
 
 =compass db recreate= completes; component drift is clean; the full build is green;
 the recreated database seeds the storage service account and the protocol package
-URIs; and live runs earlier in the work published a compute package, uploaded an ORE
-directory and completed an ORE import on the new keys.
+URIs, and live runs published a compute package, uploaded an ORE directory and
+completed an ORE import on the new keys.
 
 **Left over**
 

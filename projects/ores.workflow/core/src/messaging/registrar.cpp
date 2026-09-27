@@ -66,8 +66,7 @@ ores::history::service::dispatch_registry& history_registry() {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
-                             ores::security::jwt::jwt_authenticator signer,
-                             ores::nats::service::nats_client outbound_nats) {
+                             ores::security::jwt::jwt_authenticator signer) {
 
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.workflow.service";
@@ -95,10 +94,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats, hist_registry, "workflow", qg, ctx, signer));
 
     // ----------------------------------------------------------------
-    // Load FSM state maps once at startup (one NATS round-trip each).
+    // Load FSM state maps once at startup (one store read each).
     // ----------------------------------------------------------------
-    const auto instance_states = service::load_fsm_states(outbound_nats, "workflow_instance");
-    const auto step_states = service::load_fsm_states(outbound_nats, "workflow_step");
+    const auto instance_states = service::load_fsm_states(ctx, "workflow_instance");
+    const auto step_states = service::load_fsm_states(ctx, "workflow_step");
 
     // ----------------------------------------------------------------
     // Build workflow registry (one entry per known workflow type).

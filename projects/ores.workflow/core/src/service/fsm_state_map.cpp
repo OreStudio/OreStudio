@@ -18,35 +18,21 @@
  *
  */
 #include "ores.workflow.core/service/fsm_state_map.hpp"
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.dq.core/repository/fsm_state_repository.hpp"
 #include <format>
 
 namespace ores::workflow::service {
 
-fsm_state_map load_fsm_states(ores::nats::service::nats_client& nats,
-                              const std::string& machine_name) {
-    using namespace ores::dq::messaging;
+fsm_state_map load_fsm_states(ores::database::context ctx, const std::string& machine_name) {
+    const auto states = ores::dq::repository::fsm_state_repository().read_latest_by_machine_name(
+        ctx, machine_name);
 
-    const auto& codec = ores::nats::default_wire_codec();
-    const auto msg = nats.authenticated_request(
-        get_fsm_states_request::nats_subject,
-        codec.encode(get_fsm_states_request{.machine_name = machine_name}));
-
-    auto result = codec.decode<get_fsm_states_response>(msg.data);
-    if (!result)
+    if (states.empty())
         throw std::runtime_error(
-            std::format("Failed to parse fsm-states response for machine '{}': {}",
-                        machine_name,
-                        result.error().what()));
-
-    if (!result->success)
-        throw std::runtime_error(std::format(
-            "fsm-states.list failed for machine '{}': {}", machine_name, result->message));
+            std::format("No fsm states are stored for machine '{}'", machine_name));
 
     fsm_state_map m;
-    for (const auto& s : result->states)
+    for (const auto& s : states)
         m.states.emplace(s.name, s.id);
     return m;
 }

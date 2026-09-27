@@ -232,8 +232,17 @@ class ores::workflow::service::fsm_state_map <<struct>> {
 }
 
 class ores::workflow::service::load_fsm_states <<generated free function>> {
-    +{static} load_fsm_states(nats, machine_name : string) : fsm_state_map
+    +{static} load_fsm_states(ctx, machine_name : string) : fsm_state_map
 }
+
+note right of "ores::workflow::service::load_fsm_states"
+Reads the states of one machine from the store dq owns.
+The generated wire surface addresses a state by name alone,
+and a state's name is unique only within its machine, so the
+machine is resolved where its name lives. The edge down to
+dq's fsm_state_repository is left undrawn, as the cross-module
+edges above are.
+end note
 
 class ores::workflow::service::workflow_engine <<hand-written>> {
     +workflow_engine(nats, ctx, registry, instance_states, step_states)

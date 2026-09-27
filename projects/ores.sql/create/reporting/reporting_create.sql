@@ -33,6 +33,8 @@
 \ir ./reporting_report_types_notify_trigger_create.sql
 \ir ./reporting_configuration_types_create.sql
 \ir ./reporting_configuration_types_notify_trigger_create.sql
+\ir ./reporting_configurations_create.sql
+\ir ./reporting_configurations_notify_trigger_create.sql
 \ir ./reporting_report_types_validate_fn_create.sql
 \ir ./reporting_concurrency_policies_create.sql
 \ir ./reporting_concurrency_policies_notify_trigger_create.sql

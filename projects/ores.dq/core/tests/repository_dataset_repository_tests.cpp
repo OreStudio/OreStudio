@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -28,11 +28,28 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace {
 
 const std::string_view test_suite("ores.dq.tests");
 const std::string tags("[repository]");
+
+/**
+ * @brief Makes a generated dataset unique within the tenant.
+ *
+ * A dataset is identified two ways, by code and by name within a subject area
+ * and domain, and the table enforces both. The generator draws each from a
+ * small word list, so two runs of this suite, or two members of one batch, can
+ * draw the same pair and fail the natural key rather than the behaviour under
+ * test.
+ */
+void make_unique(ores::dq::domain::dataset& d) {
+    const auto suffix = std::string(faker::string::alphanumeric(8));
+    d.code = d.code + "_" + suffix;
+    d.name = d.name + "_" + suffix;
+}
 
 }
 
@@ -44,52 +61,54 @@ using ores::dq::repository::dataset_repository;
 using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_dataset", tags) {
-
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
     generation_context ctx;
-    dataset_repository repo(h.context());
+    dataset_repository repo;
     auto dataset = generate_synthetic_dataset(ctx);
     dataset.tenant_id = h.tenant_id();
+    make_unique(dataset);
 
     BOOST_LOG_SEV(lg, debug) << "Dataset: " << dataset;
-    CHECK_NOTHROW(repo.write(dataset));
+    CHECK_NOTHROW(repo.write(h.context(), dataset));
 }
 
 TEST_CASE("write_multiple_datasets", tags) {
-
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
-    dataset_repository repo(h.context());
+    dataset_repository repo;
     generation_context ctx;
     auto datasets = generate_synthetic_datasets(3, ctx);
-    for (auto& d : datasets)
+    for (auto& d : datasets) {
         d.tenant_id = h.tenant_id();
+        make_unique(d);
+    }
     BOOST_LOG_SEV(lg, debug) << "Datasets: " << datasets;
 
-    CHECK_NOTHROW(repo.write(datasets));
+    CHECK_NOTHROW(repo.write(h.context(), datasets));
 }
 
 TEST_CASE("read_latest_datasets", tags) {
-
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
-    dataset_repository repo(h.context());
+    dataset_repository repo;
     generation_context ctx;
     auto written_datasets = generate_synthetic_datasets(3, ctx);
-    for (auto& d : written_datasets)
+    for (auto& d : written_datasets) {
         d.tenant_id = h.tenant_id();
+        make_unique(d);
+    }
     BOOST_LOG_SEV(lg, debug) << "Written datasets: " << written_datasets;
 
-    repo.write(written_datasets);
+    repo.write(h.context(), written_datasets);
 
-    auto read_datasets = repo.read_latest();
+    auto read_datasets = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     CHECK(!read_datasets.empty());
@@ -97,24 +116,25 @@ TEST_CASE("read_latest_datasets", tags) {
 }
 
 TEST_CASE("read_latest_dataset_by_id", tags) {
-
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
-    dataset_repository repo(h.context());
+    dataset_repository repo;
     generation_context ctx;
     auto datasets = generate_synthetic_datasets(3, ctx);
-    for (auto& d : datasets)
+    for (auto& d : datasets) {
         d.tenant_id = h.tenant_id();
+        make_unique(d);
+    }
 
     const auto target = datasets.front();
     BOOST_LOG_SEV(lg, debug) << "Write datasets: " << datasets;
-    repo.write(datasets);
+    repo.write(h.context(), datasets);
 
     BOOST_LOG_SEV(lg, debug) << "Target dataset: " << target;
 
-    auto read_datasets = repo.read_latest(target.id);
+    auto read_datasets = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
     BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     REQUIRE(read_datasets.size() == 1);
@@ -124,17 +144,16 @@ TEST_CASE("read_latest_dataset_by_id", tags) {
 }
 
 TEST_CASE("read_nonexistent_dataset_by_id", tags) {
-
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
-    dataset_repository repo(h.context());
+    dataset_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_datasets = repo.read_latest(nonexistent_id);
+    auto read_datasets = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read datasets: " << read_datasets;
 
     CHECK(read_datasets.size() == 0);

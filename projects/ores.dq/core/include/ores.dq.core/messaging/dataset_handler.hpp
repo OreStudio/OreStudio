@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_MESSAGING_DATASET_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_DATASET_HANDLER_HPP
 
@@ -29,19 +34,9 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <boost/uuid/string_generator.hpp>
 #include <optional>
-#include <stdexcept>
 
 namespace ores::dq::messaging {
-
-using ores::service::messaging::reply;
-using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
-using ores::service::messaging::error_reply;
-using ores::service::messaging::has_permission;
-using namespace ores::logging;
 
 namespace {
 inline auto& dataset_handler_lg() {
@@ -50,6 +45,15 @@ inline auto& dataset_handler_lg() {
 }
 } // namespace
 
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using namespace ores::logging;
+
+/**
+ * @brief NATS message handler for dataset operations.
+ */
 class dataset_handler {
 public:
     dataset_handler(ores::nats::service::client& nats,
@@ -59,124 +63,388 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.datasets.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_datasets(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_datasets_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_datasets_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::dataset_service svc(ctx);
+        service::dataset_service svc(req_ctx);
         try {
-            const auto items = svc.list_datasets(static_cast<std::uint32_t>(req->offset),
-                                                 static_cast<std::uint32_t>(req->limit));
-            const auto count = svc.get_dataset_count();
-            get_datasets_response resp;
-            resp.datasets = items;
-            resp.total_available_count = static_cast<int>(count);
+            auto response = svc.list_datasets(*req);
             BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            get_datasets_response resp;
-            resp.total_available_count = 0;
-            reply(nats_, msg, resp);
+            list_datasets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.datasets.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_dataset(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<save_dataset_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_dataset_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        service::dataset_service svc(req_ctx);
+        try {
+            auto response = svc.get_dataset(*req);
+            BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_dataset_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.datasets.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_datasets(ores::nats::message msg) {
+        BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "dq::datasets:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_datasets_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::dataset_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_datasets(*req);
+            BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_datasets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.datasets.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_dataset(ores::nats::message msg) {
+        BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::datasets:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::dataset_service svc(ctx);
+        auto req = decode<put_dataset_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::dataset_service svc(req_ctx);
         try {
-            for (auto& ds : req->datasets)
-                stamp(ds, ctx);
-            svc.save_datasets(req->datasets);
+            auto response = svc.put_dataset(*req);
             BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_dataset_response{true, {}});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_dataset_response{false, e.what()});
+            put_dataset_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.datasets.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_datasets(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::datasets:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_datasets_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::dataset_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_datasets(*req);
+            BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_many_datasets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.datasets.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_dataset(ores::nats::message msg) {
+        BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::datasets:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<delete_dataset_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "dq::datasets:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::dataset_service svc(ctx);
+        service::dataset_service svc(req_ctx);
         try {
-            boost::uuids::string_generator gen;
-            for (const auto& id : req->ids)
-                svc.remove_dataset(gen(id));
+            auto response = svc.delete_dataset(*req);
             BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_dataset_response{true, {}});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_dataset_response{false, e.what()});
+            delete_dataset_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves dq.v1.datasets.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_datasets(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_dataset_history_request>(msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::datasets:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_datasets_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::dataset_service svc(ctx);
+        service::dataset_service svc(req_ctx);
         try {
-            const auto hist = svc.get_dataset_history(boost::uuids::string_generator{}(req->id));
-            get_dataset_history_response resp;
-            resp.success = true;
-            resp.history = hist;
+            auto response = svc.delete_many_datasets(*req);
             BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            get_dataset_history_response resp;
-            resp.success = false;
-            resp.message = e.what();
-            reply(nats_, msg, resp);
+            delete_many_datasets_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.datasets_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_dataset_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_dataset_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::dataset_service svc(req_ctx);
+        try {
+            auto response = svc.list_dataset_versions(*req);
+            BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_dataset_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves dq.v1.datasets_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_dataset_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_dataset_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::dataset_service svc(req_ctx);
+        try {
+            auto response = svc.get_dataset_version(*req);
+            BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_dataset_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

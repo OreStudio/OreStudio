@@ -31,6 +31,7 @@ set(files
     "data_domain_commands_tests.cpp"
     "dataset_bundle_commands_tests.cpp"
     "dataset_bundle_member_commands_tests.cpp"
+    "dataset_commands_tests.cpp"
     "fsm_state_commands_tests.cpp"
     "fsm_transition_commands_tests.cpp"
     "lei_entity_commands_tests.cpp"

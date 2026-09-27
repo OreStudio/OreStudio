@@ -19,28 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.dq.api/domain/dataset_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_DQ_SERVICE_MESSAGING_DATASET_EVENT_REGISTRAR_HPP
+#define ORES_DQ_SERVICE_MESSAGING_DATASET_EVENT_REGISTRAR_HPP
 
-namespace ores::dq::domain {
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
+namespace ores::dq::service::messaging {
 
-std::string convert_to_table(const std::vector<dataset>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+[[nodiscard]] ores::eventing::service::subscription
+register_dataset_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                               ores::eventing::service::event_bus& event_bus,
+                               ores::nats::service::client& nats);
 
-    table << fort::header << "Code" << "Name" << "Subject Area" << "Domain" << "Artefact Type"
-          << "Modified By" << "Version" << fort::endr;
+} // namespace ores::dq::service::messaging
 
-    for ([[maybe_unused]] const auto& d : v) {
-        table << d.code << d.name << d.subject_area_name << d.domain_name << d.artefact_type
-              << d.modified_by << d.version << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+#endif

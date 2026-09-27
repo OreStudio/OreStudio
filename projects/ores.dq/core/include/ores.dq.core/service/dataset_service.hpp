@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,15 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_SERVICE_DATASET_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_DATASET_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_repository.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -35,8 +42,8 @@ namespace ores::dq::service {
 /**
  * @brief Service for managing datasets.
  *
- * This service provides functionality for:
- * - Managing datasets (CRUD operations)
+ * Provides a higher-level interface for dataset operations,
+ * wrapping the underlying repository.
  */
 class ORES_DQ_CORE_EXPORT dataset_service {
 private:
@@ -52,67 +59,151 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a dataset_service with required repositories.
+     * @brief Constructs a dataset_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit dataset_service(context ctx);
 
-    // ========================================================================
-    // Dataset Management
-    // ========================================================================
-
     /**
-     * @brief Lists all datasets.
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
      */
-    std::vector<domain::dataset> list_datasets();
+    /**@{*/
+    messaging::list_datasets_response
+    list_datasets(const messaging::list_datasets_request& request);
+    messaging::get_dataset_response get_dataset(const messaging::get_dataset_request& request);
+    messaging::get_many_datasets_response
+    get_many_datasets(const messaging::get_many_datasets_request& request);
+    messaging::put_dataset_response put_dataset(const messaging::put_dataset_request& request);
+    messaging::put_many_datasets_response
+    put_many_datasets(const messaging::put_many_datasets_request& request);
+    messaging::delete_dataset_response
+    delete_dataset(const messaging::delete_dataset_request& request);
+    messaging::delete_many_datasets_response
+    delete_many_datasets(const messaging::delete_many_datasets_request& request);
+    messaging::list_dataset_versions_response
+    list_dataset_versions(const messaging::list_dataset_versions_request& request);
+    messaging::get_dataset_version_response
+    get_dataset_version(const messaging::get_dataset_version_request& request);
+    /**@}*/
 
     /**
-     * @brief Lists datasets with pagination.
+     * @brief Lists datasets with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of datasets for the requested page.
      */
     std::vector<domain::dataset> list_datasets(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active datasets.
+     *
+     * @return Total number of active datasets.
      */
-    std::uint32_t get_dataset_count();
+    std::uint32_t count_datasets();
+
 
     /**
-     * @brief Finds a dataset by its ID.
+     * @brief Retrieves a single dataset as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The dataset at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::dataset> find_dataset(const boost::uuids::uuid& id);
+    std::optional<domain::dataset> get_dataset_at_version(const boost::uuids::uuid& id,
+                                                          std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single dataset by its primary key.
+     *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
+     * @return The dataset if found, std::nullopt otherwise.
+     */
+    std::optional<domain::dataset> get_dataset(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single dataset by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The dataset if found, std::nullopt otherwise.
+     */
+    std::optional<domain::dataset> get_dataset_by_code(const std::string& code);
+
+    /**
+     * @brief Retrieves a batch of datasets by primary key.
+     */
+    std::vector<domain::dataset> get_datasets(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a dataset (creates or updates).
      *
-     * @param dataset The dataset to save
+     * @param dataset The dataset to save.
+     * @throws std::exception on failure.
      */
     void save_dataset(const domain::dataset& dataset);
 
     /**
-     * @brief Saves multiple datasets (creates or updates).
+     * @brief Saves a batch of datasets.
      *
-     * @param datasets The datasets to save
+     * @param datasets The datasets to save.
+     * @throws std::exception on failure.
      */
     void save_datasets(const std::vector<domain::dataset>& datasets);
 
     /**
-     * @brief Removes a dataset.
+     * @brief Deletes a dataset by its primary key.
      *
-     * @param id The ID of the dataset to remove
+     * @throws std::exception on failure.
      */
-    void remove_dataset(const boost::uuids::uuid& id);
+    void delete_dataset(const boost::uuids::uuid& id);
 
     /**
-     * @brief Gets the version history for a dataset.
-     *
-     * @param id The dataset ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes datasets by their primary keys.
      */
-    std::vector<domain::dataset> get_dataset_history(const boost::uuids::uuid& id);
+    void delete_datasets(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a dataset.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
+     */
+    std::vector<domain::dataset> get_dataset_history(const std::string& key);
 
 private:
-    repository::dataset_repository dataset_repo_;
+    context ctx_;
+    repository::dataset_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::dataset_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::dataset& out);
 };
 
 }

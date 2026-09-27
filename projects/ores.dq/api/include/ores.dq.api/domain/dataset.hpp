@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_DOMAIN_DATASET_HPP
 #define ORES_DQ_API_DOMAIN_DATASET_HPP
 
@@ -25,14 +30,24 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
 /**
- * @brief Represents a data quality dataset with lineage tracking.
+ * @brief Central dataset registry with full lineage.
  *
- * A dataset captures metadata about a collection of data including its
- * origin, nature, treatment methodology, and lineage information.
+ * Central dataset registry with full lineage. Tracks provenance through
+ * upstream_derivation_id, and lineage_depth is calculated from the hierarchy.
+ *
+ * A dataset is identified two ways: by its code, and by its name within a
+ * subject area and domain. The table enforces both, so the model states code as
+ * the natural key and declares the three-column key as an extra unique index.
+ *
+ * The columns that point at other entities -- coding_scheme_code, origin_code,
+ * nature_code, treatment_code, methodology_id and upstream_derivation_id --
+ * are plain columns rather than declared references, because the table carries no
+ * constraint and adding one would refuse rows the platform accepts today.
  */
 struct dataset final {
     /**
@@ -47,72 +62,53 @@ struct dataset final {
 
     /**
      * @brief UUID uniquely identifying this dataset.
-     *
-     * This is the surrogate key for the dataset.
      */
     boost::uuids::uuid id;
 
     /**
      * @brief Unique code for stable referencing.
      *
-     * Uses dot notation for namespacing (e.g., "iso.currencies",
-     * "fpml.currencies", "crypto.large").
+     * Examples: "iso.currencies", "fpml.codelists".
      */
     std::string code;
 
     /**
      * @brief Optional catalog this dataset belongs to.
-     *
-     * Links to catalog for organizational grouping.
      */
     std::optional<std::string> catalog_name;
 
     /**
-     * @brief Subject area this dataset belongs to.
-     *
-     * Links to subject_area for organizational structure.
+     * @brief Subject area the dataset belongs to; half of the three-column key.
      */
     std::string subject_area_name;
 
     /**
-     * @brief Data domain this dataset applies to.
-     *
-     * Links to data_domain for domain categorization.
+     * @brief Domain the subject area sits in; the other half.
      */
     std::string domain_name;
 
     /**
-     * @brief Optional coding scheme used for identifiers in this dataset.
-     *
-     * Links to coding_scheme.
+     * @brief Optional coding scheme the dataset's codes come from.
      */
     std::optional<std::string> coding_scheme_code;
 
     /**
-     * @brief Code indicating the origin of the data.
-     *
-     * Links to origin_dimension.
+     * @brief Origin dimension this dataset's values came from.
      */
     std::string origin_code;
 
     /**
-     * @brief Code indicating the nature of the data.
-     *
-     * Links to nature_dimension.
+     * @brief Nature dimension of this dataset's values.
      */
     std::string nature_code;
 
     /**
-     * @brief Code indicating how the data was treated or processed.
-     *
-     * Links to treatment_dimension.
+     * @brief Treatment dimension of this dataset's values.
      */
     std::string treatment_code;
 
     /**
-     * @brief Optional methodology used to produce this dataset.
-     *
-     * Links to methodology by UUID.
+     * @brief Optional methodology that produces the dataset.
      */
     std::optional<boost::uuids::uuid> methodology_id;
 
@@ -122,58 +118,49 @@ struct dataset final {
     std::string name;
 
     /**
-     * @brief Detailed description of the dataset's contents and purpose.
+     * @brief Detailed description of the dataset's contents.
      */
     std::string description;
 
     /**
-     * @brief Identifier of the source system where data originated.
+     * @brief The system the dataset was sourced from.
      */
     std::string source_system_id;
 
     /**
-     * @brief Business context describing the dataset's role and usage.
+     * @brief Why the business holds this dataset.
      */
     std::string business_context;
 
     /**
-     * @brief Optional reference to an upstream dataset this was derived from.
-     *
-     * Links to another dataset by UUID for lineage tracking.
+     * @brief Optional dataset this one derives from.
      */
     std::optional<boost::uuids::uuid> upstream_derivation_id;
 
     /**
-     * @brief Depth in the derivation chain from the original source.
-     *
-     * 0 indicates an original source dataset.
+     * @brief Depth of this dataset in the derivation hierarchy.
      */
     int lineage_depth = 0;
 
     /**
-     * @brief Business date the data represents.
-     *
-     * Stored as time_point, typically truncated to day precision.
+     * @brief The date the dataset's contents are stated as of.
      */
     std::chrono::system_clock::time_point as_of_date;
 
     /**
-     * @brief Timestamp when the data was ingested into the system.
+     * @brief When the dataset was ingested.
      */
     std::chrono::system_clock::time_point ingestion_timestamp;
 
     /**
-     * @brief Optional license information for the data.
+     * @brief Optional licensing terms for the dataset.
      */
     std::optional<std::string> license_info;
 
     /**
-     * @brief Type of artefact this dataset populates.
-     *
-     * Used for categorization. Links to artefact_type which provides
-     * target_table and target_subject for publication.
+     * @brief The artefact type this dataset is published as.
      */
-    std::optional<std::string> artefact_type;
+    std::string artefact_type;
 
     /**
      * @brief Username of the person who last modified this dataset.
@@ -181,20 +168,55 @@ struct dataset final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const dataset&, const dataset&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for dataset, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const dataset&) {
+    return "ores.dq.dataset";
+}
 
 }
 

@@ -36,7 +36,6 @@ using namespace ores::database::repository;
 
 publication_service::publication_service(context ctx)
     : ctx_(std::move(ctx))
-    , dataset_repo_(ctx_)
     , dependency_repo_(ctx_)
     , publication_repo_(ctx_) {
     BOOST_LOG_SEV(lg(), debug) << "publication_service initialized";
@@ -65,7 +64,7 @@ publication_service::publish(const std::vector<boost::uuids::uuid>& dataset_ids,
     } else {
         // Just fetch the datasets in the order given
         for (const auto& id : dataset_ids) {
-            auto datasets = dataset_repo_.read_latest(id);
+            auto datasets = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
             if (!datasets.empty()) {
                 ordered_datasets.push_back(datasets.front());
             } else {
@@ -126,7 +125,7 @@ publication_service::resolve_publication_order(const std::vector<boost::uuids::u
     std::set<std::string> requested_codes;
 
     for (const auto& id : dataset_ids) {
-        auto datasets = dataset_repo_.read_latest(id);
+        auto datasets = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
         if (!datasets.empty()) {
             const auto& dataset = datasets.front();
             datasets_by_code[dataset.code] = dataset;
@@ -161,7 +160,7 @@ publication_service::resolve_publication_order(const std::vector<boost::uuids::u
         BOOST_LOG_SEV(lg(), debug) << "Fetching " << (all_codes.size() - datasets_by_code.size())
                                    << " additional dependency datasets";
 
-        auto all_datasets = dataset_repo_.read_latest();
+        auto all_datasets = dataset_repo_.read_latest(ctx_);
         for (const auto& ds : all_datasets) {
             if (all_codes.count(ds.code) > 0 && datasets_by_code.count(ds.code) == 0) {
                 datasets_by_code[ds.code] = ds;
@@ -245,9 +244,8 @@ publication_service::build_artefact_type_cache(const std::vector<domain::dataset
     // Collect unique artefact type codes
     std::set<std::string> artefact_type_codes;
     for (const auto& dataset : datasets) {
-        if (dataset.artefact_type.has_value() && !dataset.artefact_type->empty()) {
-            artefact_type_codes.insert(*dataset.artefact_type);
-        }
+        if (!dataset.artefact_type.empty())
+            artefact_type_codes.insert(dataset.artefact_type);
     }
 
     // Fetch each artefact type once
@@ -271,14 +269,14 @@ domain::publication_result publication_service::publish_dataset(
     const std::map<std::string, domain::artefact_type>& artefact_type_cache) {
 
     BOOST_LOG_SEV(lg(), debug) << "Publishing dataset: " << dataset.code
-                               << " with artefact_type: " << dataset.artefact_type.value_or("none");
+                               << " with artefact_type: " << dataset.artefact_type;
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
     result.dataset_code = dataset.code;
     result.dataset_name = dataset.name;
 
-    if (!dataset.artefact_type.has_value() || dataset.artefact_type->empty()) {
+    if (dataset.artefact_type.empty()) {
         result.success = false;
         result.error_message = "Dataset has no artefact_type specified";
         BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
@@ -286,10 +284,10 @@ domain::publication_result publication_service::publish_dataset(
     }
 
     // Look up the artefact_type from cache
-    auto it = artefact_type_cache.find(*dataset.artefact_type);
+    auto it = artefact_type_cache.find(dataset.artefact_type);
     if (it == artefact_type_cache.end()) {
         result.success = false;
-        result.error_message = "Unknown artefact_type: " + *dataset.artefact_type;
+        result.error_message = "Unknown artefact_type: " + dataset.artefact_type;
         BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
@@ -298,14 +296,14 @@ domain::publication_result publication_service::publish_dataset(
 
     if (!artefact_type.target_table.has_value() || artefact_type.target_table->empty()) {
         result.success = false;
-        result.error_message = "Artefact type has no target_table: " + *dataset.artefact_type;
+        result.error_message = "Artefact type has no target_table: " + dataset.artefact_type;
         BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
 
     if (!artefact_type.target_subject.has_value() || artefact_type.target_subject->empty()) {
         result.success = false;
-        result.error_message = "Artefact type has no target_subject: " + *dataset.artefact_type;
+        result.error_message = "Artefact type has no target_subject: " + dataset.artefact_type;
         BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
@@ -421,7 +419,7 @@ publication_service::list_publishable_datasets(const std::vector<boost::uuids::u
         ordered_datasets = resolve_publication_order(dataset_ids);
     } else {
         for (const auto& id : dataset_ids) {
-            auto rows = dataset_repo_.read_latest(id);
+            auto rows = dataset_repo_.read_latest(ctx_, boost::uuids::to_string(id));
             if (!rows.empty())
                 ordered_datasets.push_back(rows.front());
             else
@@ -434,11 +432,11 @@ publication_service::list_publishable_datasets(const std::vector<boost::uuids::u
     std::vector<bundle_publishable_dataset> result;
     result.reserve(ordered_datasets.size());
     for (const auto& ds : ordered_datasets) {
-        if (!ds.artefact_type.has_value() || ds.artefact_type->empty()) {
+        if (ds.artefact_type.empty()) {
             BOOST_LOG_SEV(lg(), warn) << "Skipping dataset without artefact_type: " << ds.code;
             continue;
         }
-        auto it = cache.find(*ds.artefact_type);
+        auto it = cache.find(ds.artefact_type);
         if (it == cache.end()) {
             BOOST_LOG_SEV(lg(), warn) << "Artefact type not found for dataset: " << ds.code;
             continue;

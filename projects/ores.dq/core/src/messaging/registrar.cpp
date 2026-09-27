@@ -57,6 +57,8 @@
 #include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
+#include "ores.dq.core/messaging/dataset_history_provider_registrar.hpp"
+#include "ores.dq.core/messaging/dataset_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_state_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_history_provider_registrar.hpp"
@@ -221,27 +223,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Datasets
     // =========================================================================
 
-    auto ds = std::make_shared<dataset_handler>(nats, ctx, verifier);
+    // Datasets are on the standard generated stack (see
+    // dataset_handler/_registrar), migrated from the hand-written handler
+    // once the publish verb moved to publish_handler.
 
-    subs.push_back(nats.queue_subscribe(
-        get_datasets_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
-            ds->list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        save_dataset_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
-            ds->save(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        delete_dataset_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
-            ds->remove(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_history_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
-            ds->history(std::move(msg));
-        }));
+    {
+        auto dataset_subs = register_dataset_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(dataset_subs.begin()),
+                    std::make_move_iterator(dataset_subs.end()));
+    }
 
     // Dataset bundles and their members moved to the standard generated
     // stack; see register_dataset_bundle_handlers below alongside the other
@@ -415,6 +406,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_code_domain_history_provider(hist_registry);
         register_data_domain_history_provider(hist_registry);
         register_dataset_bundle_history_provider(hist_registry);
+        register_dataset_history_provider(hist_registry);
         register_lei_entity_history_provider(hist_registry);
         register_lei_relationship_history_provider(hist_registry);
         register_report_definition_history_provider(hist_registry);

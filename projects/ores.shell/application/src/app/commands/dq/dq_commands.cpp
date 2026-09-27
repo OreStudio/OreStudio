@@ -10,6 +10,7 @@
 #include "ores.shell/app/commands/dq/data_domain_commands.hpp"
 #include "ores.shell/app/commands/dq/dataset_bundle_commands.hpp"
 #include "ores.shell/app/commands/dq/dataset_bundle_member_commands.hpp"
+#include "ores.shell/app/commands/dq/dataset_commands.hpp"
 #include "ores.shell/app/commands/dq/fsm_state_commands.hpp"
 #include "ores.shell/app/commands/dq/fsm_transition_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_entity_commands.hpp"
@@ -38,6 +39,7 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     fsm_transition_commands::register_commands(root_menu, session);
     dataset_bundle_commands::register_commands(root_menu, session);
     dataset_bundle_member_commands::register_commands(root_menu, session);
+    dataset_commands::register_commands(root_menu, session);
     lei_entity_commands::register_commands(root_menu, session);
     lei_relationship_commands::register_commands(root_menu, session);
     methodology_commands::register_commands(root_menu, session);

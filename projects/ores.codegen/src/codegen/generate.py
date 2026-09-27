@@ -85,6 +85,17 @@ def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
         properties = dict(doc.file_properties)
         properties.update(read_physical_space_overrides(doc))
         return properties
+    except ValueError:
+        # A profile binding error is a model defect, and
+        # _ensure_profile_binding exists so it fails loudly on every path.
+        # Swallowing it here is worse than the error: the raise happens while
+        # the overrides are being *merged*, so returning {} discards every
+        # override with it and the entity renders as though it bound no
+        # profile at all. A staging shim silently regains the main table its
+        # profile withdrew. Two profiles fixing one address differently is the
+        # case that reaches this: it is a conflict to resolve, not a parse
+        # accident to tolerate.
+        raise
     except Exception:  # noqa: BLE001 — a malformed drawer must not break codegen
         return {}
 
@@ -201,6 +212,25 @@ _STAGING_ONLY_FACETS = frozenset({
     # The literate recipe documents the unit above, so it goes wherever that
     # unit goes. Left behind, it is a recipe for a command nothing renders.
     "ores.doc.shell-recipe",
+})
+
+# What a staging shim cannot announce. The same profile withdraws the notify
+# trigger (`ores.sql.schema.notify_trigger` in its Physical space), because
+# there is no main table to hang one on, so the eventing facets have no
+# publisher: a registrar that maps a channel nothing raises, an event type no
+# publisher constructs, and an integration test asserting an event that cannot
+# arrive. One decision, so they go together.
+#
+# This belongs here rather than in the profile's own Physical space. A shape
+# profile fixes `ores.cpp.eventing-integration-test` to true, and two profiles
+# that fix one address differently are a conflict the binding cannot satisfy --
+# the loader rejects it rather than picking a winner. The trigger's absence is
+# a property of this profile, so the consequence is stated where the other
+# profile-independent gates live.
+_STAGING_ONLY_EVENTING_FACETS = frozenset({
+    "ores.cpp.nats-eventing",
+    "ores.cpp.nats-event-registrar",
+    "ores.cpp.eventing-integration-test",
 })
 
 # The frontmatter keys a shell menu name is derived from: a domain entity names
@@ -494,6 +524,11 @@ def resolve_targets(
             if plural and (owners.get(plural, frozenset()) - {component}):
                 gen_facets = {f for f in gen_facets
                               if f not in _STAGING_ONLY_FACETS}
+            # Unconditional, unlike the shell unit above: the notify trigger is
+            # absent for every staging shim, not only one whose plural a second
+            # component also models.
+            gen_facets = {f for f in gen_facets
+                          if f not in _STAGING_ONLY_EVENTING_FACETS}
         if sql_flags.get("current_state"):
             # A current-state entity has no version rows, so the history
             # dialog's field mapper (which reads the domain type's recorded_at

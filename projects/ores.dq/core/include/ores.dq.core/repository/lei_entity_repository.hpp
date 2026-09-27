@@ -82,6 +82,11 @@ public:
      * transaction, so a create that collides with a live row and a write over a
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
+     *
+     * This table carries no version column, so the store cannot check a
+     * version. A @c must_match_version claim is refused here, and a
+     * @c must_not_exist claim over a live row is refused by the read below
+     * rather than by the trigger.
      */
     void write(context ctx,
                const domain::lei_entity& v,
@@ -106,21 +111,13 @@ public:
 
 
     /**
-     * @brief Reads all LEI entities, possibly filtered by primary key.
+     * @brief Reads the LEI entity rows for the given primary key.
+     *
+     * A current-state table holds one row per key, so this is the single
+     * current row, not a version history.
      */
     std::vector<domain::lei_entity> read_all(context ctx, const std::string& lei);
 
-    /**
-     * @brief Reads a single LEI entity as it stood at a specific
-     * version — the version's own [valid_from, valid_to) window is returned
-     * verbatim, so the caller can compose child entities "as of" the same
-     * window. See the "Temporal composite entity versioning" architecture
-     * doc.
-     * @param ctx Repository context with database connection
-     * @param version The version to fetch
-     */
-    std::optional<domain::lei_entity>
-    read_at_version(context ctx, const std::string& lei, std::uint32_t version);
 
     /**
      * @brief Reads latest LEI entities with pagination support.
@@ -139,7 +136,10 @@ public:
     std::uint32_t get_total_entity_count(context ctx);
 
     /**
-     * @brief Deletes a LEI entity by closing its temporal validity.
+     * @brief Deletes a LEI entity permanently.
+     *
+     * A current-state table has no history, so the row is removed, not
+     * soft-closed.
      */
     void remove(context ctx, const std::string& lei);
 
@@ -166,7 +166,7 @@ public:
     remove_status remove(context ctx, const std::string& lei, std::optional<std::uint32_t> version);
 
     /**
-     * @brief Deletes LEI entities by closing their temporal validity.
+     * @brief Deletes LEI entities permanently.
      */
     void remove(context ctx, const std::vector<std::string>& leis);
 

@@ -51,30 +51,6 @@ register_lei_relationship_handlers(ores::nats::service::client& nats,
         get_many_lei_relationships_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->get_many_lei_relationships(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        put_lei_relationship_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_lei_relationship(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_lei_relationships_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->put_many_lei_relationships(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_lei_relationship_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_lei_relationship(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_lei_relationships_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->delete_many_lei_relationships(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        list_lei_relationship_versions_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->list_lei_relationship_versions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_lei_relationship_version_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->get_lei_relationship_version(std::move(msg)); }));
     return subs;
 }
 

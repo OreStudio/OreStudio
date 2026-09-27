@@ -61,9 +61,7 @@
 #include "ores.dq.core/messaging/dataset_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_state_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
-#include "ores.dq.core/messaging/lei_entity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
-#include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
@@ -410,8 +408,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_data_domain_history_provider(hist_registry);
         register_dataset_bundle_history_provider(hist_registry);
         register_dataset_history_provider(hist_registry);
-        register_lei_entity_history_provider(hist_registry);
-        register_lei_relationship_history_provider(hist_registry);
         register_report_definition_history_provider(hist_registry);
         register_synthetic_fx_spot_config_history_provider(hist_registry);
 

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:variability:profile:
 #+created: 2026-08-05
-#+updated: 2026-08-05
+#+updated: 2026-09-27
 
 This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
 Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
@@ -58,6 +58,15 @@ always wins over these.
 | ores.sql.schema.domain_entity_drop    | false   |
 | ores.sql.schema.notify_trigger        | false   |
 | ores.sql.schema.notify_trigger_drop   | false   |
+
+Withdrawing the notify trigger withdraws what it would have announced, so the
+eventing facets -- the event type, its registrar and its integration test -- go
+for every entity that binds this profile. That consequence is enforced by a hard
+gate in ``resolve_targets`` and not by rows in the table above: a shape profile
+fixes =ores.cpp.eventing-integration-test= to true, and two profiles that fix
+one address differently are a binding the loader refuses rather than resolves.
+An entity that genuinely needs to announce a change has a store of its own, and
+takes a shape profile that keeps one.
 
 * See also
 

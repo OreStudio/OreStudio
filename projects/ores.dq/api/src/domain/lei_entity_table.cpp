@@ -33,11 +33,10 @@ std::string convert_to_table(const std::vector<lei_entity>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "LEI" << "Legal Name" << "Status" << "Modified By" << fort::endr;
+    table << fort::header << "LEI" << "Legal Name" << "Status" << fort::endr;
 
     for ([[maybe_unused]] const auto& le : v) {
-        table << le.lei << le.entity_legal_name << le.entity_entity_status << le.modified_by
-              << fort::endr;
+        table << le.lei << le.entity_legal_name << le.entity_entity_status << fort::endr;
     }
     return table.to_string();
 }

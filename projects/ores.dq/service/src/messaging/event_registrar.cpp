@@ -19,7 +19,10 @@
  */
 #include "ores.dq.service/messaging/event_registrar.hpp"
 
-// Per-entity generated event-mapping registrars.
+// Per-entity generated event-mapping registrars. The four staging shims --
+// lei_entity, lei_relationship, report_definition and synthetic_fx_spot_config --
+// are absent by design: artefact-staging-only withdraws the notify trigger, so
+// there is no channel to map, and the codegen gate renders no registrar for them.
 #include "ores.dq.service/messaging/artefact_type_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_definition_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_severity_event_registrar.hpp"
@@ -30,12 +33,8 @@
 #include "ores.dq.service/messaging/data_domain_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_event_registrar.hpp"
-#include "ores.dq.service/messaging/lei_entity_event_registrar.hpp"
 #include "ores.dq.service/messaging/publication_event_registrar.hpp"
-#include "ores.dq.service/messaging/lei_relationship_event_registrar.hpp"
-#include "ores.dq.service/messaging/report_definition_event_registrar.hpp"
 #include "ores.dq.service/messaging/subject_area_event_registrar.hpp"
-#include "ores.dq.service/messaging/synthetic_fx_spot_config_event_registrar.hpp"
 
 namespace ores::dq::service::messaging {
 
@@ -61,12 +60,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_data_domain_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_dataset_bundle_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_dataset_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_lei_entity_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_publication_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_lei_relationship_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_report_definition_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_subject_area_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_synthetic_fx_spot_config_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

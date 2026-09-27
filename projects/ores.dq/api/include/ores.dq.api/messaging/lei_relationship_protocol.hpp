@@ -39,31 +39,6 @@ struct lei_relationship_key {
     std::string relationship_start_node_node_id;
 };
 
-struct lei_relationship_write {
-    std::string relationship_start_node_node_id;
-    std::string relationship_start_node_node_id_type;
-    std::string relationship_end_node_node_id;
-    std::string relationship_end_node_node_id_type;
-    std::string relationship_relationship_type;
-    std::string relationship_relationship_status;
-    std::optional<std::chrono::system_clock::time_point> relationship_period_1_start_date;
-    std::optional<std::chrono::system_clock::time_point> relationship_period_1_end_date;
-    std::optional<std::chrono::system_clock::time_point> registration_initial_registration_date;
-    std::optional<std::chrono::system_clock::time_point> registration_last_update_date;
-    std::optional<std::string> registration_registration_status;
-    std::optional<std::string> registration_validation_sources;
-};
-
-struct lei_relationship_change {
-    lei_relationship_write write;
-    ores::utility::domain::precondition precondition;
-};
-
-struct lei_relationship_removal {
-    lei_relationship_key key;
-    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
-};
-
 struct lei_relationship_lookup {
     lei_relationship_key key;
     std::optional<ores::dq::domain::lei_relationship> lei_relationship;
@@ -76,17 +51,6 @@ struct lei_relationship_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
-};
-
-struct lei_relationship_version_key {
-    lei_relationship_key lei_relationship;
-    std::uint32_t version;
-};
-
-struct lei_relationship_versions_filter {
-    std::optional<std::uint32_t> version;
-    std::optional<std::uint32_t> from_version;
-    std::optional<std::uint32_t> to_version;
 };
 
 struct list_lei_relationships_request {
@@ -144,121 +108,6 @@ struct get_many_lei_relationships_request {
 struct get_many_lei_relationships_response {
     ores::utility::domain::result result;
     std::vector<lei_relationship_lookup> entries;
-};
-
-struct put_lei_relationship_request {
-    using response_type = struct put_lei_relationship_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_relationships.put";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    lei_relationship_change change;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_lei_relationship_response {
-    ores::utility::domain::result result;
-    ores::dq::domain::lei_relationship lei_relationship;
-};
-
-struct put_many_lei_relationships_request {
-    using response_type = struct put_many_lei_relationships_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_relationships.put_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<lei_relationship_change> changes;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_many_lei_relationships_response {
-    ores::utility::domain::result result;
-    std::vector<ores::dq::domain::lei_relationship> relationships;
-};
-
-struct delete_lei_relationship_request {
-    using response_type = struct delete_lei_relationship_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_relationships.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    lei_relationship_removal removal;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_lei_relationship_response {
-    ores::utility::domain::result result;
-};
-
-struct delete_many_lei_relationships_request {
-    using response_type = struct delete_many_lei_relationships_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_relationships.delete_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<lei_relationship_removal> removals;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_many_lei_relationships_response {
-    ores::utility::domain::result result;
-};
-
-struct list_lei_relationship_versions_request {
-    using response_type = struct list_lei_relationship_versions_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_relationships_versions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    lei_relationship_key key;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<lei_relationship_versions_filter> filter;
-};
-
-struct list_lei_relationship_versions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::dq::domain::lei_relationship> versions;
-    std::uint64_t total;
-};
-
-struct get_lei_relationship_version_request {
-    using response_type = struct get_lei_relationship_version_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei_relationships_versions.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    lei_relationship_version_key key;
-};
-
-struct get_lei_relationship_version_response {
-    ores::utility::domain::result result;
-    ores::dq::domain::lei_relationship version;
 };
 
 /**

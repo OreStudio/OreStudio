@@ -35,7 +35,6 @@ domain::lei_relationship lei_relationship_mapper::map(const lei_relationship_ent
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_relationship r;
-    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.relationship_start_node_node_id = v.relationship_start_node_node_id.value();
     r.relationship_start_node_node_id_type = v.relationship_start_node_node_id_type;
@@ -61,11 +60,6 @@ domain::lei_relationship lei_relationship_mapper::map(const lei_relationship_ent
             std::nullopt;
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -77,7 +71,6 @@ lei_relationship_entity lei_relationship_mapper::map(const domain::lei_relations
     lei_relationship_entity r;
     r.relationship_start_node_node_id = v.relationship_start_node_node_id;
     r.tenant_id = v.tenant_id.to_string();
-    r.version = v.version;
     r.relationship_start_node_node_id_type = v.relationship_start_node_node_id_type;
     r.relationship_end_node_node_id = v.relationship_end_node_node_id;
     r.relationship_end_node_node_id_type = v.relationship_end_node_node_id_type;
@@ -105,10 +98,6 @@ lei_relationship_entity lei_relationship_mapper::map(const domain::lei_relations
             std::nullopt;
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

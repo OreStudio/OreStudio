@@ -24,7 +24,7 @@ GLEIF LEI entity master data from LEI2 golden copy files
 :schema:    public
 :product:   ores
 :component: dq
-:profile:   simple-lookup, artefact-staging-only
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
 :END:
 
 * Columns
@@ -322,7 +322,7 @@ std::string(faker::word::noun())
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_dq_lei_entities_tbl
+:tablename: ores_dq_lei_entities_artefact_tbl
 :END:
 
 * Insert trigger
@@ -337,7 +337,6 @@ std::string(faker::word::noun())
 ** Flags
 :PROPERTIES:
 :subcomponent:     api
-:has_batch_remove: true
 :END:
 
 ** Repository
@@ -375,7 +374,6 @@ std::string(faker::word::noun())
 | lei                   | LEI          |
 | entity_legal_name     | Legal Name   |
 | entity_entity_status  | Status       |
-| modified_by           | Modified By  |
 
 ** Custom repository methods
 

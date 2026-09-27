@@ -35,7 +35,6 @@ domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_entity r;
-    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.lei = v.lei.value();
     r.entity_legal_name = v.entity_legal_name;
@@ -75,11 +74,6 @@ domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
     r.registration_registration_status = v.registration_registration_status;
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;
     r.entity_transliterated_name_1_type = v.entity_transliterated_name_1_type;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -91,7 +85,6 @@ lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
     lei_entity_entity r;
     r.lei = v.lei;
     r.tenant_id = v.tenant_id.to_string();
-    r.version = v.version;
     r.entity_legal_name = v.entity_legal_name;
     r.entity_entity_category = v.entity_entity_category;
     r.entity_entity_sub_category = v.entity_entity_sub_category;
@@ -132,10 +125,6 @@ lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
     r.registration_registration_status = v.registration_registration_status;
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;
     r.entity_transliterated_name_1_type = v.entity_transliterated_name_1_type;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

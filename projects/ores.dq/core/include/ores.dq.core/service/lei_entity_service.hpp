@@ -81,18 +81,6 @@ public:
     get_lei_entity(const messaging::get_lei_entity_request& request);
     messaging::get_many_lei_entities_response
     get_many_lei_entities(const messaging::get_many_lei_entities_request& request);
-    messaging::put_lei_entity_response
-    put_lei_entity(const messaging::put_lei_entity_request& request);
-    messaging::put_many_lei_entities_response
-    put_many_lei_entities(const messaging::put_many_lei_entities_request& request);
-    messaging::delete_lei_entity_response
-    delete_lei_entity(const messaging::delete_lei_entity_request& request);
-    messaging::delete_many_lei_entities_response
-    delete_many_lei_entities(const messaging::delete_many_lei_entities_request& request);
-    messaging::list_lei_entity_versions_response
-    list_lei_entity_versions(const messaging::list_lei_entity_versions_request& request);
-    messaging::get_lei_entity_version_response
-    get_lei_entity_version(const messaging::get_lei_entity_version_request& request);
     /**@}*/
 
     /**
@@ -111,16 +99,6 @@ public:
      */
     std::uint32_t count_entities();
 
-
-    /**
-     * @brief Retrieves a single LEI entity as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The LEI entity at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::lei_entity> get_entity_at_version(const std::string& lei,
-                                                            std::uint32_t version);
 
     /**
      * @brief Retrieves a single LEI entity by its primary key.
@@ -162,33 +140,10 @@ public:
      */
     void delete_entities(const std::vector<std::string>& leis);
 
-    /**
-     * @brief Retrieves all historical versions of a LEI entity.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::lei_entity> get_entity_history(const std::string& lei);
 
 private:
     context ctx_;
     repository::lei_entity_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result prepare_change(const messaging::lei_entity_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::lei_entity& out);
 };
 
 }

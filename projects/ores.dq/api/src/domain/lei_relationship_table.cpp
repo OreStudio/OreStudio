@@ -33,11 +33,11 @@ std::string convert_to_table(const std::vector<lei_relationship>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Start Node" << "End Node" << "Type" << "Modified By" << fort::endr;
+    table << fort::header << "Start Node" << "End Node" << "Type" << fort::endr;
 
     for ([[maybe_unused]] const auto& lr : v) {
         table << lr.relationship_start_node_node_id << lr.relationship_end_node_node_id
-              << lr.relationship_relationship_type << lr.modified_by << fort::endr;
+              << lr.relationship_relationship_type << fort::endr;
     }
     return table.to_string();
 }

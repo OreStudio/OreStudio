@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 035C540C-C01A-4BD1-8022-46EBFD29C093
+:END:
+#+title: Remove the unused HTTP gateway base URL
+#+description: httpBaseUrl and discoverHttpBaseUrl() are declared and unused; the browser's only HTTP surface is the BFF, so they are removed rather than documented.
+#+type: capture
+#+level: cross
+#+filetags: :web:http:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two declarations name the =ores.http= gateway from the browser side, and
+nothing uses either:
+
+- =projects/ores.web/packages/contracts/src/site.ts:56= declares
+  =httpBaseUrl= on the site description.
+- =projects/ores.web/packages/wire-protocol/src/client.ts:430= declares
+  =discoverHttpBaseUrl()=, and no file calls it.
+
+* Why
+
+The BFF is the browser's only HTTP surface. =ores.http= serves callers
+outside the browser, so a browser-side discovery path is a decision nobody
+made. A declared-but-unused path is worse than an absent one: it reads as
+the supported way to reach the gateway, and the next person adds a call
+through it.
+
+The signed-off architecture decision is to remove both rather than
+document them. It is a code change, so it belongs with the implementation
+work that follows the architecture task, not in a documentation change.
+
+* References
+
+- =projects/ores.web/packages/contracts/src/site.ts:56= — the declaration.
+- =projects/ores.web/packages/wire-protocol/src/client.ts:430= — the unused method.
+- [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][The component specification]] — states that the BFF is the browser's only HTTP surface.
+- [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][Audit the journey, provisioning and web-client architecture before the first implementation story]] — finding 5 and decision 2.
+- [[id:6F644305-4D98-4F58-8BFF-1CF3E8B46427][Correct and add the architecture the journeys depend on]] — records this as a follow-up it does not do.
+
+* See also
+
+-

@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 719CBDCA-3DAE-46C5-BB89-D5401FBE7B5A
+:END:
+#+title: How do I run a workflow where a step reports warnings?
+#+description: A step succeeds and still has something to report, which only its log records.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The warning configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+below is tangled into the runnable script library as =identity_with_warnings.ores=.
+
+* Question
+
+How do I tell a clean run from a lossy one?
+
+* Answer
+
+The second step reports =warn=, so the engine marks it =completed_with_warnings= and keeps the log entries the handler recorded. The instance still completes: a warning is not a failure, and only the step log says the run was lossy.
+
+#+name: identity-with-warnings
+#+begin_src ores-shell :exports none
+workflow start identity_workflow '{"steps":[{"name":"one"},{"name":"two","behaviour":"warn"}]}' --instance-id 10000000-0000-4000-8000-000000000003
+workflow wait 10000000-0000-4000-8000-000000000003 --timeout 60 --expect-state completed
+#+end_src
+
+=workflow wait= fails unless the instance reaches the state named, so this
+script fails when the path it covers does nothing.
+
+* Script
+
+=projects/ores.shell/scripts/library/workflow/identity_with_warnings.ores= --
+generated from this recipe by =compass build --direct tangle_shell_scripts=
+(do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f identity_with_warnings.ores= against a running fleet.
+
+* See also
+
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] -- the fixture.

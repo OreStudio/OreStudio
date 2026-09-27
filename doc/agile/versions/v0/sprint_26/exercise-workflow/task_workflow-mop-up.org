@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :exercise-workflow:sprint_26:v0:
 #+owner: marco
-#+branch: feature/workflow-mop-up
-#+pr: 2207
+#+branch: feature/workflow-configurations
+#+pr: 2225
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -28,9 +28,9 @@ Every path the identity fixture can reach is trustworthy: a step that completes 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
-| Now          | Nothing is implemented. The evidence for all three workstreams was gathered while building the fixture and is recorded on [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][the identity workflow task]]. |
+| Now          | All three workstreams are done: the step-row race is fixed, a start reports acceptance, and the six configurations are scripted and verified. |
 | Waiting on   | Nothing.                               |
-| Next         | The step-row race, because the other two cannot be verified on top of it. |
+| Next         | Nothing. The refusal paths and recovery are the only paths without a configuration, and the acceptance allows them as integration tests. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -156,6 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2225][#2225]] | [shell] Add the identity workflow configurations |
 | [[https://github.com/OreStudio/OreStudio/pull/2207][#2207]] | [workflow] Serialise the engine handlers; wake the test watchdog |
 
 * Review
@@ -244,37 +245,21 @@ Started identity_workflow.
 workflow_instance_id: ffffffff-1111-2222-3333-444444444444
 #+end_example
 
-** Still open: 3. The configurations
+** 3. The configurations -- done
 
-Nine names are designed and none is scripted. The blocker is not the scripts but
-the assertion: =workflow wait= calls =fail()= on any outcome that is not "all
-steps completed", so a script for =fail_fast= or =saga= -- whose correct
-terminal state is =failed= or =compensated= -- aborts, and an aborted script
-cannot be told from a broken one. The shell has no assertion verb and the script
-runner has no negation.
+Six recipes under =doc/recipes/shell/workflow/=, each tangling into a script that
+asserts its own terminal state: =happy_path=, =fan_out=, =with_warnings=,
+=fail_fast=, =saga= and =long_running=. All six verified in one pass against the
+live fleet, twelve commands and no aborts.
 
-The way through is =workflow wait --expect-state <completed|failed|compensated|absent>=
-as the assertion primitive, with =absent= covering the refusal paths. The
-acceptance also allows the refusal paths to be covered by integration tests
-instead ("a configuration or an integration test"), which handles =empty= and
-=unknown_type= but not the two compensating ones.
+What they needed was =workflow wait --expect-state=, because a wait that only
+knows "all steps completed" cannot assert a run whose correct end is =failed= or
+=compensated=, and an aborted script cannot be told from a broken one.
 
-The start acceptance above is what makes the refusal configurations checkable at
-all, which is why it came first.
+Three paths have no script. =empty= and =unknown_type= start nothing, so there is
+no state to assert; the acceptance allows an integration test for those and
+=workflow start= already refuses both at the shell. =recovery= needs a service
+restart mid-run, which a script cannot orchestrate.
 
-
-** Follow-ups from the review on #2207
-
-Two notes, neither a blocker, both recorded rather than acted on.
-
-The engine-wide lock has a throughput ceiling: unrelated instances serialise
-behind each other's database writes and publishes. A lock keyed by instance id
-would remove it, but every writer of one instance would still have to share a
-critical section, so it is a piece of design rather than a mechanical change.
-The engine has never run enough concurrent instances for this to bite.
-
-The non-recursive lock is safe because the client dispatches asynchronously,
-which is measured behaviour and not a guarantee the library makes. The header
-now names the behaviour it relies on and says that a synchronous delivery would
-deadlock, so whoever changes the NATS client next has the warning in front of
-them rather than a silent hang to debug.
+The instance ids are fixed, so a second run of any script reports the existing
+run rather than re-exercising the engine: each path is proven on first run only.

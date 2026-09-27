@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 5D5AFECE-2061-44FF-A851-F62BFDE758DF
+:END:
+#+title: How do I watch a workflow that takes its time?
+#+description: Steps that wait before reporting, so the run can be observed in flight.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The long-running configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+below is tangled into the runnable script library as =identity_long_running.ores=.
+
+* Question
+
+How do I watch a workflow while it is running?
+
+* Answer
+
+Each step waits before it reports, so the instance sits at =in_progress= long enough to poll. Run =workflow wait= in one shell and =workflow_steps by-workflow-id= in another to see the steps advance.
+
+#+name: identity-long-running
+#+begin_src ores-shell :exports none
+workflow start identity_workflow '{"steps":[{"name":"one","delay_seconds":5},{"name":"two","delay_seconds":5}]}' --instance-id 10000000-0000-4000-8000-000000000006
+workflow wait 10000000-0000-4000-8000-000000000006 --timeout 60 --expect-state completed
+#+end_src
+
+=workflow wait= fails unless the instance reaches the state named, so this
+script fails when the path it covers does nothing.
+
+* Script
+
+=projects/ores.shell/scripts/library/workflow/identity_long_running.ores= --
+generated from this recipe by =compass build --direct tangle_shell_scripts=
+(do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f identity_long_running.ores= against a running fleet.
+
+* See also
+
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] -- the fixture.

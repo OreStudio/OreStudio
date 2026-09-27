@@ -609,26 +609,6 @@ tangled into the runnable script library
 
 - [[id:1AE52616-1E2F-5164-9765-76457B907EF3][How do I run the system_settings commands from the shell?]]
 
-* Concurrency Policies
-
-- [[id:AEB1BB00-0503-5BB2-9A2F-9AAC8A9C929E][How do I run the concurrency_policies commands from the shell?]]
-
-* Report Definitions
-
-- [[id:8F7DD182-B1ED-5933-B377-9C0066D96489][How do I run the report_definitions commands from the shell?]]
-
-* Report Instances
-
-- [[id:D3BF8572-BC25-53F3-80CA-8CB254DA5946][How do I run the report_instances commands from the shell?]]
-
-* Report Operations
-
-- [[id:C6D0B07C-5C48-5AC1-8053-2D0B36A2D3CD][How do I run the report_operations commands from the shell?]]
-
-* Report Types
-
-- [[id:189AF09C-4D20-5F21-A7BD-D0254585EC6C][How do I run the report_types commands from the shell?]]
-
 * Artefact Types
 
 - [[id:91845E51-131E-5C5A-89A3-1261457C1A17][How do I run the artefact_types commands from the shell?]]
@@ -665,9 +645,26 @@ tangled into the runnable script library
 
 - [[id:1874CC7F-A727-5FFD-A98E-5FE54754EB1E][How do I run the lei_relationships commands from the shell?]]
 
+* Report Definitions
+
+- [[id:8F7DD182-B1ED-5933-B377-9C0066D96489][How do I run the report_definitions commands from the shell?]]
+
 * Synthetic Fx Spot Configs
 
 - [[id:433F316B-EEFE-5C37-B7C8-2C6DA4D0B817][How do I run the synthetic_fx_spot_configs commands from the shell?]]
+
+* Workflow
+
+- [[id:868CEEF2-F845-41D0-995D-90D93BF6E9B7][How do I run a workflow that compensates?]]
+- [[id:72D3431D-10D9-48EB-AC4F-3A634D3B1DBA][How do I run a workflow that fails?]]
+- [[id:AA39B1E4-DE76-433E-9DE3-D16C0BD40241][How do I run a workflow to completion?]]
+- [[id:719CBDCA-3DAE-46C5-BB89-D5401FBE7B5A][How do I run a workflow where a step reports warnings?]]
+- [[id:BC01755C-69FC-48C1-96D6-2EFD8E1BEF1D][How do I run a workflow with many steps?]]
+- [[id:5D5AFECE-2061-44FF-A851-F62BFDE758DF][How do I watch a workflow that takes its time?]]
+
+* Concurrency Policies
+
+- [[id:AEB1BB00-0503-5BB2-9A2F-9AAC8A9C929E][How do I run the concurrency_policies commands from the shell?]]
 
 * Equity Accumulator Instruments
 
@@ -740,6 +737,18 @@ tangled into the runnable script library
 * Party Role Types
 
 - [[id:A9F15744-5DAD-524E-91B5-8BA3DBD8D9CF][How do I run the party_role_types commands from the shell?]]
+
+* Report Instances
+
+- [[id:D3BF8572-BC25-53F3-80CA-8CB254DA5946][How do I run the report_instances commands from the shell?]]
+
+* Report Operations
+
+- [[id:C6D0B07C-5C48-5AC1-8053-2D0B36A2D3CD][How do I run the report_operations commands from the shell?]]
+
+* Report Types
+
+- [[id:189AF09C-4D20-5F21-A7BD-D0254585EC6C][How do I run the report_types commands from the shell?]]
 
 * Trade Id Types
 

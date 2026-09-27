@@ -1,0 +1,8 @@
+# How do I watch a workflow that takes its time?
+# Steps that wait before reporting, so the run can be observed in flight.
+#
+# GENERATED from doc/recipes/shell/workflow/identity_long_running.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+workflow start identity_workflow '{"steps":[{"name":"one","delay_seconds":5},{"name":"two","delay_seconds":5}]}' --instance-id 10000000-0000-4000-8000-000000000006
+workflow wait 10000000-0000-4000-8000-000000000006 --timeout 60 --expect-state completed

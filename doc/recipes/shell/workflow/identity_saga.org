@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 868CEEF2-F845-41D0-995D-90D93BF6E9B7
+:END:
+#+title: How do I run a workflow that compensates?
+#+description: One step completes, a later step fails, and the completed step is unwound.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The saga configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+below is tangled into the runnable script library as =identity_saga.ores=.
+
+* Question
+
+How do I exercise the engine's rollback path?
+
+* Answer
+
+The first step declares a compensation; the second fails. The engine dispatches the compensation for the completed step, records it at a negative step index, and settles the instance at =compensated= once every rollback has finished.
+
+#+name: identity-saga
+#+begin_src ores-shell :exports none
+workflow start identity_workflow '{"steps":[{"name":"ok","compensate":true},{"name":"boom","behaviour":"fail"}]}' --instance-id 10000000-0000-4000-8000-000000000005
+workflow wait 10000000-0000-4000-8000-000000000005 --timeout 60 --expect-state compensated
+#+end_src
+
+=workflow wait= fails unless the instance reaches the state named, so this
+script fails when the path it covers does nothing.
+
+* Script
+
+=projects/ores.shell/scripts/library/workflow/identity_saga.ores= --
+generated from this recipe by =compass build --direct tangle_shell_scripts=
+(do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f identity_saga.ores= against a running fleet.
+
+* See also
+
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] -- the fixture.

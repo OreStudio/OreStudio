@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 72D3431D-10D9-48EB-AC4F-3A634D3B1DBA
+:END:
+#+title: How do I run a workflow that fails?
+#+description: A step fails with nothing before it to unwind, so the instance settles at compensated.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The fail-fast configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+below is tangled into the runnable script library as =identity_fail_fast.ores=.
+
+* Question
+
+How do I run a workflow whose only step fails?
+
+* Answer
+
+The single step reports =fail= and declares no compensation, so there is nothing to unwind. The engine moves the instance through =compensating= and settles it at =compensated=, which =--expect-state= asserts.
+
+#+name: identity-fail-fast
+#+begin_src ores-shell :exports none
+workflow start identity_workflow '{"steps":[{"name":"boom","behaviour":"fail"}]}' --instance-id 10000000-0000-4000-8000-000000000004
+workflow wait 10000000-0000-4000-8000-000000000004 --timeout 60 --expect-state compensated
+#+end_src
+
+=workflow wait= fails unless the instance reaches the state named, so this
+script fails when the path it covers does nothing.
+
+* Script
+
+=projects/ores.shell/scripts/library/workflow/identity_fail_fast.ores= --
+generated from this recipe by =compass build --direct tangle_shell_scripts=
+(do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f identity_fail_fast.ores= against a running fleet.
+
+* See also
+
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] -- the fixture.

@@ -1,0 +1,8 @@
+# How do I run a workflow that fails?
+# A step fails with nothing before it to unwind, so the instance settles at compensated.
+#
+# GENERATED from doc/recipes/shell/workflow/identity_fail_fast.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+workflow start identity_workflow '{"steps":[{"name":"boom","behaviour":"fail"}]}' --instance-id 10000000-0000-4000-8000-000000000004
+workflow wait 10000000-0000-4000-8000-000000000004 --timeout 60 --expect-state compensated

@@ -1,0 +1,8 @@
+# How do I run a workflow where a step reports warnings?
+# A step succeeds and still has something to report, which only its log records.
+#
+# GENERATED from doc/recipes/shell/workflow/identity_with_warnings.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+workflow start identity_workflow '{"steps":[{"name":"one"},{"name":"two","behaviour":"warn"}]}' --instance-id 10000000-0000-4000-8000-000000000003
+workflow wait 10000000-0000-4000-8000-000000000003 --timeout 60 --expect-state completed

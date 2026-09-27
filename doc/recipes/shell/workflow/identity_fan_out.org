@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: BC01755C-69FC-48C1-96D6-2EFD8E1BEF1D
+:END:
+#+title: How do I run a workflow with many steps?
+#+description: Five steps in sequence, to show the engine advancing through a longer list.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The fan-out configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+below is tangled into the runnable script library as =identity_fan_out.ores=.
+
+* Question
+
+How do I run a workflow with more steps than I can watch one at a time?
+
+* Answer
+
+The request declares five steps and the engine dispatches them in order, advancing =current_step_index= after each completion. The materialised step list on the instance is what makes a restart re-dispatch the same sequence.
+
+#+name: identity-fan-out
+#+begin_src ores-shell :exports none
+workflow start identity_workflow '{"steps":[{"name":"one"},{"name":"two"},{"name":"three"},{"name":"four"},{"name":"five"}]}' --instance-id 10000000-0000-4000-8000-000000000002
+workflow wait 10000000-0000-4000-8000-000000000002 --timeout 60 --expect-state completed
+#+end_src
+
+=workflow wait= fails unless the instance reaches the state named, so this
+script fails when the path it covers does nothing.
+
+* Script
+
+=projects/ores.shell/scripts/library/workflow/identity_fan_out.ores= --
+generated from this recipe by =compass build --direct tangle_shell_scripts=
+(do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f identity_fan_out.ores= against a running fleet.
+
+* See also
+
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] -- the fixture.

@@ -1,0 +1,8 @@
+# How do I run a workflow that compensates?
+# One step completes, a later step fails, and the completed step is unwound.
+#
+# GENERATED from doc/recipes/shell/workflow/identity_saga.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+workflow start identity_workflow '{"steps":[{"name":"ok","compensate":true},{"name":"boom","behaviour":"fail"}]}' --instance-id 10000000-0000-4000-8000-000000000005
+workflow wait 10000000-0000-4000-8000-000000000005 --timeout 60 --expect-state compensated

@@ -1,0 +1,8 @@
+# How do I run a workflow with many steps?
+# Five steps in sequence, to show the engine advancing through a longer list.
+#
+# GENERATED from doc/recipes/shell/workflow/identity_fan_out.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+workflow start identity_workflow '{"steps":[{"name":"one"},{"name":"two"},{"name":"three"},{"name":"four"},{"name":"five"}]}' --instance-id 10000000-0000-4000-8000-000000000002
+workflow wait 10000000-0000-4000-8000-000000000002 --timeout 60 --expect-state completed

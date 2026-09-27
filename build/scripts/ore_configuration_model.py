@@ -111,7 +111,6 @@ REPORTING = '''package "ores.reporting" #E8F4FF {
     code : text
     name : text
     owning_component : text
-    root_element : text
     parameterised : boolean
   }
   class configuration {
@@ -130,7 +129,7 @@ REPORTING = '''package "ores.reporting" #E8F4FF {
   class parameter_definition {
     id : uuid
     configuration_type_id : uuid
-    section : text
+    scope : text
     subtype : text
     name : text
     value_domain_id : uuid

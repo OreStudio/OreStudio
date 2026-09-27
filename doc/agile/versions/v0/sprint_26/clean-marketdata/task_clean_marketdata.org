@@ -112,7 +112,29 @@ installed with npm, and its =node_modules= has neither =zod= nor
 =@msgpack/msgpack=, so =tsc --noEmit= reports module-resolution errors for
 every file rather than type errors. The eight regenerated =marketdata= .ts
 files are therefore recorded as rendered-but-unchecked. The codegen suite
-does cover the TypeScript rendering, at 790 passing cases.
+does cover the TypeScript rendering, at 826 passing cases after the rebase.
+
+** One generator defect the rebase exposed
+
+Rebasing onto =main= after the PR was raised picked up 48f4282df6, which made
+the generated row-level-security policies idempotent so that re-running
+=setup_schema.sql= against a populated database stops aborting on a policy
+that already exists. It fixed the domain-entity archetype and missed the
+junction one.
+
+The guard was not missing from the tree, only from the generator: 02c78a7dda
+had hand-added =drop policy if exists= to the checked-in junction SQL. So the
+two disagreed, and regenerating this component -- whose only junction opts
+into tenant isolation -- removed the guard and reintroduced the abort. The
+fix is in the junction template, with a regression test that renders a
+junction with =:rls_tenant_isolation:= and asserts the drop precedes the
+create; removing the guard from the template makes it fail. No generated file
+changes, which is the point: the checked-in SQL was already right and the
+generator now agrees with it.
+
+That same commit also fixed the =reporting= omission this PR's shell commit
+originally carried. It found it independently and first, so the finding is
+main's, not this PR's; only =marketdata= is added to the shell's parts here.
 
 ** Check the database before believing a red suite
 

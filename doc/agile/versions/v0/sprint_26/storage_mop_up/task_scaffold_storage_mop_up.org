@@ -1,14 +1,14 @@
 :PROPERTIES:
-:ID: B5A29D31-8D5E-4F12-B431-876453E8CA8B
+:ID: 7C00660F-1419-4DAD-ABAE-D87284FD0518
 :END:
-#+title: Task: Scaffold story: Move reporting's write path onto the storage protocol
+#+title: Task: Scaffold story: Mop up the storage leftovers the goal surfaced
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :reporting_storage_protocol:sprint_26:v0:
+#+filetags: :storage_mop_up:sprint_26:v0:
 #+owner: marco
-#+branch: feature/reporting-storage-protocol
-#+pr: 2255
+#+branch: feature/storage-mop-up
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -16,18 +16,18 @@
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The story, its tasks and its sprint wiring exist, and the branch carries them.
+The story, its task and its sprint wiring exist, and the branch carries them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] |
+| Parent story | [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next          | Nothing. |
@@ -39,16 +39,20 @@ The story, its tasks and its sprint wiring exist, and the branch carries them.
 
 * Plan
 
-Scaffold with =compass story new=, then keep both tasks on the story branch so
+Scaffold with =compass story new=, and keep the work task on the story branch so
 one PR carries the story.
 
 * Notes
 
-- =compass task start= derived a second branch from the task slug. The task's
-  =#+branch:= now names the story branch, and the second branch was deleted, so
-  the story's documents and its code travel together.
+- =compass task start= was given =--branch feature/storage-mop-up= rather than
+  left to derive one, so the task and its story stay on one branch.
 
 * Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -58,7 +62,7 @@ one PR carries the story.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2255][#2255]] | [reporting] Move the last storage consumer onto the bucket and key protocol |
+|    |       |
 
 * Review
 

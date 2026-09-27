@@ -42,6 +42,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 
 namespace ores::iam::messaging {
@@ -52,6 +53,9 @@ inline auto& bootstrap_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.messaging.bootstrap_handler");
     return instance;
 }
+
+/// The role a provisioned tenant's own administrator takes.
+constexpr std::string_view tenant_admin_role = "TenantAdmin";
 
 } // namespace
 
@@ -234,6 +238,23 @@ public:
             ap_svc.save_account_party(ap);
             BOOST_LOG_SEV(bootstrap_handler_lg(), info)
                 << "Associated " << username << " with system party " << system_party_id_str;
+
+            // The provisioner copies the system tenant's role definitions into
+            // the new tenant but assigns none of them, so without this the
+            // admin can log in and do nothing: a role is what carries the
+            // permissions. TenantAdmin is the tenant's own administrator, as
+            // against SuperAdmin, which holds the platform-level tenant verbs.
+            service::authorization_service auth_svc(tenant_ctx);
+            if (auto role = auth_svc.find_role_by_name(std::string(tenant_admin_role))) {
+                auth_svc.assign_role(acct.id, role->id, ctx_.service_account());
+                BOOST_LOG_SEV(bootstrap_handler_lg(), info)
+                    << "Assigned " << tenant_admin_role << " to " << username;
+            } else {
+                BOOST_LOG_SEV(bootstrap_handler_lg(), error)
+                    << "Tenant " << req->code << " has no " << tenant_admin_role
+                    << " role, so " << username
+                    << " was created without one and holds no permissions";
+            }
 
             // Reload the new tenant's party cache: the SQL provisioner created
             // the system party directly, no NATS event is published for it.

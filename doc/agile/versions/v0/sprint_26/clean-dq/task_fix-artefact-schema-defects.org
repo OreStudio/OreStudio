@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | The template emits the artefact key index once, the tags staging table has the unique index its seed needs, and a hygiene check covers both classes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

@@ -45,7 +45,7 @@ Pass 1 models the handcrafted SQL. Pass 2 runs the standard. Pass 1 is first, be
 |------+------+-------+-------+-----+-------------|
 | [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | 1 | STARTED | 2026-09-26 | | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and reach byte-identical regeneration. |
 | [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]] | 2 | BACKLOG | | | Work ores.dq through the Component Clean Standard in order and record each item. |
-| [[id:94424F3A-5FF9-415E-B9ED-8067C84CB7C2][Fix the artefact index emission and the tags ON CONFLICT]] | STARTED | 2026-09-27 | | Task for: Clean ores.dq to the component clean standard |
+| [[id:94424F3A-5FF9-415E-B9ED-8067C84CB7C2][Fix the artefact index emission and the tags ON CONFLICT]] | DONE | 2026-09-27 | 2026-09-27 | Task for: Clean ores.dq to the component clean standard |
 
 * Notes
 

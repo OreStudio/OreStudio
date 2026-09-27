@@ -110,15 +110,18 @@ Verified mechanically on 2026-09-23:
 - The filetags are =user_journey= and =security= throughout.
 
 *What the exercise found.* The journeys were expected to surface modeling errors
-and missing server-side operations, and they did. The server-side defects are
-captured separately, because they are defects rather than design gaps:
+and missing server-side operations, and they did. It found three server-side
+defects, all since closed:
 
-- [[id:2662D094-99B0-4C18-88DF-C36A304CA806][Account secrets reach the browser in the accounts wire shape]] --
-  =password_hash=, =password_salt= and =totp_secret= are on the wire.
-- [[id:E87A316A-A387-4D0B-8221-9716F8A6AF07][Change-password ignores the current password]] -- a stolen token is
-  enough to set a new one.
-- [[id:653E5D7E-13BC-4588-B5BC-40752F49D823][IAM handlers skip their permission checks]] -- role assignment is
-  unguarded and the reads are too, which compounds the first two.
+- The account credential fields are on the wire: =password_hash=,
+  =password_salt= and =totp_secret=.
+- Change-password ignores the current password, so a stolen token is enough to
+  set a new one.
+- The IAM handlers skip their permission checks: role assignment is unguarded
+  and the reads are too, which compounds the first two.
+
+PR [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]] closes all
+three, and the captures they were recorded as are retired.
 
 The design gaps, recurring across journeys: no self-service write of a member's
 own profile or contact record; no image upload anywhere, so a photo cannot be

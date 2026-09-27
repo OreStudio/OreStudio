@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/create-the-first-administrator
-#+pr:
+#+pr: 2299
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2299][#2299]] | [web] Create the first administrator from the setup screen |
 
 * Review
 

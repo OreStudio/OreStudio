@@ -36,14 +36,14 @@
 namespace ores::analytics::messaging {
 
 struct credit_simulation_matrix_state_config_key {
-    std::string label;
+    std::string credit_rating_code;
 };
 
 struct credit_simulation_matrix_state_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid transition_matrix_id;
     int position;
-    std::string label;
+    std::string credit_rating_code;
 };
 
 struct credit_simulation_matrix_state_config_change {
@@ -64,6 +64,7 @@ struct credit_simulation_matrix_state_config_lookup {
 
 struct credit_simulation_matrix_state_configs_filter {
     std::optional<boost::uuids::uuid> transition_matrix_id;
+    std::optional<std::string> credit_rating_code;
 };
 
 struct credit_simulation_matrix_state_config_event {
@@ -248,6 +249,32 @@ struct list_by_transition_matrix_id_credit_simulation_matrix_state_configs_reque
 };
 
 struct list_by_transition_matrix_id_credit_simulation_matrix_state_configs_response {
+    ores::utility::domain::result result;
+    std::vector<ores::analytics::domain::credit_simulation_matrix_state_config> states;
+    std::uint64_t total;
+};
+
+struct list_by_credit_rating_code_credit_simulation_matrix_state_configs_request {
+    using response_type =
+        struct list_by_credit_rating_code_credit_simulation_matrix_state_configs_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.credit_simulation_matrix_state_configs.list_by_credit_rating_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string credit_rating_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<credit_simulation_matrix_state_configs_filter> filter;
+};
+
+struct list_by_credit_rating_code_credit_simulation_matrix_state_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_matrix_state_config> states;
     std::uint64_t total;

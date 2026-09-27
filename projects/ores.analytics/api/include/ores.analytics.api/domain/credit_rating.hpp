@@ -22,8 +22,8 @@
  * Template: cpp_domain_type_class.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_ANALYTICS_API_DOMAIN_CREDIT_SIMULATION_MATRIX_STATE_CONFIG_HPP
-#define ORES_ANALYTICS_API_DOMAIN_CREDIT_SIMULATION_MATRIX_STATE_CONFIG_HPP
+#ifndef ORES_ANALYTICS_API_DOMAIN_CREDIT_RATING_HPP
+#define ORES_ANALYTICS_API_DOMAIN_CREDIT_RATING_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
@@ -32,16 +32,18 @@
 namespace ores::analytics::domain {
 
 /**
- * @brief A credit state a transition matrix spans.
+ * @brief A credit rating on the scale a transition matrix uses.
  *
- * ORE names the states a matrix spans in an XML comment inside the Data
- * element, one label per row and column, and indexes the grid by their
- * position. The labels are not derivable from the numbers, so without them
- * the comment cannot be written back and the document does not round trip.
- * Every shipped example declares the same eight labels, so this is a
- * vocabulary rather than free text.
+ * +#+entity_title: Credit Rating
+ * +#+updated: 2026-09-27
+ *
+ * The rating scale ORE lays a transition matrix out on. The geometry is fixed:
+ * every matrix in the shipped corpus is 8x8 and names the same eight ratings in
+ * the same order, Aaa Aa A Baa Ba B C Default. The names are a vocabulary, not
+ * free text, so they are seeded here once rather than repeated as text on every
+ * matrix; a matrix row and column is then a position on this scale.
  */
-struct credit_simulation_matrix_state_config final {
+struct credit_rating final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
@@ -53,36 +55,23 @@ struct credit_simulation_matrix_state_config final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
+     * @brief The rating as ORE writes it, for example Aaa or Default.
      */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+    std::string code;
 
     /**
-     * @brief Surrogate key for the state.
+     * @brief The human-readable name of the rating.
      */
-    boost::uuids::uuid id;
+    std::string name;
 
     /**
-     * @brief The matrix this state belongs to.
+     * @brief The position of the rating on the scale, which is what a matrix row and column index
+     * by.
      */
-    boost::uuids::uuid transition_matrix_id;
+    int display_order = 0;
 
     /**
-     * @brief The zero-based position of the state in the matrix, which is what the cells index by
-     * their from_state and to_state.
-     */
-    int position = 0;
-
-    /**
-     * @brief The rating this position stands for. The scale is fixed and seeded, so the name is a
-     * reference and not text repeated on every matrix.
-     */
-    std::string credit_rating_code;
-
-    /**
-     * @brief Username of the person who last modified this matrix state.
+     * @brief Username of the person who last modified this credit rating.
      */
     std::string modified_by;
 
@@ -124,19 +113,17 @@ struct credit_simulation_matrix_state_config final {
      * be round-trip tested at all, which is why the omission went unnoticed
      * until the diff payloads were the first generated types to have a test.
      */
-    friend bool operator==(const credit_simulation_matrix_state_config&,
-                           const credit_simulation_matrix_state_config&) = default;
+    friend bool operator==(const credit_rating&, const credit_rating&) = default;
 };
 
 /**
- * @brief Dispatch-key identifier for credit_simulation_matrix_state_config, e.g. for the
+ * @brief Dispatch-key identifier for credit_rating, e.g. for the
  * generic history-diff request and action registries. Single source
  * of truth: every call site spells entity_type_of(value) regardless
  * of which entity it holds.
  */
-[[nodiscard]] constexpr std::string_view
-entity_type_of(const credit_simulation_matrix_state_config&) {
-    return "ores.analytics.credit_simulation_matrix_state_config";
+[[nodiscard]] constexpr std::string_view entity_type_of(const credit_rating&) {
+    return "ores.analytics.credit_rating";
 }
 
 }

@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 8C1F6B29-4A73-4E18-9D52-7B0E3C5A8214
+:END:
+#+title: ores.analytics.credit_rating
+#+description: Codegen entity model for the analytics =credit_rating= table. The credit rating scale a transition matrix is laid out on.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A credit rating on the scale a transition matrix uses.
+#+entity_singular: credit_rating
+#+entity_plural: credit_ratings
++#+entity_title: Credit Rating
+#+created: 2026-09-27
++#+updated: 2026-09-27
+
+The rating scale ORE lays a transition matrix out on. The geometry is fixed:
+every matrix in the shipped corpus is 8x8 and names the same eight ratings in
+the same order, Aaa Aa A Baa Ba B C Default. The names are a vocabulary, not
+free text, so they are seeded here once rather than repeated as text on every
+matrix; a matrix row and column is then a position on this scale.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_analytics_credit_ratings_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The rating as ORE writes it, for example Aaa or Default.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the rating.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The position of the rating on the scale, which is what a matrix row and
+column index by.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_ratings_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: rating
+:entity_plural_short:   ratings
+:entity_singular_words: credit rating
+:entity_plural_words:   credit ratings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
++#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cr
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.analytics.api/domain/credit_rating.hpp
+:domain_class:           analytics::domain::credit_rating
+:protocol_include:       ores.analytics.api/messaging/credit_rating_protocol.hpp
+:collection_name:        ratings
+:key_field:              code
+:get_request_class:      analytics::messaging::get_credit_ratings_request
+:get_response_class:     analytics::messaging::get_credit_ratings_response
+:get_message_type:       get_credit_ratings_request
+:save_request_class:     analytics::messaging::save_credit_rating_request
+:save_response_class:    analytics::messaging::save_credit_rating_response
+:save_message_type:      save_credit_rating_request
+:delete_request_class:   analytics::messaging::delete_credit_rating_request
+:delete_response_class:  analytics::messaging::delete_credit_rating_response
+:delete_message_type:    delete_credit_rating_request
+:END:
+
+*** Detail fields
+
+| field         | label | type      | is_key | is_required | placeholder |
+|---------------+-------+-----------+--------+-------------+-------------|
+| code          | Code  | line_edit | true   | true        | Enter rating code |
+| name          | Name  | line_edit |        | true        | Enter display name |
+| display_order | Order | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name    | field         | header | type   | width |
+|--------------+---------------+--------+--------+-------|
+| Code         | code          | Code   | string | 140   |
+| Name         | name          | Name   | string | 200   |
+| DisplayOrder | display_order | Order  | int    | 80    |
+| Version      | version       | Version | int   | 80    |
+| ModifiedBy   | modified_by   | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

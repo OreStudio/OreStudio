@@ -22,29 +22,24 @@
  * Template: cpp_domain_type_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.analytics.core/repository/credit_simulation_matrix_state_config_mapper.hpp"
-#include "ores.analytics.api/domain/credit_simulation_matrix_state_config_json_io.hpp" // IWYU pragma: keep.
+#include "ores.analytics.core/repository/credit_rating_mapper.hpp"
+#include "ores.analytics.api/domain/credit_rating_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::credit_simulation_matrix_state_config credit_simulation_matrix_state_config_mapper::map(
-    const credit_simulation_matrix_state_config_entity& v) {
+domain::credit_rating credit_rating_mapper::map(const credit_rating_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::credit_simulation_matrix_state_config r;
+    domain::credit_rating r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.transition_matrix_id = boost::lexical_cast<boost::uuids::uuid>(v.transition_matrix_id);
-    r.position = v.position;
-    r.credit_rating_code = v.credit_rating_code;
+    r.code = v.code.value();
+    r.name = v.name;
+    r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -55,18 +50,15 @@ domain::credit_simulation_matrix_state_config credit_simulation_matrix_state_con
     return r;
 }
 
-credit_simulation_matrix_state_config_entity credit_simulation_matrix_state_config_mapper::map(
-    const domain::credit_simulation_matrix_state_config& v) {
+credit_rating_entity credit_rating_mapper::map(const domain::credit_rating& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    credit_simulation_matrix_state_config_entity r;
-    r.id = boost::uuids::to_string(v.id);
+    credit_rating_entity r;
+    r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
-    r.transition_matrix_id = boost::uuids::to_string(v.transition_matrix_id);
-    r.position = v.position;
-    r.credit_rating_code = v.credit_rating_code;
+    r.name = v.name;
+    r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -76,19 +68,15 @@ credit_simulation_matrix_state_config_entity credit_simulation_matrix_state_conf
     return r;
 }
 
-std::vector<domain::credit_simulation_matrix_state_config>
-credit_simulation_matrix_state_config_mapper::map(
-    const std::vector<credit_simulation_matrix_state_config_entity>& v) {
-    return map_vector<credit_simulation_matrix_state_config_entity,
-                      domain::credit_simulation_matrix_state_config>(
+std::vector<domain::credit_rating>
+credit_rating_mapper::map(const std::vector<credit_rating_entity>& v) {
+    return map_vector<credit_rating_entity, domain::credit_rating>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<credit_simulation_matrix_state_config_entity>
-credit_simulation_matrix_state_config_mapper::map(
-    const std::vector<domain::credit_simulation_matrix_state_config>& v) {
-    return map_vector<domain::credit_simulation_matrix_state_config,
-                      credit_simulation_matrix_state_config_entity>(
+std::vector<credit_rating_entity>
+credit_rating_mapper::map(const std::vector<domain::credit_rating>& v) {
+    return map_vector<domain::credit_rating, credit_rating_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 

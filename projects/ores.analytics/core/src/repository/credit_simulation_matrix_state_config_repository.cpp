@@ -180,37 +180,17 @@ credit_simulation_matrix_state_config_repository::read_latest(context ctx, const
 }
 
 std::vector<domain::credit_simulation_matrix_state_config>
-credit_simulation_matrix_state_config_repository::read_latest_by_label(context ctx,
-                                                                       const std::string& label) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix state by label: " << label;
+credit_simulation_matrix_state_config_repository::read_latest_by_credit_rating_code(
+    context ctx, const std::string& credit_rating_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix state by credit_rating_code: "
+                               << credit_rating_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_state_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "label"_c == label && "valid_to"_c == max.value());
-
-    return execute_read_query<credit_simulation_matrix_state_config_entity,
-                              domain::credit_simulation_matrix_state_config>(
-        ctx,
-        query,
-        [](const auto& entities) {
-            return credit_simulation_matrix_state_config_mapper::map(entities);
-        },
-        lg(),
-        "Reading latest matrix state by label.");
-}
-
-std::vector<domain::credit_simulation_matrix_state_config>
-credit_simulation_matrix_state_config_repository::read_any_by_label(context ctx,
-                                                                    const std::string& label) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any matrix state by label: " << label;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<credit_simulation_matrix_state_config_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "label"_c == label) |
-        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "credit_rating_code"_c == credit_rating_code && "valid_to"_c == max.value());
 
     return execute_read_query<credit_simulation_matrix_state_config_entity,
                               domain::credit_simulation_matrix_state_config>(
@@ -220,7 +200,30 @@ credit_simulation_matrix_state_config_repository::read_any_by_label(context ctx,
             return credit_simulation_matrix_state_config_mapper::map(entities);
         },
         lg(),
-        "Reading any matrix state by label.");
+        "Reading latest matrix state by credit_rating_code.");
+}
+
+std::vector<domain::credit_simulation_matrix_state_config>
+credit_simulation_matrix_state_config_repository::read_any_by_credit_rating_code(
+    context ctx, const std::string& credit_rating_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any matrix state by credit_rating_code: "
+                               << credit_rating_code;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_state_config_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "credit_rating_code"_c == credit_rating_code) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<credit_simulation_matrix_state_config_entity,
+                              domain::credit_simulation_matrix_state_config>(
+        ctx,
+        query,
+        [](const auto& entities) {
+            return credit_simulation_matrix_state_config_mapper::map(entities);
+        },
+        lg(),
+        "Reading any matrix state by credit_rating_code.");
 }
 
 
@@ -327,6 +330,63 @@ credit_simulation_matrix_state_config_repository::get_total_state_count_by_trans
 
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active matrix states count by transition_matrix_id: "
+                               << count;
+    return count;
+}
+
+
+std::vector<domain::credit_simulation_matrix_state_config>
+credit_simulation_matrix_state_config_repository::read_latest_by_credit_rating_code(
+    context ctx, const std::string& credit_rating_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix states. credit_rating_code: "
+                               << credit_rating_code << " offset: " << offset
+                               << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<credit_simulation_matrix_state_config_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "credit_rating_code"_c == credit_rating_code && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<credit_simulation_matrix_state_config_entity,
+                              domain::credit_simulation_matrix_state_config>(
+        ctx,
+        query,
+        [](const auto& entities) {
+            return credit_simulation_matrix_state_config_mapper::map(entities);
+        },
+        lg(),
+        "Reading latest matrix states by credit_rating_code.");
+}
+
+std::uint32_t
+credit_simulation_matrix_state_config_repository::get_total_state_count_by_credit_rating_code(
+    context ctx, const std::string& credit_rating_code) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Retrieving total active matrix states count. credit_rating_code: "
+        << credit_rating_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<credit_simulation_matrix_state_config_entity>(
+            sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "credit_rating_code"_c == credit_rating_code && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active matrix states count by credit_rating_code: "
                                << count;
     return count;
 }

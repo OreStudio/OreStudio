@@ -90,6 +90,12 @@ register_credit_simulation_matrix_state_config_handlers(
             h->list_by_transition_matrix_id_credit_simulation_matrix_state_configs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_by_credit_rating_code_credit_simulation_matrix_state_configs_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_credit_rating_code_credit_simulation_matrix_state_configs(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         list_credit_simulation_matrix_state_config_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) {

@@ -22,23 +22,20 @@
  * Template: cpp_history_field_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.analytics.core/presentation/credit_simulation_matrix_state_config_history_field_mapper.hpp"
+#include "ores.analytics.core/presentation/credit_rating_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::presentation {
 
-std::vector<ores::diff::domain::field_value> render_credit_simulation_matrix_state_config_fields(
-    const domain::credit_simulation_matrix_state_config& v) {
+std::vector<ores::diff::domain::field_value>
+render_credit_rating_fields(const domain::credit_rating& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
-    fields.push_back(
-        {.name = "Transition Matrix ID", .value = boost::uuids::to_string(v.transition_matrix_id)});
-    fields.push_back({.name = "Position", .value = std::to_string(v.position)});
-    fields.push_back({.name = "Credit Rating Code", .value = v.credit_rating_code});
+    fields.push_back({.name = "Code", .value = v.code});
+    fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

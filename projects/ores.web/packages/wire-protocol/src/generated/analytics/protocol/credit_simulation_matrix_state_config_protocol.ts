@@ -30,14 +30,14 @@ import type { Result } from '../../../utility/protocol.js';
 import type { Scope } from '../../../utility/protocol.js';
 
 export interface CreditSimulationMatrixStateConfigKey {
-    label: string;
+    credit_rating_code: string;
 }
 
 export interface CreditSimulationMatrixStateConfigWrite {
     id: string;
     transition_matrix_id: string;
     position: number;
-    label: string;
+    credit_rating_code: string;
 }
 
 export interface CreditSimulationMatrixStateConfigChange {
@@ -57,6 +57,7 @@ export interface CreditSimulationMatrixStateConfigLookup {
 
 export interface CreditSimulationMatrixStateConfigsFilter {
     transition_matrix_id: string | null;
+    credit_rating_code: string | null;
 }
 
 export interface CreditSimulationMatrixStateConfigEvent {
@@ -163,6 +164,21 @@ export interface ListByTransitionMatrixIdCreditSimulationMatrixStateConfigsRespo
     total: number;
 }
 
+export interface ListByCreditRatingCodeCreditSimulationMatrixStateConfigsRequest {
+    credit_rating_code: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CreditSimulationMatrixStateConfigsFilter | null;
+}
+
+export interface ListByCreditRatingCodeCreditSimulationMatrixStateConfigsResponse {
+    result: Result;
+    states: CreditSimulationMatrixStateConfig[];
+    total: number;
+}
+
 export interface ListCreditSimulationMatrixStateConfigVersionsRequest {
     key: CreditSimulationMatrixStateConfigKey;
     offset: number;
@@ -195,6 +211,7 @@ export const subjects = {
     delete_credit_simulation_matrix_state_config_request: "analytics.v1.credit_simulation_matrix_state_configs.delete",
     delete_many_credit_simulation_matrix_state_configs_request: "analytics.v1.credit_simulation_matrix_state_configs.delete_many",
     list_by_transition_matrix_id_credit_simulation_matrix_state_configs_request: "analytics.v1.credit_simulation_matrix_state_configs.list_by_transition_matrix_id",
+    list_by_credit_rating_code_credit_simulation_matrix_state_configs_request: "analytics.v1.credit_simulation_matrix_state_configs.list_by_credit_rating_code",
     list_credit_simulation_matrix_state_config_versions_request: "analytics.v1.credit_simulation_matrix_state_configs_versions.list",
     get_credit_simulation_matrix_state_config_version_request: "analytics.v1.credit_simulation_matrix_state_configs_versions.get",
 } as const;
@@ -212,6 +229,7 @@ export const requiresSession = {
     delete_credit_simulation_matrix_state_config_request: true,
     delete_many_credit_simulation_matrix_state_configs_request: true,
     list_by_transition_matrix_id_credit_simulation_matrix_state_configs_request: true,
+    list_by_credit_rating_code_credit_simulation_matrix_state_configs_request: true,
     list_credit_simulation_matrix_state_config_versions_request: true,
     get_credit_simulation_matrix_state_config_version_request: true,
 } as const;

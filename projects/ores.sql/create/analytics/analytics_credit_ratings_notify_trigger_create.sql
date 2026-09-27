@@ -23,19 +23,19 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function ores_analytics_credit_simulation_matrix_states_notify_fn()
+create or replace function ores_analytics_credit_ratings_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_credit_rating_code text;
+    changed_code text;
     changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_credit_rating_code := OLD.credit_rating_code;
+        changed_code := OLD.code;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
@@ -53,15 +53,15 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_credit_rating_code := NEW.credit_rating_code;
+        changed_code := NEW.code;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
-    changed_key := jsonb_build_object('credit_rating_code', changed_credit_rating_code);
+    changed_key := jsonb_build_object('code', changed_code);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,
-        'entity', 'ores.analytics.credit_simulation_matrix_state_config',
+        'entity', 'ores.analytics.credit_rating',
         'key', changed_key::text,
         'action', change_action,
         'version', changed_version,
@@ -70,12 +70,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_analytics_credit_simulation_matrix_states', notification_payload::text);
+    perform pg_notify('ores_analytics_credit_ratings', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_analytics_credit_simulation_matrix_states_notify_trg
-after insert or update or delete on ores_analytics_credit_simulation_matrix_states_tbl
-for each row execute function ores_analytics_credit_simulation_matrix_states_notify_fn();
+create or replace trigger ores_analytics_credit_ratings_notify_trg
+after insert or update or delete on ores_analytics_credit_ratings_tbl
+for each row execute function ores_analytics_credit_ratings_notify_fn();

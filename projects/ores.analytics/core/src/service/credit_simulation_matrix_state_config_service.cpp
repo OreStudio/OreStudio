@@ -60,7 +60,7 @@ std::vector<domain::credit_simulation_matrix_state_config>
 read_one(repository::credit_simulation_matrix_state_config_repository& repo,
          const ores::database::context& ctx,
          const messaging::credit_simulation_matrix_state_config_key& key) {
-    return repo.read_latest_by_label(ctx, key.label);
+    return repo.read_latest_by_credit_rating_code(ctx, key.credit_rating_code);
 }
 
 /**
@@ -72,7 +72,7 @@ read_one(repository::credit_simulation_matrix_state_config_repository& repo,
 messaging::credit_simulation_matrix_state_config_key
 key_from(const domain::credit_simulation_matrix_state_config& v) {
     messaging::credit_simulation_matrix_state_config_key key;
-    key.label = v.label;
+    key.credit_rating_code = v.credit_rating_code;
     return key;
 }
 
@@ -89,7 +89,7 @@ to_domain(const messaging::credit_simulation_matrix_state_config_write& write) {
     v.id = write.id;
     v.transition_matrix_id = write.transition_matrix_id;
     v.position = write.position;
-    v.label = write.label;
+    v.credit_rating_code = write.credit_rating_code;
     return v;
 }
 
@@ -147,6 +147,38 @@ credit_simulation_matrix_state_config_service::
     response.states =
         repo_.read_latest_by_transition_matrix_id(ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_state_count_by_transition_matrix_id(ctx_, relation);
+    return response;
+}
+
+messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_response
+credit_simulation_matrix_state_config_service::
+    list_by_credit_rating_code_credit_simulation_matrix_state_configs(
+        const messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_request&
+            request) {
+    messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+    const auto relation = request.credit_rating_code;
+    response.states =
+        repo_.read_latest_by_credit_rating_code(ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_state_count_by_credit_rating_code(ctx_, relation);
     return response;
 }
 
@@ -463,6 +495,22 @@ std::uint32_t credit_simulation_matrix_state_config_service::count_states_by_tra
 }
 
 
+std::vector<domain::credit_simulation_matrix_state_config>
+credit_simulation_matrix_state_config_service::list_states_by_credit_rating_code(
+    const std::string& credit_rating_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing matrix states by credit_rating_code: "
+                               << credit_rating_code;
+    return repo_.read_latest_by_credit_rating_code(ctx_, credit_rating_code, offset, limit);
+}
+
+std::uint32_t credit_simulation_matrix_state_config_service::count_states_by_credit_rating_code(
+    const std::string& credit_rating_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total matrix states count by credit_rating_code: "
+                               << credit_rating_code;
+    return repo_.get_total_state_count_by_credit_rating_code(ctx_, credit_rating_code);
+}
+
+
 std::optional<domain::credit_simulation_matrix_state_config>
 credit_simulation_matrix_state_config_service::get_state_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
@@ -481,10 +529,12 @@ credit_simulation_matrix_state_config_service::get_state(const boost::uuids::uui
 }
 
 std::optional<domain::credit_simulation_matrix_state_config>
-credit_simulation_matrix_state_config_service::get_state_by_label(const std::string& label) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting matrix state by label: " << label;
+credit_simulation_matrix_state_config_service::get_state_by_credit_rating_code(
+    const std::string& credit_rating_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting matrix state by credit_rating_code: "
+                               << credit_rating_code;
     messaging::credit_simulation_matrix_state_config_key k;
-    k.label = label;
+    k.credit_rating_code = credit_rating_code;
     auto found = read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
@@ -542,13 +592,13 @@ credit_simulation_matrix_state_config_service::get_state_history(const std::stri
     // value the storage key never holds, and reports an entity that has a
     // history as having none.
     messaging::credit_simulation_matrix_state_config_key k;
-    k.label = key;
+    k.credit_rating_code = key;
     // A delete here closes the transaction-time window and leaves every version
     // in place, so resolving through a latest read would lose the history at
     // exactly the moment it is wanted. This takes the newest row carrying the
     // declared key whether or not it is still current, which for a record that
     // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_label(ctx_, k.label);
+    const auto found = repo_.read_any_by_credit_rating_code(ctx_, k.credit_rating_code);
     if (found.empty())
         return {};
     const auto& row = found.front();

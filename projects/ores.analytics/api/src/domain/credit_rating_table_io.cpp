@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,28 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_domain_type_table_io.cpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The matrix state wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface CreditSimulationMatrixStateConfig {
-    version: number;
-    tenant_id: string;
-    workspace_id: string;
-    id: string;
-    transition_matrix_id: string;
-    position: number;
-    credit_rating_code: string;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+#include "ores.analytics.api/domain/credit_rating_table_io.hpp"
+#include "ores.analytics.api/domain/credit_rating_table.hpp"
+#include <ostream>
+
+namespace ores::analytics::domain {
+
+namespace {
+
+void print_credit_rating_table(std::ostream& s, const std::vector<credit_rating>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<credit_rating>& v) {
+    print_credit_rating_table(s, v);
+    return s;
+}
+
 }

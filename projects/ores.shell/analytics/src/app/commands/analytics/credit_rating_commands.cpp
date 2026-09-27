@@ -22,8 +22,8 @@
  * Template: cpp_shell_command_impl.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.shell/app/commands/analytics/credit_simulation_matrix_state_config_commands.hpp"
-#include "ores.analytics.api/messaging/credit_simulation_matrix_state_config_protocol.hpp"
+#include "ores.shell/app/commands/analytics/credit_rating_commands.hpp"
+#include "ores.analytics.api/messaging/credit_rating_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -112,9 +112,8 @@ void apply_page(Request& req, const parsed_args& parsed) {
 
 } // namespace
 
-void credit_simulation_matrix_state_config_commands::register_commands(cli::Menu& root_menu,
-                                                                       nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("credit_simulation_matrix_state_configs");
+void credit_rating_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("credit_ratings");
 
     menu->Insert(
         "list",
@@ -128,90 +127,73 @@ void credit_simulation_matrix_state_config_commands::register_commands(cli::Menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <credit_rating_code>");
+        "get <code>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <credit_rating_code>");
+        "get-many <code>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <transition_matrix_id> <position> <credit_rating_code> <reason> <commentary>");
+        "add <code> <name> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <transition_matrix_id> <position> <credit_rating_code> <reason> <commentary> "
-        "[--version <n>]");
+        "set <code> <name> <display_order> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <transition_matrix_id> <position> <credit_rating_code> <reason> "
-        "<commentary>");
+        "put-many --count <n> <code> <name> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <credit_rating_code> <reason> <commentary> [--version <n>]");
+        "delete <code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <credit_rating_code> <reason> <commentary>");
-
-    menu->Insert(
-        "by-transition-matrix-id",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_by_transition_matrix_id(std::ref(out), std::ref(session), std::move(args));
-        },
-        "by-transition-matrix-id <transition_matrix_id> [--offset <n>] [--limit <n>] [--order "
-        "<field>] [--desc]");
-
-    menu->Insert(
-        "by-credit-rating-code",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_by_credit_rating_code(std::ref(out), std::ref(session), std::move(args));
-        },
-        "by-credit-rating-code <credit_rating_code> [--offset <n>] [--limit <n>] [--order <field>] "
-        "[--desc]");
+        "delete-many <code> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <credit_rating_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <credit_rating_code> --version <n>");
+        "version <code> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
-void credit_simulation_matrix_state_config_commands::process_list(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_list(std::ostream& out,
+                                          nats_client& session,
+                                          const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
 
-    using request_type = messaging::list_credit_simulation_matrix_state_configs_request;
+    using request_type = messaging::list_credit_ratings_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run list." << std::endl;
@@ -246,7 +228,7 @@ void credit_simulation_matrix_state_config_commands::process_list(
         return;
     }
 
-    auto result = do_auth_request<messaging::list_credit_simulation_matrix_state_configs_response>(
+    auto result = do_auth_request<messaging::list_credit_ratings_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -254,11 +236,12 @@ void credit_simulation_matrix_state_config_commands::process_list(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_get(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_get(std::ostream& out,
+                                         nats_client& session,
+                                         const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
 
-    using request_type = messaging::get_credit_simulation_matrix_state_config_request;
+    using request_type = messaging::get_credit_rating_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run get." << std::endl;
@@ -282,13 +265,13 @@ void credit_simulation_matrix_state_config_commands::process_get(
                       << std::endl;
             return;
         }
-        read_token(req.key.credit_rating_code, parsed->positionals[next++], "credit_rating_code");
+        read_token(req.key.code, parsed->positionals[next++], "code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result = do_auth_request<messaging::get_credit_simulation_matrix_state_config_response>(
+    auto result = do_auth_request<messaging::get_credit_rating_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -296,11 +279,12 @@ void credit_simulation_matrix_state_config_commands::process_get(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_get_many(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_get_many(std::ostream& out,
+                                              nats_client& session,
+                                              const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
-    using request_type = messaging::get_many_credit_simulation_matrix_state_configs_request;
+    using request_type = messaging::get_many_credit_ratings_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run get-many." << std::endl;
@@ -325,8 +309,8 @@ void credit_simulation_matrix_state_config_commands::process_get_many(
             return;
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
-            messaging::credit_simulation_matrix_state_config_key key;
-            read_token(key.credit_rating_code, parsed->positionals[i + 0], "credit_rating_code");
+            messaging::credit_rating_key key;
+            read_token(key.code, parsed->positionals[i + 0], "code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -334,20 +318,20 @@ void credit_simulation_matrix_state_config_commands::process_get_many(
         return;
     }
 
-    auto result =
-        do_auth_request<messaging::get_many_credit_simulation_matrix_state_configs_response>(
-            out, session, std::string(req.nats_subject), req);
+    auto result = do_auth_request<messaging::get_many_credit_ratings_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_add(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_add(std::ostream& out,
+                                         nats_client& session,
+                                         const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
 
-    using request_type = messaging::put_credit_simulation_matrix_state_config_request;
+    using request_type = messaging::put_credit_rating_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run add." << std::endl;
@@ -371,13 +355,9 @@ void credit_simulation_matrix_state_config_commands::process_add(
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.transition_matrix_id,
-                   parsed->positionals[next++],
-                   "transition_matrix_id");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
-        read_token(
-            req.change.write.credit_rating_code, parsed->positionals[next++], "credit_rating_code");
+        read_token(req.change.write.code, parsed->positionals[next++], "code");
+        read_token(req.change.write.name, parsed->positionals[next++], "name");
+        read_token(req.change.write.display_order, parsed->positionals[next++], "display_order");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -386,7 +366,7 @@ void credit_simulation_matrix_state_config_commands::process_add(
         return;
     }
 
-    auto result = do_auth_request<messaging::put_credit_simulation_matrix_state_config_response>(
+    auto result = do_auth_request<messaging::put_credit_rating_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -394,11 +374,12 @@ void credit_simulation_matrix_state_config_commands::process_add(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_set(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_set(std::ostream& out,
+                                         nats_client& session,
+                                         const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
 
-    using request_type = messaging::put_credit_simulation_matrix_state_config_request;
+    using request_type = messaging::put_credit_rating_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run set." << std::endl;
@@ -419,18 +400,14 @@ void credit_simulation_matrix_state_config_commands::process_set(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.transition_matrix_id,
-                   parsed->positionals[next++],
-                   "transition_matrix_id");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
-        read_token(
-            req.change.write.credit_rating_code, parsed->positionals[next++], "credit_rating_code");
+        read_token(req.change.write.code, parsed->positionals[next++], "code");
+        read_token(req.change.write.name, parsed->positionals[next++], "name");
+        read_token(req.change.write.display_order, parsed->positionals[next++], "display_order");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -445,7 +422,7 @@ void credit_simulation_matrix_state_config_commands::process_set(
         return;
     }
 
-    auto result = do_auth_request<messaging::put_credit_simulation_matrix_state_config_response>(
+    auto result = do_auth_request<messaging::put_credit_rating_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -453,11 +430,12 @@ void credit_simulation_matrix_state_config_commands::process_set(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_put_many(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_put_many(std::ostream& out,
+                                              nats_client& session,
+                                              const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
-    using request_type = messaging::put_many_credit_simulation_matrix_state_configs_request;
+    using request_type = messaging::put_many_credit_ratings_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run put-many." << std::endl;
@@ -484,20 +462,16 @@ void credit_simulation_matrix_state_config_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 3 + 2) {
+            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
-            messaging::credit_simulation_matrix_state_config_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.transition_matrix_id,
-                       parsed->positionals[next++],
-                       "transition_matrix_id");
-            read_token(change.write.position, parsed->positionals[next++], "position");
-            read_token(
-                change.write.credit_rating_code, parsed->positionals[next++], "credit_rating_code");
+            messaging::credit_rating_change change;
+            read_token(change.write.code, parsed->positionals[next++], "code");
+            read_token(change.write.name, parsed->positionals[next++], "name");
+            read_token(change.write.display_order, parsed->positionals[next++], "display_order");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -508,20 +482,20 @@ void credit_simulation_matrix_state_config_commands::process_put_many(
         return;
     }
 
-    auto result =
-        do_auth_request<messaging::put_many_credit_simulation_matrix_state_configs_response>(
-            out, session, std::string(req.nats_subject), req);
+    auto result = do_auth_request<messaging::put_many_credit_ratings_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_delete(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_delete(std::ostream& out,
+                                            nats_client& session,
+                                            const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
-    using request_type = messaging::delete_credit_simulation_matrix_state_config_request;
+    using request_type = messaging::delete_credit_rating_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run delete." << std::endl;
@@ -547,8 +521,7 @@ void credit_simulation_matrix_state_config_commands::process_delete(
                       << "." << std::endl;
             return;
         }
-        read_token(
-            req.removal.key.credit_rating_code, parsed->positionals[next++], "credit_rating_code");
+        read_token(req.removal.key.code, parsed->positionals[next++], "code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -562,7 +535,7 @@ void credit_simulation_matrix_state_config_commands::process_delete(
         return;
     }
 
-    auto result = do_auth_request<messaging::delete_credit_simulation_matrix_state_config_response>(
+    auto result = do_auth_request<messaging::delete_credit_rating_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -570,11 +543,12 @@ void credit_simulation_matrix_state_config_commands::process_delete(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_delete_many(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_delete_many(std::ostream& out,
+                                                 nats_client& session,
+                                                 const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
-    using request_type = messaging::delete_many_credit_simulation_matrix_state_configs_request;
+    using request_type = messaging::delete_many_credit_ratings_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run delete-many." << std::endl;
@@ -600,11 +574,9 @@ void credit_simulation_matrix_state_config_commands::process_delete_many(
         }
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
-            messaging::credit_simulation_matrix_state_config_key key;
-            read_token(
-                key.credit_rating_code, parsed->positionals[i * 1 + 0], "credit_rating_code");
-            req.removals.push_back(
-                messaging::credit_simulation_matrix_state_config_removal{.key = std::move(key)});
+            messaging::credit_rating_key key;
+            read_token(key.code, parsed->positionals[i * 1 + 0], "code");
+            req.removals.push_back(messaging::credit_rating_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
         req.intent.commentary = parsed->positionals[parsed->positionals.size() - 1];
@@ -613,64 +585,7 @@ void credit_simulation_matrix_state_config_commands::process_delete_many(
         return;
     }
 
-    auto result =
-        do_auth_request<messaging::delete_many_credit_simulation_matrix_state_configs_response>(
-            out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    out << rfl::json::write(*result) << std::endl;
-}
-
-void credit_simulation_matrix_state_config_commands::process_by_transition_matrix_id(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-transition-matrix-id request.";
-
-    using request_type =
-        messaging::list_by_transition_matrix_id_credit_simulation_matrix_state_configs_request;
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run by-transition-matrix-id." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{
-        {.name = "offset", .requires_value = true, .default_value = ""},
-        {.name = "limit", .requires_value = true, .default_value = ""},
-        {.name = "order", .requires_value = true, .default_value = ""},
-        {.name = "scope", .requires_value = true, .default_value = ""},
-        {.name = "desc", .requires_value = false, .default_value = "false"},
-    };
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    request_type req;
-    [[maybe_unused]] std::size_t next = 0;
-    try {
-
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
-                      << std::endl;
-            return;
-        }
-        req.transition_matrix_id = ores::shell::app::from_token<boost::uuids::uuid>(
-            parsed->positionals[next++], "transition_matrix_id");
-        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
-            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
-                                           ores::utility::domain::scope::direct;
-        }
-        apply_page(req, *parsed);
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    auto result = do_auth_request<
-        messaging::list_by_transition_matrix_id_credit_simulation_matrix_state_configs_response>(
+    auto result = do_auth_request<messaging::delete_many_credit_ratings_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -678,67 +593,12 @@ void credit_simulation_matrix_state_config_commands::process_by_transition_matri
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_by_credit_rating_code(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-credit-rating-code request.";
-
-    using request_type =
-        messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_request;
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run by-credit-rating-code." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{
-        {.name = "offset", .requires_value = true, .default_value = ""},
-        {.name = "limit", .requires_value = true, .default_value = ""},
-        {.name = "order", .requires_value = true, .default_value = ""},
-        {.name = "scope", .requires_value = true, .default_value = ""},
-        {.name = "desc", .requires_value = false, .default_value = "false"},
-    };
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    request_type req;
-    [[maybe_unused]] std::size_t next = 0;
-    try {
-
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
-                      << std::endl;
-            return;
-        }
-        req.credit_rating_code = ores::shell::app::from_token<std::string>(
-            parsed->positionals[next++], "credit_rating_code");
-        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
-            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
-                                           ores::utility::domain::scope::direct;
-        }
-        apply_page(req, *parsed);
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    auto result = do_auth_request<
-        messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    out << rfl::json::write(*result) << std::endl;
-}
-
-void credit_simulation_matrix_state_config_commands::process_versions(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_versions(std::ostream& out,
+                                              nats_client& session,
+                                              const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
 
-    using request_type = messaging::list_credit_simulation_matrix_state_config_versions_request;
+    using request_type = messaging::list_credit_rating_versions_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run versions." << std::endl;
@@ -767,27 +627,27 @@ void credit_simulation_matrix_state_config_commands::process_versions(
                       << std::endl;
             return;
         }
-        read_token(req.key.credit_rating_code, parsed->positionals[next++], "credit_rating_code");
+        read_token(req.key.code, parsed->positionals[next++], "code");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    auto result =
-        do_auth_request<messaging::list_credit_simulation_matrix_state_config_versions_response>(
-            out, session, std::string(req.nats_subject), req);
+    auto result = do_auth_request<messaging::list_credit_rating_versions_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
     out << rfl::json::write(*result) << std::endl;
 }
 
-void credit_simulation_matrix_state_config_commands::process_version(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+void credit_rating_commands::process_version(std::ostream& out,
+                                             nats_client& session,
+                                             const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
 
-    using request_type = messaging::get_credit_simulation_matrix_state_config_version_request;
+    using request_type = messaging::get_credit_rating_version_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run version." << std::endl;
@@ -813,9 +673,7 @@ void credit_simulation_matrix_state_config_commands::process_version(
                       << std::endl;
             return;
         }
-        read_token(req.key.credit_simulation_matrix_state_config.credit_rating_code,
-                   parsed->positionals[next++],
-                   "credit_rating_code");
+        read_token(req.key.credit_rating.code, parsed->positionals[next++], "code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {
@@ -823,9 +681,8 @@ void credit_simulation_matrix_state_config_commands::process_version(
         return;
     }
 
-    auto result =
-        do_auth_request<messaging::get_credit_simulation_matrix_state_config_version_response>(
-            out, session, std::string(req.nats_subject), req);
+    auto result = do_auth_request<messaging::get_credit_rating_version_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

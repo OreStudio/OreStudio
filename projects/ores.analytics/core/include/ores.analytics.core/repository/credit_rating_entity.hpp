@@ -22,8 +22,8 @@
  * Template: cpp_domain_type_entity.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_ANALYTICS_CORE_REPOSITORY_CREDIT_SIMULATION_MATRIX_STATE_CONFIG_ENTITY_HPP
-#define ORES_ANALYTICS_CORE_REPOSITORY_CREDIT_SIMULATION_MATRIX_STATE_CONFIG_ENTITY_HPP
+#ifndef ORES_ANALYTICS_CORE_REPOSITORY_CREDIT_RATING_ENTITY_HPP
+#define ORES_ANALYTICS_CORE_REPOSITORY_CREDIT_RATING_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -36,19 +36,17 @@ namespace ores::analytics::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a credit simulation matrix state config in the database.
+ * @brief Represents a  in the database.
  */
-struct credit_simulation_matrix_state_config_entity {
+struct credit_rating_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_analytics_credit_simulation_matrix_states_tbl";
+    constexpr static const char* tablename = "ores_analytics_credit_ratings_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
-    std::string transition_matrix_id;
-    int position = 0;
-    std::string credit_rating_code;
+    std::string name;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -57,7 +55,7 @@ struct credit_simulation_matrix_state_config_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const credit_simulation_matrix_state_config_entity& v);
+std::ostream& operator<<(std::ostream& s, const credit_rating_entity& v);
 
 }
 

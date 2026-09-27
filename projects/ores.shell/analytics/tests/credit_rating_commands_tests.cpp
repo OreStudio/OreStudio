@@ -25,7 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/analytics/credit_simulation_matrix_state_config_commands.hpp"
+#include "ores.shell/app/commands/analytics/credit_rating_commands.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -36,7 +36,7 @@
 
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
-using ores::shell::app::commands::credit_simulation_matrix_state_config_commands;
+using ores::shell::app::commands::credit_rating_commands;
 using namespace ores::logging;
 
 namespace {
@@ -62,66 +62,63 @@ std::vector<std::string> tokens(const std::size_t count) {
 
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_registers_every_derived_verb", tags) {
+TEST_CASE("credit_rating_commands_registers_every_derived_verb", tags) {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
     nats_client session;
 
-    credit_simulation_matrix_state_config_commands::register_commands(root_menu, session);
+    credit_rating_commands::register_commands(root_menu, session);
 
     // The menu's completion list is the only public view of its children, so
     // a verb that is missing from it was never registered.
-    const auto completions = root_menu.GetCompletions("credit_simulation_matrix_state_configs ");
+    const auto completions = root_menu.GetCompletions("credit_ratings ");
     for (const auto& verb : {
-             std::string{"credit_simulation_matrix_state_configs list"},
-             std::string{"credit_simulation_matrix_state_configs get"},
-             std::string{"credit_simulation_matrix_state_configs get-many"},
-             std::string{"credit_simulation_matrix_state_configs add"},
-             std::string{"credit_simulation_matrix_state_configs set"},
-             std::string{"credit_simulation_matrix_state_configs put-many"},
-             std::string{"credit_simulation_matrix_state_configs delete"},
-             std::string{"credit_simulation_matrix_state_configs delete-many"},
-             std::string{"credit_simulation_matrix_state_configs by-transition-matrix-id"},
-             std::string{"credit_simulation_matrix_state_configs by-credit-rating-code"},
-             std::string{"credit_simulation_matrix_state_configs versions"},
-             std::string{"credit_simulation_matrix_state_configs version"},
+             std::string{"credit_ratings list"},
+             std::string{"credit_ratings get"},
+             std::string{"credit_ratings get-many"},
+             std::string{"credit_ratings add"},
+             std::string{"credit_ratings set"},
+             std::string{"credit_ratings put-many"},
+             std::string{"credit_ratings delete"},
+             std::string{"credit_ratings delete-many"},
+             std::string{"credit_ratings versions"},
+             std::string{"credit_ratings version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 12 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_list_requires_a_session", tags) {
+TEST_CASE("credit_rating_commands_process_list_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_list(out, session, tokens(0));
+    credit_rating_commands::process_list(out, session, tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_get_requires_a_session", tags) {
+TEST_CASE("credit_rating_commands_process_get_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_get(out, session, tokens(1));
+    credit_rating_commands::process_get(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_get_reports_the_expected_count",
-          tags) {
+TEST_CASE("credit_rating_commands_process_get_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -129,7 +126,7 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_get_reports_th
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_get(out, session, {});
+    credit_rating_commands::process_get(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
@@ -141,37 +138,35 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_get_reports_th
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_get_many_requires_a_session",
-          tags) {
+TEST_CASE("credit_rating_commands_process_get_many_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_get_many(out, session, tokens(1));
+    credit_rating_commands::process_get_many(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_add_requires_a_session", tags) {
+TEST_CASE("credit_rating_commands_process_add_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_add(out, session, tokens(4));
+    credit_rating_commands::process_add(out, session, tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_add_reports_the_expected_count",
-          tags) {
+TEST_CASE("credit_rating_commands_process_add_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -179,7 +174,7 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_add_reports_th
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_add(out, session, {});
+    credit_rating_commands::process_add(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
@@ -191,22 +186,21 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_add_reports_th
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_set_requires_a_session", tags) {
+TEST_CASE("credit_rating_commands_process_set_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_set(out, session, tokens(4));
+    credit_rating_commands::process_set(out, session, tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_set_reports_the_expected_count",
-          tags) {
+TEST_CASE("credit_rating_commands_process_set_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -214,7 +208,7 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_set_reports_th
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_set(out, session, {});
+    credit_rating_commands::process_set(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
@@ -226,39 +220,35 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_set_reports_th
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_put_many_requires_a_session",
-          tags) {
+TEST_CASE("credit_rating_commands_process_put_many_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_put_many(out, session, tokens(4));
+    credit_rating_commands::process_put_many(out, session, tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_delete_requires_a_session",
-          tags) {
+TEST_CASE("credit_rating_commands_process_delete_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_delete(out, session, tokens(1));
+    credit_rating_commands::process_delete(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE(
-    "credit_simulation_matrix_state_config_commands_process_delete_reports_the_expected_count",
-    tags) {
+TEST_CASE("credit_rating_commands_process_delete_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -266,7 +256,7 @@ TEST_CASE(
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_delete(out, session, {});
+    credit_rating_commands::process_delete(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
@@ -278,41 +268,35 @@ TEST_CASE(
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_delete_many_requires_a_session",
-          tags) {
+TEST_CASE("credit_rating_commands_process_delete_many_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_delete_many(out, session, tokens(1));
+    credit_rating_commands::process_delete_many(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_transition_matrix_id_requires_"
-          "a_session",
-          tags) {
+TEST_CASE("credit_rating_commands_process_versions_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_by_transition_matrix_id(
-        out, session, tokens(1));
+    credit_rating_commands::process_versions(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_transition_matrix_id_reports_"
-          "the_expected_count",
-          tags) {
+TEST_CASE("credit_rating_commands_process_versions_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -320,8 +304,7 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_transition_
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_by_transition_matrix_id(
-        out, session, {});
+    credit_rating_commands::process_versions(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
@@ -333,26 +316,21 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_transition_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_credit_rating_code_requires_a_"
-          "session",
-          tags) {
+TEST_CASE("credit_rating_commands_process_version_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_by_credit_rating_code(
-        out, session, tokens(1));
+    credit_rating_commands::process_version(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_credit_rating_code_reports_"
-          "the_expected_count",
-          tags) {
+TEST_CASE("credit_rating_commands_process_version_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -360,81 +338,7 @@ TEST_CASE("credit_simulation_matrix_state_config_commands_process_by_credit_rati
     std::ostringstream out;
 
     command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_by_credit_rating_code(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_versions_requires_a_session",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_versions(out, session, tokens(1));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE(
-    "credit_simulation_matrix_state_config_commands_process_versions_reports_the_expected_count",
-    tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_versions(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("credit_simulation_matrix_state_config_commands_process_version_requires_a_session",
-          tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_version(out, session, tokens(1));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE(
-    "credit_simulation_matrix_state_config_commands_process_version_reports_the_expected_count",
-    tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    credit_simulation_matrix_state_config_commands::process_version(out, session, {});
+    credit_rating_commands::process_version(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it

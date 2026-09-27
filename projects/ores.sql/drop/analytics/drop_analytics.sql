@@ -45,3 +45,5 @@
 
 \ir ./analytics_credit_simulation_configs_notify_trigger_drop.sql
 \ir ./analytics_credit_simulation_configs_drop.sql
+\ir ./analytics_credit_ratings_notify_trigger_drop.sql
+\ir ./analytics_credit_ratings_drop.sql

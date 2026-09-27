@@ -22,13 +22,13 @@
  * Template: cpp_nats_integration_test.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.analytics.api/domain/credit_simulation_matrix_state_config.hpp"
-#include "ores.analytics.api/domain/credit_simulation_matrix_state_config_json_io.hpp" // IWYU pragma: keep.
-#include "ores.analytics.api/eventing/credit_simulation_matrix_state_config_event.hpp"
-#include "ores.analytics.api/generators/credit_simulation_matrix_state_config_generator.hpp"
-#include "ores.analytics.api/messaging/credit_simulation_matrix_state_config_protocol.hpp"
-#include "ores.analytics.core/repository/credit_simulation_matrix_state_config_repository.hpp"
-#include "ores.analytics.core/service/credit_simulation_matrix_state_config_service.hpp"
+#include "ores.analytics.api/domain/credit_rating.hpp"
+#include "ores.analytics.api/domain/credit_rating_json_io.hpp" // IWYU pragma: keep.
+#include "ores.analytics.api/eventing/credit_rating_event.hpp"
+#include "ores.analytics.api/generators/credit_rating_generator.hpp"
+#include "ores.analytics.api/messaging/credit_rating_protocol.hpp"
+#include "ores.analytics.core/repository/credit_rating_repository.hpp"
+#include "ores.analytics.core/service/credit_rating_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
@@ -39,14 +39,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-// Soft-FK parent seeding (ores_analytics_credit_simulation_matrices_tbl): the parent may live in
-// another component, so its own component names the headers.
-#include "ores.analytics.api/generators/credit_simulation_matrix_config_generator.hpp"
-#include "ores.analytics.core/repository/credit_simulation_matrix_config_repository.hpp"
-// Soft-FK parent seeding (ores_analytics_credit_ratings_tbl): the parent may live in another
-// component, so its own component names the headers.
-#include "ores.analytics.api/generators/credit_rating_generator.hpp"
-#include "ores.analytics.core/repository/credit_rating_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -56,7 +48,7 @@
 #include <thread>
 
 // Proves the "write an entity, observe its NATS entity-changed
-// notification" pattern end to end for credit_simulation_matrix_state_config -- the
+// notification" pattern end to end for credit_rating -- the
 // production DB-write -> pg_notify -> postgres_event_source ->
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
@@ -70,12 +62,12 @@ const std::string tags("[eventing][integration]");
 }
 
 using namespace ores::analytics::generators;
-using ores::analytics::domain::credit_simulation_matrix_state_config;
-using ores::analytics::repository::credit_simulation_matrix_state_config_repository;
+using ores::analytics::domain::credit_rating;
+using ores::analytics::repository::credit_rating_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_credit_simulation_matrix_state_config_publishes_an_event", tags) {
+TEST_CASE("write_credit_rating_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -93,15 +85,14 @@ TEST_CASE("write_credit_simulation_matrix_state_config_publishes_an_event", tags
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    using event_type = ores::analytics::messaging::credit_simulation_matrix_state_config_event;
+    using event_type = ores::analytics::messaging::credit_rating_event;
     auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
         // One payload is addressed by three subjects, so the subject is the
         // collection's prefix and the action the event reports.
         ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
     });
 
-    event_source.register_entity_event_mapping<event_type>(
-        "ores_analytics_credit_simulation_matrix_states");
+    event_source.register_entity_event_mapping<event_type>("ores_analytics_credit_ratings");
 
     // 2. Subscribe as an external observer would, on the relative subject --
     // client::subscribe() prepends the subject_prefix itself. The wildcard
@@ -120,32 +111,12 @@ TEST_CASE("write_credit_simulation_matrix_state_config_publishes_an_event", tags
 
     // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
     // the chain wired above -> NATS.
-    auto v = generate_synthetic_credit_simulation_matrix_state_config(ctx);
+    auto v = generate_synthetic_credit_rating(ctx);
     v.change_reason_code = "system.test";
-    // Seed the active credit_simulation_matrix_config row
-    // ores_analytics_credit_simulation_matrices_tbl references: the insert trigger's existence
-    // check rejects a synthetic key that matches no active row, so the parent must be written
-    // first.
-    auto transition_matrix_id_parent =
-        ores::analytics::generators::generate_synthetic_credit_simulation_matrix_config(ctx);
-    transition_matrix_id_parent.change_reason_code = "system.test";
-    ores::analytics::repository::credit_simulation_matrix_config_repository
-        transition_matrix_id_repo;
-    transition_matrix_id_repo.write(party_ctx, transition_matrix_id_parent);
-    v.transition_matrix_id = transition_matrix_id_parent.id;
-    // Seed the active credit_rating row ores_analytics_credit_ratings_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto credit_rating_code_parent =
-        ores::analytics::generators::generate_synthetic_credit_rating(ctx);
-    credit_rating_code_parent.change_reason_code = "system.test";
-    ores::analytics::repository::credit_rating_repository credit_rating_code_repo;
-    credit_rating_code_repo.write(party_ctx, credit_rating_code_parent);
-    v.credit_rating_code = credit_rating_code_parent.code;
-    const auto id_str = boost::uuids::to_string(v.id);
-    BOOST_LOG_SEV(lg, debug) << "Credit Simulation Matrix State Config: " << v;
+    const auto id_str = v.code;
+    BOOST_LOG_SEV(lg, debug) << ": " << v;
 
-    credit_simulation_matrix_state_config_repository repo;
+    credit_rating_repository repo;
     repo.write(party_ctx, v);
 
     // 4. Poll the observer's buffer for the notification. The chain --
@@ -171,7 +142,7 @@ TEST_CASE("write_credit_simulation_matrix_state_config_publishes_an_event", tags
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.credit_rating_code == v.credit_rating_code)
+                if (decoded && decoded->key.code == v.code)
                     received.push_back(msg);
             }
         }
@@ -183,18 +154,16 @@ TEST_CASE("write_credit_simulation_matrix_state_config_publishes_an_event", tags
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error) << "No notification for credit_simulation_matrix_state_config "
-                                 << id_str << " after " << max_attempts
-                                 << " writes; observer received " << final_snapshot.size()
-                                 << " message(s) in total";
+        BOOST_LOG_SEV(lg, error) << "No notification for credit_rating " << id_str << " after "
+                                 << max_attempts << " writes; observer received "
+                                 << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
             BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
                                      << msg.data.size() << " bytes";
     }
     REQUIRE_FALSE(received.empty());
-    BOOST_LOG_SEV(lg, info)
-        << "Received " << received.size()
-        << " matching NATS notification(s) for credit_simulation_matrix_state_config " << id_str;
+    BOOST_LOG_SEV(lg, info) << "Received " << received.size()
+                            << " matching NATS notification(s) for credit_rating " << id_str;
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and
@@ -206,19 +175,19 @@ TEST_CASE("write_credit_simulation_matrix_state_config_publishes_an_event", tags
     // only growth is asserted, not an exact count.
     {
         const auto& crud_ctx = party_ctx;
-        ores::analytics::service::credit_simulation_matrix_state_config_service svc(crud_ctx);
+        ores::analytics::service::credit_rating_service svc(crud_ctx);
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_state_history(v.credit_rating_code);
+        auto versions = svc.get_rating_history(id_str);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_state(v.id);
+        svc.delete_rating(id_str);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_state(v.id).has_value());
-        REQUIRE(svc.get_state_history(v.credit_rating_code).size() == versions.size());
+        REQUIRE_FALSE(svc.get_rating(id_str).has_value());
+        REQUIRE(svc.get_rating_history(id_str).size() == versions.size());
     }
 }

@@ -22,58 +22,54 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- * Credit Simulation Matrix State Config Table
+ *  Table
  *
- * ORE names the states a matrix spans in an XML comment inside the Data
- * element, one label per row and column, and indexes the grid by their
- * position. The labels are not derivable from the numbers, so without them
- * the comment cannot be written back and the document does not round trip.
- * Every shipped example declares the same eight labels, so this is a
- * vocabulary rather than free text.
+ * +#+entity_title: Credit Rating
+ * +#+updated: 2026-09-27
+ *
+ * The rating scale ORE lays a transition matrix out on. The geometry is fixed:
+ * every matrix in the shipped corpus is 8x8 and names the same eight ratings in
+ * the same order, Aaa Aa A Baa Ba B C Default. The names are a vocabulary, not
+ * free text, so they are seeded here once rather than repeated as text on every
+ * matrix; a matrix row and column is then a position on this scale.
  */
 
-create table if not exists "ores_analytics_credit_simulation_matrix_states_tbl" (
-    "id" uuid not null,
+create table if not exists "ores_analytics_credit_ratings_tbl" (
+    "code" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "transition_matrix_id" uuid not null,
-    "position" integer not null,
-    "credit_rating_code" text not null,
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
+    "name" text not null,
+    "display_order" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("code" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists credit_simulation_matrix_state_configs_version_uniq_idx
-on "ores_analytics_credit_simulation_matrix_states_tbl" (tenant_id, id, version)
+create unique index if not exists credit_ratings_version_uniq_idx
+on "ores_analytics_credit_ratings_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists credit_simulation_matrix_state_configs_id_uniq_idx
-on "ores_analytics_credit_simulation_matrix_states_tbl" (tenant_id, id)
+create unique index if not exists credit_ratings_code_uniq_idx
+on "ores_analytics_credit_ratings_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists credit_simulation_matrix_state_configs_tenant_idx
-on "ores_analytics_credit_simulation_matrix_states_tbl" (tenant_id)
+create index if not exists credit_ratings_tenant_idx
+on "ores_analytics_credit_ratings_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists credit_simulation_matrix_state_configs_workspace_idx
-on "ores_analytics_credit_simulation_matrix_states_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create or replace function ores_analytics_credit_simulation_matrix_states_insert_fn()
+create or replace function ores_analytics_credit_ratings_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -81,39 +77,14 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
-
-    -- Validate transition_matrix_id (soft FK to ores_analytics_credit_simulation_matrices_tbl)
-    if not exists (
-        select 1 from ores_analytics_credit_simulation_matrices_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.transition_matrix_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid transition_matrix_id: %. No active transition matrix found with this id.', NEW.transition_matrix_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate credit_rating_code (soft FK to ores_analytics_credit_ratings_tbl)
-    if not exists (
-        select 1 from ores_analytics_credit_ratings_tbl
-        where tenant_id = NEW.tenant_id
-          and code = NEW.credit_rating_code
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid credit_rating_code: %. No active credit rating found with this code.', NEW.credit_rating_code
-            using errcode = '23503';
-    end if;
-
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
-    from "ores_analytics_credit_simulation_matrix_states_tbl"
+    from "ores_analytics_credit_ratings_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -139,10 +110,10 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_analytics_credit_simulation_matrix_states_tbl"
+        update "ores_analytics_credit_ratings_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -158,15 +129,15 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_analytics_credit_simulation_matrix_states_insert_trg
-before insert on "ores_analytics_credit_simulation_matrix_states_tbl"
-for each row execute function ores_analytics_credit_simulation_matrix_states_insert_fn();
+create or replace trigger ores_analytics_credit_ratings_insert_trg
+before insert on "ores_analytics_credit_ratings_tbl"
+for each row execute function ores_analytics_credit_ratings_insert_fn();
 
-create or replace rule ores_analytics_credit_simulation_matrix_states_delete_rule as
-on delete to "ores_analytics_credit_simulation_matrix_states_tbl" do instead (
-    update "ores_analytics_credit_simulation_matrix_states_tbl"
+create or replace rule ores_analytics_credit_ratings_delete_rule as
+on delete to "ores_analytics_credit_ratings_tbl" do instead (
+    update "ores_analytics_credit_ratings_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

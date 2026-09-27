@@ -108,13 +108,13 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest matrix states filtered by label.
+     * @brief Reads latest matrix states filtered by credit_rating_code.
      */
     std::vector<domain::credit_simulation_matrix_state_config>
-    read_latest_by_label(context ctx, const std::string& label);
+    read_latest_by_credit_rating_code(context ctx, const std::string& credit_rating_code);
 
     /**
-     * @brief Reads the newest matrix states filtered by label, current or not.
+     * @brief Reads the newest matrix states filtered by credit_rating_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable
      * after a delete, which closes the transaction-time window rather than
@@ -122,7 +122,7 @@ public:
      * ignores the window and takes the newest match.
      */
     std::vector<domain::credit_simulation_matrix_state_config>
-    read_any_by_label(context ctx, const std::string& label);
+    read_any_by_credit_rating_code(context ctx, const std::string& credit_rating_code);
 
 
     /**
@@ -162,6 +162,26 @@ public:
     std::uint32_t
     get_total_state_count_by_transition_matrix_id(context ctx,
                                                   const std::string& transition_matrix_id);
+
+
+    /**
+     * @brief Reads latest matrix states filtered by credit_rating_code, with pagination.
+     * @param ctx Repository context with database connection
+     * @param credit_rating_code The credit_rating_code to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::credit_simulation_matrix_state_config>
+    read_latest_by_credit_rating_code(context ctx,
+                                      const std::string& credit_rating_code,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active matrix states filtered by credit_rating_code.
+     */
+    std::uint32_t
+    get_total_state_count_by_credit_rating_code(context ctx, const std::string& credit_rating_code);
 
 
     /**

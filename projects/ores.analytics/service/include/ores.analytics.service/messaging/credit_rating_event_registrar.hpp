@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,28 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The matrix state wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface CreditSimulationMatrixStateConfig {
-    version: number;
-    tenant_id: string;
-    workspace_id: string;
-    id: string;
-    transition_matrix_id: string;
-    position: number;
-    credit_rating_code: string;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
-}
+#ifndef ORES_ANALYTICS_SERVICE_MESSAGING_CREDIT_RATING_EVENT_REGISTRAR_HPP
+#define ORES_ANALYTICS_SERVICE_MESSAGING_CREDIT_RATING_EVENT_REGISTRAR_HPP
+
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+
+namespace ores::analytics::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_credit_rating_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                     ores::eventing::service::event_bus& event_bus,
+                                     ores::nats::service::client& nats);
+
+} // namespace ores::analytics::service::messaging
+
+#endif

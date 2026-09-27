@@ -101,6 +101,10 @@ public:
     list_by_transition_matrix_id_credit_simulation_matrix_state_configs(
         const messaging::
             list_by_transition_matrix_id_credit_simulation_matrix_state_configs_request& request);
+    messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_response
+    list_by_credit_rating_code_credit_simulation_matrix_state_configs(
+        const messaging::list_by_credit_rating_code_credit_simulation_matrix_state_configs_request&
+            request);
     messaging::list_credit_simulation_matrix_state_config_versions_response
     list_credit_simulation_matrix_state_config_versions(
         const messaging::list_credit_simulation_matrix_state_config_versions_request& request);
@@ -148,6 +152,26 @@ public:
 
 
     /**
+     * @brief Lists matrix states filtered by credit_rating_code, with pagination.
+     *
+     * @param credit_rating_code The credit_rating_code to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching matrix states for the requested page.
+     */
+    std::vector<domain::credit_simulation_matrix_state_config> list_states_by_credit_rating_code(
+        const std::string& credit_rating_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active matrix states filtered by credit_rating_code.
+     *
+     * @param credit_rating_code The credit_rating_code to filter by.
+     * @return Total number of matching matrix states.
+     */
+    std::uint32_t count_states_by_credit_rating_code(const std::string& credit_rating_code);
+
+
+    /**
      * @brief Retrieves a single matrix state as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
@@ -179,7 +203,7 @@ public:
      * @return The matrix state if found, std::nullopt otherwise.
      */
     std::optional<domain::credit_simulation_matrix_state_config>
-    get_state_by_label(const std::string& label);
+    get_state_by_credit_rating_code(const std::string& credit_rating_code);
 
     /**
      * @brief Retrieves a batch of matrix states by primary key.

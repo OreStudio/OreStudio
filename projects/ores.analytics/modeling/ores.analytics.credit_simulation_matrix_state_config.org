@@ -61,14 +61,15 @@ The matrix this state belongs to.
 The zero-based position of the state in the matrix, which is what the
 cells index by their from_state and to_state.
 
-** label
+** credit_rating_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
 
-The state name as ORE writes it, for example Aaa or Default.
+The rating this position stands for. The scale is fixed and seeded, so the
+name is a reference and not text repeated on every matrix.
 
 * SQL
 
@@ -86,6 +87,16 @@ The state name as ORE writes it, for example Aaa or Default.
 :parent_entity: credit_simulation_matrix_config
 :nullable:      false
 :error_message: Invalid transition_matrix_id: %. No active transition matrix found with this id.
+:list_by:       true
+:END:
+
+** credit_rating_code
+:PROPERTIES:
+:table:         ores_analytics_credit_ratings_tbl
+:target_column: code
+:parent_entity: credit_rating
+:nullable:      false
+:error_message: Invalid credit_rating_code: %. No active credit rating found with this code.
 :list_by:       true
 :END:
 
@@ -145,7 +156,7 @@ The state name as ORE writes it, for example Aaa or Default.
 :protocol_include:        ores.analytics.api/messaging/credit_simulation_matrix_state_config_protocol.hpp
 :collection_name:         credit_simulation_matrix_state_configs
 :item_var:                credit_simulation_matrix_state_config
-:key_field:               label
+:key_field:               credit_rating_code
 :get_request_class:       analytics::messaging::list_credit_simulation_matrix_state_configs_request
 :get_response_class:      analytics::messaging::list_credit_simulation_matrix_state_configs_response
 :get_message_type:        list_credit_simulation_matrix_state_configs_request

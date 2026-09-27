@@ -23,21 +23,19 @@
  * To modify, update the template and regenerate.
  */
 /**
- * The matrix state wire shape.
+ * The credit rating wire shape.
  *
  * Field names are the C++ member names, because they are the keys rfl::json
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  *
  * See the sibling protocol module for the messages that carry this type.
  */
-export interface CreditSimulationMatrixStateConfig {
+export interface CreditRating {
     version: number;
     tenant_id: string;
-    workspace_id: string;
-    id: string;
-    transition_matrix_id: string;
-    position: number;
-    credit_rating_code: string;
+    code: string;
+    name: string;
+    display_order: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 64D7EF2B-1B02-5A12-A821-0D16AAFB5ACE
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the credit_ratings commands from the shell?
+#+description: Every command the credit_ratings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:credit_ratings:
+
+This file documents the credit_ratings resource at the shell, one section per command. Every command is a subcommand of =credit_ratings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 20C9B6CA-BF90-50C8-99E9-733C00FD05B5
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.list=.
+
+#+name: credit_ratings-list
+#+begin_src ores-shell :tangle credit_ratings-list.ores :exports none
+credit_ratings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7B1717A4-6F86-597C-B29C-30058B63CD1C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings get <code>
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.get=.
+
+#+name: credit_ratings-get
+#+begin_src ores-shell :tangle credit_ratings-get.ores :exports none
+credit_ratings get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 556C059A-D7D1-5969-873E-0E3C082A10AE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.get_many=.
+
+#+name: credit_ratings-get-many
+#+begin_src ores-shell :tangle credit_ratings-get-many.ores :exports none
+credit_ratings get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EA6C37AD-660F-516F-ACE5-60260814243F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings add <code> <name> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.put=.
+
+#+name: credit_ratings-add
+#+begin_src ores-shell :tangle credit_ratings-add.ores :exports none
+credit_ratings add __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3826A9FB-21C1-5D16-9341-BE606426751A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings set <code> <name> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.put=.
+
+#+name: credit_ratings-set
+#+begin_src ores-shell :tangle credit_ratings-set.ores :exports none
+credit_ratings set __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6BFC2BB1-B831-5E12-88E5-AE899AF25E5A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings put-many --count <n> <code> <name> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.put_many=.
+
+#+name: credit_ratings-put-many
+#+begin_src ores-shell :tangle credit_ratings-put-many.ores :exports none
+credit_ratings put-many --count 1 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: EF53EEDB-9748-5CAD-990F-31252F1F8B67
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.delete=.
+
+#+name: credit_ratings-delete
+#+begin_src ores-shell :tangle credit_ratings-delete.ores :exports none
+credit_ratings delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C805877D-DDC3-5C0F-B29B-D059D1E8DCE1
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings.delete_many=.
+
+#+name: credit_ratings-delete-many
+#+begin_src ores-shell :tangle credit_ratings-delete-many.ores :exports none
+credit_ratings delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D6546F1A-CBDD-5568-879C-AEF2E2CDE45C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings_versions.list=.
+
+#+name: credit_ratings-versions
+#+begin_src ores-shell :tangle credit_ratings-versions.ores :exports none
+credit_ratings versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6A116E14-B9A5-599D-8106-E313C6EB243B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_ratings version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.credit_ratings_versions.get=.
+
+#+name: credit_ratings-version
+#+begin_src ores-shell :tangle credit_ratings-version.ores :exports none
+credit_ratings version __none__ --version 1
+#+end_src
+

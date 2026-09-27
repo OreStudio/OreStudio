@@ -47,6 +47,8 @@
 -- Credit simulation configuration (ORE credit simulation document root)
 \ir ./analytics_credit_simulation_configs_create.sql
 \ir ./analytics_credit_simulation_configs_notify_trigger_create.sql
+\ir ./analytics_credit_ratings_create.sql
+\ir ./analytics_credit_ratings_notify_trigger_create.sql
 
 -- Credit simulation transition matrices (named, reusable)
 \ir ./analytics_credit_simulation_matrix_configs_create.sql

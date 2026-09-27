@@ -22,7 +22,7 @@
  * Template: cpp_domain_type_generator.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.analytics.api/generators/credit_simulation_matrix_state_config_generator.hpp"
+#include "ores.analytics.api/generators/credit_rating_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -34,21 +34,20 @@ namespace ores::analytics::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::credit_simulation_matrix_state_config
-generate_synthetic_credit_simulation_matrix_state_config(
-    utility::generation::generation_context& ctx) {
+domain::credit_rating
+generate_synthetic_credit_rating(utility::generation::generation_context& ctx) {
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
-    domain::credit_simulation_matrix_state_config r;
+    domain::credit_rating r;
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
-    r.id = ctx.generate_uuid();
-    r.transition_matrix_id = ctx.generate_uuid();
-    r.credit_rating_code = std::string(faker::word::noun());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -57,13 +56,12 @@ generate_synthetic_credit_simulation_matrix_state_config(
     return r;
 }
 
-std::vector<domain::credit_simulation_matrix_state_config>
-generate_synthetic_credit_simulation_matrix_state_configs(
-    std::size_t n, utility::generation::generation_context& ctx) {
-    std::vector<domain::credit_simulation_matrix_state_config> r;
+std::vector<domain::credit_rating>
+generate_synthetic_credit_ratings(std::size_t n, utility::generation::generation_context& ctx) {
+    std::vector<domain::credit_rating> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_credit_simulation_matrix_state_config(ctx));
+        r.push_back(generate_synthetic_credit_rating(ctx));
     return r;
 }
 

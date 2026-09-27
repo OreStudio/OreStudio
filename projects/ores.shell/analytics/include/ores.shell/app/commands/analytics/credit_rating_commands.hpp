@@ -22,8 +22,8 @@
  * Template: cpp_shell_command_header.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_SHELL_APP_COMMANDS_CREDIT_SIMULATION_MATRIX_STATE_CONFIG_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_CREDIT_SIMULATION_MATRIX_STATE_CONFIG_COMMANDS_HPP
+#ifndef ORES_SHELL_APP_COMMANDS_CREDIT_RATING_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_CREDIT_RATING_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -40,7 +40,7 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Every verb matrix states answer, as one command each.
+ * @brief Every verb credit ratings answer, as one command each.
  *
  * The unit is the entity's own derivation addressed from the REPL, so a verb
  * the model gains appears as a command without an edit here and a verb it
@@ -48,10 +48,10 @@ namespace ores::shell::app::commands {
  * shape: a paged read is addressed by nothing, a write by its write record,
  * and everything else by the key.
  */
-class credit_simulation_matrix_state_config_commands {
+class credit_rating_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.shell.app.commands.analytics.credit_simulation_matrix_state_config_commands";
+        "ores.shell.app.commands.analytics.credit_rating_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -61,7 +61,7 @@ private:
 
 public:
     /**
-     * @brief Register the matrix states submenu.
+     * @brief Register the credit ratings submenu.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
@@ -73,81 +73,63 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <credit_rating_code>
+     * @brief get <code>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <credit_rating_code>
+     * @brief get-many <code>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <transition_matrix_id> <position> <credit_rating_code> <reason> <commentary>
+     * @brief add <code> <name> <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <transition_matrix_id> <position> <credit_rating_code> <reason> <commentary>
-     * [--version <n>]
+     * @brief set <code> <name> <display_order> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <transition_matrix_id> <position> <credit_rating_code>
-     * <reason> <commentary>
+     * @brief put-many --count <n> <code> <name> <display_order> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <credit_rating_code> <reason> <commentary> [--version <n>]
+     * @brief delete <code> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <credit_rating_code> <reason> <commentary>
+     * @brief delete-many <code> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief by-transition-matrix-id <transition_matrix_id> [--offset <n>] [--limit <n>] [--order
-     * <field>] [--desc]
-     */
-    static void process_by_transition_matrix_id(std::ostream& out,
-                                                ores::nats::service::nats_client& session,
-                                                const std::vector<std::string>& args);
-
-    /**
-     * @brief by-credit-rating-code <credit_rating_code> [--offset <n>] [--limit <n>] [--order
-     * <field>] [--desc]
-     */
-    static void process_by_credit_rating_code(std::ostream& out,
-                                              ores::nats::service::nats_client& session,
-                                              const std::vector<std::string>& args);
-
-    /**
-     * @brief versions <credit_rating_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <credit_rating_code> --version <n>
+     * @brief version <code> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

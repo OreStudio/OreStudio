@@ -8,7 +8,7 @@
 #+filetags: :full-report-pipeline:sprint_26:v0:
 #+owner: marco
 #+branch: feature/design-two-mode-pipeline
-#+pr: 2280
+#+pr: 2284
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -76,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2284][#2284]] | [reporting] Write the report processing architecture as a structure note and its notes |
 | [[https://github.com/OreStudio/OreStudio/pull/2280][#2280]] | [reporting] Make the workflow clear in the two-mode design |
 | [[https://github.com/OreStudio/OreStudio/pull/2279][#2279]] | [reporting] State the orchestration contract in the two-mode design |
 | [[https://github.com/OreStudio/OreStudio/pull/2278][#2278]] | [reporting] Design the two-mode report pipeline |

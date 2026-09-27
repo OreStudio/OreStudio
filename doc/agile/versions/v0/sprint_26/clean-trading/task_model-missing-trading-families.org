@@ -72,6 +72,65 @@ to the reference-data work and are out of scope, per decision D5.
   nothing after the work, and =check_model_drift.py --summary= reports
   no drift.
 
+** 0. What is done
+
+M09's model half is done and this branch carries it.
+
+- The twenty-five models that named the generator facet in the singular
+  now name it in the plural, which is the loader's default and the only
+  value the facet has. The correction collapses the second generator tree:
+  the fifty files under =api/.../generator/= (the singular facet's output)
+  are deleted, and their replacements are emitted under
+  =api/.../generators/=. The api source list is regenerated.
+- The five models that carried the Qt-era presentation properties --
+  =trade=, =lifecycle_event=, =party_role_type=, =trade_id_type= and
+  =trade_type= -- no longer name a retired message type. The eleven
+  properties the refdata clean-up removed are the set; here nine of them
+  were present, forty-five lines in all. The properties the generator
+  still reads (=key_field=, =collection_name=, =domain_include=,
+  =domain_class=, =protocol_include=, =has_pagination=,
+  =has_uuid_primary_key=, =save_request_item_field=) stay, because
+  core.py reads =key_field= from the presentation namespace and the
+  canonical trade key depends on it.
+
+What the collapse dragged in:
+
+- A hand-written consumer, =api/tests/generators_tests.cpp=, included the
+  singular path for one generator. It is migrated.
+- The trade model's =handler_includes= block named
+  =ores.dq.api/messaging/fsm_protocol.hpp=, a header dq deleted when it
+  modelled the FSM pair (=dd131c388b=). No trading source reads a dq FSM
+  symbol, so the include is removed rather than repointed, and the prose
+  above it no longer claims the save path reads transitions from it.
+- The regenerated trade eventing test seeds =status_id= from the dq
+  catalogue, so =ores.trading.core.tests= now links =ores.dq.api.lib= and
+  =ores.dq.core.lib=. The build graph could not make that change itself,
+  which is why the generated test and the hand-written tests CMakeLists
+  move together.
+
+One thing this branch cannot finish. =ores.workflow= is red on main:
+=core/src/service/fsm_state_map.cpp= still consumes the deleted dq
+protocol (=get_fsm_states_request=, =get_fsm_states_response= with
+=.success= and =.states=), which dq's modelling replaced. That consumer
+migration is the workflow component's, not trading's, so the whole-tree
+build stays blocked until it lands. Trading itself is verified below.
+
+Two findings from doing it:
+
+1. The in-place regeneration and the dry run disagree about one generated
+   test. =trade_eventing_integration_tests.cpp= gains soft-FK parent
+   seeding for =status_id= (an =ores.dq.fsm_state= row) when the component
+   is regenerated in place, and the dry run does not render it. The
+   seeding depends on another component's regenerated state, which the
+   dry run, rendering trading alone into a temporary root, does not
+   produce. This is the cross-component blind spot the backlog capture
+   =drift_gate_misses_cross_component_outputs.org= records, seen from the
+   trading side. The change is kept, and the dry run then agrees.
+2. The model's presentation block is not itself the defect: other
+   components keep theirs. What M09 forbids is a property that names a
+   retired message type, which is what the refdata precedent
+   (=6bb3577a55=) removed.
+
 * Plan
 
 ** 1. Bind the unbound entities

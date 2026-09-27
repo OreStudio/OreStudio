@@ -35,10 +35,10 @@ namespace ores::dq::domain {
  * @brief A specific, selectable reason for making a change.
  *
  * A change reason is a specific, selectable reason for making a change
- * to a record, scoped to a change reason category. Examples: "Typo
- * Fix" (category: data_correction), "New Regulation" (category:
- * regulatory_update). Rows are authored directly (not mirrored from an
- * external source).
+ * to a record, scoped to a change reason category. The categories the
+ * seed creates are system, common and trade, each aligned to a
+ * regulatory standard; a reason names one of them. Rows are authored
+ * directly (not mirrored from an external source).
  */
 struct change_reason final {
     /**
@@ -66,6 +66,9 @@ struct change_reason final {
     /**
      * @brief Code of the change reason category this reason belongs to. References
      * ores_dq_change_reason_categories_tbl (soft FK).
+     *
+     * The value is one of the categories the DQ seed creates, so a generated instance satisfies the
+     * trigger that validates the reference.
      */
     std::string category_code;
 

@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-dq-artefact-tables
-#+pr: 2248
+#+pr: 2252
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -105,6 +105,62 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 8 part twenty-two: two of the three dq test-suite defects, and one that needs its own unit
+
+Run on 2026-09-27. The dq suites fail on main. Eleven cases do, in three
+unrelated groups; two of the three are fixed here and the third is diagnosed
+and left for its own unit, because it cascades further than this one should
+carry.
+
+**Seven generator assertions were stale.** =generators_tests.cpp= asserts
+=sut.version == 1= in seven of its twelve =*_generator_produces_valid_instance=
+cases and === 0= in the other five, while every generated generator sets
+=version = 0= through the same template line. Nothing distinguishes the two
+groups: the split runs across catalog, coding_scheme, dataset, methodology,
+nature_dimension, origin_dimension, subject_area, treatment_dimension and the
+change-reason pair with no pattern. Zero is the right answer, because the write
+path reads version zero as "no current row exists", which is exactly what a
+freshly generated instance is. The seven now say zero. The reason this survived
+is worth recording: one assertion written twelve times with two different
+answers has no single place to be right.
+
+**The change_reason generator named a category the seed does not create.** Its
+model hard-coded =std::string("data_correction")=, taken from the model's own
+prose examples, while =dq_change_reasons_populate.sql= creates =system=,
+=common= and =trade= -- the three the seed aligns to BCBS 239, FRTB and FINRA.
+The change-reason insert trigger validates the reference, so a generated reason
+was refused and =write_change_reason_publishes_an_event= failed. The model now
+generates =common=, and its prose names the three real categories rather than
+two that never existed.
+
+**What is left, and why it is its own unit.** The two LEI eventing tests fail
+because =ores_dq_lei_entities_tbl= and =ores_dq_lei_relationships_tbl= **do not
+exist**. Both models declare that table name, but dq creates only the artefact
+staging tables, and both hand-written query-function files read
+=dq_*_artefact_tbl=. The generated repository therefore queries a table nothing
+creates. Correcting the table name is the first of four cascading corrections,
+and each exposes the next:
+
+1. Point =:tablename:= at the artefact table.
+2. The models declare no =:current_state:= and no =:no_audit_columns:=, so the
+   generated entity expects =modified_by=/=recorded_at= and a temporal pair the
+   staging table does not have.
+3. Their =** Table display= sections still list =modified_by=, which the domain
+   table renderer then references.
+4. Declaring the entity current-state orphans its history provider registrar and
+   history field mapper -- the gate already drops them, so the committed files
+   become stale and stop compiling -- and leaves the two eventing integration
+   tests asserting =change_reason_code=, =change_commentary= and
+   =get_*_history=, none of which a current-state entity has.
+
+That is a unit of work, not a line: it removes a temporal surface from two
+entities and rewrites their integration tests. It is recorded as its own task
+rather than half-done here.
+
+**Evidence.** dq goes from eleven failing cases to three -- the two LEI cases
+above and one =coding_scheme= table-content assertion, which is still to
+diagnose. The dq api, core, service and shell targets build and link.
 
 * Step 8 part twenty-one: the report_definition staging shim stops owning reporting's menu
 
@@ -1125,6 +1181,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2252][#2252]] | [dq] Fix the stale generator assertions and the change-reason category |
 | [[https://github.com/OreStudio/OreStudio/pull/2248][#2248]] | [dq] Stop a staging shim from owning another component's shell menu |
 | [[https://github.com/OreStudio/OreStudio/pull/2244][#2244]] | [dq] Model the publication run log and split out the publish service |
 | [[https://github.com/OreStudio/OreStudio/pull/2239][#2239]] | [dq] Model the dataset entity and retire its hand-written layer |

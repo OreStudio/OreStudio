@@ -135,7 +135,7 @@ TEST_CASE("coding_scheme_authority_type_generator_produces_valid_instance", tags
     generation_context ctx;
     auto sut = generate_synthetic_coding_scheme_authority_type(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -162,7 +162,7 @@ TEST_CASE("coding_scheme_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_coding_scheme(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.authority_type.empty());
@@ -219,7 +219,7 @@ TEST_CASE("dataset_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_dataset(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.subject_area_name.empty());
     CHECK(!sut.domain_name.empty());
@@ -256,7 +256,7 @@ TEST_CASE("methodology_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_methodology(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -284,7 +284,7 @@ TEST_CASE("origin_dimension_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_origin_dimension(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -311,7 +311,7 @@ TEST_CASE("nature_dimension_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_nature_dimension(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -366,7 +366,7 @@ TEST_CASE("treatment_dimension_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_treatment_dimension(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());

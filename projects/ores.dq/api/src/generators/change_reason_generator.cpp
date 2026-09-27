@@ -48,7 +48,7 @@ generate_synthetic_change_reason(utility::generation::generation_context& ctx) {
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::verb()) + "_reason" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.category_code = std::string("data_correction");
+    r.category_code = std::string("common");
     r.applies_to_new = false;
     r.applies_to_amend = true;
     r.applies_to_delete = true;

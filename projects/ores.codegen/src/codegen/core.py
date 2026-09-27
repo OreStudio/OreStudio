@@ -1828,6 +1828,40 @@ def _prepare_enum_write_fields(domain_entity: dict[str, Any]) -> None:
             or f"{enum_type}{{}}")
 
 
+def _prepare_date_write_fields(domain_entity: dict[str, Any]) -> None:
+    """State the ISO-8601 conversion a write field needs when its member is a date.
+
+    A grouped entity's wire record carries the column's own text spelling,
+    while the domain member its field group declares is a calendar date or an
+    instant: the column's ``:cpp_type:`` describes the row, and the two
+    genuinely differ. The service cannot assign one to the other, so it parses
+    the text. Mirrors _prepare_enum_write_fields: only a text wire whose group
+    member is typed needs the conversion, and a column already typed on the
+    wire is left alone.
+
+    A date parses through from_iso8601_date; an instant through
+    from_iso8601_utc, the platform's canonical wire spelling. An empty wire
+    field leaves the optional member unset rather than parsing an empty
+    string.
+    """
+    by_member = {
+        field["name"]: field
+        for field in domain_entity.get("domain_group_fields") or []
+    }
+    for field in domain_entity.get("write_fields") or []:
+        wire_type = (field.get("cpp_type") or "").strip()
+        if wire_type != "std::string":
+            continue
+        member = by_member.get(field.get("domain_member") or "")
+        member_type = ((member or {}).get("cpp_type") or wire_type).strip()
+        if member_type in ("std::chrono::year_month_day",
+                           "std::optional<std::chrono::year_month_day>"):
+            field["date_from_string"] = True
+        elif member_type in ("std::chrono::system_clock::time_point",
+                             "std::optional<std::chrono::system_clock::time_point>"):
+            field["timestamp_from_string"] = True
+
+
 def _protocol_owned_by_operation(model_path, entity) -> bool:
     """Whether an operation model beside this one owns the entity's protocol.
 
@@ -4574,6 +4608,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)
         _prepare_enum_write_fields(domain_entity)
+        _prepare_date_write_fields(domain_entity)
         # The same list as operations, which is what the service and handler
         # state their methods from: one name per operation, so the subject,
         # the service method and the handler method cannot drift apart.

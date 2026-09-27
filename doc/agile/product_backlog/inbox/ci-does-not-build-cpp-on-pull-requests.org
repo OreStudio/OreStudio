@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D016B599-5E12-4E51-948C-B17DF0A4FFDF
+:END:
+#+title: No per-PR CI job builds or tests C++ outside the codegen paths
+#+description: The only per-PR job that compiles and runs the test suite lives in codegen-drift.yml, which is path-filtered to projects/*/modeling, projects/ores.codegen, projects/ores.http, projects/ores.sql/populate and doc/recipes/shell. A pull request that changes only C++ or tests therefore runs compass lint and nothing else, and Continuous Linux runs on a schedule rather than on PRs. Both C++ compile breaks that reached main this sprint -- the FSM consumer on fsm_protocol.hpp and the IAM dataset handler on get_datasets_request -- would have been caught by a build on their pull request.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

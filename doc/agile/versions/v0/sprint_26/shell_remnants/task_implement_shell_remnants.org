@@ -26,11 +26,11 @@ The shell holds no hand-written unit that generation supersedes, the three defec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9][Clean up the ores.shell remnants]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

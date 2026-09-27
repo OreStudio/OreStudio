@@ -21,11 +21,11 @@ The shell holds no hand-written unit that generation supersedes, the three defec
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -40,11 +40,26 @@ The shell holds no hand-written unit that generation supersedes, the three defec
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2D2132C5-FEA1-4DD7-B936-1806964C23DF][Scaffold story: Clean up the ores.shell remnants]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:664F4EF8-4F93-4938-9D67-88729CACE86B][Close the ores.shell remnants]] | STARTED | 2026-09-27 | | Initial task for: Clean up the ores.shell remnants |
+| [[id:2D2132C5-FEA1-4DD7-B936-1806964C23DF][Scaffold story: Clean up the ores.shell remnants]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:664F4EF8-4F93-4938-9D67-88729CACE86B][Close the ores.shell remnants]] | DONE | 2026-09-27 | 2026-09-27 | Initial task for: Clean up the ores.shell remnants |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Merged as PR #2281, with all five of its checks green. The four pieces of work
+the ores.shell clean-standard pass recorded rather than closed are closed: eleven
+hand-written trading instrument units retired behind generated ones, the session
+listing's parse defect fixed at its source, the bootstrap smoke recipe's
+precondition stated, the account-role duplication resolved per verb with the
+service's own generator repointed, and the iam S01 exception reason rewritten to
+describe what the registry enforces.
+
+Two of the four are handled by recording rather than by a fix, and both say so
+where the next reader will look: four trading units need a model written before
+generation can supersede them, and a shell recipe cannot be idempotent while the
+language has no conditional and no per-command tolerance.

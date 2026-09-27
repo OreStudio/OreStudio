@@ -133,20 +133,10 @@ tangled into the runnable script library
 
 * Change Reasons
 
-- [[id:66C9469C-9049-4410-89B3-B1D453405E38][Add]]
-- [[id:8A23C49D-61FB-4A0E-8829-ABCD0463DEC8][Delete]]
-- [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
-- [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
-- [[id:C82409F0-2DED-4134-B5E2-98E51AD9CFCF][History]]
 - [[id:D4465BCE-68AE-5C66-B36C-642843F1843E][How do I run the change_reasons commands from the shell?]]
 
 * Change Reason Categories
 
-- [[id:DC91A742-8C16-45DC-9689-7CD122B9E48A][Add]]
-- [[id:4E3F1039-7FDA-4263-81D5-296E935AACCE][Delete]]
-- [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
-- [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
-- [[id:4E1B0644-98DE-480C-A63B-92E0A5153957][History]]
 - [[id:EA683935-8199-50E5-A58B-B2E05B1C6266][How do I run the change_reason_categories commands from the shell?]]
 
 * Account Contact Informations
@@ -861,3 +851,15 @@ tangled into the runnable script library
 * Report Configurations
 
 - [[id:107EC378-86EB-52A7-90ED-62512A7BD785][How do I run the report_configurations commands from the shell?]]
+
+* Seed Profile Parameters
+
+- [[id:B582B99D-4CE8-5731-83E5-F8A3DA18BF95][How do I run the seed_profile_parameters commands from the shell?]]
+
+* Seed Profile Steps
+
+- [[id:00679BCA-C8E8-51EC-9835-B0C4C5A5612B][How do I run the seed_profile_steps commands from the shell?]]
+
+* Seed Profiles
+
+- [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I run the seed_profiles commands from the shell?]]

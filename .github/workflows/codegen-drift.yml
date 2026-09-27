@@ -135,6 +135,29 @@ jobs:
         run: |
           python3 projects/ores.codegen/scripts/check_handler_permissions.py
 
+  # Shell menu ownership: the shell's root refuses a second claim on a name at
+  # startup, because cli::Menu answers a name by first match and two units that
+  # share one silently shadow each other. This gate catches the same defect
+  # before the shell is built, and it holds the invariant the runtime check
+  # rests on: the shell reads a menu's name back through Menu::Prompt(), so
+  # every menu must be constructed from its name alone. Reads the shell's
+  # sources only, so it needs neither codegen nor a formatter.
+  shell-menus:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Prove the check fails on a planted defect
+        run: |
+          python3 projects/ores.codegen/scripts/check_shell_menu_collisions.py --self-test
+      - name: Check every shell menu name has one owner
+        run: |
+          python3 projects/ores.codegen/scripts/check_shell_menu_collisions.py
+
   # Route authentication: a route registered on the HTTP gateway must state
   # whether it needs a session. The builder refuses an undeclared route at
   # startup; this gate catches the same omission in CI, before the server is

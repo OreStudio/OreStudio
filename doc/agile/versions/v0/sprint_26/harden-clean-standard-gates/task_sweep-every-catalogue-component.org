@@ -50,23 +50,30 @@ has no gate at all.
   whose templates are older than main's.
 - It refuses when the commit to compare against cannot be resolved, rather than
   treating every component's clean-up debt as a failure.
-- A test fails when the sweep stops finding anything, so it cannot pass a tree
-  by finding nothing.
+- It fails when the catalogue yields no component to render, rather than passing
+  a tree it read nothing from.
+- A file the branch deleted whose model still produces it fails, as a
+  would-create. A generated file no render produces is out of scope and recorded
+  as such.
 
 * Plan
 
 *Two holes, one cause.* =check_component_drift.py --all= renders the components
-in =COMPONENTS_UNDER_TEST= and compares the tree. That set is ten components;
-the catalogue holds twenty-one with a modeling directory. So a component waiting
-its turn has no gate, and neither does output an archetype routes into another
-component's tree.
+in =COMPONENTS_UNDER_TEST= and compares the tree. That set is ten components. The
+catalogue holds twenty-four entries, which name twenty-one distinct modeling
+directories, because =trade= and =trading-cpp=, =dq= and =dq-cpp=, and =iam= and
+=iam-cpp= are second spellings of one component each; one of the twenty-one,
+=controller-cpp=, has no models and no modeling directory in the tree, so twenty
+components render. So a component waiting its turn has no gate, and neither does
+output an archetype routes into another component's tree.
 
 *Measured, for hole A.* The shell-command facet's output pattern routes by the
 *model's* component rather than by the catalogue component a run names, so
 rendering =ores.trading= at the =ores.cpp= address writes 66 files under
-=projects/ores.shell/=. Rendering =ores.shell= cannot reach them, because shell
-owns one model and it produces the composite root. There are 102 generated files
-under =projects/ores.shell/trading/= in the tree.
+=projects/ores.shell/trading/=. Rendering =ores.shell= cannot reach them, because
+shell owns one model and it produces the composite root. The directory holds 76
+files in total: the 66 the trade render produces, nine CMake, diagram and
+documentation files, and one further source file.
 
 *Measured, for hole B.* The =ores.service= clean-up moved three workflow header
 names out of =ores.service= into =ores.workflow.api=, and =ores.refdata= keeps a
@@ -89,11 +96,31 @@ model and its generated file that agree with each other and are both stale,
 which the sweep cannot see because the render reproduces the committed bytes.
 The sweep catches the disagreement, which is the measured case.
 
-*Cost.* A full sweep is 21 components and takes about 80 seconds, which is why
-it is its own workflow rather than another step in =codegen-drift.yml=. That
-workflow fires on the inputs codegen reads; the sweep exists for the output
-codegen writes, and the measured case touched no model at all, so it fires on
-any change under =projects/=.
+*Cost.* A full sweep renders twenty components and takes about a minute: 74
+seconds measured here and 61 on the reviewing machine, so the figure moves with
+the hardware. The workflow job is 2 minutes with its setup. That is why it is its
+own workflow rather than another step in =codegen-drift.yml=. That workflow fires
+on the inputs codegen reads; the sweep exists for the output codegen writes, and
+the measured case touched no model at all, so it fires on any change under
+=projects/=.
+
+*Two limits this sweep does not close.* Both are the price of rendering per
+technical space rather than at the whole =ores= address, and neither is covered
+by a test.
+
+- *Generated recipes are not reached.* The recipe facets declare
+  =#+requires_facet:= on a facet in another technical space, so they fire only at
+  the whole =ores= address. Measured for =ores.trading=: per-space rendering
+  gives 1,867 files and no recipe, the whole address gives 2,003 files and 22
+  recipes. The 247 generated recipes under =doc/recipes/shell/= and
+  =doc/recipes/http/= therefore have no gate, and a branch that deletes one
+  cannot be caught either.
+- *A generated file no render produces is invisible.* The comparison walks the
+  render's output, so a tree file the models do not produce is never examined.
+  That is what keeps each component's 645 files of clean-up debt out of the
+  result, but it also means the sweep cannot report a file that should exist and
+  does not, once its model no longer produces it. A file the branch deleted whose
+  model still produces it *is* caught, as a would-create.
 
 * Notes
 
@@ -116,8 +143,19 @@ via its "Verifies task" field.
 
 * Review
 
+Independent verification of PR #2264 at head =7fcda3e39c=, patch-id
+=16f83aa7b295369591fcb8f0f9337e0bc291ac3a=, verdict PASS+NOTES. Both
+safety-critical claims reproduced: the sweep writes nothing, proved by hashing
+40,928 worktree paths before and after, and the 645-file catalogue figure held on
+two runs. The rule resisted all four attack vectors.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The record claims 102 generated files under =projects/ores.shell/trading/=; the verifier measures 76 and could not find 102 anywhere. | task doc | Fixed | My number came from a grep for =trading= across all of =projects/ores.shell=, not the =trading/= subtree. The record now says 66 rendered from trade out of 76 present. |
+| 2 | The count frame is ambiguous: 24 catalogue entries, 21 distinct modeling directories, 21 returned by =_catalogue_components()=, and =controller-cpp= has no models, so only 20 render. | task doc | Fixed | The Plan now states all four numbers and which is which; the cost paragraph says twenty components, not twenty-one. |
+| 3 | The sweep renders per technical space, so it produces no recipes; the 247 generated recipes under =doc/recipes/= have no gate, and the PR does not say so. | task doc | Fixed | Recorded as the first of two limits, with the measurement for =ores.trading=: 1,867 files and no recipe per space, 2,003 files and 22 recipes at the whole address. |
+| 4 | A generated file the branch deletes never fails, because the comparison walks the render's output. | task doc, tests | Partly refuted | A deleted file whose model still produces it reads as a would-create and does fail; a test now pins that. The genuine residue is a file no render produces, which is recorded as the second limit. |
+| 5 | "about 80 seconds" is not the measured time. | task doc | Fixed | 74 seconds measured here, 61 on the reviewing machine, both named. |
+| 6 | The nine tests have no case for deletion, an untouched create, or a render failure. | tests | Fixed | Four tests added, thirteen now. |
 
 * Result

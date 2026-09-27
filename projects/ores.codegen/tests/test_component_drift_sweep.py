@@ -192,3 +192,58 @@ def test_resolve_base_returns_none_when_git_cannot_answer(monkeypatch):
     monkeypatch.setattr(ccd.subprocess, "run", lambda *a, **k: Failed())
 
     assert ccd._resolve_base(None) is None
+
+
+def test_sweep_fails_on_a_file_the_branch_deleted(tmp_path, monkeypatch,
+                                                  capsys):
+    # The render produces it and the tree does not have it, so it reads as a
+    # would-create; the branch touched it by deleting it, so it fails. A
+    # generated file no render produces is out of scope, and the doc says so.
+    repo = _make_repo(tmp_path)
+    deleted = "projects/ores.shell/trading/deleted_commands.hpp"
+    _point_at(monkeypatch, repo, touched={deleted})
+    _stub_render(monkeypatch,
+                 {deleted: "// rendered, and absent from the tree\n"})
+
+    rc = ccd._sweep("deadbeefdeadbeef", False)
+    captured = capsys.readouterr()
+
+    assert rc == 1
+    assert f"would change: {deleted}" in captured.out
+
+
+def test_sweep_passes_when_an_untouched_file_would_be_created(
+        tmp_path, monkeypatch, capsys):
+    # A file the render would create that this branch never touched is some
+    # other component's debt, and must not fail this branch.
+    repo = _make_repo(tmp_path)
+    _point_at(monkeypatch, repo, touched={"projects/ores.refdata/modeling/x.org"})
+    _stub_render(monkeypatch, {"projects/ores.dq/core/new_table.hpp": "// new\n"})
+
+    rc = ccd._sweep("deadbeefdeadbeef", False)
+    captured = capsys.readouterr()
+
+    assert rc == 0
+    assert "Sweep clean" in captured.out
+
+
+def test_sweep_returns_a_render_failure(tmp_path, monkeypatch, capsys):
+    repo = _make_repo(tmp_path)
+    _point_at(monkeypatch, repo, touched=set())
+    monkeypatch.setattr(ccd, "_render_components",
+                        lambda components, address, tmp_root: 3)
+
+    assert ccd._sweep("deadbeefdeadbeef", False) == 3
+
+
+def test_sweep_fails_when_the_catalogue_yields_nothing(tmp_path, monkeypatch,
+                                                       capsys):
+    repo = _make_repo(tmp_path)
+    _point_at(monkeypatch, repo, touched=set(), components=())
+    _stub_render(monkeypatch, {})
+
+    rc = ccd._sweep("deadbeefdeadbeef", False)
+    err = capsys.readouterr().err
+
+    assert rc == 1
+    assert "no catalogue component" in err

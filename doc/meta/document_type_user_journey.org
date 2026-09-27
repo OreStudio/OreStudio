@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:document_types:user_journey:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 
 This page defines the =user_journey= document type — one entry in the
 [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
@@ -74,7 +74,10 @@ composition classes and where the transaction boundary sits.
 * Why one screen, not one per entity
 
 A journey describes one screen composed around a goal. The list, detail and
-history primitives still exist, but they are composed into the journey rather
-than standing alone per entity: the account journey shows contact details and
-sign-in state as panels, not as separate screens. The entity models supply the
-fields; the journey decides which of them belong together and in what order.
+history primitives do not exist: commit =e47043269f= deleted them with the
+generated entity screens, and the journey is their replacement. Each step draws
+the one view it needs, so the account journey shows contact details and sign-in
+state as panels, not as separate screens. The entity models supply the fields;
+the journey decides which of them belong together and in what order. See
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][The journey runtime]] for the step,
+the rail, and the rule that a step marked final cannot be returned past.

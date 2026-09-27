@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: A8B2A803-531C-47E8-8BD8-E1A5199B581B
+:END:
+#+title: The provision-parties workflow names two subjects that do not exist
+#+description: Its header comment and ores.refdata.protocol.org name refdata.v1.parties.save and iam.v1.account_parties.save; the real subjects are put and put_many.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:provisioning:refdata:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two pages name command subjects for the party-provisioning saga that do not
+exist:
+
+- The header comment of
+  =projects/ores.refdata/api/include/ores.refdata.api/workflow/provision_parties_workflow.hpp:41-47=
+  says step 0 publishes =refdata.v1.parties.save= and step 2 publishes
+  =iam.v1.account_parties.save=.
+- =projects/ores.refdata/core/modeling/ores.refdata.protocol.org:64=
+  lists =refdata.v1.parties.save= in its Parties table, and
+  =refdata.v1.parties.history= on the line below, which is absent too.
+
+The code uses different names. The definition's real step subjects are
+=refdata.v1.parties.put= (=provision_parties_workflow.hpp:81=),
+=iam.v1.accounts.save= (=:134=) and =iam.v1.account_parties.put_many=
+(=:173=). No =nats_subject= anywhere uses =parties.save=,
+=account_parties.save= or =parties.history=.
+
+* Why
+
+The refdata protocol page is where a reader learns which subjects the
+component serves, and the comment is where a reader learns what the saga
+does. Both send the reader to a subject no broker will route, and the
+mismatch already misled the journey architecture audit into recording the
+=save= names as the saga's steps.
+
+* References
+
+- =projects/ores.refdata/api/include/ores.refdata.api/workflow/provision_parties_workflow.hpp:41-47= — the comment; =:81=, =:134=, =:173= — the three real subjects.
+- =projects/ores.refdata/core/modeling/ores.refdata.protocol.org:60-66= — the Parties table.
+- =projects/ores.refdata/api/include/ores.refdata.api/messaging/party_protocol.hpp:95-273= — the generated party subjects, which use =put=, =put_many=, =delete= and =parties_versions.*=.
+- =projects/ores.iam/api/include/ores.iam.api/messaging/account_party_protocol.hpp:69-201= — the generated account-party subjects, which use =put= and =put_many=.
+- [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][Audit the journey, provisioning and web-client architecture before the first implementation story]] — finding 2, corrected there on 2026-09-27.
+
+* See also
+
+- [[id:7E60B60A-927D-4B43-B7FB-00168BAE01AC][Party provisioning returns no workflow instance ids]] — the same saga's other defect.

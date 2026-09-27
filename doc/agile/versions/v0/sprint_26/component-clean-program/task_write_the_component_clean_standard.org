@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -91,7 +91,12 @@ hygiene, and verification. They come from:
   =component_registry.py=, and the check scripts under
   =projects/ores.codegen/scripts/=.
 
-TypeScript items are left out, because the TypeScript UI is retired.
+TypeScript items are left out of this checklist, and not because
+TypeScript is retired. The generated entity screens were TypeScript and
+they are gone, but =ores.web= is TypeScript too and it is the interface
+being built, so it has
+[[id:CDE625E2-96AE-4644-9921-282339925F3E][its own standard]]: the same
+shape as this one, and a check behind every item.
 
 The survey found that only =ores.iam= is in =COMPONENTS_UNDER_TEST=.
 =ores.refdata= was removed from it by a branch, and =ores.dq= and

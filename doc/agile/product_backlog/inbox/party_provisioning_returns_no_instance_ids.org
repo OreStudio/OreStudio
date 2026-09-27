@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 7E60B60A-927D-4B43-B7FB-00168BAE01AC
+:END:
+#+title: Party provisioning returns no workflow instance ids
+#+description: workflow.v1.parties.provision declares workflow_instance_ids in its response and the handler never fills the vector, so a caller cannot follow the workflow it just started.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:provisioning:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=workflow.v1.parties.provision= answers with a
+=provision_parties_response= that declares =party_ids= and
+=workflow_instance_ids=. The handler fills =party_ids= only. It publishes
+one =start_workflow_message= per party and never learns the instance id the
+engine creates, so =workflow_instance_ids= is always empty and the field's
+own doc comment, "use these IDs to query status", is not true.
+
+The fix is small, because the start message already takes the id. The
+engine reuses a caller-provided =instance_id= when the request carries one,
+and treats a repeated start as the same run. So the handler can generate
+the id per party, put it in =start_msg.instance_id=, and push the same id
+into =resp.workflow_instance_ids=.
+
+* Why
+
+A caller cannot follow the provisioning it just started. The journey's
+progress step needs an instance id to read =workflow.v1.instances.steps=,
+and the shell has to wait for the instance it started. The
+[[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] journey records
+this as a gap: the progress read exists, but the request does not hand
+over the id to read with.
+
+The correlation id is not a substitute. The instance carries one, but no
+list filter is known to match on it, so a caller cannot find its run
+without the id the response was supposed to carry.
+
+* References
+
+- =projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_protocol.hpp:85-93= — the declared =party_ids= and =workflow_instance_ids=.
+- =projects/ores.workflow/core/src/messaging/workflow_handler.cpp:108-119= — the handler, which fills =party_ids= only.
+- =projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_events.hpp:151-187= — =start_workflow_message=, which carries an optional =instance_id= at line 186.
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp:505-520= — the engine reuses the caller's id, or generates one, and treats a repeat as the same run.
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — the journey whose progress step needs the id.
+
+* See also
+
+- [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][The shared change-event schema reads a country-shaped field]] — the other half of the progress gap.

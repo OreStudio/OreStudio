@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-22
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -72,6 +72,19 @@ via its "Verifies task" field.
 
 Agreed with the user on 2026-09-22.
 
+Two items below are superseded, and the journey and step types in item 8
+go with them. [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+redefined the vocabulary on 2026-09-23, and
+[[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][the architecture audit]]
+confirmed the redirection against the code on 2026-09-27. Item 5's
+=/journey/= entity is not added: a journey is a definition, and its
+progress is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]], which already
+carries the kind, the current step, the request, the result and the
+error. Item 6's shell journey commands do not exist in =ores.shell= and
+are not planned: both clients call the same subjects instead. Items 1 to
+4, 7 and the seed profile and parameter types of item 8 stand as
+written.
+
 1. *Workflows* (server): system bootstrap (anyone, once), provision
    tenant (system admin), provision party (tenant admin; also run by
    provision tenant per party).
@@ -94,7 +107,7 @@ Agreed with the user on 2026-09-22.
    until the handoff. /Continue as tenant admin/ signs in automatically
    and goes into onboarding, which forces a new password. /Hand off to
    someone else/ signs out and shows the username.
-5. *Journey state is server-side*: a /journey/ entity in
+5. *Superseded.* *Journey state is server-side*: a /journey/ entity in
    =ores.workflow=, next to workflow instance: kind, current step,
    subjects (tenant, party, workflow instance ids), actors who may
    resume. A step is a /workflow step/ (start a workflow, wait for its
@@ -102,7 +115,7 @@ Agreed with the user on 2026-09-22.
    owning service reports as an event, e.g. IAM sign-in or password
    change). At sign-in a client asks for the active journey and resumes
    it at the current step.
-6. *Shell runs journeys too*: =journey start first-run|new-tenant|new-party=,
+6. *Superseded.* *Shell runs journeys too*: =journey start first-run|new-tenant|new-party=,
    =journey status= (current step, its inputs, the exact next command),
    =journey next [--field value …]=, =journey abandon=. Each step
    declares its inputs once; the web form and the shell flags come from

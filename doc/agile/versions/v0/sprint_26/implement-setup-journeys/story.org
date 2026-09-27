@@ -87,7 +87,7 @@ state and the progress are real.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6F644305-4D98-4F58-8BFF-1CF3E8B46427][Correct and add the architecture the journeys depend on]] | BACKLOG | | | Make the architecture documents true before the first journey task starts: correct the contradictions the audit found, rewrite the stale decision record, and add the page that defines the journey runtime and the BFF boundary. |
+| [[id:6F644305-4D98-4F58-8BFF-1CF3E8B46427][Correct and add the architecture the journeys depend on]] | STARTED | 2026-09-27 | | Make the architecture documents true before the first journey task starts: correct the contradictions the audit found, rewrite the stale decision record, and add the page that defines the journey runtime and the BFF boundary. |
 | [[id:8EC41D9E-757B-427B-8E3E-58BC0EA4BEEB][Decide the journey runtime and the step-call contract]] | DONE | 2026-09-27 | 2026-09-27 | Write the contract every journey is built to: what a step definition is, how one page renders the rail from the same list, and how a step reaches the server through a BFF route and a wire-client method. |
 | [[id:946954A3-23B7-43AC-A4AB-42E65698FED7][Line the shell's provisioning up with the journey contract]] | BACKLOG | | | Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the three end-to-end provisioning scripts working through them. |
 

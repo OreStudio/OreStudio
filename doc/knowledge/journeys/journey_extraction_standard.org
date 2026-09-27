@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:checklist:ux:qt:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 
 * Summary
 
@@ -78,7 +78,7 @@ before any journey is named.
 |-----+------+----------|
 | V01 | Collect the component's canonical terms from its knowledge documents, the glossary and the user manual. Record where each term is defined. | Term table on the task |
 | V02 | Find terms that collide with project terms (as /journey/ did with the IAM glossary) and settle each collision. | Notes on the task |
-| V03 | Name every term a journey must not invent, and every screen rule that binds it: the entity and component specifications, the UI design principles and the UX language. | Rule list on the task |
+| V03 | Name every term a journey must not invent, and every screen rule that binds it: [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][the component specification]], [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][the UI design principles]], [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][the UX language]] and [[id:6A63AAC7-4869-493A-97E7-55B919874784][the journey runtime]]. The [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][entity specification]] is void and binds no screen. | Rule list on the task |
 
 ** 4. Journeys
 
@@ -119,8 +119,8 @@ before any journey is named.
   secrets on the wire, a password change that ignored the current
   password, and handlers that skipped their permission checks.
 - A per-entity screen set is not a journey. The list, detail and
-  history primitives survive, but they are composed inside a journey
-  around a goal.
+  history primitives went with the generated entity screens in commit
+  =e47043269f=, and a journey step draws the one view it needs.
 - Most journeys need no server-side state: they are guided sequences
   over operations that complete at once.
 - Stale briefs mislead. Read the tree at the current commit before

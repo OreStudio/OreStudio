@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/correct-the-architecture
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -39,7 +39,7 @@ Every HTTP route the models declare has a generated literate recipe, each recipe
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B4B9C589-5F1B-47FD-BA9B-CB7E9B11DF6F][Scaffold story: Generate literate HTTP recipes that tangle to runnable Hurl]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B4B9C589-5F1B-47FD-BA9B-CB7E9B11DF6F][Scaffold story: Generate literate HTTP recipes that tangle to runnable Hurl]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:65D35A34-2A96-4B92-A102-B40A2AC71383][Build the HTTP recipe facet and its runner]] | BACKLOG | | | Initial task for: Generate literate HTTP recipes that tangle to runnable Hurl |
 
 * Decisions

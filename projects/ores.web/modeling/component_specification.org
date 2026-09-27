@@ -114,6 +114,16 @@ The shell reads the session and nothing else. The routes below that no module
 calls yet are served by the BFF and reachable, and a journey screen adds the
 call it needs.
 
+The rule a journey follows is
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]: one
+hand-written route per step, each parsing a generated schema, and no generic
+route that takes a subject from the browser. This table is therefore the
+browser's whole authority, and a step that needs an operation no route exposes
+is a missing route rather than a reason to widen one.
+
+The BFF is the browser's only HTTP surface. =ores.http= is the platform's REST
+gateway for callers outside the browser, and no route here forwards to it.
+
 ** The HTTP surface
 
 The BFF serves these routes on =ORES_WEB_PORT=.

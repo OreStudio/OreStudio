@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: A99BD090-BC0E-4736-8E2D-10F98F16F55B
+:END:
+#+title: ores.web test files escape the typecheck
+#+description: projects/ores.web/packages/web/tsconfig.json excludes src/**/*.test.ts, so no test file in the package is typechecked. A blatant type error in a test passes npm run typecheck, and vitest transpiles without checking.
+#+type: capture
+#+level: cross
+#+filetags: :web:typescript:gates:testing:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.web/packages/web/tsconfig.json= excludes
+=src/**/*.test.ts= and =src/**/*.test.tsx= from its =include=, and
+=vitest= transpiles a test without typechecking it. So a test file in this
+package is never checked by anything, and the =npm run typecheck= step in
+CI says nothing about it.
+
+The same is true of the other three packages, for the same reason: their
+test files sit beside their sources and the typecheck excludes them.
+
+* Why
+
+Found on 2026-09-27 while adding the journey rail model, at =ef8df25c61=.
+
+Proven rather than argued. Appending
+=const deliberatelyWrong: number = "not a number";= to
+=packages/web/src/journeys/runtime.test.ts= and running
+=npm run typecheck= exits 0. A test that does not compile is a test whose
+failure mode is a runtime surprise in the one place a reader trusts to be
+exact.
+
+This matters more than it looks, because the
+[[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]]
+leans on the compiler for its first section. An item that says "the
+compiler proves it" is only true of the files the compiler is given, and
+today it is not given the tests.
+
+The fix is small and has two shapes. Remove the exclusion and let
+=tsc= check the tests, which may surface errors in the existing suites
+and needs a =types= entry for whichever globals they use. Or keep the
+exclusion and add a second tsconfig that includes only the tests, run as
+its own workspace script so the failure names the right thing. Either
+way the check has to exist before an item can claim it.
+
+* References
+
+- [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] —
+  TS-V01 claims every package typechecks; this is the gap in that claim.
+- =projects/ores.web/packages/web/tsconfig.json= — the exclusion.
+
+* See also
+
+- [[https://vitest.dev/config/#typecheck][Vitest: typecheck configuration]] — the
+  in-suite alternative, which checks test types as part of the run.

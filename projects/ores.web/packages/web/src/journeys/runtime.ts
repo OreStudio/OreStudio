@@ -65,8 +65,6 @@ export interface JourneyStep<Body> {
      * belongs to the definition rather than to the page.
      */
     readonly final?: boolean;
-    /** Shown above the body from this step onward. */
-    readonly header?: Body;
 }
 
 export type RailState = 'done' | 'current' | 'ahead';

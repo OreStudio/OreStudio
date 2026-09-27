@@ -143,8 +143,9 @@ describe('defining a journey', () => {
     });
 
     it('refuses a repeated step id, which is how an inlined journey collides', () => {
-        const inlined = [describe_, provisioning];
-        const collides = [welcome, step('provisioning', 'Provisioning again'), ...inlined];
+        const innerJourney = [describe_, provisioning];
+        const outerJourney = [welcome, step('provisioning', 'Provisioning again')];
+        const collides = [...outerJourney, ...innerJourney];
 
         expect(() => defineJourney(collides)).toThrow('duplicate step id "provisioning"');
     });

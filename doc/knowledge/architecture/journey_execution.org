@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:journey:workflow:saga:orchestration:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-27
 
 * Summary
 
@@ -163,9 +163,9 @@ it removes the seam rather than policing it.
 |-------+-------|
 | [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]], with =workflow_instance= and =workflow_step= | Exists |
 | [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]], for a service acting as a person | Exists |
-| =account_setup_service=, the first coordinator | Exists. It still cannot pass a caller's =account_type= through to the table: =account_operations_service::create_account= hard-codes =user=, and a separate =create_service_account= refuses =user= outright. That second entry point is the enforcement the guard rails below ask for, and it is why the defect is now a dead request field rather than an impossible service account. |
+| =account_setup_service=, the first coordinator | Exists. =account_operations_service::create_account= takes no account type and hard-codes =user=; a separate =create_service_account= takes one and refuses =user= outright. That second entry point is the enforcement the guard rails below ask for, and it is why the defect is now a dead field rather than an impossible service account: =save_account_request= still carries an =account_type= that reaches neither of them. |
 | Workflow progress reads: =workflow.v1.instances.steps= and =workflow.v1.instances.list= | Exists, and subscribed |
-| The =workflow_instance_changed= event | Exists. The engine publishes it on every state change, and its subject already has the shape the BFF's change-notification channel serves the browser on. Following a workflow therefore needs a read, not a new channel. |
+| The =workflow_instance_changed= event | Exists. Its subject matches the convention the BFF subscribes on, which is =<component>.<entity>_changed=. Its *payload* does not match what the browser decodes: the engine sends an =entity_change_event= carrying =entity_ids=, and the shared browser schema reads =alpha2_codes=, a field named for the country event it was written for. Every field in that schema has a default, so the mismatch fails silently: the subscription succeeds and delivers an empty identifier list. Following a workflow therefore needs a read, and it also needs either the payload aligned or a channel that carries the instance id. Filed as [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][a capture]]. |
 | Tenant provisioning through the engine | Missing. =provision-acme= is a hand-written synchronous orchestrator, so it emits no progress and returns no instance. This, not the read, is why a person waits with no feedback. |
 | A retry or resume verb | Missing. The only recovery is =workflow_engine::recover_in_progress()=, called once at service start. |
 | A generic =iam.v1.tenants.provision= that returns an instance id at once | Missing |

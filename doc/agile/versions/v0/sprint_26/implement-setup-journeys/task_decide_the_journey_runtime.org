@@ -113,15 +113,17 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | The component's test files and cases, before | 10 files, 70 cases | =npm test= | =ef8df25c61= |
 | The compiler gate, before | green | =npm run typecheck= | =ef8df25c61= |
-| The component's test files and cases, after | 11 files, 83 cases | =npm test= | =ef8df25c61= |
-| The compiler gate, after | green | =npm run typecheck= | =ef8df25c61= |
-| A type error in a test file | invisible: the gate still exits 0 | append =const deliberatelyWrong: number = "not a number";= to a test file, run =npm run typecheck=, then revert | =ef8df25c61= |
+| The component's test files and cases, after | 11 files, 83 cases | =npm test= | =daa13c0603= |
+| The compiler gate, after | green | =npm run typecheck= | =daa13c0603= |
+| A type error in a test file | invisible: the gate still exits 0 | append =const deliberatelyWrong: number = "not a number";= to a test file, run =npm run typecheck=, then revert | =daa13c0603= |
 
 * Notes
 
-Every figure above was taken on this task's branch before it was
-committed, so the commit column names the merge base rather than a commit
-that contains the work.
+The =before= rows reproduce at =ef8df25c61=, the merge base. The =after=
+rows cite =daa13c0603=, the commit that adds the rail model and its
+tests, because that is the tree they were measured on. A figure whose
+commit does not contain the file it counts is not a measurement, and an
+earlier draft of this table made exactly that mistake.
 
 The last row is a counterfactual and it is the one that matters. It is
 how the test-file typecheck gap was found, and it is filed as

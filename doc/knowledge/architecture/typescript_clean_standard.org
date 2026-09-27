@@ -203,17 +203,21 @@ value, and there is no second representation downstream.
 
 ** What the first audit found
 
-Measured on 2026-09-27 at =ef8df25c61=, before any of this was acted on.
-The numbers are the reason the standard says what it says.
+Measured on 2026-09-27, before any of this was acted on. The compiler
+gate, the suite and the format figures come from =ef8df25c61=; the
+branch that adds this page adds two files to the component, so where a
+figure moves, the cell gives both. The numbers are the reason the
+standard says what it says.
 
 | What | Value | Command |
 |------+-------+---------|
 | The compiler gate | green | =npm run typecheck= |
-| The suite | green: 10 files, 70 cases | =npm test= |
-| The format gate | red on 363 files | =prettier --check .= |
-| ... of which generated | 303 | =prettier --list-different . \| grep -c /generated/= |
-| ... of which hand-written | 60 | the same list, generated paths removed |
-| A configuration that reproduces the tree | none found. The closest tested, single quotes at 100 columns, still differs on 333 files | =prettier --list-different --single-quote --print-width 100 .= |
+| The suite | green: 10 files, 70 cases at =ef8df25c61= | =npm test= |
+| The format gate | red on 363 files at =ef8df25c61=, 365 on this branch | =prettier --check .= |
+| ... of which generated | 303, unchanged by this branch | =prettier --list-different . \| grep -c /generated/= |
+| ... of which hand-written | 60 at =ef8df25c61=, 62 on this branch | the same list, generated paths removed |
+| A configuration that reproduces the tree | none found. The closest tested, single quotes at 100 columns, differs on 333 files at =ef8df25c61= and 335 on this branch | =prettier --list-different --single-quote --print-width 100 .= |
+| A tracked Prettier configuration | none. The package declares the dependency and two scripts, and configures neither | =find . -name '.prettierrc*' -o -name 'prettier.config*'= |
 | ESLint configurations in the repository | zero | =find . -name 'eslint.config*' -o -name '.eslintrc*'= |
 | The declared engine floor | ~>= 22.11.0~, below the =vitest@5.0.1= floor of ~^22.12.0, ^24.0.0 or >=26.0.0~ | =node -p "require('./node_modules/vitest/package.json').engines"= |
 
@@ -222,23 +226,28 @@ Four things follow from that table.
 The compiler gate is the one that works, and it earns its place: the
 strictness set already makes implicit =any=, an unchecked index, an
 =undefined= in an optional property and a fall-through switch into
-compile errors.
+compile errors. It is also the only gate that is not optional, which is
+what makes the exclusion of the test files worth a separate item.
 
-The format gate is named in =package.json= and has never run. No
-configuration reproduces the tree, so this is not a missing file: the
-component has never been formatted by the tool it declares. Two
-decisions follow, and they are separate. The generated tree should be
-the generator's business, not the formatter's, because 303 of the 363
-files are generated and hand-formatting them is undone by the next
-regeneration. The hand-written tree should be formatted once, against a
-configuration committed with it.
+The format gate is named in =package.json= and has never run. There is no
+configuration at all, in the component or above it, so this is not a
+missing file that somebody deleted: the component has never been
+formatted by the tool it declares, and the style it does follow was never
+captured. Two decisions follow, and they are separate. The generated tree
+should be the generator's business, not the formatter's, because 303 of
+the 363 files are generated and hand-formatting them is undone by the
+next regeneration. The hand-written tree should be formatted once,
+against a configuration committed with it.
 
 The lint gate does not exist, and most of the items above name a rule
 from it. This is the one gate the standard requires and the component
 does not have. It is also the gate that catches what the compiler
 cannot: the unsafe assertion, the non-null assertion, the floating
 promise, the unbound method, the non-exhaustive switch, and the missing
-=import type= that =verbatimModuleSyntax= only partly covers.
+=import type= that =verbatimModuleSyntax= only partly covers. Nothing
+enforces TS-T02, TS-T03, TS-T04, TS-T07, TS-T12, TS-T13, TS-T15, TS-E01
+or TS-H02/H05/H06/H07 today, and a review is the only thing standing in
+for all of them.
 
 The engine floor is a live defect rather than a convention. A
 contributor on the declared minimum installs a tool that refuses to run,

@@ -89,6 +89,11 @@ is what makes an inlined journey fragile: a step added to the inner list
 would silently change what the outer journey means by "the fourth step",
 and nothing would fail.
 
+This is a rule for the journeys that follow rather than a description of
+the tree today: the module has no production caller yet, because no
+journey has been built on it. The first caller is first run, and the
+first thing it must not do is count.
+
 =defineJourney= validates the list once, at the point it is written. It
 refuses an empty journey, and it refuses a repeated step id, which is
 exactly how an inlined journey collides. Without that check the named

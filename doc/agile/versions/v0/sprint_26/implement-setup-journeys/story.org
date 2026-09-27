@@ -75,8 +75,8 @@ state and the progress are real.
 - A scripted end-to-end run proves the path on a fresh database, in the
   shape of =scripts/verify-login.ts=.
 - The shell drives the same three journeys through the same contract.
-  =provision system=, =provision tenant= and =provision party= reach the
-  generic provision request, and
+  =provision system=, =provision tenant= and =provision party= call the
+  generic provision request once this story has added it, and
   =doc/recipes/shell/provisioning/acme_system_provision.org= runs from an
   empty installation to a working tenant without orchestrating anything
   client-side.
@@ -110,7 +110,7 @@ none of them depends on it and all of them are permanent.
 | 5 | Model the seed profile and its step catalogue, and seed the two profiles | =iam.v1.seed_profiles.list= and =.get=, each profile's parameter schema and its prefilled tenant details, and *Empty operational* and *ACME demo* as rows. |
 | 6 | Add the generic provision request that returns an instance id at once | =iam.v1.tenants.provision=, taking the profile code and its parameters, for every tenant, the first one included. |
 | 7 | Order the tenant provisioning steps as a workflow definition | The provision-tenant definition over the fixed step kinds, in the shape =workflow.v1.parties.provision= already uses, running provision party once per party. |
-| 8 | Follow the progress, and retry from the failed step | The read the page follows, and the retry verb. The event already exists and the retry verb does not, so the page needs a read rather than a channel. |
+| 8 | Follow the progress, retry from the failed step, and settle the event payload | The read the page follows, the retry verb, and the payload mismatch. The event subject exists and the retry verb does not; what the engine publishes does not match what the browser decodes, so the page needs a read and the mismatch needs an owner. |
 | 9 | Carry the forced password change, and read the password policy | The login handler copies =password_reset_required= into its reply, and a read returns the policy the server enforces. |
 | 10 | Build the First run journey | Welcome, create the administrator, the inlined new tenant steps, hand off, first sign-in, *Ready*. |
 | 11 | Build the New tenant and New party journeys | The same steps on their own rails, plus the party journey's legal-entity search and its account selection. |

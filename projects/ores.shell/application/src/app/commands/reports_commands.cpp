@@ -23,6 +23,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <iomanip>
@@ -43,7 +44,7 @@ void reports_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          "List the report definition templates of a bundle",
                          {"[--bundle <code>]"});
 
-    root_menu.Insert(std::move(reports_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(reports_menu));
 }
 
 void reports_commands::process_templates(std::ostream& out,

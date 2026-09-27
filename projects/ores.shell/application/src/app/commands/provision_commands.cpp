@@ -36,6 +36,7 @@
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include <boost/lexical_cast.hpp>
@@ -128,7 +129,7 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            {"party-uuid-or-full-name [--dataset-size small|large] "
                             "[--timeout <seconds>]"});
 
-    root_menu.Insert(std::move(provision_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(provision_menu));
 }
 
 void provision_commands::process_system(std::ostream& out,

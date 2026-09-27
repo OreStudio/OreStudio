@@ -28,6 +28,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
 #include <cstddef>
@@ -62,7 +63,7 @@ void reset_operations_commands::register_commands(cli::Menu& root_menu, nats_cli
         },
         "reset-system");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void reset_operations_commands::process_reset_tenant(std::ostream& out,

@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/trading/balance_guaranteed_swap_instrument_commands.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument_table_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -125,7 +126,7 @@ void balance_guaranteed_swap_instrument_commands::register_commands(
         "Show an Balance guaranteed swap instrument's version history",
         {"instrument_id"});
 
-    root_menu.Insert(std::move(balance_guaranteed_swap_instruments_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(balance_guaranteed_swap_instruments_menu));
 }
 
 void balance_guaranteed_swap_instrument_commands::process_get_balance_guaranteed_swap_instruments(

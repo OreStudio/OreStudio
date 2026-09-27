@@ -27,6 +27,7 @@
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/http_base_url.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -165,7 +166,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
         "Write a portfolio's trades back out as ORE portfolio XML",
         {"output_file [--node-id <uuid>] [--limit <n>]"});
 
-    root_menu.Insert(std::move(ore_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(ore_menu));
 }
 
 void ore_commands::process_upload(std::ostream& out,

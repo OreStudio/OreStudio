@@ -25,6 +25,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -210,7 +211,7 @@ void workflow_operation_commands::register_commands(cli::Menu& root_menu, nats_c
                           "Start a workflow and print the instance id to follow",
                           {"<type> <request_json> [--instance-id <uuid>]"});
 
-    root_menu.Insert(std::move(workflow_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(workflow_menu));
 }
 
 bool workflow_operation_commands::wait_for_instance(std::ostream& out,

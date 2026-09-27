@@ -25,6 +25,7 @@
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -90,20 +91,23 @@ void format_string_list(std::ostream& out,
 void rbac_commands::register_commands(cli::Menu& root_menu,
                                       nats_client& session,
                                       pagination_context& /*pagination*/) {
-    // =========================================================================
-    // Permissions submenu
-    // =========================================================================
-    auto permissions_menu = std::make_unique<cli::Menu>("permissions");
-
-    permissions_menu->Insert(
-        "suggest",
-        [&session](std::ostream& out, std::string username, std::string identifier) {
-            process_suggest_role_commands(
-                std::ref(out), std::ref(session), std::move(username), std::move(identifier));
-        },
-        "Generate role assignment commands (username hostname_or_tenant_id)");
-
-    root_menu.Insert(std::move(permissions_menu));
+    // The generated permission unit owns the permissions menu. This unit adds
+    // the one verb the model cannot express, so both live at one address and
+    // the menu's help lists both.
+    ores::shell::app::extend_menu(
+        root_menu,
+        "permissions",
+        [&session](cli::Menu& permissions_menu) {
+            permissions_menu.Insert(
+                "suggest",
+                [&session](std::ostream& out, std::string username, std::string identifier) {
+                    process_suggest_role_commands(std::ref(out),
+                                                  std::ref(session),
+                                                  std::move(username),
+                                                  std::move(identifier));
+                },
+                "Generate role assignment commands (username hostname_or_tenant_id)");
+        });
 }
 
 void rbac_commands::process_assign_role(std::ostream& out,

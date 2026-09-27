@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/subscription_commands.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
@@ -58,7 +59,7 @@ void subscription_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out) { process_notifications(std::ref(out), std::ref(session)); },
         "Display and clear pending notifications");
 
-    root_menu.Insert(std::move(events_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(events_menu));
 }
 
 void subscription_commands::process_channels(std::ostream& out, nats_client& /*session*/) {

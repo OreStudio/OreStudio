@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/trading/bond_instrument_commands.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/domain/bond_instrument_table_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
@@ -147,7 +148,7 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu,
                                   "Show an Bond instrument's version history",
                                   {"instrument_id"});
 
-    root_menu.Insert(std::move(bond_instruments_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(bond_instruments_menu));
 }
 
 void bond_instrument_commands::process_get_bond_instruments(std::ostream& out,

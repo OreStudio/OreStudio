@@ -23,6 +23,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
 #include <cli/cli.h>
@@ -66,7 +67,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
         "Import ORE market.txt/fixings.txt content via import_market_data_request",
         {"[--file <path>] [--fixings <path>] [--source <tag>]"});
 
-    root_menu.Insert(std::move(marketdata_menu));
+    ores::shell::app::insert_menu(root_menu, std::move(marketdata_menu));
 }
 
 void marketdata_commands::process_import(std::ostream& out,

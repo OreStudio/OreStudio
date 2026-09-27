@@ -24,6 +24,7 @@
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
@@ -71,6 +72,7 @@ void check_bootstrap_status(nats_client& session, std::ostream& out) {
 void connection_commands::register_commands(cli::Menu& root_menu,
                                             nats_client& session,
                                             nats::config::nats_options connection_template) {
+    ores::shell::app::claim_name(root_menu, "connect");
     root_menu.Insert(
         "connect",
         [&session, connection_template](std::ostream& out, std::vector<std::string> args) {
@@ -82,6 +84,7 @@ void connection_commands::register_commands(cli::Menu& root_menu,
         {"[host] [port] | <nats-url> [--tls-ca <ca.crt>] [--tls-cert <client.crt>] "
          "[--tls-key <client.key>] [--subject-prefix <prefix>]"});
 
+    ores::shell::app::claim_name(root_menu, "disconnect");
     root_menu.Insert(
         "disconnect",
         [&session](std::ostream& out) { process_disconnect(std::ref(out), std::ref(session)); },

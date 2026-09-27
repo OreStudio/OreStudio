@@ -306,6 +306,28 @@ corrected to the path that exists; neither component is under the drift
 gate, which is why the wrong path sat unnoticed. The marketdata half is
 left to that component's own clean-up.
 
+* Environment blockers
+
+Measured 2026-09-26 and 2026-09-27. The database would not rebuild from
+main's tree, and the default build would not compile, for eight defects.
+None of them is trading's. Six stopped the rebuild, and each repair
+revealed the next: five dq population-function scripts that never close
+their header comment; the storage service missing from =SERVICE_NAMES=,
+from the service account seed and from the service registry; a missing
+unique constraint on =ores_dq_tags_artefact_tbl=; a catalogue upsert that
+relied on an =ON CONFLICT= the versioning trigger pre-empts, which this
+programme's PR #2232 fixed; and a publish function that states version 0.
+Two stopped the default build, which had been red since PR #2216: the FSM
+remodelling deleted =fsm_protocol.hpp= and the machine filter with it, and
+the dataset remodelling replaced =get_datasets_request=, while the
+workflow, reporting and iam consumers stayed behind. Main's PR #2240
+migrated those consumers and cleared the SQL. On that base the rebuild
+needs no workaround, the build exits zero, and the fleet reaches
+twenty-four units in two seconds.
+
+=task_model-missing-trading-families.org= §2d holds the defect table, with
+each symptom and its state.
+
 * Target shape
 
 - One trade identity, one instrument identity and one security issue

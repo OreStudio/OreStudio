@@ -36,10 +36,10 @@ to the reference-data work and are out of scope, per decision D5.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | M09 is done and verified in trading; the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches); and the model-authoring pilot shows what a port costs: the commodity model is written, its regeneration converges the domain type to the canonical shape, and four consumers read the old shape and must move with it. The model is parked as evidence, so the tree stays green. |
-| Waiting on   | The =ores.workflow= consumer of the dq FSM protocol, which blocks the whole-tree build on main; and a dedicated pass for the eight table-backed ports. |
-| Next         | Port the table-backed families one at a time: restore the parked commodity model, regenerate, migrate its four consumers, and prove the build, the suites and the drift; then the five remaining tables. =evidence/pr3_model_authoring_pilot.txt=. |
-| Last touched | 2026-09-26                               |
+| Now          | The commodity family is ported and proven end to end. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
+| Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
+| Next         | Port the seven remaining table-backed families one at a time -- =activity_types=, =fpml_event_types=, =composite_instruments= with =composite_legs=, =credit_instruments=, =scripted_instruments= and =swap_legs=. For each: author the model, regenerate in place, migrate its consumers, build, run the suites, and require the drift dry run to be empty. Then close the type defects and raise PR 3. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
@@ -147,8 +147,68 @@ Thirty-one of the component's sixty-five org files bind a profile today
 workspace-scoped-lookup and one trading-record). The remaining
 thirty-four are the six field-group models, the module, the component
 overview, and twenty-six entity models. Every one of the twenty-six is
-recorded as a no-match, with the features that decide it and the reason:
-=evidence/pr3_m02_no_match_survey.txt=.
+recorded as a no-match, with the features that decide it and the reason.
+
+Measured 2026-09-26. Every one of the twenty-six carries
+=:has_tenant_id: true= and no =** Presentation= drawer, so the
+presentation features (=has_uuid_primary_key=, =has_change_reason_cache=,
+=has_pagination=, =has_explorer_api=, =has_csv_xml_io=,
+=has_version_navigation=) resolve false. None sets =read_only=,
+=current_state=, =system_scope=, =nullable_tenant_id=, =has_parent_id= or
+=party_id_from_session=, and only =bond_issue= and =trade_identifier= set
+=:has_workspace_id: true=.
+
+| Entity                           | Key       | Reason |
+|----------------------------------+-----------+--------|
+| bond_future_delivery_basket      | composite | A      |
+| bond_issue_call_date             | composite | A      |
+| bond_issue_conversion_target     | composite | A      |
+| bond_leg                         | composite | A      |
+| bond_leg_amortization            | composite | A      |
+| bond_leg_amount                  | composite | A      |
+| bond_leg_rate                    | composite | A      |
+| instrument_option_exercise_fee   | composite | A      |
+| instrument_option_payment_date   | composite | A      |
+| instrument_option_premium        | composite | A      |
+| instrument_schedule              | composite | A      |
+| instrument_schedule_date         | composite | A      |
+| trade_envelope_additional_field  | composite | A      |
+| trade_envelope_portfolio_id      | composite | A      |
+| ascot                            | uuid      | B      |
+| bond_forward                     | uuid      | B      |
+| bond_future                      | uuid      | B      |
+| bond_option                      | uuid      | B      |
+| bond_repo                        | uuid      | B      |
+| bond_trs                         | uuid      | B      |
+| instrument_option                | uuid      | B      |
+| instrument_strike                | uuid      | B      |
+| trade_envelope                   | uuid      | B      |
+| bond_issue                       | uuid      | C      |
+| trade_identifier                 | uuid      | C      |
+| trade_party_role                 | junction  | D      |
+
+- A: the key is composite. No profile declares a composite key; the
+  lookups fix either a text natural key or a uuid surrogate, and a
+  presentation tier this table has no drawer for.
+- B: the key is a uuid, the scope is the tenant alone, and there is no
+  presentation drawer. =uuid-identified-lookup= fixes
+  =has_change_reason_cache= and =has_pagination= true, which this entity
+  resolves false. =trading-instrument= fixes =has_workspace_id= and
+  =party_id_from_session=, neither of which it sets. =fk-scoped-child=
+  fixes =has_workspace_id=, =has_explorer_api= and a parent, none of
+  which it has.
+- C: the key is a uuid and the scope is the tenant and the workspace,
+  with no presentation drawer. =uuid-identified-lookup= fixes
+  =has_workspace_id= false and a presentation tier, which this entity
+  resolves false, and =workspace-scoped-lookup= fixes a text natural key
+  and a presentation tier. No profile describes a workspace-scoped record
+  with no UI surface.
+- D: the shape is a junction. The one junction profile is anchored to the
+  junction metatype, and M07 records that this component has no junction
+  metatype.
+
+The six field-group models, the module and the component overview are not
+=domain_entity= models, so the survey excludes them.
 
 The bindings were tested against every profile's own assignment table
 rather than against a name:
@@ -239,27 +299,110 @@ while the bound =instrument_identity= field group names it
 The eight table-backed ports after it will hit the same choice, so their
 models must name the key =instrument_id= as the nine modelled siblings do.
 
-The port compiles and the drift dry run is empty. Its suites are not run,
-and cannot be: the environment cannot be rebuilt from main's tree. Three
-defects stack up in the database setup, all of them another component's:
-five dq population-function SQL files with an unterminated leading
-comment; =:'storage_service_user'= used by the populate scripts but not
-passed, because =service_vars.sh= does not list =storage=; and the storage
-service account row never seeded. =evidence/pr3_environment_blocker.txt=
-records them, the local workarounds that got past the first two, and the
-half-seeded database they left behind. Every DB-backed suite fails
-wholesale against it, so the port's suite evidence waits on the storage
-owner.
+The port was held until the environment could be rebuilt, because a
+regenerated model may not land without a proven regeneration. The
+environment is sound now, and the port is proven with it: the build is
+green, the trading and ORE suites pass, and the drift dry run is empty.
+
+** 2c. How the model was authored
+
+One focused pass. The model comes from four sources: the create script
+=projects/ores.sql/create/trading/trading_commodity_instruments_create.sql=
+for its columns, indexes and checks; =equity_position_instrument.org= for
+the format, since it is an instrument sub-type of the same kind; the
+hand-written domain type for the field groups and the C++ type behind
+each column; and the loader for any property whose spelling was in doubt.
+It binds =:profile: trading-instrument=, like its nine modelled siblings.
+
+The regeneration changes twenty-one existing files and creates thirteen.
+The twenty-one are the hand-written stack, which becomes generated: the
+domain type, JSON I/O, table and table I/O, the entity, mapper,
+repository and service, the handler and the event registrar, the create
+and notify-trigger scripts and the drop script.
+
+The domain type is the significant change. It was decomposed into
+=commodity_terms=, =commodity_option=, =commodity_pricing= and
+=commodity_exotic= sub-structs, reached as =v.terms.= and so on. The
+model converges it to the canonical shape its nine modelled siblings
+have: =instrument_identity= plus flat optional blocks. Four files read
+the nested shape and move with the model:
+
+- =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp=
+- =projects/ores.ore/core/src/domain/commodity_instrument_mapper.cpp=
+- =projects/ores.ore/core/tests/xml_commodity_mapper_roundtrip_tests.cpp=
+- =projects/ores.shell/application/src/app/commands/trading/commodity_instrument_commands.cpp=
+
+Nothing else in the tree names the nested types, and no other file reads
+=.terms=, =.pricing= or =.exotic= in a commodity context.
+
+What this means for the seven that remain: =composite_instruments=,
+=credit_instruments= and =scripted_instruments= are instrument sub-types
+and take the same model, regeneration and consumer migration.
+=composite_legs= and =swap_legs= are children over the same scope, and
+=activity_types= and =fpml_event_types= bind =simple-lookup= instead.
+Authoring the model is the cheap part, one pass from sources already in
+the tree; migrating the consumers and proving the regeneration is the
+work, and each family carries its own two to four consumers.
+
+** 2d. The environment defects, and how they cleared
+
+The rebuild and the build were blocked by eight defects, none of them
+trading's. Two of the eight are fixed by this branch's own PR #2232 and
+the rest by main's PR #2240.
+
+| # | Where                | Symptom                                                             | State |
+|---+----------------------+---------------------------------------------------------------------+-------|
+| 1 | dq, 5 population functions | the file opens a block comment and never closes it; psql reports "unterminated /* comment" in =setup_schema.sql= | fixed on main |
+| 2 | =service_vars.sh=    | the populate scripts use =:'storage_service_user'=, and =SERVICE_NAMES= has no =storage=, so psql reports a syntax error at ":" | fixed on main |
+| 3 | iam seed             | the storage service account row is never seeded; the role assignment raises "Account not found: ores_merry_newton_storage_service" | fixed on main |
+| 4 | dq artefact SQL      | =ores_dq_tags_artefact_tbl= carries no unique constraint for =on conflict (tenant_id, dataset_id, name)= | fixed on main |
+| 5 | seed upsert          | =ores_dq_catalogs_upsert_fn= relied on an =ON CONFLICT= clause that the versioning trigger pre-empts, so two seeds of one catalogue aborted the populate | fixed by PR #2232 |
+| 6 | dq publish function  | =ores_dq_coding_schemes_publish_fn= publishes a dataset's rows with version 0, so a published key aborts the populate | fixed on main |
+| 7 | workflow, reporting   | dq's FSM remodelling (PR #2216) deleted =fsm_protocol.hpp= and the machine filter with it; the consumers stayed, so the build failed and both services died on =dq.v1.fsm-states.list= | fixed by PR #2240 |
+| 8 | iam                  | dq's dataset remodelling (PR #2239) replaced =get_datasets_request=; the iam consumer stayed, so the build failed | fixed by PR #2240 |
+
+Defects 1 to 6 stopped the database rebuild, and each repair revealed the
+next. Defects 7 and 8 stopped the default build, which had been red since
+PR #2216, and with it the fleet: =services start= reached twenty-two of
+twenty-four units and took four hundred and eighty-two seconds, because
+the readiness check waits on units that can never become ready.
+
+On the fixed main the rebuild needs no workaround, the default build
+exits zero, and the fleet reaches twenty-four units in two seconds.
 
 ** 3. Classify the unmodelled hand-written domain types
 
-Done: =evidence/pr3_m05_classification.txt=. Five of the twenty-four
-already have a model, as field groups; nine are models to author; ten are
-messages rather than entities, by M05; and none is infrastructure, so no
-type needed a recorded reason for staying hand-written. The task's "no
-model" was true of the B02 census of entity models and not of the
-meta-model as a whole, which is why five field groups appeared on both
-lists.
+Done. Measured 2026-09-27. The twenty-four types fall into four states,
+not three:
+
+- Already modelled, as a field group (5): =trade_audit=,
+  =trade_classification=, =trade_identity=, =trade_lifecycle= and
+  =trade_parties=. Each has an org under
+  =projects/ores.trading/modeling/=, and the entity models compose them.
+  The B02 census counts them, which is why they appeared on both lists.
+- A model to author (9): =activity_type=, =fpml_event_type=,
+  =commodity_instrument=, =composite_instrument=, =composite_leg=,
+  =credit_instrument=, =scripted_instrument=, =swap_leg= and
+  =product_type=. Eight carry a table and a hand-written stack and this PR
+  authors them; =product_type= is an enumeration on the trades table and
+  waits for PR 4, which owns that shape (defect 10).
+- A message, not an entity (10): =rates_instrument_variant=,
+  =equity_instrument_variant=, =fx_instrument_variant=, =instrument=,
+  =instrument_identity=, =instrument_payload=, =trade_instrument=,
+  =bond_instrument_data=, =bond_schedule_data= and =trade_envelope_data=.
+  M05 says a joined or denormalised shape is a message rather than an
+  entity, and each of these is one: the three variants are discriminated
+  unions over the instrument sub-types, =instrument= with its identity and
+  payload is the polymorphic container the wire and the ORE mapper carry,
+  =trade_instrument= is the trade's joined instrument view, and the three
+  =*_data= types are the denormalised shapes the mappers produce. None
+  owns a table of its own, which is the test that separates them from the
+  nine.
+- Infrastructure (0): none. Every type is modelled, to be modelled, or a
+  message, so no type needed a recorded reason for staying hand-written,
+  and none is deleted from this PR.
+
+The census of the twenty-four, as the task stated it:
 
 Twenty-four hand-written domain types have no model:
 =activity_type=, =fpml_event_type=, =commodity_instrument=,
@@ -342,7 +485,12 @@ Update the story's checklist rows for M02, M04, M05, M08 and M09.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| The commodity model regenerates with no drift | Met | The dry run is empty after the in-place regeneration, on the rebased tree |
+| The commodity port builds | Met | =cmake --build build/output/linux-clang-debug-make -j 3= exits 0 with no errors for the whole tree |
+| The commodity port's suites pass | Met | =ores.trading.api=, =ores.trading.core=, =ores.trading.service=, =ores.ore.api=, =ores.ore.core=, =ores.ore.service=, =ores.shell.trading= and =ores.shell.application= are green |
+| The database rebuilds from the tree | Met | =compass db recreate -y -k= exits 0 with no local workaround |
+| The fleet starts | Met | 24 of 24 units ready in two seconds, over busctl |
+| The seven remaining ports repeat the method | Not met | Each needs its model, regeneration, consumer migration and proof |
 
 * PRs
 
@@ -357,3 +505,31 @@ Update the story's checklist rows for M02, M04, M05, M08 and M09.
 |   |                 |      |          |       |
 
 * Result
+
+Measured 2026-09-27 on =feature/model-missing-trading-families=, rebased
+onto =dbfb31d45d=, the merge of main's PR #2240.
+
+| Check     | Result |
+|-----------+--------|
+| Rebase    | Fifteen commits replay onto main. One conflict in the port's regenerated =commodity_instrument.hpp=, resolved to the port's flat shape, which its message already states; one word of prose in =trade.org= |
+| Database  | =compass db recreate -y -k= exits 0 with no local workaround |
+| Build     | =cmake --build build/output/linux-clang-debug-make -j 3= exits 0, no errors, the first green default build of this work |
+| Fleet     | =compass services start= reports 24 of 24 units ready in two seconds |
+| Suite     | =ctest= runs 86 tests in 310 seconds: 81 pass, 5 fail |
+| Owned     | All eight suites this branch owns pass: =ores.trading.api=, =.core=, =.service=, =ores.ore.api=, =.core=, =.service=, =ores.shell.trading= and =ores.shell.application= |
+| Drift     | =check_component_drift.py --component trading-cpp --dry-run= reports no drift; main's lookup-template fix reflowed one log statement in =trade_service.cpp=, which is regenerated |
+| Transport | =ORES_USE_BUSCTL=1= is in =.env= and =busctl --user list= answers |
+
+The five failures belong to other components:
+
+- =ores.dq.api.tests=: the coding-scheme table drops its description and
+  its subject area.
+- =ores.dq.core.tests=: a written row stays at version 0;
+  =ores_dq_lei_entities_tbl= and =ores_dq_lei_relationships_tbl= do not
+  exist; a change reason names a category the seed does not hold.
+- =ores.shell.api.tests=: =to_iso8601_utc= states a space where the test
+  wants =T=.
+- =ores.refdata.core.tests=: the suites insert a business unit, a book and
+  a portfolio whose natural keys the seed holds.
+- =ores.marketdata.core.tests=: a series classification rule event never
+  arrives.

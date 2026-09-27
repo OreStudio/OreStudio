@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-27
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -32,9 +32,9 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | dq has no failing test case this task owns: =ores.dq.api.tests=, =ores.dq.service.tests= and =ores.shell.dq.tests= pass, and the two remaining =ores.dq.core.tests= failures are the LEI cases that carry their own task. All fifteen entities are canonical and =ores.shell.dq= is wired. |
+| Now          | dq has no failing test case this task owns: =ores.dq.api.tests=, =ores.dq.core.tests=, =ores.dq.service.tests= and =ores.shell.dq.tests= pass. The two LEI cases part twenty-two left are closed: the LEI staging-entity [[id:4205D956-5738-43F5-8083-B06211726780][task]] is DONE and PR #2270 merged. All fifteen entities are canonical, all 31 dq =*_protocol.hpp= carry the generated marker, =ores.shell.dq= is wired, and dq is in =COMPONENTS_UNDER_TEST=. |
 | Waiting on   | Nothing.                              |
-| Next         | Land the LEI staging-entity task, which is the last dq failure. The twelve entities whose protocol headers are still hand-written are what keep dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
+| Next         | The task's single remaining item is the seven hand-written =*_artefact_create.sql= files under =projects/ores.sql/create/dq/= that declare a table no model owns. Each needs a model, or a recorded reason it has none. The seven are listed in the =* Result= section; they are also what Step 8 of the plan now records. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -68,12 +68,12 @@ Work in verifiable units. Run the census and the drift check after each unit, an
 | 2. Liveness census | DONE | 49 tables, 0 deletion candidates; see Step 2 results |
 | 3. Divergent tables | DONE | 12 tables, 6 difference classes, 0 defects; see Step 3 results |
 | 4. Foreign models | DONE | All 6 switched, 3 as entities and 3 as junctions; see Step 4 results |
-| 5. Derivable tables | PARTIAL | 4 of 5 switched; =coding_schemes= needs a model; see Step 5 results |
+| 5. Derivable tables | DONE | All 5 switched; =dq_coding_schemes_artefact_create.sql= is generated now; see Step 5 results |
 | 6. SQL reachability (WIRE_001) | DONE | 49 entries cleared, 0 warnings with no suppression; see Step 6 results |
 | 7. Publication template | DONE | The template generated a retired design; deleted with 21 dead files; see Step 7 results |
-| 8. Remaining models | IN PROGRESS | The twelve remaining protocols are surveyed and grouped by the work each needs; the FPML family is blocked; see Step 8 in progress |
+| 8. Remaining models | IN PROGRESS | The protocol work finished: all 31 dq =*_protocol.hpp= are generated. What remains is the seven orphan artefact tables, each of which needs a model or a recorded reason; see Step 8 in progress |
 | 9. Regenerate C++ | DONE | Four facets byte-identical; all 15 entities canonical and =ores.shell.dq= wired; =--component dq= reports no drift twice in a row; see Step 9 parts one to six |
-| 10. Eventing headers | TODO | |
+| 10. Eventing headers | DONE | All 20 dq =*_event.hpp= carry the generated marker |
 | 11. Artefact projection in the model | DONE | =* Artefact columns= implemented and tested; see Step 11 results |
 | 12. Divergent tables: declare the projection | DONE | All 11 landed; divergent is 0; see Step 12 results |
 
@@ -136,8 +136,10 @@ exactly one file, =coding_scheme_table.cpp=, which is the whole of the diff.
 
 **Evidence.** =ores.dq.api.tests= passes 50 of 50, up from 49. =ores.dq.core.tests=
 is unchanged at 109 of 111, its two failures being the LEI cases part twenty-two
-gave their own task. =ores.dq.service.tests= and =ores.shell.dq.tests= pass. The
-codegen suite passes 845. dq has no failing test case that this task owns.
+gave their own task; that [[id:4205D956-5738-43F5-8083-B06211726780][task]] has since
+landed as PR #2270, so the suite now passes. =ores.dq.service.tests= and
+=ores.shell.dq.tests= pass. The codegen suite passes 845. dq has no failing test
+case that this task owns.
 
 **The wider sweep, for the record.** All 83 test binaries were run against a
 freshly recreated database, first run. Six are red, and five are not dq: refdata
@@ -259,12 +261,15 @@ append-only, so the model declares =:current_state: true= with
 hand-written one column for column and check for check, with two recorded
 differences:
 
-- The primary key loses =default gen_random_uuid()= because the template drops a
-  declared default on a key column. The fix is written and held in =git stash=;
-  it is deferred because its only other effect in the whole repository is
-  =ores.marketdata.series_classification_rule.metric=, and that component's
-  generated table is already drifted for unrelated reasons. Taking the fix here
-  would pull another component's drift into this change.
+- The primary key lost =default gen_random_uuid()= because the template dropped a
+  declared default on a key column. That defect is now fixed at source and landed
+  on this branch:
+  =projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=
+  renders ={{#default}} default {{{default}}}{{/default}}= in the primary-key
+  block, =projects/ores.sql/create/dq/dq_publications_create.sql= now reads
+  ="id" uuid not null default gen_random_uuid(),=, and
+  =projects/ores.codegen/tests/test_pk_column_default.py= is a mutation-proven
+  regression test.
 - Index names come out =publications_dataset_id_idx= rather than
   =dataset_publications_dataset_id_idx=, because the template derives the prefix
   from the entity rather than the table name. Nothing references index names, so
@@ -430,7 +435,7 @@ Run on 2026-09-26. The smallest item from part fourteen is closed. The =coding_s
 
 * Step 8 part fourteen: every hand-written SQL file, classified
 
-Run on 2026-09-26. =create/dq= holds 108 files, of which **79 are generated and 29 hand-written**. The acceptance criterion is that each is "generated from a model, or recorded with the reason it is not", so this part classifies all 29. Nothing here is changed; it is the reason each file has none yet.
+Run on 2026-09-26. =create/dq= held 108 files then, of which **79 were generated and 29 hand-written**; the tree now holds 109 files, **84 generated and 25 hand-written**. The acceptance criterion is that each is "generated from a model, or recorded with the reason it is not", so this part classifies all 29 files that were hand-written at the time. Nothing here is changed; it is the reason each file has none yet.
 
 | Files | Class | Reason it is hand-written, and what would change it |
 |-------+-------+-----------------------------------------------------|
@@ -471,7 +476,7 @@ That reframes the list. It is not five unrelated migration problems:
 
 So **one unit unblocks four of the nine**: an operation model for the publish verbs, which the codegen already supports -- =ores.codegen.operation= renders messages with a =:subject:= and =:response:= from one source and leaves the handler hand-written beside it, which is exactly the shape these verbs need.
 
-**Evidence.** No source change: the run-log model and the primary-key default fix are in =git stash= ("wip: dq publication run-log model..."), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=.
+**Evidence.** No source change: the run-log model and the primary-key default fix are in =git stash= ("wip: dq publication run-log model..."), the working tree is clean and =check_component_drift.py --component dq= reports no drift on =main=. Correction: both have since landed on =feature/dq-clean-batch-2=, and the primary-key default fix is covered by =projects/ores.codegen/tests/test_pk_column_default.py=.
 
 * Step 8 part twelve: the FSM pair lands, and two mapper defects go with it
 
@@ -1112,7 +1117,7 @@ Nothing was lost by the swap. The twins differ only in ways the generated file w
 
 **Evidence.** =validate_schemas.sh= reports 0 warnings, and it reports them with the 49 entries *deleted* from the ignore file rather than suppressed. That is the proof: an unwired file cannot pass silently, because the check that would name it is live. The artefact census also reports 0 duplicated declarations, down from 2. The component drift fell from 517 files to 513: the four regenerated files (two creates, two notify triggers) no longer drift, and =ores.sql/create= fell from 21 to 17.
 
-**Correction to Finding 3 of the investigation.** That finding said the generated drop scripts were unreachable. The files are generated, but neither drop template emits an =AUTO-GENERATED= marker, so a drop file's provenance cannot be read from its header at all. This is a G03 defect in the two drop archetypes (=sql_schema_domain_entity_drop.mustache= and =sql_schema_notify_trigger_drop.mustache=), and step 8 carries it.
+**Correction to Finding 3 of the investigation.** That finding said the generated drop scripts were unreachable. The files are generated, but neither drop template emits an =AUTO-GENERATED= marker, so a drop file's provenance cannot be read from its header at all. This is not a dq defect: measured across the whole tree, 0 of 600 files under =projects/ores.sql/drop/= carry the marker, so it is a repository-wide convention or omission that spans every drop archetype (=sql_schema_domain_entity_drop.mustache=, =sql_schema_notify_trigger_drop.mustache= and the rest). It is cross-cutting, it carries its own blast radius far wider than dq, and it is not part of this task's acceptance.
 
 * Step 3 results
 
@@ -1249,8 +1254,18 @@ via its "Verifies task" field.
 
 Pass 1 is not finished, so this task is not done. What is done is the part the story was built on: artefact tables generate from the same entity model as their base table, the projection is declared in the model, and the handcrafted SQL that no model owned is either gone or has a recorded reason for staying.
 
-The design question is answered affirmatively and the answer is enforced by templates rather than by convention. The census reads 41 generated, 1 derivable, 0 divergent and 7 orphan across 49 artefact tables, and none of the 49 is a deletion candidate — so the component shrank in handcrafted SQL without losing a table.
+The design question is answered affirmatively and the answer is enforced by templates rather than by convention. The census now reads 42 generated, 0 derivable, 0 divergent, 0 foreign and 7 orphan across 49 artefact tables, and none of the 49 is a deletion candidate — so the component shrank in handcrafted SQL without losing a table.
 
-The remaining work is named: six entities whose canonical output the generator already emits and whose hand-written duplicates must be deleted, the shell unit that must be wired before the change-reason pair can move, one decision about `subject_area`'s composite history identity, and the line that adds dq to =COMPONENTS_UNDER_TEST=. Each is recorded above with the evidence that it is a deletion problem rather than a modelling problem.
+The remaining work is one item: the seven hand-written =*_artefact_create.sql= files under =projects/ores.sql/create/dq= that carry no generated marker and declare a table no model owns. Each needs a model, or a recorded reason it has none:
+
+- =dq_crm_topology_bundles_artefact_create.sql=
+- =dq_ip2country_artefact_create.sql=
+- =dq_lei_bic_artefact_create.sql=
+- =dq_market_data_observations_artefact_create.sql=
+- =dq_synthetic_gmm_components_artefact_create.sql=
+- =dq_synthetic_ir_curve_configs_artefact_create.sql=
+- =dq_synthetic_ir_curve_template_entries_artefact_create.sql=
+
+The three synthetic tables have a partial reason — their owner is not this component. The other four have none. These seven are the reason acceptance criteria 1 and 2 are unmet. Every other item this section once named as remaining has landed: the entities it called "six entities" are migrated, the shell unit is wired, the =subject_area= composite history identity kept its recorded hand-written bridge, and dq is in =COMPONENTS_UNDER_TEST=.
 
 Landed as https://github.com/OreStudio/OreStudio/pull/2189, https://github.com/OreStudio/OreStudio/pull/2190, https://github.com/OreStudio/OreStudio/pull/2193 https://github.com/OreStudio/OreStudio/pull/2196 and https://github.com/OreStudio/OreStudio/pull/2198 and https://github.com/OreStudio/OreStudio/pull/2200 and https://github.com/OreStudio/OreStudio/pull/2203.

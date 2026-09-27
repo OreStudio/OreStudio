@@ -178,8 +178,20 @@ def reject_conflict_markers(text: str) -> None:
     for line in text.splitlines():
         if CONFLICT_MARKER_RE.match(line):
             raise SystemExit(
-                "doc/recipes/http/http.org carries a merge conflict; resolve "
-                "it, then regenerate")
+                f"{shown(INDEX)} carries a merge conflict; resolve it, then "
+                "regenerate")
+
+
+def shown(path: Path) -> str:
+    """A path for a message: repo-relative where it sits inside the repo.
+
+    The index always does in practice, but a message must not be the thing
+    that fails, so a path outside the tree is printed as it is.
+    """
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -194,15 +206,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.check:
         if current != wanted:
-            print(f"{INDEX.relative_to(REPO_ROOT)} is stale; regenerate it with "
+            print(f"{shown(INDEX)} is stale; regenerate it with "
                   f"{Path(__file__).name}", file=sys.stderr)
             return 1
-        print(f"{INDEX.relative_to(REPO_ROOT)} is current.")
+        print(f"{shown(INDEX)} is current.")
         return 0
 
     INDEX.write_text(wanted, encoding="utf-8")
     grouped = gather()
-    print(f"wrote {INDEX.relative_to(REPO_ROOT)}: "
+    print(f"wrote {shown(INDEX)}: "
           f"{sum(len(v) for v in grouped.values())} recipes "
           f"in {len(grouped)} categories.")
     return 0

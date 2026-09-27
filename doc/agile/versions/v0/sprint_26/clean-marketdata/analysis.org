@@ -351,18 +351,24 @@ commodity one, 426 by the basis swap's named form, 205 by the security class,
 171 by the shape-profile one and 128 by the rating one. The shape record is down
 to CPR alone, and 99.99% of the corpus is named.
 
-What is left is 48 keys, and nothing in it is a shape defect:
+The corpus is named in full. 485,606 of 485,606 keys project to an oresmd
+identifier and every one of them reads back as itself, so there is no coverage
+gap left to close or to record.
 
-- =IR_SWAP= (42) and =MM= (4) are F-TIIE. The family list holds =tiie= and not
-  =ftiie=, and F-TIIE is a second Mexican benchmark rather than a spelling, so
-  closing it means widening a CHECK constraint on an ores table. That is a domain
-  decision, not a key grammar, and it has its own capture.
-- =CPR= (2) is a security-keyed key on a type modelled under commodity. It is the
-  last shape-mismatch entry, it has a recorded test-coverage exemption, and the
-  security class added here is where it belongs.
+PR 2 closed the last two by the records rather than by the shapes, and neither
+was a shape defect:
 
-Every ORE series type is now either represented or recorded with its reason, and
-the gate fails if a gap goes unrecorded.
+- =CPR= moved from commodity to the =security= class. It was the last entry in
+  the shape-mismatch record and the only entry in the test-coverage exemption
+  list, and both are now empty.
+- =F-TIIE= joined =index_family= as an overnight benchmark, which meant widening
+  both CHECK constraints on =ores_synthetic_ir_curve_generation_configs_tbl= and
+  adding a one-shot migration. The 46 MXN keys it unblocked were the last ones.
+
+Two further index tokens needed no family at all: a basis swap names the basis
+itself and a swap may name a curve marker rather than a benchmark. Both ride in
+=index_spelling=, the field that already carries a producer's spelling, and are
+emitted whole.
 
 ** The security class exposed two generator defects
 
@@ -656,6 +662,41 @@ No reason is recorded for any of these, which is what W01 requires.
 Consequences: =observation_lineages.*= and
 =series_classification_rules.*= answer nothing, and =market_fixings.*=
 and =market_series.history= are declared but unserved.
+
+** The failing integration test is a stale generated trigger, not unwired code
+
+Found in PR 2, after the wiring above landed.
+=series_classification_rule_eventing_integration_tests= assembles its own
+DB-notify chain, and that chain breaks before the event bus:
+
+- The committed notify trigger emits the retired payload --
+  ={entity, timestamp, entity_ids, tenant_id}=
+  (=marketdata_series_classification_rules_notify_trigger_create.sql:49=).
+- The shared listener parses every payload as the canonical
+  =entity_event_notification= and returns on a parse failure
+  (=postgres_event_source.cpp:38-52=), so its legacy-mapping branch is unreachable
+  for these channels.
+
+Installing the canonical function the current template renders, with the test
+unmodified, makes it pass; restoring the legacy function makes it fail again on
+every run. The test's own wiring is therefore correct -- channel, subject,
+subscribe-before-write and readiness -- and the payload shape is the sole
+blocker. That excludes the reading V02 recorded, that the test was simply not
+exercising the service's mapping.
+
+The blast radius is wider than the test. **31 generated notify triggers** still
+emit =entity_ids= -- marketdata 6, refdata 15, trading 8, dq 2 -- and the listener
+now drops all of them. Marketdata's rule is the only one with test coverage,
+which is why it is the only visible failure. It also qualifies PR 1's wiring: the
+six generated event-mapping registrars that =application.cpp= now composes are
+the stale legacy ones, so the live service drops every marketdata entity event
+too. The wiring was necessary and is not yet sufficient.
+
+The fix is the regeneration this plan already schedules for PR 3, and it is not a
+test fix. The template has emitted the canonical shape since =d6701b43b6=; the
+committed marketdata triggers predate it. A library-side legacy fallback in the
+listener would be smaller and is the wrong direction: it restores a path that was
+deliberately deleted, and leaves all 31 triggers stale.
 
 ** The permissions gate is vacuous for this component
 

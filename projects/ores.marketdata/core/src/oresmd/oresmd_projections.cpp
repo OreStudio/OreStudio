@@ -498,12 +498,13 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             // currency and the spot lag, which is the only difference between
             // the two forms ORE writes: ccy/settle/tenor/maturity and
             // ccy/index/settle/tenor/maturity.
-            if (id.index)
+            const auto index = index_token(id);
+            if (!index.empty())
                 return std::format("{}/{}/{}/{}/{}/{}/{}",
                                    ore_type(qt),
                                    ore_metric(m),
                                    id.ccy,
-                                   index_token(id),
+                                   index,
                                    settle,
                                    t,
                                    point);
@@ -769,14 +770,6 @@ std::string_view ore_type(commodity_quote_type qt) {
             return ore_type_spec::commodity_fwd;
         case commodity_quote_type::option:
             return ore_type_spec::commodity_option;
-        // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
-        // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
-        // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
-        // commodity_market_data_identifier is a deliberate simplification since
-        // ORE Studio has no security-level identifier yet; the key emitted here
-        // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
-        case commodity_quote_type::cpr:
-            return ore_type_spec::cpr;
     }
     return ore_type_spec::commodity;
 }
@@ -787,8 +780,6 @@ std::string_view ore_commodity_metric(commodity_quote_type qt) {
         case commodity_quote_type::fwd:
             return ore_metric_spec::price;
         case commodity_quote_type::option:
-            return ore_metric_spec::rate;
-        case commodity_quote_type::cpr:
             return ore_metric_spec::rate;
     }
     return ore_metric_spec::price;
@@ -887,6 +878,8 @@ std::string_view ore_type(security_quote_type qt) {
             return ore_type_spec::bond;
         case security_quote_type::recovery_rate:
             return ore_type_spec::recovery_rate;
+        case security_quote_type::cpr:
+            return ore_type_spec::cpr;
     }
     return ore_type_spec::bond;
 }
@@ -900,6 +893,7 @@ std::string_view ore_security_metric(security_quote_type qt) {
         case security_quote_type::bond_conversion_factor:
             return ore_metric_spec::conversion_factor;
         case security_quote_type::recovery_rate:
+        case security_quote_type::cpr:
             return ore_metric_spec::rate;
     }
     return ore_metric_spec::price;
@@ -1020,7 +1014,7 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
     if (qt == commodity_quote_type::spot)
         return std::format(
             "{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt), id.commodity_code, id.ccy);
-    // fwd/cpr: TYPE/METRIC/CODE/CCY/TENOR — curves, need point for the tenor.
+    // fwd: TYPE/METRIC/CODE/CCY/TENOR — a curve, needs point for the tenor.
     if (!id.point)
         return std::nullopt;
     return std::format("{}/{}/{}/{}/{}",
@@ -1173,11 +1167,17 @@ std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string
     id.metric = *m;
     const auto named_index = parts.size() == 7;
     if (named_index) {
-        const auto idx = parse_index(parts[3]);
-        if (!idx)
-            return std::nullopt;
-        id.index = *idx;
-        record_index_spelling(id, parts[3]);
+        if (const auto idx = parse_index(parts[3])) {
+            id.index = *idx;
+            record_index_spelling(id, parts[3]);
+        } else {
+            // A token that names no benchmark family: the corpus writes
+            // NoDiscount in the index slot, which marks a curve rather than a
+            // rate. There is nothing to classify it with, so the token is
+            // carried whole and emitted whole, the way a basis swap's named
+            // basis is.
+            id.index_spelling = parts[3];
+        }
     }
     const auto settle = named_index ? parts[4] : parts[3];
     if (settle != "2D")
@@ -1640,10 +1640,8 @@ std::optional<market_data_identifier> from_commodity_spot(const std::vector<std:
 
 std::optional<market_data_identifier> from_commodity_curve(commodity_quote_type qt,
                                                            const std::vector<std::string>& parts) {
-    // COMMODITY_FWD/PRICE/CODE/CCY/TENOR, CPR/RATE/CODE/CCY/TENOR.
-    const auto expected =
-        (qt == commodity_quote_type::cpr) ? ore_metric_spec::rate : ore_metric_spec::price;
-    if (parts.size() != 5 || !metric_is(parts[1], expected))
+    // COMMODITY_FWD/PRICE/CODE/CCY/TENOR.
+    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::price))
         return std::nullopt;
     commodity_market_data_identifier id;
     id.commodity_code = parts[2];
@@ -1889,7 +1887,7 @@ inverse_projection(const std::vector<std::string>& parts,
     if (type == ore_type_spec::commodity_fwd)
         return from_commodity_curve(commodity_quote_type::fwd, parts);
     if (type == ore_type_spec::cpr)
-        return from_commodity_curve(commodity_quote_type::cpr, parts);
+        return from_security(security_quote_type::cpr, parts);
     if (type == ore_type_spec::cds || type == ore_type_spec::hazard_rate) {
         const auto qt = parse_enum_lower<credit_quote_type>(type);
         return qt ? from_credit_curve(*qt, parts) : std::nullopt;

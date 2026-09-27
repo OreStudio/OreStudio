@@ -611,23 +611,6 @@ TEST_CASE("round_trip_commodity_fwd", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
-TEST_CASE("round_trip_commodity_cpr", tags) {
-    const auto original =
-        oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
-    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
-    REQUIRE(original == roundtripped);
-    // The URI must also name a real ORE artefact. A documented example that
-    // parses and round-trips while projecting to nothing is the defect this case
-    // exists to catch, and the stability check above passes for it either way.
-    // Deliberately no key-readback comparison: a URI may legitimately carry
-    // context the key does not encode (a quote's curve index and role), and the
-    // key-to-URI direction normalises the entity's case, which the corpus-driven
-    // coverage tests own.
-    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
-             oresmd_projections::to_index_name(original).has_value() ||
-             oresmd_projections::to_curve_key(original).has_value()));
-}
-
 TEST_CASE("round_trip_commodity_option_delta_vol", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://commodity/"
@@ -1144,6 +1127,19 @@ TEST_CASE("round_trip_security_bond_conversion_factor", tags) {
 TEST_CASE("round_trip_security_recovery_rate", tags) {
     const auto original =
         oresmd_parser::parse(uri("oresmd://security/security_1?type=quote&quote=recovery_rate"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_security_cpr", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://security/isin:xs0983610930?type=quote&quote=cpr"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
     // The URI must also name a real ORE artefact. A documented example that

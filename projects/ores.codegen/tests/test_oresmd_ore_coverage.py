@@ -42,11 +42,10 @@ def test_oresmd_discovery_is_not_vacuous():
 
 
 def test_every_exception_carries_a_reason():
-    # VOL_DECLARED_UNWIRED is allowed to be empty, and emptying it is the goal of
-    # the list: it held commodity and credit until both reached a vol path. The
-    # other two are not empty today and are not expected to be.
-    for table_name in ("UNREPRESENTED", "SHAPE_MISMATCH"):
-        assert getattr(check, table_name), f"{table_name} is empty"
+    # Only UNREPRESENTED must hold entries. Emptying the other two is the goal:
+    # VOL_DECLARED_UNWIRED held commodity and credit until both reached a vol
+    # path, and SHAPE_MISMATCH held CPR until it moved to the security class.
+    assert check.UNREPRESENTED, "UNREPRESENTED is empty"
     for table_name in ("UNREPRESENTED", "SHAPE_MISMATCH",
                        "VOL_DECLARED_UNWIRED"):
         for key, reason in getattr(check, table_name).items():

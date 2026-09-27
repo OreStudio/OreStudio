@@ -95,7 +95,7 @@ enum class ir_quote_type {
  * @brief The `index` query key of an oresmd URI, IR-only: a fixed benchmark-family token,
  * not free text -- closes the gap-analysis's "index_name is free text" finding.
  *
- * The 22 values mirror the CHECK constraint on ores_synthetic_ir_curve_generation_configs_tbl
+ * The 23 values mirror the CHECK constraint on ores_synthetic_ir_curve_generation_configs_tbl
  * (synthetic_ir_curve_generation_configs_create.sql) exactly: libor and euribor are the only
  * term families (they require a tenor); all others are overnight-style families. See
  * oresmd_index_family_utils's is_overnight() for the tenor rule.
@@ -122,6 +122,7 @@ enum class index_family {
     nzonia,
     shibor,
     tiie,
+    ftiie,
     taibor
 };
 
@@ -163,7 +164,6 @@ enum class equity_quote_type {
 enum class commodity_quote_type {
     spot,  ///< COMMODITY/PRICE (spot price, the default).
     fwd,   ///< COMMODITY_FWD/PRICE (commodity forward price).
-    cpr,   ///< CPR/RATE (conditional prepayment rate).
     option ///< COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity
            ///< option's three shapes, with a commodity code where the equity has a ticker; the
            ///< metric segment is the vol model, not this table's ore_metric
@@ -212,8 +212,11 @@ enum class security_quote_type {
     bond_price,             ///< BOND/PRICE (bond clean price).
     bond_yield_spread,      ///< BOND/YIELD_SPREAD (bond yield spread).
     bond_conversion_factor, ///< BOND/CONVERSION_FACTOR (bond futures conversion factor).
-    recovery_rate ///< RECOVERY_RATE/RATE (recovery assumption named by a security rather than by an
-                  ///< entity and a seniority).
+    recovery_rate, ///< RECOVERY_RATE/RATE (recovery assumption named by a security rather than by
+                   ///< an entity and a seniority).
+    cpr ///< CPR/RATE (conditional prepayment rate). The corpus keys it by ISIN, inside `<Security>`
+        ///< blocks in curveconfig.xml, so it belongs to this class rather than to commodity, which
+        ///< carried it as a simplification while no security-level identifier existed.
 };
 
 /**

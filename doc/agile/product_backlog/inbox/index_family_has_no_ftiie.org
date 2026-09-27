@@ -1,15 +1,38 @@
 :PROPERTIES:
 :ID: 7c47d7c8-1eca-45d1-a168-084dcbfdd01e
 :END:
-#+title: index_family has no F-TIIE, so 46 MXN keys cannot be named
-#+description: The corpus writes IR_SWAP/RATE/MXN/FTIIE/... and MM/RATE/MXN/FTIIE/... F-TIIE is Mexico's overnight funding rate, a different benchmark from the TIIE the enum already holds, so the keys have no family to resolve to and are the last 42 IR_SWAP and 4 MM keys oresmd cannot name.
+#+title: index_family had no F-TIIE, so 46 MXN keys could not be named
+#+description: The corpus writes IR_SWAP/RATE/MXN/FTIIE/... and MM/RATE/MXN/FTIIE/... F-TIIE is Mexico's overnight funding rate, a different benchmark from the TIIE the enum holds, so the keys had no family to resolve to. Resolved: the family was added and both ores.sql CHECK constraints widened.
 #+type: capture
 #+level: cross
 #+filetags:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-27
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved
+
+Closed as proposed, in the follow-on PR. `ftiie` joins the Index family table,
+and both CHECK constraints on `ores_synthetic_ir_curve_generation_configs_tbl`
+list it as an overnight family, with a one-shot migration for databases that
+predate the change. The corpus is now named in full: 485,606 of 485,606 keys.
+
+The domain question this capture raised -- whether ores models F-TIIE curve
+configurations -- is answered yes, on the evidence that ORE's own examples quote
+curves on it, so a family ores does not hold is a family ores cannot read.
+
+Two things the migration taught, both worth keeping:
+
+- **The membership check's name is not the one a template would guess.** Postgres
+  auto-named it from its single column and truncated it
+  (`..._t_index_family_check`), and re-adding it as `..._tbl_check` collided with
+  a different check on the same table. Because the whole `do` block is one
+  transaction the failure rolled back cleanly, but a script written that way
+  against a table whose names differ could have left the constraint dropped.
+- **Idempotence needs both halves.** Matching the old definition and dropping it
+  is not enough: the script now also creates the check when it is absent, so it
+  repairs a database where a previous run dropped one and failed to re-add it.
 
 * What
 

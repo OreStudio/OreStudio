@@ -229,12 +229,10 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
     // the measured half of the same claim. It fails when one is closed without
     // the record being updated, and when a change breaks a type that worked.
     //
-    // CPR appears here even though the model declares a quote type for it: it is
-    // modelled in a shape the corpus does not use, so against real data it names
-    // nothing. That is the shape-mismatch list in the codegen record, seen from
-    // the data rather than from the models.
-    const std::set<std::string> recorded{
-        "CPR"};
+    // Empty is the goal, and this is the first time it has been: every series
+    // type the corpus carries is now named. CPR was the last, modelled in a shape
+    // the corpus does not use until it moved to the security class.
+    const std::set<std::string> recorded{};
 
     REQUIRE(types_oresmd_cannot_name() == recorded);
 }
@@ -256,23 +254,24 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     // because four types name every key and still lose some on the way back;
     // those are in the round-trip gap list above, not here.
     const std::set<std::string> expected_fully_named{
-        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
+        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CPR", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
         "COMMODITY_OPTION",
         "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
         "EQUITY_OPTION", "FRA",
         "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "MM_FUTURE", "OI_FUTURE", "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE",
+        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM", "MM_FUTURE", "OI_FUTURE",
+        "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE",
         "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};
 
     const std::set<std::string> expected_fully_round_tripped{
-        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CAPFLOOR", "CC_BASIS_SWAP",
+        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CPR", "CAPFLOOR", "CC_BASIS_SWAP",
         "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_OPTION",
         "DISCOUNT", "EQUITY_DIVIDEND",
         "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM_FUTURE", "OI_FUTURE",
+        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM", "MM_FUTURE", "OI_FUTURE",
         "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE", "SWAPTION",
         "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
         "ZC_INFLATIONSWAP", "ZERO"};

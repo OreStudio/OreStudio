@@ -74,10 +74,9 @@ UNREPRESENTED: dict[str, str] = {
 # Quote types oresmd models whose shape does not match the keys ORE writes.
 # These are model defects rather than coverage gaps: the type is declared,
 # and the declaration is wrong. Recorded here so the corpus measurement can
-# name them; the fix is the model.
-SHAPE_MISMATCH: dict[str, str] = {
-    "CPR": "real key is CPR/RATE/ISIN:<isin>, with no currency",
-}
+# name them; the fix is the model. Empty is the goal: CPR was the last entry,
+# and it moved to the security class where its ISIN-keyed shape belongs.
+SHAPE_MISMATCH: dict[str, str] = {}
 
 # ORE types oresmd represents through a volatility surface point rather than
 # a quote-type row, and the asset class that carries them. The projection
@@ -101,15 +100,10 @@ VOL_DECLARED_UNWIRED: dict[str, str] = {}
 
 # Modelled quote types with no projection test, because pinning the key the
 # projection currently emits would enshrine the defect the shape record
-# already names. Keyed by ``asset_class.enum_name``.
-TEST_COVERAGE_EXEMPT: dict[str, str] = {
-    "commodity.cpr": (
-        "CPR is modelled as a ccy-keyed curve, and ORE writes "
-        "CPR/RATE/ISIN:<isin> with no currency and no point. There is no "
-        "correct key to assert until SHAPE_MISMATCH's CPR entry is fixed, "
-        "and a test of the current key would pin the wrong shape."
-    ),
-}
+# already names. Keyed by ``asset_class.enum_name``. Empty is the goal:
+# commodity.cpr was the last entry, and the type now asserts the ISIN-keyed
+# shape it actually writes.
+TEST_COVERAGE_EXEMPT: dict[str, str] = {}
 
 # Requirement: every modelled quote type carries both a projection test and
 # a round-trip test. A type with only one of the two is declared but

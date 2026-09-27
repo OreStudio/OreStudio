@@ -21,12 +21,12 @@ ores.http serves every component through routes generated from that component's 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The facet, three components landed, and the full tree builds. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Review and raise the pull request.     |
-| Last touched  | 2026-09-26                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-27                               |
 
 * Result
 
@@ -37,7 +37,10 @@ are landed, each in its own part beside the hand-written aggregator, and
 each with its hand-written route file deleted rather than kept in
 parallel: =ores.http.assets= (image, tag, image_tag), =ores.http.refdata=
 (currency) and =ores.http.iam= (account, role, permission, session,
-login_info, and nineteen operations). The gateway registers 109 endpoints.
+login_info, and nineteen operations). Ninety-two routes generate in
+total, and the gateway serves 99 endpoints: those 92, the 5 storage and
+1 variability routes that stay hand-written, and the server's own
+=/api/v1/info=.
 
 The gateway is a protocol gateway. A generated route builds the canonical
 request, sends it over NATS and maps the reply to an HTTP response, so it
@@ -51,23 +54,32 @@ from the model. A route that states neither position cannot be built or
 registered, and a gate fails the build if any registered route is silent.
 The storage routes were public by omission and are now authenticated.
 
-Verification, on base =24f0896773=:
+Verification on the merged head =af159c1084=:
 
-- =ORES_USE_BUSCTL=0 ./compass.sh build= exits 0 for the whole tree, 100%,
-  which this branch could not do until main repaired the workflow
-  component it was blocked on.
 - =ctest -R 'http|storage'= is 8 of 8.
-- =pytest projects/ores.codegen/tests= is 757 passed.
+- =pytest projects/ores.codegen/tests= is 787 passed.
 - =check_component_drift.py --all --dry-run= reports no drift.
 - =check_route_auth_declarations.py= passes, and handler permissions,
   model drift, protocol twin coverage, populate references and the shell
   recipe inventory are all green.
-- =validate_docs.sh= reports all 40 components pass.
-- Live: a generated entity route answers 401 without a token, a generated
-  public operation answers 200, an unexposed operation answers 404, and an
-  unknown path answers 404.
+- =validate_docs.sh= reports all 40 components pass, and =compass lint=
+  passes.
 
-Two failures remain and neither is this branch's: =regenerate_cmake_component_files.py --all --check= reports stale lists in other components (main has more, this branch fixes two and introduces none), and =ores.iam.core.tests= fails against a restored database whose stored function predates the SQL fix, while the tree's SQL is correct.
+Live checks, run against the systemd fleet while the branch was open: a
+generated entity route answered 401 without a token, a generated public
+operation answered 200, an unexposed operation answered 404, and an
+unknown path answered 404.
+
+Three failures remain and none belongs to this story. The whole tree does
+not build: =ores.trading.core= and =ores.workflow.core= include
+=ores.dq.api/messaging/fsm_protocol.hpp=, which =dd131c388b= split into
+=fsm_state_protocol.hpp= and =fsm_transition_protocol.hpp= without
+migrating the including sites. Two other components own those files, so
+the repair goes there. =regenerate_cmake_component_files.py --all
+--check= reports stale lists in =ores.workspace=. =ores.iam.core.tests=
+fails against the restored database because its stored
+=ores_iam_accounts_insert_fn()= predates the tree's SQL and reads a
+column the SQL no longer has; the tree's SQL is correct.
 
 * Acceptance
 
@@ -81,7 +93,7 @@ Two failures remain and neither is this branch's: =regenerate_cmake_component_fi
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B22C0343-9FD0-4405-B301-0228CE07DE29][Scaffold story: Generate HTTP routes from the models]] | DONE | 2026-09-26 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6356873B-10D7-4AC7-AD63-8FA2F9C1BD78][Build the HTTP route facet and land ores.assets through it]] | BACKLOG | | | Initial task for: Generate HTTP routes from the models |
+| [[id:6356873B-10D7-4AC7-AD63-8FA2F9C1BD78][Build the HTTP route facet and land ores.assets through it]] | DONE | | 2026-09-27 | Initial task for: Generate HTTP routes from the models |
 
 * Decisions
 
@@ -101,16 +113,24 @@ Two failures remain and neither is this branch's: =regenerate_cmake_component_fi
 | The facet and assets | =2fb572bc6e= | A codegen facet projects an entity model onto a route unit. Assets' three entities generate 29 routes and compile. The verb-to-route mapping: a put becomes two routes because the claim is the whole difference and the method carries it. |
 | Wiring and security | =0dd86ddc07= | The generated routes replace the hand-written ones and the gateway reports 29 generated endpoints live. A route can no longer be public by omission, and a gate proves it in CI. |
 | Refdata | =b2af226191= | =risk_routes= was a misnomer for the refdata currency group; it is deleted, not renamed. Second component landed. |
-| Operations and iam | =721bd92d2d= | The operation archetype, and iam's 62 routes across eleven units. Recorded the two findings that followed: the URL changes, and blanket exposure. |
-| Exposure and the storage client | =41981304b2= | Per-message exposure, so 19 operations are served and 9 are not. The storage client requires its caller's token, and every in-repo caller follows. |
+| Operations and iam | =721bd92d2d= | The operation archetype, and iam's 53 routes across eleven units. Recorded the two findings that followed: the URL changes, and blanket exposure. |
+| Exposure and the storage client | =41981304b2= | Per-message exposure, so the nineteen operations the models opt in are served and no other operation is. The storage client requires its caller's token, and every in-repo caller follows. |
 
 * Out of scope
 
 Recorded rather than done, each with its reason:
 
-- =storage= keeps its three routes hand-written. They are file operations on ={bucket}/{key}=, not entity CRUD, so there is no entity to generate from.
-- =variability= keeps its one route hand-written. It has no models, and its clean-standard task is in flight in another worktree.
-- The whole tree build. It fails on a pre-existing break in =ores.workflow=: =ores.workflow.api.lib= is declared an INTERFACE library so its generated sources never compile, and =ores.shell.workflow.tests= has no Catch2 main. That component has an open PR.
+- =storage= keeps its five routes hand-written. Four are file operations
+  on ={bucket}/{key}= and the fifth lists a bucket, so there is no entity
+  to generate from.
+- =variability= keeps its one route hand-written. It has no models, so it
+  has nothing for the facet to read.
+- The whole tree build. It fails on a pre-existing break in other
+  components: =ores.trading.core= and =ores.workflow.core= include
+  =ores.dq.api/messaging/fsm_protocol.hpp=, which =dd131c388b= split into
+  two headers and did not migrate the including sites. Both components
+  have active owners, so the repair belongs there. No CI job builds the
+  tree, which is how main broke without a check noticing.
 - The trade and market series export handlers carry the reporting service's token, not the end user's, because the reporting service calls them without delegation. Authorization there is service-level; propagating the caller needs a reporting-side change.
 - The compute wrapper has its own HTTP client and holds no JWT, so its storage transfers still receive 401. No credential exists to give it.
 - A trailing ={key}= GET shadows the versions path beneath it, so =/roles/{name}= hides =/roles/{name}/versions=. Assets has the same shape with images. Pre-existing and worth its own fix.

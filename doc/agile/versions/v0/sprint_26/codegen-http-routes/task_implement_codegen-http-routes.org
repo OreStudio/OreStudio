@@ -8,12 +8,12 @@
 #+filetags: :codegen-http-routes:sprint_26:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2229
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
 #+updated: 2026-09-26
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:39AA071A-E7EC-4684-86F8-1B2CECF9076B][Generate HTTP routes from the models]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.http serves every component through routes generated from that component's 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:39AA071A-E7EC-4684-86F8-1B2CECF9076B][Generate HTTP routes from the models]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
@@ -42,9 +42,19 @@ ores.http serves every component through routes generated from that component's 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Land the work in five verifiable units, each green on its own: the facet
+with ores.assets, the wiring and the security declaration, refdata, the
+operation archetype with iam, and per-message exposure with the storage
+client. Delete a component's hand-written route file in the same unit
+that generates its replacement, so the two never coexist.
+
+A generated route speaks the canonical NATS protocol rather than calling
+the component's service in process, which is what lets one generator
+serve both the shell and HTTP surfaces from the same models.
+
+A route states its authentication position from the model. The route
+builder refuses silence, so a forgotten declaration cannot ship as a
+public endpoint.
 
 * Notes
 
@@ -63,7 +73,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2229][#2229]] | [agile] Close the codegen-http-routes story with the merged facts |
+| #2210 | [http] Generate the gateway's routes from the component models |
 
 * Review
 
@@ -72,3 +83,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The facet exists, and three components are landed through it.
+
+=ores.cpp.http-route= projects an entity model or an operation model onto
+a route unit with a header, an implementation and a test. A generated
+route builds the canonical request, sends it over NATS and maps the reply
+to an HTTP response, so the gateway depends on the target's wire protocol
+and not on its service library. The server stopped linking three
+component libraries.
+
+Ninety-two routes generate in total: =ores.http.assets= 29 (image, tag
+and image_tag), =ores.http.refdata= 10 (currency) and =ores.http.iam= 53
+(34 entity routes across account, role, permission, session and
+login_info, and 19 operation routes). The gateway serves 99 endpoints:
+those 92, the 5 storage and 1 variability routes that stay hand-written,
+and the server's own =/api/v1/info=. Each landed component lost its
+hand-written route file in the unit that replaced it. =assets_routes=,
+=risk_routes= and =iam_routes= are deleted, not kept in parallel.
+
+Every route states its authentication position from the model, and a
+route that states neither position cannot be built or registered. The
+gate =check_route_auth_declarations.py= fails the build when a registered
+route is silent. The route forwards the caller's bearer token by
+delegation, so each service's own permission check governs the real
+caller.
+
+Verified on the merged head =af159c1084=:
+
+- =pytest projects/ores.codegen/tests= is 787 passed.
+- =ctest -R 'http|storage'= is 8 of 8.
+- =check_component_drift.py --all --dry-run= reports no drift.
+- =check_route_auth_declarations.py= reports that every registered route
+  states its position.
+- Model drift, protocol twin coverage, handler permissions, populate
+  references, the shell recipe inventory, =compass lint= and
+  =validate_docs.sh= (40 of 40 components) all pass.
+
+Three failures remain and none belongs to this task: the whole tree does
+not build, =regenerate_cmake_component_files.py --all --check= reports
+stale lists in =ores.workspace=, and =ores.iam.core.tests= fails against
+a restored database whose stored function predates the SQL fix. The
+build break is the serious one, and =* Out of scope= on the story
+records it. The libraries this task builds do build.

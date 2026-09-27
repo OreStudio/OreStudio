@@ -151,6 +151,13 @@ COMPOUNDS = {
     "swaptionvolatility": "swaption_volatility",
     "yieldvolatility": "yield_volatility",
     "cdsvolatility": "cds_volatility",
+    "capfloorvolatility": "cap_floor_volatility",
+    "cpicapfloorvolatility": "cpi_cap_floor_volatility",
+    "yycapfloorvolatility": "yy_cap_floor_volatility",
+    "equityvolatility": "equity_volatility",
+    "fxvolatility": "fx_volatility",
+    "yyinflationindexcurve": "yy_inflation_index_curve",
+    "zeroinflationindexcurve": "zero_inflation_index_curve",
     "riskweights": "risk_weights",
     "currencylists": "currency_lists",
     "concentrationthresholds": "concentration_thresholds",
@@ -370,6 +377,7 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
     structs: dict[str, dict[str, list[tuple[str, str]]]] = {}
     edges: list[tuple[str, str, str, str, str]] = []
     notes: list[tuple[str, str, str]] = []
+    vocab: dict[tuple[str, str], tuple[str, list[str], bool]] = {}
 
     for doc in ANALYTICS_DOCUMENTS:
         classes = {c["name"]: c for c in docs[doc]["classes"]
@@ -392,7 +400,29 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
                 n = children[n][0][1]
             return n
 
+        owners: dict[str, set[str]] = {}
+        for n in classes:
+            for _lbl, target, _lo, _hi in children[n]:
+                owners.setdefault(resolve(target), set()).add(n)
+                if target != resolve(target):
+                    owners.setdefault(target, set()).add(n)
+
         merged: dict[str, str] = {}
+
+        def owner_of(n: str) -> str:
+            """A grouping with no members is not a row shape, so the rows under it
+            belong to the nearest ancestor that is one."""
+            seen = set()
+            while n not in seen:
+                seen.add(n)
+                ups = owners.get(n, set())
+                if len(ups) != 1:
+                    return ""
+                n = next(iter(ups))
+                got = merged.get(resolve(n), resolve(n))
+                if got in structs.get(doc, {}):
+                    return got
+            return ""
 
         # Shift families: one relation, discriminated by a seeded family row.
         rows = []
@@ -411,8 +441,12 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
             for suffix, cols in SHIFT_ROWS.items():
                 structs[doc][f"{doc}_{suffix}"] = cols
                 edges.append((doc, f"{doc}_shift", f"{doc}_{suffix}", suffix, "0", "unbounded"))
-            notes.append((doc, f"{doc}_shift", f"one relation for {len(rows)} shift "
-                          f"families; family FKs the shift_family lookup"))
+            vocab[(doc, "shift")] = (
+                "the shifts this configuration declares, one row per shift family. "
+                "family FKs the shift_family lookup, so a further family is a row "
+                "and not a struct",
+                [split_compounds(snake(re.sub(r"^(stress|sensi)", "", f)))
+                 for f, _e in rows])
             notes.append((doc, f"{doc}_shift_tenor", "the tenors the shift applies to; "
                           "a reference to the tenor entity, where ORE writes a "
                           "comma-separated string"))
@@ -431,14 +465,22 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
                 continue
             if len({tuple(members[t]) for t in unique}) != 1:
                 continue
+            # A carrier and its entry reach the same structs by two element
+            # names, and a name can already belong to a merge made above.
+            if any(t in merged for t in unique):
+                continue
             name = f"{doc}_{element}"
+            if name in structs.get(doc, {}):
+                continue
             structs.setdefault(doc, {})[name] = (
                 [("configuration_id", "uuid"), ("parent_id", "uuid"),
                  ("bucket", "text"), ("label1", "text"), ("label2", "text")]
                 + list(members[unique[0]]))
             for t in unique:
                 merged[t] = name
-            notes.append((doc, name, f"one relation for {len(unique)} <{element}> rows"))
+            notes.append((doc, name, f"one table for {len(unique)} structs that ORE "
+                          f"writes as separate <{element}> elements but that hold "
+                          "the same columns"))
 
         for name in sorted(classes):
             tgt = resolve(name)
@@ -451,14 +493,79 @@ def build(docs: dict, keep: dict[str, set[str]] | None = None):
         for parent in sorted(classes):
             src = merged.get(resolve(parent), resolve(parent))
             if src not in structs.get(doc, {}):
+                src = owner_of(parent)
+            if not src:
                 continue
             for lbl, target, low, high in children[parent]:
                 tgt = merged.get(resolve(target), resolve(target))
-                if tgt not in structs.get(doc, {}):
+                # A carrier holds one element and no members, so it is not a row
+                # shape: the edge that reaches it says everything, and an edge out
+                # of it only points back at the entry it resolved to.
+                if tgt not in structs.get(doc, {}) or tgt == src:
                     continue
                 edges.append((doc, src, tgt, snake(lbl), low, high))
 
+    edges, notes = collapse_relations(edges, notes, vocab)
     return structs, edges, notes
+
+
+# A vocabulary ORE writes as one element per kind. The kind is a column in the
+# model, so the relation is one row per kind: one edge on the diagram and a note
+# that names the kinds.
+COLLAPSE_PURPOSE = {
+    "currency_lists_currency": "the currencies this list holds, one row per "
+                               "currency",
+}
+# A self reference is a parent column, not a relation between two classes, so the
+# diagram carries a note instead of an edge.
+
+
+def short_name(doc: str, name: str) -> str:
+    """The struct name with its type prefix and its `_config` postfix removed."""
+    short = tidy(doc, name)
+    if short.endswith("_config"):
+        short = short[:-len("_config")]
+    if short.startswith(f"{TYPE_PREFIX[doc]}_"):
+        short = short[len(TYPE_PREFIX[doc]) + 1:]
+    return short
+
+
+def collapse_relations(edges, notes, vocab):
+    """One relation per (source, target), and no self relation at all.
+
+    ORE writes a domain vocabulary as one element per kind. The kind is a column
+    in the model, so the diagram shows one edge and a note that names the kinds.
+    A row that owns rows of its own shape is a parent column, so the diagram
+    shows a note.
+    """
+    groups: dict[tuple[str, str, str], list[tuple]] = {}
+    for edge in edges:
+        groups.setdefault(edge[:3], []).append(edge)
+    kept: list[tuple] = []
+    seen: set[tuple[str, str, str]] = set()
+    for (doc, src, tgt), group in groups.items():
+        labels = sorted({e[3] for e in group})
+        if src != tgt and len(labels) == 1:
+            kept.append(group[0])
+            continue
+        short = short_name(doc, tgt)
+        if src == tgt:
+            text = COLLAPSE_PURPOSE.get(short) or (
+                "self reference: a row owns further rows of the same shape, "
+                "reached by parent_id, so this is one table and not two classes. "
+                f"The element names are: {', '.join(labels)}")
+        else:
+            purpose, names = vocab.get((doc, short), (None, None))
+            purpose = purpose or COLLAPSE_PURPOSE.get(short) or (
+                f"one row per {short} kind, so the kind is a column and not a "
+                "relation")
+            names = names or labels
+            kept.append((doc, src, tgt, short, "0", "unbounded"))
+            text = f"{purpose}. The kinds are: {', '.join(names)}"
+        if (doc, tgt, text) not in seen:
+            seen.add((doc, tgt, text))
+            notes.append((doc, tgt, f"{text}."))
+    return kept, notes
 
 
 def emit(docs: dict, title: str, include_reporting: bool) -> str:

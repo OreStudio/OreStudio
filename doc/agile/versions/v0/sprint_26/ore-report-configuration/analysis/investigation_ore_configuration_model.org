@@ -45,6 +45,7 @@ Source: =configuration_model_reporting.puml=.
 | =configuration_parameter= | configuration + definition | one value |
 | =parameter_definition= | id | the vocabulary: for a type and subtype, the names it accepts, and the domain of each |
 | =value_domain= | id | what the value is — currency, date, boolean, integer, tenor, document, list — and, for the ones that name something, the entity it refers to |
+| =configuration_xml_element= | configuration type + path | the XML shape: for each configuration type, every element and attribute it serialises, its parent path, its ordinal and its repeatedness |
 
 The vocabulary is per type *and* subtype, because the measurement says so: of the
 218 parameter names the shipped run documents use, 165 are used by exactly one
@@ -63,17 +64,26 @@ lie: =mporCalendar= holds =EUR= and =US= — calendar names, not currencies —
 
 Source: =configuration_model_analytics.puml=.
 
-The seven documents describe 202 distinct classes. Drawing every one of them
-hides the design, so two cuts are applied. Containers that carry no data —
-the repetition carriers, 86 of them — are dropped, and the parent edge spliced
-to the child. Structs that are *the same shape* are drawn once, with the
-variants named in a note: eleven such groups collapse, which is what turns
-eighty-five shift families into a handful of drawn shapes.
+The seven documents describe 202 classes. They are normalised rather than drawn
+one per class, because two relations with the same shape are one relation:
 
-The result is 85 structs, split as sensitivity 27, simulation 27, stress 14,
-SIMM calibration 12, credit simulation 3, and one each for historical return
-and Basel traffic light. The exhaustive per-document entity diagrams produced by
-=build/scripts/xsd_to_uml.py= remain the reference when a struct's members
+- *Shift families are one relation.* Sensitivity's twenty-six and stress's ten
+  become =sensitivity_shift= and =stress_shift=, each keyed by a family row. The
+  family row names the XML element the family serialises to — =stressdiscountcurve=
+  is =<discount_curve>=, =stressfxvolatility= is =<fx_volatility>= — so the
+  element is data, not a table name.
+- *Value rows reached by one element name are one relation.* SIMM's buckets and
+  labels merge: three historical volatility ratios become one relation, four
+  inter-bucket correlation rows become one, and so on.
+- *Groupings and repetition carriers are not relations.* A class with no members
+  is the parent's edge, and it passes through unless it has several children, in
+  which case the grouping element survives in the XML map.
+
+That is 78 relations, split as SIMM calibration 31, simulation 27, sensitivity 9,
+stress 6, credit simulation 3, and one each for historical return and Basel
+traffic light. SIMM and simulation are still the two large ones and further
+merges may exist in them; the exhaustive per-document entity diagrams produced by
+=build/scripts/xsd_to_uml.py= remain the reference when a relation's members
 matter.
 
 Each document yields one configuration, whose contents are the file's own
@@ -94,10 +104,10 @@ structure:
 1. *Repetition inside a parameterised type.* =ore.xml= never repeats a parameter
    name, so =configuration_parameter= needs no more than =position=. A future
    parameterised type that repeats would need an item row; none does today.
-2. *Shift blocks.* Eleven of stress's tables have identical columns and differ
-   only in key, and the same shape repeats in sensitivity. Either one narrow
-   table per family — what the data-oriented design page asks for — or one table
-   with a family discriminator, whose key then stops being constrainable.
+2. *How much of SIMM and simulation can still merge.* Thirty-one and
+   twenty-seven relations remain; the same element-name and shape rules were
+   applied to both, so what is left is genuinely different shapes or shapes the
+   current rules cannot see.
 3. *Where the vocabulary is seeded.* Roughly 1,500 =(subtype, name)= pairs across
    the documents. Seeded rows, generated from the schemas, or declared in code
    beside the workflow that reads it.

@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
-"""Design the ORE configuration object model as one UML class diagram.
+"""Emit the normalised ORE configuration object model as UML.
 
-Two halves, per the design decision:
+Normalised, not per-class: if two relations have the same shape they are one
+relation with a discriminator. The shift families are the case that matters —
+sensitivity's twenty-six, stress's eleven — and they become one entity each,
+keyed by a family row that names the XML element the family serialises to.
 
-- `ores.reporting` owns the named configurations, the configuration types, the
-  binding from a report definition, and the parameter vocabulary that describes
-  an ORE run document.
-- `ores.analytics` owns the configuration types themselves — what a stress
-  test, a SIMM calibration, a sensitivity analysis, a simulation, a credit
-  simulation, a historical return configuration or a Basel traffic light
-  configuration is made of.
+Lossless, so that the XML can be rebuilt from the rows:
 
-Data-oriented design, so the diagram carries structs and their members and
-nothing else: no behaviour, no methods, one struct per entity, members named in
-this model's own snake_case rather than ORE's CamelCase.
-
-The analytics half is generated from the schema extraction, so it cannot drift
-from the vocabulary it models. The reporting half is written here, because it is
-a design and no schema states it.
+- every value sits in a typed member, and every member's XML spelling is held
+  in `configuration_xml_element`, which is generated from the schemas;
+- every repeated child is reached by an edge whose label is the XML element
+  name, and the map carries its ordinal, so order and nesting come back;
+- every discriminator (a family, a kind, a risk class) is a row whose own XML
+  element is recorded, so the element carrying a value is never guessed.
 
 Usage:
-  python3 build/scripts/ore_configuration_model.py --out-dir <dir>
+  python3 build/scripts/ore_configuration_model.py --half analytics --out-dir <dir>
 """
 
 from __future__ import annotations
@@ -32,9 +28,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import xsd_to_uml as extractor  # noqa: E402  the extraction rule, reused
 
-# The configuration types whose structure analytics owns, and the document each
-# is read from.
 ANALYTICS_DOCUMENTS = [
     "stress",
     "simmcalibration",
@@ -45,82 +40,112 @@ ANALYTICS_DOCUMENTS = [
     "baselTrafficLightconfig",
 ]
 
-# The reporting half of the model: the named configurations and the parameter
-# vocabulary for an ORE run document. Written out because it is the design, not
-# a projection of a schema.
-REPORTING = """
-package "ores.reporting" #E8F4FF {
-  class report_type {
-    id : uuid
-    code : text
-    name : text
-    description : text
-    display_order : integer
-  }
+# Families that are one relation with a discriminator. Each group becomes
+# `<document>_shift`, keyed by a `<document>_shift_family` row that carries the
+# XML element the family serialises to and the domain of its key.
+SHIFT_FAMILIES = {
+    "sensitivity": [
+        "discountcurve", "indexcurve", "yieldcurve", "fxspot", "fxvolatility",
+        "swaptionvolatility", "yieldvolatility", "capfloorvolatility",
+        "cdsvolatility", "creditcurve", "equityspot", "equityvolatility",
+        "zeroinflationindexcurve", "yyinflationindexcurve",
+        "cpicapfloorvolatility", "yycapfloorvolatility", "basecorrelation",
+        "securityspread", "dividendyield", "commodityCurve",
+        "intradaypowercurve", "commodityvolatility", "correlationcurve",
+        "sensiBondFutureVolatility", "survivalprobability", "recoveryrate",
+    ],
+    "stress": [
+        "stressdiscountcurve", "stressindexcurve", "stressyieldcurve",
+        "stresssurvivalprobability", "stressfxvolatility",
+        "stressswaptionvolatility", "stresscapfloorvolatility",
+        "stresscommoditycurve", "stressintradaypowercurve",
+        "stresscommodityvolatility",
+    ],
+}
+# The shift block every family shares, once the family's key has been lifted
+# into (family_id, object_code).
+SHIFT_BLOCK = [
+    ("shift_type_id", "uuid"),
+    ("shift_size", "numeric"),
+    ("shift_scheme_id", "uuid"),
+    ("shifts", "text"),
+    ("shift_tenors", "text"),
+    ("shift_expiries", "text"),
+    ("shift_strikes", "text"),
+    ("par_conversion", "text"),
+    ("is_relative", "boolean"),
+]
 
+REPORTING = '''package "ores.reporting" #E8F4FF {
   class report_definition {
     id : uuid
     name : text
     report_type_id : uuid
     party_id : uuid
-    description : text
     schedule_expression : text
     concurrency_policy : text
     fsm_state_id : uuid
     scheduler_job_id : uuid
     workspace_id : uuid
-    audit : audit_envelope
   }
-
-  class configuration_type {
+  class report_type {
     id : uuid
     code : text
     name : text
-    owning_component : text
-    parameterised : boolean
   }
-
-  class configuration {
-    id : uuid
-    name : text
-    configuration_type_id : uuid
-    party_id : uuid
-    description : text
-    workspace_id : uuid
-    audit : audit_envelope
-  }
-
   class report_configuration {
     report_definition_id : uuid
     configuration_type_id : uuid
     configuration_id : uuid
   }
-
-  class value_domain {
+  class configuration_type {
     id : uuid
     code : text
-    storage_type : text
-    referenced_entity : text
-  }
-
-  class parameter_definition {
-    id : uuid
-    configuration_type_id : uuid
-    subtype : text
     name : text
-    value_domain_id : uuid
-    required : boolean
-    display_order : integer
+    owning_component : text
+    root_element : text
+    parameterised : boolean
   }
-
+  class configuration {
+    id : uuid
+    name : text
+    configuration_type_id : uuid
+    party_id : uuid
+    workspace_id : uuid
+  }
   class configuration_parameter {
     configuration_id : uuid
     parameter_definition_id : uuid
     position : integer
     value : text
   }
-}
-"""
+  class parameter_definition {
+    id : uuid
+    configuration_type_id : uuid
+    subtype : text
+    name : text
+    value_domain_id : uuid
+    xml_element : text
+    required : boolean
+  }
+  class value_domain {
+    id : uuid
+    code : text
+    storage_type : text
+    referenced_entity : text
+  }
+  class configuration_xml_element {
+    id : uuid
+    configuration_type_id : uuid
+    path : text
+    parent_path : text
+    element_name : text
+    node_kind : text
+    ordinal : integer
+    repeated : boolean
+    value_domain_id : uuid
+  }
+}'''
 
 
 def snake(name: str) -> str:
@@ -135,184 +160,191 @@ def storage_type(ore_type: str) -> str:
         return "boolean"
     if t in ("integer", "int", "nonnegativeinteger", "positiveinteger", "long"):
         return "integer"
-    if t in ("decimal", "double", "float", "non-negative-decimal", "nonnegativedecimal"):
+    if t in ("decimal", "double", "float", "non-negative-decimal"):
         return "numeric"
     if t == "date":
         return "date"
-    if t in ("datetime", "timestamp"):
-        return "timestamptz"
     if t == "period":
         return "text"
     if t.endswith("type") or t.endswith("code") or t in (
             "currencycode", "currencypair", "indexnametype", "calendar",
             "daycounter", "businessdayconvention", "extendedcurrencycode"):
-        return "text /* coded */"
+        return "text"
     return "text"
 
 
-def emit(inventory: Path, title: str) -> str:
+def load(inventory: Path) -> dict:
     data = json.loads(inventory.read_text())
-    by_doc = {d["document"]: d for d in data["documents"]}
+    return {d["document"]: d for d in data["documents"]}
 
-    # Import the extraction rule so the analytics half is the same set of
-    # entities the taxonomy reviewed, not a second opinion.
-    import xsd_to_uml as extractor
 
+def keep_sets() -> dict[str, set[str]]:
+    """The entities and blocks the extraction rule keeps, per document."""
     schemas = [extractor.Schema(Path("external/ore/xsd") / f"{d}.xsd")
                for d in ANALYTICS_DOCUMENTS]
-    keep = extractor.entity_set(schemas)
-    classes = {s.document: s.classes for s in schemas}
-    # Cross-document association targets resolve globally.
-    global_docs: dict[str, str] = {}
-    for doc, cs in classes.items():
-        for name in cs:
-            global_docs.setdefault(name, doc)
+    return extractor.entity_set(schemas)
 
-    # Structs that differ only in name are one shape: draw the first and list
-    # the rest in a note. Eleven stress shift families, twenty-six sensitivity
-    # families and six SIMM risk classes are the same struct three times over,
-    # and drawing each one hides the design.
-    def shape(cls) -> tuple:
-        members = tuple(sorted((snake(a.name), storage_type(a.type_name))
-                               for a in cls.attributes if not a.name.startswith("<<")))
-        kids = tuple(sorted((snake(a.name), a.low, a.high) for a in cls.associations))
-        return members, kids
 
-    groups: dict[str, dict[tuple, list[str]]] = {}
+def build(docs: dict, keep: dict[str, set[str]] | None = None):
+    """Returns (structs per document, edges, notes)."""
+    keep = keep or keep_sets()
+    structs: dict[str, dict[str, list[tuple[str, str]]]] = {}
+    edges: list[tuple[str, str, str, str, str]] = []
+    notes: list[str] = []
+
     for doc in ANALYTICS_DOCUMENTS:
-        for name in sorted(keep[doc]):
-            cls = classes[doc].get(name)
-            if cls is None or not cls.attributes:
+        classes = {c["name"]: c for c in docs[doc]["classes"]
+                   if not c.get("out_of_scope") and c["name"] in keep[doc]}
+        members = {n: [(snake(a["name"]), storage_type(a["type"])) for a in c["attributes"]]
+                   for n, c in classes.items()}
+        children = {n: [(a["name"], a["target"], a["low"], a["high"])
+                        for a in c["associations"]] for n, c in classes.items()}
+        # An empty repetition carrier is not a relation: its edge passes through.
+        # A class with no members is not a relation: it is a grouping or a
+        # repetition carrier, and its edges pass through it.
+        carriers = {n for n in classes if not members[n]}
+
+        def resolve(n: str, depth: int = 0) -> str:
+            # A grouping with one child passes straight through; one with many
+            # cannot, so it stays and the edge keeps the grouping element.
+            seen = set()
+            while n in carriers and len(children[n]) == 1 and n not in seen:
+                seen.add(n)
+                n = children[n][0][1]
+            return n
+
+        merged: dict[str, str] = {}
+
+        # Shift families: one relation, discriminated by a seeded family row.
+        rows = []
+        for family in SHIFT_FAMILIES.get(doc, []):
+            if family not in classes:
                 continue
-            groups.setdefault(doc, {}).setdefault(shape(cls), []).append(name)
+            element = next((snake(lbl) for c in classes.values()
+                            for lbl, tgt, _lo, _hi in children[c["name"]] if tgt == family),
+                           snake(family))
+            rows.append((family, element))
+            merged[family] = f"{doc}_shift"
+        if rows:
+            structs.setdefault(doc, {})[f"{doc}_shift"] = (
+                [("configuration_id", "uuid"), ("family_id", "uuid"),
+                 ("object_code", "text")] + SHIFT_BLOCK)
+            structs[doc][f"{doc}_shift_family"] = [
+                ("id", "uuid"), ("code", "text"), ("name", "text"),
+                ("xml_element", "text"), ("key_value_domain_id", "uuid")]
+            notes.append(f'{doc}_shift : "one relation for {len(rows)} families; '
+                         f'family_id names the XML element"')
+            notes.append(f'{doc}_shift_family : "'
+                         + ", ".join(f"{f} → <{e}>" for f, e in rows) + '"')
 
-    draw: dict[str, set[str]] = {d: set() for d in ANALYTICS_DOCUMENTS}
-    variants: list[str] = []
-    for doc, by_shape in groups.items():
-        for sig, names in by_shape.items():
-            draw[doc].add(names[0])
-            if len(names) > 1:
-                variants.append(f'{doc}__{names[0]} : "… same shape as: {", ".join(names[1:])}"')
+        # Rows a parent reaches by one element name are one relation, provided
+        # their shapes agree.
+        by_element: dict[str, list[str]] = {}
+        for parent in classes:
+            for lbl, target, _lo, _hi in children[parent]:
+                tgt = resolve(target)
+                if tgt in classes and tgt not in merged:
+                    by_element.setdefault(snake(lbl), []).append(tgt)
+        for element, targets in sorted(by_element.items()):
+            unique = sorted(set(targets))
+            if len(unique) < 2:
+                continue
+            if len({tuple(members[t]) for t in unique}) != 1:
+                continue
+            name = f"{doc}_{element}"
+            structs.setdefault(doc, {})[name] = (
+                [("configuration_id", "uuid"), ("parent_id", "uuid"),
+                 ("bucket", "text"), ("label1", "text"), ("label2", "text")]
+                + list(members[unique[0]]))
+            for t in unique:
+                merged[t] = name
+            notes.append(f'{name} : "one relation for {len(unique)} <{element}> rows"')
 
+        for name in sorted(classes):
+            tgt = resolve(name)
+            if tgt != name or name in merged or name in carriers:
+                continue
+            if not members[name]:
+                continue
+            structs.setdefault(doc, {})[tgt] = list(members[name])
+
+        for parent in sorted(classes):
+            src = merged.get(resolve(parent), resolve(parent))
+            if src not in structs.get(doc, {}):
+                continue
+            for lbl, target, low, high in children[parent]:
+                tgt = merged.get(resolve(target), resolve(target))
+                if tgt not in structs.get(doc, {}):
+                    continue
+                edges.append((doc, src, tgt, snake(lbl), low, high))
+
+    return structs, edges, notes
+
+
+def emit(docs: dict, title: str, include_reporting: bool) -> str:
+    structs, edges, notes = build(docs, keep_sets())
     out = ["@startuml", f"title {title}", "hide empty members",
-           "skinparam classAttributeIconSize 0", "skinparam nodesep 10",
-           "skinparam ranksep 22", "left to right direction", ""]
-    out.append(REPORTING)
-
-    edges: list[str] = []
+           "skinparam classAttributeIconSize 0", "left to right direction", ""]
+    if include_reporting:
+        out += [REPORTING, ""]
     out.append('package "ores.analytics" #EAF7EA {')
     for doc in ANALYTICS_DOCUMENTS:
         out.append(f'  package "{doc}" {{')
-        for name in sorted(draw[doc]):
-            cls = classes[doc].get(name)
-            if cls is None:
-                continue
-            alias = f"{doc}__{name}"
-            out.append(f'    class "{name}" as {alias} {{')
-            for attr in cls.attributes:
-                if attr.name.startswith("<<"):
-                    continue
-                out.append(f"      {snake(attr.name)} : {storage_type(attr.type_name)}")
+        for name in sorted(structs.get(doc, {})):
+            out.append(f'    class "{name}" as {doc}__{name} {{')
+            for member, typ in structs[doc][name]:
+                out.append(f"      {member} : {typ}")
             out.append("    }")
         out.append("  }")
     out.append("}")
-    for doc in ANALYTICS_DOCUMENTS:
-        for name in sorted(draw[doc]):
-            cls = classes[doc].get(name)
-            if cls is None:
-                continue
-            src = f"{doc}__{name}"
-            for assoc in cls.associations:
-                target_doc = doc if assoc.target in classes[doc] else global_docs.get(assoc.target)
-                if target_doc is None or target_doc not in keep:
-                    continue
-                if assoc.target not in keep[target_doc]:
-                    continue
-                high = "*" if assoc.high == "unbounded" else assoc.high
-                multi = f'"{assoc.low}..{high}"' if (high, assoc.low) != ("1", "1") else '"1"'
-                edges.append(f'{src} *-- {multi} {target_doc}__{assoc.target} : {snake(assoc.name)}')
-
-    # Reporting-side relationships: the design, stated once.
-    edges += [
-        'report_definition *-- "1" report_type : typed as',
-        'report_definition *-- "0..*" report_configuration : binds',
-        'report_configuration *-- "1" configuration_type : by type',
-        'report_configuration *-- "1" configuration : to',
-        'configuration *-- "1" configuration_type : is one of',
-        'configuration *-- "0..*" configuration_parameter : holds',
-        'configuration_parameter *-- "1" parameter_definition : named by',
-        'parameter_definition *-- "1" value_domain : valued as',
-        'parameter_definition *-- "1" configuration_type : belongs to',
-        'configuration "1" -- "0..*" stress__stresstesting : detail of a stress configuration',
-        'configuration "1" -- "0..*" simmcalibration__SIMMCalibrationData : detail',
-        'configuration "1" -- "0..*" sensitivity__sensitivityanalysis : detail',
-        'configuration "1" -- "0..*" simulation__simulation : detail',
-        'configuration "1" -- "0..*" creditsimulation__creditsimulation : detail',
-        'configuration "1" -- "0..*" historicalreturnconfig__ReturnConfiguration : detail',
-        'configuration "1" -- "0..*" baselTrafficLightconfig__BaselTrafficLightConfig : detail',
-    ]
+    rels = []
+    if include_reporting:
+        rels = [
+            'report_definition *-- "1" report_type : typed as',
+            'report_definition *-- "0..*" report_configuration : binds',
+            'report_configuration *-- "1" configuration_type : by type',
+            'report_configuration *-- "1" configuration : to',
+            'configuration *-- "1" configuration_type : is one of',
+            'configuration *-- "0..*" configuration_parameter : holds',
+            'configuration_parameter *-- "1" parameter_definition : named by',
+            'parameter_definition *-- "1" value_domain : valued as',
+            'parameter_definition *-- "1" configuration_type : belongs to',
+            'configuration_type *-- "0..*" configuration_xml_element : serialised by',
+            'configuration_xml_element *-- "1" value_domain : valued as',
+        ]
+    for doc, src, tgt, label, low, high in edges:
+        h = "*" if high == "unbounded" else high
+        multi = f'"{low}..{h}"' if (h, low) != ("1", "1") else '"1"'
+        rels.append(f"{doc}__{src} *-- {multi} {doc}__{tgt} : {label}")
     out.append("")
-    out.extend(sorted(set(edges)))
-    out.extend(variants)
+    out.extend(sorted(set(rels)))
+    out.extend(notes)
     out.append("@enduml")
     return "\n".join(out) + "\n"
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--inventory", default=".audit/ore-taxonomy/ore_report_configuration_entities.json")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--inventory",
+                    default=".audit/ore-taxonomy/ore_report_configuration_entities.json")
     ap.add_argument("--out-dir", default=".")
-    ap.add_argument("--out-name", default="ore_configuration_model.puml")
+    ap.add_argument("--half", choices=("reporting", "analytics"), default="analytics")
     ap.add_argument("--title", default="ORE configuration object model")
-    ap.add_argument("--reporting-only", action="store_true",
-                    help="emit only the reporting half, which is the design core")
-    ap.add_argument("--analytics-only", action="store_true",
-                    help="emit only the analytics half, without the reporting package")
+    ap.add_argument("--out-name", default=None)
     args = ap.parse_args()
 
-    if args.reporting_only:
-        body = ["@startuml", f"title {args.title}", "hide empty members",
-                "skinparam classAttributeIconSize 0", "left to right direction", "",
-                REPORTING, "",
-                'report_definition *-- "1" report_type : typed as',
-                'report_definition *-- "0..*" report_configuration : binds',
-                'report_configuration *-- "1" configuration_type : by type',
-                'report_configuration *-- "1" configuration : to',
-                'configuration *-- "1" configuration_type : is one of',
-                'configuration *-- "0..*" configuration_parameter : holds',
-                'configuration_parameter *-- "1" parameter_definition : named by',
-                'parameter_definition *-- "1" value_domain : valued as',
-                'parameter_definition *-- "1" configuration_type : belongs to',
-                'note bottom of configuration\n  one row per named configuration:\n  "Stress Testing / eur_6m_up_library"\nend note',
-                'note bottom of parameter_definition\n  the vocabulary: which names a\n  (type, subtype) accepts, and what\n  domain each value has\nend note',
-                "@enduml"]
-        text = "\n".join(body) + "\n"
-    elif args.analytics_only:
-        text = emit(Path(args.inventory), args.title)
-        # Drop the reporting packages: this diagram is the analytics half only.
-        keep_lines, skip = [], False
-        for line in text.splitlines():
-            if line.startswith('package "ores.reporting'):
-                skip = True
-                continue
-            if skip:
-                if line.startswith("package "):
-                    skip = False
-                else:
-                    continue
-            keep_lines.append(line)
-        text = "\n".join(l for l in keep_lines
-                         if not l.startswith(('report_definition', 'report_configuration',
-                                              'configuration ', 'configuration_parameter',
-                                              'parameter_definition', 'configuration_type',
-                                              'value_domain', 'report_type'))) + "\n"
+    docs = load(Path(args.inventory))
+    text = emit(docs, args.title, include_reporting=(args.half == "reporting"))
+    if args.half == "reporting":
+        text = text.split('package "ores.analytics"')[0] + "@enduml\n"
+        name = args.out_name or "configuration_model_reporting.puml"
     else:
-        text = emit(Path(args.inventory), args.title)
-    out = Path(args.out_dir) / args.out_name
-    out.parent.mkdir(parents=True, exist_ok=True)
+        name = args.out_name or "configuration_model_analytics.puml"
+    out = Path(args.out_dir) / name
     out.write_text(text)
-    print(f"wrote {out}")
+    structs, _edges, _notes = build(docs, keep_sets())
+    counts = {d: len(v) for d, v in structs.items()}
+    print(f"wrote {out}  structs total {sum(counts.values())}  {counts}")
     return 0
 
 

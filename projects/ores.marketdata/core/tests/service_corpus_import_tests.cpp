@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -25,6 +26,7 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/test_database_manager.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -164,9 +166,28 @@ std::string source_tag_for(const std::filesystem::path& path) {
 ///
 /// Returns the number of observations the file carried, so a caller can total
 /// them across files.
+/// A tenant of this test's own.
+///
+/// The test tenant is provisioned per test *binary*, not per case, so every
+/// case in ores.marketdata.core.tests shares one. A corpus walk writes real ORE
+/// keys, and the hand-written import cases in this binary read those same keys
+/// back, so without a private tenant this test changes their row counts.
+struct corpus_tenant {
+    ores::testing::database_helper base;
+    ores::database::context ctx;
+
+    corpus_tenant() : ctx(base.context()) {
+        const auto code =
+            ores::testing::test_database_manager::generate_test_tenant_code("marketdata.corpus");
+        const auto tenant = ores::testing::test_database_manager::provision_test_tenant(
+            ctx, code, "ores.marketdata corpus import");
+        ctx = ores::database::service::tenant_context::with_tenant(base.context(), tenant);
+    }
+};
+
 std::size_t import_and_verify(const std::filesystem::path& path,
                               ores::marketdata::service::import_service& svc,
-                              ores::testing::database_helper& h) {
+                              ores::database::context ctx) {
 
 
     using namespace ores::marketdata;
@@ -174,26 +195,44 @@ std::size_t import_and_verify(const std::filesystem::path& path,
     const auto expected = lines_of(content);
     const auto tag = source_tag_for(path);
 
+    // ORE's own examples repeat a (date, key) pair, and the import resolves
+    // those by last-line-wins, reporting each one as a warning. So the row
+    // count is the distinct-key count and the values are the ones the last
+    // occurrence carried -- comparing against every line would report the
+    // de-duplication as data loss.
+    std::map<std::pair<std::string, std::string>, corpus_line> distinct;
+    for (const auto& l : expected)
+        distinct[{l.date, l.key}] = l;
+
     messaging::import_market_data_request req;
     req.market_data_content = content;
     req.source = tag;
-    const auto resp = svc.import(req);
+
+    // The parser reports the line number but not the file, and a corpus-wide
+    // walk needs to know which file a refusal came from.
+    messaging::import_market_data_response resp;
+    try {
+        resp = svc.import(req);
+    } catch (const std::exception& e) {
+        FAIL("file: " << path.string() << "\n  " << e.what());
+    }
 
     INFO("file: " << path.string());
     REQUIRE(resp.success);
-    REQUIRE(resp.observation_count == static_cast<int>(expected.size()));
+    REQUIRE(resp.observation_count == static_cast<int>(distinct.size()));
+    CHECK(resp.warnings.size() == expected.size() - distinct.size());
     CHECK(resp.errors.empty());
 
     std::vector<std::string> wanted;
-    wanted.reserve(expected.size());
-    for (const auto& l : expected)
-        wanted.push_back(l.value);
+    wanted.reserve(distinct.size());
+    for (const auto& [key, line] : distinct)
+        wanted.push_back(line.value);
 
     repository::market_series_repository series_repo;
     repository::market_observations_repository obs_repo;
     std::vector<std::string> stored;
-    for (const auto& s : series_repo.read_latest(h.context()))
-        for (const auto& o : obs_repo.read_latest(h.context(), s.id))
+    for (const auto& s : series_repo.read_latest(ctx))
+        for (const auto& o : obs_repo.read_latest(ctx, s.id))
             if (o.source == tag)
                 stored.push_back(o.value);
 
@@ -213,16 +252,16 @@ using ores::testing::database_helper;
 TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    corpus_tenant tenant;
     ores::nats::service::nats_client auth_nats;
-    import_service svc(h.context(), auth_nats);
+    import_service svc(tenant.ctx, auth_nats);
 
     const auto sample = sample_payloads(50);
     REQUIRE_FALSE(sample.empty());
 
     std::size_t total = 0;
     for (const auto& path : sample)
-        total += import_and_verify(path, svc, h);
+        total += import_and_verify(path, svc, tenant.ctx);
 
     BOOST_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << sample.size()
                             << " corpus file(s).";
@@ -232,16 +271,16 @@ TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", tags) {
 TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[.][corpus-full]") {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    corpus_tenant tenant;
     ores::nats::service::nats_client auth_nats;
-    import_service svc(h.context(), auth_nats);
+    import_service svc(tenant.ctx, auth_nats);
 
     const auto all = market_payloads();
     REQUIRE_FALSE(all.empty());
 
     std::size_t total = 0;
     for (const auto& path : all)
-        total += import_and_verify(path, svc, h);
+        total += import_and_verify(path, svc, tenant.ctx);
 
     BOOST_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << all.size()
                             << " corpus file(s).";

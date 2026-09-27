@@ -44,4 +44,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_session.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/router.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/openapi/endpoint_registry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/ores.http.hpp"
 )

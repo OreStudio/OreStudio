@@ -25,9 +25,9 @@ namespace ores #F2F2F2 {
     namespace http #F2F2F2 {
         namespace routes #F2F2F2 {
             namespace iam #F2F2F2 {
-                class account_routes {
-                }
                 class account_operations_routes {
+                }
+                class account_routes {
                 }
                 class authorization_routes {
                 }

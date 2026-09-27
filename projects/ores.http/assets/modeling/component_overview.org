@@ -13,6 +13,12 @@
 #+full_name: ores.http.assets
 #+brief: HTTP assets route units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.http.assets component diagram
+#+caption: ores.http.assets
+[[file:ores.http.assets.png][file:ores.http.assets.png]]
+
 * Summary
 
 =ores.http.assets= is the adapter part that projects the assets domain onto

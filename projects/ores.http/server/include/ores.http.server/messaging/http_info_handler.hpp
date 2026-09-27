@@ -31,7 +31,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <string>
 
-namespace ores::http_server::messaging {
+namespace ores::http::server::messaging {
 
 namespace {
 inline auto& http_info_handler_lg() {
@@ -94,6 +94,6 @@ private:
     std::string base_url_;
 };
 
-} // namespace ores::http_server::messaging
+} // namespace ores::http::server::messaging
 
 #endif

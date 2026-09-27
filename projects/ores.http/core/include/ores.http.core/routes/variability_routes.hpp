@@ -29,7 +29,7 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <memory>
 
-namespace ores::http_server::routes {
+namespace ores::http::server::routes {
 
 /**
  * @brief Registers Variability (System Settings) HTTP endpoints.

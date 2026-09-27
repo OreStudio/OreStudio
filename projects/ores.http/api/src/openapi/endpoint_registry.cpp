@@ -205,7 +205,7 @@ rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
     rfl::Object<rfl::Generic> result;
     for (const auto& [key, val] : *obj) {
         if (key == "$defs" || key == "$schema")
-            continue; // Skip these
+            continue;
         result[key] = resolve_refs_recursive(val, defs, visited);
     }
     return rfl::Generic{result};
@@ -231,8 +231,9 @@ rfl::Generic process_schema(const rfl::Generic& schema) {
         }
     }
 
+    // Nothing to resolve when the document declares no definitions.
     if (!defs_ptr)
-        return schema; // No $defs to resolve
+        return schema;
 
     // Use the recursive resolver which handles everything
     std::set<std::string> visited;

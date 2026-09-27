@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::http_server::app {
+namespace ores::http::server::app {
 
 /**
  * @brief Provides hosting services to the HTTP server application.

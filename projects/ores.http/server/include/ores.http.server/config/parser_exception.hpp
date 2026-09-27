@@ -23,7 +23,7 @@
 #include <boost/exception/all.hpp>
 #include <string>
 
-namespace ores::http_server::config {
+namespace ores::http::server::config {
 
 /**
  * @brief Exception thrown when command line parsing fails.

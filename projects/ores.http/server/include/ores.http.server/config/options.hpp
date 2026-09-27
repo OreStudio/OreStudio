@@ -28,7 +28,7 @@
 #include <optional>
 #include <string>
 
-namespace ores::http_server::config {
+namespace ores::http::server::config {
 
 /**
  * @brief All of the configuration options required by the HTTP server.

@@ -50,7 +50,6 @@ namespace ores #F2F2F2 {
                 +headers : unordered_map<string, string>
                 +body : string
                 +content_type : string
-                +status : http_status
             }
             enum http_status {
                 ok
@@ -90,6 +89,7 @@ namespace ores #F2F2F2 {
                 +param_names : vector<string>
                 +handler : request_handler
                 +requires_auth : bool
+                +auth_declared : bool
                 +required_roles : vector<string>
                 +summary : string
                 +description : string
@@ -116,12 +116,16 @@ namespace ores #F2F2F2 {
                 -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
                 -registry_ : shared_ptr<openapi::endpoint_registry>
                 -acceptor_ : unique_ptr<boost::asio::ip::tcp::acceptor>
+                -running_ : atomic<bool>
+                -active_connections_ : atomic<uint32_t>
                 -bytes_callback_ : session_bytes_callback
             }
             class http_server_options <<struct>> {
                 +address : string
                 +port : uint16_t
                 +max_connections : uint32_t
+                +request_timeout : chrono::seconds
+                +max_body_size : uint64_t
                 +enable_ssl : bool
                 +certificate_file : string
                 +private_key_file : string
@@ -134,7 +138,6 @@ namespace ores #F2F2F2 {
                 +server_identifier : string
             }
             class http_session {
-                +bytes_callback : session_bytes_callback
                 -stream_ : boost::beast::tcp_stream
                 -buffer_ : boost::beast::flat_buffer
                 -router_ : shared_ptr<router>
@@ -144,11 +147,11 @@ namespace ores #F2F2F2 {
                 -bytes_callback_ : session_bytes_callback
             }
             class route_builder {
-                +default_value : const optional<string>&
                 -method_ : domain::http_method
                 -pattern_ : string
                 -handler_ : domain::request_handler
                 -requires_auth_ : bool
+                -auth_declared_ : bool
                 -required_roles_ : vector<string>
                 -summary_ : string
                 -description_ : string

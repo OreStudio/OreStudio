@@ -32,7 +32,7 @@
 #include <string>
 #include <string_view>
 
-namespace ores::http_server::routes {
+namespace ores::http::server::routes {
 
 /**
  * @brief Generic S3-like object storage HTTP endpoints.

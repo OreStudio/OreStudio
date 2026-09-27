@@ -125,7 +125,8 @@ route_builder& route_builder::auth_optional() {
 
 route_builder& route_builder::roles(std::vector<std::string> r) {
     required_roles_ = std::move(r);
-    requires_auth_ = true; // Roles imply auth required
+    // Naming roles is a statement that the route is authenticated.
+    requires_auth_ = true;
     auth_declared_ = true;
     return *this;
 }

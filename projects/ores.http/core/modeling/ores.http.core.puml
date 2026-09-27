@@ -22,15 +22,18 @@ title ores.http.core Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    namespace http_server #F2F2F2 {
-        namespace routes #F2F2F2 {
-            class storage_routes {
-                -storage_dir_ : string
-            }
-            class variability_routes {
-                -ctx_ : database::context
-                -system_settings_ : shared_ptr<variability::service::system_settings_service>
-                -sessions_ : shared_ptr<iam::service::auth_session_service>
+    namespace http #F2F2F2 {
+        namespace server #F2F2F2 {
+            namespace routes #F2F2F2 {
+                class storage_routes {
+                    -store_ : storage::filesystem::local_store
+                    -auth_service_ : shared_ptr<iam::service::authorization_service>
+                }
+                class variability_routes {
+                    -ctx_ : database::context
+                    -system_settings_ : shared_ptr<variability::service::system_settings_service>
+                    -sessions_ : shared_ptr<iam::service::auth_session_service>
+                }
             }
         }
     }

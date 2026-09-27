@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::http_server::config {
+namespace ores::http::server::config {
 
 /**
  * @brief Parses command line options for the HTTP server.

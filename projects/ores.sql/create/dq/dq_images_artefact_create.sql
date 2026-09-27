@@ -45,15 +45,3 @@ on ores_dq_images_artefact_tbl (tenant_id);
 
 create index if not exists dq_images_artefact_image_id_idx
 on ores_dq_images_artefact_tbl (image_id);
-
-create index if not exists dq_images_artefact_image_id_idx
-on ores_dq_images_artefact_tbl (image_id);
-
-create index if not exists dq_images_artefact_image_id_idx
-on ores_dq_images_artefact_tbl (image_id);
-
-create index if not exists dq_images_artefact_image_id_idx
-on ores_dq_images_artefact_tbl (image_id);
-
-create index if not exists dq_images_artefact_image_id_idx
-on ores_dq_images_artefact_tbl (image_id);

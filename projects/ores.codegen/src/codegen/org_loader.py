@@ -1475,7 +1475,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         for node in artefact_section.children:
             entry = {"name": node.title}
             for k, v in node.properties.items():
-                entry[k.lower()] = v  # keep columns string verbatim
+                key = k.lower()
+                # columns is a raw column list, verbatim into the index
+                # definition. The remaining keys are flags, so they are
+                # decoded: :unique: false: must be false, not the non-empty
+                # string "false" that a template section would read as true.
+                entry[key] = v if key == "columns" else _parse_typed(v)
             artefact_indexes.append(entry)
         de["artefact_indexes"] = artefact_indexes
 
@@ -5170,7 +5175,12 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
         for node in artefact_section.children:
             entry = {"name": node.title}
             for k, v in node.properties.items():
-                entry[k.lower()] = v  # keep columns string verbatim
+                key = k.lower()
+                # columns is a raw column list, verbatim into the index
+                # definition. The remaining keys are flags, so they are
+                # decoded: :unique: false: must be false, not the non-empty
+                # string "false" that a template section would read as true.
+                entry[key] = v if key == "columns" else _parse_typed(v)
             artefact_indexes.append(entry)
         e["artefact_indexes"] = artefact_indexes
 

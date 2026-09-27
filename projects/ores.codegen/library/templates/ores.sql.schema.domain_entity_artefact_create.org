@@ -76,14 +76,14 @@ on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (tenant_id);
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.primary_key.column}}_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.primary_key.column}});
 {{/domain_entity.artefact_columns}}
-{{#domain_entity.artefact_columns}}
+{{#domain_entity.artefact_key_column}}
 
 create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.artefact_key_column}}_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.artefact_key_column}});
-{{/domain_entity.artefact_columns}}
+{{/domain_entity.artefact_key_column}}
 {{#domain_entity.artefact_indexes}}
 
-create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{name}}_idx
+create {{#unique}}unique {{/unique}}index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{name}}_idx
 on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{columns}});
 {{/domain_entity.artefact_indexes}}
 {{#domain_entity.has_artefact_insert_fn}}

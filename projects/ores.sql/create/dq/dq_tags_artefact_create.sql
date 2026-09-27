@@ -45,11 +45,5 @@ on ores_dq_tags_artefact_tbl (tenant_id);
 create index if not exists dq_tags_artefact_tag_id_idx
 on ores_dq_tags_artefact_tbl (tag_id);
 
-create index if not exists dq_tags_artefact_tag_id_idx
-on ores_dq_tags_artefact_tbl (tag_id);
-
-create index if not exists dq_tags_artefact_tag_id_idx
-on ores_dq_tags_artefact_tbl (tag_id);
-
-create index if not exists dq_tags_artefact_tag_id_idx
-on ores_dq_tags_artefact_tbl (tag_id);
+create unique index if not exists dq_tags_artefact_tag_identity_idx
+on ores_dq_tags_artefact_tbl (tenant_id, dataset_id, name);

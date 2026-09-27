@@ -51,33 +51,3 @@ on ores_dq_books_artefact_tbl (tenant_id);
 
 create index if not exists dq_books_artefact_id_idx
 on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);
-
-create index if not exists dq_books_artefact_id_idx
-on ores_dq_books_artefact_tbl (id);

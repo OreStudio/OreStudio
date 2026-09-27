@@ -42,5 +42,11 @@ python3 "${CODEGEN_DIR}/src/plantuml_er_parse_sql.py" \
     --validate-only \
     --strict
 
+# Hygiene the parser cannot see: an unterminated block comment (PostgreSQL
+# nests them, so an inner closer does not end the outer comment) and an index
+# a template emitted once per column. Both fail a database recreation rather
+# than this validation, which is why they are checked here.
+python3 "${SCRIPT_DIR}/check_sql_hygiene.py" "${SQL_DIR}"
+
 echo ""
 echo "=== Validation Passed ==="

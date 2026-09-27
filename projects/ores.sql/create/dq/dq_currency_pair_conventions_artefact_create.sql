@@ -49,27 +49,3 @@ on ores_dq_currency_pair_conventions_artefact_tbl (tenant_id);
 
 create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
 on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);
-
-create index if not exists dq_currency_pair_conventions_artefact_pair_code_idx
-on ores_dq_currency_pair_conventions_artefact_tbl (pair_code);

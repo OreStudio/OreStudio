@@ -76,6 +76,15 @@ jobs:
       - name: Check generated output matches the models
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --all
+      # The drift step proves a committed file matches its model; it cannot see
+      # a file the model asks for wrongly. A template that emits an index once
+      # per column, and a comment PostgreSQL nests but never closes, both
+      # regenerate faithfully and both fail a database recreation instead. This
+      # is the same check Continuous Linux runs, moved to the pull request so
+      # the defect does not reach main first.
+      - name: Check the SQL tree for unterminated comments and repeated indexes
+        run: |
+          python3 projects/ores.sql/utility/check_sql_hygiene.py projects/ores.sql
       # Protocol twin coverage: every protocol header of a component under
       # test must have its *_protocol.ts twin, and no model may carry the
       # :ores.ts.protocol.enabled: opt-out. The drift step above proves a

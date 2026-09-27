@@ -47,21 +47,3 @@ on ores_dq_countries_artefact_tbl (tenant_id);
 
 create index if not exists dq_countries_artefact_alpha2_code_idx
 on ores_dq_countries_artefact_tbl (alpha2_code);
-
-create index if not exists dq_countries_artefact_alpha2_code_idx
-on ores_dq_countries_artefact_tbl (alpha2_code);
-
-create index if not exists dq_countries_artefact_alpha2_code_idx
-on ores_dq_countries_artefact_tbl (alpha2_code);
-
-create index if not exists dq_countries_artefact_alpha2_code_idx
-on ores_dq_countries_artefact_tbl (alpha2_code);
-
-create index if not exists dq_countries_artefact_alpha2_code_idx
-on ores_dq_countries_artefact_tbl (alpha2_code);
-
-create index if not exists dq_countries_artefact_alpha2_code_idx
-on ores_dq_countries_artefact_tbl (alpha2_code);
-
-create index if not exists dq_countries_artefact_alpha2_code_idx
-on ores_dq_countries_artefact_tbl (alpha2_code);

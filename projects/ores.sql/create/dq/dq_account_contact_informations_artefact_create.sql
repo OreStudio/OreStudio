@@ -52,36 +52,3 @@ on ores_dq_account_contact_informations_artefact_tbl (tenant_id);
 
 create index if not exists dq_account_contact_informations_artefact_id_idx
 on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);
-
-create index if not exists dq_account_contact_informations_artefact_id_idx
-on ores_dq_account_contact_informations_artefact_tbl (id);

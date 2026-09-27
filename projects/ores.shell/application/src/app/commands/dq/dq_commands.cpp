@@ -1,6 +1,7 @@
 #include "ores.shell/app/commands/dq/dq_commands.hpp"
 #include "ores.shell/app/commands/dq/artefact_type_commands.hpp"
 #include "ores.shell/app/commands/dq/badge_definition_commands.hpp"
+#include "ores.shell/app/commands/dq/badge_mapping_commands.hpp"
 #include "ores.shell/app/commands/dq/catalog_commands.hpp"
 #include "ores.shell/app/commands/dq/change_reason_category_commands.hpp"
 #include "ores.shell/app/commands/dq/change_reason_commands.hpp"
@@ -27,6 +28,7 @@ void dq_commands::register_commands(cli::Menu& root_menu,
                                     ores::nats::service::nats_client& session) {
     artefact_type_commands::register_commands(root_menu, session);
     badge_definition_commands::register_commands(root_menu, session);
+    badge_mapping_commands::register_commands(root_menu, session);
     catalog_commands::register_commands(root_menu, session);
     change_reason_category_commands::register_commands(root_menu, session);
     change_reason_commands::register_commands(root_menu, session);

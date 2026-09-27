@@ -22,6 +22,7 @@
 set(files
     "artefact_type_commands_tests.cpp"
     "badge_definition_commands_tests.cpp"
+    "badge_mapping_commands_tests.cpp"
     "catalog_commands_tests.cpp"
     "change_reason_category_commands_tests.cpp"
     "change_reason_commands_tests.cpp"

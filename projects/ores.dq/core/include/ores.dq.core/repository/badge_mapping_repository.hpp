@@ -108,6 +108,11 @@ public:
     std::uint32_t get_total_mapping_count();
     std::vector<domain::badge_mapping>
     read_latest_by_code_domain(const std::string& code_domain_code);
+    /**
+     * @brief Reads latest badge mappings filtered by code_domain_code, with pagination.
+     */
+    std::vector<domain::badge_mapping> read_latest_by_code_domain(
+        const std::string& code_domain_code, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active badge mappings filtered by code_domain_code.

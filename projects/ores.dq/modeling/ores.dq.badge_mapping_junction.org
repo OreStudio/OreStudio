@@ -1,10 +1,6 @@
 :PROPERTIES:
 :ID: BBB49AAA-E476-435B-88CF-CC252B76655C
 :ores.sql.schema.junction_artefact_create.enabled: true
-:ores.cpp.nats-handler.enabled: false
-:ores.cpp.nats-sub-registrar.enabled: false
-:ores.cpp.protocol.enabled: false
-:ores.cpp.service.enabled: false
 :END:
 #+title: ores.dq.badge_mapping
 #+description: Codegen junction model for badge_mappings.
@@ -19,7 +15,7 @@
 #+product: ores
 #+schema: public
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-09-27
 
 Universal mapping table that associates any (code_domain, entity_code)
 pair with a badge definition. This is the single join point between
@@ -34,10 +30,9 @@ Examples:
 
 Populated via seed scripts; no management UI needed.
 
-NATS/protocol/service are disabled above: badge lookups already go
-through the hand-maintained =badge_handler=/=badge_service= (see
-=registrar.cpp='s own comment), so the generic generated messaging
-stack for this junction would be dead code alongside it.
+The junction is on the canonical generated stack: its protocol, handler,
+registrar and service are generated from this model like any other
+junction's, so the mapping read cannot drift from the entity it projects.
 
 * Flags
 :PROPERTIES:
@@ -52,9 +47,14 @@ stack for this junction would be dead code alongside it.
 :type:          text
 :cpp_type:      std::string
 :index_comment: Index for looking up all mappings in a code domain
+:list_by:       true
 :END:
 
 Code of the domain this mapping belongs to.
+
+Mappings are read a code domain at a time: the badge lookup asks for one
+domain's rows and indexes them by entity code. The partial index on this
+column is the read's index.
 
 References code_domain.code (soft FK). Examples: 'party_status', 'fsm_state'.
 

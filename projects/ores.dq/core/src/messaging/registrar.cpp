@@ -35,7 +35,7 @@
 #include "ores.dq.core/messaging/artefact_type_registrar.hpp"
 #include "ores.dq.core/messaging/badge_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/badge_definition_registrar.hpp"
-#include "ores.dq.core/messaging/badge_handler.hpp"
+#include "ores.dq.core/messaging/badge_mapping_registrar.hpp"
 #include "ores.dq.core/messaging/badge_severity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
 #include "ores.dq.core/messaging/catalog_history_provider_registrar.hpp"
@@ -354,10 +354,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // =========================================================================
-    // Badges: severities, code domains, and definitions are on the standard
-    // generated stack (see badge_definition_handler/badge_severity_handler/
-    // code_domain_handler); badge_mapping is a junction with no generated
-    // handler of its own, so it stays on the bespoke badge_handler.
+    // Badges: severities, code domains, definitions and the mapping junction
+    // are all on the standard generated stack (see badge_definition_handler/
+    // badge_severity_handler/code_domain_handler/badge_mapping_handler).
     // =========================================================================
 
     {
@@ -365,6 +364,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(badge_definition_subs.begin()),
                     std::make_move_iterator(badge_definition_subs.end()));
+
+        auto badge_mapping_subs = register_badge_mapping_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(badge_mapping_subs.begin()),
+                    std::make_move_iterator(badge_mapping_subs.end()));
 
         auto badge_severity_subs = register_badge_severity_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
@@ -432,13 +436,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "dq", queue_group, ctx, verifier));
     }
-
-    auto badge = std::make_shared<badge_handler>(nats, ctx, verifier);
-
-    subs.push_back(nats.queue_subscribe(
-        get_badge_mappings_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
-            badge->list_mappings(std::move(msg));
-        }));
 
     // =========================================================================
     // DQ-internal Publish-from-DQ workflow step handlers

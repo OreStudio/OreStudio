@@ -234,6 +234,28 @@ badge_mapping_repository::read_latest_by_entity(const std::string& entity_code) 
     return rows;
 }
 
+std::vector<domain::badge_mapping> badge_mapping_repository::read_latest_by_code_domain(
+    const std::string& code_domain_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: " << code_domain_code
+                               << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+                       where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
+                             "valid_to"_c == max.value()) |
+                       order_by("entity_code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    auto rows = execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+        ctx_,
+        query,
+        [](const auto& entities) { return badge_mapping_mapper::map(entities); },
+        lg(),
+        "Reading latest badge mappings by code_domain (paginated).");
+
+    return rows;
+}
+
 std::uint32_t badge_mapping_repository::get_total_mapping_count_by_code_domain(
     const std::string& code_domain_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Code Domain: "

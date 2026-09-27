@@ -17,36 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_MESSAGING_BADGE_PROTOCOL_HPP
-#define ORES_DQ_API_MESSAGING_BADGE_PROTOCOL_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_DQ_CORE_MESSAGING_BADGE_MAPPING_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_BADGE_MAPPING_REGISTRAR_HPP
 
-#include <string>
-#include <string_view>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
 namespace ores::dq::messaging {
 
-/**
- * @brief Lightweight read-only projection of a badge mapping entry.
- *
- * Associates a (code_domain_code, entity_code) pair with a badge_code.
- * Used by BadgeCache to build the lookup index at startup.
- */
-struct badge_mapping {
-    std::string code_domain_code;
-    std::string entity_code;
-    std::string badge_code;
-};
+std::vector<ores::nats::service::subscription>
+register_badge_mapping_handlers(ores::nats::service::client& nats,
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-struct get_badge_mappings_request {
-    using response_type = struct get_badge_mappings_response;
-    static constexpr std::string_view nats_subject = "dq.v1.badge_mappings.list";
-};
-
-struct get_badge_mappings_response {
-    std::vector<badge_mapping> mappings;
-};
-
-}
+} // namespace ores::dq::messaging
 
 #endif

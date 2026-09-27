@@ -37,9 +37,6 @@ export interface Account {
     username: string;
     account_type: string;
     full_name: string;
-    password_hash: string;
-    password_salt: string;
-    totp_secret: string;
     email: string;
     default_party_id: string | null;
     image_id: string | null;

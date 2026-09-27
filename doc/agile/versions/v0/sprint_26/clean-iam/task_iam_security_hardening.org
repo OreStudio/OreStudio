@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 8DE384EE-E273-42AA-B0B6-81B2AE759BD4
+:END:
+#+title: Task: Fix the security defects the ores.iam clean-up recorded
+#+description: Close the five recorded ores.iam security defects so the component's clean-standard registry entry rests on a true record: unguarded role assignment and account and login reads, credential fields on the wire, change-password ignoring the current password, the unguarded system-tenant delete, and unenforced tenant suspension.
+#+type: task
+#+level: s1
+#+filetags: :clean-iam:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/iam-security-defects
+#+pr: 2256
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the five security defects the ores.iam clean-up and the journey review
+recorded, each at its source, so the component's clean-standard registry entry
+rests on a true record rather than on a claim the gates cannot see.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The role-assignment handlers check =iam::roles:assign=, and the account and
+  login reads check their own read code, so no signed-in caller escalates or
+  reads another account's material.
+- =password_hash=, =password_salt= and =totp_secret= reach no serialized form
+  and no history diff, while C++ still reads and writes them.
+- =change-password= refuses an absent or wrong current password, and the
+  administrator reset keeps a path of its own.
+- The system tenant cannot be terminated or hard-deleted through any path,
+  generic or dedicated.
+- A suspended or terminated tenant admits no sign-in.
+- The tree builds; the codegen suite and every codegen gate pass; the iam
+  suites pass against a recreated database; each fix is verified against the
+  running fleet, not only against the source.
+
+* Plan
+
+Work the five defects in order of blast radius, smallest first, so each lands
+on a tree that already builds.
+
+1. Guard the writes that were missed: =assign= and =assign_by_name= check
+   =iam::roles:assign=; the generated account and login reads check their
+   =:read= codes through a new =:guard_reads:= model flag, because the estate
+   default is that a read needs authentication alone.
+2. Keep the credentials off the wire with a new =:no_wire:= flag: the member
+   stays in the domain struct wrapped in =rfl::Skip=, and the TypeScript twin
+   and history field mapper drop it. The estate already uses =rfl::Skip= for
+   the database password, so the pattern is the house one.
+3. Verify the current password in =change_password=, fail closed on an absent
+   one, and give the administrator reset its own =reset_password= method so it
+   does not have to state a password it never had.
+4. State the system-tenant invariant as a table check, which the delete rule,
+   the generic save and the update path all pass through, and guard the hard
+   delete, which bypasses the rule.
+5. Refuse a sign-in whose tenant is not active, in the one service every
+   password login reaches, before the password is compared.
+
+Regenerate the affected artefacts, run the codegen gates and the suites, then
+prove each fix against the running fleet.
+
+* Notes
+
+- *The credential fix keeps the domain member and skips the wire.* The
+  captured defect asked for =:sql_only:= on the three columns, which removes
+  a column from the domain struct. Login, signup and change-password read and
+  write the hash through that struct, and the component carries no
+  entity-level credential API, so =:sql_only:= would have needed a repository
+  credential layer and a migration of every write path. The smaller correct
+  fix reuses the estate's own precedent, =database_options.password=: the
+  member stays, =:no_wire:= wraps it in =rfl::Skip=, and every serializer, the
+  TypeScript twin and the history mapper leave it out. Moving the credentials
+  into the entity layer remains open if the estate wants it.
+- *The read guard is opt in on purpose.* The estate's rule is that a read
+  needs authentication alone, so guarding every read would change every
+  component at once and every caller's role. =:guard_reads:= states the
+  exception on the entity that needs it, which is the two rows here.
+- *A suspended tenant still holds a live session.* The check is on the
+  sign-in path, which is what the defect records. Ending the open sessions of
+  a tenant that is suspended or terminated is a separate change, as is giving
+  the tenant a dedicated suspend verb rather than the generic update.
+- *The allow path is live-verified; the deny path is proven by the generated
+  check.* The verification administrator holds the wildcard permission, so the
+  live run shows the guarded reads still serving it. A live caller without the
+  code was not built; the denial is the generated =has_permission= call, which
+  the regression test renders and asserts for every read verb.
+- *The reset surface keeps decisions of its own.* The recorded defect noted two
+  questions beside the ignored current password: whether an administrator reset
+  should set =password_reset_required= rather than choose a password, and that
+  =set_password_reset_required= has no caller because the hand-written HTTP
+  route that called it was replaced by a forwarder to the same NATS subject.
+  The primary defect is closed; the two questions are recorded here as the
+  capture is retired, and they belong to the reset flow rather than this pass.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]] | [iam] Close the five security defects the clean-up recorded |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The tenant-status check read the caller context's tenant, and a login with no resolvable hostname stays on the system tenant, so a suspended tenant's login might not be refused. | projects/ores.iam/core/src/service/account_operations_service.cpp | Fixed | The check reads =account.tenant_id= now. The bypass did not reproduce: the account row level security policy confines the read to the caller's tenant, so a system-context login reaches no account at all. Both the refusal and that confinement are asserted by the new case in =service_account_service_tests.cpp=. |
+
+* Result
+
+Five security defects closed at their source, on one branch, in three
+commits: the two codegen facets, the iam and SQL fixes, and this record.
+
+What each fix is. Role assignment checks =iam::roles:assign= where only
+=revoke= checked anything, so an authenticated account can no longer grant
+itself a role. The generated account and login reads check
+=iam::accounts:read= and =iam::login_info:read=, which were seeded and granted
+but never consulted. The three credential columns are wrapped in =rfl::Skip=,
+so they stay in C++ and leave every serialized form, the shell table and the
+history diff. =change-password= takes the current password and refuses an
+absent or wrong one, and the administrator reset keeps a method of its own.
+The system tenant stays =active= by a table check that the delete rule, the
+generic save and the update all pass through, and the hard delete, which
+disables the rule, carries its own guard. Login refuses a tenant that is not
+active before it compares the password.
+
+Verified. The tree builds with no errors. The codegen suite passes 852 tests,
+including two new files that render the facets and prove them non-vacuous.
+Every codegen gate is green: component drift on the committed tree, model
+drift, protocol twin coverage, handler permissions, populate references,
+registry exceptions, and the shell recipe inventory. Six of six iam-related
+suites pass against the database recreated from this branch:
+=ores.iam.api.tests=, =ores.iam.core.tests=, =ores.iam.service.tests=,
+=ores.shell.iam.tests=, =ores.http.iam.tests= and =ores.synthetic.core.tests=.
+The new pgTAP test =iam_tenant_delete_test.sql= reports 3 of 3: the generic
+delete, the generic update and the hard delete all refuse the system tenant.
+=ores.iam.core.tests= gained a suspended-tenant sign-in case: with the
+account's own tenant suspended, the login is refused with =Tenant is not
+active=, and the same credentials under the system context reach no account at
+all, because the account row level security policy confines the read. Against
+the running fleet, a shell run shows =change-password= answering
+=Current password is incorrect=, then succeeding with the right password and
+refusing a new one that matches the old, and =accounts list= answering with no
+=password_hash=, =password_salt= or =totp_secret= member.

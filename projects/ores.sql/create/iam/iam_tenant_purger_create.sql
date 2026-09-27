@@ -177,6 +177,13 @@ create or replace function ores_iam_hard_delete_tenants_fn(
 declare
     v_count integer;
 begin
+    -- The system tenant is never removable, and this path bypasses both the
+    -- soft-delete rule and the table check, so it carries the guard itself.
+    if ores_utility_system_tenant_id_fn() = any(p_tenant_ids) then
+        raise exception 'Cannot hard delete the system tenant'
+            using errcode = '42501';
+    end if;
+
     -- Disable the soft-delete rule
     alter table ores_iam_tenants_tbl disable rule ores_iam_tenants_delete_rule;
 

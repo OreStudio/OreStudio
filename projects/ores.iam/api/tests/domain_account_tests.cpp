@@ -53,9 +53,9 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
     CHECK(sut.username == "john.doe");
-    CHECK(sut.password_hash == "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
-    CHECK(sut.password_salt == "randomly_generated_salt_value");
-    CHECK(sut.totp_secret == "JBSWY3DPEHPK3PXP");
+    CHECK(sut.password_hash.value() == "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+    CHECK(sut.password_salt.value() == "randomly_generated_salt_value");
+    CHECK(sut.totp_secret.value() == "JBSWY3DPEHPK3PXP");
     CHECK(sut.email == "john.doe@example.com");
 }
 
@@ -162,9 +162,9 @@ TEST_CASE("create_account_with_faker", tags) {
     CHECK(sut.version <= 10);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.username.empty());
-    CHECK(sut.password_hash.length() == 66);
-    CHECK(sut.password_salt.length() == 34);
-    CHECK(sut.totp_secret.length() == 16);
+    CHECK(sut.password_hash.value().length() == 66);
+    CHECK(sut.password_salt.value().length() == 34);
+    CHECK(sut.totp_secret.value().length() == 16);
     CHECK(!sut.email.empty());
 }
 
@@ -265,6 +265,11 @@ TEST_CASE("account_convert_single_to_json", tags) {
     CHECK(!json.empty());
     CHECK(json.find("john.doe") != std::string::npos);
     CHECK(json.find("john.doe@example.com") != std::string::npos);
+    // The domain carries the credentials; the serialized form does not.
+    CHECK(json.find("password_hash") == std::string::npos);
+    CHECK(json.find("hash123") == std::string::npos);
+    CHECK(json.find("salt456") == std::string::npos);
+    CHECK(json.find("TOTP789") == std::string::npos);
 }
 
 TEST_CASE("account_convert_multiple_to_json", tags) {
@@ -294,6 +299,7 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
         CHECK(!json.empty());
         CHECK(json.find(acc.username) != std::string::npos);
         CHECK(json.find(acc.email) != std::string::npos);
+        CHECK(json.find(acc.password_hash.value()) == std::string::npos);
     }
 }
 

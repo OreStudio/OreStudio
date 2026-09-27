@@ -421,7 +421,7 @@ public:
         for (const auto& id_str : req->account_ids) {
             try {
                 auto account_id = sg(id_str);
-                auto err = svc.change_password(account_id, req->new_password);
+                auto err = svc.reset_password(account_id, req->new_password);
                 if (err.empty()) {
                     resp.results.push_back({.success = true});
                 } else {
@@ -472,7 +472,7 @@ public:
             }
             const auto& ctx = *ctx_expected;
             service::account_operations_service svc(ctx);
-            auto err = svc.change_password(account_id, req->new_password);
+            auto err = svc.change_password(account_id, req->current_password, req->new_password);
             if (err.empty()) {
                 BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, change_password_response{.success = true});

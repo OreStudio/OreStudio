@@ -80,8 +80,19 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
+            const auto caller_id = sg(ctx.actor());
+            service::authorization_service svc(ctx);
+            if (!svc.has_permission(caller_id, domain::permissions::roles_assign)) {
+                BOOST_LOG_SEV(authorization_handler_lg(), warn)
+                    << msg.subject << " denied: caller lacks iam::roles:assign permission";
+                reply(nats_,
+                      msg,
+                      assign_role_response{.success = false,
+                                           .error_message =
+                                               "Permission denied: iam::roles:assign required"});
+                return;
+            }
             svc.assign_role(sg(req->account_id), sg(req->role_id), ctx.actor());
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_response{.success = true});
@@ -232,6 +243,19 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            const auto caller_id = sg(ctx.actor());
+            service::authorization_service caller_svc(ctx);
+            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_assign)) {
+                BOOST_LOG_SEV(authorization_handler_lg(), warn)
+                    << msg.subject << " denied: caller lacks iam::roles:assign permission";
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false,
+                          .error_message = "Permission denied: iam::roles:assign required"});
+                return;
+            }
 
             // Parse principal: username@hostname
             const auto principal = split_principal(req->principal);

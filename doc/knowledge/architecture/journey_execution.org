@@ -135,8 +135,8 @@ carries =account_type=, the coordinator does not pass it on, and the layer benea
 hard-codes =new_account.account_type = "user";=, so a service account cannot be
 created at all. The same shape appears one layer up, where =account_handler.hpp=
 and =account_operations_handler.hpp= both handle the account entity and the
-permission guard was applied to one and not the other — one of the defects in
-[[id:653E5D7E-13BC-4588-B5BC-40752F49D823][IAM handlers skip their permission checks]].
+permission guard was applied to one and not the other — one of the ores.iam
+handler permission defects the security hardening has since closed.
 
 So the guard rails are: one entry point per concern; a declared contract for what
 a coordinator must preserve; and a test that a request field reaches the table.

@@ -7,6 +7,9 @@
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{#has_no_wire_columns}}
+#include "ores.utility/rfl/skip_comparison.hpp"
+{{/has_no_wire_columns}}
 {{#has_base64_columns}}
 #include <cstdint>
 #include <vector>
@@ -102,7 +105,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/sql_only}}
 {{/is_identity_group_column}}
@@ -182,6 +185,9 @@ struct {{entity_singular}} final {
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{#has_no_wire_columns}}
+#include "ores.utility/rfl/skip_comparison.hpp"
+{{/has_no_wire_columns}}
 {{#has_base64_columns}}
 #include <cstdint>
 #include <vector>
@@ -236,7 +242,7 @@ struct {{name_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/columns}}
     /**

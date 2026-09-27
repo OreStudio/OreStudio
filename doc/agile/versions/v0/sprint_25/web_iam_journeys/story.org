@@ -202,11 +202,10 @@ before any code is written.
   done. Fourteen documents, each with a rendered =salt= wireframe and a coverage
   table. 105 claimed subjects were checked against the generated protocol and all
   exist; every id-link resolves. The exercise paid for itself: it found three
-  server-side security defects, captured as
-  [[id:2662D094-99B0-4C18-88DF-C36A304CA806][Account secrets reach the browser in the accounts wire shape]],
-  [[id:E87A316A-A387-4D0B-8221-9716F8A6AF07][Change-password ignores the current password]] and
-  [[id:653E5D7E-13BC-4588-B5BC-40752F49D823][IAM handlers skip their permission checks]],
-  plus the design gaps the coverage tables record.
+  server-side security defects -- the account credential fields on the wire,
+  change-password ignoring the current password, and the unguarded role
+  assignment and reads. PR [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]]
+  closes all three; the design gaps the coverage tables record remain.
 - 2026-09-23, after auditing every =ores.iam= data type and responsibility: the
   corpus was incomplete. Every /entity/ was covered, which is why the gap was
   invisible, but four message families had no journey at all — =login_messages=,
@@ -222,13 +221,12 @@ before any code is written.
   renamed from "Journeys" to "User Journeys", because these are client-side
   journeys and a "journey" in =ores.workflow= is a different thing.
 - [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] found two more
-  server-side defects, captured separately because they are defects rather than
-  design gaps: the generic delete can terminate the system tenant
-  ([[id:97E6AD78-87F1-4443-B06F-712F24AB11D4][Delete can terminate the system tenant]]),
-  because the guard lives in the lifecycle functions the generic path does not
-  call; and suspension is not enforced anywhere on the sign-in path
-  ([[id:0A586E9E-F9A9-4FB5-B113-FCB199E39E16][Suspending a tenant does not suspend it]]),
-  so a suspended tenant still admits its accounts.
+  server-side defects, recorded because they are defects rather than design
+  gaps: the generic delete can terminate the system tenant, because the guard
+  lives in the lifecycle functions the generic path does not call; and
+  suspension is not enforced anywhere on the sign-in path, so a suspended
+  tenant still admits its accounts. PR
+  [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]] closes both.
 
 * Out of scope
 

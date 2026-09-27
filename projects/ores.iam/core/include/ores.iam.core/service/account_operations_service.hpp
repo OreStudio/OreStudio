@@ -288,17 +288,37 @@ public:
     bool set_password_reset_required(const boost::uuids::uuid& account_id);
 
     /**
-     * @brief Changes the password for an account.
+     * @brief Changes an account's own password, proving the current one.
      *
-     * Validates password strength, hashes the new password, updates the account,
-     * and clears the password_reset_required flag.
+     * Verifies @p current_password against the stored hash before anything is
+     * written, and refuses the change when it is empty or does not match.
+     * Validates password strength, hashes the new password, updates the
+     * account, and clears the password_reset_required flag.
+     *
+     * @param account_id The ID of the account to update
+     * @param current_password The caller's existing plaintext password
+     * @param new_password The new plaintext password (will be hashed)
+     * @return empty string on success, error message on failure
+     */
+    std::string change_password(const boost::uuids::uuid& account_id,
+                                const std::string& current_password,
+                                const std::string& new_password);
+
+    /**
+     * @brief Sets a new password without proving the current one.
+     *
+     * The administrator reset path, reached only through
+     * iam.v1.accounts.reset-password, whose handler checks
+     * iam::accounts:reset_password first. Validates password strength, hashes
+     * the new password, updates the account, and clears the
+     * password_reset_required flag.
      *
      * @param account_id The ID of the account to update
      * @param new_password The new plaintext password (will be hashed)
      * @return empty string on success, error message on failure
      */
-    std::string change_password(const boost::uuids::uuid& account_id,
-                                const std::string& new_password);
+    std::string reset_password(const boost::uuids::uuid& account_id,
+                               const std::string& new_password);
 
     /**
      * @brief Retrieves the login_info for a specific account.

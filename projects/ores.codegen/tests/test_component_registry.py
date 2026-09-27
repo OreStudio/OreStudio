@@ -59,7 +59,15 @@ def test_an_exception_is_only_recorded_against_a_listed_component():
 
 
 def test_a_component_with_no_exception_reports_none():
-    assert accepted_exceptions("iam") == ()
+    assert accepted_exceptions("analytics-cpp") == ()
+
+
+def test_iam_records_the_four_items_it_does_not_pass():
+    """The rows its clean-standard task marks Partial or as a coverage work
+    item, recorded now that the security defects the same pass found are
+    closed."""
+    assert {e.item for e in accepted_exceptions("iam")} == {
+        "P01", "P04", "S01", "V08"}
 
 
 def test_variability_records_the_one_item_it_does_not_pass():

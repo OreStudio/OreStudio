@@ -3490,7 +3490,9 @@ def _operation_verb(name: str) -> str:
     return ""
 
 
-def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def protocol_operations(
+        messages: list[dict[str, Any]],
+        guard_reads: bool = False) -> list[dict[str, Any]]:
     """The operations a resource addresses, in the order the messages state them.
 
     A message with a subject is an operation; one without is a record. The
@@ -3501,6 +3503,12 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     Declared messages are left out: an operation model states its whole
     protocol and its handler beside it, so the derived surface a generated
     handler serves stops at what the derivation owns.
+
+    ``guard_reads`` makes each read name a permission as well, for an entity
+    whose reads expose material a signed-in caller must not see. The model
+    asks for it with ``:guard_reads: true``, and the permission is the
+    resource's own ``:read`` code. Without the flag a read needs
+    authentication alone, which is the estate's default.
     """
     operations: list[dict[str, Any]] = []
     for message in messages:
@@ -3510,6 +3518,8 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         names = [field.get("name") for field in fields]
         leading_type = fields[0].get("cpp_type", "") if fields else ""
         verb = message.get("verb") or _operation_verb(message["name"])
+        is_write = verb in ("put", "put_many", "delete", "delete_many")
+        guarded_read = guard_reads and not is_write and verb != ""
         operations.append({
             "method": message["name"][:-len("_request")],
             "request": message["name"],
@@ -3535,8 +3545,11 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "leading_is_optional": "optional" in leading_type,
             # A write is an operation that changes state, and the permission
             # it needs is the one the resource already names for that kind of
-            # change. A read needs authentication alone, so it names none.
-            "is_write": verb in ("put", "put_many", "delete", "delete_many"),
+            # change. A read needs authentication alone, so it names none --
+            # unless the model guards its reads, when it names the resource's
+            # own read code.
+            "is_write": is_write,
+            "is_guarded": is_write or guarded_read,
             # The single write verb has one hook the other verbs do not: a
             # component may intercept its own save before authentication, for
             # an orchestration command that carries its context in headers
@@ -3544,7 +3557,8 @@ def protocol_operations(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             # that does, through an implementation block.
             "is_put_one": verb == "put",
             "permission": ("delete" if verb in ("delete", "delete_many")
-                           else "write" if verb in ("put", "put_many") else ""),
+                           else "write" if verb in ("put", "put_many")
+                           else "read" if guarded_read else ""),
             # The message's own authentication requirement, carried beside the
             # verb so a projection that declares a route -- rather than the
             # protocol header it cannot read at generate time -- states the

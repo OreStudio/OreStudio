@@ -26,12 +26,12 @@ ores.iam passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] |
-| Now          | The survey, the fixes and the verification are in, on the branch rebased onto =origin/main=. Thirteen defects are fixed at source, including the one that matters most: the component published no entity change events at all, now proved against the running fleet by 19 events on NATS. The whole tree builds; all four iam suites pass; 158 shell recipes replay with zero unwired commands. The items that do not pass are recorded individually below, each with its evidence and its reason. One defect in the environment is not this component's: =ores.workflow='s invalid foreign key stops the database recreating on main, for every component, so iam's V03 was verified with that one statement locally neutralised. |
-| Waiting on   | A decision on the open items, and on the registry question V06 puts to the review. |
-| Next         | The review accepts the open items as exceptions, or the registry entry is withdrawn until they close. |
-| Last touched | 2026-09-26                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
@@ -92,7 +92,7 @@ are worked below.
 | G07 | Pass. No artefact was refreshed while a generator defect stood. The operator defect was fixed first, with its regression test, and only then were the four diagrams refreshed. The two-pass contract held in all four: the automated pass was re-run, the manual pass re-authored below the sentinel, and the sentinel verified present afterwards. Re-running the automated pass reports no changes, so it is idempotent. | =generate_component_puml.py= dry runs; the four =.puml= files |
 | G08 | Fix. =core= and =service= already carried their outermost namespace headers; =api= and =client= did not and now do, with the namespace =@brief= the diagram conventions read, wired into the CMake lists. A latent defect found in passing: =core/'s and =service/'s =ores.iam.service.hpp= shared one include guard, so including both silently dropped one; each now has its own. | projects/ores.iam/{api,client}/include/ores.iam.{api,client}/ores.iam.{api,client}.hpp; projects/ores.iam/{core,service}/include/.../ores.iam.service.hpp |
 | W01 | Fix, and the headline defect. The ten generated event registrars were never composed: the service created no =postgres_event_source= and opened no =event_bus=, so the ten notify channels the generated SQL triggers publish had no listener and iam's entity change events never reached NATS. Twelve other services wire theirs. Fixed by adding the aggregate composition point -- the one hand-maintained line-per-entity call site that refdata and synthetic keep -- and wiring it into =application.cpp= with =start()=/=stop()=. The drift gate cannot see this and the component's own eventing tests register their own mappings, which is exactly the trap the standard names. Proved against the running fleet, not the source: the service logs ten =Registering canonical event mapping= lines at startup, one per entity with its channel and subject prefix, and the live replay drove **19 events onto NATS**, =created= and =updated= across accounts, account contact information, account types, login info, permissions, roles and sessions. The review must know: =ores.assets=, =ores.workflow= and =ores.marketdata= have the same unwired family. | projects/ores.iam/service/src/messaging/event_registrar.cpp; service/src/app/application.cpp; build/audit_iam/verify_after_rebase.txt; the service log's mapping and publish lines |
-| W02 | Pass. =check_handler_permissions.py= is green with iam registered. | build/audit_iam/check_handler_permissions.txt |
+| W02 | Pass, with the gate's reach corrected on the record. =check_handler_permissions.py= is green, but iam was never in that gate's =REGISTRY=, and the check compares only the permission codes a handler uses against the seeded literals, so it cannot see a handler that checks nothing. That is why the unguarded role assignment and the unguarded account and login reads survived this pass. They are fixed by PR [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]], and the structural gate a hand-written handler needs is captured separately. | build/audit_iam/check_handler_permissions.txt; =projects/ores.codegen/scripts/check_handler_permissions.py= |
 | W03 | Pass. =check_populate_references.py= is green. | build/audit_iam/check_populate_references.txt |
 | W04 | Pass. Schema validation reports 304 tables and 0 warnings, so no =WIRE_001=; every iam script is reachable from the create and drop aggregators, and the service grants cover what the service reads. | build/audit_iam/validate_schemas_after.txt |
 | S01 | Partial. Coverage passes: 19 shell-enabled models, 123 commands, 0 uncovered verbs, every verb with a generated unit and a test. The deletion clause does not. Four hand-written units (=accounts_commands=, =tenants_commands=, =rbac_commands=, =provision_commands=) survive and are registered after the generated aggregator, so overlapping verbs are shadowed dead (=accounts list=, =tenants get/add/delete=, =permissions list=, =roles list/get=) while the rest duplicate generated behaviour under a second menu. Which verbs are superseded is a per-verb call-site question, and login has no generated unit, so the wholesale deletion this sentence asks for would remove live behaviour. The sibling =ores.workflow= task shows the correct granularity: retire the superseded registration, keep the verb generation cannot express. Recorded open with the mapping rather than half-done. | build/audit_iam/survey_shell.md; projects/ores.shell/application/src/app/repl.cpp |
@@ -143,7 +143,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | W02 claims =check_handler_permissions.py= is green "with iam registered". | projects/ores.codegen/scripts/check_handler_permissions.py | Corrected | iam was never in that gate's =REGISTRY=, and the check compares only the codes a handler uses against the seeds, so it cannot see a handler that checks nothing. The row is corrected above; the guards it missed are fixed by [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]]. |
+| 2 | Four items do not pass: P01, P04, S01, V08. | projects/ores.codegen/scripts/component_registry.py | Accepted as exceptions | Each is recorded with its reason and the date, so the registry listing states exactly what the component does not pass rather than claiming a clean sweep. |
+| 3 | V04's one aborted recipe, and the Result's "one aborts". | task Result | Corrected | [[https://github.com/OreStudio/OreStudio/pull/2236][#2236]] lets an operation declare =:request_timeout_seconds:=, and =provision-acme-tenant= answers in 38.4 s against a declared 1800. |
 
 * Result
 
@@ -174,13 +176,14 @@ recreates from scratch with no workaround, because main removed the foreign key
 that had blocked it. 141 shell recipes replay live: 120 answered, 20 recorded
 as destructive, one aborts.
 
-What did not land, and why. One recipe still aborts, and the reason is a
-duration rather than a defect in the command: =tenant_provisioning
-provision-acme-tenant= takes about 32 seconds on the server while the shell's
-request timeout is 30, so the client gives up seconds before the answer
-arrives. Both fixes are design changes -- make the operation asynchronous
-behind a poll, or let an operation command declare a longer timeout -- and
-neither is surgical. The items the review must weigh are otherwise recorded
+What did not land, and why. One recipe still aborted when this pass closed, and
+the reason was a duration rather than a defect in the command:
+=tenant_provisioning provision-acme-tenant= took about 32 seconds on the server
+while the shell's request timeout was 30, so the client gave up seconds before
+the answer arrived. That is now fixed: PR
+[[https://github.com/OreStudio/OreStudio/pull/2236][#2236]] lets an operation
+declare =:request_timeout_seconds:=, Acme declares 1800, and the command
+answers. The items the review must weigh are otherwise recorded
 individually in the table above: S01's hand-written shell units, the six dead
 =*_table_io= pairs and the missing export macro, the unmodelled
 =account_role=/=role_permission=/=auth_event= tables, and three design
@@ -191,4 +194,15 @@ to its owner. Two of this task's own follow-ups are captured beside them, so
 they do not live only in the table above: the four iam commands left without a
 recipe when the stale documents were deleted, and the provisioning command's
 duration against the client's request timeout.
+
+Closed, 2026-09-27. The review accepted four items as exceptions, P01, P04, S01
+and V08, each now recorded in =ACCEPTED_EXCEPTIONS= with its reason and the date
+it was accepted, so the registry entry states exactly what the component does
+not pass. The security defects this pass recorded, and the ones the journey
+review recorded beside them, are closed by PR
+[[https://github.com/OreStudio/OreStudio/pull/2256][#2256]]: guarded role
+assignment and account and login reads, the credential columns off the wire,
+=change-password= proving the current password, the system tenant protected on
+every path, and a suspended tenant refused at sign-in. With those closed and
+the four accepted, the component is closed too.
 

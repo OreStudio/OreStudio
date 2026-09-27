@@ -58,6 +58,7 @@ create table if not exists "ores_iam_tenants_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'),
+    check ("id" <> ores_utility_system_tenant_id_fn() or "status" = 'active'),
     check ("tenant_id" = ores_utility_system_tenant_id_fn()),
     check ("code" <> ''),
     check ("hostname" <> '')

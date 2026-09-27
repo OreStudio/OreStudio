@@ -2638,6 +2638,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['sql_only'] = bool(col.get('sql_only', False))
                 if col['sql_only']:
                     continue
+                # A wire-hidden column keeps its domain member, because C++ has
+                # to read and write the value, but the member is skipped when
+                # the struct is serialized. The domain type doubles as the wire
+                # type, so this is what keeps a credential out of a response.
+                col['no_wire'] = bool(col.get('no_wire', False))
                 # Every other column must reach the struct through exactly one
                 # of the entity template's type flags. One matching none of
                 # them is dropped from the struct with nothing to show for it:
@@ -2671,6 +2676,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # history field mapper need this flag regardless.
             domain_entity['has_enum_columns'] = any(
                 c.get('is_enum') for c in domain_entity['columns']
+            )
+            # A column the model declares :no_wire: reaches the domain struct
+            # but not its serialized form, so the domain header includes
+            # rfl::Skip where it is used.
+            domain_entity['has_no_wire_columns'] = any(
+                c.get('no_wire') for c in domain_entity['columns']
             )
             # The mapper's own include gate: read and write both convert
             # through boost::asio::ip, which the mapper template includes
@@ -4427,7 +4438,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The same list as operations, which is what the service and handler
         # state their methods from: one name per operation, so the subject,
         # the service method and the handler method cannot drift apart.
-        _ops = protocol_operations(domain_entity['messages'])
+        _ops = protocol_operations(
+            domain_entity['messages'], domain_entity.get('guard_reads', False))
         domain_entity['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             domain_entity[f'{_verb}_operations'] = _verb_ops

@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::accounts:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_accounts_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::accounts:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::accounts:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_accounts_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -203,6 +215,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::accounts:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_account_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -244,6 +260,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::accounts:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_account_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;

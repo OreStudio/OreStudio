@@ -114,6 +114,7 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{/natural_keys}}
 {{#columns}}
 {{^sql_only}}
+{{^no_wire}}
 {{#render_is_uuid}}
     fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{{group_prefix}}}{{name}})});
 {{/render_is_uuid}}
@@ -158,6 +159,7 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{#render_is_enum}}
     fields.push_back({.name = "{{render_label}}", .value = rfl::enum_to_string(v.{{{group_prefix}}}{{name}})});
 {{/render_is_enum}}
+{{/no_wire}}
 {{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}

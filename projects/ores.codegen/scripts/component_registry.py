@@ -123,6 +123,11 @@ class AcceptedException:
 # capture read data members and not methods, so a class whose content is
 # methods arrived without its API. The capture now reads member functions, so
 # the exception was retired and the component's diagrams regenerated from it.
+#
+# iam was listed from its clean-standard pass while four items did not pass and
+# no exception was recorded, so the listing claimed more than the task record
+# did. The four are named here now, each with the task row that carries it, and
+# the security defects the same pass recorded are closed.
 ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
     "variability-cpp": (
         AcceptedException(
@@ -135,6 +140,61 @@ ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
             ),
             accepted_by="marco",
             accepted_on="2026-09-26",
+        ),
+    ),
+    "iam": (
+        AcceptedException(
+            item="P01",
+            reason=(
+                "Two protocol decisions are recorded rather than settled. The "
+                "account entity is :read_only:, so its writes are bespoke "
+                "operation verbs with success/message envelopes instead of the "
+                "canonical put and delete; and account_contact_information "
+                "declares :list_by_as_of:, which generates a point-in-time "
+                "read no caller uses and whose as_of never reaches the wire. "
+                "Both are design calls for the owner, not cleanup."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-27",
+        ),
+        AcceptedException(
+            item="P04",
+            reason=(
+                "The item is met: the nine non-entity surfaces are operation "
+                "models and generate their messages, with no hand-written "
+                "protocol header left. Two estate-wide conventions differ and "
+                "are recorded rather than changed here: the operation subjects "
+                "use no .v1.ops. namespace, and operation responses carry "
+                "success/message where the entity CRUD responses carry "
+                "ores::utility::domain::result. Both are house decisions."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-27",
+        ),
+        AcceptedException(
+            item="S01",
+            reason=(
+                "Four hand-written shell units survive and are registered "
+                "after the generated aggregator, so some overlapping verbs are "
+                "shadowed and the rest duplicate generated behaviour. Which "
+                "verbs the generation supersedes is a per-verb call-site "
+                "question, and login has no generated unit, so the wholesale "
+                "deletion the item asks for would remove live behaviour. The "
+                "mapping is on the task."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-27",
+        ),
+        AcceptedException(
+            item="V08",
+            reason=(
+                "The per-file survey is complete and recorded: 87 of 151 "
+                "source files are touched by a test and 64 are not, each with "
+                "its directory and its reason. The untouched list is the "
+                "coverage work item the item names, not a hole in the pass."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-09-27",
         ),
     ),
 }

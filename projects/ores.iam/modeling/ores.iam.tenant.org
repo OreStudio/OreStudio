@@ -43,6 +43,13 @@ is what a history request, a delete and a single-record read all do.
 It is not a widening of what a caller may see. The row that filter excluded is
 the caller's own tenant, and a tenant admin is the one person who should see it.
 
+The system tenant holds the shared reference data and the platform
+administration, so terminating or suspending it is close to unrecoverable. The
+dedicated lifecycle functions refuse it, and the generic delete and update paths
+must refuse it too: a check states that the row whose id is the system tenant
+stays =active=, which no write path can bypass. Suspending or terminating the
+system tenant is a constraint violation rather than a silent status change.
+
 * Columns
 
 ** id
@@ -155,6 +162,7 @@ Tenant lifecycle status (FK to tenant_statuses).
 | expression                                                                  |
 |-----------------------------------------------------------------------------|
 | "id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'   |
+| "id" <> ores_utility_system_tenant_id_fn() or "status" = 'active'           |
 | "tenant_id" = ores_utility_system_tenant_id_fn()                            |
 | "code" <> ''                                                                |
 | "hostname" <> ''                                                            |

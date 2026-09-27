@@ -1,0 +1,241 @@
+:PROPERTIES:
+:ID: BA3231C1-6D1C-4A66-AC4D-68B5A640120C
+:END:
+#+title: ores.dq.publication
+#+description: Codegen entity model for the dq dataset-publication run log: one row per dataset the publish path sent to production.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: One row per dataset publication, recording where it went and what it wrote.
+#+entity_singular: publication
+#+entity_plural: publications
+#+entity_title: Publication
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+An append-only log of datasets published to production tables: which dataset
+went where, under which mode, and how many records each outcome touched. The
+publish path writes one row per dataset it dispatches.
+
+The table is called =ores_dq_dataset_publications_tbl=, so the model states its
+table name rather than deriving it: the entity is a publication, and the table
+names the thing published.
+
+It is a run log, not an entity with a lifecycle. Nothing edits a row after it is
+written, so the model declares =:current_state:=: no transaction-time pair, no
+exclusion constraint, no =version= and no audit tail. Rows carry their own
+=published_at=, which is the ordering the reads use. The surrogate =id= is the
+primary key because a dataset may be published many times.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     dq
+:has_tenant_id: true
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:default:     gen_random_uuid()
+:END:
+
+Surrogate identifier for this publication record.
+
+** dataset_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The dataset that was published.
+
+** dataset_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The dataset's code at the time of publication, recorded so the row still reads
+after the dataset is renamed or removed.
+
+** mode
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+How records were written to the target table: =upsert=, =insert_only= or
+=replace_all=.
+
+** target_table
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The production table the dataset was published into.
+
+** records_inserted
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Records the publication inserted.
+
+** records_updated
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Records the publication updated.
+
+** records_skipped
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Records the publication left alone.
+
+** records_deleted
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+Records the publication removed.
+
+** published_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Who asked for the publication.
+
+** published_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:default:  current_timestamp
+:END:
+
+When the publication was recorded. This is the column the log is read by.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:         ores_dq_dataset_publications_tbl
+:current_state:     true
+:no_audit_columns:  true
+:END:
+
+** Indexes
+
+| name         | columns      | unique | current_only | where_extra |
+|--------------+--------------+--------+--------------+-------------|
+| dataset_id   | dataset_id   | false  | false        |             |
+| published_at | published_at | false  | false        |             |
+| published_by | published_by | false  | false        |             |
+| tenant       | tenant_id    | false  | false        |             |
+
+** Checks
+
+| expression                                        |
+|---------------------------------------------------|
+| "dataset_id" <> ores_utility_nil_uuid_fn()        |
+| "dataset_code" <> ''                              |
+| "mode" in ('upsert', 'insert_only', 'replace_all') |
+| "target_table" <> ''                              |
+| "records_inserted" >= 0                           |
+| "records_updated" >= 0                            |
+| "records_skipped" >= 0                            |
+| "records_deleted" >= 0                            |
+| "published_by" <> ''                              |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope:     shared
+:entity_singular_short: publication
+:entity_plural_short:   publications
+:entity_singular_words: publication
+:entity_plural_words:   publications
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| id               | ID               |
+| dataset_code     | Dataset          |
+| mode             | Mode             |
+| target_table     | Target Table     |
+| records_inserted | Inserted         |
+| records_updated  | Updated          |
+| records_skipped  | Skipped          |
+| records_deleted  | Deleted          |
+| published_by     | Published By     |
+| published_at     | Published At     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:    ores.dq.api/domain/publication.hpp
+:domain_class:      dq::domain::publication
+:protocol_include:  ores.dq.api/messaging/publication_protocol.hpp
+:collection_name:   publications
+:key_field:         id
+:has_uuid_primary_key: true
+:get_request_class:    dq::messaging::list_publications_request
+:get_response_class:   dq::messaging::list_publications_response
+:get_message_type:     list_publications_request
+:has_pagination:       true
+:END:
+
+*** Detail fields
+
+| field        | label        |
+|--------------+--------------|
+| dataset_code | Dataset      |
+| mode         | Mode         |
+| target_table | Target Table |
+| published_by | Published By |
+| published_at | Published At |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

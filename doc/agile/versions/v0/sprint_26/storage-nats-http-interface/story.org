@@ -115,3 +115,21 @@ consumer-named shell verbs go.
   story must not settle it by accident: it authenticates the caller and gates
   the operation, and leaves the isolation question where the target state
   leaves it.
+
+* Result
+
+Object storage is a service with two authenticated interfaces and a written key
+protocol, and the consumers that move bytes use it.
+
+The interface shipped on PR #2188: the api/core/service split, the modelled
+operation set, authentication and a per-operation permission on both interfaces,
+and one local store behind both. The consumer migration shipped on PR #2230: one
+bucket =ores= with keys =service/purpose/id[/name]=, the consumers writing it, the
+consumer roles holding the storage permissions, the HTTP boundary verifying the
+platform's RS256 session tokens, and the setup SQL idempotent through its create
+phase.
+
+Left to other work: the raw shell surface; a second =setup_schema.sql= run that
+still stops on the notify triggers; and the export handlers' token story, which
+main took on its own terms.
+

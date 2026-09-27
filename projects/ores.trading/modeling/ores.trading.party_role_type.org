@@ -116,15 +116,6 @@ drop function if exists ores_trading_validate_party_role_type_fn;
 :protocol_include:       ores.trading.api/messaging/party_role_type_protocol.hpp
 :collection_name:        party_role_types
 :key_field:              code
-:get_request_class:      trading::messaging::get_party_role_types_request
-:get_response_class:     trading::messaging::get_party_role_types_response
-:get_message_type:       get_party_role_types_request
-:save_request_class:     trading::messaging::save_party_role_type_request
-:save_response_class:    trading::messaging::save_party_role_type_response
-:save_message_type:      save_party_role_type_request
-:delete_request_class:   trading::messaging::delete_party_role_type_request
-:delete_response_class:  trading::messaging::delete_party_role_type_response
-:delete_message_type:    delete_party_role_type_request
 :END:
 
 *** Detail fields

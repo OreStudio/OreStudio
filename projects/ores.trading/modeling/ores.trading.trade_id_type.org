@@ -116,15 +116,6 @@ drop function if exists ores_trading_validate_trade_id_type_fn;
 :protocol_include:       ores.trading.api/messaging/trade_id_type_protocol.hpp
 :collection_name:        trade_id_types
 :key_field:              code
-:get_request_class:      trading::messaging::get_trade_id_types_request
-:get_response_class:     trading::messaging::get_trade_id_types_response
-:get_message_type:       get_trade_id_types_request
-:save_request_class:     trading::messaging::save_trade_id_type_request
-:save_response_class:    trading::messaging::save_trade_id_type_response
-:save_message_type:      save_trade_id_type_request
-:delete_request_class:   trading::messaging::delete_trade_id_type_request
-:delete_response_class:  trading::messaging::delete_trade_id_type_response
-:delete_message_type:    delete_trade_id_type_request
 :END:
 
 *** Detail fields

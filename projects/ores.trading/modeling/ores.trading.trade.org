@@ -655,7 +655,7 @@ std::uint32_t trade_repository::count_latest_for_node_id(context ctx,
 
 ** Handler includes
 
-The instrument services the export path resolves through, and the storage
+The instrument services the export path resolves through, the storage
 and msgpack headers the storage export needs.
 
 #+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
@@ -1384,16 +1384,7 @@ below is the order the wire carries.
 :key_field:               external_id
 :has_uuid_primary_key:    true
 :has_pagination:          true
-:get_request_class:       trading::messaging::get_trades_request
-:get_response_class:      trading::messaging::get_trades_response
-:get_message_type:        get_trades_request
-:save_request_class:      trading::messaging::save_trade_request
-:save_response_class:     trading::messaging::save_trade_response
-:save_message_type:       save_trade_request
 :save_request_item_field: trade
-:delete_request_class:    trading::messaging::delete_trade_request
-:delete_response_class:   trading::messaging::delete_trade_response
-:delete_message_type:     delete_trade_request
 :END:
 
 *** Detail fields

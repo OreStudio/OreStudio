@@ -121,15 +121,6 @@ std::nullopt
 :protocol_include:       ores.trading.api/messaging/lifecycle_event_protocol.hpp
 :collection_name:        lifecycle_events
 :key_field:              code
-:get_request_class:      trading::messaging::get_lifecycle_events_request
-:get_response_class:     trading::messaging::get_lifecycle_events_response
-:get_message_type:       get_lifecycle_events_request
-:save_request_class:     trading::messaging::save_lifecycle_event_request
-:save_response_class:    trading::messaging::save_lifecycle_event_response
-:save_message_type:      save_lifecycle_event_request
-:delete_request_class:   trading::messaging::delete_lifecycle_event_request
-:delete_response_class:  trading::messaging::delete_lifecycle_event_response
-:delete_message_type:    delete_lifecycle_event_request
 :END:
 
 *** Detail fields

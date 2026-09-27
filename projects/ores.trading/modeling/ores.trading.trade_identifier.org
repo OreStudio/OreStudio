@@ -127,7 +127,7 @@ std::string()
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:generator_facet_name: generator
+:generator_facet_name: generators
 :END:
 
 ** Repository

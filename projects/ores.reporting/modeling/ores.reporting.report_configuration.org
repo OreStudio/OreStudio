@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826
+:END:
+#+title: ores.reporting.report_configuration
+#+description: Codegen entity model for the reporting =report_configuration= table. One configuration a report definition binds, in a named slot.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A configuration a report definition binds, in a named slot.
+#+entity_singular: report_configuration
+#+entity_plural: report_configurations
+#+entity_title: Report Configuration
+#+created: 2026-09-27
++#+updated: 2026-09-27
+
+This is how a report definition reaches its configuration: one row per
+configuration it binds, where the configuration type is the slot and the
+configuration fills it. Several reports may fill the same slot with the same
+configuration, so a configuration is never copied to be shared, and adding a
+slot is not a column on the report definition.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: reporting
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   uuid-identified-lookup
+:tablename: ores_reporting_report_configurations_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the binding.
+
+** report_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The report definition that binds the configuration.
+
+** configuration_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The slot. It must match the kind of the configuration on the same row.
+
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The configuration that fills the slot.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_configurations_tbl
+:END:
+
+* Foreign keys
+
+** report_definition_id
+:PROPERTIES:
+:table:         ores_reporting_report_definitions_tbl
+:target_column: id
+:parent_entity: report_definition
+:nullable:      false
+:error_message: Invalid report_definition_id: %. No active report definition found with this id.
+:list_by:       true
+:END:
+
+** configuration_type_code
+:PROPERTIES:
+:table:         ores_reporting_configuration_types_tbl
+:target_column: code
+:parent_entity: configuration_type
+:nullable:      false
+:error_message: Invalid configuration_type_code: %. No active configuration type found with this code.
+:list_by:       true
+:END:
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      false
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: report_configuration
+:entity_plural_short:   report_configurations
+:entity_singular_words: report configuration
+:entity_plural_words:   report configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rc
+:END:
+
+** Table display
+
+| column                  | header      |
+|-------------------------+-------------|
+| configuration_type_code | Slot        |
+| configuration_id        | Configuration |
+| modified_by             | Modified By |
+| version                 | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/report_configuration.hpp
+:domain_class:           reporting::domain::report_configuration
+:protocol_include:       ores.reporting.api/messaging/report_configuration_protocol.hpp
+:collection_name:        report_configurations
+:key_field:              configuration_type_code
+:get_request_class:      reporting::messaging::get_report_configurations_request
+:get_response_class:     reporting::messaging::get_report_configurations_response
+:get_message_type:       get_report_configurations_request
+:save_request_class:     reporting::messaging::save_report_configuration_request
+:save_response_class:    reporting::messaging::save_report_configuration_response
+:save_message_type:      save_report_configuration_request
+:delete_request_class:   reporting::messaging::delete_report_configuration_request
+:delete_response_class:  reporting::messaging::delete_report_configuration_response
+:delete_message_type:    delete_report_configuration_request
+:END:
+
+*** Detail fields
+
+| field                   | label         | type      | is_key | is_required | placeholder |
+|-------------------------+---------------+-----------+--------+-------------+-------------|
+| configuration_type_code | Slot          | line_edit | true   | true        | Enter configuration type code |
+| configuration_id        | Configuration | line_edit |        | true        | Enter configuration id |
+
+*** Columns
+
+| enum_name           | field                   | header        | type   | width |
+|---------------------+-------------------------+---------------+--------+-------|
+| ConfigurationType   | configuration_type_code | Slot          | string | 180   |
+| ConfigurationId     | configuration_id        | Configuration | string | 260   |
+| Version             | version                 | Version       | int    | 80    |
+| ModifiedBy          | modified_by             | Modified By   | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

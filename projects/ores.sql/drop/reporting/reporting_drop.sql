@@ -36,6 +36,9 @@
 \ir ./reporting_report_types_notify_trigger_drop.sql
 \ir ./reporting_report_types_drop.sql
 \ir ./reporting_report_types_validate_fn_drop.sql
+\ir ./reporting_report_configurations_notify_trigger_drop.sql
+\ir ./reporting_report_configurations_drop.sql
+
 \ir ./reporting_configurations_notify_trigger_drop.sql
 \ir ./reporting_configurations_drop.sql
 

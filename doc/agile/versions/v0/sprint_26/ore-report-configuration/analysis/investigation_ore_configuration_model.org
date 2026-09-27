@@ -43,9 +43,9 @@ Source: =configuration_model_reporting.puml=.
 | =configuration_type= | id | *Stress Testing*, *Simulation*, *Sensitivity*, … and which component owns the detail |
 | =configuration= | id | **the named configuration**: the name is ours, and one row is what a report binds to |
 | =configuration_parameter= | configuration + definition | one value |
-| =parameter_definition= | id | the vocabulary: for a type and subtype, the names it accepts, and the domain of each |
+| =parameter_definition= | id | the vocabulary: for a section and subtype, the names it accepts, and the domain of each. =name= is the literal =Parameter/@name= value, used verbatim; =section= is the enclosing element — =Setup=, =Logging=, =Markets=, =Analytics=, =Restore= — and =subtype= is the =Analytic/@type= value where there is one |
 | =value_domain= | id | what the value is — currency, date, boolean, integer, tenor, document, list — and, for the ones that name something, the entity it refers to |
-| =configuration_xml_element= | configuration type + path | the XML shape: for each configuration type, every element and attribute it serialises, its parent path, its ordinal and its repeatedness |
+| =configuration_xml_element= | configuration type + path | the XML shape of a type whose fields are their own elements: every element and attribute, its parent path, its ordinal and its repeatedness. A parameterised type needs no entry per parameter, because every parameter is the same =Parameter= element and only its =@name= varies |
 
 The vocabulary is per type *and* subtype, because the measurement says so: of the
 218 parameter names the shipped run documents use, 165 are used by exactly one

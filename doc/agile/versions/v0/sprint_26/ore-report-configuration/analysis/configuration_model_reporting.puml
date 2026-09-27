@@ -4,96 +4,76 @@ hide empty members
 skinparam classAttributeIconSize 0
 left to right direction
 
-
 package "ores.reporting" #E8F4FF {
-  class report_type {
-    id : uuid
-    code : text
-    name : text
-    description : text
-    display_order : integer
-  }
-
   class report_definition {
     id : uuid
     name : text
     report_type_id : uuid
     party_id : uuid
-    description : text
     schedule_expression : text
     concurrency_policy : text
     fsm_state_id : uuid
     scheduler_job_id : uuid
     workspace_id : uuid
-    audit : audit_envelope
   }
-
-  class configuration_type {
+  class report_type {
     id : uuid
     code : text
     name : text
-    owning_component : text
-    parameterised : boolean
   }
-
-  class configuration {
-    id : uuid
-    name : text
-    configuration_type_id : uuid
-    party_id : uuid
-    description : text
-    workspace_id : uuid
-    audit : audit_envelope
-  }
-
   class report_configuration {
     report_definition_id : uuid
     configuration_type_id : uuid
     configuration_id : uuid
   }
-
-  class value_domain {
+  class configuration_type {
     id : uuid
     code : text
-    storage_type : text
-    referenced_entity : text
-  }
-
-  class parameter_definition {
-    id : uuid
-    configuration_type_id : uuid
-    subtype : text
     name : text
-    value_domain_id : uuid
-    required : boolean
-    display_order : integer
+    owning_component : text
+    root_element : text
+    parameterised : boolean
   }
-
+  class configuration {
+    id : uuid
+    name : text
+    configuration_type_id : uuid
+    party_id : uuid
+    workspace_id : uuid
+  }
   class configuration_parameter {
     configuration_id : uuid
     parameter_definition_id : uuid
     position : integer
     value : text
   }
+  class parameter_definition {
+    id : uuid
+    configuration_type_id : uuid
+    section : text
+    subtype : text
+    name : text
+    value_domain_id : uuid
+    required : boolean
+    position : integer
+  }
+  class value_domain {
+    id : uuid
+    code : text
+    storage_type : text
+    referenced_entity : text
+  }
+  class configuration_xml_element {
+    id : uuid
+    configuration_type_id : uuid
+    element_name : text
+    path : text
+    parent_path : text
+    node_kind : text
+    ordinal : integer
+    repeated : boolean
+    value_domain_id : uuid
+  }
 }
 
-
-report_definition *-- "1" report_type : typed as
-report_definition *-- "0..*" report_configuration : binds
-report_configuration *-- "1" configuration_type : by type
-report_configuration *-- "1" configuration : to
-configuration *-- "1" configuration_type : is one of
-configuration *-- "0..*" configuration_parameter : holds
-configuration_parameter *-- "1" parameter_definition : named by
-parameter_definition *-- "1" value_domain : valued as
-parameter_definition *-- "1" configuration_type : belongs to
-note bottom of configuration
-  one row per named configuration:
-  "Stress Testing / eur_6m_up_library"
-end note
-note bottom of parameter_definition
-  the vocabulary: which names a
-  (type, subtype) accepts, and what
-  domain each value has
-end note
 @enduml

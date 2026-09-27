@@ -130,11 +130,12 @@ REPORTING = '''package "ores.reporting" #E8F4FF {
   class parameter_definition {
     id : uuid
     configuration_type_id : uuid
+    section : text
     subtype : text
     name : text
     value_domain_id : uuid
-    xml_element : text
     required : boolean
+    position : integer
   }
   class value_domain {
     id : uuid
@@ -145,9 +146,9 @@ REPORTING = '''package "ores.reporting" #E8F4FF {
   class configuration_xml_element {
     id : uuid
     configuration_type_id : uuid
+    element_name : text
     path : text
     parent_path : text
-    element_name : text
     node_kind : text
     ordinal : integer
     repeated : boolean

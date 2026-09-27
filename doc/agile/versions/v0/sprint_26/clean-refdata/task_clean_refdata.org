@@ -213,6 +213,15 @@ record each item's result in the table below.
 - Scratch evidence for this task lives in =build/audit/refdata-clean/=, which is
   untracked. The B01 drift run needs a tree that is clean apart from that
   directory.
+- The Acme tenant provision (=provision tenant --source acme=) failed twice on
+  2026-09-27 with =Step 2 failed: acme_lei_import -- instance not found or
+  unqueryable=. This is not a refdata defect and it leaves V04 intact. The
+  workflow engine writes steps under its own tenant, so a workflow started for
+  the Acme tenant is invisible to it and never advances past step 0. The
+  evidence is on the exercise-workflow task for tenant-aware engine contexts.
+  The provisioning script =build/audit/refdata-clean/provision-tenant.ores= is a
+  fleet exercise after the database recreate; the V04 sweep itself logged in as
+  =tenant_admin@acme_corporation= and answered 732 of 732 commands.
 
 * Test Scenarios
 

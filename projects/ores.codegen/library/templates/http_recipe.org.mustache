@@ -1,0 +1,45 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.doc.http-recipe.recipe.org. Edit the org source. }}
+{{#http_recipe}}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:{{group}}:
+
+{{intro}}
+
+* Endpoints
+
+{{#endpoints}}
+** ={{heading}}=
+:PROPERTIES:
+:ID: {{id}}
+:END:
+
+{{commentary}}
+
+{{#subject}}
+It forwards to ={{subject}}=.
+{{/subject}}
+
+The request is:
+
+#+begin_example
+{{method_upper}} {{pattern}}
+#+end_example
+
+#+name: {{block}}
+#+begin_src hurl :tangle {{name}}.hurl :exports none
+{{=<% %>=}}
+<%method_upper%> {{base_url}}<%pattern%>
+Accept: application/json
+<%#requires_session%>Authorization: Bearer {{token}}
+<%/requires_session%>HTTP <%status%>
+<%={{ }}=%>
+#+end_src
+
+{{/endpoints}}
+{{/http_recipe}}

@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: F437A524-A1EE-4460-A7FF-88180347D010
+:END:
+#+title: ores.doc.http-recipe.recipe
+#+description: One literate HTTP recipe per model that renders a route: a section per endpoint, each section exporting its own Hurl file into the gateway's library.
+#+type: archetype
+#+output: doc/recipes/http/{group}/{entity}.org
+#+facet: ores.doc.http-recipe
+#+model_types: domain_entity
+#+requires_facet: ores.cpp.http-route
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+One literate recipe document per model that renders an HTTP route. The
+document states what each endpoint does, the method and path it is addressed
+at, and the subject it forwards to, and each section exports its own =hurl=
+block.
+
+The block carries a =:tangle= argument naming the file it exports, which is
+what makes one document produce one Hurl file per endpoint: given a
+=TARGET-FILE= =org-babel-tangle-file= redirects every matching block into one
+file, but with no target it honours each block's own =:tangle= instead. So the
+recipe is the literate source and the library file is its export, rather than
+a second document that restates it.
+
+The request addresses a sentinel value per path parameter rather than a real
+key. A request that sent nothing would fail before it left the client, and a
+client-side refusal proves nothing about the service; a well-formed value that
+addresses no row reaches the router, so the recipe checks the wiring it exists
+to check. See =org_loader._SENTINEL_VALUES=.
+
+=base_url= and =token= are Hurl variables, and the runner supplies both, so no
+recipe carries a host, a port or a credential. The template switches its
+mustache delimiters around the Hurl block for that reason: those braces belong
+to Hurl, not to the generator.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/http_recipe.org.mustache=.
+
+#+begin_src mustache :tangle http_recipe.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.doc.http-recipe.recipe.org. Edit the org source. }}
+{{#http_recipe}}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: recipe
+,#+level: cross
+,#+filetags: :recipe:http:{{group}}:
+
+{{intro}}
+
+,* Endpoints
+
+{{#endpoints}}
+,** ={{heading}}=
+:PROPERTIES:
+:ID: {{id}}
+:END:
+
+{{commentary}}
+
+{{#subject}}
+It forwards to ={{subject}}=.
+{{/subject}}
+
+The request is:
+
+,#+begin_example
+{{method_upper}} {{pattern}}
+,#+end_example
+
+,#+name: {{block}}
+,#+begin_src hurl :tangle {{name}}.hurl :exports none
+{{=<% %>=}}
+<%method_upper%> {{base_url}}<%pattern%>
+Accept: application/json
+<%#requires_session%>Authorization: Bearer {{token}}
+<%/requires_session%>HTTP <%status%>
+<%={{ }}=%>
+,#+end_src
+
+{{/endpoints}}
+{{/http_recipe}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:65EF4DE2-BDE3-4704-9561-7864D81080B4][ores.doc.http-recipe]]
+- [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]] — the unit this document is a view of.

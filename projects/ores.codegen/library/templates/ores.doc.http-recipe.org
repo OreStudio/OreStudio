@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 65EF4DE2-BDE3-4704-9561-7864D81080B4
+:END:
+#+title: ores.doc.http-recipe
+#+description: Literate HTTP recipes: one org document per model that renders a route, one section per endpoint, each section exporting its own Hurl file into the gateway's library.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.doc
+#+default: enabled
+#+filetags: :codegen:physical-space:doc:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is the literate source for the =ores.doc.http-recipe= facet of the
+codegen template library. The archetype below is documented, and holds its
+=mustache= source, in its own linked page — this page is the facet-level
+summary and the routing table to it.
+
+* Summary
+
+One document that is both the page a reader opens and the source of the files
+the HTTP harness runs. A recipe is a literate document first: it says what an
+endpoint is for, the method and path it is addressed at, and the subject it
+forwards to. The Hurl file is the same document's export, so the prose and the
+runnable request cannot describe different endpoints.
+
+* The ores.doc.http-recipe facet
+
+The facet consumes a =domain_entity= model and writes one org document per
+model into =doc/recipes/http/<group>/. It reads the same route projection the
+generated route unit reads, so the document is a view of that unit rather than
+a second description of it: a route the unit gains arrives in the document that
+documents it, in the same commit.
+
+The facet renders only where =ores.cpp.http-route= rendered something for the
+same model. That dependency is stated as =#+requires_facet:= rather than as a
+second per-model opt-in, because two flags for one decision drift: a model that
+opts into the route and not the document would ship endpoints with no recipe,
+and the reverse would ship a recipe for endpoints that do not exist.
+
+*Opt-in* is the route's, in other words: =:ores.cpp.http-route.enabled:= in the
+model's properties drawer, and =:http_route: true= on a message for an
+operation. The facet itself is enabled by default and resolves to nothing
+wherever the route does.
+
+* Where the Hurl files go
+
+Each endpoint's block carries =:tangle <name>.hurl=. The tangle run honours
+that per block and moves the result into
+=projects/ores.http/scripts/library/<group>/, so the document states the
+file's name and the build owns its directory. Target
+=compass build --direct tangle_http_recipes=.
+
+A recipe states no host, no port and no credential. =base_url= and =token= are
+Hurl variables the runner supplies, which is what lets the same committed file
+run against any environment.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:F437A524-A1EE-4460-A7FF-88180347D010][ores.doc.http-recipe.recipe]] | One literate HTTP recipe per entity: a section per endpoint, each section exporting its own Hurl file into the gateway's library. |
+
+* See also
+
+- [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] — the parent technical space's catalogue of documentation facets.
+- [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]] — the unit this facet documents.
+- [[id:14E8EF57-7C0A-4DCE-ACD8-1569893708A6][ores.doc.shell-recipe]] — the same arrangement for the shell surface.

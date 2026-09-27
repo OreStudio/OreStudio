@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the parameter_definitions commands from the shell?
+#+description: Every command the parameter_definitions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:parameter_definitions:
+
+This file documents the parameter_definitions resource at the shell, one section per command. Every command is a subcommand of =parameter_definitions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1E420516-13DA-5F2C-9270-D5A2729B3BB1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.list=.
+
+#+name: parameter_definitions-list
+#+begin_src ores-shell :tangle parameter_definitions-list.ores :exports none
+parameter_definitions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FB98124E-A5C7-5C2D-A229-EF3B7EF14892
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions get <name>
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.get=.
+
+#+name: parameter_definitions-get
+#+begin_src ores-shell :tangle parameter_definitions-get.ores :exports none
+parameter_definitions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E7A8D15B-E540-53E1-B535-3AEBE99BF032
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions get-many <name>
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.get_many=.
+
+#+name: parameter_definitions-get-many
+#+begin_src ores-shell :tangle parameter_definitions-get-many.ores :exports none
+parameter_definitions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 04DB1323-52AD-52D2-BFD2-3425223DB2E7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions add <scope> <subtype> <name> <position> <parameter_value_domain_code> <is_required> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.put=.
+
+#+name: parameter_definitions-add
+#+begin_src ores-shell :tangle parameter_definitions-add.ores :exports none
+parameter_definitions add __none__ __none__ __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 34ADA878-4612-5A69-AB8D-610F345018AC
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions set <id> <scope> <subtype> <name> <position> <parameter_value_domain_code> <is_required> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.put=.
+
+#+name: parameter_definitions-set
+#+begin_src ores-shell :tangle parameter_definitions-set.ores :exports none
+parameter_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0FD5B41A-4274-5C6C-BDE4-87F58B2D8732
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions put-many --count <n> <id> <scope> <subtype> <name> <position> <parameter_value_domain_code> <is_required> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.put_many=.
+
+#+name: parameter_definitions-put-many
+#+begin_src ores-shell :tangle parameter_definitions-put-many.ores :exports none
+parameter_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E386AFCF-B3B9-5A84-807A-22AED9D208A5
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.delete=.
+
+#+name: parameter_definitions-delete
+#+begin_src ores-shell :tangle parameter_definitions-delete.ores :exports none
+parameter_definitions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1BCDD1C3-FE5B-540D-B24E-4C0EBCF5CE12
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.delete_many=.
+
+#+name: parameter_definitions-delete-many
+#+begin_src ores-shell :tangle parameter_definitions-delete-many.ores :exports none
+parameter_definitions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-parameter-value-domain-code=
+:PROPERTIES:
+:ID: 07B527BA-6A82-55AB-A158-087ACC7983AE
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions by-parameter-value-domain-code <parameter_value_domain_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions.list_by_parameter_value_domain_code=.
+
+#+name: parameter_definitions-by-parameter-value-domain-code
+#+begin_src ores-shell :tangle parameter_definitions-by-parameter-value-domain-code.ores :exports none
+parameter_definitions by-parameter-value-domain-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C40D28EE-FF6E-5BE8-B98D-E32186223376
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions_versions.list=.
+
+#+name: parameter_definitions-versions
+#+begin_src ores-shell :tangle parameter_definitions-versions.ores :exports none
+parameter_definitions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: AFDC1CEB-7743-52F9-AB98-B06DD2F4C7F4
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+parameter_definitions version <name> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.parameter_definitions_versions.get=.
+
+#+name: parameter_definitions-version
+#+begin_src ores-shell :tangle parameter_definitions-version.ores :exports none
+parameter_definitions version __none__ --version 1
+#+end_src
+

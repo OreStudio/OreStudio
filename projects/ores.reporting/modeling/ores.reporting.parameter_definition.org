@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: 3C8F1D56-9B24-4E70-A5D3-7F0A2C6E9184
+:END:
+#+title: ores.reporting.parameter_definition
+#+description: Codegen entity model for the reporting =parameter_definition= table. The vocabulary of an ORE document: which parameter names a scope and subtype accepts, and what each value means.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A parameter an ORE document accepts, and what its value is.
+#+entity_singular: parameter_definition
+#+entity_plural: parameter_definitions
++#+entity_title: Parameter Definition
+#+created: 2026-09-27
++#+updated: 2026-09-27
+
+The vocabulary of the run document. ORE writes parameters as a name and a
+value inside a block; =scope= names the block (Setup, Markets, an analytic)
+and =subtype= narrows it, so a pair of them plus =name= says which parameter
+this is. =position= keeps the order the document wrote, because a document
+that is not reproducible in order is not reproducible.
+
+165 of the 218 parameter names observed in the shipped corpus belong to
+exactly one analytic kind, which is why the name alone is not the key.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: reporting
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   uuid-identified-lookup
+:tablename: ores_reporting_parameter_definitions_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the definition.
+
+** scope
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The block the parameter belongs to, for example Setup or Markets.
+
+** subtype
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The kind within the block that accepts the parameter, for example the
+analytic type. Empty when the block is the whole context.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The parameter name as ORE writes it.
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document writes the parameter in.
+
+** parameter_value_domain_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What a value of this parameter is.
+
+** is_required
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the document must carry the parameter.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_parameter_definitions_tbl
+:END:
+
+* Foreign keys
+
+** parameter_value_domain_code
+:PROPERTIES:
+:table:         ores_reporting_parameter_value_domains_tbl
+:target_column: code
+:parent_entity: parameter_value_domain
+:nullable:      false
+:error_message: Invalid parameter_value_domain_code: %. No active value domain found with this code.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parameter
+:entity_plural_short:   parameters
+:entity_singular_words: parameter definition
+:entity_plural_words:   parameter definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pd
+:END:
+
+** Table display
+
+| column | header | 
+|--------+--------|
+| scope  | Scope  |
+| subtype | Subtype |
+| name   | Name   |
+| parameter_value_domain_code | Value Is |
+| modified_by | Modified By |
+| version | Version |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/parameter_definition.hpp
+:domain_class:           reporting::domain::parameter_definition
+:protocol_include:       ores.reporting.api/messaging/parameter_definition_protocol.hpp
+:collection_name:        parameters
+:key_field:              name
+:get_request_class:      reporting::messaging::get_parameter_definitions_request
+:get_response_class:     reporting::messaging::get_parameter_definitions_response
+:get_message_type:       get_parameter_definitions_request
+:save_request_class:     reporting::messaging::save_parameter_definition_request
+:save_response_class:    reporting::messaging::save_parameter_definition_response
+:save_message_type:      save_parameter_definition_request
+:delete_request_class:   reporting::messaging::delete_parameter_definition_request
+:delete_response_class:  reporting::messaging::delete_parameter_definition_response
+:delete_message_type:    delete_parameter_definition_request
+:parent_entity_singular:  parameter_value_domain
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|
+| scope | Scope | line_edit | true | true | Enter scope |
+| subtype | Subtype | line_edit | true | true | Enter subtype |
+| name | Name | line_edit | true | true | Enter parameter name |
+| parameter_value_domain_code | Value Is | line_edit | | true | Enter value domain code |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Scope | scope | Scope | string | 140 |
+| Subtype | subtype | Subtype | string | 160 |
+| Name | name | Name | string | 200 |
+| ValueDomain | parameter_value_domain_code | Value Is | string | 160 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

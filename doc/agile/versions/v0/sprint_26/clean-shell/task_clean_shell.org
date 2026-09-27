@@ -8,7 +8,7 @@
 #+filetags: :clean-shell:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-shell
-#+pr: 2277
+#+pr: 2275
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23

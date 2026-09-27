@@ -57,22 +57,24 @@ public:
     }
 
     /**
-     * @brief Returns the JWT authenticator for token generation/validation.
+     * @brief Returns the verifier every session authenticates its caller with.
      */
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> get_authenticator() {
-        return authenticator_;
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> get_verifier() {
+        return verifier_;
     }
 
     /**
-     * @brief Sets the verifier for the platform's session tokens.
+     * @brief Sets the verifier every session authenticates its caller with.
      *
      * Session tokens are RS256 and IAM signs them, so the server checks them
-     * against IAM's public key. The symmetric authenticator above stays because
-     * the server mints the login token that starts a session.
+     * against IAM's public key and holds no signing key of its own. The
+     * framework fetches that key at startup; this is where it reaches the
+     * HTTP surface. A session is built with whatever stands here, so it is
+     * set before the server starts accepting.
      */
-    void set_request_verifier(
+    void set_verifier(
         std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier) {
-        request_verifier_ = std::move(verifier);
+        verifier_ = std::move(verifier);
     }
 
     /**
@@ -118,10 +120,11 @@ private:
     boost::asio::io_context& io_ctx_;
     http_server_options options_;
     std::shared_ptr<router> router_;
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
 
-    // Verifies the RS256 session tokens IAM issues.
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier_;
+    // Verifies the RS256 session tokens IAM issues. The server holds no other
+    // credential: it never mints, so a symmetric key here would be a second
+    // way to be believed rather than a second way to sign.
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier_;
     std::shared_ptr<openapi::endpoint_registry> registry_;
     std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
     std::atomic<bool> running_{false};

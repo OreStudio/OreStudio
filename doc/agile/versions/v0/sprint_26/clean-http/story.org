@@ -21,7 +21,7 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -40,6 +40,7 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6B2C0AA5-94BB-4F07-9585-C4374295C983][Bring ores.http to the clean standard]] | DONE | 2026-09-27 | 2026-09-27 | Work ores.http through the Component Clean Standard in order and record each item. |
+| [[id:F1E98183-5526-4A8D-82BB-7C1C033511F1][Verify session tokens at the gateway with IAM's key alone]] | STARTED | 2026-09-27 | | The gateway authenticates HTTP sessions with a verifier that prefers IAM's published RS256 key and silently falls back to a symmetric HS256 secret it generates. The fallback is a second trust root, it authenticates nothing legitimate because the gateway never mints, and it masks a failed key fetch. Remove it, so the edge has one way of being believed, and document how the edge verifies on the security architecture page. |
 
 * Result
 

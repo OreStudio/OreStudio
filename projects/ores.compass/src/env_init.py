@@ -706,7 +706,6 @@ def run(argv, project_root: Path) -> int:
     readonly_pw = _get_or_gen(existing, "ORES_DB_READONLY_PASSWORD")
     test_ddl_pw = _get_or_gen(existing, "ORES_TEST_DB_DDL_PASSWORD")
     test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
-    http_jwt_secret = _get_or_gen(existing, "ORES_HTTP_SERVER_JWT_SECRET")
     web_bff_host = _env_value(existing, "ORES_WEB_BFF_HOST", "127.0.0.1")
     service_log_level = _env_value(existing, "ORES_SERVICE_LOG_LEVEL", "info")
     web_log_level = _env_value(existing, "ORES_WEB_LOG_LEVEL", "info")
@@ -981,7 +980,6 @@ ORES_SHELL_LOGIN_PASSWORD=Secure-Password-123
 # ---------------------------------------------------------------------------
 ORES_HTTP_SERVER_PORT={http_port}
 ORES_HTTP_SERVER_STORAGE_DIR=../storage
-ORES_HTTP_SERVER_JWT_SECRET={http_jwt_secret}
 
 # ---------------------------------------------------------------------------
 # Compute Wrapper IAM service account name (no DB connection — NATS/TLS only)

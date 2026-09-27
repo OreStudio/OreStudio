@@ -59,8 +59,7 @@ class ORES_HTTP_API_EXPORT http_session final : public std::enable_shared_from_t
 public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
                           std::shared_ptr<router> router,
-                          std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
-                          std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier,
+                          std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
                           const http_server_options& options,
                           session_bytes_callback bytes_callback = nullptr);
 
@@ -94,11 +93,11 @@ private:
     boost::beast::tcp_stream stream_;
     boost::beast::flat_buffer buffer_;
     std::shared_ptr<router> router_;
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
 
-    // Verifies the RS256 session tokens IAM issues; tried before the symmetric
-    // authenticator, which only the login token needs.
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> request_verifier_;
+    // Verifies the RS256 session tokens IAM issues. A session refuses every
+    // request when this is absent, rather than falling back to a second way of
+    // being believed.
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier_;
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: F1E98183-5526-4A8D-82BB-7C1C033511F1
+:END:
+#+title: Task: Verify session tokens at the gateway with IAM's key alone
+#+description: The gateway authenticates HTTP sessions with a verifier that prefers IAM's published RS256 key and silently falls back to a symmetric HS256 secret it generates. The fallback is a second trust root, it authenticates nothing legitimate because the gateway never mints, and it masks a failed key fetch. Remove it, so the edge has one way of being believed, and document how the edge verifies on the security architecture page.
+#+type: task
+#+level: s1
+#+filetags: :clean-http:sprint_26:v0:
+#+owner: marco
+#+branch: feature/http-single-verifier
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gateway verifies session tokens with IAM's published RS256 key alone, holds no signing credential of its own, and refuses requests when it has no verifier; the security architecture page states how the edge verifies.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The gateway verifies with one verifier: IAM's RS256 public key, fetched from its JWKS at startup.
+- The HS256 path is gone: no option, no parser requirement, and no environment variable.
+- A session with no verifier refuses every request, so a failed key fetch cannot fall back to anything weaker.
+- The HTTP edge's verification is documented on the security architecture page.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

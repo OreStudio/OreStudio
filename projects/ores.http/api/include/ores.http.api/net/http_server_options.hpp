@@ -77,26 +77,6 @@ struct http_server_options final {
     std::string private_key_file;
 
     /**
-     * @brief JWT secret for authentication (if using symmetric key).
-     */
-    std::string jwt_secret;
-
-    /**
-     * @brief Path to JWT public key file (if using RSA).
-     */
-    std::string jwt_public_key_file;
-
-    /**
-     * @brief JWT issuer for validation.
-     */
-    std::string jwt_issuer = "ores";
-
-    /**
-     * @brief JWT audience for validation.
-     */
-    std::string jwt_audience = "ores-api";
-
-    /**
      * @brief Enable CORS support.
      */
     bool enable_cors = true;

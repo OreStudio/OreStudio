@@ -129,7 +129,7 @@ namespace ores #F2F2F2 {
                 -io_ctx_ : boost::asio::io_context&
                 -options_ : http_server_options
                 -router_ : shared_ptr<router>
-                -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
+                -verifier_ : shared_ptr<ores::security::jwt::jwt_authenticator>
                 -registry_ : shared_ptr<openapi::endpoint_registry>
                 -acceptor_ : unique_ptr<boost::asio::ip::tcp::acceptor>
                 -running_ : atomic<bool>
@@ -138,7 +138,8 @@ namespace ores #F2F2F2 {
                 +http_server(boost::asio::io_context& io_ctx, const http_server_options& options)
                 +get_router() : shared_ptr<router>
                 +get_registry() : shared_ptr<openapi::endpoint_registry>
-                +get_authenticator() : shared_ptr<ores::security::jwt::jwt_authenticator>
+                +get_verifier() : shared_ptr<ores::security::jwt::jwt_authenticator>
+                +set_verifier(shared_ptr<ores::security::jwt::jwt_authenticator> verifier) : void
                 +set_session_bytes_callback(session_bytes_callback callback) : void
                 +run() : boost::asio::awaitable<void>
                 +stop() : void
@@ -156,10 +157,6 @@ namespace ores #F2F2F2 {
                 +enable_ssl : bool
                 +certificate_file : string
                 +private_key_file : string
-                +jwt_secret : string
-                +jwt_public_key_file : string
-                +jwt_issuer : string
-                +jwt_audience : string
                 +enable_cors : bool
                 +cors_allowed_origins : string
                 +server_identifier : string
@@ -168,11 +165,11 @@ namespace ores #F2F2F2 {
                 -stream_ : boost::beast::tcp_stream
                 -buffer_ : boost::beast::flat_buffer
                 -router_ : shared_ptr<router>
-                -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
+                -verifier_ : shared_ptr<ores::security::jwt::jwt_authenticator>
                 -options_ : http_server_options
                 -remote_address_ : string
                 -bytes_callback_ : session_bytes_callback
-                +http_session(boost::asio::ip::tcp::socket socket, shared_ptr<router> router, shared_ptr<ores::security::jwt::jwt_authenticator> authenticator, const http_server_options& options, session_bytes_callback bytes_callback)
+                +http_session(boost::asio::ip::tcp::socket socket, shared_ptr<router> router, shared_ptr<ores::security::jwt::jwt_authenticator> verifier, const http_server_options& options, session_bytes_callback bytes_callback)
                 +run() : boost::asio::awaitable<void>
                 -lg() : auto&
                 -handle_request(boost::beast::http::request<boost::beast::http::string_body> req) : boost::asio::awaitable<void>

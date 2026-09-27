@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 3DBFE6C1-87FF-5133-BFFB-8897F47B458B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the configuration_types commands from the shell?
+#+description: Every command the configuration_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:configuration_types:
+
+This file documents the configuration_types resource at the shell, one section per command. Every command is a subcommand of =configuration_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BB77FBB3-4536-52BB-BB27-6DB09AA29031
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.list=.
+
+#+name: configuration_types-list
+#+begin_src ores-shell :tangle configuration_types-list.ores :exports none
+configuration_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 03A610A9-F2B2-53D1-80E3-41F626BA74F8
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types get <code>
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.get=.
+
+#+name: configuration_types-get
+#+begin_src ores-shell :tangle configuration_types-get.ores :exports none
+configuration_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 74D0D038-CC7D-562F-9324-127076816FBD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.get_many=.
+
+#+name: configuration_types-get-many
+#+begin_src ores-shell :tangle configuration_types-get-many.ores :exports none
+configuration_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7C60AB91-E088-5019-AF9A-3ED390B75A03
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types add <code> <name> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.put=.
+
+#+name: configuration_types-add
+#+begin_src ores-shell :tangle configuration_types-add.ores :exports none
+configuration_types add __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: EF5F01BD-F268-52FB-8C6E-EAB32CBBA12C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types set <code> <name> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.put=.
+
+#+name: configuration_types-set
+#+begin_src ores-shell :tangle configuration_types-set.ores :exports none
+configuration_types set __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6181FD8F-A91B-55CD-BD81-4F2A05425A97
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types put-many --count <n> <code> <name> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.put_many=.
+
+#+name: configuration_types-put-many
+#+begin_src ores-shell :tangle configuration_types-put-many.ores :exports none
+configuration_types put-many --count 1 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 17EEC82E-0C56-5355-BF94-AE696308F97D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.delete=.
+
+#+name: configuration_types-delete
+#+begin_src ores-shell :tangle configuration_types-delete.ores :exports none
+configuration_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C8E66C85-0BC7-5A20-8D3A-81F359E3A721
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types.delete_many=.
+
+#+name: configuration_types-delete-many
+#+begin_src ores-shell :tangle configuration_types-delete-many.ores :exports none
+configuration_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 59F20C55-3E6D-56C0-94C6-F977A63CF6C8
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types_versions.list=.
+
+#+name: configuration_types-versions
+#+begin_src ores-shell :tangle configuration_types-versions.ores :exports none
+configuration_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D2391A94-1E06-5F56-A446-B349030316CA
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+configuration_types version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.configuration_types_versions.get=.
+
+#+name: configuration_types-version
+#+begin_src ores-shell :tangle configuration_types-version.ores :exports none
+configuration_types version __none__ --version 1
+#+end_src
+

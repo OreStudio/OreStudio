@@ -32,8 +32,10 @@ set(files
     "time/time_utils.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/atomic_shared_ptr.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/ores.platform.concurrency.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/fake_environment_provider.hpp"

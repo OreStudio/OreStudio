@@ -24,8 +24,6 @@
  *
  * Report Configuration Table
  *
- * +#+updated: 2026-09-27
- *
  * This is how a report definition reaches its configuration: one row per
  * configuration it binds, where the configuration type is the slot and the
  * configuration fills it. Several reports may fill the same slot with the same

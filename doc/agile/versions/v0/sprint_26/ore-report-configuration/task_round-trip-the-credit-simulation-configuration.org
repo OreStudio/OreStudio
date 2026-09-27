@@ -59,7 +59,9 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | corpus files of this kind | 14 | `find external/ore/examples -iname "creditsimulation*.xml" \| wc -l` | abff31c9f0 |
 | distinct documents behind them | 7, each appearing twice | `find external/ore/examples -iname "creditsimulation*.xml" \| sort \| xargs md5sum \| sort \| awk '{print $1}' \| uniq -c \| sort -rn` | abff31c9f0 |
-| matrix cells in the largest file | 64 (an 8x8 grid in one `Data` element) | see the slice notes | |
+| matrix cells per document | 64, an 8x8 grid | `.audit/ore-taxonomy/grid_check $(find external/ore/examples -iname "creditsimulation*.xml")` | f8c9d3e538 |
+| state labels per matrix | 8, identical in every file | same command | f8c9d3e538 |
+| grids that survive parse, format, parse | 14 of 14 | same command | f8c9d3e538 |
 
 * Notes
 

@@ -23,6 +23,7 @@ set(files
     "artefact_type_commands_tests.cpp"
     "badge_definition_commands_tests.cpp"
     "badge_mapping_commands_tests.cpp"
+    "badge_severity_commands_tests.cpp"
     "catalog_commands_tests.cpp"
     "change_reason_category_commands_tests.cpp"
     "change_reason_commands_tests.cpp"
@@ -41,6 +42,8 @@ set(files
     "methodology_commands_tests.cpp"
     "nature_dimension_commands_tests.cpp"
     "origin_dimension_commands_tests.cpp"
+    "publication_commands_tests.cpp"
+    "subject_area_commands_tests.cpp"
     "synthetic_fx_spot_config_commands_tests.cpp"
     "treatment_dimension_commands_tests.cpp"
 )

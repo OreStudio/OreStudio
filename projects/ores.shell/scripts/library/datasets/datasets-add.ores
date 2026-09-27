@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/datasets/dataset.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+datasets add __none__ - __none__ __none__ - __none__ __none__ __none__ - __none__ __none__ __none__ __none__ - 0 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z - __none__ system.new_record generated_script

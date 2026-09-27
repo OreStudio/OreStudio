@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/origin_dimensions/origin_dimension.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+origin_dimensions version __none__ --version 1

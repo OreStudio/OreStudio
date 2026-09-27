@@ -765,3 +765,55 @@ tangled into the runnable script library
 * Trade Types
 
 - [[id:571DB331-F3D8-5715-86C9-18ED3958B95E][How do I run the trade_types commands from the shell?]]
+
+* Badge Mappings
+
+- [[id:6FA5889A-660A-5527-8D75-243F973DBBB2][How do I run the badge_mappings commands from the shell?]]
+
+* Coding Scheme Authority Types
+
+- [[id:B8654A98-305D-5F26-A9D5-C313EC4CAA1A][How do I run the coding_scheme_authority_types commands from the shell?]]
+
+* Coding Schemes
+
+- [[id:BD298865-4613-56D7-BF3D-23B492927D68][How do I run the coding_schemes commands from the shell?]]
+
+* Datasets
+
+- [[id:17AD150A-5304-51D9-BB08-B8B15D7112A9][How do I run the datasets commands from the shell?]]
+
+* Fsm States
+
+- [[id:EDB33C5A-9066-57F6-9548-A7705D2093F1][How do I run the fsm_states commands from the shell?]]
+
+* Fsm Transitions
+
+- [[id:25DAA650-9746-56CA-867A-D407BF0D0933][How do I run the fsm_transitions commands from the shell?]]
+
+* Methodologies
+
+- [[id:67374BCA-C98C-56AA-B258-E7F660037121][How do I run the methodologies commands from the shell?]]
+
+* Nature Dimensions
+
+- [[id:949F75DB-90E5-56A5-B670-BE03F1F4683E][How do I run the nature_dimensions commands from the shell?]]
+
+* Origin Dimensions
+
+- [[id:94EF527D-49F7-580C-80CD-3CE890D7ABB7][How do I run the origin_dimensions commands from the shell?]]
+
+* Treatment Dimensions
+
+- [[id:B188080F-8D57-508C-A145-76508407853F][How do I run the treatment_dimensions commands from the shell?]]
+
+* Badge Severities
+
+- [[id:CC65E97E-9638-5553-9FED-59C5794CF474][How do I run the badge_severities commands from the shell?]]
+
+* Subject Areas
+
+- [[id:BEFE8DA0-ABAD-5C04-9163-EE52A13EDDFC][How do I run the subject_areas commands from the shell?]]
+
+* Publications
+
+- [[id:924F7A20-A61E-52A4-B2CE-951A084C6216][How do I run the publications commands from the shell?]]

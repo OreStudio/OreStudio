@@ -1,0 +1,6 @@
+# =delete-many=
+#
+# GENERATED from doc/recipes/shell/badge_severities/badge_severity.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+badge_severities delete-many __none__ system.new_record generated_script

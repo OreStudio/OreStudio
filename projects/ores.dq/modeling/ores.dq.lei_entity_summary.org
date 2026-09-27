@@ -22,9 +22,12 @@ consolidates, which is a query shape and not a page over a table, and it returns
 a summary record rather than the entity.
 
 No handler is generated for an operation, so the handler that serves this
-subject would be hand-written beside this model. There is none today: the
-subject has no subscriber, and the SQL functions that answered it are dead
-alongside it. See the capture recorded by the task.
+subject is hand-written beside this model:
+=core/include/ores.dq.core/messaging/lei_entity_summary_handler.hpp=, wired in
+=core/src/messaging/registrar.cpp=. The two SQL functions it calls,
+=ores_dq_lei_entities_distinct_countries_fn= and
+=ores_dq_lei_entities_summary_by_country_fn=, keep the deduplication and the
+consolidation filter in the database.
 
 * Includes
 

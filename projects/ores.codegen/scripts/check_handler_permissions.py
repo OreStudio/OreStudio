@@ -35,8 +35,9 @@ POPULATE = (
 # because a component's handlers are found under projects/ores.<name>, and it
 # is deliberately separate from the shared component_registry list, which
 # carries catalogue slugs. analytics joined with its clean-standard pass, whose
-# W02 item this check proves; compute and assets joined with theirs.
-REGISTRY = ("refdata", "analytics", "compute", "assets", "storage", "reporting")
+# W02 item this check proves; compute and assets joined with theirs, and dq
+# with pass 2 of its own clean-standard work.
+REGISTRY = ("refdata", "analytics", "compute", "assets", "storage", "reporting", "dq")
 
 # has_permission takes the request context first, so the code is the string
 # literal argument. A helper that passes the code through a variable is not

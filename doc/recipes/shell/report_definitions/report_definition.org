@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 8F7DD182-B1ED-5933-B377-9C0066D96489
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the report_definitions commands from the shell?
 #+description: Every command the report_definitions submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -92,7 +93,7 @@ It is addressed at =reporting.v1.report_definitions.put=.
 
 #+name: report_definitions-add
 #+begin_src ores-shell :tangle report_definitions-add.ores :exports none
-report_definitions add __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+report_definitions add __none__ __none__ __none__ - __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =reporting.v1.report_definitions.put=.
 
 #+name: report_definitions-set
 #+begin_src ores-shell :tangle report_definitions-set.ores :exports none
-report_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+report_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =reporting.v1.report_definitions.put_many=.
 
 #+name: report_definitions-put-many
 #+begin_src ores-shell :tangle report_definitions-put-many.ores :exports none
-report_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+report_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

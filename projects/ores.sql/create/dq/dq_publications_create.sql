@@ -40,7 +40,7 @@
  */
 
 create table if not exists "ores_dq_dataset_publications_tbl" (
-    "id" uuid not null,
+    "id" uuid not null default gen_random_uuid(),
     "tenant_id" uuid not null,
     "dataset_id" uuid not null,
     "dataset_code" text not null,

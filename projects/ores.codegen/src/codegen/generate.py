@@ -614,7 +614,11 @@ def resolve_targets(
             # dialog's field mapper (which reads the domain type's recorded_at
             # member) has nothing to project and would not compile.
             no_temporal_archetypes = _NO_TEMPORAL_HISTORY_ARCHETYPES
-    if "ores.cpp.protocol" not in gen_facets:
+    # Per-archetype activation: the entity's ores.* drawer overrides (most-
+    # specific wins, archetype depth included) and, for components, the kind
+    # discriminator that selects mutually-exclusive variants in one pass.
+    overrides = _enabled_overrides(properties or {})
+    if not _facet_renders(graph, "ores.cpp.protocol", model_type, overrides):
         # Hard gate, like the junction messaging and audit-shape gates above:
         # the facets that name the protocol's request types have nothing to
         # name when the model suppresses the protocol, so they are dropped
@@ -624,12 +628,15 @@ def resolve_targets(
         # is the case that exposed it: the junction disables the protocol,
         # handler and service because a hand-written read-only handler serves
         # the lookup, and its shell unit was emitted anyway.
+        #
+        # The question is whether the *model* suppresses the protocol, not
+        # whether this run happens to render it. Asking the latter emptied
+        # every doc-only run: a recipe depends on the protocol facet but lives
+        # in another technical space, so --address ores.doc never had the
+        # facet in its target and no run of any component ever produced a
+        # recipe.
         gen_facets = {f for f in gen_facets
                       if f not in _PROTOCOL_DEPENDENT_FACETS}
-    # Per-archetype activation: the entity's ores.* drawer overrides (most-
-    # specific wins, archetype depth included) and, for components, the kind
-    # discriminator that selects mutually-exclusive variants in one pass.
-    overrides = _enabled_overrides(properties or {})
     component_kind = None
     if model_type == "component":
         comp = model_data.setdefault("component", {})

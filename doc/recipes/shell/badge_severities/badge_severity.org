@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: CC65E97E-9638-5553-9FED-59C5794CF474
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the badge_severities commands from the shell?
+#+description: Every command the badge_severities submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:badge_severities:
+
+This file documents the badge_severities resource at the shell, one section per command. Every command is a subcommand of =badge_severities=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1FBADF88-4801-5758-8C66-28D133AC59FC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.list=.
+
+#+name: badge_severities-list
+#+begin_src ores-shell :tangle badge_severities-list.ores :exports none
+badge_severities list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0713C5C2-3AA8-52BB-9E99-60DDB21DBAA6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities get <code>
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.get=.
+
+#+name: badge_severities-get
+#+begin_src ores-shell :tangle badge_severities-get.ores :exports none
+badge_severities get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F7AAF0F8-2C4C-568E-9568-D11167720A05
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.get_many=.
+
+#+name: badge_severities-get-many
+#+begin_src ores-shell :tangle badge_severities-get-many.ores :exports none
+badge_severities get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 457CCF3E-522F-5602-B162-FE95D717DA30
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.put=.
+
+#+name: badge_severities-add
+#+begin_src ores-shell :tangle badge_severities-add.ores :exports none
+badge_severities add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 435E7CEB-F7ED-5DC9-8A52-6F0FF6F910A6
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.put=.
+
+#+name: badge_severities-set
+#+begin_src ores-shell :tangle badge_severities-set.ores :exports none
+badge_severities set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6AF603A9-1D75-58BF-88C7-F00A77B3FC52
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.put_many=.
+
+#+name: badge_severities-put-many
+#+begin_src ores-shell :tangle badge_severities-put-many.ores :exports none
+badge_severities put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 39BA02C8-14A4-5FB7-81E6-E39D5F700582
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.delete=.
+
+#+name: badge_severities-delete
+#+begin_src ores-shell :tangle badge_severities-delete.ores :exports none
+badge_severities delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 289180BC-119B-5251-A649-EA0F75E2D496
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.badge_severities.delete_many=.
+
+#+name: badge_severities-delete-many
+#+begin_src ores-shell :tangle badge_severities-delete-many.ores :exports none
+badge_severities delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D9914E7E-48BF-58AF-ACF8-076A5C239BDC
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.badge_severities_versions.list=.
+
+#+name: badge_severities-versions
+#+begin_src ores-shell :tangle badge_severities-versions.ores :exports none
+badge_severities versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F63E6C8C-D82E-52CC-AB72-6920ECFE4C20
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+badge_severities version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.badge_severities_versions.get=.
+
+#+name: badge_severities-version
+#+begin_src ores-shell :tangle badge_severities-version.ores :exports none
+badge_severities version __none__ --version 1
+#+end_src
+

@@ -9,115 +9,458 @@
 NATS messaging reference for [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]. All subjects use the
 =dq.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
 
-Each entity follows the standard pattern: =list=, =save=, =delete=, =history=.
+Each generated entity exposes the verbs =list=, =get=, =get_many=, =put=, =put_many=,
+=delete=, and =delete_many=. Version history sits under the =<entity>_versions= prefix with
+=list= and =get=. Read-only entities expose only =list=, =get=, and =get_many=. The entity
+segment is the plural snake_case name, so a subject reads =dq.v1.<entity>.<verb>= or
+=dq.v1.<entity>_versions.<verb>=.
+
+Change notifications are published on =dq.v1.<entity>_events.<action>=, where the action is
+=created=, =updated=, or =deleted=; see the Entity Change Events section.
+
+* Artefact Types
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.artefact_types.list= | Retrieve all artefact types |
+| =dq.v1.artefact_types.get= | Retrieve one artefact type |
+| =dq.v1.artefact_types.get_many= | Retrieve several artefact types by key |
+| =dq.v1.artefact_types.put= | Create or update an artefact type |
+| =dq.v1.artefact_types.put_many= | Create or update several artefact types |
+| =dq.v1.artefact_types.delete= | Delete one or more artefact types |
+| =dq.v1.artefact_types.delete_many= | Delete several artefact types by key |
+| =dq.v1.artefact_types_versions.list= | Retrieve version history for an artefact type |
+| =dq.v1.artefact_types_versions.get= | Retrieve one version of an artefact type |
+
+* Badge Definitions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.badge_definitions.list= | Retrieve all badge definitions |
+| =dq.v1.badge_definitions.get= | Retrieve one badge definition |
+| =dq.v1.badge_definitions.get_many= | Retrieve several badge definitions by key |
+| =dq.v1.badge_definitions.put= | Create or update a badge definition |
+| =dq.v1.badge_definitions.put_many= | Create or update several badge definitions |
+| =dq.v1.badge_definitions.delete= | Delete one or more badge definitions |
+| =dq.v1.badge_definitions.delete_many= | Delete several badge definitions by key |
+| =dq.v1.badge_definitions_versions.list= | Retrieve version history for a badge definition |
+| =dq.v1.badge_definitions_versions.get= | Retrieve one version of a badge definition |
+
+* Badge Mappings
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.badge_mappings.list= | Retrieve all badge mappings |
+| =dq.v1.badge_mappings.list_by_code_domain_code= | Retrieve badge mappings for a code domain |
+| =dq.v1.badge_mappings.get= | Retrieve one badge mapping |
+| =dq.v1.badge_mappings.get_many= | Retrieve several badge mappings by key |
+| =dq.v1.badge_mappings.put= | Create or update a badge mapping |
+| =dq.v1.badge_mappings.put_many= | Create or update several badge mappings |
+| =dq.v1.badge_mappings.delete= | Delete one or more badge mappings |
+| =dq.v1.badge_mappings.delete_many= | Delete several badge mappings by key |
+
+* Badge Severities
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.badge_severities.list= | Retrieve all badge severities |
+| =dq.v1.badge_severities.get= | Retrieve one badge severity |
+| =dq.v1.badge_severities.get_many= | Retrieve several badge severities by key |
+| =dq.v1.badge_severities.put= | Create or update a badge severity |
+| =dq.v1.badge_severities.put_many= | Create or update several badge severities |
+| =dq.v1.badge_severities.delete= | Delete one or more badge severities |
+| =dq.v1.badge_severities.delete_many= | Delete several badge severities by key |
+| =dq.v1.badge_severities_versions.list= | Retrieve version history for a badge severity |
+| =dq.v1.badge_severities_versions.get= | Retrieve one version of a badge severity |
+
+* Bundle Publishing
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.bundles.publish= | Publish all datasets in a bundle |
 
 * Catalogs
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.catalogs.list= | Retrieve all data quality catalogs |
-| =dq.v1.catalogs.save= | Create or update a catalog |
+| =dq.v1.catalogs.list= | Retrieve all catalogs |
+| =dq.v1.catalogs.get= | Retrieve one catalog |
+| =dq.v1.catalogs.get_many= | Retrieve several catalogs by key |
+| =dq.v1.catalogs.put= | Create or update a catalog |
+| =dq.v1.catalogs.put_many= | Create or update several catalogs |
 | =dq.v1.catalogs.delete= | Delete one or more catalogs |
-| =dq.v1.catalogs.history= | Retrieve version history for a catalog |
+| =dq.v1.catalogs.delete_many= | Delete several catalogs by key |
+| =dq.v1.catalogs_versions.list= | Retrieve version history for a catalog |
+| =dq.v1.catalogs_versions.get= | Retrieve one version of a catalog |
+
+* Change Reason Categories
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.change_reason_categories.list= | Retrieve all change reason categories |
+| =dq.v1.change_reason_categories.get= | Retrieve one change reason category |
+| =dq.v1.change_reason_categories.get_many= | Retrieve several change reason categories by key |
+| =dq.v1.change_reason_categories.put= | Create or update a change reason category |
+| =dq.v1.change_reason_categories.put_many= | Create or update several change reason categories |
+| =dq.v1.change_reason_categories.delete= | Delete one or more change reason categories |
+| =dq.v1.change_reason_categories.delete_many= | Delete several change reason categories by key |
+| =dq.v1.change_reason_categories_versions.list= | Retrieve version history for a change reason category |
+| =dq.v1.change_reason_categories_versions.get= | Retrieve one version of a change reason category |
+
+* Change Reasons
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.change_reasons.list= | Retrieve all change reasons |
+| =dq.v1.change_reasons.get= | Retrieve one change reason |
+| =dq.v1.change_reasons.get_many= | Retrieve several change reasons by key |
+| =dq.v1.change_reasons.put= | Create or update a change reason |
+| =dq.v1.change_reasons.put_many= | Create or update several change reasons |
+| =dq.v1.change_reasons.delete= | Delete one or more change reasons |
+| =dq.v1.change_reasons.delete_many= | Delete several change reasons by key |
+| =dq.v1.change_reasons_versions.list= | Retrieve version history for a change reason |
+| =dq.v1.change_reasons_versions.get= | Retrieve one version of a change reason |
+
+* Code Domains
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.code_domains.list= | Retrieve all code domains |
+| =dq.v1.code_domains.get= | Retrieve one code domain |
+| =dq.v1.code_domains.get_many= | Retrieve several code domains by key |
+| =dq.v1.code_domains.put= | Create or update a code domain |
+| =dq.v1.code_domains.put_many= | Create or update several code domains |
+| =dq.v1.code_domains.delete= | Delete one or more code domains |
+| =dq.v1.code_domains.delete_many= | Delete several code domains by key |
+| =dq.v1.code_domains_versions.list= | Retrieve version history for a code domain |
+| =dq.v1.code_domains_versions.get= | Retrieve one version of a code domain |
+
+* Coding Scheme Authority Types
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.coding_scheme_authority_types.list= | Retrieve all coding scheme authority types |
+| =dq.v1.coding_scheme_authority_types.get= | Retrieve one coding scheme authority type |
+| =dq.v1.coding_scheme_authority_types.get_many= | Retrieve several coding scheme authority types by key |
+| =dq.v1.coding_scheme_authority_types.put= | Create or update a coding scheme authority type |
+| =dq.v1.coding_scheme_authority_types.put_many= | Create or update several coding scheme authority types |
+| =dq.v1.coding_scheme_authority_types.delete= | Delete one or more coding scheme authority types |
+| =dq.v1.coding_scheme_authority_types.delete_many= | Delete several coding scheme authority types by key |
+| =dq.v1.coding_scheme_authority_types_versions.list= | Retrieve version history for a coding scheme authority type |
+| =dq.v1.coding_scheme_authority_types_versions.get= | Retrieve one version of a coding scheme authority type |
+
+* Coding Schemes
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.coding_schemes.list= | Retrieve all coding schemes |
+| =dq.v1.coding_schemes.get= | Retrieve one coding scheme |
+| =dq.v1.coding_schemes.get_many= | Retrieve several coding schemes by key |
+| =dq.v1.coding_schemes.put= | Create or update a coding scheme |
+| =dq.v1.coding_schemes.put_many= | Create or update several coding schemes |
+| =dq.v1.coding_schemes.delete= | Delete one or more coding schemes |
+| =dq.v1.coding_schemes.delete_many= | Delete several coding schemes by key |
+| =dq.v1.coding_schemes_versions.list= | Retrieve version history for a coding scheme |
+| =dq.v1.coding_schemes_versions.get= | Retrieve one version of a coding scheme |
 
 * Data Domains
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.data-domains.list= | Retrieve all data domains |
-| =dq.v1.data-domains.save= | Create or update a data domain |
-| =dq.v1.data-domains.delete= | Delete one or more data domains |
-| =dq.v1.data-domains.history= | Retrieve version history for a data domain |
+| =dq.v1.data_domains.list= | Retrieve all data domains |
+| =dq.v1.data_domains.get= | Retrieve one data domain |
+| =dq.v1.data_domains.get_many= | Retrieve several data domains by key |
+| =dq.v1.data_domains.put= | Create or update a data domain |
+| =dq.v1.data_domains.put_many= | Create or update several data domains |
+| =dq.v1.data_domains.delete= | Delete one or more data domains |
+| =dq.v1.data_domains.delete_many= | Delete several data domains by key |
+| =dq.v1.data_domains_versions.list= | Retrieve version history for a data domain |
+| =dq.v1.data_domains_versions.get= | Retrieve one version of a data domain |
 
-* Methodologies
-
-| Subject | Description |
-|---------+-------------|
-| =dq.v1.methodologies.list= | Retrieve all methodologies |
-| =dq.v1.methodologies.save= | Create or update a methodology |
-| =dq.v1.methodologies.delete= | Delete one or more methodologies |
-| =dq.v1.methodologies.history= | Retrieve version history for a methodology |
-
-* Subject Areas
+* Dataset Bundle Members
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.subject-areas.list= | Retrieve all subject areas |
-| =dq.v1.subject-areas.save= | Create or update a subject area |
-| =dq.v1.subject-areas.delete= | Delete one or more subject areas |
-| =dq.v1.subject-areas.history= | Retrieve version history for a subject area |
+| =dq.v1.dataset_bundle_members.list= | Retrieve all dataset bundle members |
+| =dq.v1.dataset_bundle_members.list_by_bundle_code= | Retrieve dataset bundle members for a bundle |
+| =dq.v1.dataset_bundle_members.get= | Retrieve one dataset bundle member |
+| =dq.v1.dataset_bundle_members.get_many= | Retrieve several dataset bundle members by key |
+| =dq.v1.dataset_bundle_members.put= | Create or update a dataset bundle member |
+| =dq.v1.dataset_bundle_members.put_many= | Create or update several dataset bundle members |
+| =dq.v1.dataset_bundle_members.delete= | Delete one or more dataset bundle members |
+| =dq.v1.dataset_bundle_members.delete_many= | Delete several dataset bundle members by key |
 
-* Nature Dimensions
-
-| Subject | Description |
-|---------+-------------|
-| =dq.v1.nature-dimensions.list= | Retrieve all nature dimensions |
-| =dq.v1.nature-dimensions.save= | Create or update a nature dimension |
-| =dq.v1.nature-dimensions.delete= | Delete one or more nature dimensions |
-| =dq.v1.nature-dimensions.history= | Retrieve version history for a nature dimension |
-
-* Origin Dimensions
+* Dataset Bundles
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.origin-dimensions.list= | Retrieve all origin dimensions |
-| =dq.v1.origin-dimensions.save= | Create or update an origin dimension |
-| =dq.v1.origin-dimensions.delete= | Delete one or more origin dimensions |
-| =dq.v1.origin-dimensions.history= | Retrieve version history for an origin dimension |
-
-* Treatment Dimensions
-
-| Subject | Description |
-|---------+-------------|
-| =dq.v1.treatment-dimensions.list= | Retrieve all treatment dimensions |
-| =dq.v1.treatment-dimensions.save= | Create or update a treatment dimension |
-| =dq.v1.treatment-dimensions.delete= | Delete one or more treatment dimensions |
-| =dq.v1.treatment-dimensions.history= | Retrieve version history for a treatment dimension |
+| =dq.v1.dataset_bundles.list= | Retrieve all dataset bundles |
+| =dq.v1.dataset_bundles.get= | Retrieve one dataset bundle |
+| =dq.v1.dataset_bundles.get_many= | Retrieve several dataset bundles by key |
+| =dq.v1.dataset_bundles.put= | Create or update a dataset bundle |
+| =dq.v1.dataset_bundles.put_many= | Create or update several dataset bundles |
+| =dq.v1.dataset_bundles.delete= | Delete one or more dataset bundles |
+| =dq.v1.dataset_bundles.delete_many= | Delete several dataset bundles by key |
+| =dq.v1.dataset_bundles_versions.list= | Retrieve version history for a dataset bundle |
+| =dq.v1.dataset_bundles_versions.get= | Retrieve one version of a dataset bundle |
 
 * Datasets
 
 | Subject | Description |
 |---------+-------------|
 | =dq.v1.datasets.list= | Retrieve all datasets |
-| =dq.v1.datasets.save= | Create or update a dataset |
+| =dq.v1.datasets.get= | Retrieve one dataset |
+| =dq.v1.datasets.get_many= | Retrieve several datasets by key |
+| =dq.v1.datasets.put= | Create or update a dataset |
+| =dq.v1.datasets.put_many= | Create or update several datasets |
 | =dq.v1.datasets.delete= | Delete one or more datasets |
-| =dq.v1.datasets.history= | Retrieve version history for a dataset |
+| =dq.v1.datasets.delete_many= | Delete several datasets by key |
+| =dq.v1.datasets.publish= | Publish one or more datasets |
+| =dq.v1.datasets_versions.list= | Retrieve version history for a dataset |
+| =dq.v1.datasets_versions.get= | Retrieve one version of a dataset |
 
-* Dataset Bundles
+* Entity History
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.dataset-bundles.list= | Retrieve all dataset bundles |
-| =dq.v1.dataset-bundles.save= | Create or update a dataset bundle |
-| =dq.v1.dataset-bundles.delete= | Delete one or more dataset bundles |
-| =dq.v1.dataset-bundles.history= | Retrieve version history for a dataset bundle |
+| =dq.v1.history.get= | Retrieve version history for an entity of any type |
+
+* FSM States
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.fsm_states.list= | Retrieve all FSM states |
+| =dq.v1.fsm_states.get= | Retrieve one FSM state |
+| =dq.v1.fsm_states.get_many= | Retrieve several FSM states by key |
+| =dq.v1.fsm_states.put= | Create or update an FSM state |
+| =dq.v1.fsm_states.put_many= | Create or update several FSM states |
+| =dq.v1.fsm_states.delete= | Delete one or more FSM states |
+| =dq.v1.fsm_states.delete_many= | Delete several FSM states by key |
+| =dq.v1.fsm_states_versions.list= | Retrieve version history for an FSM state |
+| =dq.v1.fsm_states_versions.get= | Retrieve one version of an FSM state |
+
+* FSM Transitions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.fsm_transitions.list= | Retrieve all FSM transitions |
+| =dq.v1.fsm_transitions.get= | Retrieve one FSM transition |
+| =dq.v1.fsm_transitions.get_many= | Retrieve several FSM transitions by key |
+| =dq.v1.fsm_transitions.put= | Create or update an FSM transition |
+| =dq.v1.fsm_transitions.put_many= | Create or update several FSM transitions |
+| =dq.v1.fsm_transitions.delete= | Delete one or more FSM transitions |
+| =dq.v1.fsm_transitions.delete_many= | Delete several FSM transitions by key |
+| =dq.v1.fsm_transitions_versions.list= | Retrieve version history for an FSM transition |
+| =dq.v1.fsm_transitions_versions.get= | Retrieve one version of an FSM transition |
+
+* LEI Entities
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.lei_entities.list= | Retrieve all LEI entities |
+| =dq.v1.lei_entities.get= | Retrieve one LEI entity |
+| =dq.v1.lei_entities.get_many= | Retrieve several LEI entities by key |
+| =dq.v1.lei-entities.summary= | Retrieve the LEI entity summary projection |
+
+* LEI Relationships
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.lei_relationships.list= | Retrieve all LEI relationships |
+| =dq.v1.lei_relationships.get= | Retrieve one LEI relationship |
+| =dq.v1.lei_relationships.get_many= | Retrieve several LEI relationships by key |
+
+* Methodologies
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.methodologies.list= | Retrieve all methodologies |
+| =dq.v1.methodologies.get= | Retrieve one methodology |
+| =dq.v1.methodologies.get_many= | Retrieve several methodologies by key |
+| =dq.v1.methodologies.put= | Create or update a methodology |
+| =dq.v1.methodologies.put_many= | Create or update several methodologies |
+| =dq.v1.methodologies.delete= | Delete one or more methodologies |
+| =dq.v1.methodologies.delete_many= | Delete several methodologies by key |
+| =dq.v1.methodologies_versions.list= | Retrieve version history for a methodology |
+| =dq.v1.methodologies_versions.get= | Retrieve one version of a methodology |
+
+* Nature Dimensions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.nature_dimensions.list= | Retrieve all nature dimensions |
+| =dq.v1.nature_dimensions.get= | Retrieve one nature dimension |
+| =dq.v1.nature_dimensions.get_many= | Retrieve several nature dimensions by key |
+| =dq.v1.nature_dimensions.put= | Create or update a nature dimension |
+| =dq.v1.nature_dimensions.put_many= | Create or update several nature dimensions |
+| =dq.v1.nature_dimensions.delete= | Delete one or more nature dimensions |
+| =dq.v1.nature_dimensions.delete_many= | Delete several nature dimensions by key |
+| =dq.v1.nature_dimensions_versions.list= | Retrieve version history for a nature dimension |
+| =dq.v1.nature_dimensions_versions.get= | Retrieve one version of a nature dimension |
+
+* Origin Dimensions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.origin_dimensions.list= | Retrieve all origin dimensions |
+| =dq.v1.origin_dimensions.get= | Retrieve one origin dimension |
+| =dq.v1.origin_dimensions.get_many= | Retrieve several origin dimensions by key |
+| =dq.v1.origin_dimensions.put= | Create or update an origin dimension |
+| =dq.v1.origin_dimensions.put_many= | Create or update several origin dimensions |
+| =dq.v1.origin_dimensions.delete= | Delete one or more origin dimensions |
+| =dq.v1.origin_dimensions.delete_many= | Delete several origin dimensions by key |
+| =dq.v1.origin_dimensions_versions.list= | Retrieve version history for an origin dimension |
+| =dq.v1.origin_dimensions_versions.get= | Retrieve one version of an origin dimension |
 
 * Publications
 
 | Subject | Description |
 |---------+-------------|
 | =dq.v1.publications.list= | Retrieve all publications |
-| =dq.v1.publications.save= | Create or update a publication |
+| =dq.v1.publications.get= | Retrieve one publication |
+| =dq.v1.publications.get_many= | Retrieve several publications by key |
+| =dq.v1.publications.put= | Create or update a publication |
+| =dq.v1.publications.put_many= | Create or update several publications |
 | =dq.v1.publications.delete= | Delete one or more publications |
-| =dq.v1.publications.history= | Retrieve version history for a publication |
+| =dq.v1.publications.delete_many= | Delete several publications by key |
 
-* Coding Scheme Authority Types
-
-| Subject | Description |
-|---------+-------------|
-| =dq.v1.coding-scheme-authority-types.list= | Retrieve all coding scheme authority types |
-| =dq.v1.coding-scheme-authority-types.save= | Create or update a coding scheme authority type |
-| =dq.v1.coding-scheme-authority-types.delete= | Delete one or more coding scheme authority types |
-| =dq.v1.coding-scheme-authority-types.history= | Retrieve version history for a coding scheme authority type |
-
-* Coding Schemes
+* Publish from DQ Triggers
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.coding-schemes.list= | Retrieve all coding schemes |
-| =dq.v1.coding-schemes.save= | Create or update a coding scheme |
-| =dq.v1.coding-schemes.delete= | Delete one or more coding schemes |
-| =dq.v1.coding-schemes.history= | Retrieve version history for a coding scheme |
+| =dq.v1.ip2country.publish-from-dq= | Trigger the IP-to-country publish-from-DQ step |
+| =dq.v1.coding-schemes.publish-from-dq= | Trigger the coding schemes publish-from-DQ step |
+| =dq.v1.badge-severities.publish-from-dq= | Trigger the badge severities publish-from-DQ step |
+| =dq.v1.badge-definitions.publish-from-dq= | Trigger the badge definitions publish-from-DQ step |
+| =dq.v1.code-domains.publish-from-dq= | Trigger the code domains publish-from-DQ step |
+| =dq.v1.badge-mappings.publish-from-dq= | Trigger the badge mappings publish-from-DQ step |
+
+* Report Definition Templates
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.report-definition-templates.list= | Retrieve all report definition templates |
+
+* Report Definitions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.report_definitions.list= | Retrieve all report definitions |
+| =dq.v1.report_definitions.get= | Retrieve one report definition |
+| =dq.v1.report_definitions.get_many= | Retrieve several report definitions by key |
+
+* Subject Areas
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.subject_areas.list= | Retrieve all subject areas |
+| =dq.v1.subject_areas.get= | Retrieve one subject area |
+| =dq.v1.subject_areas.get_many= | Retrieve several subject areas by key |
+| =dq.v1.subject_areas.put= | Create or update a subject area |
+| =dq.v1.subject_areas.put_many= | Create or update several subject areas |
+| =dq.v1.subject_areas.delete= | Delete one or more subject areas |
+| =dq.v1.subject_areas.delete_many= | Delete several subject areas by key |
+| =dq.v1.subject_areas_versions.list= | Retrieve version history for a subject area |
+| =dq.v1.subject_areas_versions.get= | Retrieve one version of a subject area |
+
+* Synthetic FX Spot Configs
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.synthetic_fx_spot_configs.list= | Retrieve all synthetic FX spot configs |
+| =dq.v1.synthetic_fx_spot_configs.get= | Retrieve one synthetic FX spot config |
+| =dq.v1.synthetic_fx_spot_configs.get_many= | Retrieve several synthetic FX spot configs by key |
+
+* Treatment Dimensions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.treatment_dimensions.list= | Retrieve all treatment dimensions |
+| =dq.v1.treatment_dimensions.get= | Retrieve one treatment dimension |
+| =dq.v1.treatment_dimensions.get_many= | Retrieve several treatment dimensions by key |
+| =dq.v1.treatment_dimensions.put= | Create or update a treatment dimension |
+| =dq.v1.treatment_dimensions.put_many= | Create or update several treatment dimensions |
+| =dq.v1.treatment_dimensions.delete= | Delete one or more treatment dimensions |
+| =dq.v1.treatment_dimensions.delete_many= | Delete several treatment dimensions by key |
+| =dq.v1.treatment_dimensions_versions.list= | Retrieve version history for a treatment dimension |
+| =dq.v1.treatment_dimensions_versions.get= | Retrieve one version of a treatment dimension |
+
+* Entity Change Events
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.artefact_types_events.created= | Published when an artefact type is created |
+| =dq.v1.artefact_types_events.deleted= | Published when an artefact type is deleted |
+| =dq.v1.artefact_types_events.updated= | Published when an artefact type is updated |
+| =dq.v1.badge_definitions_events.created= | Published when a badge definition is created |
+| =dq.v1.badge_definitions_events.deleted= | Published when a badge definition is deleted |
+| =dq.v1.badge_definitions_events.updated= | Published when a badge definition is updated |
+| =dq.v1.badge_severities_events.created= | Published when a badge severity is created |
+| =dq.v1.badge_severities_events.deleted= | Published when a badge severity is deleted |
+| =dq.v1.badge_severities_events.updated= | Published when a badge severity is updated |
+| =dq.v1.catalogs_events.created= | Published when a catalog is created |
+| =dq.v1.catalogs_events.deleted= | Published when a catalog is deleted |
+| =dq.v1.catalogs_events.updated= | Published when a catalog is updated |
+| =dq.v1.change_reason_categories_events.created= | Published when a change reason category is created |
+| =dq.v1.change_reason_categories_events.deleted= | Published when a change reason category is deleted |
+| =dq.v1.change_reason_categories_events.updated= | Published when a change reason category is updated |
+| =dq.v1.change_reasons_events.created= | Published when a change reason is created |
+| =dq.v1.change_reasons_events.deleted= | Published when a change reason is deleted |
+| =dq.v1.change_reasons_events.updated= | Published when a change reason is updated |
+| =dq.v1.code_domains_events.created= | Published when a code domain is created |
+| =dq.v1.code_domains_events.deleted= | Published when a code domain is deleted |
+| =dq.v1.code_domains_events.updated= | Published when a code domain is updated |
+| =dq.v1.coding_scheme_authority_types_events.created= | Published when a coding scheme authority type is created |
+| =dq.v1.coding_scheme_authority_types_events.deleted= | Published when a coding scheme authority type is deleted |
+| =dq.v1.coding_scheme_authority_types_events.updated= | Published when a coding scheme authority type is updated |
+| =dq.v1.coding_schemes_events.created= | Published when a coding scheme is created |
+| =dq.v1.coding_schemes_events.deleted= | Published when a coding scheme is deleted |
+| =dq.v1.coding_schemes_events.updated= | Published when a coding scheme is updated |
+| =dq.v1.data_domains_events.created= | Published when a data domain is created |
+| =dq.v1.data_domains_events.deleted= | Published when a data domain is deleted |
+| =dq.v1.data_domains_events.updated= | Published when a data domain is updated |
+| =dq.v1.dataset_bundles_events.created= | Published when a dataset bundle is created |
+| =dq.v1.dataset_bundles_events.deleted= | Published when a dataset bundle is deleted |
+| =dq.v1.dataset_bundles_events.updated= | Published when a dataset bundle is updated |
+| =dq.v1.datasets_events.created= | Published when a dataset is created |
+| =dq.v1.datasets_events.deleted= | Published when a dataset is deleted |
+| =dq.v1.datasets_events.updated= | Published when a dataset is updated |
+| =dq.v1.fsm_states_events.created= | Published when an FSM state is created |
+| =dq.v1.fsm_states_events.deleted= | Published when an FSM state is deleted |
+| =dq.v1.fsm_states_events.updated= | Published when an FSM state is updated |
+| =dq.v1.fsm_transitions_events.created= | Published when an FSM transition is created |
+| =dq.v1.fsm_transitions_events.deleted= | Published when an FSM transition is deleted |
+| =dq.v1.fsm_transitions_events.updated= | Published when an FSM transition is updated |
+| =dq.v1.lei_entities_events.created= | Published when an LEI entity is created |
+| =dq.v1.lei_entities_events.deleted= | Published when an LEI entity is deleted |
+| =dq.v1.lei_entities_events.updated= | Published when an LEI entity is updated |
+| =dq.v1.lei_relationships_events.created= | Published when an LEI relationship is created |
+| =dq.v1.lei_relationships_events.deleted= | Published when an LEI relationship is deleted |
+| =dq.v1.lei_relationships_events.updated= | Published when an LEI relationship is updated |
+| =dq.v1.methodologies_events.created= | Published when a methodology is created |
+| =dq.v1.methodologies_events.deleted= | Published when a methodology is deleted |
+| =dq.v1.methodologies_events.updated= | Published when a methodology is updated |
+| =dq.v1.nature_dimensions_events.created= | Published when a nature dimension is created |
+| =dq.v1.nature_dimensions_events.deleted= | Published when a nature dimension is deleted |
+| =dq.v1.nature_dimensions_events.updated= | Published when a nature dimension is updated |
+| =dq.v1.origin_dimensions_events.created= | Published when an origin dimension is created |
+| =dq.v1.origin_dimensions_events.deleted= | Published when an origin dimension is deleted |
+| =dq.v1.origin_dimensions_events.updated= | Published when an origin dimension is updated |
+| =dq.v1.publications_events.created= | Published when a publication is created |
+| =dq.v1.publications_events.deleted= | Published when a publication is deleted |
+| =dq.v1.publications_events.updated= | Published when a publication is updated |
+| =dq.v1.report_definitions_events.created= | Published when a report definition is created |
+| =dq.v1.report_definitions_events.deleted= | Published when a report definition is deleted |
+| =dq.v1.report_definitions_events.updated= | Published when a report definition is updated |
+| =dq.v1.subject_areas_events.created= | Published when a subject area is created |
+| =dq.v1.subject_areas_events.deleted= | Published when a subject area is deleted |
+| =dq.v1.subject_areas_events.updated= | Published when a subject area is updated |
+| =dq.v1.synthetic_fx_spot_configs_events.created= | Published when a synthetic FX spot config is created |
+| =dq.v1.synthetic_fx_spot_configs_events.deleted= | Published when a synthetic FX spot config is deleted |
+| =dq.v1.synthetic_fx_spot_configs_events.updated= | Published when a synthetic FX spot config is updated |
+| =dq.v1.treatment_dimensions_events.created= | Published when a treatment dimension is created |
+| =dq.v1.treatment_dimensions_events.deleted= | Published when a treatment dimension is deleted |
+| =dq.v1.treatment_dimensions_events.updated= | Published when a treatment dimension is updated |
 
 * Useful Pages
 

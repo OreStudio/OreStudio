@@ -22,10 +22,10 @@ Values: secondary, info, success, warning, danger, primary.
 
 * Flags
 :PROPERTIES:
+:profile:       simple-lookup
 :schema:        public
 :product:       ores
 :component:     dq
-:has_tenant_id: true
 :END:
 
 * Columns

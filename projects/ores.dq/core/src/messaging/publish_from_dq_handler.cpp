@@ -23,10 +23,11 @@
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include <algorithm>
+#include <array>
 #include <format>
 #include <rfl/json.hpp>
 #include <string>
-#include <unordered_map>
 
 namespace ores::dq::messaging {
 
@@ -42,16 +43,47 @@ auto& lg() {
     return instance;
 }
 
-const std::unordered_map<std::string, std::string>& subject_fn_map() {
-    static const std::unordered_map<std::string, std::string> m{
-        {"dq.v1.ip2country.publish-from-dq", "ores_dq_ip2country_publish_fn"},
-        {"dq.v1.coding-schemes.publish-from-dq", "ores_dq_coding_schemes_publish_fn"},
-        {"dq.v1.badge-severities.publish-from-dq", "ores_dq_badge_severities_publish_fn"},
-        {"dq.v1.badge-definitions.publish-from-dq", "ores_dq_badge_definitions_publish_fn"},
-        {"dq.v1.code-domains.publish-from-dq", "ores_dq_code_domains_publish_fn"},
-        {"dq.v1.badge-mappings.publish-from-dq", "ores_dq_badge_mappings_publish_fn"},
-    };
-    return m;
+/**
+ * @brief Derives the SQL function name from the NATS subject.
+ *
+ * Converts "dq.v1.coding-schemes.publish-from-dq" to
+ * "ores_dq_coding_schemes_publish_fn". Any namespace prefix, such as
+ * "ores.dev.local3.", is ignored.
+ */
+std::string subject_to_fn(std::string_view subject) {
+    const auto v1_pos = subject.find("v1.");
+    if (v1_pos == std::string_view::npos)
+        return {};
+    const auto start = v1_pos + 3;
+    const auto end = subject.rfind(".publish-from-dq");
+    if (end == std::string_view::npos || end <= start)
+        return {};
+    auto entity = std::string(subject.substr(start, end - start));
+    std::replace(entity.begin(), entity.end(), '-', '_');
+    return "ores_dq_" + entity + "_publish_fn";
+}
+
+/**
+ * @brief Allow-list of SQL functions subject_to_fn() may resolve to.
+ *
+ * Each entry corresponds to one literal queue_subscribe subject in
+ * registrar.cpp, so subject_to_fn() can only ever produce one of the
+ * entries below. It is written generically, though, so a future wildcard
+ * subscription (e.g. "dq.v1.*.publish-from-dq") would make fn_name
+ * publisher-influenced and interpolated directly into raw SQL. Check
+ * against this allow-list before use so that remains safe if such a
+ * subscription is ever added — extend the list, not just the subscription,
+ * when a new entity is wired up.
+ */
+bool is_known_fn(std::string_view fn_name) {
+    static constexpr std::array<std::string_view, 6> known = {
+        "ores_dq_ip2country_publish_fn",
+        "ores_dq_coding_schemes_publish_fn",
+        "ores_dq_badge_severities_publish_fn",
+        "ores_dq_badge_definitions_publish_fn",
+        "ores_dq_code_domains_publish_fn",
+        "ores_dq_badge_mappings_publish_fn"};
+    return std::find(known.begin(), known.end(), fn_name) != known.end();
 }
 
 } // namespace
@@ -74,19 +106,11 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     }
     const auto& cmd = *parsed;
 
-    // Strip namespace prefix (e.g. "ores.dev.local3.") before map lookup.
-    const auto v1_pos = msg.subject.find("dq.v1.");
-    const std::string bare_subject = v1_pos != std::string_view::npos ?
-                                         std::string(msg.subject.substr(v1_pos)) :
-                                         std::string(msg.subject);
-
-    const auto& m = subject_fn_map();
-    const auto it = m.find(bare_subject);
-    if (it == m.end()) {
+    const auto fn_name = subject_to_fn(msg.subject);
+    if (fn_name.empty() || !is_known_fn(fn_name)) {
         wf->fail("Unknown DQ publish-from-dq subject: " + std::string(msg.subject));
         return;
     }
-    const auto& fn_name = it->second;
 
     BOOST_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
                               << " mode=" << cmd.mode << " step=" << wf->step_id;

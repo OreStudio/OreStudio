@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 949F75DB-90E5-56A5-B670-BE03F1F4683E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the nature_dimensions commands from the shell?
+#+description: Every command the nature_dimensions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:nature_dimensions:
+
+This file documents the nature_dimensions resource at the shell, one section per command. Every command is a subcommand of =nature_dimensions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 607613DB-373D-5B4A-B963-F622A1CF5586
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.list=.
+
+#+name: nature_dimensions-list
+#+begin_src ores-shell :tangle nature_dimensions-list.ores :exports none
+nature_dimensions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0F6208E0-980F-5C0C-9CAB-DFB7F2649EA9
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions get <code>
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.get=.
+
+#+name: nature_dimensions-get
+#+begin_src ores-shell :tangle nature_dimensions-get.ores :exports none
+nature_dimensions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C972BF53-453B-532C-B1ED-3228FA1BA019
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions get-many <code>
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.get_many=.
+
+#+name: nature_dimensions-get-many
+#+begin_src ores-shell :tangle nature_dimensions-get-many.ores :exports none
+nature_dimensions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: AC762B4F-B737-5A30-B50D-450342B9668C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions add <code> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.put=.
+
+#+name: nature_dimensions-add
+#+begin_src ores-shell :tangle nature_dimensions-add.ores :exports none
+nature_dimensions add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5230B02F-1D97-50EB-858C-467DD9761C67
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions set <code> <name> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.put=.
+
+#+name: nature_dimensions-set
+#+begin_src ores-shell :tangle nature_dimensions-set.ores :exports none
+nature_dimensions set __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B1842246-4ED0-5C57-B28F-0A3B4E16CA21
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions put-many --count <n> <code> <name> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.put_many=.
+
+#+name: nature_dimensions-put-many
+#+begin_src ores-shell :tangle nature_dimensions-put-many.ores :exports none
+nature_dimensions put-many --count 1 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4B266B8D-B137-5695-A952-CC8DD3DB39A9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.delete=.
+
+#+name: nature_dimensions-delete
+#+begin_src ores-shell :tangle nature_dimensions-delete.ores :exports none
+nature_dimensions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 04CF5D10-7628-5015-98AA-CE248CC14EE1
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions.delete_many=.
+
+#+name: nature_dimensions-delete-many
+#+begin_src ores-shell :tangle nature_dimensions-delete-many.ores :exports none
+nature_dimensions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8FCF8E6C-D8C7-5004-8221-584BD0BB6178
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions_versions.list=.
+
+#+name: nature_dimensions-versions
+#+begin_src ores-shell :tangle nature_dimensions-versions.ores :exports none
+nature_dimensions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: AD2C383B-E5EB-5AA2-ABD4-B8744F1A3BAD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+nature_dimensions version <code> --version <n>
+#+end_example
+
+It is addressed at =dq.v1.nature_dimensions_versions.get=.
+
+#+name: nature_dimensions-version
+#+begin_src ores-shell :tangle nature_dimensions-version.ores :exports none
+nature_dimensions version __none__ --version 1
+#+end_src
+

@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/subject_areas/subject_area.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+subject_areas version __none__ __none__ --version 1

@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ID: 924F7A20-A61E-52A4-B2CE-951A084C6216
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the publications commands from the shell?
+#+description: Every command the publications submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:publications:
+
+This file documents the publications resource at the shell, one section per command. Every command is a subcommand of =publications=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D82A5AE8-9F85-5CDB-993F-A752BB8DF792
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.publications.list=.
+
+#+name: publications-list
+#+begin_src ores-shell :tangle publications-list.ores :exports none
+publications list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F9076745-B4DD-5CB2-86B8-7AF61C446A8B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications get <id>
+#+end_example
+
+It is addressed at =dq.v1.publications.get=.
+
+#+name: publications-get
+#+begin_src ores-shell :tangle publications-get.ores :exports none
+publications get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 2DF66E58-6B5B-55D5-8EC6-4700DC455BE8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications get-many <id>
+#+end_example
+
+It is addressed at =dq.v1.publications.get_many=.
+
+#+name: publications-get-many
+#+begin_src ores-shell :tangle publications-get-many.ores :exports none
+publications get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3477F276-88B2-56FC-99DE-3A5810DDD43B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications add <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.publications.put=.
+
+#+name: publications-add
+#+begin_src ores-shell :tangle publications-add.ores :exports none
+publications add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3FEC927F-9127-5ECF-A414-8C15A1F6CEE3
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications set <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.publications.put=.
+
+#+name: publications-set
+#+begin_src ores-shell :tangle publications-set.ores :exports none
+publications set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3638D050-EED8-5228-A973-DBE8B7F7DB12
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications put-many --count <n> <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.publications.put_many=.
+
+#+name: publications-put-many
+#+begin_src ores-shell :tangle publications-put-many.ores :exports none
+publications put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 272C738A-28AF-532D-919D-1981BDCAB5FC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =dq.v1.publications.delete=.
+
+#+name: publications-delete
+#+begin_src ores-shell :tangle publications-delete.ores :exports none
+publications delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 825A939C-266A-5A51-B789-256C1F1AF4DB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+publications delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =dq.v1.publications.delete_many=.
+
+#+name: publications-delete-many
+#+begin_src ores-shell :tangle publications-delete-many.ores :exports none
+publications delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+

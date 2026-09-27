@@ -102,13 +102,6 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
         "Create a new account (principal password totp_secret email) - principal is "
         "username@hostname or username");
 
-    accounts_menu->Insert(
-        "list",
-        [&session, &pagination](std::ostream& out) {
-            process_list_accounts(std::ref(out), std::ref(session), std::ref(pagination));
-        },
-        "Retrieve accounts from the server (paginated)");
-
     // Register list callback for navigation
     pagination.register_list_callback("accounts", [&session, &pagination](std::ostream& out) {
         process_list_accounts(out, session, pagination);

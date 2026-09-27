@@ -67,45 +67,6 @@ public:
     // Permissions Commands
     // =========================================================================
 
-    /**
-     * @brief Process a list permissions request.
-     *
-     * Retrieves all permissions from the server and displays them.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     */
-    static void process_list_permissions(std::ostream& out,
-                                         ores::nats::service::nats_client& session);
-
-    // =========================================================================
-    // Roles Commands
-    // =========================================================================
-
-    /**
-     * @brief Process a list roles request.
-     *
-     * Retrieves all roles from the server and displays them.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     */
-    static void process_list_roles(std::ostream& out, ores::nats::service::nats_client& session);
-
-    /**
-     * @brief Process a get role request.
-     *
-     * Retrieves a specific role by name or ID and displays its details
-     * including all assigned permissions.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param role_identifier Role name or UUID
-     */
-    static void process_get_role(std::ostream& out,
-                                 ores::nats::service::nats_client& session,
-                                 std::string role_identifier);
-
     // =========================================================================
     // Account-Role Assignment Commands
     // =========================================================================

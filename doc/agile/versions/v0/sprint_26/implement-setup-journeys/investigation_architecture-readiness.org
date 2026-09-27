@@ -106,17 +106,23 @@ it before it decides how a journey follows a workflow.
 
 ** Seven findings change what the story does next
 
-1. *The progress channel already exists, end to end.*
+1. *The progress subject already exists; the progress payload does not.*
    =ores.workflow.workflow_instance_changed= is published by the engine
-   on every state change (=projects/ores.workflow/core/src/service/workflow_engine.cpp:98=).
-   That subject has exactly the shape the BFF's change-notification
-   channel already subscribes to — =<component>.<entity>_changed=,
-   built at =projects/ores.web/packages/bff/src/change-events.ts:67= —
-   and the browser already reaches it through =GET /api/events= and
-   =POST /api/events/watch=. So provisioning progress needs no new
-   channel, no polling and no new event. The event carries identifiers
-   and a time and no state, so the page re-reads the instance's steps
-   after each event, which does need a route.
+   on every state change
+   (=projects/ores.workflow/core/src/service/workflow_engine.cpp:98=),
+   and its subject follows the convention the BFF subscribes on —
+   =ores.<component>.<entity>_changed=, built at
+   =projects/ores.web/packages/bff/src/change-events.ts:67=. What the
+   engine sends does not match what the browser can read: the payload is
+   an =entity_change_event= carrying =entity_ids=, and the schema the
+   browser decodes every change notification with reads =alpha2_codes=, a
+   field named for the country event it was written for. Every field of
+   that schema has a default, so the mismatch raises nothing and hands the
+   subscriber an empty identifier list. Provisioning progress therefore
+   needs no new *subject*, but it does need the payload settled, and it
+   needs a read either way, because the event carries identifiers and a
+   time and no state. The mismatch is filed as
+   [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][a capture]].
 2. *A party-provisioning workflow already exists.*
    =workflow.v1.parties.provision= takes a list of parties, returns the
    party ids and one workflow instance id per party immediately, and
@@ -185,7 +191,7 @@ it before it decides how a journey follows a workflow.
 | [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]], [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | "No =ores.workflow= component and no journey subject exist today" | The component exists, with entities, services and subjects |
 | The same three journeys | The candidate is =iam.v1.journeys.get-active= | Retired by the vocabulary; no journey entity is needed |
 | The same three journeys | =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= are the working path | The setup story retires both for a generic =iam.v1.tenants.provision= |
-| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | "No streamed progress"; the candidates are a =workflow_instance_changed= event or an =iam.v1.workflow_instances.get= read | The event is already published; =workflow.v1.instances.steps= and =workflow.v1.instances.list= already exist and are subscribed |
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | "No streamed progress"; the candidates are a =workflow_instance_changed= event or an =iam.v1.workflow_instances.get= read | The event subject is published, but what it carries does not match what the browser decodes (finding 1 above). The read the document asks for does exist: =workflow.v1.instances.steps= and =workflow.v1.instances.list= are implemented and subscribed. |
 | [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | "Start the provision-party workflow | none | missing" | =workflow.v1.parties.provision= exists and returns instance ids |
 | [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | =party_essentials= exists and "only the ACME handler publishes it today" | =party_essentials= occurs nowhere under =projects/=; it is a bundle the contract proposes, not one that exists |
 | [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | Nothing discards a half-provisioned tenant | =iam.v1.system.reset-tenant= exists |

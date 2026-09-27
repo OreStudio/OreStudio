@@ -27,13 +27,13 @@ const changeEventSchema = z.object({
 #+end_src
 
 =alpha2_codes= is the field of
-=projects/ores.refdata.api/eventing/country_changed_event.hpp=. The
-generic event every other component publishes is
-=ores.eventing.api/domain/entity_change_event.hpp=, whose identifier
-field is =entity_ids=.
+=projects/ores.refdata/api/include/ores.refdata.api/eventing/country_changed_event.hpp=.
+The generic event every other component publishes is
+=projects/ores.eventing/api/include/ores.eventing.api/domain/entity_change_event.hpp=,
+whose identifier field is =entity_ids=.
 
 The event subject convention is uniform: the BFF subscribes to
-=<component>.<entity>_changed= for whatever a session asks to watch. The
+=ores.<component>.<entity>_changed= for whatever a session asks to watch. The
 payload is not uniform, and the browser can only read one of the two
 shapes.
 

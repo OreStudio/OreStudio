@@ -39,7 +39,7 @@ create table if not exists "ores_trading_trades_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "external_id" text null,
+    "external_id" text not null,
     "book_id" uuid not null,
     "portfolio_id" uuid not null,
     "successor_trade_id" uuid null,

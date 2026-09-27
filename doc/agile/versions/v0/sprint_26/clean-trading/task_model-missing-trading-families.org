@@ -488,6 +488,37 @@ and an observation schedule rather than two scalar dates. If the
 grammar cannot express one, record it as a generator defect with a
 failing regression test rather than forcing the tree.
 
+** 5a. The defect states
+
+The story's defect table assigns eleven defects to this PR. Work them in
+the order below, because each makes the next smaller.
+
+| # | Defect | State |
+|---+--------+-------|
+| 17 | The trade's declared key is nullable | Closed |
+| 2 | Dates held as text, 58 fields | Next |
+| 3 | Monetary amounts held as double, 18 fields | Pending |
+| 6 | One concept under two names | Pending |
+| 5 | Code fields whose reference table does not exist | Pending |
+| 4 | Enumerations held as free text with no reference table | Pending |
+| 8 | Enumerations enforced in PL/pgSQL, 27 of them | Pending |
+| 1 | Schedules and collections held as JSON text | Pending |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | Pending |
+| 15 | An underlying is an unqualified name | Pending |
+| 16 | No observation schedule | Pending |
+
+Defect 17 is closed: the model declares =external_id= not null, its
+generator supplies a =TRD-= key, the shell verb takes the key first, the
+ORE importer refuses a keyless item, the SQL fixtures supply one, and a
+one-shot migration backfills the column and sets it not null.
+
+One gate lesson: =check_component_drift.py --all --dry-run= does not cover
+trading, because trading is not in the drift registry's gated set. A hand
+edit to the generated =trade_handler.hpp= therefore passed the
+all-component run, and the next regeneration reverted it. The
+per-component dry run is the gate that catches a hand-edited generated
+file, and the edit now lives in the model where it belongs.
+
 ** 6. Regenerate and prove
 
 Regenerate the component and re-run the dry run twice. Every new

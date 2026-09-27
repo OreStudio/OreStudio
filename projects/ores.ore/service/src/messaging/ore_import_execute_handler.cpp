@@ -1338,6 +1338,19 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto src = item.source_file.string();
         const auto ext_id = item.trade.identity.external_id;
 
+        // The trade's declared key is required, so an ORE trade with no id
+        // cannot be written. Report it as an item error rather than saving a
+        // row no read by key can find.
+        if (ext_id.empty()) {
+            const auto failure = std::string("Trade has no external id: the ORE trade id is "
+                                             "required.");
+            BOOST_LOG_SEV(lg(), warn)
+                << "ore.import.execute trade save failed | corr=" << req.correlation_id
+                << " trade_id=" << tid << " source=" << src << " error=" << failure;
+            result.item_errors.push_back({.source_file = src, .item_id = tid, .message = failure});
+            continue;
+        }
+
         ores::trading::messaging::put_many_trades_request save_req;
         {
             ores::trading::messaging::trade_change change;

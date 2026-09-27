@@ -42,7 +42,7 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.external_id = v.external_id.value_or("");
+    r.identity.external_id = v.external_id;
     r.parties.book_id = boost::lexical_cast<boost::uuids::uuid>(v.book_id);
     r.parties.portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.portfolio_id);
     r.parties.successor_trade_id =
@@ -91,8 +91,7 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.external_id =
-        v.identity.external_id.empty() ? std::nullopt : std::optional(v.identity.external_id);
+    r.external_id = v.identity.external_id;
     r.book_id = boost::uuids::to_string(v.parties.book_id);
     r.portfolio_id = boost::uuids::to_string(v.parties.portfolio_id);
     r.successor_trade_id =

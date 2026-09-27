@@ -69,7 +69,7 @@ struct trade_identity {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief Optional external trade identifier (e.g. UTI prefix or legacy system ID).
+     * @brief External trade identifier (e.g. UTI prefix or legacy system ID).
      */
     std::string external_id;
 

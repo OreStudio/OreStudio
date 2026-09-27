@@ -61,16 +61,16 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
-Optional external trade identifier.
+External trade identifier.
 
 e.g., UTI prefix or legacy system ID.
 
-The model declares this column as the trade's key, so a fixture needs a
-value here: an empty key cannot be looked up, and the mapper writes an
-empty domain string as NULL, which no equality filter matches.
+The model declares this column as the trade's key, so every writer
+supplies a value here: an empty key cannot be looked up, and the mapper
+writes an empty domain string as NULL, which no equality filter matches.
 
 #+begin_src cpp :name generator
 std::string("TRD-") + std::string(faker::string::alphanumeric(12))
@@ -702,6 +702,7 @@ and msgpack headers the storage export needs.
 #include <chrono>
 #include <rfl/msgpack.hpp>
 #include <unordered_map>
+#include <unordered_set>
 #+end_src
 
 ** Handler private members
@@ -840,9 +841,13 @@ type, then read each product's table in one batch.
             comp_legs_map;
         if (!composite_ids.empty()) {
             repository::composite_leg_repository comp_leg_repo;
-            for (auto& leg : comp_leg_repo.read_latest(ctx, composite_ids))
-                comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
-                    std::move(leg));
+            const std::unordered_set<std::string> wanted(composite_ids.begin(),
+                                                         composite_ids.end());
+            for (auto& leg : comp_leg_repo.read_latest(ctx)) {
+                const auto key = boost::uuids::to_string(leg.identity.instrument_id);
+                if (wanted.contains(key))
+                    comp_legs_map[key].push_back(std::move(leg));
+            }
         }
 
         // Phase 3: batch-fetch instruments, build lookup map

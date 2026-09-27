@@ -91,6 +91,17 @@ A report definition's configuration is a set of strongly typed entities rather t
   /projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp/, so that
   document cannot be read or written at all today. The SIMM slice generates the
   binding first; the round trip proves it afterwards.
+- The classification task was written against columns that do not exist. The
+  report definition carries =fsm_state_id= and =scheduler_job_id=, and keeps
+  =schedule_expression= and =concurrency_policy=; =pre_processing=,
+  =prepared_input_key= and =post_processing= appear nowhere but an untracked web
+  build artifact. Classification replaces the type code with a foreign key and
+  the run columns with a classification, and it does not hunt for those three.
+- A reporting table declares a foreign key in a =* Foreign keys= section with
+  =:table:=, =:target_column:=, =:parent_entity:=, =:nullable:=, =:error_message:=
+  and =:list_by:=, which generates validation and indexes; it does not use the
+  =:references:= property that one compute model uses. See
+  =evidence/reporting_model_recon.md=.
 
 * Out of scope
 

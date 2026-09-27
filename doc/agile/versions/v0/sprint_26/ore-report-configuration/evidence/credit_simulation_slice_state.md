@@ -36,8 +36,24 @@ The environment load is not optional: the binary aborts with
   writes to or reads from PostgreSQL. This is the objective's central claim
   and the largest gap. The next step is a sibling test that takes the mapped
   entities, writes them through the generated repositories, reads them back,
-  and only then calls `reverse`. `projects/ores.analytics/core/tests/repository_*_repository_tests.cpp`
-  shows how a test obtains a database context; read one before writing.
+  and only then calls `reverse`.
+
+  The wiring is known, from
+  `projects/ores.analytics/core/tests/repository_pricing_model_config_repository_tests.cpp:38-55`:
+
+  ```cpp
+  using ores::testing::scoped_database_helper;
+  scoped_database_helper h;
+  auto ctx = ores::testing::make_generation_context(h);   // for generators only
+  repo.write(h.context(), entity);
+  auto read = repo.read_latest(h.context());
+  ```
+
+  A repository needs no synthetic data: map a corpus document, then write the
+  four vectors and read them back. Compare the re-read rows against the mapped
+  ones before calling `reverse`, so a failure names which leg broke. Note that
+  a re-read regenerates nothing but does reorder, so match rows by their
+  natural key — matrix plus `from_rating` — and not by position.
 - Nine of eleven document kinds have no tables at all.
 - 121 generated files still exist for the three retired entities
   (`credit_ratings`, `matrix_state_config`, `matrix_cell_config`). The models

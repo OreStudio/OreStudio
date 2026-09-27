@@ -105,13 +105,18 @@ struct Reflector<std::optional<boost::uuids::uuid>> {
 /**
  * @brief Custom reflector for std::chrono::year_month_day.
  *
- * Serializes to and from an ISO 8601 date string ("YYYY-MM-DD").
+ * Serializes to and from an ISO 8601 date string ("YYYY-MM-DD"). An
+ * unengaged date -- the default-constructed value the domain uses as
+ * its absent sentinel -- is the empty string, which reads back as that
+ * same default, so a default-constructed entity survives a round trip.
  */
 template <>
 struct Reflector<std::chrono::year_month_day> {
     using ReflType = std::string;
 
     static std::chrono::year_month_day to(const ReflType& str) {
+        if (str.empty())
+            return {};
         int y{}, m{}, d{};
         char sep1{}, sep2{};
         std::istringstream ss(str);
@@ -126,7 +131,7 @@ struct Reflector<std::chrono::year_month_day> {
     }
 
     static ReflType from(const std::chrono::year_month_day& v) {
-        return std::format("{:%Y-%m-%d}", v);
+        return v.ok() ? std::format("{:%Y-%m-%d}", v) : std::string{};
     }
 };
 

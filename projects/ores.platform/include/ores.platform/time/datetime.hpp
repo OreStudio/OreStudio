@@ -122,7 +122,10 @@ public:
     static std::string to_iso8601_date(const std::chrono::year_month_day& date);
 
     /**
-     * @brief Parses an ISO 8601 date string ("YYYY-MM-DD") to a calendar date.
+     * @brief Parses an ISO 8601 date string to a calendar date.
+     *
+     * Accepts the extended form ("YYYY-MM-DD") and the basic form
+     * ("YYYYMMDD").
      *
      * @param str String to parse.
      * @return Parsed date.

@@ -120,9 +120,15 @@ std::string datetime::to_iso8601_date(const std::chrono::year_month_day& date) {
 }
 
 std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) {
+    // ISO 8601 states a calendar date in the extended form ("YYYY-MM-DD")
+    // and in the basic form ("YYYYMMDD"); ORE documents use both.
+    std::string extended = str;
+    if (str.size() == 8 && str.find('-') == std::string::npos)
+        extended = str.substr(0, 4) + "-" + str.substr(4, 2) + "-" + str.substr(6, 2);
+
     int yy{}, mm{}, dd{};
     char s1{}, s2{};
-    std::istringstream ss(str);
+    std::istringstream ss(extended);
     ss >> yy >> s1 >> mm >> s2 >> dd;
 
     if (ss.fail() || s1 != '-' || s2 != '-')

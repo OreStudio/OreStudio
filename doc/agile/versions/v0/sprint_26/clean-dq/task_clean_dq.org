@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/dq-clean-batch-5
-#+pr: 2303
+#+pr: 2304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -237,6 +237,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2304][#2304]] | [dq] Pass H01: run both diagram passes and write the architecture audit |
 | [[https://github.com/OreStudio/OreStudio/pull/2303][#2303]] | [agile] Correct the dq H01 finding: the diagram generator exists |
 | [[https://github.com/OreStudio/OreStudio/pull/2302][#2302]] | [dq] Remove the model properties that name the retired message types |
 | [[https://github.com/OreStudio/OreStudio/pull/2300][#2300]] | [codegen] Add the vacuous-test and reachability survey tools |

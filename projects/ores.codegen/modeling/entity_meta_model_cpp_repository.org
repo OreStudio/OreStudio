@@ -57,6 +57,27 @@ words, irregular plurals):
 ,:END:
 #+end_src
 
+* Tenant read scope
+
+Every read the repository generates carries a =tenant_id = ctx.tenant_id()=
+predicate, on top of the table's row-level security policy. That predicate is
+what a read chooses to add, and =:tenant_read_scope:= states the choice:
+
+| Value              | Meaning                                                        |
+|--------------------+-----------------------------------------------------------------|
+| =tenant= (default) | The read carries the predicate. Use it for rows a caller may only see in its own tenant. |
+| =shared=           | The read carries no tenant predicate and the row-level security policy alone decides. Use it when the policy admits rows the predicate would hide: system-tenant-seeded reference data every tenant may read, or a service that holds the system tenant and works across tenants. |
+
+Mutations (insert, update, delete) always stay tenant-scoped, whichever value is set.
+
+#+begin_src org
+,** Repository
+,:PROPERTIES:
+,:tenant_read_scope: shared
+,:entity_singular_short: catalog
+,:END:
+#+end_src
+
 * Entity includes
 
 Same shape as [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]'s =Domain includes=, but for the

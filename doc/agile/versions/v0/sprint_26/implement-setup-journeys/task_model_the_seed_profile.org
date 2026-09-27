@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-the-seed-profile
-#+pr: 2306
+#+pr: 2308
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -127,6 +127,7 @@ these rows gets its own scenario when its screen exists.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2308][#2308]] | [agile] Close the seed profile task |
 | [[https://github.com/OreStudio/OreStudio/pull/2306][#2306]] | [iam] Model the seed profile and seed the two profiles |
 
 * Review

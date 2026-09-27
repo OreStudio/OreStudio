@@ -8,7 +8,7 @@
 #+filetags: :clean-iam:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/iam-security-defects
-#+pr:
+#+pr: 2256
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2256][#2256]] | [iam] Close the five security defects the clean-up recorded |
 
 * Review
 

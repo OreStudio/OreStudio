@@ -37,28 +37,28 @@ import type { Language } from './languages.js';
  * is the source the others fall back to rather than a peer of them.
  */
 const TRANSLATED: Readonly<Record<Exclude<Language, 'en'>, Record<string, string>>> = {
-  fr: frFlat,
-  pt: ptFlat,
+    fr: frFlat,
+    pt: ptFlat,
 };
 
 describe('the catalogue', () => {
-  it('agrees with English on the key set, in every language', () => {
-    const english = Object.keys(enFlat).sort();
-    expect(english.length).toBeGreaterThan(0);
-    for (const [language, flat] of Object.entries(TRANSLATED)) {
-      expect({ language, keys: Object.keys(flat).sort() }).toEqual({
-        language,
-        keys: english,
-      });
-    }
-  });
+    it('agrees with English on the key set, in every language', () => {
+        const english = Object.keys(enFlat).sort();
+        expect(english.length).toBeGreaterThan(0);
+        for (const [language, flat] of Object.entries(TRANSLATED)) {
+            expect({ language, keys: Object.keys(flat).sort() }).toEqual({
+                language,
+                keys: english,
+            });
+        }
+    });
 
-  it('is sourced in English, which a translation falls back to', () => {
-    // A translation that carries one message, deliberately: every other key has
-    // to come from English, and the message it does carry has to win.
-    const partial: Record<string, string> = { 'app.name': 'ORE Studio (fr)' };
-    const translator = createTranslator('fr', enFlat, partial);
-    expect(translator.t('app.name')).toBe('ORE Studio (fr)');
-    expect(translator.t('landing.signUp')).toBe('Sign up');
-  });
+    it('is sourced in English, which a translation falls back to', () => {
+        // A translation that carries one message, deliberately: every other key has
+        // to come from English, and the message it does carry has to win.
+        const partial: Record<string, string> = { 'app.name': 'ORE Studio (fr)' };
+        const translator = createTranslator('fr', enFlat, partial);
+        expect(translator.t('app.name')).toBe('ORE Studio (fr)');
+        expect(translator.t('landing.signUp')).toBe('Sign up');
+    });
 });

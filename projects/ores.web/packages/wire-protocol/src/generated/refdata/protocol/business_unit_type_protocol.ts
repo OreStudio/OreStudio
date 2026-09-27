@@ -168,15 +168,15 @@ export interface GetBusinessUnitTypeVersionResponse {
 }
 
 export const subjects = {
-    list_business_unit_types_request: "refdata.v1.business_unit_types.list",
-    get_business_unit_type_request: "refdata.v1.business_unit_types.get",
-    get_many_business_unit_types_request: "refdata.v1.business_unit_types.get_many",
-    put_business_unit_type_request: "refdata.v1.business_unit_types.put",
-    put_many_business_unit_types_request: "refdata.v1.business_unit_types.put_many",
-    delete_business_unit_type_request: "refdata.v1.business_unit_types.delete",
-    delete_many_business_unit_types_request: "refdata.v1.business_unit_types.delete_many",
-    list_business_unit_type_versions_request: "refdata.v1.business_unit_types_versions.list",
-    get_business_unit_type_version_request: "refdata.v1.business_unit_types_versions.get",
+    list_business_unit_types_request: 'refdata.v1.business_unit_types.list',
+    get_business_unit_type_request: 'refdata.v1.business_unit_types.get',
+    get_many_business_unit_types_request: 'refdata.v1.business_unit_types.get_many',
+    put_business_unit_type_request: 'refdata.v1.business_unit_types.put',
+    put_many_business_unit_types_request: 'refdata.v1.business_unit_types.put_many',
+    delete_business_unit_type_request: 'refdata.v1.business_unit_types.delete',
+    delete_many_business_unit_types_request: 'refdata.v1.business_unit_types.delete_many',
+    list_business_unit_type_versions_request: 'refdata.v1.business_unit_types_versions.list',
+    get_business_unit_type_version_request: 'refdata.v1.business_unit_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.business_unit_types_events.created",
-    updated: "refdata.v1.business_unit_types_events.updated",
-    deleted: "refdata.v1.business_unit_types_events.deleted",
+    created: 'refdata.v1.business_unit_types_events.created',
+    updated: 'refdata.v1.business_unit_types_events.updated',
+    deleted: 'refdata.v1.business_unit_types_events.deleted',
 } as const;

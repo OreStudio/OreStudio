@@ -169,15 +169,15 @@ export interface GetArtefactTypeVersionResponse {
 }
 
 export const subjects = {
-    list_artefact_types_request: "dq.v1.artefact_types.list",
-    get_artefact_type_request: "dq.v1.artefact_types.get",
-    get_many_artefact_types_request: "dq.v1.artefact_types.get_many",
-    put_artefact_type_request: "dq.v1.artefact_types.put",
-    put_many_artefact_types_request: "dq.v1.artefact_types.put_many",
-    delete_artefact_type_request: "dq.v1.artefact_types.delete",
-    delete_many_artefact_types_request: "dq.v1.artefact_types.delete_many",
-    list_artefact_type_versions_request: "dq.v1.artefact_types_versions.list",
-    get_artefact_type_version_request: "dq.v1.artefact_types_versions.get",
+    list_artefact_types_request: 'dq.v1.artefact_types.list',
+    get_artefact_type_request: 'dq.v1.artefact_types.get',
+    get_many_artefact_types_request: 'dq.v1.artefact_types.get_many',
+    put_artefact_type_request: 'dq.v1.artefact_types.put',
+    put_many_artefact_types_request: 'dq.v1.artefact_types.put_many',
+    delete_artefact_type_request: 'dq.v1.artefact_types.delete',
+    delete_many_artefact_types_request: 'dq.v1.artefact_types.delete_many',
+    list_artefact_type_versions_request: 'dq.v1.artefact_types_versions.list',
+    get_artefact_type_version_request: 'dq.v1.artefact_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +202,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.artefact_types_events.created",
-    updated: "dq.v1.artefact_types_events.updated",
-    deleted: "dq.v1.artefact_types_events.deleted",
+    created: 'dq.v1.artefact_types_events.created',
+    updated: 'dq.v1.artefact_types_events.updated',
+    deleted: 'dq.v1.artefact_types_events.deleted',
 } as const;

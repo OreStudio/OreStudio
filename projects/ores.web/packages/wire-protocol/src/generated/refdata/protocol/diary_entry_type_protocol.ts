@@ -166,15 +166,15 @@ export interface GetDiaryEntryTypeVersionResponse {
 }
 
 export const subjects = {
-    list_diary_entry_types_request: "refdata.v1.diary_entry_types.list",
-    get_diary_entry_type_request: "refdata.v1.diary_entry_types.get",
-    get_many_diary_entry_types_request: "refdata.v1.diary_entry_types.get_many",
-    put_diary_entry_type_request: "refdata.v1.diary_entry_types.put",
-    put_many_diary_entry_types_request: "refdata.v1.diary_entry_types.put_many",
-    delete_diary_entry_type_request: "refdata.v1.diary_entry_types.delete",
-    delete_many_diary_entry_types_request: "refdata.v1.diary_entry_types.delete_many",
-    list_diary_entry_type_versions_request: "refdata.v1.diary_entry_types_versions.list",
-    get_diary_entry_type_version_request: "refdata.v1.diary_entry_types_versions.get",
+    list_diary_entry_types_request: 'refdata.v1.diary_entry_types.list',
+    get_diary_entry_type_request: 'refdata.v1.diary_entry_types.get',
+    get_many_diary_entry_types_request: 'refdata.v1.diary_entry_types.get_many',
+    put_diary_entry_type_request: 'refdata.v1.diary_entry_types.put',
+    put_many_diary_entry_types_request: 'refdata.v1.diary_entry_types.put_many',
+    delete_diary_entry_type_request: 'refdata.v1.diary_entry_types.delete',
+    delete_many_diary_entry_types_request: 'refdata.v1.diary_entry_types.delete_many',
+    list_diary_entry_type_versions_request: 'refdata.v1.diary_entry_types_versions.list',
+    get_diary_entry_type_version_request: 'refdata.v1.diary_entry_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.diary_entry_types_events.created",
-    updated: "refdata.v1.diary_entry_types_events.updated",
-    deleted: "refdata.v1.diary_entry_types_events.deleted",
+    created: 'refdata.v1.diary_entry_types_events.created',
+    updated: 'refdata.v1.diary_entry_types_events.updated',
+    deleted: 'refdata.v1.diary_entry_types_events.deleted',
 } as const;

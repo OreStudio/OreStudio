@@ -34,18 +34,14 @@ export const X_ERROR_HEADER = 'X-Error';
 
 /** Server-reported error codes carried in the `X-Error` header. */
 export type ServerErrorCode =
-  | 'unauthorized'
-  | 'token_expired'
-  | 'forbidden'
-  | 'bad_request'
-  | 'max_session_exceeded';
+    'unauthorized' | 'token_expired' | 'forbidden' | 'bad_request' | 'max_session_exceeded';
 
 /** Base class for every protocol failure. */
 export class ProtocolError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
-    super(message, options);
-    this.name = new.target.name;
-  }
+    constructor(message: string, options?: { cause?: unknown }) {
+        super(message, options);
+        this.name = new.target.name;
+    }
 }
 
 /** The transport could not reach, or lost, the NATS server. */
@@ -59,24 +55,24 @@ export class NotAuthenticatedError extends ProtocolError {}
 
 /** No service is subscribed to the subject. */
 export class ServiceUnavailableError extends ProtocolError {
-  readonly subject: string;
+    readonly subject: string;
 
-  constructor(subject: string, options?: { cause?: unknown }) {
-    super(`No responder for subject ${subject}`, options);
-    this.subject = subject;
-  }
+    constructor(subject: string, options?: { cause?: unknown }) {
+        super(`No responder for subject ${subject}`, options);
+        this.subject = subject;
+    }
 }
 
 /** The server did not answer inside the client timeout. */
 export class RequestTimeoutError extends ProtocolError {
-  readonly subject: string;
-  readonly timeoutMs: number;
+    readonly subject: string;
+    readonly timeoutMs: number;
 
-  constructor(subject: string, timeoutMs: number) {
-    super(`Request to ${subject} timed out after ${timeoutMs}ms`);
-    this.subject = subject;
-    this.timeoutMs = timeoutMs;
-  }
+    constructor(subject: string, timeoutMs: number) {
+        super(`Request to ${subject} timed out after ${timeoutMs}ms`);
+        this.subject = subject;
+        this.timeoutMs = timeoutMs;
+    }
 }
 
 /** The reply body was not decodable as the expected response type. */
@@ -84,14 +80,14 @@ export class MalformedResponseError extends ProtocolError {}
 
 /** The server rejected the request with an `X-Error` header. */
 export class ServerError extends ProtocolError {
-  readonly code: ServerErrorCode;
-  readonly subject: string;
+    readonly code: ServerErrorCode;
+    readonly subject: string;
 
-  constructor(code: ServerErrorCode, subject: string) {
-    super(`Server rejected ${subject} with ${code}`);
-    this.code = code;
-    this.subject = subject;
-  }
+    constructor(code: ServerErrorCode, subject: string) {
+        super(`Server rejected ${subject} with ${code}`);
+        this.code = code;
+        this.subject = subject;
+    }
 }
 
 /**
@@ -103,19 +99,19 @@ export class ServerError extends ProtocolError {
  * message to the caller.
  */
 export class OperationFailedError extends ProtocolError {
-  readonly subject: string;
+    readonly subject: string;
 
-  constructor(subject: string, message: string) {
-    super(message.length > 0 ? message : `Operation on ${subject} failed`);
-    this.subject = subject;
-  }
+    constructor(subject: string, message: string) {
+        super(message.length > 0 ? message : `Operation on ${subject} failed`);
+        this.subject = subject;
+    }
 }
 
 /** The session token is expired, or the session outlived its maximum. */
 export class SessionExpiredError extends ServerError {
-  constructor(code: 'token_expired' | 'max_session_exceeded', subject: string) {
-    super(code, subject);
-  }
+    constructor(code: 'token_expired' | 'max_session_exceeded', subject: string) {
+        super(code, subject);
+    }
 }
 
 /**
@@ -125,17 +121,17 @@ export class SessionExpiredError extends ServerError {
  * {@link MalformedResponseError} rather than being mistaken for success.
  */
 export function serverErrorFor(code: string, subject: string): ProtocolError {
-  switch (code) {
-    case 'token_expired':
-    case 'max_session_exceeded':
-      return new SessionExpiredError(code, subject);
-    case 'unauthorized':
-    case 'forbidden':
-    case 'bad_request':
-      return new ServerError(code, subject);
-    default:
-      return new MalformedResponseError(`Unknown X-Error code ${JSON.stringify(code)}`, {
-        cause: { subject },
-      });
-  }
+    switch (code) {
+        case 'token_expired':
+        case 'max_session_exceeded':
+            return new SessionExpiredError(code, subject);
+        case 'unauthorized':
+        case 'forbidden':
+        case 'bad_request':
+            return new ServerError(code, subject);
+        default:
+            return new MalformedResponseError(`Unknown X-Error code ${JSON.stringify(code)}`, {
+                cause: { subject },
+            });
+    }
 }

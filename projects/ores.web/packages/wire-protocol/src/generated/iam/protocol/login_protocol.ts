@@ -78,16 +78,14 @@ export interface LoginResponse {
     session_id: string;
 }
 
-export interface LogoutRequest {
-}
+export interface LogoutRequest {}
 
 export interface LogoutResponse {
     success: boolean;
     message: string;
 }
 
-export interface PublicKeyRequest {
-}
+export interface PublicKeyRequest {}
 
 /**
  * @brief Request to refresh a JWT token.
@@ -95,8 +93,7 @@ export interface PublicKeyRequest {
  * The current token is passed in the Authorization: Bearer header.
  * No request body is needed — identity is taken from the token claims.
  */
-export interface RefreshRequest {
-}
+export interface RefreshRequest {}
 
 /**
  * @brief Response to a token refresh request.
@@ -139,11 +136,11 @@ export interface ServiceLoginResponse {
 }
 
 export const subjects = {
-    login_request: "iam.v1.auth.login",
-    logout_request: "iam.v1.auth.logout",
-    public_key_request: "iam.v1.auth.public-key",
-    refresh_request: "iam.v1.auth.refresh",
-    service_login_request: "iam.v1.auth.service-login",
+    login_request: 'iam.v1.auth.login',
+    logout_request: 'iam.v1.auth.logout',
+    public_key_request: 'iam.v1.auth.public-key',
+    refresh_request: 'iam.v1.auth.refresh',
+    service_login_request: 'iam.v1.auth.service-login',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -173,15 +173,15 @@ export interface GetCdsConventionVersionResponse {
 }
 
 export const subjects = {
-    list_cds_conventions_request: "refdata.v1.cds_conventions.list",
-    get_cds_convention_request: "refdata.v1.cds_conventions.get",
-    get_many_cds_conventions_request: "refdata.v1.cds_conventions.get_many",
-    put_cds_convention_request: "refdata.v1.cds_conventions.put",
-    put_many_cds_conventions_request: "refdata.v1.cds_conventions.put_many",
-    delete_cds_convention_request: "refdata.v1.cds_conventions.delete",
-    delete_many_cds_conventions_request: "refdata.v1.cds_conventions.delete_many",
-    list_cds_convention_versions_request: "refdata.v1.cds_conventions_versions.list",
-    get_cds_convention_version_request: "refdata.v1.cds_conventions_versions.get",
+    list_cds_conventions_request: 'refdata.v1.cds_conventions.list',
+    get_cds_convention_request: 'refdata.v1.cds_conventions.get',
+    get_many_cds_conventions_request: 'refdata.v1.cds_conventions.get_many',
+    put_cds_convention_request: 'refdata.v1.cds_conventions.put',
+    put_many_cds_conventions_request: 'refdata.v1.cds_conventions.put_many',
+    delete_cds_convention_request: 'refdata.v1.cds_conventions.delete',
+    delete_many_cds_conventions_request: 'refdata.v1.cds_conventions.delete_many',
+    list_cds_convention_versions_request: 'refdata.v1.cds_conventions_versions.list',
+    get_cds_convention_version_request: 'refdata.v1.cds_conventions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -206,7 +206,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.cds_conventions_events.created",
-    updated: "refdata.v1.cds_conventions_events.updated",
-    deleted: "refdata.v1.cds_conventions_events.deleted",
+    created: 'refdata.v1.cds_conventions_events.created',
+    updated: 'refdata.v1.cds_conventions_events.updated',
+    deleted: 'refdata.v1.cds_conventions_events.deleted',
 } as const;

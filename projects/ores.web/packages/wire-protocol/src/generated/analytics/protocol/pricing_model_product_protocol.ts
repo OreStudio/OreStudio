@@ -167,15 +167,16 @@ export interface GetPricingModelProductVersionResponse {
 }
 
 export const subjects = {
-    list_pricing_model_products_request: "analytics.v1.pricing_model_products.list",
-    get_pricing_model_product_request: "analytics.v1.pricing_model_products.get",
-    get_many_pricing_model_products_request: "analytics.v1.pricing_model_products.get_many",
-    put_pricing_model_product_request: "analytics.v1.pricing_model_products.put",
-    put_many_pricing_model_products_request: "analytics.v1.pricing_model_products.put_many",
-    delete_pricing_model_product_request: "analytics.v1.pricing_model_products.delete",
-    delete_many_pricing_model_products_request: "analytics.v1.pricing_model_products.delete_many",
-    list_pricing_model_product_versions_request: "analytics.v1.pricing_model_products_versions.list",
-    get_pricing_model_product_version_request: "analytics.v1.pricing_model_products_versions.get",
+    list_pricing_model_products_request: 'analytics.v1.pricing_model_products.list',
+    get_pricing_model_product_request: 'analytics.v1.pricing_model_products.get',
+    get_many_pricing_model_products_request: 'analytics.v1.pricing_model_products.get_many',
+    put_pricing_model_product_request: 'analytics.v1.pricing_model_products.put',
+    put_many_pricing_model_products_request: 'analytics.v1.pricing_model_products.put_many',
+    delete_pricing_model_product_request: 'analytics.v1.pricing_model_products.delete',
+    delete_many_pricing_model_products_request: 'analytics.v1.pricing_model_products.delete_many',
+    list_pricing_model_product_versions_request:
+        'analytics.v1.pricing_model_products_versions.list',
+    get_pricing_model_product_version_request: 'analytics.v1.pricing_model_products_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "analytics.v1.pricing_model_products_events.created",
-    updated: "analytics.v1.pricing_model_products_events.updated",
-    deleted: "analytics.v1.pricing_model_products_events.deleted",
+    created: 'analytics.v1.pricing_model_products_events.created',
+    updated: 'analytics.v1.pricing_model_products_events.updated',
+    deleted: 'analytics.v1.pricing_model_products_events.deleted',
 } as const;

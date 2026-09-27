@@ -21,12 +21,12 @@
 
 import { z } from 'zod';
 import {
-  LIVE_WORKSPACE_ID,
-  SYSTEM_TENANT_ID,
-  toWireTimestamp,
-  uuid,
-  wireTimestamp,
-  type Uuid,
+    LIVE_WORKSPACE_ID,
+    SYSTEM_TENANT_ID,
+    toWireTimestamp,
+    uuid,
+    wireTimestamp,
+    type Uuid,
 } from './primitives.js';
 
 /**
@@ -49,9 +49,9 @@ const accountTypeSchema = z.enum(ACCOUNT_TYPES);
  * other layer uses.
  */
 export const uuidSchema = z
-  .string()
-  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
-  .transform((value): Uuid => uuid(value));
+    .string()
+    .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    .transform((value): Uuid => uuid(value));
 
 /**
  * An instant as the server writes it: `YYYY-MM-DD HH:MM:SSZ`.
@@ -60,12 +60,12 @@ export const uuidSchema = z
  * the wire schemas.
  */
 export const wireTimestampSchema = z.string().transform((value, ctx) => {
-  try {
-    return wireTimestamp(value);
-  } catch (cause) {
-    ctx.addIssue({ code: 'custom', message: 'Not a wire timestamp', cause });
-    return z.NEVER;
-  }
+    try {
+        return wireTimestamp(value);
+    } catch (cause) {
+        ctx.addIssue({ code: 'custom', message: 'Not a wire timestamp', cause });
+        return z.NEVER;
+    }
 });
 
 /**
@@ -76,47 +76,47 @@ export const wireTimestampSchema = z.string().transform((value, ctx) => {
  * dropped at the parse boundary and cannot reach the browser.
  */
 export const accountSchema = z.object({
-  /** Optimistic-locking version. Bumped on every accepted write. */
-  version: z.int().nonnegative(),
-  id: uuidSchema,
-  tenantId: uuidSchema,
-  username: z.string(),
-  /** Present only for accounts that represent a person. */
-  fullName: z.string(),
-  email: z.string(),
-  accountType: accountTypeSchema,
-  jobTitle: z.string(),
-  /** Reporting line, or `null` when the account sits at the top. */
-  reportsToAccountId: uuidSchema.nullable(),
-  /** Quick-login party, or `null` when the account always picks a party. */
-  defaultPartyId: uuidSchema.nullable(),
-  modifiedBy: z.string(),
-  changeReasonCode: z.string(),
-  changeCommentary: z.string(),
-  performedBy: z.string(),
-  recordedAt: wireTimestampSchema,
+    /** Optimistic-locking version. Bumped on every accepted write. */
+    version: z.int().nonnegative(),
+    id: uuidSchema,
+    tenantId: uuidSchema,
+    username: z.string(),
+    /** Present only for accounts that represent a person. */
+    fullName: z.string(),
+    email: z.string(),
+    accountType: accountTypeSchema,
+    jobTitle: z.string(),
+    /** Reporting line, or `null` when the account sits at the top. */
+    reportsToAccountId: uuidSchema.nullable(),
+    /** Quick-login party, or `null` when the account always picks a party. */
+    defaultPartyId: uuidSchema.nullable(),
+    modifiedBy: z.string(),
+    changeReasonCode: z.string(),
+    changeCommentary: z.string(),
+    performedBy: z.string(),
+    recordedAt: wireTimestampSchema,
 });
 
 export type Account = z.infer<typeof accountSchema>;
 
 /** One selectable party offered at login, or switchable mid-session. */
 export const partySummarySchema = z.object({
-  id: uuidSchema,
-  name: z.string(),
-  /** `System` or `Operational`. */
-  partyCategory: z.string(),
-  /** FpML business-centre code, for example `GBLO`. */
-  businessCenterCode: z.string(),
+    id: uuidSchema,
+    name: z.string(),
+    /** `System` or `Operational`. */
+    partyCategory: z.string(),
+    /** FpML business-centre code, for example `GBLO`. */
+    businessCenterCode: z.string(),
 });
 
 export type PartySummary = z.infer<typeof partySummarySchema>;
 
 /** A page of accounts. `totalCount` counts every account the caller can see. */
 export const accountPageSchema = z.object({
-  accounts: z.array(accountSchema),
-  totalCount: z.int().nonnegative(),
-  offset: z.int().nonnegative(),
-  limit: z.int().positive(),
+    accounts: z.array(accountSchema),
+    totalCount: z.int().nonnegative(),
+    offset: z.int().nonnegative(),
+    limit: z.int().positive(),
 });
 
 export type AccountPage = z.infer<typeof accountPageSchema>;
@@ -129,14 +129,14 @@ export type AccountPage = z.infer<typeof accountPageSchema>;
  * must not read would be pointless indirection.
  */
 export const activePartySchema = z.object({
-  accountId: uuidSchema,
-  tenantId: uuidSchema,
-  tenantName: z.string(),
-  party: partySummarySchema,
-  sessionId: z.string(),
-  /** When the token was last issued, so the browser can refresh before expiry. */
-  issuedAt: wireTimestampSchema,
-  accessLifetimeSeconds: z.int().positive(),
+    accountId: uuidSchema,
+    tenantId: uuidSchema,
+    tenantName: z.string(),
+    party: partySummarySchema,
+    sessionId: z.string(),
+    /** When the token was last issued, so the browser can refresh before expiry. */
+    issuedAt: wireTimestampSchema,
+    accessLifetimeSeconds: z.int().positive(),
 });
 
 export type ActiveParty = z.infer<typeof activePartySchema>;

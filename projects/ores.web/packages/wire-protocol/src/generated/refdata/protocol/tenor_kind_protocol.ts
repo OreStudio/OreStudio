@@ -166,15 +166,15 @@ export interface GetTenorKindVersionResponse {
 }
 
 export const subjects = {
-    list_tenor_kinds_request: "refdata.v1.tenor_kinds.list",
-    get_tenor_kind_request: "refdata.v1.tenor_kinds.get",
-    get_many_tenor_kinds_request: "refdata.v1.tenor_kinds.get_many",
-    put_tenor_kind_request: "refdata.v1.tenor_kinds.put",
-    put_many_tenor_kinds_request: "refdata.v1.tenor_kinds.put_many",
-    delete_tenor_kind_request: "refdata.v1.tenor_kinds.delete",
-    delete_many_tenor_kinds_request: "refdata.v1.tenor_kinds.delete_many",
-    list_tenor_kind_versions_request: "refdata.v1.tenor_kinds_versions.list",
-    get_tenor_kind_version_request: "refdata.v1.tenor_kinds_versions.get",
+    list_tenor_kinds_request: 'refdata.v1.tenor_kinds.list',
+    get_tenor_kind_request: 'refdata.v1.tenor_kinds.get',
+    get_many_tenor_kinds_request: 'refdata.v1.tenor_kinds.get_many',
+    put_tenor_kind_request: 'refdata.v1.tenor_kinds.put',
+    put_many_tenor_kinds_request: 'refdata.v1.tenor_kinds.put_many',
+    delete_tenor_kind_request: 'refdata.v1.tenor_kinds.delete',
+    delete_many_tenor_kinds_request: 'refdata.v1.tenor_kinds.delete_many',
+    list_tenor_kind_versions_request: 'refdata.v1.tenor_kinds_versions.list',
+    get_tenor_kind_version_request: 'refdata.v1.tenor_kinds_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.tenor_kinds_events.created",
-    updated: "refdata.v1.tenor_kinds_events.updated",
-    deleted: "refdata.v1.tenor_kinds_events.deleted",
+    created: 'refdata.v1.tenor_kinds_events.created',
+    updated: 'refdata.v1.tenor_kinds_events.updated',
+    deleted: 'refdata.v1.tenor_kinds_events.deleted',
 } as const;

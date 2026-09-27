@@ -166,15 +166,15 @@ export interface GetSeriesSubclassCodeVersionResponse {
 }
 
 export const subjects = {
-    list_series_subclass_codes_request: "refdata.v1.series_subclass_codes.list",
-    get_series_subclass_code_request: "refdata.v1.series_subclass_codes.get",
-    get_many_series_subclass_codes_request: "refdata.v1.series_subclass_codes.get_many",
-    put_series_subclass_code_request: "refdata.v1.series_subclass_codes.put",
-    put_many_series_subclass_codes_request: "refdata.v1.series_subclass_codes.put_many",
-    delete_series_subclass_code_request: "refdata.v1.series_subclass_codes.delete",
-    delete_many_series_subclass_codes_request: "refdata.v1.series_subclass_codes.delete_many",
-    list_series_subclass_code_versions_request: "refdata.v1.series_subclass_codes_versions.list",
-    get_series_subclass_code_version_request: "refdata.v1.series_subclass_codes_versions.get",
+    list_series_subclass_codes_request: 'refdata.v1.series_subclass_codes.list',
+    get_series_subclass_code_request: 'refdata.v1.series_subclass_codes.get',
+    get_many_series_subclass_codes_request: 'refdata.v1.series_subclass_codes.get_many',
+    put_series_subclass_code_request: 'refdata.v1.series_subclass_codes.put',
+    put_many_series_subclass_codes_request: 'refdata.v1.series_subclass_codes.put_many',
+    delete_series_subclass_code_request: 'refdata.v1.series_subclass_codes.delete',
+    delete_many_series_subclass_codes_request: 'refdata.v1.series_subclass_codes.delete_many',
+    list_series_subclass_code_versions_request: 'refdata.v1.series_subclass_codes_versions.list',
+    get_series_subclass_code_version_request: 'refdata.v1.series_subclass_codes_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.series_subclass_codes_events.created",
-    updated: "refdata.v1.series_subclass_codes_events.updated",
-    deleted: "refdata.v1.series_subclass_codes_events.deleted",
+    created: 'refdata.v1.series_subclass_codes_events.created',
+    updated: 'refdata.v1.series_subclass_codes_events.updated',
+    deleted: 'refdata.v1.series_subclass_codes_events.deleted',
 } as const;

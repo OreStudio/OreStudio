@@ -30,8 +30,7 @@
  * the server-side function knows how to expand, which is why it declares no
  * fields.
  */
-export interface PublishAccountsFromDqRequest {
-}
+export interface PublishAccountsFromDqRequest {}
 
 export interface SaveAccountRequest {
     principal: string;
@@ -207,18 +206,18 @@ export interface ChangePasswordRequestTyped {
 }
 
 export const subjects = {
-    publish_accounts_from_dq_request: "iam.v1.accounts.publish-from-dq",
-    save_account_request: "iam.v1.accounts.save",
-    update_account_request: "iam.v1.accounts.update",
-    delete_account_request: "iam.v1.accounts.delete",
-    lock_account_request: "iam.v1.accounts.lock",
-    unlock_account_request: "iam.v1.accounts.unlock",
-    reset_password_request: "iam.v1.accounts.reset-password",
-    update_my_email_request: "iam.v1.accounts.update-email",
-    set_my_default_party_request: "iam.v1.accounts.set-default-party",
-    select_party_request: "iam.v1.accounts.select-party",
-    switch_party_request: "iam.v1.accounts.switch-party",
-    change_password_request_typed: "iam.v1.accounts.change-password",
+    publish_accounts_from_dq_request: 'iam.v1.accounts.publish-from-dq',
+    save_account_request: 'iam.v1.accounts.save',
+    update_account_request: 'iam.v1.accounts.update',
+    delete_account_request: 'iam.v1.accounts.delete',
+    lock_account_request: 'iam.v1.accounts.lock',
+    unlock_account_request: 'iam.v1.accounts.unlock',
+    reset_password_request: 'iam.v1.accounts.reset-password',
+    update_my_email_request: 'iam.v1.accounts.update-email',
+    set_my_default_party_request: 'iam.v1.accounts.set-default-party',
+    select_party_request: 'iam.v1.accounts.select-party',
+    switch_party_request: 'iam.v1.accounts.switch-party',
+    change_password_request_typed: 'iam.v1.accounts.change-password',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

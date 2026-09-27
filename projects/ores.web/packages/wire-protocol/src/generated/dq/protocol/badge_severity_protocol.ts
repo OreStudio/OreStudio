@@ -166,15 +166,15 @@ export interface GetBadgeSeverityVersionResponse {
 }
 
 export const subjects = {
-    list_badge_severities_request: "dq.v1.badge_severities.list",
-    get_badge_severity_request: "dq.v1.badge_severities.get",
-    get_many_badge_severities_request: "dq.v1.badge_severities.get_many",
-    put_badge_severity_request: "dq.v1.badge_severities.put",
-    put_many_badge_severities_request: "dq.v1.badge_severities.put_many",
-    delete_badge_severity_request: "dq.v1.badge_severities.delete",
-    delete_many_badge_severities_request: "dq.v1.badge_severities.delete_many",
-    list_badge_severity_versions_request: "dq.v1.badge_severities_versions.list",
-    get_badge_severity_version_request: "dq.v1.badge_severities_versions.get",
+    list_badge_severities_request: 'dq.v1.badge_severities.list',
+    get_badge_severity_request: 'dq.v1.badge_severities.get',
+    get_many_badge_severities_request: 'dq.v1.badge_severities.get_many',
+    put_badge_severity_request: 'dq.v1.badge_severities.put',
+    put_many_badge_severities_request: 'dq.v1.badge_severities.put_many',
+    delete_badge_severity_request: 'dq.v1.badge_severities.delete',
+    delete_many_badge_severities_request: 'dq.v1.badge_severities.delete_many',
+    list_badge_severity_versions_request: 'dq.v1.badge_severities_versions.list',
+    get_badge_severity_version_request: 'dq.v1.badge_severities_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.badge_severities_events.created",
-    updated: "dq.v1.badge_severities_events.updated",
-    deleted: "dq.v1.badge_severities_events.deleted",
+    created: 'dq.v1.badge_severities_events.created',
+    updated: 'dq.v1.badge_severities_events.updated',
+    deleted: 'dq.v1.badge_severities_events.deleted',
 } as const;

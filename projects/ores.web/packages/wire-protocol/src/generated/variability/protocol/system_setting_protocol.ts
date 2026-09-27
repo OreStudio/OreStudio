@@ -168,15 +168,15 @@ export interface GetSystemSettingVersionResponse {
 }
 
 export const subjects = {
-    list_system_settings_request: "variability.v1.system_settings.list",
-    get_system_setting_request: "variability.v1.system_settings.get",
-    get_many_system_settings_request: "variability.v1.system_settings.get_many",
-    put_system_setting_request: "variability.v1.system_settings.put",
-    put_many_system_settings_request: "variability.v1.system_settings.put_many",
-    delete_system_setting_request: "variability.v1.system_settings.delete",
-    delete_many_system_settings_request: "variability.v1.system_settings.delete_many",
-    list_system_setting_versions_request: "variability.v1.system_settings_versions.list",
-    get_system_setting_version_request: "variability.v1.system_settings_versions.get",
+    list_system_settings_request: 'variability.v1.system_settings.list',
+    get_system_setting_request: 'variability.v1.system_settings.get',
+    get_many_system_settings_request: 'variability.v1.system_settings.get_many',
+    put_system_setting_request: 'variability.v1.system_settings.put',
+    put_many_system_settings_request: 'variability.v1.system_settings.put_many',
+    delete_system_setting_request: 'variability.v1.system_settings.delete',
+    delete_many_system_settings_request: 'variability.v1.system_settings.delete_many',
+    list_system_setting_versions_request: 'variability.v1.system_settings_versions.list',
+    get_system_setting_version_request: 'variability.v1.system_settings_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "variability.v1.system_settings_events.created",
-    updated: "variability.v1.system_settings_events.updated",
-    deleted: "variability.v1.system_settings_events.deleted",
+    created: 'variability.v1.system_settings_events.created',
+    updated: 'variability.v1.system_settings_events.updated',
+    deleted: 'variability.v1.system_settings_events.deleted',
 } as const;

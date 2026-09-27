@@ -75,9 +75,9 @@ export interface GetManyLeiEntitiesResponse {
 }
 
 export const subjects = {
-    list_lei_entities_request: "dq.v1.lei_entities.list",
-    get_lei_entity_request: "dq.v1.lei_entities.get",
-    get_many_lei_entities_request: "dq.v1.lei_entities.get_many",
+    list_lei_entities_request: 'dq.v1.lei_entities.list',
+    get_lei_entity_request: 'dq.v1.lei_entities.get',
+    get_many_lei_entities_request: 'dq.v1.lei_entities.get_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -96,7 +96,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.lei_entities_events.created",
-    updated: "dq.v1.lei_entities_events.updated",
-    deleted: "dq.v1.lei_entities_events.deleted",
+    created: 'dq.v1.lei_entities_events.created',
+    updated: 'dq.v1.lei_entities_events.updated',
+    deleted: 'dq.v1.lei_entities_events.deleted',
 } as const;

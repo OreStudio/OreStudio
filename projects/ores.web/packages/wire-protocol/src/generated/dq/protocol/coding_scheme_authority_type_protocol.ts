@@ -165,15 +165,18 @@ export interface GetCodingSchemeAuthorityTypeVersionResponse {
 }
 
 export const subjects = {
-    list_coding_scheme_authority_types_request: "dq.v1.coding_scheme_authority_types.list",
-    get_coding_scheme_authority_type_request: "dq.v1.coding_scheme_authority_types.get",
-    get_many_coding_scheme_authority_types_request: "dq.v1.coding_scheme_authority_types.get_many",
-    put_coding_scheme_authority_type_request: "dq.v1.coding_scheme_authority_types.put",
-    put_many_coding_scheme_authority_types_request: "dq.v1.coding_scheme_authority_types.put_many",
-    delete_coding_scheme_authority_type_request: "dq.v1.coding_scheme_authority_types.delete",
-    delete_many_coding_scheme_authority_types_request: "dq.v1.coding_scheme_authority_types.delete_many",
-    list_coding_scheme_authority_type_versions_request: "dq.v1.coding_scheme_authority_types_versions.list",
-    get_coding_scheme_authority_type_version_request: "dq.v1.coding_scheme_authority_types_versions.get",
+    list_coding_scheme_authority_types_request: 'dq.v1.coding_scheme_authority_types.list',
+    get_coding_scheme_authority_type_request: 'dq.v1.coding_scheme_authority_types.get',
+    get_many_coding_scheme_authority_types_request: 'dq.v1.coding_scheme_authority_types.get_many',
+    put_coding_scheme_authority_type_request: 'dq.v1.coding_scheme_authority_types.put',
+    put_many_coding_scheme_authority_types_request: 'dq.v1.coding_scheme_authority_types.put_many',
+    delete_coding_scheme_authority_type_request: 'dq.v1.coding_scheme_authority_types.delete',
+    delete_many_coding_scheme_authority_types_request:
+        'dq.v1.coding_scheme_authority_types.delete_many',
+    list_coding_scheme_authority_type_versions_request:
+        'dq.v1.coding_scheme_authority_types_versions.list',
+    get_coding_scheme_authority_type_version_request:
+        'dq.v1.coding_scheme_authority_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.coding_scheme_authority_types_events.created",
-    updated: "dq.v1.coding_scheme_authority_types_events.updated",
-    deleted: "dq.v1.coding_scheme_authority_types_events.deleted",
+    created: 'dq.v1.coding_scheme_authority_types_events.created',
+    updated: 'dq.v1.coding_scheme_authority_types_events.updated',
+    deleted: 'dq.v1.coding_scheme_authority_types_events.deleted',
 } as const;

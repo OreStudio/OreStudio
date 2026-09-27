@@ -145,14 +145,15 @@ export interface ListByBundleCodeDatasetBundleMembersResponse {
 }
 
 export const subjects = {
-    list_dataset_bundle_members_request: "dq.v1.dataset_bundle_members.list",
-    get_dataset_bundle_member_request: "dq.v1.dataset_bundle_members.get",
-    get_many_dataset_bundle_members_request: "dq.v1.dataset_bundle_members.get_many",
-    put_dataset_bundle_member_request: "dq.v1.dataset_bundle_members.put",
-    put_many_dataset_bundle_members_request: "dq.v1.dataset_bundle_members.put_many",
-    delete_dataset_bundle_member_request: "dq.v1.dataset_bundle_members.delete",
-    delete_many_dataset_bundle_members_request: "dq.v1.dataset_bundle_members.delete_many",
-    list_by_bundle_code_dataset_bundle_members_request: "dq.v1.dataset_bundle_members.list_by_bundle_code",
+    list_dataset_bundle_members_request: 'dq.v1.dataset_bundle_members.list',
+    get_dataset_bundle_member_request: 'dq.v1.dataset_bundle_members.get',
+    get_many_dataset_bundle_members_request: 'dq.v1.dataset_bundle_members.get_many',
+    put_dataset_bundle_member_request: 'dq.v1.dataset_bundle_members.put',
+    put_many_dataset_bundle_members_request: 'dq.v1.dataset_bundle_members.put_many',
+    delete_dataset_bundle_member_request: 'dq.v1.dataset_bundle_members.delete',
+    delete_many_dataset_bundle_members_request: 'dq.v1.dataset_bundle_members.delete_many',
+    list_by_bundle_code_dataset_bundle_members_request:
+        'dq.v1.dataset_bundle_members.list_by_bundle_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

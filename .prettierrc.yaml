@@ -1,0 +1,18 @@
+# The TypeScript house style, deliberately the C++ one: .clang-format declares
+# IndentWidth 4 and ColumnLimit 100, so one width governs both languages and a
+# reader moves between them without re-tuning. The codegen render runs prettier
+# over its own output, the way it runs clang-format over its C++, so this file
+# is the one place the style is stated.
+printWidth: 100
+tabWidth: 4
+singleQuote: true
+
+# JSON, Markdown and CSS keep two spaces. That is the convention for those
+# formats, and four-space JSON is nobody's.
+overrides:
+  - files:
+      - '*.json'
+      - '*.md'
+      - '*.css'
+    options:
+      tabWidth: 2

@@ -62,6 +62,86 @@ def clang_format_files(paths: list[Path]) -> None:
     subprocess.run([exe, "-i", *str_paths], check=True)
     log.info("clang-formatted %d generated C++ file(s) (two passes)", len(cpp))
 
+
+# TypeScript extensions that codegen runs prettier over as a second step.
+_PRETTIER_EXTS = {".ts", ".tsx"}
+
+
+def _declared_prettier_version(repo_root: Path) -> str | None:
+    """The prettier version the TypeScript workspace declares, or ``None``."""
+    package = repo_root / "projects" / "ores.web" / "package.json"
+    try:
+        declared = json.loads(package.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    version = declared.get("devDependencies", {}).get("prettier")
+    return version if isinstance(version, str) else None
+
+
+@lru_cache(maxsize=1)
+def _prettier_exe(repo_root: Path) -> str | None:
+    """The prettier the TypeScript render formats with, or ``None``.
+
+    The workspace's own prettier comes first: it is the version
+    ``projects/ores.web/package.json`` declares, so a regeneration and the
+    committed tree cannot disagree about what *formatted* means. A prettier on
+    ``PATH`` is the fallback, and the workflow that runs the drift gate
+    installs that version for the same reason.
+    """
+    local = repo_root / "projects" / "ores.web" / "node_modules" / ".bin" / "prettier"
+    exe = str(local) if local.is_file() else shutil.which("prettier")
+    if exe is None:
+        return None
+    declared = _declared_prettier_version(repo_root)
+    if declared is not None:
+        try:
+            found = subprocess.run(
+                [exe, "--version"], check=True, capture_output=True,
+                text=True).stdout.strip()
+        except (OSError, subprocess.CalledProcessError):
+            found = "unknown"
+        if found != declared:
+            log.warning(
+                "prettier %s formats the generated TypeScript, but "
+                "projects/ores.web declares %s; a different version formats "
+                "differently, and the drift gate then reads every generated "
+                "file as drifted", found, declared)
+    return exe
+
+
+def prettier_format_files(paths: list[Path], base_dir: Path) -> None:
+    """Run ``prettier --write`` over the generated TypeScript files.
+
+    The TypeScript half of :func:`clang_format_files`: codegen renders the
+    template, then normalises the output, so a template never has to be
+    prettier-shaped and the drift gate compares formatted bytes on both sides.
+    A generated file is therefore never hand-formatted, because the next
+    regeneration would undo it.
+
+    The repository's configuration is passed explicitly rather than discovered.
+    The drift gate renders into a temporary directory, where a configuration
+    found by walking up from the file does not exist, and both runs have to use
+    one style or the gate reports drift that is not there.
+
+    No-op (with a warning) when prettier is not installed.
+    """
+    ts = [p for p in paths if p.suffix in _PRETTIER_EXTS]
+    if not ts:
+        return
+    repo_root = base_dir.parent.parent
+    exe = _prettier_exe(repo_root)
+    if exe is None:
+        log.warning("prettier not found; skipping format of %d generated "
+                    "TypeScript file(s)", len(ts))
+        return
+    subprocess.run(
+        [exe, "--write", "--log-level", "warn",
+         "--config", str(repo_root / ".prettierrc.yaml"),
+         *[str(p) for p in ts]],
+        check=True,
+    )
+    log.info("prettier-formatted %d generated TypeScript file(s)", len(ts))
+
 # Filter for org files in a component's modeling/ dir: only files whose
 # frontmatter declares a codegen model type are picked up. Other org
 # files (overviews, knowledge docs, plantuml source) are skipped.
@@ -785,6 +865,7 @@ def _generate_single(
         written.append(output_path)
 
     clang_format_files(written)
+    prettier_format_files(written, base_dir)
     return 0
 
 

@@ -166,15 +166,16 @@ export interface GetDayCountFractionTypeVersionResponse {
 }
 
 export const subjects = {
-    list_day_count_fraction_types_request: "refdata.v1.day_count_fraction_types.list",
-    get_day_count_fraction_type_request: "refdata.v1.day_count_fraction_types.get",
-    get_many_day_count_fraction_types_request: "refdata.v1.day_count_fraction_types.get_many",
-    put_day_count_fraction_type_request: "refdata.v1.day_count_fraction_types.put",
-    put_many_day_count_fraction_types_request: "refdata.v1.day_count_fraction_types.put_many",
-    delete_day_count_fraction_type_request: "refdata.v1.day_count_fraction_types.delete",
-    delete_many_day_count_fraction_types_request: "refdata.v1.day_count_fraction_types.delete_many",
-    list_day_count_fraction_type_versions_request: "refdata.v1.day_count_fraction_types_versions.list",
-    get_day_count_fraction_type_version_request: "refdata.v1.day_count_fraction_types_versions.get",
+    list_day_count_fraction_types_request: 'refdata.v1.day_count_fraction_types.list',
+    get_day_count_fraction_type_request: 'refdata.v1.day_count_fraction_types.get',
+    get_many_day_count_fraction_types_request: 'refdata.v1.day_count_fraction_types.get_many',
+    put_day_count_fraction_type_request: 'refdata.v1.day_count_fraction_types.put',
+    put_many_day_count_fraction_types_request: 'refdata.v1.day_count_fraction_types.put_many',
+    delete_day_count_fraction_type_request: 'refdata.v1.day_count_fraction_types.delete',
+    delete_many_day_count_fraction_types_request: 'refdata.v1.day_count_fraction_types.delete_many',
+    list_day_count_fraction_type_versions_request:
+        'refdata.v1.day_count_fraction_types_versions.list',
+    get_day_count_fraction_type_version_request: 'refdata.v1.day_count_fraction_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.day_count_fraction_types_events.created",
-    updated: "refdata.v1.day_count_fraction_types_events.updated",
-    deleted: "refdata.v1.day_count_fraction_types_events.deleted",
+    created: 'refdata.v1.day_count_fraction_types_events.created',
+    updated: 'refdata.v1.day_count_fraction_types_events.updated',
+    deleted: 'refdata.v1.day_count_fraction_types_events.deleted',
 } as const;

@@ -178,15 +178,15 @@ export interface GetCurrencyVersionResponse {
 }
 
 export const subjects = {
-    list_currencies_request: "refdata.v1.currencies.list",
-    get_currency_request: "refdata.v1.currencies.get",
-    get_many_currencies_request: "refdata.v1.currencies.get_many",
-    put_currency_request: "refdata.v1.currencies.put",
-    put_many_currencies_request: "refdata.v1.currencies.put_many",
-    delete_currency_request: "refdata.v1.currencies.delete",
-    delete_many_currencies_request: "refdata.v1.currencies.delete_many",
-    list_currency_versions_request: "refdata.v1.currencies_versions.list",
-    get_currency_version_request: "refdata.v1.currencies_versions.get",
+    list_currencies_request: 'refdata.v1.currencies.list',
+    get_currency_request: 'refdata.v1.currencies.get',
+    get_many_currencies_request: 'refdata.v1.currencies.get_many',
+    put_currency_request: 'refdata.v1.currencies.put',
+    put_many_currencies_request: 'refdata.v1.currencies.put_many',
+    delete_currency_request: 'refdata.v1.currencies.delete',
+    delete_many_currencies_request: 'refdata.v1.currencies.delete_many',
+    list_currency_versions_request: 'refdata.v1.currencies_versions.list',
+    get_currency_version_request: 'refdata.v1.currencies_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -211,7 +211,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.currencies_events.created",
-    updated: "refdata.v1.currencies_events.updated",
-    deleted: "refdata.v1.currencies_events.deleted",
+    created: 'refdata.v1.currencies_events.created',
+    updated: 'refdata.v1.currencies_events.updated',
+    deleted: 'refdata.v1.currencies_events.deleted',
 } as const;

@@ -166,15 +166,20 @@ export interface GetBusinessDayConventionTypeVersionResponse {
 }
 
 export const subjects = {
-    list_business_day_convention_types_request: "refdata.v1.business_day_convention_types.list",
-    get_business_day_convention_type_request: "refdata.v1.business_day_convention_types.get",
-    get_many_business_day_convention_types_request: "refdata.v1.business_day_convention_types.get_many",
-    put_business_day_convention_type_request: "refdata.v1.business_day_convention_types.put",
-    put_many_business_day_convention_types_request: "refdata.v1.business_day_convention_types.put_many",
-    delete_business_day_convention_type_request: "refdata.v1.business_day_convention_types.delete",
-    delete_many_business_day_convention_types_request: "refdata.v1.business_day_convention_types.delete_many",
-    list_business_day_convention_type_versions_request: "refdata.v1.business_day_convention_types_versions.list",
-    get_business_day_convention_type_version_request: "refdata.v1.business_day_convention_types_versions.get",
+    list_business_day_convention_types_request: 'refdata.v1.business_day_convention_types.list',
+    get_business_day_convention_type_request: 'refdata.v1.business_day_convention_types.get',
+    get_many_business_day_convention_types_request:
+        'refdata.v1.business_day_convention_types.get_many',
+    put_business_day_convention_type_request: 'refdata.v1.business_day_convention_types.put',
+    put_many_business_day_convention_types_request:
+        'refdata.v1.business_day_convention_types.put_many',
+    delete_business_day_convention_type_request: 'refdata.v1.business_day_convention_types.delete',
+    delete_many_business_day_convention_types_request:
+        'refdata.v1.business_day_convention_types.delete_many',
+    list_business_day_convention_type_versions_request:
+        'refdata.v1.business_day_convention_types_versions.list',
+    get_business_day_convention_type_version_request:
+        'refdata.v1.business_day_convention_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.business_day_convention_types_events.created",
-    updated: "refdata.v1.business_day_convention_types_events.updated",
-    deleted: "refdata.v1.business_day_convention_types_events.deleted",
+    created: 'refdata.v1.business_day_convention_types_events.created',
+    updated: 'refdata.v1.business_day_convention_types_events.updated',
+    deleted: 'refdata.v1.business_day_convention_types_events.deleted',
 } as const;

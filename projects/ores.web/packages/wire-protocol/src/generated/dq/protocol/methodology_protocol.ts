@@ -167,15 +167,15 @@ export interface GetMethodologyVersionResponse {
 }
 
 export const subjects = {
-    list_methodologies_request: "dq.v1.methodologies.list",
-    get_methodology_request: "dq.v1.methodologies.get",
-    get_many_methodologies_request: "dq.v1.methodologies.get_many",
-    put_methodology_request: "dq.v1.methodologies.put",
-    put_many_methodologies_request: "dq.v1.methodologies.put_many",
-    delete_methodology_request: "dq.v1.methodologies.delete",
-    delete_many_methodologies_request: "dq.v1.methodologies.delete_many",
-    list_methodology_versions_request: "dq.v1.methodologies_versions.list",
-    get_methodology_version_request: "dq.v1.methodologies_versions.get",
+    list_methodologies_request: 'dq.v1.methodologies.list',
+    get_methodology_request: 'dq.v1.methodologies.get',
+    get_many_methodologies_request: 'dq.v1.methodologies.get_many',
+    put_methodology_request: 'dq.v1.methodologies.put',
+    put_many_methodologies_request: 'dq.v1.methodologies.put_many',
+    delete_methodology_request: 'dq.v1.methodologies.delete',
+    delete_many_methodologies_request: 'dq.v1.methodologies.delete_many',
+    list_methodology_versions_request: 'dq.v1.methodologies_versions.list',
+    get_methodology_version_request: 'dq.v1.methodologies_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.methodologies_events.created",
-    updated: "dq.v1.methodologies_events.updated",
-    deleted: "dq.v1.methodologies_events.deleted",
+    created: 'dq.v1.methodologies_events.created',
+    updated: 'dq.v1.methodologies_events.updated',
+    deleted: 'dq.v1.methodologies_events.deleted',
 } as const;

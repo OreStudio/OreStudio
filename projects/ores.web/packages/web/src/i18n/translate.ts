@@ -43,7 +43,7 @@ import { SOURCE_LANGUAGE, type Language } from './languages.js';
  * the catalogue be nested while the keys stay flat strings.
  */
 export type Catalogue = {
-  readonly [key: string]: string | Catalogue;
+    readonly [key: string]: string | Catalogue;
 };
 
 /** The English catalogue, and therefore the shape every other one must match. */
@@ -56,23 +56,23 @@ export type SourceCatalogue = Catalogue;
  * the runtime does, and deriving it twice is how the two drift.
  */
 export function flatten(catalogue: Catalogue, prefix = ''): Record<string, string> {
-  const flat: Record<string, string> = {};
-  for (const [key, value] of Object.entries(catalogue)) {
-    const path = prefix.length === 0 ? key : `${prefix}.${key}`;
-    if (typeof value === 'string') {
-      flat[path] = value;
-    } else {
-      Object.assign(flat, flatten(value, path));
+    const flat: Record<string, string> = {};
+    for (const [key, value] of Object.entries(catalogue)) {
+        const path = prefix.length === 0 ? key : `${prefix}.${key}`;
+        if (typeof value === 'string') {
+            flat[path] = value;
+        } else {
+            Object.assign(flat, flatten(value, path));
+        }
     }
-  }
-  return flat;
+    return flat;
 }
 
 /** The flat key set of the English catalogue. */
 export type MessageKey = string;
 
 export interface InterpolationValues {
-  readonly [name: string]: string | number;
+    readonly [name: string]: string | number;
 }
 
 /**
@@ -83,29 +83,25 @@ export interface InterpolationValues {
  * silently producing a sentence with a hole in it.
  */
 export function interpolate(message: string, values: InterpolationValues): string {
-  return message.replace(/\{(\w+)\}/g, (match, name: string) => {
-    const value = values[name];
-    return value === undefined ? match : String(value);
-  });
+    return message.replace(/\{(\w+)\}/g, (match, name: string) => {
+        const value = values[name];
+        return value === undefined ? match : String(value);
+    });
 }
 
 export interface Translator {
-  /** The active language. */
-  readonly language: Language;
-  /**
-   * Translates a key.
-   *
-   * Falls back to the source language, then to the key itself. Returning the key
-   * is deliberate: a screen showing `entity.accounts.title` is a screen somebody
-   * reports, where an empty string is a screen somebody ignores.
-   */
-  readonly t: (key: string, values?: InterpolationValues) => string;
-  /** The message for a count, choosing between singular and plural forms. */
-  readonly plural: (
-    key: string,
-    count: number,
-    values?: InterpolationValues,
-  ) => string;
+    /** The active language. */
+    readonly language: Language;
+    /**
+     * Translates a key.
+     *
+     * Falls back to the source language, then to the key itself. Returning the key
+     * is deliberate: a screen showing `entity.accounts.title` is a screen somebody
+     * reports, where an empty string is a screen somebody ignores.
+     */
+    readonly t: (key: string, values?: InterpolationValues) => string;
+    /** The message for a count, choosing between singular and plural forms. */
+    readonly plural: (key: string, count: number, values?: InterpolationValues) => string;
 }
 
 /**
@@ -117,42 +113,44 @@ export interface Translator {
  * no plural suffix is used for every count.
  */
 export function selectPluralForm(
-  catalogue: Record<string, string>,
-  key: string,
-  count: number,
-  language: Language,
+    catalogue: Record<string, string>,
+    key: string,
+    count: number,
+    language: Language,
 ): string | undefined {
-  const rules = new Intl.PluralRules(language);
-  const category = rules.select(count);
-  return catalogue[`${key}.${category}`] ?? catalogue[`${key}.other`] ?? catalogue[key];
+    const rules = new Intl.PluralRules(language);
+    const category = rules.select(count);
+    return catalogue[`${key}.${category}`] ?? catalogue[`${key}.other`] ?? catalogue[key];
 }
 
 /** Builds a translator for one language against the source catalogue. */
 export function createTranslator(
-  language: Language,
-  source: Record<string, string>,
-  target: Record<string, string>,
+    language: Language,
+    source: Record<string, string>,
+    target: Record<string, string>,
 ): Translator {
-  const lookup = (key: string): string | undefined =>
-    // The active language first, then the source, then nothing.
-    (language === SOURCE_LANGUAGE ? target[key] : target[key] ?? source[key]) ?? undefined;
+    const lookup = (key: string): string | undefined =>
+        // The active language first, then the source, then nothing.
+        (language === SOURCE_LANGUAGE ? target[key] : (target[key] ?? source[key])) ?? undefined;
 
-  return {
-    language,
-    t: (key, values) => {
-      const message = lookup(key) ?? key;
-      return values === undefined ? message : interpolate(message, values);
-    },
-    plural: (key, count, values) => {
-      const chosen =
-        selectPluralForm(target, key, count, language) ??
-        (language === SOURCE_LANGUAGE ? undefined : selectPluralForm(source, key, count, language)) ??
-        key;
-      return values === undefined
-        ? interpolate(chosen, { count })
-        : interpolate(chosen, { count, ...values });
-    },
-  };
+    return {
+        language,
+        t: (key, values) => {
+            const message = lookup(key) ?? key;
+            return values === undefined ? message : interpolate(message, values);
+        },
+        plural: (key, count, values) => {
+            const chosen =
+                selectPluralForm(target, key, count, language) ??
+                (language === SOURCE_LANGUAGE
+                    ? undefined
+                    : selectPluralForm(source, key, count, language)) ??
+                key;
+            return values === undefined
+                ? interpolate(chosen, { count })
+                : interpolate(chosen, { count, ...values });
+        },
+    };
 }
 
 /**
@@ -163,26 +161,22 @@ export function createTranslator(
  * the message was renamed. There is no exemption: every message in the
  * catalogue is a sentence somebody chose, so every one of them is translated.
  */
-export function catalogueSchema(
-  source: Record<string, string>,
-): z.ZodType<Record<string, string>> {
-  const keys = Object.keys(source);
-  return z
-    .record(z.string(), z.string())
-    .superRefine((value, ctx) => {
-      const missing = keys.filter((key) => !(key in value));
-      const extra = Object.keys(value).filter((key) => !(key in source));
-      if (missing.length > 0) {
-        ctx.addIssue({
-          code: 'custom',
-          message: `Missing ${missing.length} key(s): ${missing.slice(0, 10).join(', ')}`,
-        });
-      }
-      if (extra.length > 0) {
-        ctx.addIssue({
-          code: 'custom',
-          message: `Unknown ${extra.length} key(s): ${extra.slice(0, 10).join(', ')}`,
-        });
-      }
+export function catalogueSchema(source: Record<string, string>): z.ZodType<Record<string, string>> {
+    const keys = Object.keys(source);
+    return z.record(z.string(), z.string()).superRefine((value, ctx) => {
+        const missing = keys.filter((key) => !(key in value));
+        const extra = Object.keys(value).filter((key) => !(key in source));
+        if (missing.length > 0) {
+            ctx.addIssue({
+                code: 'custom',
+                message: `Missing ${missing.length} key(s): ${missing.slice(0, 10).join(', ')}`,
+            });
+        }
+        if (extra.length > 0) {
+            ctx.addIssue({
+                code: 'custom',
+                message: `Unknown ${extra.length} key(s): ${extra.slice(0, 10).join(', ')}`,
+            });
+        }
     });
 }

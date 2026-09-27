@@ -21,10 +21,10 @@
 
 import { z } from 'zod';
 import {
-  accountOperationResultSchema,
-  accountPageSchema,
-  changePasswordResultSchema,
-  lockResultSchema,
+    accountOperationResultSchema,
+    accountPageSchema,
+    changePasswordResultSchema,
+    lockResultSchema,
 } from './operations.js';
 import { OperationFailedError } from './errors.js';
 import type { WireAccountPage } from './operations.js';
@@ -41,19 +41,19 @@ import type { WireAccountPage } from './operations.js';
 
 /** The subset of the client these operations need. */
 export interface AuthenticatedCaller {
-  callAuthenticated<Schema extends z.ZodType>(
-    subject: string,
-    body: unknown,
-    schema: Schema,
-  ): Promise<z.infer<Schema>>;
+    callAuthenticated<Schema extends z.ZodType>(
+        subject: string,
+        body: unknown,
+        schema: Schema,
+    ): Promise<z.infer<Schema>>;
 }
 
 /** Subjects for account mutations, kept beside the operations that use them. */
 export const ACCOUNT_SUBJECTS = {
-  lock: 'iam.v1.accounts.lock',
-  unlock: 'iam.v1.accounts.unlock',
-  delete: 'iam.v1.accounts.delete',
-  changePassword: 'iam.v1.accounts.change-password',
+    lock: 'iam.v1.accounts.lock',
+    unlock: 'iam.v1.accounts.unlock',
+    delete: 'iam.v1.accounts.delete',
+    changePassword: 'iam.v1.accounts.change-password',
 } as const;
 
 /**
@@ -64,46 +64,43 @@ export const ACCOUNT_SUBJECTS = {
  * caller needs to know which ids were refused.
  */
 export async function setAccountsLocked(
-  caller: AuthenticatedCaller,
-  input: { readonly accountIds: readonly string[]; readonly locked: boolean },
+    caller: AuthenticatedCaller,
+    input: { readonly accountIds: readonly string[]; readonly locked: boolean },
 ): Promise<readonly z.infer<typeof accountOperationResultSchema>[]> {
-  const subject = input.locked ? ACCOUNT_SUBJECTS.lock : ACCOUNT_SUBJECTS.unlock;
-  const reply = await caller.callAuthenticated(
-    subject,
-    { account_ids: [...input.accountIds] },
-    lockResultSchema,
-  );
-  return reply.results;
+    const subject = input.locked ? ACCOUNT_SUBJECTS.lock : ACCOUNT_SUBJECTS.unlock;
+    const reply = await caller.callAuthenticated(
+        subject,
+        { account_ids: [...input.accountIds] },
+        lockResultSchema,
+    );
+    return reply.results;
 }
 
 /** Deletes one account. */
-export async function deleteAccount(
-  caller: AuthenticatedCaller,
-  accountId: string,
-): Promise<void> {
-  const reply = await caller.callAuthenticated(
-    ACCOUNT_SUBJECTS.delete,
-    { account_id: accountId },
-    z.object({ success: z.boolean().default(false), message: z.string().default('') }),
-  );
-  if (!reply.success) {
-    throw new OperationFailedError(ACCOUNT_SUBJECTS.delete, reply.message);
-  }
+export async function deleteAccount(caller: AuthenticatedCaller, accountId: string): Promise<void> {
+    const reply = await caller.callAuthenticated(
+        ACCOUNT_SUBJECTS.delete,
+        { account_id: accountId },
+        z.object({ success: z.boolean().default(false), message: z.string().default('') }),
+    );
+    if (!reply.success) {
+        throw new OperationFailedError(ACCOUNT_SUBJECTS.delete, reply.message);
+    }
 }
 
 /** Changes the signed-in account's own password. */
 export async function changeOwnPassword(
-  caller: AuthenticatedCaller,
-  input: { readonly currentPassword: string; readonly newPassword: string },
+    caller: AuthenticatedCaller,
+    input: { readonly currentPassword: string; readonly newPassword: string },
 ): Promise<void> {
-  const reply = await caller.callAuthenticated(
-    ACCOUNT_SUBJECTS.changePassword,
-    { current_password: input.currentPassword, new_password: input.newPassword },
-    changePasswordResultSchema,
-  );
-  if (!reply.success) {
-    throw new OperationFailedError(ACCOUNT_SUBJECTS.changePassword, reply.message);
-  }
+    const reply = await caller.callAuthenticated(
+        ACCOUNT_SUBJECTS.changePassword,
+        { current_password: input.currentPassword, new_password: input.newPassword },
+        changePasswordResultSchema,
+    );
+    if (!reply.success) {
+        throw new OperationFailedError(ACCOUNT_SUBJECTS.changePassword, reply.message);
+    }
 }
 
 /** Re-exported for callers that only need the page type. */

@@ -171,15 +171,15 @@ export interface GetReportInstanceVersionResponse {
 }
 
 export const subjects = {
-    list_report_instances_request: "reporting.v1.report_instances.list",
-    get_report_instance_request: "reporting.v1.report_instances.get",
-    get_many_report_instances_request: "reporting.v1.report_instances.get_many",
-    put_report_instance_request: "reporting.v1.report_instances.put",
-    put_many_report_instances_request: "reporting.v1.report_instances.put_many",
-    delete_report_instance_request: "reporting.v1.report_instances.delete",
-    delete_many_report_instances_request: "reporting.v1.report_instances.delete_many",
-    list_report_instance_versions_request: "reporting.v1.report_instances_versions.list",
-    get_report_instance_version_request: "reporting.v1.report_instances_versions.get",
+    list_report_instances_request: 'reporting.v1.report_instances.list',
+    get_report_instance_request: 'reporting.v1.report_instances.get',
+    get_many_report_instances_request: 'reporting.v1.report_instances.get_many',
+    put_report_instance_request: 'reporting.v1.report_instances.put',
+    put_many_report_instances_request: 'reporting.v1.report_instances.put_many',
+    delete_report_instance_request: 'reporting.v1.report_instances.delete',
+    delete_many_report_instances_request: 'reporting.v1.report_instances.delete_many',
+    list_report_instance_versions_request: 'reporting.v1.report_instances_versions.list',
+    get_report_instance_version_request: 'reporting.v1.report_instances_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -204,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.report_instances_events.created",
-    updated: "reporting.v1.report_instances_events.updated",
-    deleted: "reporting.v1.report_instances_events.deleted",
+    created: 'reporting.v1.report_instances_events.created',
+    updated: 'reporting.v1.report_instances_events.updated',
+    deleted: 'reporting.v1.report_instances_events.deleted',
 } as const;

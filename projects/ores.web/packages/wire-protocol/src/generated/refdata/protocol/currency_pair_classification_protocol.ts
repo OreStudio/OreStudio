@@ -166,15 +166,20 @@ export interface GetCurrencyPairClassificationVersionResponse {
 }
 
 export const subjects = {
-    list_currency_pair_classifications_request: "refdata.v1.currency_pair_classifications.list",
-    get_currency_pair_classification_request: "refdata.v1.currency_pair_classifications.get",
-    get_many_currency_pair_classifications_request: "refdata.v1.currency_pair_classifications.get_many",
-    put_currency_pair_classification_request: "refdata.v1.currency_pair_classifications.put",
-    put_many_currency_pair_classifications_request: "refdata.v1.currency_pair_classifications.put_many",
-    delete_currency_pair_classification_request: "refdata.v1.currency_pair_classifications.delete",
-    delete_many_currency_pair_classifications_request: "refdata.v1.currency_pair_classifications.delete_many",
-    list_currency_pair_classification_versions_request: "refdata.v1.currency_pair_classifications_versions.list",
-    get_currency_pair_classification_version_request: "refdata.v1.currency_pair_classifications_versions.get",
+    list_currency_pair_classifications_request: 'refdata.v1.currency_pair_classifications.list',
+    get_currency_pair_classification_request: 'refdata.v1.currency_pair_classifications.get',
+    get_many_currency_pair_classifications_request:
+        'refdata.v1.currency_pair_classifications.get_many',
+    put_currency_pair_classification_request: 'refdata.v1.currency_pair_classifications.put',
+    put_many_currency_pair_classifications_request:
+        'refdata.v1.currency_pair_classifications.put_many',
+    delete_currency_pair_classification_request: 'refdata.v1.currency_pair_classifications.delete',
+    delete_many_currency_pair_classifications_request:
+        'refdata.v1.currency_pair_classifications.delete_many',
+    list_currency_pair_classification_versions_request:
+        'refdata.v1.currency_pair_classifications_versions.list',
+    get_currency_pair_classification_version_request:
+        'refdata.v1.currency_pair_classifications_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.currency_pair_classifications_events.created",
-    updated: "refdata.v1.currency_pair_classifications_events.updated",
-    deleted: "refdata.v1.currency_pair_classifications_events.deleted",
+    created: 'refdata.v1.currency_pair_classifications_events.created',
+    updated: 'refdata.v1.currency_pair_classifications_events.updated',
+    deleted: 'refdata.v1.currency_pair_classifications_events.deleted',
 } as const;

@@ -25,7 +25,6 @@
 import type { DiffResult } from '../../../diff/protocol.js';
 import type { FieldValue } from '../../../diff/protocol.js';
 
-
 /**
  * @brief One rendered, diffed version of an entity's history.
  *
@@ -66,8 +65,7 @@ export interface GetEntityHistoryResponse {
     message: string;
 }
 
-export const subjects = {
-} as const;
+export const subjects = {} as const;
 /**
  * The subject these messages are addressed at, derived from the dispatch key of
  * the resource being asked about. The pattern is stated once, in the model, and

@@ -20,10 +20,10 @@
  */
 
 import {
-  loginResultSchema,
-  sessionViewSchema,
-  type LoginResult,
-  type SessionView,
+    loginResultSchema,
+    sessionViewSchema,
+    type LoginResult,
+    type SessionView,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
 
@@ -38,45 +38,44 @@ import { ApiFailure, request } from './transport.js';
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export interface Credentials {
-  readonly username: string;
-  readonly password: string;
+    readonly username: string;
+    readonly password: string;
 }
 
 export const api = {
-  async login(credentials: Credentials): Promise<LoginResult> {
-    const payload = await request('/api/session', {
-      method: 'POST',
-      headers: JSON_HEADERS,
-      body: JSON.stringify(credentials),
-    });
-    return loginResultSchema.parse(payload);
-  },
+    async login(credentials: Credentials): Promise<LoginResult> {
+        const payload = await request('/api/session', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(credentials),
+        });
+        return loginResultSchema.parse(payload);
+    },
 
-  async selectParty(partyId: string): Promise<SessionView> {
-    const payload = await request('/api/session/party', {
-      method: 'POST',
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ partyId }),
-    });
-    return sessionViewSchema.parse(payload);
-  },
+    async selectParty(partyId: string): Promise<SessionView> {
+        const payload = await request('/api/session/party', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ partyId }),
+        });
+        return sessionViewSchema.parse(payload);
+    },
 
-  /** Returns null when no session is open, which is not an error. */
-  async session(): Promise<SessionView | null> {
-    try {
-      return sessionViewSchema.parse(await request('/api/session', { method: 'GET' }));
-    } catch (error) {
-      if (error instanceof ApiFailure && error.status === 401) {
-        return null;
-      }
-      throw error;
-    }
-  },
+    /** Returns null when no session is open, which is not an error. */
+    async session(): Promise<SessionView | null> {
+        try {
+            return sessionViewSchema.parse(await request('/api/session', { method: 'GET' }));
+        } catch (error) {
+            if (error instanceof ApiFailure && error.status === 401) {
+                return null;
+            }
+            throw error;
+        }
+    },
 
-  async logout(): Promise<void> {
-    await request('/api/session', { method: 'DELETE' });
-  },
-
+    async logout(): Promise<void> {
+        await request('/api/session', { method: 'DELETE' });
+    },
 };
 
 export { ApiFailure };

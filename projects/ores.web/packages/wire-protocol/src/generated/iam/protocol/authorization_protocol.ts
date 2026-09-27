@@ -99,14 +99,14 @@ export interface SuggestRoleCommandsResponse {
 }
 
 export const subjects = {
-    assign_role_request: "iam.v1.roles.assign",
-    assign_role_by_name_request: "iam.v1.roles.assign-by-name",
-    revoke_role_request: "iam.v1.roles.revoke",
-    revoke_role_by_name_request: "iam.v1.roles.revoke-by-name",
-    get_account_roles_request: "iam.v1.roles.by-account",
-    get_account_permissions_request: "iam.v1.roles.permissions-by-account",
-    get_role_permissions_request: "iam.v1.roles.permissions",
-    suggest_role_commands_request: "iam.v1.roles.suggest-commands",
+    assign_role_request: 'iam.v1.roles.assign',
+    assign_role_by_name_request: 'iam.v1.roles.assign-by-name',
+    revoke_role_request: 'iam.v1.roles.revoke',
+    revoke_role_by_name_request: 'iam.v1.roles.revoke-by-name',
+    get_account_roles_request: 'iam.v1.roles.by-account',
+    get_account_permissions_request: 'iam.v1.roles.permissions-by-account',
+    get_role_permissions_request: 'iam.v1.roles.permissions',
+    suggest_role_commands_request: 'iam.v1.roles.suggest-commands',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

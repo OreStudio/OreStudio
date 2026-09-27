@@ -170,15 +170,15 @@ export interface GetSwapConventionVersionResponse {
 }
 
 export const subjects = {
-    list_swap_conventions_request: "refdata.v1.swap_conventions.list",
-    get_swap_convention_request: "refdata.v1.swap_conventions.get",
-    get_many_swap_conventions_request: "refdata.v1.swap_conventions.get_many",
-    put_swap_convention_request: "refdata.v1.swap_conventions.put",
-    put_many_swap_conventions_request: "refdata.v1.swap_conventions.put_many",
-    delete_swap_convention_request: "refdata.v1.swap_conventions.delete",
-    delete_many_swap_conventions_request: "refdata.v1.swap_conventions.delete_many",
-    list_swap_convention_versions_request: "refdata.v1.swap_conventions_versions.list",
-    get_swap_convention_version_request: "refdata.v1.swap_conventions_versions.get",
+    list_swap_conventions_request: 'refdata.v1.swap_conventions.list',
+    get_swap_convention_request: 'refdata.v1.swap_conventions.get',
+    get_many_swap_conventions_request: 'refdata.v1.swap_conventions.get_many',
+    put_swap_convention_request: 'refdata.v1.swap_conventions.put',
+    put_many_swap_conventions_request: 'refdata.v1.swap_conventions.put_many',
+    delete_swap_convention_request: 'refdata.v1.swap_conventions.delete',
+    delete_many_swap_conventions_request: 'refdata.v1.swap_conventions.delete_many',
+    list_swap_convention_versions_request: 'refdata.v1.swap_conventions_versions.list',
+    get_swap_convention_version_request: 'refdata.v1.swap_conventions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.swap_conventions_events.created",
-    updated: "refdata.v1.swap_conventions_events.updated",
-    deleted: "refdata.v1.swap_conventions_events.deleted",
+    created: 'refdata.v1.swap_conventions_events.created',
+    updated: 'refdata.v1.swap_conventions_events.updated',
+    deleted: 'refdata.v1.swap_conventions_events.deleted',
 } as const;

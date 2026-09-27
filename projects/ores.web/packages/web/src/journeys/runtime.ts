@@ -45,34 +45,34 @@ export type StepId = string;
  * moves on, and it is the only place a step reaches the server.
  */
 export interface StepAction {
-  readonly label: string;
-  readonly enabled: boolean;
-  readonly run?: () => void | Promise<void>;
+    readonly label: string;
+    readonly enabled: boolean;
+    readonly run?: () => void | Promise<void>;
 }
 
 export interface JourneyStep<Body> {
-  readonly id: StepId;
-  readonly title: string;
-  readonly lead: string;
-  readonly body: Body;
-  /** Absent when the step advances by itself, as a step awaiting the server does. */
-  readonly next?: StepAction;
-  /**
-   * Once passed, the person cannot come back here.
-   *
-   * Set it on a step that changed server state. Walking backwards into a
-   * half-finished write is the failure this prevents, and it is why the flag
-   * belongs to the definition rather than to the page.
-   */
-  readonly final?: boolean;
+    readonly id: StepId;
+    readonly title: string;
+    readonly lead: string;
+    readonly body: Body;
+    /** Absent when the step advances by itself, as a step awaiting the server does. */
+    readonly next?: StepAction;
+    /**
+     * Once passed, the person cannot come back here.
+     *
+     * Set it on a step that changed server state. Walking backwards into a
+     * half-finished write is the failure this prevents, and it is why the flag
+     * belongs to the definition rather than to the page.
+     */
+    readonly final?: boolean;
 }
 
 export type RailState = 'done' | 'current' | 'ahead';
 
 export interface RailEntry {
-  readonly id: StepId;
-  readonly title: string;
-  readonly state: RailState;
+    readonly id: StepId;
+    readonly title: string;
+    readonly state: RailState;
 }
 
 /**
@@ -87,18 +87,20 @@ export interface RailEntry {
  * undo is not a check. `readonly` stops the type checker from offering `push`,
  * and it stops nothing at run time; freezing stops both.
  */
-export function defineJourney<Body>(steps: readonly JourneyStep<Body>[]): readonly JourneyStep<Body>[] {
-  if (steps.length === 0) {
-    throw new Error('a journey needs at least one step');
-  }
-  const seen = new Set<StepId>();
-  for (const step of steps) {
-    if (seen.has(step.id)) {
-      throw new Error(`duplicate step id "${step.id}"`);
+export function defineJourney<Body>(
+    steps: readonly JourneyStep<Body>[],
+): readonly JourneyStep<Body>[] {
+    if (steps.length === 0) {
+        throw new Error('a journey needs at least one step');
     }
-    seen.add(step.id);
-  }
-  return Object.freeze(steps);
+    const seen = new Set<StepId>();
+    for (const step of steps) {
+        if (seen.has(step.id)) {
+            throw new Error(`duplicate step id "${step.id}"`);
+        }
+        seen.add(step.id);
+    }
+    return Object.freeze(steps);
 }
 
 /**
@@ -109,12 +111,12 @@ export function defineJourney<Body>(steps: readonly JourneyStep<Body>[]): readon
  * them differently.
  */
 export function rail<Body>(steps: readonly JourneyStep<Body>[], at: number): readonly RailEntry[] {
-  requireStep(steps, at);
-  return steps.map((step, index) => ({
-    id: step.id,
-    title: step.title,
-    state: stateOf(index, at),
-  }));
+    requireStep(steps, at);
+    return steps.map((step, index) => ({
+        id: step.id,
+        title: step.title,
+        state: stateOf(index, at),
+    }));
 }
 
 /**
@@ -125,7 +127,7 @@ export function rail<Body>(steps: readonly JourneyStep<Body>[], at: number): rea
  * that guards that away renders an empty screen where a defect occurred.
  */
 export function stepAt<Body>(steps: readonly JourneyStep<Body>[], at: number): JourneyStep<Body> {
-  return requireStep(steps, at);
+    return requireStep(steps, at);
 }
 
 /**
@@ -136,30 +138,33 @@ export function stepAt<Body>(steps: readonly JourneyStep<Body>[], at: number): J
  * outer journey means by "the third step".
  */
 export function indexOfStep<Body>(steps: readonly JourneyStep<Body>[], id: StepId): number {
-  const index = steps.findIndex((step) => step.id === id);
-  if (index < 0) {
-    throw new Error(`journey has no step "${id}"`);
-  }
-  return index;
+    const index = steps.findIndex((step) => step.id === id);
+    if (index < 0) {
+        throw new Error(`journey has no step "${id}"`);
+    }
+    return index;
 }
 
 /** False at the first step, and false when the step before this one is final. */
 export function canGoBack<Body>(steps: readonly JourneyStep<Body>[], at: number): boolean {
-  requireStep(steps, at);
-  return at > 0 && steps[at - 1]?.final !== true;
+    requireStep(steps, at);
+    return at > 0 && steps[at - 1]?.final !== true;
 }
 
 /** The next position, or undefined at the last step. */
-export function nextPosition<Body>(steps: readonly JourneyStep<Body>[], at: number): number | undefined {
-  requireStep(steps, at);
-  return at + 1 < steps.length ? at + 1 : undefined;
+export function nextPosition<Body>(
+    steps: readonly JourneyStep<Body>[],
+    at: number,
+): number | undefined {
+    requireStep(steps, at);
+    return at + 1 < steps.length ? at + 1 : undefined;
 }
 
 function stateOf(index: number, at: number): RailState {
-  if (index < at) {
-    return 'done';
-  }
-  return index === at ? 'current' : 'ahead';
+    if (index < at) {
+        return 'done';
+    }
+    return index === at ? 'current' : 'ahead';
 }
 
 /**
@@ -175,10 +180,10 @@ function stateOf(index: number, at: number): RailState {
  * non-null assertion that would say so.
  */
 function requireStep<Body>(steps: readonly JourneyStep<Body>[], at: number): JourneyStep<Body> {
-  const inRange = Number.isInteger(at) && at >= 0 && at < steps.length;
-  const step = inRange ? steps.at(at) : undefined;
-  if (step === undefined) {
-    throw new RangeError(`journey position ${at} is outside 0..${steps.length - 1}`);
-  }
-  return step;
+    const inRange = Number.isInteger(at) && at >= 0 && at < steps.length;
+    const step = inRange ? steps.at(at) : undefined;
+    if (step === undefined) {
+        throw new RangeError(`journey position ${at} is outside 0..${steps.length - 1}`);
+    }
+    return step;
 }

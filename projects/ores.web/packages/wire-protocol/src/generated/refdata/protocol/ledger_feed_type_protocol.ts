@@ -166,15 +166,15 @@ export interface GetLedgerFeedTypeVersionResponse {
 }
 
 export const subjects = {
-    list_ledger_feed_types_request: "refdata.v1.ledger_feed_types.list",
-    get_ledger_feed_type_request: "refdata.v1.ledger_feed_types.get",
-    get_many_ledger_feed_types_request: "refdata.v1.ledger_feed_types.get_many",
-    put_ledger_feed_type_request: "refdata.v1.ledger_feed_types.put",
-    put_many_ledger_feed_types_request: "refdata.v1.ledger_feed_types.put_many",
-    delete_ledger_feed_type_request: "refdata.v1.ledger_feed_types.delete",
-    delete_many_ledger_feed_types_request: "refdata.v1.ledger_feed_types.delete_many",
-    list_ledger_feed_type_versions_request: "refdata.v1.ledger_feed_types_versions.list",
-    get_ledger_feed_type_version_request: "refdata.v1.ledger_feed_types_versions.get",
+    list_ledger_feed_types_request: 'refdata.v1.ledger_feed_types.list',
+    get_ledger_feed_type_request: 'refdata.v1.ledger_feed_types.get',
+    get_many_ledger_feed_types_request: 'refdata.v1.ledger_feed_types.get_many',
+    put_ledger_feed_type_request: 'refdata.v1.ledger_feed_types.put',
+    put_many_ledger_feed_types_request: 'refdata.v1.ledger_feed_types.put_many',
+    delete_ledger_feed_type_request: 'refdata.v1.ledger_feed_types.delete',
+    delete_many_ledger_feed_types_request: 'refdata.v1.ledger_feed_types.delete_many',
+    list_ledger_feed_type_versions_request: 'refdata.v1.ledger_feed_types_versions.list',
+    get_ledger_feed_type_version_request: 'refdata.v1.ledger_feed_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.ledger_feed_types_events.created",
-    updated: "refdata.v1.ledger_feed_types_events.updated",
-    deleted: "refdata.v1.ledger_feed_types_events.deleted",
+    created: 'refdata.v1.ledger_feed_types_events.created',
+    updated: 'refdata.v1.ledger_feed_types_events.updated',
+    deleted: 'refdata.v1.ledger_feed_types_events.deleted',
 } as const;

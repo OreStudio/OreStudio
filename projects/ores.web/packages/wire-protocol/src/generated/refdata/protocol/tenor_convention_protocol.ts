@@ -166,15 +166,15 @@ export interface GetTenorConventionVersionResponse {
 }
 
 export const subjects = {
-    list_tenor_conventions_request: "refdata.v1.tenor_conventions.list",
-    get_tenor_convention_request: "refdata.v1.tenor_conventions.get",
-    get_many_tenor_conventions_request: "refdata.v1.tenor_conventions.get_many",
-    put_tenor_convention_request: "refdata.v1.tenor_conventions.put",
-    put_many_tenor_conventions_request: "refdata.v1.tenor_conventions.put_many",
-    delete_tenor_convention_request: "refdata.v1.tenor_conventions.delete",
-    delete_many_tenor_conventions_request: "refdata.v1.tenor_conventions.delete_many",
-    list_tenor_convention_versions_request: "refdata.v1.tenor_conventions_versions.list",
-    get_tenor_convention_version_request: "refdata.v1.tenor_conventions_versions.get",
+    list_tenor_conventions_request: 'refdata.v1.tenor_conventions.list',
+    get_tenor_convention_request: 'refdata.v1.tenor_conventions.get',
+    get_many_tenor_conventions_request: 'refdata.v1.tenor_conventions.get_many',
+    put_tenor_convention_request: 'refdata.v1.tenor_conventions.put',
+    put_many_tenor_conventions_request: 'refdata.v1.tenor_conventions.put_many',
+    delete_tenor_convention_request: 'refdata.v1.tenor_conventions.delete',
+    delete_many_tenor_conventions_request: 'refdata.v1.tenor_conventions.delete_many',
+    list_tenor_convention_versions_request: 'refdata.v1.tenor_conventions_versions.list',
+    get_tenor_convention_version_request: 'refdata.v1.tenor_conventions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.tenor_conventions_events.created",
-    updated: "refdata.v1.tenor_conventions_events.updated",
-    deleted: "refdata.v1.tenor_conventions_events.deleted",
+    created: 'refdata.v1.tenor_conventions_events.created',
+    updated: 'refdata.v1.tenor_conventions_events.updated',
+    deleted: 'refdata.v1.tenor_conventions_events.deleted',
 } as const;

@@ -65,8 +65,7 @@ export interface UnscheduleReportDefinitionsResponse {
  * fields. It is declared here, and referenced rather than spelled out, because
  * the SQL function name the handler derives from it depends on the spelling.
  */
-export interface PublishReportDefinitionsFromDqRequest {
-}
+export interface PublishReportDefinitionsFromDqRequest {}
 
 export interface GatherTradesRequest {
     report_instance_id: string;
@@ -184,18 +183,18 @@ export interface ReportExecutionRequest {
 }
 
 export const subjects = {
-    trigger_report_instance_request: "reporting.v1.ops.trigger_report_instance",
-    schedule_report_definitions_request: "reporting.v1.report-definitions.schedule",
-    unschedule_report_definitions_request: "reporting.v1.report-definitions.unschedule",
-    publish_report_definitions_from_dq_request: "reporting.v1.report-definitions.publish-from-dq",
-    gather_trades_request: "reporting.v1.report.gather-trades",
-    gather_market_data_request: "reporting.v1.report.gather-market-data",
-    assemble_bundle_request: "reporting.v1.report.assemble-bundle",
-    prepare_ore_package_request: "ore.v1.report.prepare-package",
-    submit_compute_request: "compute.v1.report.submit",
-    collect_compute_results_request: "reporting.v1.report.collect-compute-results",
-    finalise_report_request: "reporting.v1.report.finalise",
-    fail_report_request: "reporting.v1.report.fail",
+    trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
+    schedule_report_definitions_request: 'reporting.v1.report-definitions.schedule',
+    unschedule_report_definitions_request: 'reporting.v1.report-definitions.unschedule',
+    publish_report_definitions_from_dq_request: 'reporting.v1.report-definitions.publish-from-dq',
+    gather_trades_request: 'reporting.v1.report.gather-trades',
+    gather_market_data_request: 'reporting.v1.report.gather-market-data',
+    assemble_bundle_request: 'reporting.v1.report.assemble-bundle',
+    prepare_ore_package_request: 'ore.v1.report.prepare-package',
+    submit_compute_request: 'compute.v1.report.submit',
+    collect_compute_results_request: 'reporting.v1.report.collect-compute-results',
+    finalise_report_request: 'reporting.v1.report.finalise',
+    fail_report_request: 'reporting.v1.report.fail',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

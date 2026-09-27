@@ -72,8 +72,7 @@ export interface ServiceHeartbeatMessage {
  *
  * It carries no fields: the reply covers every service the caller may see.
  */
-export interface GetServiceSamplesRequest {
-}
+export interface GetServiceSamplesRequest {}
 
 /**
  * @brief The latest sample of every running instance.
@@ -94,8 +93,8 @@ export interface GetServiceSamplesResponse {
 }
 
 export const subjects = {
-    service_heartbeat_message: "telemetry.v1.services.heartbeat",
-    get_service_samples_request: "telemetry.v1.services.list",
+    service_heartbeat_message: 'telemetry.v1.services.heartbeat',
+    get_service_samples_request: 'telemetry.v1.services.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

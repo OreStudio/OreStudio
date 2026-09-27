@@ -121,9 +121,9 @@ export interface OreImportRollbackRequest {
 }
 
 export const subjects = {
-    ore_import_request: "workflow.v1.ore.import",
-    ore_import_execute_request: "ore.v1.ore.import.execute",
-    ore_import_rollback_request: "ore.v1.ore.import.rollback",
+    ore_import_request: 'workflow.v1.ore.import',
+    ore_import_execute_request: 'ore.v1.ore.import.execute',
+    ore_import_rollback_request: 'ore.v1.ore.import.rollback',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

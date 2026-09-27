@@ -165,15 +165,15 @@ export interface GetBatchVersionResponse {
 }
 
 export const subjects = {
-    list_batches_request: "compute.v1.batches.list",
-    get_batch_request: "compute.v1.batches.get",
-    get_many_batches_request: "compute.v1.batches.get_many",
-    put_batch_request: "compute.v1.batches.put",
-    put_many_batches_request: "compute.v1.batches.put_many",
-    delete_batch_request: "compute.v1.batches.delete",
-    delete_many_batches_request: "compute.v1.batches.delete_many",
-    list_batch_versions_request: "compute.v1.batches_versions.list",
-    get_batch_version_request: "compute.v1.batches_versions.get",
+    list_batches_request: 'compute.v1.batches.list',
+    get_batch_request: 'compute.v1.batches.get',
+    get_many_batches_request: 'compute.v1.batches.get_many',
+    put_batch_request: 'compute.v1.batches.put',
+    put_many_batches_request: 'compute.v1.batches.put_many',
+    delete_batch_request: 'compute.v1.batches.delete',
+    delete_many_batches_request: 'compute.v1.batches.delete_many',
+    list_batch_versions_request: 'compute.v1.batches_versions.list',
+    get_batch_version_request: 'compute.v1.batches_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "compute.v1.batches_events.created",
-    updated: "compute.v1.batches_events.updated",
-    deleted: "compute.v1.batches_events.deleted",
+    created: 'compute.v1.batches_events.created',
+    updated: 'compute.v1.batches_events.updated',
+    deleted: 'compute.v1.batches_events.deleted',
 } as const;

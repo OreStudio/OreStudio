@@ -41,8 +41,7 @@ export interface ResetTenantResult {
 // and re-enables system.bootstrap_mode so SystemProvisionerWizard fires on
 // next startup.
 // Requires: iam::system:reset permission (SuperAdmin only).
-export interface ResetSystemCommand {
-}
+export interface ResetSystemCommand {}
 
 export interface ResetSystemResult {
     success: boolean;
@@ -50,8 +49,8 @@ export interface ResetSystemResult {
 }
 
 export const subjects = {
-    reset_tenant_command: "iam.v1.system.reset-tenant",
-    reset_system_command: "iam.v1.system.reset",
+    reset_tenant_command: 'iam.v1.system.reset-tenant',
+    reset_system_command: 'iam.v1.system.reset',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

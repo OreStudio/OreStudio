@@ -29,63 +29,63 @@ import { resolveBroker } from './broker.js';
  */
 
 const site = siteConfigurationSchema.parse({
-  active: 'eager_maxwell',
-  environments: [
-    {
-      id: 'eager_maxwell',
-      displayName: 'Eager Maxwell',
-      host: 'localhost',
-      port: 21405,
-      subjectPrefix: 'ores.dev.eager_maxwell',
-      tls: { cert: '/site/cert', key: '/site/key' },
-    },
-  ],
-  tls: { ca: '/site/ca', cert: '/site/default-cert', key: '/site/default-key' },
-  developerTools: false,
-  developerAccounts: [],
+    active: 'eager_maxwell',
+    environments: [
+        {
+            id: 'eager_maxwell',
+            displayName: 'Eager Maxwell',
+            host: 'localhost',
+            port: 21405,
+            subjectPrefix: 'ores.dev.eager_maxwell',
+            tls: { cert: '/site/cert', key: '/site/key' },
+        },
+    ],
+    tls: { ca: '/site/ca', cert: '/site/default-cert', key: '/site/default-key' },
+    developerTools: false,
+    developerAccounts: [],
 });
 
 const environment = site.environments[0]!;
 
 describe('resolveBroker', () => {
-  it('takes the broker from the process environment when it names one', () => {
-    const broker = resolveBroker(site, environment, {
-      ORES_NATS_URL: 'nats://broker.example:4222',
-      ORES_NATS_SUBJECT_PREFIX: 'ores.override',
-      ORES_NATS_TLS_CA: '/env/ca',
-      ORES_NATS_TLS_CERT: '/env/cert',
-      ORES_NATS_TLS_KEY: '/env/key',
+    it('takes the broker from the process environment when it names one', () => {
+        const broker = resolveBroker(site, environment, {
+            ORES_NATS_URL: 'nats://broker.example:4222',
+            ORES_NATS_SUBJECT_PREFIX: 'ores.override',
+            ORES_NATS_TLS_CA: '/env/ca',
+            ORES_NATS_TLS_CERT: '/env/cert',
+            ORES_NATS_TLS_KEY: '/env/key',
+        });
+
+        expect(broker).toEqual({
+            server: 'nats://broker.example:4222',
+            subjectPrefix: 'ores.override',
+            tls: { ca: '/env/ca', cert: '/env/cert', key: '/env/key' },
+        });
     });
 
-    expect(broker).toEqual({
-      server: 'nats://broker.example:4222',
-      subjectPrefix: 'ores.override',
-      tls: { ca: '/env/ca', cert: '/env/cert', key: '/env/key' },
-    });
-  });
+    it('keeps the environment subject prefix when the process names none', () => {
+        const broker = resolveBroker(site, environment, {
+            ORES_NATS_URL: 'nats://broker.example:4222',
+        });
 
-  it('keeps the environment subject prefix when the process names none', () => {
-    const broker = resolveBroker(site, environment, {
-      ORES_NATS_URL: 'nats://broker.example:4222',
+        expect(broker.subjectPrefix).toBe('ores.dev.eager_maxwell');
+        expect(broker.tls).toEqual({ ca: '', cert: '', key: '' });
     });
 
-    expect(broker.subjectPrefix).toBe('ores.dev.eager_maxwell');
-    expect(broker.tls).toEqual({ ca: '', cert: '', key: '' });
-  });
+    it('falls back to the site configuration when the process names no broker', () => {
+        const broker = resolveBroker(site, environment, {});
 
-  it('falls back to the site configuration when the process names no broker', () => {
-    const broker = resolveBroker(site, environment, {});
-
-    expect(broker).toEqual({
-      server: 'nats://localhost:21405',
-      subjectPrefix: 'ores.dev.eager_maxwell',
-      tls: { ca: '/site/ca', cert: '/site/cert', key: '/site/key' },
+        expect(broker).toEqual({
+            server: 'nats://localhost:21405',
+            subjectPrefix: 'ores.dev.eager_maxwell',
+            tls: { ca: '/site/ca', cert: '/site/cert', key: '/site/key' },
+        });
     });
-  });
 
-  it('treats a blank broker URL as absent', () => {
-    const broker = resolveBroker(site, environment, { ORES_NATS_URL: '   ' });
+    it('treats a blank broker URL as absent', () => {
+        const broker = resolveBroker(site, environment, { ORES_NATS_URL: '   ' });
 
-    expect(broker.server).toBe('nats://localhost:21405');
-  });
+        expect(broker.server).toBe('nats://localhost:21405');
+    });
 });

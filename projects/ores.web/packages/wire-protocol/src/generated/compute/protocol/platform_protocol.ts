@@ -170,15 +170,15 @@ export interface GetPlatformVersionResponse {
 }
 
 export const subjects = {
-    list_platforms_request: "compute.v1.platforms.list",
-    get_platform_request: "compute.v1.platforms.get",
-    get_many_platforms_request: "compute.v1.platforms.get_many",
-    put_platform_request: "compute.v1.platforms.put",
-    put_many_platforms_request: "compute.v1.platforms.put_many",
-    delete_platform_request: "compute.v1.platforms.delete",
-    delete_many_platforms_request: "compute.v1.platforms.delete_many",
-    list_platform_versions_request: "compute.v1.platforms_versions.list",
-    get_platform_version_request: "compute.v1.platforms_versions.get",
+    list_platforms_request: 'compute.v1.platforms.list',
+    get_platform_request: 'compute.v1.platforms.get',
+    get_many_platforms_request: 'compute.v1.platforms.get_many',
+    put_platform_request: 'compute.v1.platforms.put',
+    put_many_platforms_request: 'compute.v1.platforms.put_many',
+    delete_platform_request: 'compute.v1.platforms.delete',
+    delete_many_platforms_request: 'compute.v1.platforms.delete_many',
+    list_platform_versions_request: 'compute.v1.platforms_versions.list',
+    get_platform_version_request: 'compute.v1.platforms_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "compute.v1.platforms_events.created",
-    updated: "compute.v1.platforms_events.updated",
-    deleted: "compute.v1.platforms_events.deleted",
+    created: 'compute.v1.platforms_events.created',
+    updated: 'compute.v1.platforms_events.updated',
+    deleted: 'compute.v1.platforms_events.deleted',
 } as const;

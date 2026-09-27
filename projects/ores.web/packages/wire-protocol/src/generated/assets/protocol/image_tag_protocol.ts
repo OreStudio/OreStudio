@@ -145,14 +145,14 @@ export interface ListByImageIdImageTagsResponse {
 }
 
 export const subjects = {
-    list_image_tags_request: "assets.v1.image_tags.list",
-    get_image_tag_request: "assets.v1.image_tags.get",
-    get_many_image_tags_request: "assets.v1.image_tags.get_many",
-    put_image_tag_request: "assets.v1.image_tags.put",
-    put_many_image_tags_request: "assets.v1.image_tags.put_many",
-    delete_image_tag_request: "assets.v1.image_tags.delete",
-    delete_many_image_tags_request: "assets.v1.image_tags.delete_many",
-    list_by_image_id_image_tags_request: "assets.v1.image_tags.list_by_image_id",
+    list_image_tags_request: 'assets.v1.image_tags.list',
+    get_image_tag_request: 'assets.v1.image_tags.get',
+    get_many_image_tags_request: 'assets.v1.image_tags.get_many',
+    put_image_tag_request: 'assets.v1.image_tags.put',
+    put_many_image_tags_request: 'assets.v1.image_tags.put_many',
+    delete_image_tag_request: 'assets.v1.image_tags.delete',
+    delete_many_image_tags_request: 'assets.v1.image_tags.delete_many',
+    list_by_image_id_image_tags_request: 'assets.v1.image_tags.list_by_image_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

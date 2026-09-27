@@ -169,15 +169,15 @@ export interface GetTenorVersionResponse {
 }
 
 export const subjects = {
-    list_tenors_request: "refdata.v1.tenors.list",
-    get_tenor_request: "refdata.v1.tenors.get",
-    get_many_tenors_request: "refdata.v1.tenors.get_many",
-    put_tenor_request: "refdata.v1.tenors.put",
-    put_many_tenors_request: "refdata.v1.tenors.put_many",
-    delete_tenor_request: "refdata.v1.tenors.delete",
-    delete_many_tenors_request: "refdata.v1.tenors.delete_many",
-    list_tenor_versions_request: "refdata.v1.tenors_versions.list",
-    get_tenor_version_request: "refdata.v1.tenors_versions.get",
+    list_tenors_request: 'refdata.v1.tenors.list',
+    get_tenor_request: 'refdata.v1.tenors.get',
+    get_many_tenors_request: 'refdata.v1.tenors.get_many',
+    put_tenor_request: 'refdata.v1.tenors.put',
+    put_many_tenors_request: 'refdata.v1.tenors.put_many',
+    delete_tenor_request: 'refdata.v1.tenors.delete',
+    delete_many_tenors_request: 'refdata.v1.tenors.delete_many',
+    list_tenor_versions_request: 'refdata.v1.tenors_versions.list',
+    get_tenor_version_request: 'refdata.v1.tenors_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +202,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.tenors_events.created",
-    updated: "refdata.v1.tenors_events.updated",
-    deleted: "refdata.v1.tenors_events.deleted",
+    created: 'refdata.v1.tenors_events.created',
+    updated: 'refdata.v1.tenors_events.updated',
+    deleted: 'refdata.v1.tenors_events.deleted',
 } as const;

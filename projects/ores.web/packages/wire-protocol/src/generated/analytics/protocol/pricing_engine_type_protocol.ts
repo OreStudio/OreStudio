@@ -165,15 +165,15 @@ export interface GetPricingEngineTypeVersionResponse {
 }
 
 export const subjects = {
-    list_pricing_engine_types_request: "analytics.v1.pricing_engine_types.list",
-    get_pricing_engine_type_request: "analytics.v1.pricing_engine_types.get",
-    get_many_pricing_engine_types_request: "analytics.v1.pricing_engine_types.get_many",
-    put_pricing_engine_type_request: "analytics.v1.pricing_engine_types.put",
-    put_many_pricing_engine_types_request: "analytics.v1.pricing_engine_types.put_many",
-    delete_pricing_engine_type_request: "analytics.v1.pricing_engine_types.delete",
-    delete_many_pricing_engine_types_request: "analytics.v1.pricing_engine_types.delete_many",
-    list_pricing_engine_type_versions_request: "analytics.v1.pricing_engine_types_versions.list",
-    get_pricing_engine_type_version_request: "analytics.v1.pricing_engine_types_versions.get",
+    list_pricing_engine_types_request: 'analytics.v1.pricing_engine_types.list',
+    get_pricing_engine_type_request: 'analytics.v1.pricing_engine_types.get',
+    get_many_pricing_engine_types_request: 'analytics.v1.pricing_engine_types.get_many',
+    put_pricing_engine_type_request: 'analytics.v1.pricing_engine_types.put',
+    put_many_pricing_engine_types_request: 'analytics.v1.pricing_engine_types.put_many',
+    delete_pricing_engine_type_request: 'analytics.v1.pricing_engine_types.delete',
+    delete_many_pricing_engine_types_request: 'analytics.v1.pricing_engine_types.delete_many',
+    list_pricing_engine_type_versions_request: 'analytics.v1.pricing_engine_types_versions.list',
+    get_pricing_engine_type_version_request: 'analytics.v1.pricing_engine_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "analytics.v1.pricing_engine_types_events.created",
-    updated: "analytics.v1.pricing_engine_types_events.updated",
-    deleted: "analytics.v1.pricing_engine_types_events.deleted",
+    created: 'analytics.v1.pricing_engine_types_events.created',
+    updated: 'analytics.v1.pricing_engine_types_events.updated',
+    deleted: 'analytics.v1.pricing_engine_types_events.deleted',
 } as const;

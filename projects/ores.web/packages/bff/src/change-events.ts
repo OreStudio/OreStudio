@@ -40,20 +40,20 @@ import type { OresClient } from '@ores/wire-protocol';
 
 /** What one session is watching. */
 export interface Watch {
-  readonly component: string;
-  readonly entity: string;
+    readonly component: string;
+    readonly entity: string;
 }
 
 /** How a change is delivered to a session. */
 export type ChangeListener = (change: ChangeEvent) => void;
 
 export interface ChangeEvent {
-  readonly component: string;
-  readonly entity: string;
-  /** When the change happened, server-side. */
-  readonly at: string;
-  /** The records that changed, as the service named them. */
-  readonly ids: readonly string[];
+    readonly component: string;
+    readonly entity: string;
+    /** When the change happened, server-side. */
+    readonly at: string;
+    /** The records that changed, as the service named them. */
+    readonly ids: readonly string[];
 }
 
 /**
@@ -64,126 +64,129 @@ export interface ChangeEvent {
  * prefix, which is why the key is built here rather than passed in.
  */
 export function eventSubject(component: string, entity: string): string {
-  return `ores.${component}.${snake(entity)}_changed`;
+    return `ores.${component}.${snake(entity)}_changed`;
 }
 
 /** `businessUnit` to `business_unit`, which is how the event names are written. */
 function snake(value: string): string {
-  return value.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+    return value.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 }
 
 export class ChangeEventRegistry {
-  readonly #client: OresClient;
-  /** Subscription key to the sessions listening and the way to stop it. */
-  readonly #shared = new Map<string, { listeners: Map<string, ChangeListener>; stop: () => void }>();
-  /** Session id to what it watches, so a session can be forgotten wholesale. */
-  readonly #watching = new Map<string, { tenantId: string; watches: readonly Watch[] }>();
-  /** How to reach a session, registered once when its stream opens. */
-  readonly #listeners = new Map<string, ChangeListener>();
+    readonly #client: OresClient;
+    /** Subscription key to the sessions listening and the way to stop it. */
+    readonly #shared = new Map<
+        string,
+        { listeners: Map<string, ChangeListener>; stop: () => void }
+    >();
+    /** Session id to what it watches, so a session can be forgotten wholesale. */
+    readonly #watching = new Map<string, { tenantId: string; watches: readonly Watch[] }>();
+    /** How to reach a session, registered once when its stream opens. */
+    readonly #listeners = new Map<string, ChangeListener>();
 
-  constructor(client: OresClient) {
-    this.#client = client;
-  }
+    constructor(client: OresClient) {
+        this.#client = client;
+    }
 
-  /**
-   * Remembers how to reach a session.
-   *
-   * Registered when the session's stream opens and not before, because a
-   * subscription opened for a session with nowhere to deliver to would be work
-   * done for nothing.
-   */
-  attach(sessionId: string, listener: ChangeListener): void {
-    this.#listeners.set(sessionId, listener);
-  }
+    /**
+     * Remembers how to reach a session.
+     *
+     * Registered when the session's stream opens and not before, because a
+     * subscription opened for a session with nowhere to deliver to would be work
+     * done for nothing.
+     */
+    attach(sessionId: string, listener: ChangeListener): void {
+        this.#listeners.set(sessionId, listener);
+    }
 
-  /**
-   * Declares what a session is watching, replacing what it watched before.
-   *
-   * Called whenever a screen changes, so it is written to be safe to call with
-   * the same set repeatedly: the subscriptions that are still wanted are left
-   * alone rather than torn down and rebuilt, because rebuilding is how a screen
-   * misses the change that arrives during the gap.
-   */
-  watch(sessionId: string, tenantId: string, watches: readonly Watch[]): void {
-    if (!this.#listeners.has(sessionId)) return;
-    const previous = this.#watching.get(sessionId);
-    if (previous !== undefined) {
-      for (const watch of previous.watches) {
-        if (!watches.some((w) => sameWatch(w, watch))) {
-          this.#release(previous.tenantId, watch, sessionId);
+    /**
+     * Declares what a session is watching, replacing what it watched before.
+     *
+     * Called whenever a screen changes, so it is written to be safe to call with
+     * the same set repeatedly: the subscriptions that are still wanted are left
+     * alone rather than torn down and rebuilt, because rebuilding is how a screen
+     * misses the change that arrives during the gap.
+     */
+    watch(sessionId: string, tenantId: string, watches: readonly Watch[]): void {
+        if (!this.#listeners.has(sessionId)) return;
+        const previous = this.#watching.get(sessionId);
+        if (previous !== undefined) {
+            for (const watch of previous.watches) {
+                if (!watches.some((w) => sameWatch(w, watch))) {
+                    this.#release(previous.tenantId, watch, sessionId);
+                }
+            }
         }
-      }
-    }
-    for (const watch of watches) {
-      this.#acquire(tenantId, watch, sessionId);
-    }
-    this.#watching.set(sessionId, { tenantId, watches });
-  }
-
-  /** Forgets a session, dropping whatever only it was watching. */
-  forget(sessionId: string): void {
-    const entry = this.#watching.get(sessionId);
-    if (entry !== undefined) {
-      for (const watch of entry.watches) {
-        this.#release(entry.tenantId, watch, sessionId);
-      }
-      this.#watching.delete(sessionId);
-    }
-    this.#listeners.delete(sessionId);
-  }
-
-  #acquire(tenantId: string, watch: Watch, sessionId: string): void {
-    const key = keyFor(tenantId, watch);
-    let entry = this.#shared.get(key);
-
-    if (entry === undefined) {
-      // The subscription is opened once for everyone watching, and the listener
-      // map starts empty: it is the sessions that listen, and they arrive next.
-      const listeners = new Map<string, ChangeListener>();
-      const stop = this.#client.subscribeToEvents(
-        eventSubject(watch.component, watch.entity),
-        (change) => {
-          const event: ChangeEvent = {
-            component: watch.component,
-            entity: watch.entity,
-            at: change.at,
-            ids: change.ids,
-          };
-          for (const listener of listeners.values()) listener(event);
-        },
-      );
-      entry = { listeners, stop };
-      this.#shared.set(key, entry);
+        for (const watch of watches) {
+            this.#acquire(tenantId, watch, sessionId);
+        }
+        this.#watching.set(sessionId, { tenantId, watches });
     }
 
-    const listener = this.#listeners.get(sessionId);
-    if (listener !== undefined) entry.listeners.set(sessionId, listener);
-  }
-
-  #release(tenantId: string, watch: Watch, sessionId: string): void {
-    const key = keyFor(tenantId, watch);
-    const entry = this.#shared.get(key);
-    if (entry === undefined) return;
-
-    entry.listeners.delete(sessionId);
-    // The last watcher leaving closes the subscription, so nothing is held open
-    // for an entity nobody is looking at.
-    if (entry.listeners.size === 0) {
-      entry.stop();
-      this.#shared.delete(key);
+    /** Forgets a session, dropping whatever only it was watching. */
+    forget(sessionId: string): void {
+        const entry = this.#watching.get(sessionId);
+        if (entry !== undefined) {
+            for (const watch of entry.watches) {
+                this.#release(entry.tenantId, watch, sessionId);
+            }
+            this.#watching.delete(sessionId);
+        }
+        this.#listeners.delete(sessionId);
     }
-  }
 
-  /** How many shared subscriptions are open, which is what a test asserts on. */
-  get size(): number {
-    return this.#shared.size;
-  }
+    #acquire(tenantId: string, watch: Watch, sessionId: string): void {
+        const key = keyFor(tenantId, watch);
+        let entry = this.#shared.get(key);
+
+        if (entry === undefined) {
+            // The subscription is opened once for everyone watching, and the listener
+            // map starts empty: it is the sessions that listen, and they arrive next.
+            const listeners = new Map<string, ChangeListener>();
+            const stop = this.#client.subscribeToEvents(
+                eventSubject(watch.component, watch.entity),
+                (change) => {
+                    const event: ChangeEvent = {
+                        component: watch.component,
+                        entity: watch.entity,
+                        at: change.at,
+                        ids: change.ids,
+                    };
+                    for (const listener of listeners.values()) listener(event);
+                },
+            );
+            entry = { listeners, stop };
+            this.#shared.set(key, entry);
+        }
+
+        const listener = this.#listeners.get(sessionId);
+        if (listener !== undefined) entry.listeners.set(sessionId, listener);
+    }
+
+    #release(tenantId: string, watch: Watch, sessionId: string): void {
+        const key = keyFor(tenantId, watch);
+        const entry = this.#shared.get(key);
+        if (entry === undefined) return;
+
+        entry.listeners.delete(sessionId);
+        // The last watcher leaving closes the subscription, so nothing is held open
+        // for an entity nobody is looking at.
+        if (entry.listeners.size === 0) {
+            entry.stop();
+            this.#shared.delete(key);
+        }
+    }
+
+    /** How many shared subscriptions are open, which is what a test asserts on. */
+    get size(): number {
+        return this.#shared.size;
+    }
 }
 
 function keyFor(tenantId: string, watch: Watch): string {
-  return `${tenantId}\u0000${watch.component}\u0000${watch.entity}`;
+    return `${tenantId}\u0000${watch.component}\u0000${watch.entity}`;
 }
 
 function sameWatch(a: Watch, b: Watch): boolean {
-  return a.component === b.component && a.entity === b.entity;
+    return a.component === b.component && a.entity === b.entity;
 }

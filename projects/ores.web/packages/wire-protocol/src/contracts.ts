@@ -36,16 +36,16 @@ import { activePartySchema, partySummarySchema } from './domain.js';
 
 /** The signed-in session as the browser sees it. */
 export const sessionViewSchema = z.object({
-  username: z.string(),
-  email: z.string(),
-  accountId: z.string(),
-  tenantId: z.string(),
-  tenantName: z.string(),
-  party: partySummarySchema,
-  availableParties: z.array(partySummarySchema),
-  /** Seconds the token remains valid for, so the browser can renew early. */
-  accessLifetimeSeconds: z.int().positive(),
-  passwordResetRequired: z.boolean(),
+    username: z.string(),
+    email: z.string(),
+    accountId: z.string(),
+    tenantId: z.string(),
+    tenantName: z.string(),
+    party: partySummarySchema,
+    availableParties: z.array(partySummarySchema),
+    /** Seconds the token remains valid for, so the browser can renew early. */
+    accessLifetimeSeconds: z.int().positive(),
+    passwordResetRequired: z.boolean(),
 });
 export type SessionView = z.infer<typeof sessionViewSchema>;
 
@@ -56,27 +56,27 @@ export type SessionView = z.infer<typeof sessionViewSchema>;
  * action rather than a failure to recover from.
  */
 export const partyChoiceSchema = z.object({
-  outcome: z.literal('party-required'),
-  username: z.string(),
-  email: z.string(),
-  accountId: z.string(),
-  tenantName: z.string(),
-  availableParties: z.array(partySummarySchema),
-  defaultPartyId: z.string().nullable(),
-  passwordResetRequired: z.boolean(),
+    outcome: z.literal('party-required'),
+    username: z.string(),
+    email: z.string(),
+    accountId: z.string(),
+    tenantName: z.string(),
+    availableParties: z.array(partySummarySchema),
+    defaultPartyId: z.string().nullable(),
+    passwordResetRequired: z.boolean(),
 });
 export type PartyChoice = z.infer<typeof partyChoiceSchema>;
 
 export const loginSuccessSchema = z.object({
-  outcome: z.literal('active'),
-  session: sessionViewSchema,
+    outcome: z.literal('active'),
+    session: sessionViewSchema,
 });
 export type LoginSuccess = z.infer<typeof loginSuccessSchema>;
 
 /** The union a login attempt resolves to. */
 export const loginResultSchema = z.discriminatedUnion('outcome', [
-  loginSuccessSchema,
-  partyChoiceSchema,
+    loginSuccessSchema,
+    partyChoiceSchema,
 ]);
 export type LoginResult = z.infer<typeof loginResultSchema>;
 
@@ -89,20 +89,20 @@ export type LoginResult = z.infer<typeof loginResultSchema>;
  * server resolves the stored credential and the browser never handles it.
  */
 export const loginRequestSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().default(''),
-  /** The NATS server to sign in to. */
-  server: z.string().min(1),
-  port: z.int().min(1).max(65535),
-  /** The subject namespace, which isolates one environment on a shared broker. */
-  subjectPrefix: z.string().default(''),
-  /** The saved connection being used, when one was chosen. */
-  connectionId: z.string().default(''),
+    username: z.string().min(1),
+    password: z.string().default(''),
+    /** The NATS server to sign in to. */
+    server: z.string().min(1),
+    port: z.int().min(1).max(65535),
+    /** The subject namespace, which isolates one environment on a shared broker. */
+    subjectPrefix: z.string().default(''),
+    /** The saved connection being used, when one was chosen. */
+    connectionId: z.string().default(''),
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 
 export const selectPartyRequestSchema = z.object({
-  partyId: z.string().min(1),
+    partyId: z.string().min(1),
 });
 export type SelectPartyRequest = z.infer<typeof selectPartyRequestSchema>;
 
@@ -113,18 +113,18 @@ export type SelectPartyRequest = z.infer<typeof selectPartyRequestSchema>;
  * may change.
  */
 export const apiErrorSchema = z.object({
-  code: z.enum([
-    'invalid-credentials',
-    'not-authenticated',
-    'session-expired',
-    'forbidden',
-    'invalid-request',
-    'bootstrap-mode',
-    'upstream-unavailable',
-    'upstream-timeout',
-    'internal',
-  ]),
-  message: z.string(),
+    code: z.enum([
+        'invalid-credentials',
+        'not-authenticated',
+        'session-expired',
+        'forbidden',
+        'invalid-request',
+        'bootstrap-mode',
+        'upstream-unavailable',
+        'upstream-timeout',
+        'internal',
+    ]),
+    message: z.string(),
 });
 export type ApiError = z.infer<typeof apiErrorSchema>;
 
@@ -132,7 +132,7 @@ export type ApiError = z.infer<typeof apiErrorSchema>;
 export { activePartySchema };
 
 export const sseEnvelopeSchema = z.object({
-  event: z.enum(['connected', 'party-changed', 'session-expired', 'account-changed']),
-  data: z.unknown(),
+    event: z.enum(['connected', 'party-changed', 'session-expired', 'account-changed']),
+    data: z.unknown(),
 });
 export type SseEnvelope = z.infer<typeof sseEnvelopeSchema>;

@@ -34,78 +34,78 @@
  */
 
 export interface RateLimiter {
-  /** True when the caller may proceed; false when it must wait. */
-  allow(key: string): boolean;
-  readonly trackedKeys: number;
+    /** True when the caller may proceed; false when it must wait. */
+    allow(key: string): boolean;
+    readonly trackedKeys: number;
 }
 
 export interface RateLimiterOptions {
-  readonly maxAttempts: number;
-  readonly windowSeconds: number;
-  /** Distinct clients tracked before the sweep runs. */
-  readonly maxTrackedKeys?: number;
-  readonly now?: () => number;
+    readonly maxAttempts: number;
+    readonly windowSeconds: number;
+    /** Distinct clients tracked before the sweep runs. */
+    readonly maxTrackedKeys?: number;
+    readonly now?: () => number;
 }
 
 const DEFAULT_MAX_TRACKED_KEYS = 4096;
 
 export function createRateLimiter(options: RateLimiterOptions): RateLimiter {
-  const attempts = new Map<string, number[]>();
-  const windowMs = options.windowSeconds * 1000;
-  const maxTrackedKeys = options.maxTrackedKeys ?? DEFAULT_MAX_TRACKED_KEYS;
-  const now = options.now ?? (() => Date.now());
+    const attempts = new Map<string, number[]>();
+    const windowMs = options.windowSeconds * 1000;
+    const maxTrackedKeys = options.maxTrackedKeys ?? DEFAULT_MAX_TRACKED_KEYS;
+    const now = options.now ?? (() => Date.now());
 
-  /** Drops every key with no attempt left inside the window. */
-  function sweep(timestamp: number): void {
-    for (const [key, recorded] of attempts) {
-      const recent = recorded.filter((recordedAt) => timestamp - recordedAt < windowMs);
-      if (recent.length === 0) {
-        attempts.delete(key);
-      } else {
-        attempts.set(key, recent);
-      }
-    }
-  }
-
-  /** Drops the key whose most recent attempt is oldest. */
-  function evictOldest(): void {
-    let oldestKey: string | undefined;
-    let oldestAt = Number.POSITIVE_INFINITY;
-    for (const [key, recorded] of attempts) {
-      const last = recorded[recorded.length - 1] ?? Number.NEGATIVE_INFINITY;
-      if (last < oldestAt) {
-        oldestAt = last;
-        oldestKey = key;
-      }
-    }
-    if (oldestKey !== undefined) {
-      attempts.delete(oldestKey);
-    }
-  }
-
-  return {
-    allow(key) {
-      const timestamp = now();
-      const tracked = attempts.get(key);
-      if (tracked === undefined && attempts.size >= maxTrackedKeys) {
-        sweep(timestamp);
-        if (attempts.size >= maxTrackedKeys) {
-          evictOldest();
+    /** Drops every key with no attempt left inside the window. */
+    function sweep(timestamp: number): void {
+        for (const [key, recorded] of attempts) {
+            const recent = recorded.filter((recordedAt) => timestamp - recordedAt < windowMs);
+            if (recent.length === 0) {
+                attempts.delete(key);
+            } else {
+                attempts.set(key, recent);
+            }
         }
-      }
-      const recent = (attempts.get(key) ?? []).filter(
-        (recordedAt) => timestamp - recordedAt < windowMs,
-      );
-      if (recent.length >= options.maxAttempts) {
-        attempts.set(key, recent);
-        return false;
-      }
-      recent.push(timestamp);
-      attempts.set(key, recent);
-      return true;
-    },
-    get trackedKeys() {
-      return attempts.size;
-    },
-  };
+    }
+
+    /** Drops the key whose most recent attempt is oldest. */
+    function evictOldest(): void {
+        let oldestKey: string | undefined;
+        let oldestAt = Number.POSITIVE_INFINITY;
+        for (const [key, recorded] of attempts) {
+            const last = recorded[recorded.length - 1] ?? Number.NEGATIVE_INFINITY;
+            if (last < oldestAt) {
+                oldestAt = last;
+                oldestKey = key;
+            }
+        }
+        if (oldestKey !== undefined) {
+            attempts.delete(oldestKey);
+        }
+    }
+
+    return {
+        allow(key) {
+            const timestamp = now();
+            const tracked = attempts.get(key);
+            if (tracked === undefined && attempts.size >= maxTrackedKeys) {
+                sweep(timestamp);
+                if (attempts.size >= maxTrackedKeys) {
+                    evictOldest();
+                }
+            }
+            const recent = (attempts.get(key) ?? []).filter(
+                (recordedAt) => timestamp - recordedAt < windowMs,
+            );
+            if (recent.length >= options.maxAttempts) {
+                attempts.set(key, recent);
+                return false;
+            }
+            recent.push(timestamp);
+            attempts.set(key, recent);
+            return true;
+        },
+        get trackedKeys() {
+            return attempts.size;
+        },
+    };
 }

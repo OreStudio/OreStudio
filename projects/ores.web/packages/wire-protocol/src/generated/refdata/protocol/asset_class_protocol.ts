@@ -55,7 +55,7 @@ export interface GetAssetClassesResponse {
 }
 
 export const subjects = {
-    get_asset_classes_request: "refdata.v1.asset_classes.list",
+    get_asset_classes_request: 'refdata.v1.asset_classes.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

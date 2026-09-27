@@ -35,36 +35,36 @@ import { z } from 'zod';
  * nothing against another.
  */
 const imageBytes = z.union([
-  z.string(),
-  z.array(z.number().int().min(0).max(255)),
-  z.instanceof(Uint8Array),
+    z.string(),
+    z.array(z.number().int().min(0).max(255)),
+    z.instanceof(Uint8Array),
 ]);
 
 export const imageSchema = z.object({
-  version: z.int().nonnegative().default(0),
-  image_id: z.string().default(''),
-  tenant_id: z.string().default(''),
-  key: z.string().default(''),
-  description: z.string().default(''),
-  mime_type: z.string().default('image/svg+xml'),
-  data: imageBytes,
-  modified_by: z.string().default(''),
-  change_reason_code: z.string().default(''),
-  change_commentary: z.string().default(''),
-  performed_by: z.string().default(''),
-  recorded_at: z.string().default(''),
+    version: z.int().nonnegative().default(0),
+    image_id: z.string().default(''),
+    tenant_id: z.string().default(''),
+    key: z.string().default(''),
+    description: z.string().default(''),
+    mime_type: z.string().default('image/svg+xml'),
+    data: imageBytes,
+    modified_by: z.string().default(''),
+    change_reason_code: z.string().default(''),
+    change_commentary: z.string().default(''),
+    performed_by: z.string().default(''),
+    recorded_at: z.string().default(''),
 });
 
 export type WireImage = z.infer<typeof imageSchema>;
 
 export const getImagesRequestSchema = z.object({
-  image_ids: z.array(z.string()),
+    image_ids: z.array(z.string()),
 });
 
 export const getImagesResponseSchema = z.object({
-  success: z.boolean().default(true),
-  message: z.string().default(''),
-  images: z.array(imageSchema).default([]),
+    success: z.boolean().default(true),
+    message: z.string().default(''),
+    images: z.array(imageSchema).default([]),
 });
 
 /**
@@ -75,9 +75,9 @@ export const getImagesResponseSchema = z.object({
  * same way, so nothing downstream has to care which arrived.
  */
 export function imageBytesToBuffer(data: WireImage['data']): Buffer {
-  if (typeof data === 'string') return Buffer.from(data, 'binary');
-  if (data instanceof Uint8Array) return Buffer.from(data);
-  return Buffer.from(data);
+    if (typeof data === 'string') return Buffer.from(data, 'binary');
+    if (data instanceof Uint8Array) return Buffer.from(data);
+    return Buffer.from(data);
 }
 
 /**
@@ -87,8 +87,8 @@ export function imageBytesToBuffer(data: WireImage['data']): Buffer {
  * inspection or a test is the markup rather than a byte count.
  */
 export function imageBytesToText(data: WireImage['data']): string {
-  if (typeof data === 'string') return data;
-  return Buffer.from(data instanceof Uint8Array ? data : Uint8Array.from(data)).toString('utf8');
+    if (typeof data === 'string') return data;
+    return Buffer.from(data instanceof Uint8Array ? data : Uint8Array.from(data)).toString('utf8');
 }
 
 /**
@@ -100,10 +100,10 @@ export function imageBytesToText(data: WireImage['data']): string {
  * hundred downloads.
  */
 export const imageInfoSchema = z.object({
-  image_id: z.string(),
-  key: z.string().default(''),
-  description: z.string().default(''),
-  size_bytes: z.int().nonnegative().default(0),
+    image_id: z.string(),
+    key: z.string().default(''),
+    description: z.string().default(''),
+    size_bytes: z.int().nonnegative().default(0),
 });
 
 export type WireImageInfo = z.infer<typeof imageInfoSchema>;
@@ -115,11 +115,11 @@ export type WireImageInfo = z.infer<typeof imageInfoSchema>;
  * decoder requires every member; null means everything.
  */
 export const listImagesRequestSchema = z.object({
-  modified_since: z.string().nullable(),
+    modified_since: z.string().nullable(),
 });
 
 export const listImagesResponseSchema = z.object({
-  success: z.boolean().default(true),
-  message: z.string().default(''),
-  images: z.array(imageInfoSchema).default([]),
+    success: z.boolean().default(true),
+    message: z.string().default(''),
+    images: z.array(imageInfoSchema).default([]),
 });

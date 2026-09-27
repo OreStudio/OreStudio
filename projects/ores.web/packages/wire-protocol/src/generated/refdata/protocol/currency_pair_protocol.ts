@@ -166,15 +166,15 @@ export interface GetCurrencyPairVersionResponse {
 }
 
 export const subjects = {
-    list_currency_pairs_request: "refdata.v1.currency_pairs.list",
-    get_currency_pair_request: "refdata.v1.currency_pairs.get",
-    get_many_currency_pairs_request: "refdata.v1.currency_pairs.get_many",
-    put_currency_pair_request: "refdata.v1.currency_pairs.put",
-    put_many_currency_pairs_request: "refdata.v1.currency_pairs.put_many",
-    delete_currency_pair_request: "refdata.v1.currency_pairs.delete",
-    delete_many_currency_pairs_request: "refdata.v1.currency_pairs.delete_many",
-    list_currency_pair_versions_request: "refdata.v1.currency_pairs_versions.list",
-    get_currency_pair_version_request: "refdata.v1.currency_pairs_versions.get",
+    list_currency_pairs_request: 'refdata.v1.currency_pairs.list',
+    get_currency_pair_request: 'refdata.v1.currency_pairs.get',
+    get_many_currency_pairs_request: 'refdata.v1.currency_pairs.get_many',
+    put_currency_pair_request: 'refdata.v1.currency_pairs.put',
+    put_many_currency_pairs_request: 'refdata.v1.currency_pairs.put_many',
+    delete_currency_pair_request: 'refdata.v1.currency_pairs.delete',
+    delete_many_currency_pairs_request: 'refdata.v1.currency_pairs.delete_many',
+    list_currency_pair_versions_request: 'refdata.v1.currency_pairs_versions.list',
+    get_currency_pair_version_request: 'refdata.v1.currency_pairs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.currency_pairs_events.created",
-    updated: "refdata.v1.currency_pairs_events.updated",
-    deleted: "refdata.v1.currency_pairs_events.deleted",
+    created: 'refdata.v1.currency_pairs_events.created',
+    updated: 'refdata.v1.currency_pairs_events.updated',
+    deleted: 'refdata.v1.currency_pairs_events.deleted',
 } as const;

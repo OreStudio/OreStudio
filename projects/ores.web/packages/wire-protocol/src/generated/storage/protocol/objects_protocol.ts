@@ -152,10 +152,10 @@ export interface ListObjectsResponse {
 }
 
 export const subjects = {
-    put_objects_request: "storage.v1.objects.put",
-    get_objects_request: "storage.v1.objects.get",
-    delete_objects_request: "storage.v1.objects.delete",
-    list_objects_request: "storage.v1.objects.list",
+    put_objects_request: 'storage.v1.objects.put',
+    get_objects_request: 'storage.v1.objects.get',
+    delete_objects_request: 'storage.v1.objects.delete',
+    list_objects_request: 'storage.v1.objects.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

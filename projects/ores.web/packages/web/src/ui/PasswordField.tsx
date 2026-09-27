@@ -30,31 +30,40 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Field, Input, cx } from './Primitives.js';
-import { PASSWORD_RULES, PASSWORD_SPECIAL_CHARS, MIN_PASSWORD_LENGTH, assessPassword } from './passwordPolicy.js';
+import {
+    PASSWORD_RULES,
+    PASSWORD_SPECIAL_CHARS,
+    MIN_PASSWORD_LENGTH,
+    assessPassword,
+} from './passwordPolicy.js';
 
 /**
  * A password input with a show/hide toggle. Every password in the app uses it,
  * so revealing a password works and reads the same everywhere.
  */
 export function PasswordInput({
-  className,
-  ...rest
+    className,
+    ...rest
 }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>): ReactNode {
-  const { t } = useTranslation();
-  const [reveal, setReveal] = useState(false);
-  return (
-    <div className="relative">
-      <Input {...rest} type={reveal ? 'text' : 'password'} className={cx('pr-16', className)} />
-      <button
-        type="button"
-        className="absolute inset-y-0 right-0 px-3 text-xs text-ink-faint hover:text-ink"
-        aria-pressed={reveal}
-        onClick={() => setReveal((value) => !value)}
-      >
-        {reveal ? t('password.hide') : t('password.show')}
-      </button>
-    </div>
-  );
+    const { t } = useTranslation();
+    const [reveal, setReveal] = useState(false);
+    return (
+        <div className="relative">
+            <Input
+                {...rest}
+                type={reveal ? 'text' : 'password'}
+                className={cx('pr-16', className)}
+            />
+            <button
+                type="button"
+                className="absolute inset-y-0 right-0 px-3 text-xs text-ink-faint hover:text-ink"
+                aria-pressed={reveal}
+                onClick={() => setReveal((value) => !value)}
+            >
+                {reveal ? t('password.hide') : t('password.show')}
+            </button>
+        </div>
+    );
 }
 
 const STRENGTH_TONE = ['bg-line', 'bg-down', 'bg-warn', 'bg-up', 'bg-up'] as const;
@@ -65,76 +74,88 @@ const STRENGTH_TONE = ['bg-line', 'bg-down', 'bg-warn', 'bg-up', 'bg-up'] as con
  * password and whether it may be submitted, which needs both.
  */
 export function NewPasswordField({
-  label,
-  hint,
-  value,
-  onChange,
+    label,
+    hint,
+    value,
+    onChange,
 }: {
-  readonly label?: string;
-  readonly hint?: string;
-  readonly value: string;
-  readonly onChange: (password: string, acceptable: boolean) => void;
+    readonly label?: string;
+    readonly hint?: string;
+    readonly value: string;
+    readonly onChange: (password: string, acceptable: boolean) => void;
 }): ReactNode {
-  const { t } = useTranslation();
-  const [confirm, setConfirm] = useState('');
-  const rulesId = useId();
-  const assessment = assessPassword(value);
-  const mismatch = confirm.length > 0 && confirm !== value;
+    const { t } = useTranslation();
+    const [confirm, setConfirm] = useState('');
+    const rulesId = useId();
+    const assessment = assessPassword(value);
+    const mismatch = confirm.length > 0 && confirm !== value;
 
-  const report = (password: string, confirmation: string): void =>
-    onChange(password, assessPassword(password).valid && password === confirmation);
+    const report = (password: string, confirmation: string): void =>
+        onChange(password, assessPassword(password).valid && password === confirmation);
 
-  return (
-    <div className="space-y-3">
-      <Field label={label ?? t('password.new')} {...(hint !== undefined && { hint })}>
-        <PasswordInput
-          value={value}
-          autoComplete="new-password"
-          aria-describedby={rulesId}
-          onChange={(event) => report(event.target.value, confirm)}
-        />
-      </Field>
+    return (
+        <div className="space-y-3">
+            <Field label={label ?? t('password.new')} {...(hint !== undefined && { hint })}>
+                <PasswordInput
+                    value={value}
+                    autoComplete="new-password"
+                    aria-describedby={rulesId}
+                    onChange={(event) => report(event.target.value, confirm)}
+                />
+            </Field>
 
-      <div id={rulesId} aria-live="polite">
-        <div className="flex items-center gap-2">
-          <div className="flex flex-1 gap-1" aria-hidden>
-            {[1, 2, 3, 4].map((level) => (
-              <span
-                key={level}
-                className={cx(
-                  'h-1 flex-1 rounded-full',
-                  assessment.strength >= level ? STRENGTH_TONE[assessment.strength] : 'bg-line',
-                )}
-              />
-            ))}
-          </div>
-          <span className="w-16 text-right text-xs text-ink-muted">{t(`password.strength.${assessment.strength}`)}</span>
+            <div id={rulesId} aria-live="polite">
+                <div className="flex items-center gap-2">
+                    <div className="flex flex-1 gap-1" aria-hidden>
+                        {[1, 2, 3, 4].map((level) => (
+                            <span
+                                key={level}
+                                className={cx(
+                                    'h-1 flex-1 rounded-full',
+                                    assessment.strength >= level
+                                        ? STRENGTH_TONE[assessment.strength]
+                                        : 'bg-line',
+                                )}
+                            />
+                        ))}
+                    </div>
+                    <span className="w-16 text-right text-xs text-ink-muted">
+                        {t(`password.strength.${assessment.strength}`)}
+                    </span>
+                </div>
+                <ul className="mt-2 grid gap-x-4 gap-y-0.5 text-xs sm:grid-cols-2">
+                    {PASSWORD_RULES.map((rule) => {
+                        const met = assessment.met.has(rule);
+                        return (
+                            <li key={rule} className={met ? 'text-up' : 'text-ink-faint'}>
+                                <span aria-hidden>{met ? '✓' : '○'}</span>{' '}
+                                {t(`password.rule.${rule}`, {
+                                    min: MIN_PASSWORD_LENGTH,
+                                    chars: PASSWORD_SPECIAL_CHARS,
+                                })}
+                                <span className="sr-only">
+                                    {met ? t('password.ruleMet') : t('password.ruleNotMet')}
+                                </span>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+
+            <Field
+                label={t('password.confirm')}
+                {...(mismatch && { error: t('password.mismatch') })}
+            >
+                <PasswordInput
+                    value={confirm}
+                    autoComplete="new-password"
+                    aria-invalid={mismatch}
+                    onChange={(event) => {
+                        setConfirm(event.target.value);
+                        report(value, event.target.value);
+                    }}
+                />
+            </Field>
         </div>
-        <ul className="mt-2 grid gap-x-4 gap-y-0.5 text-xs sm:grid-cols-2">
-          {PASSWORD_RULES.map((rule) => {
-            const met = assessment.met.has(rule);
-            return (
-              <li key={rule} className={met ? 'text-up' : 'text-ink-faint'}>
-                <span aria-hidden>{met ? '✓' : '○'}</span>{' '}
-                {t(`password.rule.${rule}`, { min: MIN_PASSWORD_LENGTH, chars: PASSWORD_SPECIAL_CHARS })}
-                <span className="sr-only">{met ? t('password.ruleMet') : t('password.ruleNotMet')}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <Field label={t('password.confirm')} {...(mismatch && { error: t('password.mismatch') })}>
-        <PasswordInput
-          value={confirm}
-          autoComplete="new-password"
-          aria-invalid={mismatch}
-          onChange={(event) => {
-            setConfirm(event.target.value);
-            report(value, event.target.value);
-          }}
-        />
-      </Field>
-    </div>
-  );
+    );
 }

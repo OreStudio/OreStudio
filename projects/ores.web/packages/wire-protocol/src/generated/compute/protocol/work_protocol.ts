@@ -134,8 +134,7 @@ export interface HeartbeatMessage {
  *
  * It carries no fields, because the stale threshold is the service's own.
  */
-export interface ReapWorkMessage {
-}
+export interface ReapWorkMessage {}
 
 /**
  * @brief Hands a finished job back from a wrapper node.
@@ -183,11 +182,11 @@ export interface SubmitResultResponse {
 }
 
 export const subjects = {
-    pull_work_request: "compute.v1.work.pull",
-    work_assignment_event: "compute.v1.work.assignments",
-    heartbeat_message: "compute.v1.work.heartbeat",
-    reap_work_message: "compute.v1.work.reap",
-    submit_result_request: "compute.v1.results.submit",
+    pull_work_request: 'compute.v1.work.pull',
+    work_assignment_event: 'compute.v1.work.assignments',
+    heartbeat_message: 'compute.v1.work.heartbeat',
+    reap_work_message: 'compute.v1.work.reap',
+    submit_result_request: 'compute.v1.results.submit',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -144,14 +144,15 @@ export interface ListByCodeDomainCodeBadgeMappingsResponse {
 }
 
 export const subjects = {
-    list_badge_mappings_request: "dq.v1.badge_mappings.list",
-    get_badge_mapping_request: "dq.v1.badge_mappings.get",
-    get_many_badge_mappings_request: "dq.v1.badge_mappings.get_many",
-    put_badge_mapping_request: "dq.v1.badge_mappings.put",
-    put_many_badge_mappings_request: "dq.v1.badge_mappings.put_many",
-    delete_badge_mapping_request: "dq.v1.badge_mappings.delete",
-    delete_many_badge_mappings_request: "dq.v1.badge_mappings.delete_many",
-    list_by_code_domain_code_badge_mappings_request: "dq.v1.badge_mappings.list_by_code_domain_code",
+    list_badge_mappings_request: 'dq.v1.badge_mappings.list',
+    get_badge_mapping_request: 'dq.v1.badge_mappings.get',
+    get_many_badge_mappings_request: 'dq.v1.badge_mappings.get_many',
+    put_badge_mapping_request: 'dq.v1.badge_mappings.put',
+    put_many_badge_mappings_request: 'dq.v1.badge_mappings.put_many',
+    delete_badge_mapping_request: 'dq.v1.badge_mappings.delete',
+    delete_many_badge_mappings_request: 'dq.v1.badge_mappings.delete_many',
+    list_by_code_domain_code_badge_mappings_request:
+        'dq.v1.badge_mappings.list_by_code_domain_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -36,16 +36,16 @@ import type { Uuid } from './primitives.js';
  */
 
 export const SUBJECTS = {
-  login: 'iam.v1.auth.login',
-  logout: 'iam.v1.auth.logout',
-  refresh: 'iam.v1.auth.refresh',
-  selectParty: 'iam.v1.accounts.select-party',
-  switchParty: 'iam.v1.accounts.switch-party',
-  listAccounts: 'iam.v1.accounts.list',
-  listChangeReasons: 'dq.v1.change_reasons.list',
-  getImages: 'assets.v1.images.get',
-  listImages: 'assets.v1.images.list',
-  httpInfo: httpInfoSubjects.get_http_info_request,
+    login: 'iam.v1.auth.login',
+    logout: 'iam.v1.auth.logout',
+    refresh: 'iam.v1.auth.refresh',
+    selectParty: 'iam.v1.accounts.select-party',
+    switchParty: 'iam.v1.accounts.switch-party',
+    listAccounts: 'iam.v1.accounts.list',
+    listChangeReasons: 'dq.v1.change_reasons.list',
+    getImages: 'assets.v1.images.get',
+    listImages: 'assets.v1.images.list',
+    httpInfo: httpInfoSubjects.get_http_info_request,
 } as const;
 
 /**
@@ -56,8 +56,8 @@ export const SUBJECTS = {
  * that say so are the interface's, not the wire's.
  */
 export const bootstrapStatusResponseSchema = z.object({
-  is_in_bootstrap_mode: z.boolean().default(false),
-  message: z.string().default(''),
+    is_in_bootstrap_mode: z.boolean().default(false),
+    message: z.string().default(''),
 });
 
 const uuidLike = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
@@ -76,26 +76,26 @@ const text = z.string().default('');
  * `login_request`. The credential field is `principal`, not `username`.
  */
 export const loginRequestSchema = z.object({
-  principal: z.string(),
-  password: z.string(),
+    principal: z.string(),
+    password: z.string(),
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 
 /** `party_summary` as it appears inside `login_response`. */
 export const wirePartySchema = z.object({
-  id: uuidSchema,
-  name: z.string(),
-  party_category: z.string(),
-  business_center_code: z.string(),
+    id: uuidSchema,
+    name: z.string(),
+    party_category: z.string(),
+    business_center_code: z.string(),
 });
 
 function mapParty(row: z.infer<typeof wirePartySchema>): PartySummary {
-  return {
-    id: row.id,
-    name: row.name,
-    partyCategory: row.party_category,
-    businessCenterCode: row.business_center_code,
-  };
+    return {
+        id: row.id,
+        name: row.name,
+        partyCategory: row.party_category,
+        businessCenterCode: row.business_center_code,
+    };
 }
 
 /**
@@ -107,46 +107,46 @@ function mapParty(row: z.infer<typeof wirePartySchema>): PartySummary {
  * until `select_party` replaces it.
  */
 export const loginResponseSchema = z
-  .object({
-    success: flag,
-    account_id: text,
-    tenant_id: text,
-    tenant_name: text,
-    username: text,
-    email: text,
-    password_reset_required: flag,
-    tenant_bootstrap_mode: flag,
-    party_setup_required: flag,
-    party_setup_warning: text,
-    token: text,
-    error_message: text,
-    message: text,
-    selected_party_id: text,
-    available_parties: z.array(wirePartySchema).default([]),
-    default_party_id: text,
-    access_lifetime_s: z.int().default(1800),
-    session_id: text,
-  })
-  .transform((row) => ({
-    success: row.success,
-    accountId: row.account_id,
-    tenantId: row.tenant_id,
-    tenantName: row.tenant_name,
-    username: row.username,
-    email: row.email,
-    passwordResetRequired: row.password_reset_required,
-    tenantBootstrapMode: row.tenant_bootstrap_mode,
-    partySetupRequired: row.party_setup_required,
-    partySetupWarning: row.party_setup_warning,
-    token: row.token,
-    errorMessage: row.error_message,
-    message: row.message,
-    selectedPartyId: row.selected_party_id,
-    availableParties: row.available_parties.map(mapParty),
-    defaultPartyId: row.default_party_id,
-    accessLifetimeSeconds: row.access_lifetime_s,
-    sessionId: row.session_id,
-  }));
+    .object({
+        success: flag,
+        account_id: text,
+        tenant_id: text,
+        tenant_name: text,
+        username: text,
+        email: text,
+        password_reset_required: flag,
+        tenant_bootstrap_mode: flag,
+        party_setup_required: flag,
+        party_setup_warning: text,
+        token: text,
+        error_message: text,
+        message: text,
+        selected_party_id: text,
+        available_parties: z.array(wirePartySchema).default([]),
+        default_party_id: text,
+        access_lifetime_s: z.int().default(1800),
+        session_id: text,
+    })
+    .transform((row) => ({
+        success: row.success,
+        accountId: row.account_id,
+        tenantId: row.tenant_id,
+        tenantName: row.tenant_name,
+        username: row.username,
+        email: row.email,
+        passwordResetRequired: row.password_reset_required,
+        tenantBootstrapMode: row.tenant_bootstrap_mode,
+        partySetupRequired: row.party_setup_required,
+        partySetupWarning: row.party_setup_warning,
+        token: row.token,
+        errorMessage: row.error_message,
+        message: row.message,
+        selectedPartyId: row.selected_party_id,
+        availableParties: row.available_parties.map(mapParty),
+        defaultPartyId: row.default_party_id,
+        accessLifetimeSeconds: row.access_lifetime_s,
+        sessionId: row.session_id,
+    }));
 
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
 
@@ -158,49 +158,49 @@ export const emptyRequestSchema = z.object({});
 
 /** `logout_response`. */
 export const logoutResponseSchema = z.object({
-  success: flag,
-  message: text,
+    success: flag,
+    message: text,
 });
 export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
 
 /** `refresh_request` carries no body; identity comes from the bearer token. */
 export const refreshResponseSchema = z.object({
-  success: flag,
-  token: text,
-  message: text,
-  access_lifetime_s: z.int().default(1800),
+    success: flag,
+    token: text,
+    message: text,
+    access_lifetime_s: z.int().default(1800),
 });
 export type RefreshResponse = z.infer<typeof refreshResponseSchema>;
 
 /** `select_party_request` and `switch_party_request` share a body and reply. */
 export const partyRequestSchema = z.object({
-  party_id: uuidLike,
+    party_id: uuidLike,
 });
 export type PartyRequest = z.infer<typeof partyRequestSchema>;
 
 export const partyResponseSchema = z
-  .object({
-    success: flag,
-    message: text,
-    token: text,
-    username: text,
-    tenant_name: text,
-    party_name: text,
-    party_setup_required: flag,
-    party_setup_warning: text,
-    access_lifetime_s: z.int().default(1800),
-  })
-  .transform((row) => ({
-    success: row.success,
-    message: row.message,
-    token: row.token,
-    username: row.username,
-    tenantName: row.tenant_name,
-    partyName: row.party_name,
-    partySetupRequired: row.party_setup_required,
-    partySetupWarning: row.party_setup_warning,
-    accessLifetimeSeconds: row.access_lifetime_s,
-  }));
+    .object({
+        success: flag,
+        message: text,
+        token: text,
+        username: text,
+        tenant_name: text,
+        party_name: text,
+        party_setup_required: flag,
+        party_setup_warning: text,
+        access_lifetime_s: z.int().default(1800),
+    })
+    .transform((row) => ({
+        success: row.success,
+        message: row.message,
+        token: row.token,
+        username: row.username,
+        tenantName: row.tenant_name,
+        partyName: row.party_name,
+        partySetupRequired: row.party_setup_required,
+        partySetupWarning: row.party_setup_warning,
+        accessLifetimeSeconds: row.access_lifetime_s,
+    }));
 export type PartyResponse = z.infer<typeof partyResponseSchema>;
 
 /**
@@ -209,27 +209,27 @@ export type PartyResponse = z.infer<typeof partyResponseSchema>;
  * login.
  */
 export const httpInfoResponseSchema = z.object({
-  base_url: text,
-  success: flag,
-  message: text,
+    base_url: text,
+    success: flag,
+    message: text,
 });
 export type HttpInfoResponse = z.infer<typeof httpInfoResponseSchema>;
 
 /** `lock_account_request` and `unlock_account_request` share a body and reply. */
 export const accountIdsRequestSchema = z.object({
-  account_ids: z.array(uuidLike).default([]),
+    account_ids: z.array(uuidLike).default([]),
 });
 export type AccountIdsRequest = z.infer<typeof accountIdsRequestSchema>;
 
 /** `account_operation_result`, one per requested id. */
 export const accountOperationResultSchema = z.object({
-  success: flag,
-  message: text,
+    success: flag,
+    message: text,
 });
 export type AccountOperationResult = z.infer<typeof accountOperationResultSchema>;
 
 export const lockResultSchema = z.object({
-  results: z.array(accountOperationResultSchema).default([]),
+    results: z.array(accountOperationResultSchema).default([]),
 });
 export type LockResult = z.infer<typeof lockResultSchema>;
 
@@ -240,40 +240,40 @@ export type LockResult = z.infer<typeof lockResultSchema>;
  * is the one the client sends.
  */
 export const changePasswordRequestSchema = z.object({
-  current_password: z.string(),
-  new_password: z.string(),
+    current_password: z.string(),
+    new_password: z.string(),
 });
 export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>;
 
 export const changePasswordResultSchema = z.object({
-  success: flag,
-  message: text,
+    success: flag,
+    message: text,
 });
 export type ChangePasswordResult = z.infer<typeof changePasswordResultSchema>;
 
 /** `get_accounts_request_typed`, sent on `iam.v1.accounts.list`. */
 export const listAccountsRequestSchema = z.object({
-  offset: z.int().nonnegative().default(0),
-  limit: z.int().positive().max(1000).default(100),
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(1000).default(100),
 });
 export type ListAccountsRequest = z.infer<typeof listAccountsRequestSchema>;
 
 const wireAccountSchema = z.object({
-  version: z.int().nonnegative().default(0),
-  id: uuidSchema,
-  tenant_id: uuidSchema,
-  username: text,
-  full_name: text,
-  email: text,
-  account_type: z.string().default('user'),
-  job_title: text,
-  reports_to_account_id: uuidSchema.nullable().default(null),
-  default_party_id: uuidSchema.nullable().default(null),
-  modified_by: text,
-  change_reason_code: text,
-  change_commentary: text,
-  performed_by: text,
-  recorded_at: wireTimestampSchema,
+    version: z.int().nonnegative().default(0),
+    id: uuidSchema,
+    tenant_id: uuidSchema,
+    username: text,
+    full_name: text,
+    email: text,
+    account_type: z.string().default('user'),
+    job_title: text,
+    reports_to_account_id: uuidSchema.nullable().default(null),
+    default_party_id: uuidSchema.nullable().default(null),
+    modified_by: text,
+    change_reason_code: text,
+    change_commentary: text,
+    performed_by: text,
+    recorded_at: wireTimestampSchema,
 });
 
 /**
@@ -285,34 +285,34 @@ const wireAccountSchema = z.object({
  * from the schema, so it is dropped rather than forwarded.
  */
 function mapAccount(row: z.infer<typeof wireAccountSchema>): Account {
-  return {
-    version: row.version,
-    id: row.id,
-    tenantId: row.tenant_id,
-    username: row.username,
-    fullName: row.full_name,
-    email: row.email,
-    accountType: parseAccountType(row.account_type),
-    jobTitle: row.job_title,
-    reportsToAccountId: orNil(row.reports_to_account_id),
-    defaultPartyId: orNil(row.default_party_id),
-    modifiedBy: row.modified_by,
-    changeReasonCode: row.change_reason_code,
-    changeCommentary: row.change_commentary,
-    performedBy: row.performed_by,
-    recordedAt: row.recorded_at,
-  };
+    return {
+        version: row.version,
+        id: row.id,
+        tenantId: row.tenant_id,
+        username: row.username,
+        fullName: row.full_name,
+        email: row.email,
+        accountType: parseAccountType(row.account_type),
+        jobTitle: row.job_title,
+        reportsToAccountId: orNil(row.reports_to_account_id),
+        defaultPartyId: orNil(row.default_party_id),
+        modifiedBy: row.modified_by,
+        changeReasonCode: row.change_reason_code,
+        changeCommentary: row.change_commentary,
+        performedBy: row.performed_by,
+        recordedAt: row.recorded_at,
+    };
 }
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
 function orNil(value: Uuid | null): Uuid | null {
-  return value === null || value === NIL_UUID ? null : value;
+    return value === null || value === NIL_UUID ? null : value;
 }
 
 function parseAccountType(value: string): Account['accountType'] {
-  const parsed = accountSchema.shape.accountType.safeParse(value);
-  return parsed.success ? parsed.data : 'user';
+    const parsed = accountSchema.shape.accountType.safeParse(value);
+    return parsed.success ? parsed.data : 'user';
 }
 
 /**
@@ -322,14 +322,14 @@ function parseAccountType(value: string): Account['accountType'] {
  * this schema is the HTTP shape directly.
  */
 export const accountPageSchema = z
-  .object({
-    accounts: z.array(wireAccountSchema).default([]),
-    total_available_count: z.int().nonnegative().default(0),
-  })
-  .transform((row) => ({
-    accounts: row.accounts.map(mapAccount),
-    totalCount: row.total_available_count,
-  }));
+    .object({
+        accounts: z.array(wireAccountSchema).default([]),
+        total_available_count: z.int().nonnegative().default(0),
+    })
+    .transform((row) => ({
+        accounts: row.accounts.map(mapAccount),
+        totalCount: row.total_available_count,
+    }));
 
 /** The translated page the BFF returns and the browser consumes. */
 export type WireAccountPage = z.infer<typeof accountPageSchema>;
@@ -339,7 +339,6 @@ export const partyIdSchema = z.string().regex(/^[0-9a-f-]{36}$/);
 
 /** Re-exported so callers can validate a party in isolation. */
 export { partySummarySchema };
-
 
 /**
  * The change reasons a write may carry.
@@ -352,22 +351,22 @@ export { partySummarySchema };
  * `applies_to_new` is the wire name; the model calls the same idea create.
  */
 export const changeReasonSchema = z.object({
-  version: z.int().nonnegative().default(0),
-  code: z.string(),
-  description: z.string().default(''),
-  category_code: z.string().default(''),
-  applies_to_new: z.boolean().default(false),
-  applies_to_amend: z.boolean().default(false),
-  applies_to_delete: z.boolean().default(false),
-  requires_commentary: z.boolean().default(false),
-  display_order: z.int().default(0),
+    version: z.int().nonnegative().default(0),
+    code: z.string(),
+    description: z.string().default(''),
+    category_code: z.string().default(''),
+    applies_to_new: z.boolean().default(false),
+    applies_to_amend: z.boolean().default(false),
+    applies_to_delete: z.boolean().default(false),
+    requires_commentary: z.boolean().default(false),
+    display_order: z.int().default(0),
 });
 
 export type ChangeReason = z.infer<typeof changeReasonSchema>;
 
 export const changeReasonPageSchema = z.object({
-  reasons: z.array(changeReasonSchema).default([]),
-  total_available_count: z.int().nonnegative().default(0),
-  success: z.boolean().default(false),
-  message: z.string().default(''),
+    reasons: z.array(changeReasonSchema).default([]),
+    total_available_count: z.int().nonnegative().default(0),
+    success: z.boolean().default(false),
+    message: z.string().default(''),
 });

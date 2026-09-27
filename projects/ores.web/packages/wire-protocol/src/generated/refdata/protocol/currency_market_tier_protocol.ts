@@ -166,15 +166,15 @@ export interface GetCurrencyMarketTierVersionResponse {
 }
 
 export const subjects = {
-    list_currency_market_tiers_request: "refdata.v1.currency_market_tiers.list",
-    get_currency_market_tier_request: "refdata.v1.currency_market_tiers.get",
-    get_many_currency_market_tiers_request: "refdata.v1.currency_market_tiers.get_many",
-    put_currency_market_tier_request: "refdata.v1.currency_market_tiers.put",
-    put_many_currency_market_tiers_request: "refdata.v1.currency_market_tiers.put_many",
-    delete_currency_market_tier_request: "refdata.v1.currency_market_tiers.delete",
-    delete_many_currency_market_tiers_request: "refdata.v1.currency_market_tiers.delete_many",
-    list_currency_market_tier_versions_request: "refdata.v1.currency_market_tiers_versions.list",
-    get_currency_market_tier_version_request: "refdata.v1.currency_market_tiers_versions.get",
+    list_currency_market_tiers_request: 'refdata.v1.currency_market_tiers.list',
+    get_currency_market_tier_request: 'refdata.v1.currency_market_tiers.get',
+    get_many_currency_market_tiers_request: 'refdata.v1.currency_market_tiers.get_many',
+    put_currency_market_tier_request: 'refdata.v1.currency_market_tiers.put',
+    put_many_currency_market_tiers_request: 'refdata.v1.currency_market_tiers.put_many',
+    delete_currency_market_tier_request: 'refdata.v1.currency_market_tiers.delete',
+    delete_many_currency_market_tiers_request: 'refdata.v1.currency_market_tiers.delete_many',
+    list_currency_market_tier_versions_request: 'refdata.v1.currency_market_tiers_versions.list',
+    get_currency_market_tier_version_request: 'refdata.v1.currency_market_tiers_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.currency_market_tiers_events.created",
-    updated: "refdata.v1.currency_market_tiers_events.updated",
-    deleted: "refdata.v1.currency_market_tiers_events.deleted",
+    created: 'refdata.v1.currency_market_tiers_events.created',
+    updated: 'refdata.v1.currency_market_tiers_events.updated',
+    deleted: 'refdata.v1.currency_market_tiers_events.deleted',
 } as const;

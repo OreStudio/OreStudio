@@ -131,13 +131,13 @@ export interface DeleteManyPermissionsResponse {
 }
 
 export const subjects = {
-    list_permissions_request: "iam.v1.permissions.list",
-    get_permission_request: "iam.v1.permissions.get",
-    get_many_permissions_request: "iam.v1.permissions.get_many",
-    put_permission_request: "iam.v1.permissions.put",
-    put_many_permissions_request: "iam.v1.permissions.put_many",
-    delete_permission_request: "iam.v1.permissions.delete",
-    delete_many_permissions_request: "iam.v1.permissions.delete_many",
+    list_permissions_request: 'iam.v1.permissions.list',
+    get_permission_request: 'iam.v1.permissions.get',
+    get_many_permissions_request: 'iam.v1.permissions.get_many',
+    put_permission_request: 'iam.v1.permissions.put',
+    put_many_permissions_request: 'iam.v1.permissions.put_many',
+    delete_permission_request: 'iam.v1.permissions.delete',
+    delete_many_permissions_request: 'iam.v1.permissions.delete_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -160,7 +160,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.permissions_events.created",
-    updated: "iam.v1.permissions_events.updated",
-    deleted: "iam.v1.permissions_events.deleted",
+    created: 'iam.v1.permissions_events.created',
+    updated: 'iam.v1.permissions_events.updated',
+    deleted: 'iam.v1.permissions_events.deleted',
 } as const;

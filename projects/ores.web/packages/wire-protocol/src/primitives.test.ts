@@ -21,56 +21,56 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  fromWireTimestamp,
-  isUuid,
-  isWireTimestamp,
-  toWireTimestamp,
-  uuid,
-  wireTimestamp,
+    fromWireTimestamp,
+    isUuid,
+    isWireTimestamp,
+    toWireTimestamp,
+    uuid,
+    wireTimestamp,
 } from './primitives.js';
 
 describe('uuid', () => {
-  it('accepts the canonical lowercase form', () => {
-    expect(isUuid('aef9c708-6d94-4d63-b315-0d6402cc5b46')).toBe(true);
-  });
+    it('accepts the canonical lowercase form', () => {
+        expect(isUuid('aef9c708-6d94-4d63-b315-0d6402cc5b46')).toBe(true);
+    });
 
-  it('rejects an uppercase form the server never writes', () => {
-    expect(isUuid('AEF9C708-6D94-4D63-B315-0D6402CC5B46')).toBe(false);
-  });
+    it('rejects an uppercase form the server never writes', () => {
+        expect(isUuid('AEF9C708-6D94-4D63-B315-0D6402CC5B46')).toBe(false);
+    });
 
-  it('rejects a truncated value', () => {
-    expect(isUuid('aef9c708-6d94-4d63-b315')).toBe(false);
-  });
+    it('rejects a truncated value', () => {
+        expect(isUuid('aef9c708-6d94-4d63-b315')).toBe(false);
+    });
 
-  it('throws a TypeError when branding invalid input', () => {
-    expect(() => uuid('nope')).toThrow(TypeError);
-  });
+    it('throws a TypeError when branding invalid input', () => {
+        expect(() => uuid('nope')).toThrow(TypeError);
+    });
 });
 
 describe('wire timestamp', () => {
-  it('accepts the server spelling', () => {
-    expect(isWireTimestamp('2026-09-18 15:50:44Z')).toBe(true);
-  });
+    it('accepts the server spelling', () => {
+        expect(isWireTimestamp('2026-09-18 15:50:44Z')).toBe(true);
+    });
 
-  it('rejects an ISO spelling with a T separator', () => {
-    expect(isWireTimestamp('2026-09-18T15:50:44Z')).toBe(false);
-  });
+    it('rejects an ISO spelling with a T separator', () => {
+        expect(isWireTimestamp('2026-09-18T15:50:44Z')).toBe(false);
+    });
 
-  it('rejects a date that does not exist', () => {
-    expect(isWireTimestamp('2026-02-30 00:00:00Z')).toBe(false);
-  });
+    it('rejects a date that does not exist', () => {
+        expect(isWireTimestamp('2026-02-30 00:00:00Z')).toBe(false);
+    });
 
-  it('rejects an out-of-range time', () => {
-    expect(isWireTimestamp('2026-02-01 24:00:00Z')).toBe(false);
-  });
+    it('rejects an out-of-range time', () => {
+        expect(isWireTimestamp('2026-02-01 24:00:00Z')).toBe(false);
+    });
 
-  it('converts a Date to the wire spelling with second resolution', () => {
-    const instant = new Date(Date.UTC(2026, 8, 18, 15, 50, 44, 512));
-    expect(toWireTimestamp(instant)).toBe('2026-09-18 15:50:44Z');
-  });
+    it('converts a Date to the wire spelling with second resolution', () => {
+        const instant = new Date(Date.UTC(2026, 8, 18, 15, 50, 44, 512));
+        expect(toWireTimestamp(instant)).toBe('2026-09-18 15:50:44Z');
+    });
 
-  it('parses back to the same instant', () => {
-    const value = wireTimestamp('2026-09-18 15:50:44Z');
-    expect(fromWireTimestamp(value).toISOString()).toBe('2026-09-18T15:50:44.000Z');
-  });
+    it('parses back to the same instant', () => {
+        const value = wireTimestamp('2026-09-18 15:50:44Z');
+        expect(fromWireTimestamp(value).toISOString()).toBe('2026-09-18T15:50:44.000Z');
+    });
 });

@@ -166,15 +166,15 @@ export interface GetConcurrencyPolicyVersionResponse {
 }
 
 export const subjects = {
-    list_concurrency_policies_request: "reporting.v1.concurrency_policies.list",
-    get_concurrency_policy_request: "reporting.v1.concurrency_policies.get",
-    get_many_concurrency_policies_request: "reporting.v1.concurrency_policies.get_many",
-    put_concurrency_policy_request: "reporting.v1.concurrency_policies.put",
-    put_many_concurrency_policies_request: "reporting.v1.concurrency_policies.put_many",
-    delete_concurrency_policy_request: "reporting.v1.concurrency_policies.delete",
-    delete_many_concurrency_policies_request: "reporting.v1.concurrency_policies.delete_many",
-    list_concurrency_policy_versions_request: "reporting.v1.concurrency_policies_versions.list",
-    get_concurrency_policy_version_request: "reporting.v1.concurrency_policies_versions.get",
+    list_concurrency_policies_request: 'reporting.v1.concurrency_policies.list',
+    get_concurrency_policy_request: 'reporting.v1.concurrency_policies.get',
+    get_many_concurrency_policies_request: 'reporting.v1.concurrency_policies.get_many',
+    put_concurrency_policy_request: 'reporting.v1.concurrency_policies.put',
+    put_many_concurrency_policies_request: 'reporting.v1.concurrency_policies.put_many',
+    delete_concurrency_policy_request: 'reporting.v1.concurrency_policies.delete',
+    delete_many_concurrency_policies_request: 'reporting.v1.concurrency_policies.delete_many',
+    list_concurrency_policy_versions_request: 'reporting.v1.concurrency_policies_versions.list',
+    get_concurrency_policy_version_request: 'reporting.v1.concurrency_policies_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.concurrency_policies_events.created",
-    updated: "reporting.v1.concurrency_policies_events.updated",
-    deleted: "reporting.v1.concurrency_policies_events.deleted",
+    created: 'reporting.v1.concurrency_policies_events.created',
+    updated: 'reporting.v1.concurrency_policies_events.updated',
+    deleted: 'reporting.v1.concurrency_policies_events.deleted',
 } as const;

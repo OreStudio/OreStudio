@@ -139,13 +139,13 @@ export interface DeleteManyPublicationsResponse {
 }
 
 export const subjects = {
-    list_publications_request: "dq.v1.publications.list",
-    get_publication_request: "dq.v1.publications.get",
-    get_many_publications_request: "dq.v1.publications.get_many",
-    put_publication_request: "dq.v1.publications.put",
-    put_many_publications_request: "dq.v1.publications.put_many",
-    delete_publication_request: "dq.v1.publications.delete",
-    delete_many_publications_request: "dq.v1.publications.delete_many",
+    list_publications_request: 'dq.v1.publications.list',
+    get_publication_request: 'dq.v1.publications.get',
+    get_many_publications_request: 'dq.v1.publications.get_many',
+    put_publication_request: 'dq.v1.publications.put',
+    put_many_publications_request: 'dq.v1.publications.put_many',
+    delete_publication_request: 'dq.v1.publications.delete',
+    delete_many_publications_request: 'dq.v1.publications.delete_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -168,7 +168,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.publications_events.created",
-    updated: "dq.v1.publications_events.updated",
-    deleted: "dq.v1.publications_events.deleted",
+    created: 'dq.v1.publications_events.created',
+    updated: 'dq.v1.publications_events.updated',
+    deleted: 'dq.v1.publications_events.deleted',
 } as const;

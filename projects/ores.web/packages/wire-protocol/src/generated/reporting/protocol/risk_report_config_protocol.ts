@@ -213,16 +213,17 @@ export interface GetRiskReportConfigVersionResponse {
 }
 
 export const subjects = {
-    list_risk_report_configs_request: "reporting.v1.risk_report_configs.list",
-    get_risk_report_config_request: "reporting.v1.risk_report_configs.get",
-    get_many_risk_report_configs_request: "reporting.v1.risk_report_configs.get_many",
-    put_risk_report_config_request: "reporting.v1.risk_report_configs.put",
-    put_many_risk_report_configs_request: "reporting.v1.risk_report_configs.put_many",
-    delete_risk_report_config_request: "reporting.v1.risk_report_configs.delete",
-    delete_many_risk_report_configs_request: "reporting.v1.risk_report_configs.delete_many",
-    list_by_report_definition_id_risk_report_configs_request: "reporting.v1.risk_report_configs.list_by_report_definition_id",
-    list_risk_report_config_versions_request: "reporting.v1.risk_report_configs_versions.list",
-    get_risk_report_config_version_request: "reporting.v1.risk_report_configs_versions.get",
+    list_risk_report_configs_request: 'reporting.v1.risk_report_configs.list',
+    get_risk_report_config_request: 'reporting.v1.risk_report_configs.get',
+    get_many_risk_report_configs_request: 'reporting.v1.risk_report_configs.get_many',
+    put_risk_report_config_request: 'reporting.v1.risk_report_configs.put',
+    put_many_risk_report_configs_request: 'reporting.v1.risk_report_configs.put_many',
+    delete_risk_report_config_request: 'reporting.v1.risk_report_configs.delete',
+    delete_many_risk_report_configs_request: 'reporting.v1.risk_report_configs.delete_many',
+    list_by_report_definition_id_risk_report_configs_request:
+        'reporting.v1.risk_report_configs.list_by_report_definition_id',
+    list_risk_report_config_versions_request: 'reporting.v1.risk_report_configs_versions.list',
+    get_risk_report_config_version_request: 'reporting.v1.risk_report_configs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -248,7 +249,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.risk_report_configs_events.created",
-    updated: "reporting.v1.risk_report_configs_events.updated",
-    deleted: "reporting.v1.risk_report_configs_events.deleted",
+    created: 'reporting.v1.risk_report_configs_events.created',
+    updated: 'reporting.v1.risk_report_configs_events.updated',
+    deleted: 'reporting.v1.risk_report_configs_events.deleted',
 } as const;

@@ -165,15 +165,15 @@ export interface GetOriginDimensionVersionResponse {
 }
 
 export const subjects = {
-    list_origin_dimensions_request: "dq.v1.origin_dimensions.list",
-    get_origin_dimension_request: "dq.v1.origin_dimensions.get",
-    get_many_origin_dimensions_request: "dq.v1.origin_dimensions.get_many",
-    put_origin_dimension_request: "dq.v1.origin_dimensions.put",
-    put_many_origin_dimensions_request: "dq.v1.origin_dimensions.put_many",
-    delete_origin_dimension_request: "dq.v1.origin_dimensions.delete",
-    delete_many_origin_dimensions_request: "dq.v1.origin_dimensions.delete_many",
-    list_origin_dimension_versions_request: "dq.v1.origin_dimensions_versions.list",
-    get_origin_dimension_version_request: "dq.v1.origin_dimensions_versions.get",
+    list_origin_dimensions_request: 'dq.v1.origin_dimensions.list',
+    get_origin_dimension_request: 'dq.v1.origin_dimensions.get',
+    get_many_origin_dimensions_request: 'dq.v1.origin_dimensions.get_many',
+    put_origin_dimension_request: 'dq.v1.origin_dimensions.put',
+    put_many_origin_dimensions_request: 'dq.v1.origin_dimensions.put_many',
+    delete_origin_dimension_request: 'dq.v1.origin_dimensions.delete',
+    delete_many_origin_dimensions_request: 'dq.v1.origin_dimensions.delete_many',
+    list_origin_dimension_versions_request: 'dq.v1.origin_dimensions_versions.list',
+    get_origin_dimension_version_request: 'dq.v1.origin_dimensions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.origin_dimensions_events.created",
-    updated: "dq.v1.origin_dimensions_events.updated",
-    deleted: "dq.v1.origin_dimensions_events.deleted",
+    created: 'dq.v1.origin_dimensions_events.created',
+    updated: 'dq.v1.origin_dimensions_events.updated',
+    deleted: 'dq.v1.origin_dimensions_events.deleted',
 } as const;

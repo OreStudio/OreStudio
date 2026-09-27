@@ -166,15 +166,15 @@ export interface GetRoundingTypeVersionResponse {
 }
 
 export const subjects = {
-    list_rounding_types_request: "refdata.v1.rounding_types.list",
-    get_rounding_type_request: "refdata.v1.rounding_types.get",
-    get_many_rounding_types_request: "refdata.v1.rounding_types.get_many",
-    put_rounding_type_request: "refdata.v1.rounding_types.put",
-    put_many_rounding_types_request: "refdata.v1.rounding_types.put_many",
-    delete_rounding_type_request: "refdata.v1.rounding_types.delete",
-    delete_many_rounding_types_request: "refdata.v1.rounding_types.delete_many",
-    list_rounding_type_versions_request: "refdata.v1.rounding_types_versions.list",
-    get_rounding_type_version_request: "refdata.v1.rounding_types_versions.get",
+    list_rounding_types_request: 'refdata.v1.rounding_types.list',
+    get_rounding_type_request: 'refdata.v1.rounding_types.get',
+    get_many_rounding_types_request: 'refdata.v1.rounding_types.get_many',
+    put_rounding_type_request: 'refdata.v1.rounding_types.put',
+    put_many_rounding_types_request: 'refdata.v1.rounding_types.put_many',
+    delete_rounding_type_request: 'refdata.v1.rounding_types.delete',
+    delete_many_rounding_types_request: 'refdata.v1.rounding_types.delete_many',
+    list_rounding_type_versions_request: 'refdata.v1.rounding_types_versions.list',
+    get_rounding_type_version_request: 'refdata.v1.rounding_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.rounding_types_events.created",
-    updated: "refdata.v1.rounding_types_events.updated",
-    deleted: "refdata.v1.rounding_types_events.deleted",
+    created: 'refdata.v1.rounding_types_events.created',
+    updated: 'refdata.v1.rounding_types_events.updated',
+    deleted: 'refdata.v1.rounding_types_events.deleted',
 } as const;

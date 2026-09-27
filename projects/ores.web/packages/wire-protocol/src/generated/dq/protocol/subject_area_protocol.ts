@@ -166,15 +166,15 @@ export interface GetSubjectAreaVersionResponse {
 }
 
 export const subjects = {
-    list_subject_areas_request: "dq.v1.subject_areas.list",
-    get_subject_area_request: "dq.v1.subject_areas.get",
-    get_many_subject_areas_request: "dq.v1.subject_areas.get_many",
-    put_subject_area_request: "dq.v1.subject_areas.put",
-    put_many_subject_areas_request: "dq.v1.subject_areas.put_many",
-    delete_subject_area_request: "dq.v1.subject_areas.delete",
-    delete_many_subject_areas_request: "dq.v1.subject_areas.delete_many",
-    list_subject_area_versions_request: "dq.v1.subject_areas_versions.list",
-    get_subject_area_version_request: "dq.v1.subject_areas_versions.get",
+    list_subject_areas_request: 'dq.v1.subject_areas.list',
+    get_subject_area_request: 'dq.v1.subject_areas.get',
+    get_many_subject_areas_request: 'dq.v1.subject_areas.get_many',
+    put_subject_area_request: 'dq.v1.subject_areas.put',
+    put_many_subject_areas_request: 'dq.v1.subject_areas.put_many',
+    delete_subject_area_request: 'dq.v1.subject_areas.delete',
+    delete_many_subject_areas_request: 'dq.v1.subject_areas.delete_many',
+    list_subject_area_versions_request: 'dq.v1.subject_areas_versions.list',
+    get_subject_area_version_request: 'dq.v1.subject_areas_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.subject_areas_events.created",
-    updated: "dq.v1.subject_areas_events.updated",
-    deleted: "dq.v1.subject_areas_events.deleted",
+    created: 'dq.v1.subject_areas_events.created',
+    updated: 'dq.v1.subject_areas_events.updated',
+    deleted: 'dq.v1.subject_areas_events.deleted',
 } as const;

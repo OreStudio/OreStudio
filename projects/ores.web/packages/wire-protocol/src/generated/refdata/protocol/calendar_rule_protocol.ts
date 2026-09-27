@@ -194,16 +194,16 @@ export interface GetCalendarRuleVersionResponse {
 }
 
 export const subjects = {
-    list_calendar_rules_request: "refdata.v1.calendar_rules.list",
-    get_calendar_rule_request: "refdata.v1.calendar_rules.get",
-    get_many_calendar_rules_request: "refdata.v1.calendar_rules.get_many",
-    put_calendar_rule_request: "refdata.v1.calendar_rules.put",
-    put_many_calendar_rules_request: "refdata.v1.calendar_rules.put_many",
-    delete_calendar_rule_request: "refdata.v1.calendar_rules.delete",
-    delete_many_calendar_rules_request: "refdata.v1.calendar_rules.delete_many",
-    list_by_calendar_code_calendar_rules_request: "refdata.v1.calendar_rules.list_by_calendar_code",
-    list_calendar_rule_versions_request: "refdata.v1.calendar_rules_versions.list",
-    get_calendar_rule_version_request: "refdata.v1.calendar_rules_versions.get",
+    list_calendar_rules_request: 'refdata.v1.calendar_rules.list',
+    get_calendar_rule_request: 'refdata.v1.calendar_rules.get',
+    get_many_calendar_rules_request: 'refdata.v1.calendar_rules.get_many',
+    put_calendar_rule_request: 'refdata.v1.calendar_rules.put',
+    put_many_calendar_rules_request: 'refdata.v1.calendar_rules.put_many',
+    delete_calendar_rule_request: 'refdata.v1.calendar_rules.delete',
+    delete_many_calendar_rules_request: 'refdata.v1.calendar_rules.delete_many',
+    list_by_calendar_code_calendar_rules_request: 'refdata.v1.calendar_rules.list_by_calendar_code',
+    list_calendar_rule_versions_request: 'refdata.v1.calendar_rules_versions.list',
+    get_calendar_rule_version_request: 'refdata.v1.calendar_rules_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -229,7 +229,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.calendar_rules_events.created",
-    updated: "refdata.v1.calendar_rules_events.updated",
-    deleted: "refdata.v1.calendar_rules_events.deleted",
+    created: 'refdata.v1.calendar_rules_events.created',
+    updated: 'refdata.v1.calendar_rules_events.updated',
+    deleted: 'refdata.v1.calendar_rules_events.deleted',
 } as const;

@@ -192,16 +192,16 @@ export interface GetResultVersionResponse {
 }
 
 export const subjects = {
-    list_results_request: "compute.v1.results.list",
-    get_result_request: "compute.v1.results.get",
-    get_many_results_request: "compute.v1.results.get_many",
-    put_result_request: "compute.v1.results.put",
-    put_many_results_request: "compute.v1.results.put_many",
-    delete_result_request: "compute.v1.results.delete",
-    delete_many_results_request: "compute.v1.results.delete_many",
-    list_by_workunit_id_results_request: "compute.v1.results.list_by_workunit_id",
-    list_result_versions_request: "compute.v1.results_versions.list",
-    get_result_version_request: "compute.v1.results_versions.get",
+    list_results_request: 'compute.v1.results.list',
+    get_result_request: 'compute.v1.results.get',
+    get_many_results_request: 'compute.v1.results.get_many',
+    put_result_request: 'compute.v1.results.put',
+    put_many_results_request: 'compute.v1.results.put_many',
+    delete_result_request: 'compute.v1.results.delete',
+    delete_many_results_request: 'compute.v1.results.delete_many',
+    list_by_workunit_id_results_request: 'compute.v1.results.list_by_workunit_id',
+    list_result_versions_request: 'compute.v1.results_versions.list',
+    get_result_version_request: 'compute.v1.results_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -227,7 +227,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "compute.v1.results_events.created",
-    updated: "compute.v1.results_events.updated",
-    deleted: "compute.v1.results_events.deleted",
+    created: 'compute.v1.results_events.created',
+    updated: 'compute.v1.results_events.updated',
+    deleted: 'compute.v1.results_events.deleted',
 } as const;

@@ -145,14 +145,15 @@ export interface ListByAppVersionIdAppVersionPlatformsResponse {
 }
 
 export const subjects = {
-    list_app_version_platforms_request: "compute.v1.app_version_platforms.list",
-    get_app_version_platform_request: "compute.v1.app_version_platforms.get",
-    get_many_app_version_platforms_request: "compute.v1.app_version_platforms.get_many",
-    put_app_version_platform_request: "compute.v1.app_version_platforms.put",
-    put_many_app_version_platforms_request: "compute.v1.app_version_platforms.put_many",
-    delete_app_version_platform_request: "compute.v1.app_version_platforms.delete",
-    delete_many_app_version_platforms_request: "compute.v1.app_version_platforms.delete_many",
-    list_by_app_version_id_app_version_platforms_request: "compute.v1.app_version_platforms.list_by_app_version_id",
+    list_app_version_platforms_request: 'compute.v1.app_version_platforms.list',
+    get_app_version_platform_request: 'compute.v1.app_version_platforms.get',
+    get_many_app_version_platforms_request: 'compute.v1.app_version_platforms.get_many',
+    put_app_version_platform_request: 'compute.v1.app_version_platforms.put',
+    put_many_app_version_platforms_request: 'compute.v1.app_version_platforms.put_many',
+    delete_app_version_platform_request: 'compute.v1.app_version_platforms.delete',
+    delete_many_app_version_platforms_request: 'compute.v1.app_version_platforms.delete_many',
+    list_by_app_version_id_app_version_platforms_request:
+        'compute.v1.app_version_platforms.list_by_app_version_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

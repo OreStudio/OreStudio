@@ -192,16 +192,16 @@ export interface GetCounterpartyCompositeAsOfResponse {
 }
 
 export const subjects = {
-    list_counterparties_request: "refdata.v1.counterparties.list",
-    get_counterparty_request: "refdata.v1.counterparties.get",
-    get_many_counterparties_request: "refdata.v1.counterparties.get_many",
-    put_counterparty_request: "refdata.v1.counterparties.put",
-    put_many_counterparties_request: "refdata.v1.counterparties.put_many",
-    delete_counterparty_request: "refdata.v1.counterparties.delete",
-    delete_many_counterparties_request: "refdata.v1.counterparties.delete_many",
-    list_counterparty_versions_request: "refdata.v1.counterparties_versions.list",
-    get_counterparty_version_request: "refdata.v1.counterparties_versions.get",
-    get_counterparty_composite_as_of_request: "refdata.v1.counterparties.composite_as_of",
+    list_counterparties_request: 'refdata.v1.counterparties.list',
+    get_counterparty_request: 'refdata.v1.counterparties.get',
+    get_many_counterparties_request: 'refdata.v1.counterparties.get_many',
+    put_counterparty_request: 'refdata.v1.counterparties.put',
+    put_many_counterparties_request: 'refdata.v1.counterparties.put_many',
+    delete_counterparty_request: 'refdata.v1.counterparties.delete',
+    delete_many_counterparties_request: 'refdata.v1.counterparties.delete_many',
+    list_counterparty_versions_request: 'refdata.v1.counterparties_versions.list',
+    get_counterparty_version_request: 'refdata.v1.counterparties_versions.get',
+    get_counterparty_composite_as_of_request: 'refdata.v1.counterparties.composite_as_of',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -227,7 +227,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.counterparties_events.created",
-    updated: "refdata.v1.counterparties_events.updated",
-    deleted: "refdata.v1.counterparties_events.deleted",
+    created: 'refdata.v1.counterparties_events.created',
+    updated: 'refdata.v1.counterparties_events.updated',
+    deleted: 'refdata.v1.counterparties_events.deleted',
 } as const;

@@ -75,9 +75,9 @@ export interface GetManySyntheticFxSpotConfigsResponse {
 }
 
 export const subjects = {
-    list_synthetic_fx_spot_configs_request: "dq.v1.synthetic_fx_spot_configs.list",
-    get_synthetic_fx_spot_config_request: "dq.v1.synthetic_fx_spot_configs.get",
-    get_many_synthetic_fx_spot_configs_request: "dq.v1.synthetic_fx_spot_configs.get_many",
+    list_synthetic_fx_spot_configs_request: 'dq.v1.synthetic_fx_spot_configs.list',
+    get_synthetic_fx_spot_config_request: 'dq.v1.synthetic_fx_spot_configs.get',
+    get_many_synthetic_fx_spot_configs_request: 'dq.v1.synthetic_fx_spot_configs.get_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -96,7 +96,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.synthetic_fx_spot_configs_events.created",
-    updated: "dq.v1.synthetic_fx_spot_configs_events.updated",
-    deleted: "dq.v1.synthetic_fx_spot_configs_events.deleted",
+    created: 'dq.v1.synthetic_fx_spot_configs_events.created',
+    updated: 'dq.v1.synthetic_fx_spot_configs_events.updated',
+    deleted: 'dq.v1.synthetic_fx_spot_configs_events.deleted',
 } as const;

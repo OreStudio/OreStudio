@@ -206,17 +206,19 @@ export interface GetTenorScheduleVersionResponse {
 }
 
 export const subjects = {
-    list_tenor_schedules_request: "refdata.v1.tenor_schedules.list",
-    get_tenor_schedule_request: "refdata.v1.tenor_schedules.get",
-    get_many_tenor_schedules_request: "refdata.v1.tenor_schedules.get_many",
-    put_tenor_schedule_request: "refdata.v1.tenor_schedules.put",
-    put_many_tenor_schedules_request: "refdata.v1.tenor_schedules.put_many",
-    delete_tenor_schedule_request: "refdata.v1.tenor_schedules.delete",
-    delete_many_tenor_schedules_request: "refdata.v1.tenor_schedules.delete_many",
-    list_by_calendar_code_tenor_schedules_request: "refdata.v1.tenor_schedules.list_by_calendar_code",
-    list_by_diary_entry_type_tenor_schedules_request: "refdata.v1.tenor_schedules.list_by_diary_entry_type",
-    list_tenor_schedule_versions_request: "refdata.v1.tenor_schedules_versions.list",
-    get_tenor_schedule_version_request: "refdata.v1.tenor_schedules_versions.get",
+    list_tenor_schedules_request: 'refdata.v1.tenor_schedules.list',
+    get_tenor_schedule_request: 'refdata.v1.tenor_schedules.get',
+    get_many_tenor_schedules_request: 'refdata.v1.tenor_schedules.get_many',
+    put_tenor_schedule_request: 'refdata.v1.tenor_schedules.put',
+    put_many_tenor_schedules_request: 'refdata.v1.tenor_schedules.put_many',
+    delete_tenor_schedule_request: 'refdata.v1.tenor_schedules.delete',
+    delete_many_tenor_schedules_request: 'refdata.v1.tenor_schedules.delete_many',
+    list_by_calendar_code_tenor_schedules_request:
+        'refdata.v1.tenor_schedules.list_by_calendar_code',
+    list_by_diary_entry_type_tenor_schedules_request:
+        'refdata.v1.tenor_schedules.list_by_diary_entry_type',
+    list_tenor_schedule_versions_request: 'refdata.v1.tenor_schedules_versions.list',
+    get_tenor_schedule_version_request: 'refdata.v1.tenor_schedules_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -243,7 +245,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.tenor_schedules_events.created",
-    updated: "refdata.v1.tenor_schedules_events.updated",
-    deleted: "refdata.v1.tenor_schedules_events.deleted",
+    created: 'refdata.v1.tenor_schedules_events.created',
+    updated: 'refdata.v1.tenor_schedules_events.updated',
+    deleted: 'refdata.v1.tenor_schedules_events.deleted',
 } as const;

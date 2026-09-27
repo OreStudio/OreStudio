@@ -165,15 +165,15 @@ export interface GetRoleVersionResponse {
 }
 
 export const subjects = {
-    list_roles_request: "iam.v1.roles.list",
-    get_role_request: "iam.v1.roles.get",
-    get_many_roles_request: "iam.v1.roles.get_many",
-    put_role_request: "iam.v1.roles.put",
-    put_many_roles_request: "iam.v1.roles.put_many",
-    delete_role_request: "iam.v1.roles.delete",
-    delete_many_roles_request: "iam.v1.roles.delete_many",
-    list_role_versions_request: "iam.v1.roles_versions.list",
-    get_role_version_request: "iam.v1.roles_versions.get",
+    list_roles_request: 'iam.v1.roles.list',
+    get_role_request: 'iam.v1.roles.get',
+    get_many_roles_request: 'iam.v1.roles.get_many',
+    put_role_request: 'iam.v1.roles.put',
+    put_many_roles_request: 'iam.v1.roles.put_many',
+    delete_role_request: 'iam.v1.roles.delete',
+    delete_many_roles_request: 'iam.v1.roles.delete_many',
+    list_role_versions_request: 'iam.v1.roles_versions.list',
+    get_role_version_request: 'iam.v1.roles_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.roles_events.created",
-    updated: "iam.v1.roles_events.updated",
-    deleted: "iam.v1.roles_events.deleted",
+    created: 'iam.v1.roles_events.created',
+    updated: 'iam.v1.roles_events.updated',
+    deleted: 'iam.v1.roles_events.deleted',
 } as const;

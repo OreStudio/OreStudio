@@ -143,14 +143,14 @@ export interface ListByAccountIdAccountPartiesResponse {
 }
 
 export const subjects = {
-    list_account_parties_request: "iam.v1.account_parties.list",
-    get_account_party_request: "iam.v1.account_parties.get",
-    get_many_account_parties_request: "iam.v1.account_parties.get_many",
-    put_account_party_request: "iam.v1.account_parties.put",
-    put_many_account_parties_request: "iam.v1.account_parties.put_many",
-    delete_account_party_request: "iam.v1.account_parties.delete",
-    delete_many_account_parties_request: "iam.v1.account_parties.delete_many",
-    list_by_account_id_account_parties_request: "iam.v1.account_parties.list_by_account_id",
+    list_account_parties_request: 'iam.v1.account_parties.list',
+    get_account_party_request: 'iam.v1.account_parties.get',
+    get_many_account_parties_request: 'iam.v1.account_parties.get_many',
+    put_account_party_request: 'iam.v1.account_parties.put',
+    put_many_account_parties_request: 'iam.v1.account_parties.put_many',
+    delete_account_party_request: 'iam.v1.account_parties.delete',
+    delete_many_account_parties_request: 'iam.v1.account_parties.delete_many',
+    list_by_account_id_account_parties_request: 'iam.v1.account_parties.list_by_account_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

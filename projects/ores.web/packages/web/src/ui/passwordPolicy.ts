@@ -32,28 +32,34 @@ export const PASSWORD_SPECIAL_CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
 export type PasswordRule = 'length' | 'upper' | 'lower' | 'digit' | 'special';
 
-export const PASSWORD_RULES: readonly PasswordRule[] = ['length', 'upper', 'lower', 'digit', 'special'];
+export const PASSWORD_RULES: readonly PasswordRule[] = [
+    'length',
+    'upper',
+    'lower',
+    'digit',
+    'special',
+];
 
 export interface PasswordAssessment {
-  readonly met: ReadonlySet<PasswordRule>;
-  readonly valid: boolean;
-  /** 0 (empty) to 4 (strong). Meeting the policy is 3; length beyond it is 4. */
-  readonly strength: 0 | 1 | 2 | 3 | 4;
+    readonly met: ReadonlySet<PasswordRule>;
+    readonly valid: boolean;
+    /** 0 (empty) to 4 (strong). Meeting the policy is 3; length beyond it is 4. */
+    readonly strength: 0 | 1 | 2 | 3 | 4;
 }
 
 export function assessPassword(password: string): PasswordAssessment {
-  const met = new Set<PasswordRule>();
-  if (password.length >= MIN_PASSWORD_LENGTH) met.add('length');
-  if (/[A-Z]/.test(password)) met.add('upper');
-  if (/[a-z]/.test(password)) met.add('lower');
-  if (/[0-9]/.test(password)) met.add('digit');
-  if ([...password].some((c) => PASSWORD_SPECIAL_CHARS.includes(c))) met.add('special');
+    const met = new Set<PasswordRule>();
+    if (password.length >= MIN_PASSWORD_LENGTH) met.add('length');
+    if (/[A-Z]/.test(password)) met.add('upper');
+    if (/[a-z]/.test(password)) met.add('lower');
+    if (/[0-9]/.test(password)) met.add('digit');
+    if ([...password].some((c) => PASSWORD_SPECIAL_CHARS.includes(c))) met.add('special');
 
-  const valid = met.size === PASSWORD_RULES.length;
-  let strength: PasswordAssessment['strength'];
-  if (password.length === 0) strength = 0;
-  else if (valid) strength = password.length >= MIN_PASSWORD_LENGTH + 4 ? 4 : 3;
-  else strength = met.size >= 3 ? 2 : 1;
+    const valid = met.size === PASSWORD_RULES.length;
+    let strength: PasswordAssessment['strength'];
+    if (password.length === 0) strength = 0;
+    else if (valid) strength = password.length >= MIN_PASSWORD_LENGTH + 4 ? 4 : 3;
+    else strength = met.size >= 3 ? 2 : 1;
 
-  return { met, valid, strength };
+    return { met, valid, strength };
 }

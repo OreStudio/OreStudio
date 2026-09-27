@@ -168,15 +168,15 @@ export interface GetBusinessCentreVersionResponse {
 }
 
 export const subjects = {
-    list_business_centres_request: "refdata.v1.business_centres.list",
-    get_business_centre_request: "refdata.v1.business_centres.get",
-    get_many_business_centres_request: "refdata.v1.business_centres.get_many",
-    put_business_centre_request: "refdata.v1.business_centres.put",
-    put_many_business_centres_request: "refdata.v1.business_centres.put_many",
-    delete_business_centre_request: "refdata.v1.business_centres.delete",
-    delete_many_business_centres_request: "refdata.v1.business_centres.delete_many",
-    list_business_centre_versions_request: "refdata.v1.business_centres_versions.list",
-    get_business_centre_version_request: "refdata.v1.business_centres_versions.get",
+    list_business_centres_request: 'refdata.v1.business_centres.list',
+    get_business_centre_request: 'refdata.v1.business_centres.get',
+    get_many_business_centres_request: 'refdata.v1.business_centres.get_many',
+    put_business_centre_request: 'refdata.v1.business_centres.put',
+    put_many_business_centres_request: 'refdata.v1.business_centres.put_many',
+    delete_business_centre_request: 'refdata.v1.business_centres.delete',
+    delete_many_business_centres_request: 'refdata.v1.business_centres.delete_many',
+    list_business_centre_versions_request: 'refdata.v1.business_centres_versions.list',
+    get_business_centre_version_request: 'refdata.v1.business_centres_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.business_centres_events.created",
-    updated: "refdata.v1.business_centres_events.updated",
-    deleted: "refdata.v1.business_centres_events.deleted",
+    created: 'refdata.v1.business_centres_events.created',
+    updated: 'refdata.v1.business_centres_events.updated',
+    deleted: 'refdata.v1.business_centres_events.deleted',
 } as const;

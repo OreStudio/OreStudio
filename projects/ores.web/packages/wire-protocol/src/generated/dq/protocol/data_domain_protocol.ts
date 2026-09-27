@@ -164,15 +164,15 @@ export interface GetDataDomainVersionResponse {
 }
 
 export const subjects = {
-    list_data_domains_request: "dq.v1.data_domains.list",
-    get_data_domain_request: "dq.v1.data_domains.get",
-    get_many_data_domains_request: "dq.v1.data_domains.get_many",
-    put_data_domain_request: "dq.v1.data_domains.put",
-    put_many_data_domains_request: "dq.v1.data_domains.put_many",
-    delete_data_domain_request: "dq.v1.data_domains.delete",
-    delete_many_data_domains_request: "dq.v1.data_domains.delete_many",
-    list_data_domain_versions_request: "dq.v1.data_domains_versions.list",
-    get_data_domain_version_request: "dq.v1.data_domains_versions.get",
+    list_data_domains_request: 'dq.v1.data_domains.list',
+    get_data_domain_request: 'dq.v1.data_domains.get',
+    get_many_data_domains_request: 'dq.v1.data_domains.get_many',
+    put_data_domain_request: 'dq.v1.data_domains.put',
+    put_many_data_domains_request: 'dq.v1.data_domains.put_many',
+    delete_data_domain_request: 'dq.v1.data_domains.delete',
+    delete_many_data_domains_request: 'dq.v1.data_domains.delete_many',
+    list_data_domain_versions_request: 'dq.v1.data_domains_versions.list',
+    get_data_domain_version_request: 'dq.v1.data_domains_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -197,7 +197,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.data_domains_events.created",
-    updated: "dq.v1.data_domains_events.updated",
-    deleted: "dq.v1.data_domains_events.deleted",
+    created: 'dq.v1.data_domains_events.created',
+    updated: 'dq.v1.data_domains_events.updated',
+    deleted: 'dq.v1.data_domains_events.deleted',
 } as const;

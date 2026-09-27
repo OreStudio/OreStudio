@@ -166,15 +166,15 @@ export interface GetContactTypeVersionResponse {
 }
 
 export const subjects = {
-    list_contact_types_request: "refdata.v1.contact_types.list",
-    get_contact_type_request: "refdata.v1.contact_types.get",
-    get_many_contact_types_request: "refdata.v1.contact_types.get_many",
-    put_contact_type_request: "refdata.v1.contact_types.put",
-    put_many_contact_types_request: "refdata.v1.contact_types.put_many",
-    delete_contact_type_request: "refdata.v1.contact_types.delete",
-    delete_many_contact_types_request: "refdata.v1.contact_types.delete_many",
-    list_contact_type_versions_request: "refdata.v1.contact_types_versions.list",
-    get_contact_type_version_request: "refdata.v1.contact_types_versions.get",
+    list_contact_types_request: 'refdata.v1.contact_types.list',
+    get_contact_type_request: 'refdata.v1.contact_types.get',
+    get_many_contact_types_request: 'refdata.v1.contact_types.get_many',
+    put_contact_type_request: 'refdata.v1.contact_types.put',
+    put_many_contact_types_request: 'refdata.v1.contact_types.put_many',
+    delete_contact_type_request: 'refdata.v1.contact_types.delete',
+    delete_many_contact_types_request: 'refdata.v1.contact_types.delete_many',
+    list_contact_type_versions_request: 'refdata.v1.contact_types_versions.list',
+    get_contact_type_version_request: 'refdata.v1.contact_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.contact_types_events.created",
-    updated: "refdata.v1.contact_types_events.updated",
-    deleted: "refdata.v1.contact_types_events.deleted",
+    created: 'refdata.v1.contact_types_events.created',
+    updated: 'refdata.v1.contact_types_events.updated',
+    deleted: 'refdata.v1.contact_types_events.deleted',
 } as const;

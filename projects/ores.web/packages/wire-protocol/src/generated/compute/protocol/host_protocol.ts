@@ -171,15 +171,15 @@ export interface GetHostVersionResponse {
 }
 
 export const subjects = {
-    list_hosts_request: "compute.v1.hosts.list",
-    get_host_request: "compute.v1.hosts.get",
-    get_many_hosts_request: "compute.v1.hosts.get_many",
-    put_host_request: "compute.v1.hosts.put",
-    put_many_hosts_request: "compute.v1.hosts.put_many",
-    delete_host_request: "compute.v1.hosts.delete",
-    delete_many_hosts_request: "compute.v1.hosts.delete_many",
-    list_host_versions_request: "compute.v1.hosts_versions.list",
-    get_host_version_request: "compute.v1.hosts_versions.get",
+    list_hosts_request: 'compute.v1.hosts.list',
+    get_host_request: 'compute.v1.hosts.get',
+    get_many_hosts_request: 'compute.v1.hosts.get_many',
+    put_host_request: 'compute.v1.hosts.put',
+    put_many_hosts_request: 'compute.v1.hosts.put_many',
+    delete_host_request: 'compute.v1.hosts.delete',
+    delete_many_hosts_request: 'compute.v1.hosts.delete_many',
+    list_host_versions_request: 'compute.v1.hosts_versions.list',
+    get_host_version_request: 'compute.v1.hosts_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -204,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "compute.v1.hosts_events.created",
-    updated: "compute.v1.hosts_events.updated",
-    deleted: "compute.v1.hosts_events.deleted",
+    created: 'compute.v1.hosts_events.created',
+    updated: 'compute.v1.hosts_events.updated',
+    deleted: 'compute.v1.hosts_events.deleted',
 } as const;

@@ -156,14 +156,15 @@ export interface ListBySeriesIdMarketObservationsResponse {
 }
 
 export const subjects = {
-    list_market_observations_request: "marketdata.v1.market_observations.list",
-    get_market_observation_request: "marketdata.v1.market_observations.get",
-    get_many_market_observations_request: "marketdata.v1.market_observations.get_many",
-    put_market_observation_request: "marketdata.v1.market_observations.put",
-    put_many_market_observations_request: "marketdata.v1.market_observations.put_many",
-    delete_market_observation_request: "marketdata.v1.market_observations.delete",
-    delete_many_market_observations_request: "marketdata.v1.market_observations.delete_many",
-    list_by_series_id_market_observations_request: "marketdata.v1.market_observations.list_by_series_id",
+    list_market_observations_request: 'marketdata.v1.market_observations.list',
+    get_market_observation_request: 'marketdata.v1.market_observations.get',
+    get_many_market_observations_request: 'marketdata.v1.market_observations.get_many',
+    put_market_observation_request: 'marketdata.v1.market_observations.put',
+    put_many_market_observations_request: 'marketdata.v1.market_observations.put_many',
+    delete_market_observation_request: 'marketdata.v1.market_observations.delete',
+    delete_many_market_observations_request: 'marketdata.v1.market_observations.delete_many',
+    list_by_series_id_market_observations_request:
+        'marketdata.v1.market_observations.list_by_series_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -187,7 +188,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "marketdata.v1.market_observations_events.created",
-    updated: "marketdata.v1.market_observations_events.updated",
-    deleted: "marketdata.v1.market_observations_events.deleted",
+    created: 'marketdata.v1.market_observations_events.created',
+    updated: 'marketdata.v1.market_observations_events.updated',
+    deleted: 'marketdata.v1.market_observations_events.deleted',
 } as const;

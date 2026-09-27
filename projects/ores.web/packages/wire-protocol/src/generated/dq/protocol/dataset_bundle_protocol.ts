@@ -166,15 +166,15 @@ export interface GetDatasetBundleVersionResponse {
 }
 
 export const subjects = {
-    list_dataset_bundles_request: "dq.v1.dataset_bundles.list",
-    get_dataset_bundle_request: "dq.v1.dataset_bundles.get",
-    get_many_dataset_bundles_request: "dq.v1.dataset_bundles.get_many",
-    put_dataset_bundle_request: "dq.v1.dataset_bundles.put",
-    put_many_dataset_bundles_request: "dq.v1.dataset_bundles.put_many",
-    delete_dataset_bundle_request: "dq.v1.dataset_bundles.delete",
-    delete_many_dataset_bundles_request: "dq.v1.dataset_bundles.delete_many",
-    list_dataset_bundle_versions_request: "dq.v1.dataset_bundles_versions.list",
-    get_dataset_bundle_version_request: "dq.v1.dataset_bundles_versions.get",
+    list_dataset_bundles_request: 'dq.v1.dataset_bundles.list',
+    get_dataset_bundle_request: 'dq.v1.dataset_bundles.get',
+    get_many_dataset_bundles_request: 'dq.v1.dataset_bundles.get_many',
+    put_dataset_bundle_request: 'dq.v1.dataset_bundles.put',
+    put_many_dataset_bundles_request: 'dq.v1.dataset_bundles.put_many',
+    delete_dataset_bundle_request: 'dq.v1.dataset_bundles.delete',
+    delete_many_dataset_bundles_request: 'dq.v1.dataset_bundles.delete_many',
+    list_dataset_bundle_versions_request: 'dq.v1.dataset_bundles_versions.list',
+    get_dataset_bundle_version_request: 'dq.v1.dataset_bundles_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.dataset_bundles_events.created",
-    updated: "dq.v1.dataset_bundles_events.updated",
-    deleted: "dq.v1.dataset_bundles_events.deleted",
+    created: 'dq.v1.dataset_bundles_events.created',
+    updated: 'dq.v1.dataset_bundles_events.updated',
+    deleted: 'dq.v1.dataset_bundles_events.deleted',
 } as const;

@@ -195,16 +195,26 @@ export interface GetCounterpartyContactInformationVersionResponse {
 }
 
 export const subjects = {
-    list_counterparty_contact_informations_request: "refdata.v1.counterparty_contact_informations.list",
-    get_counterparty_contact_information_request: "refdata.v1.counterparty_contact_informations.get",
-    get_many_counterparty_contact_informations_request: "refdata.v1.counterparty_contact_informations.get_many",
-    put_counterparty_contact_information_request: "refdata.v1.counterparty_contact_informations.put",
-    put_many_counterparty_contact_informations_request: "refdata.v1.counterparty_contact_informations.put_many",
-    delete_counterparty_contact_information_request: "refdata.v1.counterparty_contact_informations.delete",
-    delete_many_counterparty_contact_informations_request: "refdata.v1.counterparty_contact_informations.delete_many",
-    list_by_counterparty_id_counterparty_contact_informations_request: "refdata.v1.counterparty_contact_informations.list_by_counterparty_id",
-    list_counterparty_contact_information_versions_request: "refdata.v1.counterparty_contact_informations_versions.list",
-    get_counterparty_contact_information_version_request: "refdata.v1.counterparty_contact_informations_versions.get",
+    list_counterparty_contact_informations_request:
+        'refdata.v1.counterparty_contact_informations.list',
+    get_counterparty_contact_information_request:
+        'refdata.v1.counterparty_contact_informations.get',
+    get_many_counterparty_contact_informations_request:
+        'refdata.v1.counterparty_contact_informations.get_many',
+    put_counterparty_contact_information_request:
+        'refdata.v1.counterparty_contact_informations.put',
+    put_many_counterparty_contact_informations_request:
+        'refdata.v1.counterparty_contact_informations.put_many',
+    delete_counterparty_contact_information_request:
+        'refdata.v1.counterparty_contact_informations.delete',
+    delete_many_counterparty_contact_informations_request:
+        'refdata.v1.counterparty_contact_informations.delete_many',
+    list_by_counterparty_id_counterparty_contact_informations_request:
+        'refdata.v1.counterparty_contact_informations.list_by_counterparty_id',
+    list_counterparty_contact_information_versions_request:
+        'refdata.v1.counterparty_contact_informations_versions.list',
+    get_counterparty_contact_information_version_request:
+        'refdata.v1.counterparty_contact_informations_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -230,7 +240,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.counterparty_contact_informations_events.created",
-    updated: "refdata.v1.counterparty_contact_informations_events.updated",
-    deleted: "refdata.v1.counterparty_contact_informations_events.deleted",
+    created: 'refdata.v1.counterparty_contact_informations_events.created',
+    updated: 'refdata.v1.counterparty_contact_informations_events.updated',
+    deleted: 'refdata.v1.counterparty_contact_informations_events.deleted',
 } as const;

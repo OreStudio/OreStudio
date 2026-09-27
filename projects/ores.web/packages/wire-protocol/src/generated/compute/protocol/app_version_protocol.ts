@@ -167,15 +167,15 @@ export interface GetAppVersionVersionResponse {
 }
 
 export const subjects = {
-    list_app_versions_request: "compute.v1.app_versions.list",
-    get_app_version_request: "compute.v1.app_versions.get",
-    get_many_app_versions_request: "compute.v1.app_versions.get_many",
-    put_app_version_request: "compute.v1.app_versions.put",
-    put_many_app_versions_request: "compute.v1.app_versions.put_many",
-    delete_app_version_request: "compute.v1.app_versions.delete",
-    delete_many_app_versions_request: "compute.v1.app_versions.delete_many",
-    list_app_version_versions_request: "compute.v1.app_versions_versions.list",
-    get_app_version_version_request: "compute.v1.app_versions_versions.get",
+    list_app_versions_request: 'compute.v1.app_versions.list',
+    get_app_version_request: 'compute.v1.app_versions.get',
+    get_many_app_versions_request: 'compute.v1.app_versions.get_many',
+    put_app_version_request: 'compute.v1.app_versions.put',
+    put_many_app_versions_request: 'compute.v1.app_versions.put_many',
+    delete_app_version_request: 'compute.v1.app_versions.delete',
+    delete_many_app_versions_request: 'compute.v1.app_versions.delete_many',
+    list_app_version_versions_request: 'compute.v1.app_versions_versions.list',
+    get_app_version_version_request: 'compute.v1.app_versions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "compute.v1.app_versions_events.created",
-    updated: "compute.v1.app_versions_events.updated",
-    deleted: "compute.v1.app_versions_events.deleted",
+    created: 'compute.v1.app_versions_events.created',
+    updated: 'compute.v1.app_versions_events.updated',
+    deleted: 'compute.v1.app_versions_events.deleted',
 } as const;

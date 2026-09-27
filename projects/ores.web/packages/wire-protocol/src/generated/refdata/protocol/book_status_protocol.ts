@@ -167,15 +167,15 @@ export interface GetBookStatusVersionResponse {
 }
 
 export const subjects = {
-    list_book_statuses_request: "refdata.v1.book_statuses.list",
-    get_book_status_request: "refdata.v1.book_statuses.get",
-    get_many_book_statuses_request: "refdata.v1.book_statuses.get_many",
-    put_book_status_request: "refdata.v1.book_statuses.put",
-    put_many_book_statuses_request: "refdata.v1.book_statuses.put_many",
-    delete_book_status_request: "refdata.v1.book_statuses.delete",
-    delete_many_book_statuses_request: "refdata.v1.book_statuses.delete_many",
-    list_book_status_versions_request: "refdata.v1.book_statuses_versions.list",
-    get_book_status_version_request: "refdata.v1.book_statuses_versions.get",
+    list_book_statuses_request: 'refdata.v1.book_statuses.list',
+    get_book_status_request: 'refdata.v1.book_statuses.get',
+    get_many_book_statuses_request: 'refdata.v1.book_statuses.get_many',
+    put_book_status_request: 'refdata.v1.book_statuses.put',
+    put_many_book_statuses_request: 'refdata.v1.book_statuses.put_many',
+    delete_book_status_request: 'refdata.v1.book_statuses.delete',
+    delete_many_book_statuses_request: 'refdata.v1.book_statuses.delete_many',
+    list_book_status_versions_request: 'refdata.v1.book_statuses_versions.list',
+    get_book_status_version_request: 'refdata.v1.book_statuses_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.book_statuses_events.created",
-    updated: "refdata.v1.book_statuses_events.updated",
-    deleted: "refdata.v1.book_statuses_events.deleted",
+    created: 'refdata.v1.book_statuses_events.created',
+    updated: 'refdata.v1.book_statuses_events.updated',
+    deleted: 'refdata.v1.book_statuses_events.deleted',
 } as const;

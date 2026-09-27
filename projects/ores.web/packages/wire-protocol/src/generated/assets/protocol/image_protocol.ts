@@ -167,15 +167,15 @@ export interface GetImageVersionResponse {
 }
 
 export const subjects = {
-    list_images_request: "assets.v1.images.list",
-    get_image_request: "assets.v1.images.get",
-    get_many_images_request: "assets.v1.images.get_many",
-    put_image_request: "assets.v1.images.put",
-    put_many_images_request: "assets.v1.images.put_many",
-    delete_image_request: "assets.v1.images.delete",
-    delete_many_images_request: "assets.v1.images.delete_many",
-    list_image_versions_request: "assets.v1.images_versions.list",
-    get_image_version_request: "assets.v1.images_versions.get",
+    list_images_request: 'assets.v1.images.list',
+    get_image_request: 'assets.v1.images.get',
+    get_many_images_request: 'assets.v1.images.get_many',
+    put_image_request: 'assets.v1.images.put',
+    put_many_images_request: 'assets.v1.images.put_many',
+    delete_image_request: 'assets.v1.images.delete',
+    delete_many_images_request: 'assets.v1.images.delete_many',
+    list_image_versions_request: 'assets.v1.images_versions.list',
+    get_image_version_request: 'assets.v1.images_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "assets.v1.images_events.created",
-    updated: "assets.v1.images_events.updated",
-    deleted: "assets.v1.images_events.deleted",
+    created: 'assets.v1.images_events.created',
+    updated: 'assets.v1.images_events.updated',
+    deleted: 'assets.v1.images_events.deleted',
 } as const;

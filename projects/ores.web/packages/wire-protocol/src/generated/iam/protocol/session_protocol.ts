@@ -140,13 +140,13 @@ export interface DeleteManySessionsResponse {
 }
 
 export const subjects = {
-    list_sessions_request: "iam.v1.sessions.list",
-    get_session_request: "iam.v1.sessions.get",
-    get_many_sessions_request: "iam.v1.sessions.get_many",
-    put_session_request: "iam.v1.sessions.put",
-    put_many_sessions_request: "iam.v1.sessions.put_many",
-    delete_session_request: "iam.v1.sessions.delete",
-    delete_many_sessions_request: "iam.v1.sessions.delete_many",
+    list_sessions_request: 'iam.v1.sessions.list',
+    get_session_request: 'iam.v1.sessions.get',
+    get_many_sessions_request: 'iam.v1.sessions.get_many',
+    put_session_request: 'iam.v1.sessions.put',
+    put_many_sessions_request: 'iam.v1.sessions.put_many',
+    delete_session_request: 'iam.v1.sessions.delete',
+    delete_many_sessions_request: 'iam.v1.sessions.delete_many',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -169,7 +169,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "iam.v1.sessions_events.created",
-    updated: "iam.v1.sessions_events.updated",
-    deleted: "iam.v1.sessions_events.deleted",
+    created: 'iam.v1.sessions_events.created',
+    updated: 'iam.v1.sessions_events.updated',
+    deleted: 'iam.v1.sessions_events.deleted',
 } as const;

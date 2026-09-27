@@ -22,7 +22,13 @@
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
-import { AppProviders, SessionProvider, createQueryClient, useSession, type SessionState } from './session/SessionProvider.js';
+import {
+    AppProviders,
+    SessionProvider,
+    createQueryClient,
+    useSession,
+    type SessionState,
+} from './session/SessionProvider.js';
 import { TranslationProvider } from './i18n/Provider.js';
 import './styles.css';
 
@@ -41,14 +47,14 @@ const queryClient = createQueryClient();
  * tell the difference is not a shell anybody can debug.
  */
 function sessionLine(state: SessionState): string {
-  switch (state.status) {
-    case 'authenticated':
-      return `Signed in as ${state.session.username}.`;
-    case 'loading':
-      return 'Checking the session...';
-    default:
-      return 'No session.';
-  }
+    switch (state.status) {
+        case 'authenticated':
+            return `Signed in as ${state.session.username}.`;
+        case 'loading':
+            return 'Checking the session...';
+        default:
+            return 'No session.';
+    }
 }
 
 /**
@@ -59,35 +65,35 @@ function sessionLine(state: SessionState): string {
  * broken deployment rather than an unbuilt one.
  */
 function App(): ReactNode {
-  const { state } = useSession();
+    const { state } = useSession();
 
-  return (
-    <main className="mx-auto max-w-[680px] px-5 py-16">
-      <h1 className="text-xl font-semibold tracking-tight text-ink">ORE Studio</h1>
-      <p className="mt-3 text-sm text-ink-muted">
-        The interface is not built yet. This build is the application shell and
-        the transport that talks to the server; no screens are wired to it.
-      </p>
-      <p className="mt-2 text-xs text-ink-faint">{sessionLine(state)}</p>
-    </main>
-  );
+    return (
+        <main className="mx-auto max-w-[680px] px-5 py-16">
+            <h1 className="text-xl font-semibold tracking-tight text-ink">ORE Studio</h1>
+            <p className="mt-3 text-sm text-ink-muted">
+                The interface is not built yet. This build is the application shell and the
+                transport that talks to the server; no screens are wired to it.
+            </p>
+            <p className="mt-2 text-xs text-ink-faint">{sessionLine(state)}</p>
+        </main>
+    );
 }
 
 const container = document.getElementById('root');
 if (container === null) {
-  throw new Error('missing #root element');
+    throw new Error('missing #root element');
 }
 
 createRoot(container).render(
-  <StrictMode>
-    <AppProviders queryClient={queryClient}>
-      <TranslationProvider>
-        <SessionProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </SessionProvider>
-      </TranslationProvider>
-    </AppProviders>
-  </StrictMode>,
+    <StrictMode>
+        <AppProviders queryClient={queryClient}>
+            <TranslationProvider>
+                <SessionProvider>
+                    <BrowserRouter>
+                        <App />
+                    </BrowserRouter>
+                </SessionProvider>
+            </TranslationProvider>
+        </AppProviders>
+    </StrictMode>,
 );

@@ -168,15 +168,24 @@ export interface GetPricingModelProductParameterVersionResponse {
 }
 
 export const subjects = {
-    list_pricing_model_product_parameters_request: "analytics.v1.pricing_model_product_parameters.list",
-    get_pricing_model_product_parameter_request: "analytics.v1.pricing_model_product_parameters.get",
-    get_many_pricing_model_product_parameters_request: "analytics.v1.pricing_model_product_parameters.get_many",
-    put_pricing_model_product_parameter_request: "analytics.v1.pricing_model_product_parameters.put",
-    put_many_pricing_model_product_parameters_request: "analytics.v1.pricing_model_product_parameters.put_many",
-    delete_pricing_model_product_parameter_request: "analytics.v1.pricing_model_product_parameters.delete",
-    delete_many_pricing_model_product_parameters_request: "analytics.v1.pricing_model_product_parameters.delete_many",
-    list_pricing_model_product_parameter_versions_request: "analytics.v1.pricing_model_product_parameters_versions.list",
-    get_pricing_model_product_parameter_version_request: "analytics.v1.pricing_model_product_parameters_versions.get",
+    list_pricing_model_product_parameters_request:
+        'analytics.v1.pricing_model_product_parameters.list',
+    get_pricing_model_product_parameter_request:
+        'analytics.v1.pricing_model_product_parameters.get',
+    get_many_pricing_model_product_parameters_request:
+        'analytics.v1.pricing_model_product_parameters.get_many',
+    put_pricing_model_product_parameter_request:
+        'analytics.v1.pricing_model_product_parameters.put',
+    put_many_pricing_model_product_parameters_request:
+        'analytics.v1.pricing_model_product_parameters.put_many',
+    delete_pricing_model_product_parameter_request:
+        'analytics.v1.pricing_model_product_parameters.delete',
+    delete_many_pricing_model_product_parameters_request:
+        'analytics.v1.pricing_model_product_parameters.delete_many',
+    list_pricing_model_product_parameter_versions_request:
+        'analytics.v1.pricing_model_product_parameters_versions.list',
+    get_pricing_model_product_parameter_version_request:
+        'analytics.v1.pricing_model_product_parameters_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +210,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "analytics.v1.pricing_model_product_parameters_events.created",
-    updated: "analytics.v1.pricing_model_product_parameters_events.updated",
-    deleted: "analytics.v1.pricing_model_product_parameters_events.deleted",
+    created: 'analytics.v1.pricing_model_product_parameters_events.created',
+    updated: 'analytics.v1.pricing_model_product_parameters_events.updated',
+    deleted: 'analytics.v1.pricing_model_product_parameters_events.deleted',
 } as const;

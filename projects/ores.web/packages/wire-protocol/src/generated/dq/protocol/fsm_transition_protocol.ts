@@ -168,15 +168,15 @@ export interface GetFsmTransitionVersionResponse {
 }
 
 export const subjects = {
-    list_fsm_transitions_request: "dq.v1.fsm_transitions.list",
-    get_fsm_transition_request: "dq.v1.fsm_transitions.get",
-    get_many_fsm_transitions_request: "dq.v1.fsm_transitions.get_many",
-    put_fsm_transition_request: "dq.v1.fsm_transitions.put",
-    put_many_fsm_transitions_request: "dq.v1.fsm_transitions.put_many",
-    delete_fsm_transition_request: "dq.v1.fsm_transitions.delete",
-    delete_many_fsm_transitions_request: "dq.v1.fsm_transitions.delete_many",
-    list_fsm_transition_versions_request: "dq.v1.fsm_transitions_versions.list",
-    get_fsm_transition_version_request: "dq.v1.fsm_transitions_versions.get",
+    list_fsm_transitions_request: 'dq.v1.fsm_transitions.list',
+    get_fsm_transition_request: 'dq.v1.fsm_transitions.get',
+    get_many_fsm_transitions_request: 'dq.v1.fsm_transitions.get_many',
+    put_fsm_transition_request: 'dq.v1.fsm_transitions.put',
+    put_many_fsm_transitions_request: 'dq.v1.fsm_transitions.put_many',
+    delete_fsm_transition_request: 'dq.v1.fsm_transitions.delete',
+    delete_many_fsm_transitions_request: 'dq.v1.fsm_transitions.delete_many',
+    list_fsm_transition_versions_request: 'dq.v1.fsm_transitions_versions.list',
+    get_fsm_transition_version_request: 'dq.v1.fsm_transitions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -201,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.fsm_transitions_events.created",
-    updated: "dq.v1.fsm_transitions_events.updated",
-    deleted: "dq.v1.fsm_transitions_events.deleted",
+    created: 'dq.v1.fsm_transitions_events.created',
+    updated: 'dq.v1.fsm_transitions_events.updated',
+    deleted: 'dq.v1.fsm_transitions_events.deleted',
 } as const;

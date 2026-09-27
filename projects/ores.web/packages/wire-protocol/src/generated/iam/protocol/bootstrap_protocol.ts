@@ -22,8 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-export interface BootstrapStatusRequest {
-}
+export interface BootstrapStatusRequest {}
 
 export interface BootstrapStatusResponse {
     is_in_bootstrap_mode: boolean;
@@ -81,9 +80,9 @@ export interface ProvisionTenantResponse {
 }
 
 export const subjects = {
-    bootstrap_status_request: "iam.v1.bootstrap.status",
-    create_initial_admin_request: "iam.v1.bootstrap.create-admin",
-    provision_tenant_request: "iam.v1.bootstrap.provision-tenant",
+    bootstrap_status_request: 'iam.v1.bootstrap.status',
+    create_initial_admin_request: 'iam.v1.bootstrap.create-admin',
+    provision_tenant_request: 'iam.v1.bootstrap.provision-tenant',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

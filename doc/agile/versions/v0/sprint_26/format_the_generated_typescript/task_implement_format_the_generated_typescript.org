@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :format_the_generated_typescript:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-format-the-generated-typescript
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:753E0E14-FDCE-46B5-86AD-0F4AF6721CA3][Format the generated TypeScript with prettier]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

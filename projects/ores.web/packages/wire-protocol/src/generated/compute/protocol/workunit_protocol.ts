@@ -191,16 +191,16 @@ export interface GetWorkunitVersionResponse {
 }
 
 export const subjects = {
-    list_workunits_request: "compute.v1.workunits.list",
-    get_workunit_request: "compute.v1.workunits.get",
-    get_many_workunits_request: "compute.v1.workunits.get_many",
-    put_workunit_request: "compute.v1.workunits.put",
-    put_many_workunits_request: "compute.v1.workunits.put_many",
-    delete_workunit_request: "compute.v1.workunits.delete",
-    delete_many_workunits_request: "compute.v1.workunits.delete_many",
-    list_by_batch_id_workunits_request: "compute.v1.workunits.list_by_batch_id",
-    list_workunit_versions_request: "compute.v1.workunits_versions.list",
-    get_workunit_version_request: "compute.v1.workunits_versions.get",
+    list_workunits_request: 'compute.v1.workunits.list',
+    get_workunit_request: 'compute.v1.workunits.get',
+    get_many_workunits_request: 'compute.v1.workunits.get_many',
+    put_workunit_request: 'compute.v1.workunits.put',
+    put_many_workunits_request: 'compute.v1.workunits.put_many',
+    delete_workunit_request: 'compute.v1.workunits.delete',
+    delete_many_workunits_request: 'compute.v1.workunits.delete_many',
+    list_by_batch_id_workunits_request: 'compute.v1.workunits.list_by_batch_id',
+    list_workunit_versions_request: 'compute.v1.workunits_versions.list',
+    get_workunit_version_request: 'compute.v1.workunits_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -226,7 +226,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "compute.v1.workunits_events.created",
-    updated: "compute.v1.workunits_events.updated",
-    deleted: "compute.v1.workunits_events.deleted",
+    created: 'compute.v1.workunits_events.created',
+    updated: 'compute.v1.workunits_events.updated',
+    deleted: 'compute.v1.workunits_events.deleted',
 } as const;

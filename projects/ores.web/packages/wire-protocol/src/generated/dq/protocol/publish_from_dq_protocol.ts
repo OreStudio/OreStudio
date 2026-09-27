@@ -81,12 +81,10 @@ export interface PublishFromDqResult {
     records_deleted: number;
 }
 
-export const subjects = {
-} as const;
+export const subjects = {} as const;
 /**
  * Whether a message needs an established session first. An operation that
  * produces the session cannot present one, so a client reads this rather than
  * assuming every call carries a token.
  */
-export const requiresSession = {
-} as const;
+export const requiresSession = {} as const;

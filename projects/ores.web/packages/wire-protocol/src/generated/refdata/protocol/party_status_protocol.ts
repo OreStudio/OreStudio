@@ -166,15 +166,15 @@ export interface GetPartyStatusVersionResponse {
 }
 
 export const subjects = {
-    list_party_statuses_request: "refdata.v1.party_statuses.list",
-    get_party_status_request: "refdata.v1.party_statuses.get",
-    get_many_party_statuses_request: "refdata.v1.party_statuses.get_many",
-    put_party_status_request: "refdata.v1.party_statuses.put",
-    put_many_party_statuses_request: "refdata.v1.party_statuses.put_many",
-    delete_party_status_request: "refdata.v1.party_statuses.delete",
-    delete_many_party_statuses_request: "refdata.v1.party_statuses.delete_many",
-    list_party_status_versions_request: "refdata.v1.party_statuses_versions.list",
-    get_party_status_version_request: "refdata.v1.party_statuses_versions.get",
+    list_party_statuses_request: 'refdata.v1.party_statuses.list',
+    get_party_status_request: 'refdata.v1.party_statuses.get',
+    get_many_party_statuses_request: 'refdata.v1.party_statuses.get_many',
+    put_party_status_request: 'refdata.v1.party_statuses.put',
+    put_many_party_statuses_request: 'refdata.v1.party_statuses.put_many',
+    delete_party_status_request: 'refdata.v1.party_statuses.delete',
+    delete_many_party_statuses_request: 'refdata.v1.party_statuses.delete_many',
+    list_party_status_versions_request: 'refdata.v1.party_statuses_versions.list',
+    get_party_status_version_request: 'refdata.v1.party_statuses_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +199,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.party_statuses_events.created",
-    updated: "refdata.v1.party_statuses_events.updated",
-    deleted: "refdata.v1.party_statuses_events.deleted",
+    created: 'refdata.v1.party_statuses_events.created',
+    updated: 'refdata.v1.party_statuses_events.updated',
+    deleted: 'refdata.v1.party_statuses_events.deleted',
 } as const;

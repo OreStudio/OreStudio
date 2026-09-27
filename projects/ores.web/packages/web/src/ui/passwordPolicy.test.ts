@@ -23,25 +23,25 @@ import { describe, expect, it } from 'vitest';
 import { assessPassword } from './passwordPolicy.js';
 
 describe('assessPassword', () => {
-  it('rates an empty password zero', () => {
-    expect(assessPassword('')).toMatchObject({ valid: false, strength: 0 });
-  });
+    it('rates an empty password zero', () => {
+        expect(assessPassword('')).toMatchObject({ valid: false, strength: 0 });
+    });
 
-  it('names each rule a password misses', () => {
-    const result = assessPassword('abcdefghijkl');
-    expect(result.valid).toBe(false);
-    expect([...result.met].sort()).toEqual(['length', 'lower']);
-  });
+    it('names each rule a password misses', () => {
+        const result = assessPassword('abcdefghijkl');
+        expect(result.valid).toBe(false);
+        expect([...result.met].sort()).toEqual(['length', 'lower']);
+    });
 
-  it('accepts a password that meets every server rule', () => {
-    expect(assessPassword('Abcdefgh123!')).toMatchObject({ valid: true, strength: 3 });
-  });
+    it('accepts a password that meets every server rule', () => {
+        expect(assessPassword('Abcdefgh123!')).toMatchObject({ valid: true, strength: 3 });
+    });
 
-  it('rates a longer valid password strongest', () => {
-    expect(assessPassword('Abcdefgh123!wxyz').strength).toBe(4);
-  });
+    it('rates a longer valid password strongest', () => {
+        expect(assessPassword('Abcdefgh123!wxyz').strength).toBe(4);
+    });
 
-  it('counts only the server special characters', () => {
-    expect(assessPassword('Abcdefgh1234~').met.has('special')).toBe(false);
-  });
+    it('counts only the server special characters', () => {
+        expect(assessPassword('Abcdefgh1234~').met.has('special')).toBe(false);
+    });
 });

@@ -165,15 +165,15 @@ export interface GetCatalogVersionResponse {
 }
 
 export const subjects = {
-    list_catalogs_request: "dq.v1.catalogs.list",
-    get_catalog_request: "dq.v1.catalogs.get",
-    get_many_catalogs_request: "dq.v1.catalogs.get_many",
-    put_catalog_request: "dq.v1.catalogs.put",
-    put_many_catalogs_request: "dq.v1.catalogs.put_many",
-    delete_catalog_request: "dq.v1.catalogs.delete",
-    delete_many_catalogs_request: "dq.v1.catalogs.delete_many",
-    list_catalog_versions_request: "dq.v1.catalogs_versions.list",
-    get_catalog_version_request: "dq.v1.catalogs_versions.get",
+    list_catalogs_request: 'dq.v1.catalogs.list',
+    get_catalog_request: 'dq.v1.catalogs.get',
+    get_many_catalogs_request: 'dq.v1.catalogs.get_many',
+    put_catalog_request: 'dq.v1.catalogs.put',
+    put_many_catalogs_request: 'dq.v1.catalogs.put_many',
+    delete_catalog_request: 'dq.v1.catalogs.delete',
+    delete_many_catalogs_request: 'dq.v1.catalogs.delete_many',
+    list_catalog_versions_request: 'dq.v1.catalogs_versions.list',
+    get_catalog_version_request: 'dq.v1.catalogs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -198,7 +198,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "dq.v1.catalogs_events.created",
-    updated: "dq.v1.catalogs_events.updated",
-    deleted: "dq.v1.catalogs_events.deleted",
+    created: 'dq.v1.catalogs_events.created',
+    updated: 'dq.v1.catalogs_events.updated',
+    deleted: 'dq.v1.catalogs_events.deleted',
 } as const;

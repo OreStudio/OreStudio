@@ -67,7 +67,7 @@ export interface PublishDatasetsResponse {
 }
 
 export const subjects = {
-    publish_datasets_request: "dq.v1.datasets.publish",
+    publish_datasets_request: 'dq.v1.datasets.publish',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

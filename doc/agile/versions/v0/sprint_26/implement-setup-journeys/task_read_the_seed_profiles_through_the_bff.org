@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/read-the-seed-profiles-through-the-bff
-#+pr:
+#+pr: 2310
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2310][#2310]] | [web] Read the seed profiles through the BFF |
 
 * Review
 

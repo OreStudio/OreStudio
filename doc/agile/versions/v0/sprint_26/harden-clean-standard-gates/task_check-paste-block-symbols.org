@@ -33,11 +33,11 @@ somebody later regenerates that component and the stale block arrives.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
-| Now          | Gate written, proven end to end, and wired. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -78,8 +78,20 @@ translation units, or tell a declaration from a use. The scope an identifier sit
 inside is recorded whether or not the identifier is declared there, and that errs
 towards resolving, which keeps the check quiet on the tree it runs against. It is
 a lint for a rename, not a compiler, and the honest statement of its power is
-that it resolves 34 of the 34 names on this tree and would have caught the
-measured defect through two of its three names.
+that it resolves 34 of the 34 names on this tree and fails on a name whose scope
+does not declare it.
+
+What that means for the measured defect is narrower than it sounds, and the
+reason is worth recording. On the current tree
+=ores::service::messaging::step_id_header= still resolves, because the identifier
+survives somewhere under that scope, while
+=ores::service::messaging::instance_id_header= and
+=ores::service::messaging::tenant_id_header= do not. So the check catches a
+rename when the identifier leaves its scope entirely, which is the common shape,
+and not when a same-named symbol remains behind. The independent verifier could
+not reconstruct the pre-migration set of names from the clean-service record, so
+how many of that rename this check would have caught is not a measured number and
+is not claimed here.
 
 *Why it is in the sweep workflow.* A rename lands in somebody else's headers, so
 the check is sensitive to any change under =projects/=. =codegen-drift.yml= fires
@@ -127,3 +139,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=projects/ores.codegen/scripts/check_paste_block_symbols.py= resolves every
+qualified name rooted at =ores= that a model's =:implements= block references
+against the =(scope, identifier)= pairs the headers declare, and fails when the
+scope does not declare the identifier. It reads the models and the headers only,
+needs no build and no formatter, and takes about eight seconds.
+
+It is the model-side companion to the catalogue sweep. The sweep catches the
+measured case because the model and the generated file disagree there; it cannot
+catch the narrower one where both agree and are both stale, because the render
+reproduces the committed bytes. This reads the model, so it catches both, and a
+rename fails at review with no regeneration.
+
+Measured at the branch point: 34 qualified names referenced by 98 blocks in 21
+models, all resolving, against 191,661 declared pairs in 4,545 headers. Proved
+end to end by renaming =make_request_context= in its header, which makes the
+check fail and name all four blocks that reference it, in =ores.marketdata=,
+=ores.refdata= twice and =ores.trading=. Ten tests.
+
+What it does not catch is recorded rather than implied:
+=ores::service::messaging::step_id_header= still resolves on this tree because
+the identifier survives under that scope, while =instance_id_header= and
+=tenant_id_header= under the same scope do not. So it catches a rename when the
+identifier leaves its scope entirely, which is the common shape, and not when a
+same-named symbol remains behind. It is a lint for a rename, not a compiler: it
+does not expand macros, follow =using= aliases across translation units, or tell
+a declaration from a use.
+
+It runs in =codegen-sweep.yml=, whose path filter is =projects/**=, because a
+rename lands in somebody else's headers and =codegen-drift.yml='s filter matches
+none of them. Named in V05 of the Component Clean Standard and in the
+=compass-pr-raise= gate roster. Codegen suite 916 passed, =compass lint= clean,
+=validate_docs.sh= 40 of 40.

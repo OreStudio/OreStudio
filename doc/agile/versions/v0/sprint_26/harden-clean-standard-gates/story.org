@@ -44,11 +44,11 @@ Three classes, one task each:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing in flight. The gate for a test case that never reaches the compiler is merged (PR #2249) and its task is DONE. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The sweep over generated output outside the registry, which is the first class below. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -68,7 +68,7 @@ Three classes, one task each:
 | [[id:EE473AFD-DFAB-4F72-97B0-F74D56BE9BA8][Sweep every catalogue component for drift the registry cannot see]] | DONE | 2026-09-27 | 2026-09-27 | The drift gate's coverage is the registry, which lists ten components; the catalogue holds twenty-four. Output that an archetype routes into another component's tree, and any generated file under a component the registry does not list, has no gate. Add a dry-run sweep over every catalogue component that fails only on files the branch touched, so a cross-component rename cannot pass review unseen. |
 | [[id:922962C6-FC22-42D9-9DAD-3F9280F7DD88][Mark generated recipes, and give them a gate]] | DONE | 2026-09-27 | 2026-09-27 | The recipe templates carry a codegen marker as a Mustache comment, which Mustache strips, so no generated recipe reaches the tree with one: 247 files sit at the generated recipe path shape and 172 carry the tangle block a generated recipe exports, none carries a marker, against 6,478 tracked C++ files that do. The sweep renders per technical space, so it never produces a recipe and cannot cover them either. Emit the marker at the render seam and render the whole ores address. |
 | [[id:292BFD27-F75A-4AE5-9751-DC0CB0865587][Make a measured number name its command and its commit]] | DONE | 2026-09-27 | 2026-09-27 | A clean-up record is a claim about a tree, and its numbers are the part a reviewer checks least and a verifier re-runs first. When trunk moves under a branch a count, a gate's component count and a suite's size all change with no code changing, and the record goes quietly wrong: the ores.service record was failed twice by verifiers for exactly this. The task template has nowhere to put a measured number and the standard's Evidence column says 'kept on the task', which is not the same claim as naming the command and the commit. |
-| [[id:026C7253-4E4E-4290-B26C-B9258FD16523][Check that a model's pasted block names symbols that exist]] | STARTED | 2026-09-27 | | A model can paste hand-written C++ into generated output through an :implements block, and the block is compiled only when its component is regenerated. So a cross-component rename can leave a block naming a symbol that no longer exists, with no compile error, until somebody regenerates that component and the build breaks. That is the measured ores.service defect. The sweep catches it only when the generated file disagrees with its model; this catches the model itself. |
+| [[id:026C7253-4E4E-4290-B26C-B9258FD16523][Check that a model's pasted block names symbols that exist]] | DONE | 2026-09-27 | 2026-09-27 | A model can paste hand-written C++ into generated output through an :implements block, and the block is compiled only when its component is regenerated. So a cross-component rename can leave a block naming a symbol that no longer exists, with no compile error, until somebody regenerates that component and the build breaks. That is the measured ores.service defect. The sweep catches it only when the generated file disagrees with its model; this catches the model itself. |
 
 * Decisions
 

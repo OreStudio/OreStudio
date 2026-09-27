@@ -26,7 +26,6 @@
 #define ORES_TRADING_CORE_MESSAGING_TRADE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -983,15 +982,6 @@ private:
         }
     }
 
-    /**
-     * @brief Fetches all FSM transitions from the DQ service via NATS.
-     *
-     * Results are cached process-wide for 5 minutes; FSM transitions are
-     * system-level reference data that change only on schema migrations.
-     * The cache avoids an extra NATS round-trip per trade when the ore import
-     * handler sends one save_trade message per trade.
-     * Throws std::runtime_error on failure; callers must handle or propagate.
-     */
     // Extract the raw JWT from an incoming message, preferring the delegated
     // header so the original end-user context propagates to downstream calls.
     static std::string extract_bearer(const ores::nats::message& msg) {

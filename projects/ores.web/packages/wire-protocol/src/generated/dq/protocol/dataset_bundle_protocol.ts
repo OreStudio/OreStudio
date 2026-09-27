@@ -111,7 +111,7 @@ export interface PutDatasetBundleRequest {
 
 export interface PutDatasetBundleResponse {
     result: Result;
-    dataset_bundle: DatasetBundle;
+    dataset_bundle: DatasetBundle | null;
 }
 
 export interface PutManyDatasetBundlesRequest {
@@ -162,7 +162,7 @@ export interface GetDatasetBundleVersionRequest {
 
 export interface GetDatasetBundleVersionResponse {
     result: Result;
-    version: DatasetBundle;
+    version: DatasetBundle | null;
 }
 
 export const subjects = {

@@ -115,7 +115,7 @@ export interface PutBadgeDefinitionRequest {
 
 export interface PutBadgeDefinitionResponse {
     result: Result;
-    badge_definition: BadgeDefinition;
+    badge_definition: BadgeDefinition | null;
 }
 
 export interface PutManyBadgeDefinitionsRequest {
@@ -166,7 +166,7 @@ export interface GetBadgeDefinitionVersionRequest {
 
 export interface GetBadgeDefinitionVersionResponse {
     result: Result;
-    version: BadgeDefinition;
+    version: BadgeDefinition | null;
 }
 
 export const subjects = {

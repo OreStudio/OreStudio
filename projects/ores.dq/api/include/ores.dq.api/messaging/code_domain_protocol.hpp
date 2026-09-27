@@ -154,7 +154,7 @@ struct put_code_domain_request {
 
 struct put_code_domain_response {
     ores::utility::domain::result result;
-    ores::dq::domain::code_domain code_domain;
+    std::optional<ores::dq::domain::code_domain> code_domain;
 };
 
 struct put_many_code_domains_request {
@@ -250,7 +250,7 @@ struct get_code_domain_version_request {
 
 struct get_code_domain_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::code_domain version;
+    std::optional<ores::dq::domain::code_domain> version;
 };
 
 /**

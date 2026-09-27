@@ -111,7 +111,7 @@ export interface PutCodeDomainRequest {
 
 export interface PutCodeDomainResponse {
     result: Result;
-    code_domain: CodeDomain;
+    code_domain: CodeDomain | null;
 }
 
 export interface PutManyCodeDomainsRequest {
@@ -162,7 +162,7 @@ export interface GetCodeDomainVersionRequest {
 
 export interface GetCodeDomainVersionResponse {
     result: Result;
-    version: CodeDomain;
+    version: CodeDomain | null;
 }
 
 export const subjects = {

@@ -170,15 +170,15 @@ export interface GetBusinessUnitVersionResponse {
 }
 
 export const subjects = {
-    list_business_units_request: "refdata.v1.business_units.list",
-    get_business_unit_request: "refdata.v1.business_units.get",
-    get_many_business_units_request: "refdata.v1.business_units.get_many",
-    put_business_unit_request: "refdata.v1.business_units.put",
-    put_many_business_units_request: "refdata.v1.business_units.put_many",
-    delete_business_unit_request: "refdata.v1.business_units.delete",
-    delete_many_business_units_request: "refdata.v1.business_units.delete_many",
-    list_business_unit_versions_request: "refdata.v1.business_units_versions.list",
-    get_business_unit_version_request: "refdata.v1.business_units_versions.get",
+    list_business_units_request: 'refdata.v1.business_units.list',
+    get_business_unit_request: 'refdata.v1.business_units.get',
+    get_many_business_units_request: 'refdata.v1.business_units.get_many',
+    put_business_unit_request: 'refdata.v1.business_units.put',
+    put_many_business_units_request: 'refdata.v1.business_units.put_many',
+    delete_business_unit_request: 'refdata.v1.business_units.delete',
+    delete_many_business_units_request: 'refdata.v1.business_units.delete_many',
+    list_business_unit_versions_request: 'refdata.v1.business_units_versions.list',
+    get_business_unit_version_request: 'refdata.v1.business_units_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -203,7 +203,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.business_units_events.created",
-    updated: "refdata.v1.business_units_events.updated",
-    deleted: "refdata.v1.business_units_events.deleted",
+    created: 'refdata.v1.business_units_events.created',
+    updated: 'refdata.v1.business_units_events.updated',
+    deleted: 'refdata.v1.business_units_events.deleted',
 } as const;

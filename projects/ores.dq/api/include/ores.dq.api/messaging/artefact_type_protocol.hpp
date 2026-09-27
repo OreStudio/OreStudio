@@ -157,7 +157,7 @@ struct put_artefact_type_request {
 
 struct put_artefact_type_response {
     ores::utility::domain::result result;
-    ores::dq::domain::artefact_type artefact_type;
+    std::optional<ores::dq::domain::artefact_type> artefact_type;
 };
 
 struct put_many_artefact_types_request {
@@ -253,7 +253,7 @@ struct get_artefact_type_version_request {
 
 struct get_artefact_type_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::artefact_type version;
+    std::optional<ores::dq::domain::artefact_type> version;
 };
 
 /**

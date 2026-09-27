@@ -153,7 +153,7 @@ struct put_coding_scheme_authority_type_request {
 
 struct put_coding_scheme_authority_type_response {
     ores::utility::domain::result result;
-    ores::dq::domain::coding_scheme_authority_type coding_scheme_authority_type;
+    std::optional<ores::dq::domain::coding_scheme_authority_type> coding_scheme_authority_type;
 };
 
 struct put_many_coding_scheme_authority_types_request {
@@ -252,7 +252,7 @@ struct get_coding_scheme_authority_type_version_request {
 
 struct get_coding_scheme_authority_type_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::coding_scheme_authority_type version;
+    std::optional<ores::dq::domain::coding_scheme_authority_type> version;
 };
 
 /**

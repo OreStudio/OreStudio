@@ -139,7 +139,7 @@ struct put_badge_mapping_request {
 
 struct put_badge_mapping_response {
     ores::utility::domain::result result;
-    ores::dq::domain::badge_mapping badge_mapping;
+    std::optional<ores::dq::domain::badge_mapping> badge_mapping;
 };
 
 struct put_many_badge_mappings_request {

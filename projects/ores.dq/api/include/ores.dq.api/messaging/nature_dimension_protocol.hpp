@@ -153,7 +153,7 @@ struct put_nature_dimension_request {
 
 struct put_nature_dimension_response {
     ores::utility::domain::result result;
-    ores::dq::domain::nature_dimension nature_dimension;
+    std::optional<ores::dq::domain::nature_dimension> nature_dimension;
 };
 
 struct put_many_nature_dimensions_request {
@@ -249,7 +249,7 @@ struct get_nature_dimension_version_request {
 
 struct get_nature_dimension_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::nature_dimension version;
+    std::optional<ores::dq::domain::nature_dimension> version;
 };
 
 /**

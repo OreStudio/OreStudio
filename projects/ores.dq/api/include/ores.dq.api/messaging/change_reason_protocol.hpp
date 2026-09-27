@@ -158,7 +158,7 @@ struct put_change_reason_request {
 
 struct put_change_reason_response {
     ores::utility::domain::result result;
-    ores::dq::domain::change_reason change_reason;
+    std::optional<ores::dq::domain::change_reason> change_reason;
 };
 
 struct put_many_change_reasons_request {
@@ -254,7 +254,7 @@ struct get_change_reason_version_request {
 
 struct get_change_reason_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::change_reason version;
+    std::optional<ores::dq::domain::change_reason> version;
 };
 
 /**

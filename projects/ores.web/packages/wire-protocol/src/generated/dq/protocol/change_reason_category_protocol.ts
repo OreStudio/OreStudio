@@ -109,7 +109,7 @@ export interface PutChangeReasonCategoryRequest {
 
 export interface PutChangeReasonCategoryResponse {
     result: Result;
-    change_reason_category: ChangeReasonCategory;
+    change_reason_category: ChangeReasonCategory | null;
 }
 
 export interface PutManyChangeReasonCategoriesRequest {
@@ -160,7 +160,7 @@ export interface GetChangeReasonCategoryVersionRequest {
 
 export interface GetChangeReasonCategoryVersionResponse {
     result: Result;
-    version: ChangeReasonCategory;
+    version: ChangeReasonCategory | null;
 }
 
 export const subjects = {

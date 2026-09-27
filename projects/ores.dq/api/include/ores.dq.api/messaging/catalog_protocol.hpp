@@ -153,7 +153,7 @@ struct put_catalog_request {
 
 struct put_catalog_response {
     ores::utility::domain::result result;
-    ores::dq::domain::catalog catalog;
+    std::optional<ores::dq::domain::catalog> catalog;
 };
 
 struct put_many_catalogs_request {
@@ -249,7 +249,7 @@ struct get_catalog_version_request {
 
 struct get_catalog_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::catalog version;
+    std::optional<ores::dq::domain::catalog> version;
 };
 
 /**

@@ -172,15 +172,15 @@ export interface GetPortfolioVersionResponse {
 }
 
 export const subjects = {
-    list_portfolios_request: "refdata.v1.portfolios.list",
-    get_portfolio_request: "refdata.v1.portfolios.get",
-    get_many_portfolios_request: "refdata.v1.portfolios.get_many",
-    put_portfolio_request: "refdata.v1.portfolios.put",
-    put_many_portfolios_request: "refdata.v1.portfolios.put_many",
-    delete_portfolio_request: "refdata.v1.portfolios.delete",
-    delete_many_portfolios_request: "refdata.v1.portfolios.delete_many",
-    list_portfolio_versions_request: "refdata.v1.portfolios_versions.list",
-    get_portfolio_version_request: "refdata.v1.portfolios_versions.get",
+    list_portfolios_request: 'refdata.v1.portfolios.list',
+    get_portfolio_request: 'refdata.v1.portfolios.get',
+    get_many_portfolios_request: 'refdata.v1.portfolios.get_many',
+    put_portfolio_request: 'refdata.v1.portfolios.put',
+    put_many_portfolios_request: 'refdata.v1.portfolios.put_many',
+    delete_portfolio_request: 'refdata.v1.portfolios.delete',
+    delete_many_portfolios_request: 'refdata.v1.portfolios.delete_many',
+    list_portfolio_versions_request: 'refdata.v1.portfolios_versions.list',
+    get_portfolio_version_request: 'refdata.v1.portfolios_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -205,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.portfolios_events.created",
-    updated: "refdata.v1.portfolios_events.updated",
-    deleted: "refdata.v1.portfolios_events.deleted",
+    created: 'refdata.v1.portfolios_events.created',
+    updated: 'refdata.v1.portfolios_events.updated',
+    deleted: 'refdata.v1.portfolios_events.deleted',
 } as const;

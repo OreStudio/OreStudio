@@ -109,7 +109,7 @@ export interface PutDataDomainRequest {
 
 export interface PutDataDomainResponse {
     result: Result;
-    data_domain: DataDomain;
+    data_domain: DataDomain | null;
 }
 
 export interface PutManyDataDomainsRequest {
@@ -160,7 +160,7 @@ export interface GetDataDomainVersionRequest {
 
 export interface GetDataDomainVersionResponse {
     result: Result;
-    version: DataDomain;
+    version: DataDomain | null;
 }
 
 export const subjects = {

@@ -143,14 +143,15 @@ export interface ListByCurrencyIsoCodeCurrencyCountriesResponse {
 }
 
 export const subjects = {
-    list_currency_countries_request: "refdata.v1.currency_countries.list",
-    get_currency_country_request: "refdata.v1.currency_countries.get",
-    get_many_currency_countries_request: "refdata.v1.currency_countries.get_many",
-    put_currency_country_request: "refdata.v1.currency_countries.put",
-    put_many_currency_countries_request: "refdata.v1.currency_countries.put_many",
-    delete_currency_country_request: "refdata.v1.currency_countries.delete",
-    delete_many_currency_countries_request: "refdata.v1.currency_countries.delete_many",
-    list_by_currency_iso_code_currency_countries_request: "refdata.v1.currency_countries.list_by_currency_iso_code",
+    list_currency_countries_request: 'refdata.v1.currency_countries.list',
+    get_currency_country_request: 'refdata.v1.currency_countries.get',
+    get_many_currency_countries_request: 'refdata.v1.currency_countries.get_many',
+    put_currency_country_request: 'refdata.v1.currency_countries.put',
+    put_many_currency_countries_request: 'refdata.v1.currency_countries.put_many',
+    delete_currency_country_request: 'refdata.v1.currency_countries.delete',
+    delete_many_currency_countries_request: 'refdata.v1.currency_countries.delete_many',
+    list_by_currency_iso_code_currency_countries_request:
+        'refdata.v1.currency_countries.list_by_currency_iso_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

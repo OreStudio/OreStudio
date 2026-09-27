@@ -113,7 +113,7 @@ export interface PutFsmTransitionRequest {
 
 export interface PutFsmTransitionResponse {
     result: Result;
-    fsm_transition: FsmTransition;
+    fsm_transition: FsmTransition | null;
 }
 
 export interface PutManyFsmTransitionsRequest {
@@ -164,7 +164,7 @@ export interface GetFsmTransitionVersionRequest {
 
 export interface GetFsmTransitionVersionResponse {
     result: Result;
-    version: FsmTransition;
+    version: FsmTransition | null;
 }
 
 export const subjects = {

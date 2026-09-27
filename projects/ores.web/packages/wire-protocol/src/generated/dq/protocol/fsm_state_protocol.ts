@@ -112,7 +112,7 @@ export interface PutFsmStateRequest {
 
 export interface PutFsmStateResponse {
     result: Result;
-    fsm_state: FsmState;
+    fsm_state: FsmState | null;
 }
 
 export interface PutManyFsmStatesRequest {
@@ -163,7 +163,7 @@ export interface GetFsmStateVersionRequest {
 
 export interface GetFsmStateVersionResponse {
     result: Result;
-    version: FsmState;
+    version: FsmState | null;
 }
 
 export const subjects = {

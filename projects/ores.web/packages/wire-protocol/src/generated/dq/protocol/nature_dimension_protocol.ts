@@ -110,7 +110,7 @@ export interface PutNatureDimensionRequest {
 
 export interface PutNatureDimensionResponse {
     result: Result;
-    nature_dimension: NatureDimension;
+    nature_dimension: NatureDimension | null;
 }
 
 export interface PutManyNatureDimensionsRequest {
@@ -161,7 +161,7 @@ export interface GetNatureDimensionVersionRequest {
 
 export interface GetNatureDimensionVersionResponse {
     result: Result;
-    version: NatureDimension;
+    version: NatureDimension | null;
 }
 
 export const subjects = {

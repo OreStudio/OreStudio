@@ -127,7 +127,7 @@ export interface PutDatasetRequest {
 
 export interface PutDatasetResponse {
     result: Result;
-    dataset: Dataset;
+    dataset: Dataset | null;
 }
 
 export interface PutManyDatasetsRequest {
@@ -178,7 +178,7 @@ export interface GetDatasetVersionRequest {
 
 export interface GetDatasetVersionResponse {
     result: Result;
-    version: Dataset;
+    version: Dataset | null;
 }
 
 export const subjects = {

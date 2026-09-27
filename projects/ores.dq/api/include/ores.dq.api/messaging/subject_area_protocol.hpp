@@ -154,7 +154,7 @@ struct put_subject_area_request {
 
 struct put_subject_area_response {
     ores::utility::domain::result result;
-    ores::dq::domain::subject_area subject_area;
+    std::optional<ores::dq::domain::subject_area> subject_area;
 };
 
 struct put_many_subject_areas_request {
@@ -250,7 +250,7 @@ struct get_subject_area_version_request {
 
 struct get_subject_area_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::subject_area version;
+    std::optional<ores::dq::domain::subject_area> version;
 };
 
 /**

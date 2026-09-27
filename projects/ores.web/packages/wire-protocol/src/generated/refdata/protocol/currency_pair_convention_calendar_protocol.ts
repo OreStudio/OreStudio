@@ -143,14 +143,22 @@ export interface ListByPairCodeCurrencyPairConventionCalendarsResponse {
 }
 
 export const subjects = {
-    list_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.list",
-    get_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.get",
-    get_many_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.get_many",
-    put_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.put",
-    put_many_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.put_many",
-    delete_currency_pair_convention_calendar_request: "refdata.v1.currency_pair_convention_calendars.delete",
-    delete_many_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.delete_many",
-    list_by_pair_code_currency_pair_convention_calendars_request: "refdata.v1.currency_pair_convention_calendars.list_by_pair_code",
+    list_currency_pair_convention_calendars_request:
+        'refdata.v1.currency_pair_convention_calendars.list',
+    get_currency_pair_convention_calendar_request:
+        'refdata.v1.currency_pair_convention_calendars.get',
+    get_many_currency_pair_convention_calendars_request:
+        'refdata.v1.currency_pair_convention_calendars.get_many',
+    put_currency_pair_convention_calendar_request:
+        'refdata.v1.currency_pair_convention_calendars.put',
+    put_many_currency_pair_convention_calendars_request:
+        'refdata.v1.currency_pair_convention_calendars.put_many',
+    delete_currency_pair_convention_calendar_request:
+        'refdata.v1.currency_pair_convention_calendars.delete',
+    delete_many_currency_pair_convention_calendars_request:
+        'refdata.v1.currency_pair_convention_calendars.delete_many',
+    list_by_pair_code_currency_pair_convention_calendars_request:
+        'refdata.v1.currency_pair_convention_calendars.list_by_pair_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

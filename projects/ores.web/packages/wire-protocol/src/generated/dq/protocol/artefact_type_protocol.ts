@@ -114,7 +114,7 @@ export interface PutArtefactTypeRequest {
 
 export interface PutArtefactTypeResponse {
     result: Result;
-    artefact_type: ArtefactType;
+    artefact_type: ArtefactType | null;
 }
 
 export interface PutManyArtefactTypesRequest {
@@ -165,7 +165,7 @@ export interface GetArtefactTypeVersionRequest {
 
 export interface GetArtefactTypeVersionResponse {
     result: Result;
-    version: ArtefactType;
+    version: ArtefactType | null;
 }
 
 export const subjects = {

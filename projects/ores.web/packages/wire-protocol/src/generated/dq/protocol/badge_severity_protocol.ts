@@ -111,7 +111,7 @@ export interface PutBadgeSeverityRequest {
 
 export interface PutBadgeSeverityResponse {
     result: Result;
-    badge_severity: BadgeSeverity;
+    badge_severity: BadgeSeverity | null;
 }
 
 export interface PutManyBadgeSeveritiesRequest {
@@ -162,7 +162,7 @@ export interface GetBadgeSeverityVersionRequest {
 
 export interface GetBadgeSeverityVersionResponse {
     result: Result;
-    version: BadgeSeverity;
+    version: BadgeSeverity | null;
 }
 
 export const subjects = {

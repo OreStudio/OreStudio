@@ -188,16 +188,16 @@ export interface GetPartyIdentifierVersionResponse {
 }
 
 export const subjects = {
-    list_party_identifiers_request: "refdata.v1.party_identifiers.list",
-    get_party_identifier_request: "refdata.v1.party_identifiers.get",
-    get_many_party_identifiers_request: "refdata.v1.party_identifiers.get_many",
-    put_party_identifier_request: "refdata.v1.party_identifiers.put",
-    put_many_party_identifiers_request: "refdata.v1.party_identifiers.put_many",
-    delete_party_identifier_request: "refdata.v1.party_identifiers.delete",
-    delete_many_party_identifiers_request: "refdata.v1.party_identifiers.delete_many",
-    list_by_party_id_party_identifiers_request: "refdata.v1.party_identifiers.list_by_party_id",
-    list_party_identifier_versions_request: "refdata.v1.party_identifiers_versions.list",
-    get_party_identifier_version_request: "refdata.v1.party_identifiers_versions.get",
+    list_party_identifiers_request: 'refdata.v1.party_identifiers.list',
+    get_party_identifier_request: 'refdata.v1.party_identifiers.get',
+    get_many_party_identifiers_request: 'refdata.v1.party_identifiers.get_many',
+    put_party_identifier_request: 'refdata.v1.party_identifiers.put',
+    put_many_party_identifiers_request: 'refdata.v1.party_identifiers.put_many',
+    delete_party_identifier_request: 'refdata.v1.party_identifiers.delete',
+    delete_many_party_identifiers_request: 'refdata.v1.party_identifiers.delete_many',
+    list_by_party_id_party_identifiers_request: 'refdata.v1.party_identifiers.list_by_party_id',
+    list_party_identifier_versions_request: 'refdata.v1.party_identifiers_versions.list',
+    get_party_identifier_version_request: 'refdata.v1.party_identifiers_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -223,7 +223,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.party_identifiers_events.created",
-    updated: "refdata.v1.party_identifiers_events.updated",
-    deleted: "refdata.v1.party_identifiers_events.deleted",
+    created: 'refdata.v1.party_identifiers_events.created',
+    updated: 'refdata.v1.party_identifiers_events.updated',
+    deleted: 'refdata.v1.party_identifiers_events.deleted',
 } as const;

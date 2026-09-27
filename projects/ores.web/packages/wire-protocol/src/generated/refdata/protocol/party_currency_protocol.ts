@@ -143,14 +143,14 @@ export interface ListByPartyIdPartyCurrenciesResponse {
 }
 
 export const subjects = {
-    list_party_currencies_request: "refdata.v1.party_currencies.list",
-    get_party_currency_request: "refdata.v1.party_currencies.get",
-    get_many_party_currencies_request: "refdata.v1.party_currencies.get_many",
-    put_party_currency_request: "refdata.v1.party_currencies.put",
-    put_many_party_currencies_request: "refdata.v1.party_currencies.put_many",
-    delete_party_currency_request: "refdata.v1.party_currencies.delete",
-    delete_many_party_currencies_request: "refdata.v1.party_currencies.delete_many",
-    list_by_party_id_party_currencies_request: "refdata.v1.party_currencies.list_by_party_id",
+    list_party_currencies_request: 'refdata.v1.party_currencies.list',
+    get_party_currency_request: 'refdata.v1.party_currencies.get',
+    get_many_party_currencies_request: 'refdata.v1.party_currencies.get_many',
+    put_party_currency_request: 'refdata.v1.party_currencies.put',
+    put_many_party_currencies_request: 'refdata.v1.party_currencies.put_many',
+    delete_party_currency_request: 'refdata.v1.party_currencies.delete',
+    delete_many_party_currencies_request: 'refdata.v1.party_currencies.delete_many',
+    list_by_party_id_party_currencies_request: 'refdata.v1.party_currencies.list_by_party_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

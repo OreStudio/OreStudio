@@ -88,10 +88,10 @@ export interface ListByCalendarCodeCalendarDatesResponse {
 }
 
 export const subjects = {
-    list_calendar_dates_request: "refdata.v1.calendar_dates.list",
-    get_calendar_date_request: "refdata.v1.calendar_dates.get",
-    get_many_calendar_dates_request: "refdata.v1.calendar_dates.get_many",
-    list_by_calendar_code_calendar_dates_request: "refdata.v1.calendar_dates.list_by_calendar_code",
+    list_calendar_dates_request: 'refdata.v1.calendar_dates.list',
+    get_calendar_date_request: 'refdata.v1.calendar_dates.get',
+    get_many_calendar_dates_request: 'refdata.v1.calendar_dates.get_many',
+    list_by_calendar_code_calendar_dates_request: 'refdata.v1.calendar_dates.list_by_calendar_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -140,7 +140,7 @@ struct put_dataset_bundle_member_request {
 
 struct put_dataset_bundle_member_response {
     ores::utility::domain::result result;
-    ores::dq::domain::dataset_bundle_member dataset_bundle_member;
+    std::optional<ores::dq::domain::dataset_bundle_member> dataset_bundle_member;
 };
 
 struct put_many_dataset_bundle_members_request {

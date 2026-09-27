@@ -98,7 +98,7 @@ export interface PutDatasetBundleMemberRequest {
 
 export interface PutDatasetBundleMemberResponse {
     result: Result;
-    dataset_bundle_member: DatasetBundleMember;
+    dataset_bundle_member: DatasetBundleMember | null;
 }
 
 export interface PutManyDatasetBundleMembersRequest {

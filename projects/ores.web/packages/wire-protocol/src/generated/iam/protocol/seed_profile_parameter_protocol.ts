@@ -123,7 +123,7 @@ export interface PutSeedProfileParameterRequest {
 
 export interface PutSeedProfileParameterResponse {
     result: Result;
-    seed_profile_parameter: SeedProfileParameter;
+    seed_profile_parameter: SeedProfileParameter | null;
 }
 
 export interface PutManySeedProfileParametersRequest {
@@ -189,7 +189,7 @@ export interface GetSeedProfileParameterVersionRequest {
 
 export interface GetSeedProfileParameterVersionResponse {
     result: Result;
-    version: SeedProfileParameter;
+    version: SeedProfileParameter | null;
 }
 
 export const subjects = {

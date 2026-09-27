@@ -155,7 +155,7 @@ struct put_fsm_state_request {
 
 struct put_fsm_state_response {
     ores::utility::domain::result result;
-    ores::dq::domain::fsm_state fsm_state;
+    std::optional<ores::dq::domain::fsm_state> fsm_state;
 };
 
 struct put_many_fsm_states_request {
@@ -251,7 +251,7 @@ struct get_fsm_state_version_request {
 
 struct get_fsm_state_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::fsm_state version;
+    std::optional<ores::dq::domain::fsm_state> version;
 };
 
 /**

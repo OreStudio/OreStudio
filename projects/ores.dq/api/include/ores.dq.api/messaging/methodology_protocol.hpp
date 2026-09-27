@@ -155,7 +155,7 @@ struct put_methodology_request {
 
 struct put_methodology_response {
     ores::utility::domain::result result;
-    ores::dq::domain::methodology methodology;
+    std::optional<ores::dq::domain::methodology> methodology;
 };
 
 struct put_many_methodologies_request {
@@ -251,7 +251,7 @@ struct get_methodology_version_request {
 
 struct get_methodology_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::methodology version;
+    std::optional<ores::dq::domain::methodology> version;
 };
 
 /**

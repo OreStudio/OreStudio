@@ -110,7 +110,7 @@ export interface PutCatalogRequest {
 
 export interface PutCatalogResponse {
     result: Result;
-    catalog: Catalog;
+    catalog: Catalog | null;
 }
 
 export interface PutManyCatalogsRequest {
@@ -161,7 +161,7 @@ export interface GetCatalogVersionRequest {
 
 export interface GetCatalogVersionResponse {
     result: Result;
-    version: Catalog;
+    version: Catalog | null;
 }
 
 export const subjects = {

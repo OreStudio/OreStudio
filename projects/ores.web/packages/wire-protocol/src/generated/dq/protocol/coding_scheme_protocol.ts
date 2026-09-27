@@ -114,7 +114,7 @@ export interface PutCodingSchemeRequest {
 
 export interface PutCodingSchemeResponse {
     result: Result;
-    coding_scheme: CodingScheme;
+    coding_scheme: CodingScheme | null;
 }
 
 export interface PutManyCodingSchemesRequest {
@@ -165,7 +165,7 @@ export interface GetCodingSchemeVersionRequest {
 
 export interface GetCodingSchemeVersionResponse {
     result: Result;
-    version: CodingScheme;
+    version: CodingScheme | null;
 }
 
 export const subjects = {

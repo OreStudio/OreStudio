@@ -110,7 +110,7 @@ export interface PutOriginDimensionRequest {
 
 export interface PutOriginDimensionResponse {
     result: Result;
-    origin_dimension: OriginDimension;
+    origin_dimension: OriginDimension | null;
 }
 
 export interface PutManyOriginDimensionsRequest {
@@ -161,7 +161,7 @@ export interface GetOriginDimensionVersionRequest {
 
 export interface GetOriginDimensionVersionResponse {
     result: Result;
-    version: OriginDimension;
+    version: OriginDimension | null;
 }
 
 export const subjects = {

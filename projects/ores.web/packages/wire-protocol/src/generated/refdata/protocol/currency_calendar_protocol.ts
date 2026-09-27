@@ -143,14 +143,15 @@ export interface ListByCurrencyIsoCodeCurrencyCalendarsResponse {
 }
 
 export const subjects = {
-    list_currency_calendars_request: "refdata.v1.currency_calendars.list",
-    get_currency_calendar_request: "refdata.v1.currency_calendars.get",
-    get_many_currency_calendars_request: "refdata.v1.currency_calendars.get_many",
-    put_currency_calendar_request: "refdata.v1.currency_calendars.put",
-    put_many_currency_calendars_request: "refdata.v1.currency_calendars.put_many",
-    delete_currency_calendar_request: "refdata.v1.currency_calendars.delete",
-    delete_many_currency_calendars_request: "refdata.v1.currency_calendars.delete_many",
-    list_by_currency_iso_code_currency_calendars_request: "refdata.v1.currency_calendars.list_by_currency_iso_code",
+    list_currency_calendars_request: 'refdata.v1.currency_calendars.list',
+    get_currency_calendar_request: 'refdata.v1.currency_calendars.get',
+    get_many_currency_calendars_request: 'refdata.v1.currency_calendars.get_many',
+    put_currency_calendar_request: 'refdata.v1.currency_calendars.put',
+    put_many_currency_calendars_request: 'refdata.v1.currency_calendars.put_many',
+    delete_currency_calendar_request: 'refdata.v1.currency_calendars.delete',
+    delete_many_currency_calendars_request: 'refdata.v1.currency_calendars.delete_many',
+    list_by_currency_iso_code_currency_calendars_request:
+        'refdata.v1.currency_calendars.list_by_currency_iso_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

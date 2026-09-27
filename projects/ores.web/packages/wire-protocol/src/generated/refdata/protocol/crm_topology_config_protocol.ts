@@ -167,15 +167,15 @@ export interface GetCrmTopologyConfigVersionResponse {
 }
 
 export const subjects = {
-    list_crm_topology_configs_request: "refdata.v1.crm_topology_configs.list",
-    get_crm_topology_config_request: "refdata.v1.crm_topology_configs.get",
-    get_many_crm_topology_configs_request: "refdata.v1.crm_topology_configs.get_many",
-    put_crm_topology_config_request: "refdata.v1.crm_topology_configs.put",
-    put_many_crm_topology_configs_request: "refdata.v1.crm_topology_configs.put_many",
-    delete_crm_topology_config_request: "refdata.v1.crm_topology_configs.delete",
-    delete_many_crm_topology_configs_request: "refdata.v1.crm_topology_configs.delete_many",
-    list_crm_topology_config_versions_request: "refdata.v1.crm_topology_configs_versions.list",
-    get_crm_topology_config_version_request: "refdata.v1.crm_topology_configs_versions.get",
+    list_crm_topology_configs_request: 'refdata.v1.crm_topology_configs.list',
+    get_crm_topology_config_request: 'refdata.v1.crm_topology_configs.get',
+    get_many_crm_topology_configs_request: 'refdata.v1.crm_topology_configs.get_many',
+    put_crm_topology_config_request: 'refdata.v1.crm_topology_configs.put',
+    put_many_crm_topology_configs_request: 'refdata.v1.crm_topology_configs.put_many',
+    delete_crm_topology_config_request: 'refdata.v1.crm_topology_configs.delete',
+    delete_many_crm_topology_configs_request: 'refdata.v1.crm_topology_configs.delete_many',
+    list_crm_topology_config_versions_request: 'refdata.v1.crm_topology_configs_versions.list',
+    get_crm_topology_config_version_request: 'refdata.v1.crm_topology_configs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.crm_topology_configs_events.created",
-    updated: "refdata.v1.crm_topology_configs_events.updated",
-    deleted: "refdata.v1.crm_topology_configs_events.deleted",
+    created: 'refdata.v1.crm_topology_configs_events.created',
+    updated: 'refdata.v1.crm_topology_configs_events.updated',
+    deleted: 'refdata.v1.crm_topology_configs_events.deleted',
 } as const;

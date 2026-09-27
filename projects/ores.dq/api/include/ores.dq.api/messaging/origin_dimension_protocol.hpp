@@ -153,7 +153,7 @@ struct put_origin_dimension_request {
 
 struct put_origin_dimension_response {
     ores::utility::domain::result result;
-    ores::dq::domain::origin_dimension origin_dimension;
+    std::optional<ores::dq::domain::origin_dimension> origin_dimension;
 };
 
 struct put_many_origin_dimensions_request {
@@ -249,7 +249,7 @@ struct get_origin_dimension_version_request {
 
 struct get_origin_dimension_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::origin_dimension version;
+    std::optional<ores::dq::domain::origin_dimension> version;
 };
 
 /**

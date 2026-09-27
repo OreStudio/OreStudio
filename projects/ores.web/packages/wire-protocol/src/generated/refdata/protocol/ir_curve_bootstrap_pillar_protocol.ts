@@ -169,15 +169,18 @@ export interface GetIrCurveBootstrapPillarVersionResponse {
 }
 
 export const subjects = {
-    list_ir_curve_bootstrap_pillars_request: "refdata.v1.ir_curve_bootstrap_pillars.list",
-    get_ir_curve_bootstrap_pillar_request: "refdata.v1.ir_curve_bootstrap_pillars.get",
-    get_many_ir_curve_bootstrap_pillars_request: "refdata.v1.ir_curve_bootstrap_pillars.get_many",
-    put_ir_curve_bootstrap_pillar_request: "refdata.v1.ir_curve_bootstrap_pillars.put",
-    put_many_ir_curve_bootstrap_pillars_request: "refdata.v1.ir_curve_bootstrap_pillars.put_many",
-    delete_ir_curve_bootstrap_pillar_request: "refdata.v1.ir_curve_bootstrap_pillars.delete",
-    delete_many_ir_curve_bootstrap_pillars_request: "refdata.v1.ir_curve_bootstrap_pillars.delete_many",
-    list_ir_curve_bootstrap_pillar_versions_request: "refdata.v1.ir_curve_bootstrap_pillars_versions.list",
-    get_ir_curve_bootstrap_pillar_version_request: "refdata.v1.ir_curve_bootstrap_pillars_versions.get",
+    list_ir_curve_bootstrap_pillars_request: 'refdata.v1.ir_curve_bootstrap_pillars.list',
+    get_ir_curve_bootstrap_pillar_request: 'refdata.v1.ir_curve_bootstrap_pillars.get',
+    get_many_ir_curve_bootstrap_pillars_request: 'refdata.v1.ir_curve_bootstrap_pillars.get_many',
+    put_ir_curve_bootstrap_pillar_request: 'refdata.v1.ir_curve_bootstrap_pillars.put',
+    put_many_ir_curve_bootstrap_pillars_request: 'refdata.v1.ir_curve_bootstrap_pillars.put_many',
+    delete_ir_curve_bootstrap_pillar_request: 'refdata.v1.ir_curve_bootstrap_pillars.delete',
+    delete_many_ir_curve_bootstrap_pillars_request:
+        'refdata.v1.ir_curve_bootstrap_pillars.delete_many',
+    list_ir_curve_bootstrap_pillar_versions_request:
+        'refdata.v1.ir_curve_bootstrap_pillars_versions.list',
+    get_ir_curve_bootstrap_pillar_version_request:
+        'refdata.v1.ir_curve_bootstrap_pillars_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -202,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.ir_curve_bootstrap_pillars_events.created",
-    updated: "refdata.v1.ir_curve_bootstrap_pillars_events.updated",
-    deleted: "refdata.v1.ir_curve_bootstrap_pillars_events.deleted",
+    created: 'refdata.v1.ir_curve_bootstrap_pillars_events.created',
+    updated: 'refdata.v1.ir_curve_bootstrap_pillars_events.updated',
+    deleted: 'refdata.v1.ir_curve_bootstrap_pillars_events.deleted',
 } as const;

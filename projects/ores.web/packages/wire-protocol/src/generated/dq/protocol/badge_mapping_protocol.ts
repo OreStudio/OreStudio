@@ -97,7 +97,7 @@ export interface PutBadgeMappingRequest {
 
 export interface PutBadgeMappingResponse {
     result: Result;
-    badge_mapping: BadgeMapping;
+    badge_mapping: BadgeMapping | null;
 }
 
 export interface PutManyBadgeMappingsRequest {

@@ -158,7 +158,7 @@ struct put_badge_definition_request {
 
 struct put_badge_definition_response {
     ores::utility::domain::result result;
-    ores::dq::domain::badge_definition badge_definition;
+    std::optional<ores::dq::domain::badge_definition> badge_definition;
 };
 
 struct put_many_badge_definitions_request {
@@ -254,7 +254,7 @@ struct get_badge_definition_version_request {
 
 struct get_badge_definition_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::badge_definition version;
+    std::optional<ores::dq::domain::badge_definition> version;
 };
 
 /**

@@ -143,14 +143,14 @@ export interface ListByPartyIdPartyCountriesResponse {
 }
 
 export const subjects = {
-    list_party_countries_request: "refdata.v1.party_countries.list",
-    get_party_country_request: "refdata.v1.party_countries.get",
-    get_many_party_countries_request: "refdata.v1.party_countries.get_many",
-    put_party_country_request: "refdata.v1.party_countries.put",
-    put_many_party_countries_request: "refdata.v1.party_countries.put_many",
-    delete_party_country_request: "refdata.v1.party_countries.delete",
-    delete_many_party_countries_request: "refdata.v1.party_countries.delete_many",
-    list_by_party_id_party_countries_request: "refdata.v1.party_countries.list_by_party_id",
+    list_party_countries_request: 'refdata.v1.party_countries.list',
+    get_party_country_request: 'refdata.v1.party_countries.get',
+    get_many_party_countries_request: 'refdata.v1.party_countries.get_many',
+    put_party_country_request: 'refdata.v1.party_countries.put',
+    put_many_party_countries_request: 'refdata.v1.party_countries.put_many',
+    delete_party_country_request: 'refdata.v1.party_countries.delete',
+    delete_many_party_countries_request: 'refdata.v1.party_countries.delete_many',
+    list_by_party_id_party_countries_request: 'refdata.v1.party_countries.list_by_party_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

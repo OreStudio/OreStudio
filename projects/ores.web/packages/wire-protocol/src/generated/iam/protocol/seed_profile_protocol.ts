@@ -121,7 +121,7 @@ export interface PutSeedProfileRequest {
 
 export interface PutSeedProfileResponse {
     result: Result;
-    seed_profile: SeedProfile;
+    seed_profile: SeedProfile | null;
 }
 
 export interface PutManySeedProfilesRequest {
@@ -172,7 +172,7 @@ export interface GetSeedProfileVersionRequest {
 
 export interface GetSeedProfileVersionResponse {
     result: Result;
-    version: SeedProfile;
+    version: SeedProfile | null;
 }
 
 export const subjects = {

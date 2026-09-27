@@ -160,7 +160,7 @@ struct put_seed_profile_step_request {
 
 struct put_seed_profile_step_response {
     ores::utility::domain::result result;
-    ores::iam::domain::seed_profile_step seed_profile_step;
+    std::optional<ores::iam::domain::seed_profile_step> seed_profile_step;
 };
 
 struct put_many_seed_profile_steps_request {
@@ -281,7 +281,7 @@ struct get_seed_profile_step_version_request {
 
 struct get_seed_profile_step_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::seed_profile_step version;
+    std::optional<ores::iam::domain::seed_profile_step> version;
 };
 
 /**

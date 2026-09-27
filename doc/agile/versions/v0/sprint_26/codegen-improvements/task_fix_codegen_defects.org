@@ -109,6 +109,17 @@ gate sees composites, whose kind excludes them.
 - Register the parts as components. Largest, and it changes the manifest that
   many other tools read.
 
+*Scope of the regeneration.* =check_component_drift.py --all= covers the 12
+components in =COMPONENTS_UNDER_TEST=, so the regeneration reached the parts of
+those 12 and no others: 37 umbrella headers now carry the marker, and 31 parts
+gained the header. The 22 own-root umbrellas still without a marker belong to
+components that are not under test yet -- =trading=, =refdata=, =marketdata=,
+=scheduler=, =synthetic=, =history=, =storage=, and the standalone =database=,
+=diff=, =geo=, =logging=, =nats=, =orgmode=, =platform=, =security=, =service=,
+=testing= and =utility=. They regenerate as each of those components is cleaned
+and listed, which is the arrangement the branch exists for. Nothing is
+outstanding against this task for them.
+
 *Test Scenarios*
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

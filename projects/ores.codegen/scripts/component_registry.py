@@ -29,15 +29,15 @@ from dataclasses import dataclass
 # its shell, sql and web derivatives into this branch's diff. main had it
 # listed; that belongs to the refdata work, not here.
 #
-# dq is the next component to join and is deliberately not listed yet. Its
-# regeneration is clean -- check_component_drift.py --component dq reports no
-# drift -- but it cannot pass this list's twin claim: twelve of its protocol
-# headers are hand-written for entities that have no model yet (datasets,
-# coding schemes, publications, the FSM family, dimensions, methodologies,
-# report-definition templates, and the badge mapping projection), so they have
-# no TypeScript twin and none can be generated. Listing dq would fail
-# check_protocol_twin_coverage.py on those twelve. It joins once the remaining
-# entities are modelled.
+# dq joins here at the end of its clean-standard pass. Its regeneration is
+# byte-identical at all eight addresses, and every one of its protocol headers
+# now has a TypeScript twin. The five that lacked one were settled rather than
+# suppressed: the badge mapping junction declared no :list_by:, so the junction
+# gate dropped its whole messaging stack while a stale twin sat in the tree; the
+# publish-from-dq payloads, the LEI entity summary and the report-definition
+# template are operation models now; and the dataset-dependency surface, which
+# nothing called, is retired. Listing dq is what makes those gates permanent for
+# the component.
 #
 # The ores.assets clean-standard task adds assets-cpp on the same terms: the
 # component regenerates byte for byte, every codegen gate passes with it
@@ -228,4 +228,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "http-cpp", "ore", "reporting", "shell", "telemetry-cpp", "workflow-cpp", "variability-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "ore", "reporting", "shell", "telemetry-cpp", "workflow-cpp", "variability-cpp")

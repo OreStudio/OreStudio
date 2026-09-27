@@ -47,10 +47,9 @@ namespace ores::dq::domain {
  *
  * Populated via seed scripts; no management UI needed.
  *
- * NATS/protocol/service are disabled above: badge lookups already go
- * through the hand-maintained badge_handler/badge_service (see
- * registrar.cpp's own comment), so the generic generated messaging
- * stack for this junction would be dead code alongside it.
+ * The junction is on the canonical generated stack: its protocol, handler,
+ * registrar and service are generated from this model like any other
+ * junction's, so the mapping read cannot drift from the entity it projects.
  */
 struct badge_mapping final {
     /**
@@ -66,7 +65,10 @@ struct badge_mapping final {
     /**
      * @brief Code of the domain this mapping belongs to.
      *
-     * References code_domain.code (soft FK). Examples: 'party_status', 'fsm_state'.
+     * Mappings are read a code domain at a time: the badge lookup asks for one domain's rows and
+indexes them by entity code. The partial index on this column is the read's index.
+
+References code_domain.code (soft FK). Examples: 'party_status', 'fsm_state'.
      */
     std::string code_domain_code;
 

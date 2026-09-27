@@ -48,7 +48,8 @@ persistence without depending on =ores.dq=.
 - =include/ores.dq.core/ores.dq.core.hpp= — aggregate include.
 - =include/ores.dq.core/messaging/registrar.hpp= — registers all NATS
   handlers with the service host.
-- =include/ores.dq.core/service/badge_service.hpp= — badge management.
+- =include/ores.dq.core/service/badge_definition_service.hpp= — badge
+  definitions, mappings and severities.
 - =include/ores.dq.core/service/dataset_service.hpp= — dataset lifecycle.
 
 * Dependencies

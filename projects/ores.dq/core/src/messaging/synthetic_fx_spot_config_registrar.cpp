@@ -52,34 +52,6 @@ std::vector<ores::nats::service::subscription> register_synthetic_fx_spot_config
         get_many_synthetic_fx_spot_configs_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->get_many_synthetic_fx_spot_configs(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        put_synthetic_fx_spot_config_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->put_synthetic_fx_spot_config(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_synthetic_fx_spot_configs_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->put_many_synthetic_fx_spot_configs(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_synthetic_fx_spot_config_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->delete_synthetic_fx_spot_config(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(delete_many_synthetic_fx_spot_configs_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) {
-                                            h->delete_many_synthetic_fx_spot_configs(
-                                                std::move(msg));
-                                        }));
-    subs.push_back(
-        nats.queue_subscribe(list_synthetic_fx_spot_config_versions_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->list_synthetic_fx_spot_config_versions(std::move(msg));
-                             }));
-    subs.push_back(nats.queue_subscribe(
-        get_synthetic_fx_spot_config_version_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->get_synthetic_fx_spot_config_version(std::move(msg)); }));
     return subs;
 }
 

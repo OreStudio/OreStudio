@@ -22,6 +22,7 @@
 set(files
     "app/commands/dq/artefact_type_commands.cpp"
     "app/commands/dq/badge_definition_commands.cpp"
+    "app/commands/dq/badge_mapping_commands.cpp"
     "app/commands/dq/catalog_commands.cpp"
     "app/commands/dq/change_reason_category_commands.cpp"
     "app/commands/dq/change_reason_commands.cpp"
@@ -47,6 +48,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/artefact_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/badge_definition_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/badge_mapping_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/catalog_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/change_reason_category_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/dq/change_reason_commands.hpp"

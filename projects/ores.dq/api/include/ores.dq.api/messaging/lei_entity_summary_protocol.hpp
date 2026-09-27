@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_MESSAGING_LEI_ENTITY_SUMMARY_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_LEI_ENTITY_SUMMARY_PROTOCOL_HPP
 
@@ -26,24 +31,70 @@
 
 namespace ores::dq::messaging {
 
+/**
+ * @brief One legal entity, reduced to the fields the shell lists it by.
+ */
 struct lei_entity_summary {
+    /**
+     * @brief The entity's LEI.
+     */
     std::string lei;
+    /**
+     * @brief The entity's registered legal name.
+     */
     std::string entity_legal_name;
+    /**
+     * @brief The entity's category, as the registry classifies it.
+     */
     std::string entity_category;
+    /**
+     * @brief The country of the entity's legal address.
+     */
     std::string country;
 };
 
+/**
+ * @brief Asks for the active root legal entities, optionally of one country.
+ */
 struct get_lei_entities_summary_request {
     using response_type = struct get_lei_entities_summary_response;
     static constexpr std::string_view nats_subject = "dq.v1.lei-entities.summary";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The country to list, or empty for every country's count.
+     */
     std::string country_filter;
+    /**
+     * @brief How many rows to skip.
+     */
     int offset = 0;
+    /**
+     * @brief How many rows to return.
+     */
     int limit = 1000;
 };
 
+/**
+ * @brief Reports the summary rows, or why they could not be read.
+ */
 struct get_lei_entities_summary_response {
+    /**
+     * @brief Whether the read completed.
+     */
     bool success = false;
+    /**
+     * @brief Why it failed, when it did.
+     */
     std::string error_message;
+    /**
+     * @brief The summarised entities.
+     */
     std::vector<lei_entity_summary> entities;
 };
 

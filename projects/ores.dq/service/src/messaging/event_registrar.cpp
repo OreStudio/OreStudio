@@ -19,10 +19,10 @@
  */
 #include "ores.dq.service/messaging/event_registrar.hpp"
 
-// Per-entity generated event-mapping registrars. The four staging shims --
-// lei_entity, lei_relationship, report_definition and synthetic_fx_spot_config --
-// are absent by design: artefact-staging-only withdraws the notify trigger, so
-// there is no channel to map, and the codegen gate renders no registrar for them.
+// Per-entity generated event-mapping registrars. The two LEI staging shims are
+// absent by design: artefact-staging-only withdraws the notify trigger, so
+// there is no channel to map and the codegen gate renders no registrar for
+// them.
 #include "ores.dq.service/messaging/artefact_type_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_definition_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_severity_event_registrar.hpp"
@@ -30,11 +30,19 @@
 #include "ores.dq.service/messaging/change_reason_category_event_registrar.hpp"
 #include "ores.dq.service/messaging/change_reason_event_registrar.hpp"
 #include "ores.dq.service/messaging/code_domain_event_registrar.hpp"
+#include "ores.dq.service/messaging/coding_scheme_authority_type_event_registrar.hpp"
+#include "ores.dq.service/messaging/coding_scheme_event_registrar.hpp"
 #include "ores.dq.service/messaging/data_domain_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
 #include "ores.dq.service/messaging/dataset_event_registrar.hpp"
+#include "ores.dq.service/messaging/fsm_state_event_registrar.hpp"
+#include "ores.dq.service/messaging/fsm_transition_event_registrar.hpp"
+#include "ores.dq.service/messaging/methodology_event_registrar.hpp"
+#include "ores.dq.service/messaging/nature_dimension_event_registrar.hpp"
+#include "ores.dq.service/messaging/origin_dimension_event_registrar.hpp"
 #include "ores.dq.service/messaging/publication_event_registrar.hpp"
 #include "ores.dq.service/messaging/subject_area_event_registrar.hpp"
+#include "ores.dq.service/messaging/treatment_dimension_event_registrar.hpp"
 
 namespace ores::dq::service::messaging {
 
@@ -57,11 +65,20 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_change_reason_category_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_change_reason_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_code_domain_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_coding_scheme_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_coding_scheme_authority_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_data_domain_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_dataset_bundle_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_dataset_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fsm_state_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fsm_transition_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_methodology_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_nature_dimension_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_origin_dimension_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_publication_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_subject_area_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_treatment_dimension_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_API_MESSAGING_PUBLISH_FROM_DQ_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_PUBLISH_FROM_DQ_PROTOCOL_HPP
 
@@ -33,10 +38,22 @@ namespace ores::dq::messaging {
  * DQ artefact table for dataset_id and writes to the target service's tables.
  */
 struct publish_from_dq_command {
-    std::string dataset_id;  // UUID of the DQ dataset to publish
-    std::string tenant_id;   // UUID of the target tenant
-    std::string mode;        // "upsert" | "replace_all" | "insert_only"
-    std::string params_json; // extra per-artefact parameters (may be "{}")
+    /**
+     * @brief UUID of the DQ dataset to publish.
+     */
+    std::string dataset_id;
+    /**
+     * @brief UUID of the target tenant.
+     */
+    std::string tenant_id;
+    /**
+     * @brief How the target writes the rows: upsert, replace_all or insert_only.
+     */
+    std::string mode;
+    /**
+     * @brief Extra per-artefact parameters, as JSON. May be an empty object.
+     */
+    std::string params_json;
 };
 
 /**
@@ -46,11 +63,29 @@ struct publish_from_dq_command {
  * record counts and propagate them to the bundle publish result.
  */
 struct publish_from_dq_result {
+    /**
+     * @brief Whether the publication completed.
+     */
     bool success = false;
+    /**
+     * @brief Why it failed, when it did.
+     */
     std::string error_message;
+    /**
+     * @brief How many rows the publication inserted.
+     */
     std::uint64_t records_inserted = 0;
+    /**
+     * @brief How many rows the publication updated.
+     */
     std::uint64_t records_updated = 0;
+    /**
+     * @brief How many rows the publication left alone.
+     */
     std::uint64_t records_skipped = 0;
+    /**
+     * @brief How many rows the publication removed.
+     */
     std::uint64_t records_deleted = 0;
 };
 

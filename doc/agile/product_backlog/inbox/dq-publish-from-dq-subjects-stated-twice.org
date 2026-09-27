@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 8A92D69B-D788-4597-86B0-074F5D9E4640
+:END:
+#+title: The publish-from-dq subject list is stated twice by hand
+#+description: Six dq.v1.*.publish-from-dq subjects are hard-coded in registrar.cpp and again as map keys in publish_from_dq_handler.cpp. Nothing keeps the two lists in step, and a subject added to one but not the other fails at runtime with 'Unknown DQ publish-from-dq subject'.
+#+type: capture
+#+level: cross
+#+filetags: :dq:protocol:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Six subjects are written down twice, in two files that must agree and have
+nothing keeping them in step. =registrar.cpp= subscribes each one as a literal
+string; =publish_from_dq_handler.cpp= repeats the same six as the keys of its
+=subject_fn_map=, which maps each to the SQL function that answers it. The
+handler strips any namespace prefix before the lookup, so a subject present in
+the registrar but absent from the map fails at runtime with
+="Unknown DQ publish-from-dq subject"= rather than at compile time.
+
+* Why
+
+The subjects are =dq.v1.{ip2country,coding-schemes,badge-severities,badge-definitions,code-domains,badge-mappings}.publish-from-dq=.
+They are a trigger surface rather than an entity protocol, which is why they
+were never modelled; the operation model added for the payloads
+(=projects/ores.dq/modeling/ores.dq.publish_from_dq.org=) declares the command
+and result and deliberately declares no subject.
+
+Two repairs are available. The model could declare the six triggers, so the
+registrar and the handler both reference generated constants and the SQL
+function binding is the only hand-written part. Or the handler could derive the
+function name from the subject, as the iam, refdata, assets, marketdata,
+synthetic and reporting handlers already do — that removes the second list
+rather than generating it. The second is smaller and needs no model change, but
+the subject strings would still be stated once by hand.
+
+* References
+
+- =projects/ores.dq/core/src/messaging/registrar.cpp= — the subscriptions.
+- =projects/ores.dq/core/src/messaging/publish_from_dq_handler.cpp= — the map
+  and the prefix-stripping lookup.
+
+* See also
+
+- [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]]

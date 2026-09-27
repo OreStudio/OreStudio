@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 6E93D08B-1E1B-41BE-8AE5-AB8F55EE26FD
+:END:
+#+title: The reporting report-definition-templates forwarder is dead
+#+description: reporting.v1.report-definition-templates.list is registered and forwards to dq's subject, but no client sends it. Its request and response are declared in a handler header rather than a protocol header, so the twin-coverage gate cannot see them.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:protocol:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=reporting.v1.report-definition-templates.list= is registered by
+=projects/ores.reporting/core/src/messaging/registrar.cpp= and forwards to dq's
+=dq.v1.report-definition-templates.list=, decoding dq's request type and
+replying with dq's response type. No client sends it: the subject occurs only in
+the forwarding handler itself. The forwarder is therefore unreachable.
+
+* Why
+
+Its request and response are declared in a handler header rather than in a
+=*_protocol.hpp=, so =check_protocol_twin_coverage.py= — which globs
+=api/include/*/messaging/*_protocol.hpp= — cannot see them and cannot demand
+their TypeScript twins. That is the gate's blind spot as much as the
+component's defect: a wire type parked outside a protocol header escapes every
+check the twin gate makes.
+
+The reporting clean pass already records this. Either the forwarder is deleted,
+or its messages move to an operation model and gain twins, which is what dq did
+for its own half.
+
+* References
+
+- =projects/ores.reporting/core/include/ores.reporting.core/messaging/report_definition_template_handler.hpp=
+  — the redeclared request, the subject and the forwarding body.
+- =projects/ores.reporting/core/src/messaging/registrar.cpp= — the registration.
+
+* See also
+
+- [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]]

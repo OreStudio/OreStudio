@@ -24,11 +24,6 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace dq #F2F2F2 {
         namespace messaging #F2F2F2 {
-            class badge_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-            }
             class change_management_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
@@ -39,22 +34,12 @@ namespace ores #F2F2F2 {
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
-            class data_organization_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-            }
             class dataset_bundle_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
             class dataset_bundle_member_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-            }
-            class dataset_dependency_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
@@ -563,13 +548,6 @@ namespace ores #F2F2F2 {
             }
         }
         namespace service #F2F2F2 {
-            class badge_service {
-                -ctx_ : context
-                -sev_repo_ : repository::badge_severity_repository
-                -def_repo_ : repository::badge_definition_repository
-                -dom_repo_ : repository::code_domain_repository
-                -map_repo_ : repository::badge_mapping_repository
-            }
             class change_management_service {
                 -category_repo_ : repository::change_reason_category_repository
                 -reason_repo_ : repository::change_reason_repository
@@ -577,12 +555,6 @@ namespace ores #F2F2F2 {
             class coding_scheme_service {
                 -coding_scheme_repo_ : repository::coding_scheme_repository
                 -authority_type_repo_ : repository::coding_scheme_authority_type_repository
-            }
-            class data_organization_service {
-                -catalog_repo_ : repository::catalog_repository
-                -dataset_dependency_repo_ : repository::dataset_dependency_repository
-                -data_domain_repo_ : repository::data_domain_repository
-                -subject_area_repo_ : repository::subject_area_repository
             }
             class dataset_bundle_member_service {
                 -repo_ : repository::dataset_bundle_member_repository

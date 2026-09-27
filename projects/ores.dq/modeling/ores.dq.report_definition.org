@@ -25,7 +25,7 @@ analytics bundle
 :schema:    public
 :product:   ores
 :component: dq
-:profile:   uuid-surrogate-lookup, artefact-staging-only
+:profile:   uuid-surrogate-lookup, read-only-current-state, artefact-staging-only
 :END:
 
 * Columns
@@ -121,7 +121,7 @@ faker::number::integer(1, 100)
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_dq_report_definitions_tbl
+:tablename: ores_dq_report_definitions_artefact_tbl
 :END:
 
 * Insert trigger
@@ -174,7 +174,6 @@ faker::number::integer(1, 100)
 | report_type         | Type         |
 | schedule_expression | Schedule     |
 | display_order       | Order        |
-| modified_by         | Modified By  |
 
 ** Custom repository methods
 

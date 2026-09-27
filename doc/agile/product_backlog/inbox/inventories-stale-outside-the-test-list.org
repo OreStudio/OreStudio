@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 181D1F1F-C07E-4A91-94F7-30C7ED78C221
+:END:
+#+title: Two generated inventories are stale in components outside the test list
+#+description: regenerate_cmake_component_files.py --all --check reports ores.synthetic, ores.utility and ores.workspace stale, and regenerate_physical_space_inventories.py --check reports ores.doc.http-recipe.org stale. All four are pre-existing on main and none is in COMPONENTS_UNDER_TEST, which is why no gate is red.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:gate:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two generated inventories are stale on =main=, in components that are not in
+=COMPONENTS_UNDER_TEST=:
+
+- =regenerate_cmake_component_files.py --all --check= reports
+  =ores.synthetic/core=, =ores.synthetic/service=, =ores.utility/src=,
+  =ores.workspace/api=, =ores.workspace/core= and =ores.workspace/service=
+  stale. The change each wants is the generated marker and the reworded header
+  comment the Qt-removal work left behind, not a missing file.
+- =regenerate_physical_space_inventories.py --check= reports
+  =projects/ores.codegen/library/templates/ores.doc.http-recipe.org= stale.
+
+None is dq's, and dq's own four CMake lists are current.
+
+* Why
+
+A component outside =COMPONENTS_UNDER_TEST= is nobody's gate. That is deliberate
+— listing a component claims responsibility for regenerating it — but it means
+a shared template change can leave a component's generated output stale
+indefinitely, and the only thing that notices is a whole-tree check nobody runs
+per component. The stale lists were found while bringing dq to the standard, and
+fixing them here would pull three unrelated components into a dq branch.
+
+The repair is to regenerate them in the branch that owns each component, or to
+add a gate that fails when the generator's output differs from the tree for any
+component, not only the listed ones.
+
+* References
+
+- =projects/ores.codegen/scripts/regenerate_cmake_component_files.py=
+- =projects/ores.codegen/scripts/regenerate_physical_space_inventories.py=
+- =projects/ores.codegen/scripts/component_registry.py= — the list that decides
+  which components are checked.
+
+* See also
+
+- [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]]

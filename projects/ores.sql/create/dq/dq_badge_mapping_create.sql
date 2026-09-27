@@ -37,10 +37,9 @@
  *
  * Populated via seed scripts; no management UI needed.
  *
- * NATS/protocol/service are disabled above: badge lookups already go
- * through the hand-maintained badge_handler/badge_service (see
- * registrar.cpp's own comment), so the generic generated messaging
- * stack for this junction would be dead code alongside it.
+ * The junction is on the canonical generated stack: its protocol, handler,
+ * registrar and service are generated from this model like any other
+ * junction's, so the mapping read cannot drift from the entity it projects.
  */
 
 create table if not exists "ores_dq_badge_mappings_tbl" (

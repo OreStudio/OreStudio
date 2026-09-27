@@ -53,12 +53,6 @@ public:
      */
     std::vector<domain::dataset_dependency> read_latest();
 
-    /**
-     * @brief Reads all active dependencies for a specific dataset.
-     * @param dataset_code The code of the dataset to query dependencies for
-     */
-    std::vector<domain::dataset_dependency> read_latest_by_dataset(const std::string& dataset_code);
-
 private:
     context ctx_;
 };

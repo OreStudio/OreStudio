@@ -49,21 +49,4 @@ std::vector<domain::dataset_dependency> dataset_dependency_repository::read_late
         "Reading latest dataset dependencies");
 }
 
-std::vector<domain::dataset_dependency>
-dataset_dependency_repository::read_latest_by_dataset(const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dependencies for dataset: " << dataset_code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_dependency_entity>> |
-                       where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
-                       order_by("dependency_code"_c);
-
-    return execute_read_query<dataset_dependency_entity, domain::dataset_dependency>(
-        ctx_,
-        query,
-        [](const auto& entities) { return dataset_dependency_mapper::map(entities); },
-        lg(),
-        "Reading latest dataset dependencies by dataset");
-}
-
 }

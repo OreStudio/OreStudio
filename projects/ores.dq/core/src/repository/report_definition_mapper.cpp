@@ -37,7 +37,6 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_definition r;
-    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
@@ -46,11 +45,6 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     r.schedule_expression = v.schedule_expression;
     r.concurrency_policy = v.concurrency_policy;
     r.display_order = v.display_order;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -62,17 +56,12 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     report_definition_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.version = v.version;
     r.name = v.name;
     r.description = v.description;
     r.report_type = v.report_type;
     r.schedule_expression = v.schedule_expression;
     r.concurrency_policy = v.concurrency_policy;
     r.display_order = v.display_order;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

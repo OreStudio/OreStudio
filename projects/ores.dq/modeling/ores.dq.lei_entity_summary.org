@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 8E3EF28A-A3B9-40CD-AFD6-36C526895885
+:END:
+#+title: ores.dq.lei_entity_summary
+#+description: Codegen operation model for the LEI entity summary read, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: lei_entity_summary
+#+namespace: ores::dq::messaging
+#+brief: Summarises active LEI entities by country, one row per legal entity.
+#+filetags: :model:operation:dq:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The summary read the shell's =lei= menu asks for: the root legal entities of a
+country, one row each, with the fields a person recognises them by.
+
+It is an operation rather than an entity verb. The row is a projection over
+=lei_entity= that deduplicates on the LEI and drops every entity another entity
+consolidates, which is a query shape and not a page over a table, and it returns
+a summary record rather than the entity.
+
+No handler is generated for an operation, so the handler that serves this
+subject would be hand-written beside this model. There is none today: the
+subject has no subscriber, and the SQL functions that answered it are dead
+alongside it. See the capture recorded by the task.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** lei_entity_summary
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One legal entity, reduced to the fields the shell lists it by.
+ */
+#+end_src
+
+*** lei
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entity's LEI.
+ */
+#+end_src
+
+*** entity_legal_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entity's registered legal name.
+ */
+#+end_src
+
+*** entity_category
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entity's category, as the registry classifies it.
+ */
+#+end_src
+
+*** country
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The country of the entity's legal address.
+ */
+#+end_src
+
+** get_lei_entities_summary_request
+:PROPERTIES:
+:subject:  dq.v1.lei-entities.summary
+:response: get_lei_entities_summary_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the active root legal entities, optionally of one country.
+ */
+#+end_src
+
+*** country_filter
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The country to list, or empty for every country's count.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows to skip.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  1000
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows to return.
+ */
+#+end_src
+
+** get_lei_entities_summary_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports the summary rows, or why they could not be read.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the read completed.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it failed, when it did.
+ */
+#+end_src
+
+*** entities
+:PROPERTIES:
+:cpp_type: std::vector<lei_entity_summary>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The summarised entities.
+ */
+#+end_src
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

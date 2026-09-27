@@ -19,7 +19,6 @@
  */
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/domain/dataset_dependency_table.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -94,33 +93,3 @@ TEST_CASE("dataset_dependency_supports_custom_codes", tags) {
     CHECK(sut.role == "reference_data");
 }
 
-TEST_CASE("dataset_dependency_convert_to_table", tags) {
-    auto lg(make_logger(test_suite));
-
-    dataset_dependency dep1;
-    dep1.dataset_code = "iso.countries";
-    dep1.dependency_code = "assets.country_flags";
-    dep1.role = "visual_assets";
-    dep1.modified_by = "admin";
-    dep1.recorded_at = std::chrono::system_clock::now();
-
-    dataset_dependency dep2;
-    dep2.dataset_code = "crypto.large";
-    dep2.dependency_code = "assets.crypto_icons";
-    dep2.role = "visual_assets";
-    dep2.modified_by = "admin";
-    dep2.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<dataset_dependency> deps = {dep1, dep2};
-    auto table = convert_to_table(deps);
-
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
-
-    CHECK(!table.empty());
-    CHECK(table.contains("Dataset Code"));
-    CHECK(table.contains("Depends On"));
-    CHECK(table.contains("Role"));
-    CHECK(table.contains("iso.countries"));
-    CHECK(table.contains("assets.country_flags"));
-    CHECK(table.contains("visual_assets"));
-}

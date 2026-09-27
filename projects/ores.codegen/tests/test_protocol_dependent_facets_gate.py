@@ -11,12 +11,14 @@ therefore has no types for those facets to name, and the gate in
 ``resolve_targets`` drops them together instead of leaving units that
 cannot compile.
 
-The live case is the dq ``badge_mapping`` junction, which suppresses its
-protocol, handler and service because a hand-written read-only handler
-serves the badge lookup. Its shell unit was emitted anyway, including a
-``badge_mapping_protocol.hpp`` nothing generates, and that is what failed
-to build. It is the only model in the tree that disables the protocol, so
-the negative case is pinned to it rather than to a fixture.
+The negative case is a fixture rather than a live model. It was pinned to
+the dq ``badge_mapping`` junction, which was then the only model in the
+tree that disabled its protocol; that junction now generates its protocol
+like any other, and pinning a gate's negative case to a live model makes
+the test a statement about the tree instead of about the gate. The fixture
+is that junction's model text with the opt-out restored, so it carries a
+declared ``:list_by:`` and the junction gate stays out of the way -- the
+protocol-dependent gate is the one under test.
 
 The positive case pins the other direction: a junction that keeps its
 protocol keeps its shell unit. Without it the gate could pass by dropping
@@ -32,14 +34,23 @@ from codegen.generate import resolve_targets  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects/ores.codegen"
 
-# The junction that suppresses its protocol, handler and service.
-PROTOCOL_OPTED_OUT = (
+# The model text the fixture is cut from: a junction with a declared
+# :list_by:, so the junction gate does not also fire.
+JUNCTION_FIXTURE = (
     REPO_ROOT / "projects/ores.dq/modeling/ores.dq.badge_mapping_junction.org"
 )
 
 # A junction on the standard stack, used as the positive control.
 PROTOCOL_OPTED_IN = (
     REPO_ROOT / "projects/ores.dq/modeling/ores.dq.dataset_bundle_member_junction.org"
+)
+
+# The opt-out, as a model's :PROPERTIES: drawer states it.
+OPT_OUT = (
+    ":ores.cpp.nats-handler.enabled: false\n"
+    ":ores.cpp.nats-sub-registrar.enabled: false\n"
+    ":ores.cpp.protocol.enabled: false\n"
+    ":ores.cpp.service.enabled: false\n"
 )
 
 # The generated shell command unit. Every one of the three templates names
@@ -66,8 +77,19 @@ SQL_TEMPLATES = frozenset({
 })
 
 
-def test_a_junction_that_suppresses_its_protocol_resolves_no_unit_that_names_it():
-    units, model_type, _ = resolve_targets(PROTOCOL_OPTED_OUT, CODEGEN_BASE)
+def _opted_out_junction(tmp_path: Path) -> Path:
+    """The junction fixture with its protocol, handler and service disabled."""
+    text = JUNCTION_FIXTURE.read_text(encoding="utf-8")
+    head, sep, tail = text.partition(":END:\n")
+    assert sep, f"{JUNCTION_FIXTURE.name} has no property drawer"
+    path = tmp_path / JUNCTION_FIXTURE.name
+    path.write_text(head + OPT_OUT + sep + tail, encoding="utf-8")
+    return path
+
+
+def test_a_junction_that_suppresses_its_protocol_resolves_no_unit_that_names_it(
+        tmp_path):
+    units, model_type, _ = resolve_targets(_opted_out_junction(tmp_path), CODEGEN_BASE)
     assert model_type == "junction"
     templates = {u["template"] for u in units}
     assert not (PROTOCOL_NAMING_TEMPLATES & templates)

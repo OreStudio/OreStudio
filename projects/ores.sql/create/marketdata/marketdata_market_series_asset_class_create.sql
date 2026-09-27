@@ -160,6 +160,9 @@ do instead
 -- =============================================================================
 alter table "ores_marketdata_market_series_asset_classes_tbl" enable row level security;
 
+drop policy if exists market_series_asset_classes_tbl_tenant_isolation_policy
+    on "ores_marketdata_market_series_asset_classes_tbl";
+
 create policy market_series_asset_classes_tbl_tenant_isolation_policy
 on "ores_marketdata_market_series_asset_classes_tbl"
 for all using (

@@ -148,6 +148,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_pair_classifications_tbl enable row level security;
 
+drop policy if exists currency_pair_classifications_tenant_isolation_policy
+    on ores_refdata_currency_pair_classifications_tbl;
+
 create policy currency_pair_classifications_tenant_isolation_policy
 on ores_refdata_currency_pair_classifications_tbl
 for all using (
@@ -175,6 +178,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_currency_groups_tbl enable row level security;
 
+drop policy if exists currency_currency_groups_tenant_isolation_policy
+    on ores_refdata_currency_currency_groups_tbl;
+
 create policy currency_currency_groups_tenant_isolation_policy
 on ores_refdata_currency_currency_groups_tbl
 for all using (
@@ -201,6 +207,9 @@ with check (
 -- Currency Pair Conventions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_pair_conventions_tbl enable row level security;
+
+drop policy if exists currency_pair_conventions_tenant_isolation_policy
+    on ores_refdata_currency_pair_conventions_tbl;
 
 create policy currency_pair_conventions_tenant_isolation_policy
 on ores_refdata_currency_pair_conventions_tbl
@@ -483,6 +492,9 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
 -- bulk inserts from the publisher.
+drop policy if exists party_identifiers_party_isolation_policy
+    on ores_refdata_party_identifiers_tbl;
+
 create policy party_identifiers_party_isolation_policy
 on ores_refdata_party_identifiers_tbl
 as restrictive
@@ -506,6 +518,9 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
 -- bulk inserts from the publisher.
+drop policy if exists party_contact_informations_party_isolation_policy
+    on ores_refdata_party_contact_informations_tbl;
+
 create policy party_contact_informations_party_isolation_policy
 on ores_refdata_party_contact_informations_tbl
 as restrictive
@@ -568,6 +583,9 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
 -- bulk inserts from the publisher.
+drop policy if exists business_units_party_isolation_policy
+    on ores_refdata_business_units_tbl;
+
 create policy business_units_party_isolation_policy
 on ores_refdata_business_units_tbl
 as restrictive
@@ -591,6 +609,9 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id is part of the PK; WITH CHECK would block bulk
 -- inserts from the publisher.
+drop policy if exists party_countries_party_isolation_policy
+    on ores_refdata_party_countries_tbl;
+
 create policy party_countries_party_isolation_policy
 on ores_refdata_party_countries_tbl
 as restrictive
@@ -614,6 +635,9 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id is part of the PK; WITH CHECK would block bulk
 -- inserts from the publisher.
+drop policy if exists party_currencies_party_isolation_policy
+    on ores_refdata_party_currencies_tbl;
+
 create policy party_currencies_party_isolation_policy
 on ores_refdata_party_currencies_tbl
 as restrictive
@@ -638,6 +662,9 @@ with check (
 -- x = ANY(NULL) evaluates to NULL (falsy) when no party context is set.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk inserts from the publisher.
+drop policy if exists portfolios_party_isolation_policy
+    on ores_refdata_portfolios_tbl;
+
 create policy portfolios_party_isolation_policy
 on ores_refdata_portfolios_tbl
 as restrictive
@@ -661,6 +688,9 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk inserts from the publisher.
+drop policy if exists books_party_isolation_policy
+    on ores_refdata_books_tbl;
+
 create policy books_party_isolation_policy
 on ores_refdata_books_tbl
 as restrictive
@@ -674,6 +704,9 @@ for select using (
 alter table ores_refdata_party_counterparties_tbl enable row level security;
 
 -- Tenant isolation (standard pattern)
+drop policy if exists party_counterparties_tenant_isolation_policy
+    on ores_refdata_party_counterparties_tbl;
+
 create policy party_counterparties_tenant_isolation_policy
 on ores_refdata_party_counterparties_tbl
 for all using (
@@ -687,6 +720,9 @@ with check (
 -- When no party context is set (visible_party_ids is NULL), the policy
 -- passes through, preserving backward compatibility. When party context IS
 -- set, only rows matching the visible party set are accessible.
+drop policy if exists party_counterparties_party_isolation_policy
+    on ores_refdata_party_counterparties_tbl;
+
 create policy party_counterparties_party_isolation_policy
 on ores_refdata_party_counterparties_tbl
 as restrictive
@@ -847,6 +883,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_pair_convention_calendars_tbl enable row level security;
 
+drop policy if exists currency_pair_convention_calendars_tenant_isolation_policy
+    on ores_refdata_currency_pair_convention_calendars_tbl;
+
 create policy currency_pair_convention_calendars_tenant_isolation_policy
 on ores_refdata_currency_pair_convention_calendars_tbl
 for all using (
@@ -860,6 +899,9 @@ with check (
 -- CRM topology configs (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_crm_topology_configs_tbl enable row level security;
+
+drop policy if exists crm_topology_configs_tbl_tenant_isolation_policy
+    on ores_refdata_crm_topology_configs_tbl;
 
 create policy crm_topology_configs_tbl_tenant_isolation_policy
 on ores_refdata_crm_topology_configs_tbl
@@ -876,6 +918,9 @@ with check (
 -- SELECT-only policy for that role's read-only role is OR'd with the
 -- tenant-isolation policy above, so it can see every tenant's rows without
 -- weakening the default-deny-cross-tenant behaviour for any other role.
+drop policy if exists crm_topology_configs_tbl_marketdata_cross_tenant_read_policy
+    on ores_refdata_crm_topology_configs_tbl;
+
 create policy crm_topology_configs_tbl_marketdata_cross_tenant_read_policy
 on ores_refdata_crm_topology_configs_tbl
 for select
@@ -888,6 +933,9 @@ using (true);
 -- restrict marketdata_service_user's documented cross-tenant, cross-party
 -- read above. FOR SELECT only: party_id FK validated by trigger; WITH
 -- CHECK would block bulk inserts from the publisher.
+drop policy if exists crm_topology_configs_tbl_party_isolation_policy
+    on ores_refdata_crm_topology_configs_tbl;
+
 create policy crm_topology_configs_tbl_party_isolation_policy
 on ores_refdata_crm_topology_configs_tbl
 as restrictive
@@ -902,6 +950,9 @@ using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_crm_driver_pairs_tbl enable row level security;
 
+drop policy if exists crm_driver_pairs_tbl_tenant_isolation_policy
+    on ores_refdata_crm_driver_pairs_tbl;
+
 create policy crm_driver_pairs_tbl_tenant_isolation_policy
 on ores_refdata_crm_driver_pairs_tbl
 for all using (
@@ -912,6 +963,9 @@ with check (
 );
 
 -- See crm_topology_configs_tbl_marketdata_cross_tenant_read_policy above.
+drop policy if exists crm_driver_pairs_tbl_marketdata_cross_tenant_read_policy
+    on ores_refdata_crm_driver_pairs_tbl;
+
 create policy crm_driver_pairs_tbl_marketdata_cross_tenant_read_policy
 on ores_refdata_crm_driver_pairs_tbl
 for select
@@ -919,6 +973,9 @@ to :marketdata_service_user
 using (true);
 
 -- See crm_topology_configs_tbl_party_isolation_policy above.
+drop policy if exists crm_driver_pairs_tbl_party_isolation_policy
+    on ores_refdata_crm_driver_pairs_tbl;
+
 create policy crm_driver_pairs_tbl_party_isolation_policy
 on ores_refdata_crm_driver_pairs_tbl
 as restrictive
@@ -932,6 +989,9 @@ using (
 -- Asset Class Codes (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_asset_class_codes_tbl enable row level security;
+
+drop policy if exists asset_class_codes_tbl_tenant_isolation_policy
+    on ores_refdata_asset_class_codes_tbl;
 
 create policy asset_class_codes_tbl_tenant_isolation_policy
 on ores_refdata_asset_class_codes_tbl
@@ -947,6 +1007,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_instrument_codes_tbl enable row level security;
 
+drop policy if exists instrument_codes_tbl_tenant_isolation_policy
+    on ores_refdata_instrument_codes_tbl;
+
 create policy instrument_codes_tbl_tenant_isolation_policy
 on ores_refdata_instrument_codes_tbl
 for all using (
@@ -960,6 +1023,9 @@ with check (
 -- Tenor Anchors (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_anchors_tbl enable row level security;
+
+drop policy if exists tenor_anchors_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_anchors_tbl;
 
 create policy tenor_anchors_tbl_tenant_isolation_policy
 on ores_refdata_tenor_anchors_tbl
@@ -975,6 +1041,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_kinds_tbl enable row level security;
 
+drop policy if exists tenor_kinds_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_kinds_tbl;
+
 create policy tenor_kinds_tbl_tenant_isolation_policy
 on ores_refdata_tenor_kinds_tbl
 for all using (
@@ -988,6 +1057,9 @@ with check (
 -- Tenor Units (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_units_tbl enable row level security;
+
+drop policy if exists tenor_units_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_units_tbl;
 
 create policy tenor_units_tbl_tenant_isolation_policy
 on ores_refdata_tenor_units_tbl
@@ -1003,6 +1075,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_resolution_algorithms_tbl enable row level security;
 
+drop policy if exists tenor_resolution_algorithms_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_resolution_algorithms_tbl;
+
 create policy tenor_resolution_algorithms_tbl_tenant_isolation_policy
 on ores_refdata_tenor_resolution_algorithms_tbl
 for all using (
@@ -1016,6 +1091,9 @@ with check (
 -- Payment Frequencies (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_payment_frequencies_tbl enable row level security;
+
+drop policy if exists payment_frequencies_tbl_tenant_isolation_policy
+    on ores_refdata_payment_frequencies_tbl;
 
 create policy payment_frequencies_tbl_tenant_isolation_policy
 on ores_refdata_payment_frequencies_tbl
@@ -1044,6 +1122,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenors_tbl enable row level security;
 
+drop policy if exists tenors_tbl_tenant_isolation_policy
+    on ores_refdata_tenors_tbl;
+
 create policy tenors_tbl_tenant_isolation_policy
 on ores_refdata_tenors_tbl
 for all using (
@@ -1057,6 +1138,9 @@ with check (
 -- Tenor Conventions (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_conventions_tbl enable row level security;
+
+drop policy if exists tenor_conventions_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_conventions_tbl;
 
 create policy tenor_conventions_tbl_tenant_isolation_policy
 on ores_refdata_tenor_conventions_tbl
@@ -1072,6 +1156,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_convention_resolutions_tbl enable row level security;
 
+drop policy if exists tenor_convention_resolutions_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_convention_resolutions_tbl;
+
 create policy tenor_convention_resolutions_tbl_tenant_isolation_policy
 on ores_refdata_tenor_convention_resolutions_tbl
 for all using (
@@ -1086,6 +1173,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_crm_enabled_derived_pairs_tbl enable row level security;
 
+drop policy if exists crm_enabled_derived_pairs_tbl_tenant_isolation_policy
+    on ores_refdata_crm_enabled_derived_pairs_tbl;
+
 create policy crm_enabled_derived_pairs_tbl_tenant_isolation_policy
 on ores_refdata_crm_enabled_derived_pairs_tbl
 for all using (
@@ -1096,6 +1186,9 @@ with check (
 );
 
 -- See crm_topology_configs_tbl_marketdata_cross_tenant_read_policy above.
+drop policy if exists crm_enabled_derived_pairs_tbl_marketdata_cross_tenant_read_policy
+    on ores_refdata_crm_enabled_derived_pairs_tbl;
+
 create policy crm_enabled_derived_pairs_tbl_marketdata_cross_tenant_read_policy
 on ores_refdata_crm_enabled_derived_pairs_tbl
 for select
@@ -1103,6 +1196,9 @@ to :marketdata_service_user
 using (true);
 
 -- See crm_topology_configs_tbl_party_isolation_policy above.
+drop policy if exists crm_enabled_derived_pairs_tbl_party_isolation_policy
+    on ores_refdata_crm_enabled_derived_pairs_tbl;
+
 create policy crm_enabled_derived_pairs_tbl_party_isolation_policy
 on ores_refdata_crm_enabled_derived_pairs_tbl
 as restrictive
@@ -1143,6 +1239,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_series_subclass_codes_tbl enable row level security;
 
+drop policy if exists series_subclass_codes_tbl_tenant_isolation_policy
+    on ores_refdata_series_subclass_codes_tbl;
+
 create policy series_subclass_codes_tbl_tenant_isolation_policy
 on ores_refdata_series_subclass_codes_tbl
 for all using (
@@ -1157,6 +1256,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ir_curve_bootstrap_configs_tbl enable row level security;
 
+drop policy if exists ir_curve_bootstrap_configs_tenant_isolation_policy
+    on ores_refdata_ir_curve_bootstrap_configs_tbl;
+
 create policy ir_curve_bootstrap_configs_tenant_isolation_policy
 on ores_refdata_ir_curve_bootstrap_configs_tbl
 for all using (
@@ -1165,6 +1267,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists ir_curve_bootstrap_configs_party_isolation_policy
+    on ores_refdata_ir_curve_bootstrap_configs_tbl;
 
 create policy ir_curve_bootstrap_configs_party_isolation_policy
 on ores_refdata_ir_curve_bootstrap_configs_tbl
@@ -1183,6 +1288,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ir_curve_bootstrap_pillars_tbl enable row level security;
 
+drop policy if exists ir_curve_bootstrap_pillars_tenant_isolation_policy
+    on ores_refdata_ir_curve_bootstrap_pillars_tbl;
+
 create policy ir_curve_bootstrap_pillars_tenant_isolation_policy
 on ores_refdata_ir_curve_bootstrap_pillars_tbl
 for all using (
@@ -1191,6 +1299,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists ir_curve_bootstrap_pillars_party_isolation_policy
+    on ores_refdata_ir_curve_bootstrap_pillars_tbl;
 
 create policy ir_curve_bootstrap_pillars_party_isolation_policy
 on ores_refdata_ir_curve_bootstrap_pillars_tbl
@@ -1208,6 +1319,9 @@ with check (
 -- Floating Index Types (moved from ores.trading)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_floating_index_types_tbl enable row level security;
+
+drop policy if exists floating_index_types_tbl_tenant_isolation_policy
+    on ores_refdata_floating_index_types_tbl;
 
 create policy floating_index_types_tbl_tenant_isolation_policy
 on ores_refdata_floating_index_types_tbl

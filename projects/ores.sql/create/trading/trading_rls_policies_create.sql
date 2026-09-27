@@ -105,6 +105,9 @@ with check (
 -- party_id is denormalised from book_id by the insert trigger.
 -- FOR SELECT only: party_id is auto-populated by trigger; WITH CHECK would
 -- block inserts from the publisher where the new party is not yet in the session.
+drop policy if exists trades_party_isolation_policy
+    on ores_trading_trades_tbl;
+
 create policy trades_party_isolation_policy
 on ores_trading_trades_tbl
 as restrictive
@@ -157,6 +160,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists bond_instruments_party_isolation_policy
+    on ores_trading_bond_instruments_tbl;
 
 create policy bond_instruments_party_isolation_policy
 on ores_trading_bond_instruments_tbl
@@ -457,6 +463,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists commodity_instruments_party_isolation_policy
+    on ores_trading_commodity_instruments_tbl;
+
 create policy commodity_instruments_party_isolation_policy
 on ores_trading_commodity_instruments_tbl
 as restrictive
@@ -476,6 +485,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists equity_option_instruments_party_isolation_policy
+    on ores_trading_equity_option_instruments_tbl;
 
 create policy equity_option_instruments_party_isolation_policy
 on ores_trading_equity_option_instruments_tbl
@@ -497,6 +509,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists equity_digital_option_instruments_party_isolation_policy
+    on ores_trading_equity_digital_option_instruments_tbl;
+
 create policy equity_digital_option_instruments_party_isolation_policy
 on ores_trading_equity_digital_option_instruments_tbl
 as restrictive
@@ -516,6 +531,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists equity_barrier_option_instruments_party_isolation_policy
+    on ores_trading_equity_barrier_option_instruments_tbl;
 
 create policy equity_barrier_option_instruments_party_isolation_policy
 on ores_trading_equity_barrier_option_instruments_tbl
@@ -537,6 +555,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists equity_asian_option_instruments_party_isolation_policy
+    on ores_trading_equity_asian_option_instruments_tbl;
+
 create policy equity_asian_option_instruments_party_isolation_policy
 on ores_trading_equity_asian_option_instruments_tbl
 as restrictive
@@ -556,6 +577,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists equity_forward_instruments_party_isolation_policy
+    on ores_trading_equity_forward_instruments_tbl;
 
 create policy equity_forward_instruments_party_isolation_policy
 on ores_trading_equity_forward_instruments_tbl
@@ -577,6 +601,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists equity_variance_swap_instruments_party_isolation_policy
+    on ores_trading_equity_variance_swap_instruments_tbl;
+
 create policy equity_variance_swap_instruments_party_isolation_policy
 on ores_trading_equity_variance_swap_instruments_tbl
 as restrictive
@@ -596,6 +623,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists equity_swap_instruments_party_isolation_policy
+    on ores_trading_equity_swap_instruments_tbl;
 
 create policy equity_swap_instruments_party_isolation_policy
 on ores_trading_equity_swap_instruments_tbl
@@ -617,6 +647,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists equity_accumulator_instruments_party_isolation_policy
+    on ores_trading_equity_accumulator_instruments_tbl;
+
 create policy equity_accumulator_instruments_party_isolation_policy
 on ores_trading_equity_accumulator_instruments_tbl
 as restrictive
@@ -636,6 +669,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists equity_position_instruments_party_isolation_policy
+    on ores_trading_equity_position_instruments_tbl;
 
 create policy equity_position_instruments_party_isolation_policy
 on ores_trading_equity_position_instruments_tbl
@@ -657,6 +693,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists credit_instruments_party_isolation_policy
+    on ores_trading_credit_instruments_tbl;
+
 create policy credit_instruments_party_isolation_policy
 on ores_trading_credit_instruments_tbl
 as restrictive
@@ -676,6 +715,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists scripted_instruments_party_isolation_policy
+    on ores_trading_scripted_instruments_tbl;
 
 create policy scripted_instruments_party_isolation_policy
 on ores_trading_scripted_instruments_tbl
@@ -697,6 +739,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists composite_instruments_party_isolation_policy
+    on ores_trading_composite_instruments_tbl;
+
 create policy composite_instruments_party_isolation_policy
 on ores_trading_composite_instruments_tbl
 as restrictive
@@ -717,6 +762,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists composite_legs_party_isolation_policy
+    on ores_trading_composite_legs_tbl;
+
 create policy composite_legs_party_isolation_policy
 on ores_trading_composite_legs_tbl
 as restrictive
@@ -736,6 +784,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists swap_legs_party_isolation_policy
+    on ores_trading_swap_legs_tbl;
 
 create policy swap_legs_party_isolation_policy
 on ores_trading_swap_legs_tbl
@@ -761,6 +812,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists fra_instruments_party_isolation_policy
+    on ores_trading_fra_instruments_tbl;
+
 create policy fra_instruments_party_isolation_policy
 on ores_trading_fra_instruments_tbl
 as restrictive
@@ -780,6 +834,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists vanilla_swap_instruments_party_isolation_policy
+    on ores_trading_vanilla_swap_instruments_tbl;
 
 create policy vanilla_swap_instruments_party_isolation_policy
 on ores_trading_vanilla_swap_instruments_tbl
@@ -801,6 +858,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists cap_floor_instruments_party_isolation_policy
+    on ores_trading_cap_floor_instruments_tbl;
+
 create policy cap_floor_instruments_party_isolation_policy
 on ores_trading_cap_floor_instruments_tbl
 as restrictive
@@ -820,6 +880,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists swaption_instruments_party_isolation_policy
+    on ores_trading_swaption_instruments_tbl;
 
 create policy swaption_instruments_party_isolation_policy
 on ores_trading_swaption_instruments_tbl
@@ -841,6 +904,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists bgs_instruments_party_isolation_policy
+    on ores_trading_balance_guaranteed_swap_instruments_tbl;
+
 create policy bgs_instruments_party_isolation_policy
 on ores_trading_balance_guaranteed_swap_instruments_tbl
 as restrictive
@@ -860,6 +926,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists callable_swap_instruments_party_isolation_policy
+    on ores_trading_callable_swap_instruments_tbl;
 
 create policy callable_swap_instruments_party_isolation_policy
 on ores_trading_callable_swap_instruments_tbl
@@ -881,6 +950,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists knock_out_swap_instruments_party_isolation_policy
+    on ores_trading_knock_out_swap_instruments_tbl;
+
 create policy knock_out_swap_instruments_party_isolation_policy
 on ores_trading_knock_out_swap_instruments_tbl
 as restrictive
@@ -901,6 +973,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists inflation_swap_instruments_party_isolation_policy
+    on ores_trading_inflation_swap_instruments_tbl;
+
 create policy inflation_swap_instruments_party_isolation_policy
 on ores_trading_inflation_swap_instruments_tbl
 as restrictive
@@ -920,6 +995,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists rpa_instruments_party_isolation_policy
+    on ores_trading_rpa_instruments_tbl;
 
 create policy rpa_instruments_party_isolation_policy
 on ores_trading_rpa_instruments_tbl
@@ -945,6 +1023,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists fx_forward_instruments_party_isolation_policy
+    on ores_trading_fx_forward_instruments_tbl;
+
 create policy fx_forward_instruments_party_isolation_policy
 on ores_trading_fx_forward_instruments_tbl
 as restrictive
@@ -964,6 +1045,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists fx_vanilla_option_instruments_party_isolation_policy
+    on ores_trading_fx_vanilla_option_instruments_tbl;
 
 create policy fx_vanilla_option_instruments_party_isolation_policy
 on ores_trading_fx_vanilla_option_instruments_tbl
@@ -985,6 +1069,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists fx_barrier_option_instruments_party_isolation_policy
+    on ores_trading_fx_barrier_option_instruments_tbl;
+
 create policy fx_barrier_option_instruments_party_isolation_policy
 on ores_trading_fx_barrier_option_instruments_tbl
 as restrictive
@@ -1004,6 +1091,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists fx_digital_option_instruments_party_isolation_policy
+    on ores_trading_fx_digital_option_instruments_tbl;
 
 create policy fx_digital_option_instruments_party_isolation_policy
 on ores_trading_fx_digital_option_instruments_tbl
@@ -1025,6 +1115,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists fx_asian_forward_instruments_party_isolation_policy
+    on ores_trading_fx_asian_forward_instruments_tbl;
+
 create policy fx_asian_forward_instruments_party_isolation_policy
 on ores_trading_fx_asian_forward_instruments_tbl
 as restrictive
@@ -1045,6 +1138,9 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+drop policy if exists fx_accumulator_instruments_party_isolation_policy
+    on ores_trading_fx_accumulator_instruments_tbl;
+
 create policy fx_accumulator_instruments_party_isolation_policy
 on ores_trading_fx_accumulator_instruments_tbl
 as restrictive
@@ -1064,6 +1160,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists fx_variance_swap_instruments_party_isolation_policy
+    on ores_trading_fx_variance_swap_instruments_tbl;
 
 create policy fx_variance_swap_instruments_party_isolation_policy
 on ores_trading_fx_variance_swap_instruments_tbl

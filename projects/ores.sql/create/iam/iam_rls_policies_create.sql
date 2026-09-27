@@ -43,6 +43,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_contact_informations_tbl enable row level security;
 
+drop policy if exists account_contact_informations_tenant_isolation_policy
+    on ores_iam_account_contact_informations_tbl;
+
 create policy account_contact_informations_tenant_isolation_policy
 on ores_iam_account_contact_informations_tbl
 for all using (

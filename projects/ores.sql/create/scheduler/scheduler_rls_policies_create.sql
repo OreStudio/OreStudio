@@ -38,6 +38,9 @@ alter table ores_scheduler_job_definitions_tbl enable row level security;
 -- Exception: the system service context (tenant = system sentinel) is allowed
 -- to read and write jobs for any tenant during cross-tenant operations such as
 -- startup reconciliation.  The INSERT trigger always validates tenant_id FK.
+drop policy if exists job_definitions_tenant_isolation_policy
+    on ores_scheduler_job_definitions_tbl;
+
 create policy job_definitions_tenant_isolation_policy
 on ores_scheduler_job_definitions_tbl
 for all using (
@@ -54,6 +57,9 @@ with check (
 -- WITH CHECK is not needed and would block bulk operations.
 -- Exception: the system service context bypasses party isolation for cross-tenant
 -- operations such as startup reconciliation.
+drop policy if exists job_definitions_party_isolation_policy
+    on ores_scheduler_job_definitions_tbl;
+
 create policy job_definitions_party_isolation_policy
 on ores_scheduler_job_definitions_tbl
 as restrictive
@@ -68,6 +74,9 @@ for select using (
 -- Write policy: the scheduler service (system tenant context) may write job
 -- instances for any tenant, including null-tenant system jobs.
 -- Tenant-scoped callers may only write instances for their own tenant.
+drop policy if exists job_instances_write_policy
+    on ores_scheduler_job_instances_tbl;
+
 create policy job_instances_write_policy
 on ores_scheduler_job_instances_tbl
 for all using (
@@ -87,6 +96,9 @@ with check (
 -- context. The system tenant bypasses party isolation for cross-tenant ops.
 -- FOR SELECT only: party_id is set by the scheduler service; WITH CHECK would
 -- block bulk writes from the service context.
+drop policy if exists job_instances_party_isolation_policy
+    on ores_scheduler_job_instances_tbl;
+
 create policy job_instances_party_isolation_policy
 on ores_scheduler_job_instances_tbl
 as restrictive

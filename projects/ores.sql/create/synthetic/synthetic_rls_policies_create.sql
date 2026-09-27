@@ -41,6 +41,9 @@ alter table ores_synthetic_market_data_generation_configs_tbl enable row level s
 -- isolation boundary just by omitting the narrower identifier. Only a
 -- system-tenant-context caller may write an actual null-tenant row;
 -- mirrors scheduler_rls_policies_create.sql's job_instances_write_policy.
+drop policy if exists market_data_generation_configs_tenant_isolation_policy
+    on ores_synthetic_market_data_generation_configs_tbl;
+
 create policy market_data_generation_configs_tenant_isolation_policy
 on ores_synthetic_market_data_generation_configs_tbl
 for all using (
@@ -60,6 +63,9 @@ with check (
 -- the trigger set owns write-side validation, and a WITH CHECK here would
 -- block the generated-data publisher and the eventing test seeds. Rows with
 -- a null party_id are tenant/system-scoped and visible to the whole tenant.
+drop policy if exists market_data_generation_configs_party_isolation_policy
+    on ores_synthetic_market_data_generation_configs_tbl;
+
 create policy market_data_generation_configs_party_isolation_policy
 on ores_synthetic_market_data_generation_configs_tbl
 as restrictive
@@ -72,6 +78,9 @@ for select using (
 -- FX spot generation configs (dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_fx_spot_generation_configs_tbl enable row level security;
+
+drop policy if exists fx_spot_generation_configs_tenant_isolation_policy
+    on ores_synthetic_fx_spot_generation_configs_tbl;
 
 create policy fx_spot_generation_configs_tenant_isolation_policy
 on ores_synthetic_fx_spot_generation_configs_tbl
@@ -88,6 +97,9 @@ with check (
 -- "Synthetic data scope and binding" story). Read-side only, matching the
 -- container's own USING/WITH CHECK split: writes still require actual
 -- party membership (or an unrestricted session).
+drop policy if exists fx_spot_generation_configs_party_isolation_policy
+    on ores_synthetic_fx_spot_generation_configs_tbl;
+
 create policy fx_spot_generation_configs_party_isolation_policy
 on ores_synthetic_fx_spot_generation_configs_tbl
 as restrictive
@@ -106,6 +118,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_gmm_components_tbl enable row level security;
 
+drop policy if exists gmm_components_tenant_isolation_policy
+    on ores_synthetic_gmm_components_tbl;
+
 create policy gmm_components_tenant_isolation_policy
 on ores_synthetic_gmm_components_tbl
 for all using (
@@ -117,6 +132,9 @@ with check (
 
 -- Same widening as fx_spot_generation_configs above, one hop further:
 -- gmm_component -> fx_spot_generation_config -> market_data_generation_config.
+drop policy if exists gmm_components_party_isolation_policy
+    on ores_synthetic_gmm_components_tbl;
+
 create policy gmm_components_party_isolation_policy
 on ores_synthetic_gmm_components_tbl
 as restrictive
@@ -137,6 +155,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_ir_curve_generation_configs_tbl enable row level security;
 
+drop policy if exists ir_curve_generation_configs_tenant_isolation_policy
+    on ores_synthetic_ir_curve_generation_configs_tbl;
+
 create policy ir_curve_generation_configs_tenant_isolation_policy
 on ores_synthetic_ir_curve_generation_configs_tbl
 for all using (
@@ -145,6 +166,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists ir_curve_generation_configs_party_isolation_policy
+    on ores_synthetic_ir_curve_generation_configs_tbl;
 
 create policy ir_curve_generation_configs_party_isolation_policy
 on ores_synthetic_ir_curve_generation_configs_tbl
@@ -158,6 +182,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_ir_curve_template_entries_tbl enable row level security;
 
+drop policy if exists ir_curve_template_entries_tenant_isolation_policy
+    on ores_synthetic_ir_curve_template_entries_tbl;
+
 create policy ir_curve_template_entries_tenant_isolation_policy
 on ores_synthetic_ir_curve_template_entries_tbl
 for all using (
@@ -166,6 +193,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists ir_curve_template_entries_party_isolation_policy
+    on ores_synthetic_ir_curve_template_entries_tbl;
 
 create policy ir_curve_template_entries_party_isolation_policy
 on ores_synthetic_ir_curve_template_entries_tbl
@@ -179,6 +209,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_folders_tbl enable row level security;
 
+drop policy if exists folders_tenant_isolation_policy
+    on ores_synthetic_folders_tbl;
+
 create policy folders_tenant_isolation_policy
 on ores_synthetic_folders_tbl
 for all using (
@@ -187,6 +220,9 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+drop policy if exists folders_party_isolation_policy
+    on ores_synthetic_folders_tbl;
 
 create policy folders_party_isolation_policy
 on ores_synthetic_folders_tbl
@@ -197,6 +233,9 @@ for select using (
 );
 
 alter table ores_synthetic_yield_curve_process_types_tbl enable row level security;
+
+drop policy if exists yield_curve_process_types_tenant_isolation_policy
+    on ores_synthetic_yield_curve_process_types_tbl;
 
 create policy yield_curve_process_types_tenant_isolation_policy
 on ores_synthetic_yield_curve_process_types_tbl
@@ -212,6 +251,9 @@ with check (
 -- tenant isolation only, same shape as yield_curve_process_types)
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_process_parameter_definitions_tbl enable row level security;
+
+drop policy if exists yield_curve_process_parameter_definitions_tenant_isolation_policy
+    on ores_synthetic_process_parameter_definitions_tbl;
 
 create policy yield_curve_process_parameter_definitions_tenant_isolation_policy
 on ores_synthetic_process_parameter_definitions_tbl
@@ -233,6 +275,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_config_process_parameter_values_tbl enable row level security;
 
+drop policy if exists ir_curve_generation_config_process_parameter_values_tenant_isolation_policy
+    on ores_synthetic_config_process_parameter_values_tbl;
+
 create policy ir_curve_generation_config_process_parameter_values_tenant_isolation_policy
 on ores_synthetic_config_process_parameter_values_tbl
 for all using (
@@ -247,6 +292,9 @@ with check (
 -- reference must be table-qualified -- an unqualified config_id binds
 -- to the inner table and turns the predicate into c.id = c.config_id
 -- (always false), hiding every value row under party isolation.
+drop policy if exists ir_curve_generation_config_process_parameter_values_party_isolation_policy
+    on ores_synthetic_config_process_parameter_values_tbl;
+
 create policy ir_curve_generation_config_process_parameter_values_party_isolation_policy
 on ores_synthetic_config_process_parameter_values_tbl
 as restrictive

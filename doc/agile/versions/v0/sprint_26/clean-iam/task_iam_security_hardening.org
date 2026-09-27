@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 8DE384EE-E273-42AA-B0B6-81B2AE759BD4
+:END:
+#+title: Task: Fix the security defects the ores.iam clean-up recorded
+#+description: Close the five recorded ores.iam security defects so the component's clean-standard registry entry rests on a true record: unguarded role assignment and account and login reads, credential fields on the wire, change-password ignoring the current password, the unguarded system-tenant delete, and unenforced tenant suspension.
+#+type: task
+#+level: s1
+#+filetags: :clean-iam:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/iam-security-defects
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the five security defects the ores.iam clean-up and the journey review
+recorded, each at its source, so the component's clean-standard registry entry
+rests on a true record rather than on a claim the gates cannot see.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] |
+| Now          | The five fixes are written; verification is in progress. |
+| Waiting on   | Nothing.                               |
+| Next         | Build, run the iam suites against a recreated database, and verify each fix against the running fleet. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The role-assignment handlers check =iam::roles:assign=, and the account and
+  login reads check their own read code, so no signed-in caller escalates or
+  reads another account's material.
+- =password_hash=, =password_salt= and =totp_secret= reach no serialized form
+  and no history diff, while C++ still reads and writes them.
+- =change-password= refuses an absent or wrong current password, and the
+  administrator reset keeps a path of its own.
+- The system tenant cannot be terminated or hard-deleted through any path,
+  generic or dedicated.
+- A suspended or terminated tenant admits no sign-in.
+- The tree builds; the codegen suite and every codegen gate pass; the iam
+  suites pass against a recreated database; each fix is verified against the
+  running fleet, not only against the source.
+
+* Plan
+
+Work the five defects in order of blast radius, smallest first, so each lands
+on a tree that already builds.
+
+1. Guard the writes that were missed: =assign= and =assign_by_name= check
+   =iam::roles:assign=; the generated account and login reads check their
+   =:read= codes through a new =:guard_reads:= model flag, because the estate
+   default is that a read needs authentication alone.
+2. Keep the credentials off the wire with a new =:no_wire:= flag: the member
+   stays in the domain struct wrapped in =rfl::Skip=, and the TypeScript twin
+   and history field mapper drop it. The estate already uses =rfl::Skip= for
+   the database password, so the pattern is the house one.
+3. Verify the current password in =change_password=, fail closed on an absent
+   one, and give the administrator reset its own =reset_password= method so it
+   does not have to state a password it never had.
+4. State the system-tenant invariant as a table check, which the delete rule,
+   the generic save and the update path all pass through, and guard the hard
+   delete, which bypasses the rule.
+5. Refuse a sign-in whose tenant is not active, in the one service every
+   password login reaches, before the password is compared.
+
+Regenerate the affected artefacts, run the codegen gates and the suites, then
+prove each fix against the running fleet.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

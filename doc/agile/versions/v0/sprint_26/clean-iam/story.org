@@ -41,6 +41,7 @@ ores.iam meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean St
 |------+-------+-------+-----+-------------|
 | [[id:DDAB54CA-B987-433B-AACD-87B0B8A32D2A][Bring ores.iam to the clean standard]] | STARTED | 2026-09-26 | | Work ores.iam through the Component Clean Standard in order and record each item. |
 | [[id:A7822C2A-5F0C-4ABF-BF4E-1A7FA586BCE8][Fix the defects the ores.iam clean-up found]] | DONE | 2026-09-26 | 2026-09-27 | Task for: Clean ores.iam to the component clean standard |
+| [[id:8DE384EE-E273-42AA-B0B6-81B2AE759BD4][Fix the security defects the ores.iam clean-up recorded]] | STARTED | 2026-09-27 | | Close the five recorded ores.iam security defects so the component's clean-standard registry entry rests on a true record: unguarded role assignment and account and login reads, credential fields on the wire, change-password ignoring the current password, the unguarded system-tenant delete, and unenforced tenant suspension. |
 
 * Notes
 

@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: F0F5580D-B2BD-48BE-9ADA-1F21A311326C
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.fpml_event_type
+#+description: Codegen entity model for the trading =fpml_event_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Standard FpML lc_EventType_Type coding scheme (New, Amendment, Novation, PartialTermination, FullTermination).
+#+entity_singular: fpml_event_type
+#+entity_plural: fpml_event_types
+#+entity_title: FpML Event Type
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Reference data table holding the standard FpML =lc_EventType_Type= coding
+scheme. Each row names one wire-format event code: New, Amendment,
+Novation, PartialTermination and FullTermination. These are the FpML
+equivalents the internal activity types map to.
+
+The table is bi-temporal and audited: it carries =version=, the four audit
+columns and the =valid_from=/=valid_to= pair with the GIST exclusion and the
+delete rule, so the model takes the ordinary audited shape and needs no
+shape flag.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Natural keys
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique FpML event type code.
+
+Examples: 'New', 'Amendment', 'Novation', 'PartialTermination',
+'FullTermination'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_event"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the FpML event type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_fpml_event_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_fpml_event_type_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fpml_event_type
+:entity_plural_short:   fpml_event_types
+:entity_singular_words: FpML event type
+:entity_plural_words:   FpML event types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fet
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

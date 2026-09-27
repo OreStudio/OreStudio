@@ -31,6 +31,7 @@ set(files
     "equity_position_instrument_eventing_integration_tests.cpp"
     "equity_swap_instrument_eventing_integration_tests.cpp"
     "equity_variance_swap_instrument_eventing_integration_tests.cpp"
+    "fpml_event_type_eventing_integration_tests.cpp"
     "fx_accumulator_instrument_eventing_integration_tests.cpp"
     "fx_asian_forward_instrument_eventing_integration_tests.cpp"
     "fx_barrier_option_instrument_eventing_integration_tests.cpp"

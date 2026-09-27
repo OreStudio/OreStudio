@@ -379,8 +379,8 @@ the proof.
 |----------------------+---------------------+----------------------------------------+-------|
 | commodity_instrument | trading-instrument  | ores.trading.commodity_instrument.org  | Done: build green, eight suites pass, drift empty |
 | activity_type        | simple-lookup       | ores.trading.activity_type.org         | Done: build green, eight suites pass, drift empty |
-| fpml_event_type      | simple-lookup       | --                                     | Next |
-| composite_instrument | trading-instrument  | --                                     | Pending |
+| fpml_event_type      | simple-lookup       | ores.trading.fpml_event_type.org       | Done: build green, eight suites pass, drift empty |
+| composite_instrument | trading-instrument  | --                                     | Next |
 | composite_leg        | trading-instrument  | --                                     | Pending |
 | credit_instrument    | trading-instrument  | --                                     | Pending |
 | scripted_instrument  | trading-instrument  | --                                     | Pending |

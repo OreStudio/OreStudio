@@ -17,11 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- FpML Event Types - Standard FpML lc_EventType_Type coding scheme
--- (New, Amendment, Novation, PartialTermination, FullTermination)
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * FpML Event Type Table
+ *
+ * Reference data table holding the standard FpML lc_EventType_Type coding
+ * scheme. Each row names one wire-format event code: New, Amendment,
+ * Novation, PartialTermination and FullTermination. These are the FpML
+ * equivalents the internal activity types map to.
+ *
+ * The table is bi-temporal and audited: it carries version, the four audit
+ * columns and the valid_from/valid_to pair with the GIST exclusion and the
+ * delete rule, so the model takes the ordinary audited shape and needs no
+ * shape flag.
+ */
 
 create table if not exists "ores_trading_fpml_event_types_tbl" (
     "code" text not null,
@@ -44,6 +56,7 @@ create table if not exists "ores_trading_fpml_event_types_tbl" (
     check ("code" <> '')
 );
 
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists fpml_event_types_version_uniq_idx
 on "ores_trading_fpml_event_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -62,78 +75,100 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate change_reason_code
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Version management
     select version into current_version
     from "ores_trading_fpml_event_types_tbl"
-    where tenant_id = new.tenant_id
-      and code = new.code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
-
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_fpml_event_types_tbl"
-        set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and code = new.code
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_fpml_event_types_insert_trg
 before insert on "ores_trading_fpml_event_types_tbl"
-for each row
-execute function ores_trading_fpml_event_types_insert_fn();
+for each row execute function ores_trading_fpml_event_types_insert_fn();
 
 create or replace rule ores_trading_fpml_event_types_delete_rule as
-on delete to "ores_trading_fpml_event_types_tbl"
-do instead
-  update "ores_trading_fpml_event_types_tbl"
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and code = old.code
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_trading_fpml_event_types_tbl" do instead (
+    update "ores_trading_fpml_event_types_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
 -- =============================================================================
 -- Validation function for fpml_event_type
 -- Validates that a code exists in the fpml_event_types table.
+-- Returns the validated value, or default if null/empty.
+-- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_trading_validate_fpml_event_type_fn(
     p_tenant_id uuid,
     p_value text
 ) returns text as $$
 begin
+    -- Return default if null or empty
     if p_value is null or p_value = '' then
         raise exception 'Invalid fpml_event_type: value cannot be null or empty'
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_trading_fpml_event_types_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from ores_trading_fpml_event_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 
+    -- Validate against reference data
     if not exists (
         select 1 from ores_trading_fpml_event_types_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
@@ -150,4 +185,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

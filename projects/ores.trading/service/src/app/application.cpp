@@ -60,6 +60,7 @@
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fpml_event_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/fra_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_asian_forward_instrument_event_registrar.hpp"
@@ -190,6 +191,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto activity_type_sub =
         ores::trading::service::messaging::register_activity_type_event_mapping(
+            event_source, event_bus, nats);
+    auto fpml_event_type_sub =
+        ores::trading::service::messaging::register_fpml_event_type_event_mapping(
             event_source, event_bus, nats);
     auto party_role_type_sub =
         ores::trading::service::messaging::register_party_role_type_event_mapping(

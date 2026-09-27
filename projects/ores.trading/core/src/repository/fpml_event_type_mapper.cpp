@@ -17,11 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/repository/fpml_event_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/fpml_event_type_json_io.hpp" // IWYU pragma: keep.
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 

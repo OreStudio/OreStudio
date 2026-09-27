@@ -23,6 +23,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:D18832B9-0D51-4617-A789-AB33E14AA41A][ores.trading.party_role_type]] | FpML-aligned party role code (e.g. Counterparty, CalculationAgent, ExecutingBroker). |
 | [[id:06F0B798-F261-4BBC-974E-52A41C4AA1F0][ores.trading.lifecycle_event]] | Trade lifecycle event type (e.g. New, Amendment, Novation, PartialTermination). |
 | [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][ores.trading.activity_type]] | Internal trade activity classification (e.g. new_booking, amendment, novation). |
+| [[id:F0F5580D-B2BD-48BE-9ADA-1F21A311326C][ores.trading.fpml_event_type]] | Standard FpML lc_EventType_Type coding scheme (New, Amendment, Novation, PartialTermination, FullTermination). |
 | [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] | Vanilla interest rate swap or cross-currency swap instrument. |
 | [[id:A7A25644-CBF0-4E4A-A768-4636CCF91E05][ores.trading.callable_swap_instrument]] | Callable interest rate swap instrument. |
 | [[id:7297F657-B695-46B5-BBCA-89A9DA3D1191][ores.trading.inflation_swap_instrument]] | Inflation-linked interest rate swap instrument. |

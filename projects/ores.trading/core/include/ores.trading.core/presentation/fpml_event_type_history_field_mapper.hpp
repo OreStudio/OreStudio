@@ -19,26 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/fpml_event_type_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_TRADING_CORE_PRESENTATION_FPML_EVENT_TYPE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_FPML_EVENT_TYPE_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::trading::domain {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/fpml_event_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
+namespace ores::trading::presentation {
 
-std::string convert_to_table(const std::vector<fpml_event_type>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+/**
+ * @brief Renders a fpml_event_type to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_fpml_event_type_fields(const domain::fpml_event_type& v);
 
-    table << fort::header << "Code" << "Description" << "Modified By" << "Version" << fort::endr;
-
-    for ([[maybe_unused]] const auto& fet : v) {
-        table << fet.code << fet.description << fet.modified_by << fet.version << fort::endr;
-    }
-    return table.to_string();
 }
 
-}
+#endif

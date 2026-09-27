@@ -35,6 +35,7 @@
 #include "ores.shell/app/commands/trading/equity_position_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_variance_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fpml_event_type_commands.hpp"
 #include "ores.shell/app/commands/trading/fra_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_asian_forward_instrument_commands.hpp"
@@ -83,6 +84,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     equity_position_instrument_commands::register_commands(root_menu, session);
     equity_swap_instrument_commands::register_commands(root_menu, session);
     equity_variance_swap_instrument_commands::register_commands(root_menu, session);
+    fpml_event_type_commands::register_commands(root_menu, session);
     fx_accumulator_instrument_commands::register_commands(root_menu, session);
     fx_asian_forward_instrument_commands::register_commands(root_menu, session);
     fx_barrier_option_instrument_commands::register_commands(root_menu, session);

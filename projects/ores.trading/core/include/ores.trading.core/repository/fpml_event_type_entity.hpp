@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_FPML_EVENT_TYPE_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_FPML_EVENT_TYPE_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_FPML_EVENT_TYPE_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_FPML_EVENT_TYPE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -31,7 +36,7 @@ namespace ores::trading::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a FpML event type in the database.
+ * @brief Represents a fpml event type in the database.
  */
 struct fpml_event_type_entity {
     constexpr static const char* schema = "public";

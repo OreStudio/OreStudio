@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-dq-artefact-tables
-#+pr: 2237
+#+pr: 2239
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -1039,6 +1039,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2239][#2239]] | [dq] Model the dataset entity and retire its hand-written layer |
 | [[https://github.com/OreStudio/OreStudio/pull/2237][#2237]] | [memory] Never regenerate the whole tree while components have drifted |
 | [[https://github.com/OreStudio/OreStudio/pull/2231][#2231]] | [dq] Move the publish verbs into a handler of their own |
 | https://github.com/OreStudio/OreStudio/pull/2189 | [dq] Generate the ores.dq artefact tables from the entity models |

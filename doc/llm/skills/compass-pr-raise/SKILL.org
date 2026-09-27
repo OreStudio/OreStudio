@@ -113,13 +113,17 @@ lifecycle is ordered this way.
      clean, so a component waiting its turn has no gate, and neither does
      output an archetype routes into another component's tree -- rendering
      =ores.trading= writes 66 files under =projects/ores.shell/=, which no run
-     of =ores.shell= can reach. The sweep renders all 21 catalogue components
-     into a temporary root and compares, then fails only on the files this
-     branch touched, because a component's remaining drift belongs to its own
-     clean-up story. It renders and compares only, so nothing is written and it
-     is safe on a branch whose templates are older than main's. Run it whenever
-     anything under =projects/= changed, which is why it also runs on every pull
-     request that touches =projects/**=.
+     of =ores.shell= can reach. The sweep renders all twenty catalogue
+     components at the whole =ores= address into a temporary root and compares,
+     then fails only on the files this branch touched, because a component's
+     remaining drift belongs to its own clean-up story. The whole address
+     matters: expanding =ores= into the technical spaces skips every facet whose
+     =#+requires_facet:= names a facet in another space, which is how the
+     generated recipes under =doc/recipes/= went unchecked. It renders and
+     compares only, so nothing is written and it is safe on a branch whose
+     templates are older than main's. Run it whenever anything under
+     =projects/= changed, which is why it also runs on every pull request that
+     touches =projects/**=.
    - *populate reference drift*:
      =python3 projects/ores.codegen/scripts/check_populate_references.py=.
      It reads the lookup contract from the upsert function bodies under

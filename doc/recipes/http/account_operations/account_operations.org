@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 76F232AB-8D75-572F-9309-49288505E73A
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I call the account_operations endpoints over HTTP?
 #+description: Every endpoint the account_operations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
 #+type: recipe

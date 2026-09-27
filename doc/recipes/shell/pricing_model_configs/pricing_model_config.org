@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: AF548E17-F214-5E57-B859-68C197C7003F
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the pricing_model_configs commands from the shell?
 #+description: Every command the pricing_model_configs submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: C0C0A800-51E1-4DC9-BF15-7C346AEEEE2F
+:END:
+#+title: Generated recipes are stale, and nothing watched them
+#+description: Sixty generated recipes disagree with the models that produce them, in two different ways, and no gate could see either because the drift check rendered per technical space and never produced a recipe at all. A further 76 files sit at the generated recipe path shape with no model behind them.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:recipe:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two bodies of generated recipe debt, with different causes and different owners,
+plus a third question about files no model produces.
+
+* Why
+
+The drift check renders a component's technical spaces one at a time, and a facet
+whose =#+requires_facet:= names a facet in another space never fires that way. The
+recipe facets are exactly that shape, so no run of any component has ever
+produced a recipe, and the 247 files at the generated recipe path shape have gone
+unchecked since the facet landed. Both bodies below were found the day the sweep
+started rendering the whole =ores= address.
+
+** 1. Fifty-eight recipes are a placeholder behind the template
+
+Every one differs in the same region and nowhere else: inside its
+=#+begin_src ores-shell :tangle ...= blocks, an argument placeholder that the
+committed file writes as =__none__= is a hyphen in the current render, and in
+some files the render also carries trailing entries the committed file does not.
+Not one byte of prose differs, so these are stale rather than hand-edited. The
+direction is the shell owner's call: either the recipes are behind the template
+and want regenerating, or the template is ahead of the shell and wants
+correcting.
+
+** 2. Two recipes are a staging change behind main
+
+=doc/recipes/shell/lei_entities/lei_entity.org= and
+=doc/recipes/shell/lei_relationships/lei_relationship.org= are staging shims, and
+main's staging-only change means the generator now renders them with no command
+sections at all: 77 lines, where the tree held 224 before this branch added the
+marker and holds 223 once it is removed. Regenerating would delete 146 lines of
+generated recipe content, and whether a staging shim should keep a
+recipe at all is the =dq= owner's call. These two are why the marker task
+carries 111 marked recipes rather than 113.
+
+This is also a live instance of the sweep's recorded limit: a change that retires
+a path leaves nothing behind for the comparison to walk, so the deletion is
+silent until some later branch happens to touch the file. Here the marker task
+touched it.
+
+** 3. Seventy-six files at the shape no model produces
+
+The shape holds 247 files; the render accounts for 171 of them once the 14 it
+produces but the tree lacks are set aside, leaving 76 with no model behind them,
+which is what a retired or renamed template leaves. Nothing deletes them, and
+nothing should: a clean-up that removed files no render produces would delete
+whatever a hand-written nested recipe looks like.
+
+* References
+
+- =doc/agile/versions/v0/sprint_26/harden-clean-standard-gates/task_mark-generated-recipes.org=
+  -- the task that emitted the marker, made the sweep render the whole address,
+  and measured all of this.
+- =projects/ores.codegen/scripts/check_component_drift.py= -- =--sweep= reaches
+  recipes now; =--all= and =--component= still render per technical space.
+- =projects/ores.codegen/library/templates/ores.doc.shell-recipe.recipe.org= --
+  the archetype, with =#+requires_facet: ores.cpp.shell-command=.
+- =projects/ores.codegen/src/codegen/generate.py= -- =resolve_targets=, where the
+  staging-only facets are withdrawn.
+
+* See also
+
+- [[id:BBBD07EF-09E0-4FF6-A282-28534429264C][check_component_drift.py corrupts a branch that is behind main]] -- the
+  other hazard in the same script.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] -- V05,
+  the gate roster the sweep joined.

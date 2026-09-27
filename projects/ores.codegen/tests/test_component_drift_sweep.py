@@ -47,8 +47,8 @@ def _stub_render(monkeypatch, rendered: dict) -> list:
     """Record the render call and write ``rendered`` into the temporary root."""
     calls = []
 
-    def fake_render(components, address, tmp_root):
-        calls.append((list(components), address))
+    def fake_render(components, address, tmp_root, whole_address=False):
+        calls.append((list(components), address, whole_address))
         for rel, body in rendered.items():
             _write(tmp_root / rel, body)
         return 0
@@ -146,7 +146,9 @@ def test_sweep_renders_every_component_at_the_whole_address(
     capsys.readouterr()
 
     assert rc == 0
-    assert calls == [(["a", "b", "c"], "ores")]
+    # whole_address=True is what reaches the recipe facets, which need a
+    # facet from another technical space.
+    assert calls == [(["a", "b", "c"], "ores", True)]
 
 
 def test_catalogue_components_drops_a_second_spelling_of_one_component(
@@ -231,7 +233,8 @@ def test_sweep_returns_a_render_failure(tmp_path, monkeypatch, capsys):
     repo = _make_repo(tmp_path)
     _point_at(monkeypatch, repo, touched=set())
     monkeypatch.setattr(ccd, "_render_components",
-                        lambda components, address, tmp_root: 3)
+                        lambda components, address, tmp_root,
+                        whole_address=False: 3)
 
     assert ccd._sweep("deadbeefdeadbeef", False) == 3
 

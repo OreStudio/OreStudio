@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: DF802ADC-80A2-5CAA-8311-928BBD8F40B2
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the pricing_model_products commands from the shell?
 #+description: Every command the pricing_model_products submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

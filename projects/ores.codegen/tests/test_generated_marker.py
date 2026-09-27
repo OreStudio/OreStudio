@@ -23,6 +23,7 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.core import (  # noqa: E402
     _emits_cpp,
+    _emits_org,
     _emits_ts,
     generated_marker,
     render_template,
@@ -100,3 +101,67 @@ def test_emits_ts_classifies_by_output_suffix():
     assert _emits_ts("ts_protocol.ts.mustache")
     assert not _emits_ts("cpp_enum.hpp.mustache")
     assert not _emits_ts("cpp_widget.ui.mustache")
+
+
+ORG_DOCUMENT = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-000000000001
+:END:
+#+title: {{title}}
+
+The blurb.
+"""
+
+
+def _render_org(tmp_path, template_name="shell_recipe.org.mustache"):
+    template = tmp_path / template_name
+    template.write_text(ORG_DOCUMENT, encoding="utf-8")
+    return render_template(str(template), {"title": "A recipe"})
+
+
+def test_org_output_is_marked(tmp_path):
+    out = _render_org(tmp_path)
+    assert "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY" in out
+    assert "#+generated:" in out
+    assert "Template: shell_recipe.org.mustache" in out
+
+
+def test_org_marker_follows_the_frontmatter_drawer(tmp_path):
+    # The doc index reads the drawer from the first line, so a marker above it
+    # would be folded into the blurb; and a # comment in that position would
+    # too, because the blurb skips only #+ lines and blank lines.
+    lines = _render_org(tmp_path).splitlines()
+    assert lines[0] == ":PROPERTIES:"
+    assert lines[2] == ":END:"
+    assert lines[3].startswith("#+generated:")
+    assert lines[4] == "#+title: A recipe"
+
+
+def test_org_marker_keeps_the_blurb(tmp_path):
+    out = _render_org(tmp_path)
+    assert "The blurb." in out
+    assert out.index("#+generated:") < out.index("The blurb.")
+
+
+def test_org_marker_goes_to_the_top_when_there_is_no_drawer(tmp_path):
+    template = tmp_path / "doc_recipe.org.mustache"
+    template.write_text("#+title: {{title}}\n\nBody.\n", encoding="utf-8")
+    out = render_template(str(template), {"title": "N"})
+    assert out.splitlines()[0].startswith("#+generated:")
+
+
+def test_the_cpp_marker_does_not_reach_an_org_document(tmp_path):
+    # The C++ marker is a C comment, which would be inert text in org. The two
+    # markers share their wording deliberately, so the comment form is what
+    # distinguishes them.
+    out = _render_org(tmp_path)
+    assert "/**" not in out
+    assert generated_marker("shell_recipe.org.mustache") not in out
+
+
+def test_emits_org_classifies_by_output_suffix():
+    assert _emits_org("shell_recipe.org.mustache")
+    assert _emits_org("doc_recipe.org.mustache")
+    assert not _emits_org("cpp_enum.hpp.mustache")
+    assert not _emits_org("ts_protocol.ts.mustache")
+    assert not _emits_org("cmake_component_src.mustache")

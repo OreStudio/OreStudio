@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 43A2CAE6-BAB9-5371-BFBB-4F396F14208A
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the trade_id_types commands from the shell?
 #+description: Every command the trade_id_types submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe

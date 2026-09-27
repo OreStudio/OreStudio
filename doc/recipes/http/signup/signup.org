@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 84CA2C80-6E6A-5384-AF4B-0904CD1394F1
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I call the signup endpoints over HTTP?
 #+description: Every endpoint the signup resource answers over HTTP, with the request each one exports into the gateway's recipe library.
 #+type: recipe

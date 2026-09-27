@@ -45,6 +45,13 @@
 \echo '=== Foundation Layer Population ==='
 \echo ''
 
+-- The layer runs in one transaction that declares itself a reseed. The seed
+-- scripts below state version zero, and the version gate refuses a create that
+-- meets a live row, so without this declaration a second run stops on the first
+-- row the first run wrote. Declaring the reseed makes the run replace it.
+begin;
+select ores_utility_allow_version_replace_fn();
+
 -- =============================================================================
 -- Tenant Infrastructure (must be first - all other entities depend on tenants)
 -- =============================================================================
@@ -243,3 +250,5 @@ union all
 select 'System Settings', count(*)
 from ores_variability_system_settings_tbl where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+
+commit;

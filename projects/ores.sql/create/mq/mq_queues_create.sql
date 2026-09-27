@@ -85,7 +85,7 @@ begin
 end;
 $$;
 
-create trigger ores_mq_queues_notify_trg
+create or replace trigger ores_mq_queues_notify_trg
 after insert or update on ores_mq_queues_tbl
 for each row execute function ores_mq_queues_notify_fn();
 

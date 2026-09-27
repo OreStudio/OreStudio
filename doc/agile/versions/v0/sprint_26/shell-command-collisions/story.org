@@ -38,7 +38,7 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:560DC5AA-C067-4ECA-B12B-1947E89D0319][Scaffold story: Stop ores.shell menus from silently shadowing each other]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:560DC5AA-C067-4ECA-B12B-1947E89D0319][Scaffold story: Stop ores.shell menus from silently shadowing each other]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:FBFF4403-2636-4D04-9BFA-7146B7D39B60][Implement Stop ores.shell menus from silently shadowing each other]] | BACKLOG | | | Initial task for: Stop ores.shell menus from silently shadowing each other |
 
 * Decisions

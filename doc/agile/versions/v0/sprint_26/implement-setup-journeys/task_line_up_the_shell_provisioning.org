@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 946954A3-23B7-43AC-A4AB-42E65698FED7
+:END:
+#+title: Task: Line the shell's provisioning up with the journey contract
+#+description: Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the Acme end-to-end script working through them.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.shell= and =ores.web= drive the same three journeys through the
+same server-side operations, so that neither is the reference and neither
+can drift.
+
+The shell is not a bystander in this work. It already carries the three
+Setup journeys as porcelain commands, and
+=doc/recipes/shell/provisioning/acme_system_provision.org= runs the whole
+sequence end to end: create the system administrator with an Acme tenant,
+sign out, sign in as the tenant administrator, provision the tenant, sign
+out, sign in again, provision a party, set the default party. That recipe
+is the only artefact in the tree that takes an empty database to a working
+tenant, and it is the sequence the browser is being built to match.
+
+Those three commands orchestrate on the client today. This task removes
+that orchestration, because the accepted
+[[id:94C3AE99-8642-4418-982D-92C5FD805CCB][seed profile contract]] already
+decided it: "ores.web and ores.shell are thin callers. The shell's
+client-side orchestration is deleted." The work moves to the server, and
+both clients become callers of one contract.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Not yet started. It follows the generic provision request. |
+| Waiting on   | The generic =iam.v1.tenants.provision=, because a thin caller needs something to call. |
+| Next          | Inventory what each command orchestrates, then move each piece to the server. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- =provision system=, =provision tenant= and =provision party= call the
+  same subjects the browser calls, and hold no sequence of their own.
+- The orchestration they do today — publishing bundles, waiting on
+  workflows, generating a synthetic organisation, associating the
+  administrator with the operational parties — happens on the server, in
+  one request per stage, or is recorded as deliberately staying in the
+  client with the reason.
+- =doc/recipes/shell/provisioning/acme_system_provision.org= runs from an
+  empty database to a working tenant, and it is the proof.
+- The generated recipes that name the retired subjects —
+  =doc/recipes/shell/bootstrap/bootstrap.org= and
+  =doc/recipes/shell/tenant_provisioning/tenant_provisioning.org= — are
+  regenerated against the new models rather than edited.
+- The shell's command tests pass, and each command's flags still cover
+  what its recipe passes.
+- No flag or default is silently dropped: a knob the shell offers and the
+  generic request cannot carry is either added to the request or recorded
+  as gone, with the reason.
+
+* Plan
+
+1. *Inventory the orchestration.* Read
+   =projects/ores.shell/application/src/app/commands/provision_commands.cpp=
+   and list, per command, every call it makes and every wait it performs.
+   The three commands are 696 lines, and the list is the checklist for
+   the rest of the task.
+2. *Inventory the flags.* Each command's flags are the wizard's knobs.
+   Map each to a seed-profile parameter, to a field on the generic
+   request, or to nothing. The last group is the one to argue about,
+   because a knob that disappears is a capability that disappears.
+3. *Re-point each command* at the generic request and the two bootstrap
+   subjects that survive, deleting the client-side sequence.
+4. *Regenerate the recipes and scripts* that follow the commands, and add
+   the Acme script to the story's end-to-end proof.
+5. *Run the Acme script* against a fresh database, on the fleet, and
+   record the output.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The porcelain provisioning command source | 696 lines | =wc -l projects/ores.shell/application/src/app/commands/provision_commands.cpp= | =ef8df25c61= |
+| The provisioning shell scripts | 8 files, 108 lines | =wc -l projects/ores.shell/scripts/library/provisioning/*.ores projects/ores.shell/scripts/library/tenant_provisioning/*.ores= | =ef8df25c61= |
+| The hand-written provisioning recipes | 6 files | =ls doc/recipes/shell/provisioning/*.org= | =ef8df25c61= |
+
+* Notes
+
+The commands' own header says each "spans one of the GUI provisioning
+wizards end-to-end". The GUI is gone, so these commands are now the only
+description of what those wizards did. That makes them evidence as well as
+code: the inventory in step 1 is the record of the wizard behaviour the
+journeys replace, and it should not be deleted with the orchestration.
+
+The Acme script's variant in the same folder,
+=tenant_provisioning-provision-acme-tenant.ores=, drives =--source acme=,
+which is the synchronous =provision-acme= handler. It retires with that
+subject, and its recipe is one of the six.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

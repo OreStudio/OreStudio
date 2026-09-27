@@ -104,7 +104,7 @@ retirement. [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] is
 accurate and its consumer is genuinely absent: the runtime should read
 it before it decides how a journey follows a workflow.
 
-** Six findings change what the story does next
+** Seven findings change what the story does next
 
 1. *The progress channel already exists, end to end.*
    =ores.workflow.workflow_instance_changed= is published by the engine
@@ -159,6 +159,20 @@ it before it decides how a journey follows a workflow.
    the See-also of the component specification, so whoever adds the
    journey client methods reads it first and is told to hand-write what
    the generator already produces.
+7. *The shell is a second client of the same three journeys, and it
+   orchestrates on the client today.* =ores.shell= carries the Setup
+   journeys as porcelain commands — =provision system=, =provision
+   tenant= and =provision party=, 696 lines in one file — which publish
+   bundles, wait on workflows, generate a synthetic organisation and
+   associate the administrator with the operational parties themselves.
+   =doc/recipes/shell/provisioning/acme_system_provision.org= runs all
+   three end to end, and it is the only artefact in the tree that takes
+   an empty database to a working tenant. The accepted
+   [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][seed profile contract]] already
+   decided the outcome: the shell becomes a thin caller and its
+   client-side orchestration is deleted. So this is accepted,
+   unimplemented scope rather than new work, and the audit missed it
+   because it read the shell only as a consumer of two recipes.
 
 ** Stale documents, with the evidence
 

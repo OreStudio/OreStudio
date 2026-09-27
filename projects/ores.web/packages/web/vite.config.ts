@@ -19,9 +19,10 @@
  *
  */
 
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { resolve } from 'node:path';
 
 /**
  * The browser bundle.
@@ -31,25 +32,39 @@ import tailwindcss from '@tailwindcss/vite';
  * CORS configuration in the build. The BFF port is read from the same variable
  * the BFF reads, so there is one number rather than two that can disagree.
  */
-const BFF_PORT = process.env['ORES_WEB_PORT'] ?? '8080';
-const WEB_PORT = Number(process.env['ORES_WEB_DEV_PORT'] ?? '5173');
+export default defineConfig(({ mode }) => {
+  /*
+   * The checkout's `.env` is the one place those ports are declared. Vite loads
+   * only `VITE_`-prefixed variables by itself, and these belong to the service,
+   * so they are read from the file directly. The directory is derived from this
+   * file rather than from the working directory, because npm runs the workspace
+   * script from the package and the file is four levels up.
+   *
+   * An empty prefix also makes `loadEnv` merge the whole of `process.env` into
+   * its result, and merge it last, so a variable exported by the caller wins
+   * over the file. Reading `process.env` again here would be dead code.
+   */
+  const env = loadEnv(mode, resolve(import.meta.dirname, '../../../..'), '');
+  const BFF_PORT = env['ORES_WEB_PORT'] ?? '8080';
+  const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  server: {
-    port: WEB_PORT,
-    // Fail rather than slide to another port: a dev server that quietly moves is
-    // a dev server whose URL somebody writes down and then cannot reach.
-    strictPort: true,
-    proxy: {
-      '/api': {
-        target: `http://127.0.0.1:${BFF_PORT}`,
-        changeOrigin: false,
+  return {
+    plugins: [react(), tailwindcss()],
+    server: {
+      port: WEB_PORT,
+      // Fail rather than slide to another port: a dev server that quietly moves
+      // is a dev server whose URL somebody writes down and then cannot reach.
+      strictPort: true,
+      proxy: {
+        '/api': {
+          target: `http://127.0.0.1:${BFF_PORT}`,
+          changeOrigin: false,
+        },
       },
     },
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-  },
+    build: {
+      outDir: 'dist',
+      sourcemap: true,
+    },
+  };
 });

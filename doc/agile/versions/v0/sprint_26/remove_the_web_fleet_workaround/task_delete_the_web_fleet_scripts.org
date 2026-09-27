@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 7B162044-E868-457E-B093-154CE11519E0
+:END:
+#+title: Task: Delete the web fleet scripts and the documentation that offers them
+#+description: Remove dev-stack.sh and run-service.sh, and take the standalone-path instructions out of the component README, its npm scripts and the verification script's comment, so the fleet has one way to start.
+#+type: task
+#+level: s1
+#+filetags: :remove_the_web_fleet_workaround:sprint_26:v0:
+#+owner: marco
+#+branch: feature/delete-the-web-fleet-scripts
+#+pr: 2288
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CC5F510F-28C4-40F8-B1F3-D5F666F3EDB9][Remove the ores.web fleet workaround]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.web= has no way to start services that is not the fleet, and nothing
+in the component tells a reader otherwise.
+
+Two scripts go: =scripts/dev-stack.sh=, which starts NATS, IAM, refdata and
+the BFF as separate processes, and =scripts/run-service.sh=, which exists
+only to be called by it. Everything that offers them goes with them, which
+is the component README, an npm script, and the prerequisites comment in
+=scripts/verify-login.ts=.
+
+Deleting the workaround must not delete the capability it was covering. The
+script's =dev= mode started a Vite server that proxies to the BFF, and that
+is the path a person uses while working on the client. It stays, and it
+stops depending on its caller to supply the ports: it reads the checkout's
+=.env=, which is where the BFF reads them, so the proxy cannot point at the
+wrong port.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CC5F510F-28C4-40F8-B1F3-D5F666F3EDB9][Remove the ores.web fleet workaround]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next          | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- =projects/ores.web/scripts/dev-stack.sh= and
+  =projects/ores.web/scripts/run-service.sh= are gone.
+- The component README describes one way to run the component,
+  =compass services start=, and gives the hot-reload path beside it.
+- The =stack= npm script is gone, and no other npm script runs a deleted
+  file.
+- =scripts/verify-login.ts= names the fleet in its prerequisites.
+- The live backlog capture whose reproduction step ran the script names
+  the fleet instead.
+- The Vite development server takes its ports from the checkout's =.env=,
+  so =npm run dev:web= proxies to the BFF without being told the port.
+- No dangling reference to either script remains outside the historical
+  sprint 25 review record, which is left as it was written.
+- =compass lint=, =validate_docs.sh=, =npm run typecheck=, =npm test= and
+  =npm run build= pass.
+
+* Plan
+
+1. Establish who uses the script before deleting it. The answer was the
+   README, the =stack= npm script, and one comment; =run-service.sh= had
+   exactly one caller, the script itself.
+2. Delete both scripts.
+3. Replace the README's standalone-path section with the fleet and the
+   hot-reload path.
+4. Remove the =stack= script from =package.json=.
+5. Point =verify-login.ts='s prerequisites and the live capture's
+   reproduction step at =compass services start=.
+6. Make the Vite config read the checkout's =.env=, because the deleted
+   script was the only thing passing those ports.
+7. Run the gates, including a full component build, since the Vite config
+   change is code rather than prose.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files naming either script, excluding the scripts themselves | 5: the component README, =package.json=, =verify-login.ts=, one live backlog capture, and one closed sprint 25 review record | =git grep -l "dev-stack\|run-service\.sh" HEAD=, less the two script paths | =d9b41bcc00= |
+| Scripts deleted | 2 files, 316 lines | =git show HEAD:projects/ores.web/scripts/dev-stack.sh \| wc -l= and the same for =run-service.sh= | =d9b41bcc00= |
+| Services the script started, against the fleet the component now uses | 4 of 25 | =compass services status= | =d9b41bcc00= |
+
+* Notes
+
+The script's own header is the evidence that it was a workaround rather than
+a design: "The C++ services are started one per process because each presents
+its own NATS client certificate; =compass services start= installs systemd
+units outside the checkout, which needs privileges this workspace does not
+have." The story that made =busctl= the transport is what stopped that being
+true.
+
+The Vite change is the part worth reviewing. Without it the README would
+document a dev server that proxies to port 8080 while the BFF listens on
+21402, because =vite= passes only =VITE_=-prefixed variables from =.env= and
+these are the service's. The directory is derived from the config file rather
+than from the working directory, since npm runs the workspace script from the
+package.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2288][#2288]] | [web] Delete the ores.web fleet scripts busctl made obsolete |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The middle =process.env[...]= fallback in the two port reads is probably dead, since =loadEnv= with an empty prefix already merges =process.env= | =packages/web/vite.config.ts= | Accept | Confirmed in the installed Vite rather than from memory: =loadEnv= ends with a loop that copies every =process.env= key whose name starts with a prefix, so an empty prefix copies them all, and it runs last, which means it also overrides the file. The fallback could never run. Dropping it leaves one source for each port instead of three, and the reason is now in the comment so the next reader does not put it back. |
+
+* Result
+
+Both scripts are gone, and so is everything that offered them: the README's
+standalone-path section, the =stack= npm script, the prerequisites comment
+in =verify-login.ts=, and the reproduction step of the live capture on
+=iam.v1.accounts.list=. The closed sprint 25 review record that names the
+script is left as it was written, because it records a decision as it was
+taken.
+
+The capability the script was covering is kept. =npm run dev:web= starts
+the Vite server that proxies =/api= to the BFF, and it now reads the
+checkout's =.env= rather than depending on its caller to export the ports,
+which is what the deleted script was doing for it. Two numbers worth
+carrying: the scripts were 316 lines, and they started four of the
+twenty-five units the fleet generates.
+
+Verified on the branch: =npm run build=, =npm run typecheck=, =npm test=
+with 10 test files and 70 cases, =compass lint= and =validate_docs.sh= all
+pass. The dev server was started against the running fleet, read 21402 from
+the checkout =.env=, and proxied =/api/health= to the BFF, answering
+={"status":"ok"}=.
+
+One review note was taken and fixed: the middle =process.env= fallback in
+the port reads was dead, which the installed Vite confirms. The round also
+rebased the branch onto main and resolved one conflict in the sprint's
+hotfix table, where main had added a build-restoration hotfix in the same
+place this story appends its own row.

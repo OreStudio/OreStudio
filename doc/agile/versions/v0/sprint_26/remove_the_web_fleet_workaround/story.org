@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: CC5F510F-28C4-40F8-B1F3-D5F666F3EDB9
+:END:
+#+title: Story: Remove the ores.web fleet workaround
+#+description: dev-stack.sh and run-service.sh start a subset of the fleet by hand because compass services start could not reach systemd from a sandboxed session. busctl removed that constraint, so the scripts are a second way to start the same services.
+#+type: story
+#+level: s2
+#+filetags: :web:compass:services:hotfix:v0:sprint_26:
+#+category: housekeeping
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.web= starts the way every other component starts: the generated fleet,
+brought up by =compass services=.
+
+The component carries its own way to start a subset of that fleet.
+=scripts/dev-stack.sh= starts NATS, the IAM service, refdata and the BFF as
+separate processes, and =scripts/run-service.sh= exists only to be called by
+it. They were written because =compass services start= installs systemd units
+outside the checkout, which a sandboxed session could not do. The busctl
+transport removed that constraint, so the workaround is now a second way to
+start the same services, and a second way is a way to drift.
+
+This is housekeeping rather than a feature. It is worth doing because the
+workaround is already inconsistent with the thing it duplicates: it starts
+four units out of twenty-five, it documents itself in the component README as
+the standalone path, and nothing keeps it in step with the fleet.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. The scripts are gone and the paths that offered them are updated. |
+| Waiting on    | Nothing.                               |
+| Next          | Merge PR #2288.                        |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- =projects/ores.web/scripts/= holds no script that starts services and is
+  not the fleet.
+- No document, npm script or comment offers a way to start the component
+  other than =compass services start=.
+- The hot-reload path is still reachable, and it takes its ports from the
+  same file the BFF does, so the two cannot disagree.
+- =compass lint=, =validate_docs.sh=, =npm run typecheck= and =npm test=
+  pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7B162044-E868-457E-B093-154CE11519E0][Delete the web fleet scripts and the documentation that offers them]] | DONE | 2026-09-27 | 2026-09-27 | Remove dev-stack.sh and run-service.sh, and take the standalone-path instructions out of the component README, its npm scripts and the verification script's comment, so the fleet has one way to start. |
+
+* Decisions
+
+- *A component does not start services.* The fleet is generated and owned by
+  compass, one unit per service, with the certificates, the environment and
+  the dependencies that go with it. A script inside a component that starts
+  four of those units is a parallel implementation of the fleet, and it can
+  only ever be a partial one.
+- *The workaround was correct when it was written.* The README's own words
+  were that =compass services start= "installs systemd units outside the
+  checkout, which needs privileges this workspace does not have". That was
+  true, and the script is what made the component testable in the meantime.
+  It is not true now, which is the whole of the argument for removing it.
+- *The hot-reload path stays, and it stops depending on the caller.* The
+  thing worth keeping from the script is a Vite server that proxies to the
+  BFF. That already exists as =npm run dev:web=, but it read its ports from
+  the environment, so it only worked when the script passed them. It now
+  reads the checkout's =.env= directly, which is where the BFF reads them.
+- *The historical records are not rewritten.* A sprint 25 review table names
+  the script and the file mode it was given. That is a record of a decision
+  as it was taken, and it stays.
+
+* Out of scope
+
+- The service units, their dependencies and their credentials. This change
+  removes a competing way to start them; it does not touch how the fleet
+  works.
+- =scripts/emit_protocol_ir.py=, =scripts/make-test-hash.cpp= and
+  =scripts/seed-test-account.sh=. They are the component's own tools and
+  none of them starts a service.
+
+* Result
+
+The component has one way to start services, and it is the fleet.
+=dev-stack.sh= and =run-service.sh= are deleted, and every path that offered
+them points at =compass services start= instead: the README, the npm
+scripts, the verification script's comment, and a live backlog capture.
+
+The workaround was correct when it was written and its own header says why:
+=compass services start= "installs systemd units outside the checkout, which
+needs privileges this workspace does not have". The busctl transport removed
+that, which left a script that started four of twenty-five units and could
+only drift from the fleet it duplicated.
+
+The thing worth keeping from it is kept. Hot reload is =npm run dev:web=
+against the running fleet, and the Vite config now reads the checkout's
+=.env= for its ports rather than depending on its caller to export them,
+which is what the deleted script did for it.

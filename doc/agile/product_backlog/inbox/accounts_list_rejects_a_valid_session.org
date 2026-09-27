@@ -4,7 +4,7 @@
 #+title: iam.v1.accounts.list rejects a well-formed request from a valid session
 #+description: A logged-in session with a party cannot list accounts. The server answers iam.v1.accounts.list with bad_request, which aborts verify-login.ts before its last three checks run.
 
-Reproduction. Run scripts/dev-stack.sh start, seed an account, then npm run verify:login in projects/ores.web. The rejected-login checks pass, the login checks pass, and the run stops at accounts.list. Seed first with AUDIT_ACCOUNT set to a username that exists, because the default sysadmin does not exist in a restored database.
+Reproduction. Run compass services start, seed an account, then npm run verify:login in projects/ores.web. The rejected-login checks pass, the login checks pass, and the run stops at accounts.list. Seed first with AUDIT_ACCOUNT set to a username that exists, because the default sysadmin does not exist in a restored database.
 
 What is ruled out. The generated account protocol module, the OresClient listAccounts call and verify-login.ts itself are all unchanged on the branch that found this, and no C++ or SQL is involved. The client sends the subject and the message shape its generated protocol declares.
 

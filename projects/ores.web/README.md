@@ -101,22 +101,26 @@ the certificates. It never holds the bearer token.
 
 ## Running the stack
 
-`compass services start` starts the fleet. The fleet includes
-`ores.web.service`. The BFF serves the built browser bundle and the `/api`
-routes from one process on `ORES_WEB_PORT`. In this checkout that port is 21402.
+`compass services start` is the way to run this component, as it is for every
+other one. The fleet includes `ores.web.service`. The BFF serves the built
+browser bundle and the `/api` routes from one process on `ORES_WEB_PORT`. In
+this checkout that port is 21402.
 
 Build the component before you start the fleet. From `projects/ores.web`, run
 `npm ci` and `npm run build`. The service runs the built BFF from
 `packages/bff/dist`.
 
-`scripts/dev-stack.sh` remains the standalone development path:
+For hot reload while working on the client, start the fleet and then the Vite
+development server, which proxies `/api` to the BFF. It reads the checkout's
+`.env`, so it needs no arguments and it cannot disagree with the BFF about
+which port it is proxying to:
 
 ```sh
-scripts/dev-stack.sh start
+compass services start
+npm run dev:web
 ```
 
-That path starts the broker, the IAM and refdata services, the BFF, and the Vite
-development server. It waits for each port and prints the URL to open.
+`compass services stop` stops the fleet.
 
 ## Verification
 

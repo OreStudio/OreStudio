@@ -77,6 +77,13 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
     fields.push_back({.name = "{{render_label}}",
                       .value = v.{{{group_prefix}}}{{name}} ? ores::platform::time::datetime::to_iso8601_utc(*v.{{{group_prefix}}}{{name}}) : std::string{}});
 {{/render_is_optional_timestamp}}
+{{#render_is_date}}
+    fields.push_back({.name = "{{render_label}}", .value = ores::platform::time::datetime::to_iso8601_date(v.{{{group_prefix}}}{{name}})});
+{{/render_is_date}}
+{{#render_is_optional_date}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.{{{group_prefix}}}{{name}} ? ores::platform::time::datetime::to_iso8601_date(*v.{{{group_prefix}}}{{name}}) : std::string{}});
+{{/render_is_optional_date}}
 {{#render_is_optional_string}}
     fields.push_back({.name = "{{render_label}}", .value = v.{{{group_prefix}}}{{name}}.value_or(std::string{})});
 {{/render_is_optional_string}}

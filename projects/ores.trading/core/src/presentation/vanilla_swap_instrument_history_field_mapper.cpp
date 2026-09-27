@@ -41,7 +41,8 @@ render_vanilla_swap_instrument_fields(const domain::vanilla_swap_instrument& v) 
     fields.push_back({.name = "Trade ID",
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
     fields.push_back(
         {.name = "Settlement Lag",

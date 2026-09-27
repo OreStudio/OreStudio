@@ -198,6 +198,10 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{group_prefix}}}{{name}} = std::string(faker::word::noun());
 {{/requires_unique_suffix}}
 {{/is_plain_string}}
+{{#is_date}}
+    r.{{{group_prefix}}}{{name}} = std::chrono::year_month_day{
+        std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+{{/is_date}}
 {{#is_base64}}
     r.{{{group_prefix}}}{{name}} = std::vector<std::uint8_t>{'<', 's', 'v', 'g', '/', '>'};
 {{/is_base64}}

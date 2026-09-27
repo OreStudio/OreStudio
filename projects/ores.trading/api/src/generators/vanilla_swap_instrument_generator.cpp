@@ -48,7 +48,8 @@ generate_synthetic_vanilla_swap_instrument(utility::generation::generation_conte
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("Swap");
     r.identity.party_id = ctx.generate_uuid();
-    r.start_date = std::string("2024-01-15");
+    r.start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.maturity_date = std::string("2029-01-15");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

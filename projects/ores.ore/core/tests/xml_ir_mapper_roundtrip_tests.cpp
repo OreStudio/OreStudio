@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -82,7 +83,7 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     const auto& instr = std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument);
     const auto& legs = result.legs;
 
-    CHECK(instr.start_date == "2023-02-21");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2023-02-21");
     CHECK(instr.maturity_date == "2043-02-21");
 
     REQUIRE(legs.size() == 2);

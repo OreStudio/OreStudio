@@ -62,6 +62,13 @@ _ENTITY_STRUCT_FLAGS = (
     # A value type reaches the struct as the string it wraps, so it is a
     # member like any other and not a hole.
     'is_value_type',
+    # A plain date column's domain member is std::chrono::year_month_day (or
+    # its optional) while the entity member is the ISO-8601 std::string the
+    # database stores -- sqlgen cannot bind year_month_day. The template pairs
+    # these flags with a std::string/std::optional<std::string> member, so
+    # without them the guard would refuse a shape the template carries.
+    'is_required_date',
+    'is_optional_date',
     'is_simple',
 )
 
@@ -2494,6 +2501,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['name'].split('.', 1)[1]: (f.get('cpp_type') or '').strip()
                 for f in domain_entity.get('domain_group_fields', []) or []
             }
+            # The plain (non-key) columns, by identity: the loop below also
+            # walks natural keys and primary-key columns, which carry their
+            # own is_date projection and must not be re-flagged here.
+            _plain_column_ids = {id(c) for c in domain_entity['columns']}
             # Add type flags and iterator_var for protocol serialization
             for col in (domain_entity['columns']
                         + list(domain_entity.get('natural_keys') or [])
@@ -2512,10 +2523,35 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 )
                 is_enum_type = col.get('is_enum', False)
                 is_inet_address_type = 'boost::asio::ip::address' in col.get('cpp_type', '')
+                # A plain date column: the domain member is
+                # std::chrono::year_month_day (or its optional), but sqlgen
+                # cannot bind year_month_day -- its parsing layer rejects the
+                # type with a static_assert -- so the entity member stays the
+                # ISO-8601 std::string the database column stores, exactly as
+                # the refdata date columns already do, and the mapper converts
+                # at the boundary. The domain type is read from the resolved
+                # domain type, not the raw :cpp_type:, so a domain-grouped
+                # column (whose entity model declares the row type, std::string,
+                # while the field group declares the member) is covered too.
+                _domain_cpp_type = _domain_type_of.get(
+                    col.get('name'), (col.get('cpp_type') or '').strip()
+                )
+                is_date_domain = _domain_cpp_type in (
+                    'std::chrono::year_month_day',
+                    'std::optional<std::chrono::year_month_day>',
+                )
+                col['is_date'] = bool(
+                    id(col) in _plain_column_ids
+                    and col.get('type') == 'date'
+                    and is_date_domain
+                )
+                col['is_optional_date'] = col['is_date'] and col.get('nullable', False)
+                col['is_required_date'] = col['is_date'] and not col.get('nullable', False)
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
                     and not is_uuid_type
                     and not is_timestamp_type
+                    and not col['is_date']
                 )
                 col['is_already_optional'] = is_already_optional
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
@@ -2572,6 +2608,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_timestamp_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_date']
                     and col.get('cpp_type') == 'std::string'
                 )
                 # A nullable numeric (or bool) column whose domain member is
@@ -2597,6 +2634,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_inet_address_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_date']
                     and not col['is_base64']
                     and not col['is_value_type']
                 )
@@ -2658,6 +2696,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 )
                 col['render_is_optional_timestamp'] = (
                     _render_cpp_type.startswith('std::optional<') and 'time_point' in _render_cpp_type
+                )
+                # A plain date's domain member renders through the ISO-8601
+                # helpers; key date columns already branch on is_date in their
+                # own template sections, so these flags exist for the plain
+                # column blocks (mapper and history field mapper).
+                col['render_is_date'] = _render_cpp_type == 'std::chrono::year_month_day'
+                col['render_is_optional_date'] = (
+                    _render_cpp_type == 'std::optional<std::chrono::year_month_day>'
                 )
                 # Derived from the raw is_enum flag, not the nullable-narrowed
                 # col['is_enum'] above -- render_* flags must match the
@@ -2783,6 +2829,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # asks for it, so neither drags the conversion in for every entity.
             domain_entity['has_base64_columns'] = any(
                 c.get('is_base64') for c in domain_entity['columns']
+            )
+            # The mapper's own include gate for the ISO-8601 date conversion:
+            # the mapper template pulls in ores.platform/time/datetime.hpp
+            # rather than relying on a transitive include from the domain
+            # header, the same way has_inet_columns does for make_address.
+            domain_entity['has_plain_date_columns'] = any(
+                c.get('is_date') for c in domain_entity['columns']
             )
         # Field-group contract: detect identity/audit group annotations and
         # mark each column so templates can emit nested-struct form.

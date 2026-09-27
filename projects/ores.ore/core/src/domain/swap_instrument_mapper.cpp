@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <map>
 
 namespace ores::ore::domain {
@@ -72,6 +73,11 @@ std::string start_date_from_schedule(const xsd::optional<scheduleData>& sd) {
         return {};
     if (!sd->Rules.empty())
         return std::string(sd->Rules.front().StartDate);
+    // A schedule may carry an explicit date list instead of a rule. Its first
+    // entry is the effective date, and a date-typed start_date cannot hold
+    // the empty string the rule-only path leaves behind.
+    if (!sd->Dates.empty() && !sd->Dates.front().Dates.Date.empty())
+        return std::string(sd->Dates.front().Dates.Date.front());
     return {};
 }
 
@@ -441,7 +447,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
     auto& vi = std::get<vanilla_swap_instrument>(result.instrument);
 
     if (!sd->LegData.empty()) {
-        vi.start_date = start_date_from_schedule(sd->LegData.front().ScheduleData);
+        vi.start_date = ores::platform::time::datetime::from_iso8601_date(
+            start_date_from_schedule(sd->LegData.front().ScheduleData));
         vi.maturity_date = end_date_from_schedule(sd->LegData.front().ScheduleData);
     }
 
@@ -661,7 +668,10 @@ trade swap_instrument_mapper::reverse_swap(const vanilla_swap_instrument& instr,
 
     swapData sd;
     for (const auto& sl : legs)
-        sd.LegData.push_back(reverse_leg(instr.start_date, instr.maturity_date, sl));
+        sd.LegData.push_back(reverse_leg(
+            ores::platform::time::datetime::to_iso8601_date(instr.start_date),
+            instr.maturity_date,
+            sl));
 
     t.SwapData = std::move(sd);
     return t;
@@ -941,7 +951,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
         result.legs.push_back(map_leg(ld, leg_num++));
 
     if (!result.legs.empty()) {
-        vi.start_date = start_date_from_schedule(fd.LegData.front().ScheduleData);
+        vi.start_date = ores::platform::time::datetime::from_iso8601_date(
+            start_date_from_schedule(fd.LegData.front().ScheduleData));
         vi.maturity_date = end_date_from_schedule(fd.LegData.front().ScheduleData);
     }
 

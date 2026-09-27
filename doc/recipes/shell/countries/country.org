@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.countries.put=.
 
 #+name: countries-add
 #+begin_src ores-shell :tangle countries-add.ores :exports none
-countries add __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+countries add __none__ __none__ __none__ __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.countries.put=.
 
 #+name: countries-set
 #+begin_src ores-shell :tangle countries-set.ores :exports none
-countries set __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+countries set __none__ __none__ __none__ __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.countries.put_many=.
 
 #+name: countries-put-many
 #+begin_src ores-shell :tangle countries-put-many.ores :exports none
-countries put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+countries put-many --count 1 __none__ __none__ __none__ __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

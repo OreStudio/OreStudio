@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-party_contact_informations add <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+party_contact_informations add <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.party_contact_informations.put=.
 
 #+name: party_contact_informations-add
 #+begin_src ores-shell :tangle party_contact_informations-add.ores :exports none
-party_contact_informations add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+party_contact_informations add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -106,14 +106,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-party_contact_informations set <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
+party_contact_informations set <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.party_contact_informations.put=.
 
 #+name: party_contact_informations-set
 #+begin_src ores-shell :tangle party_contact_informations-set.ores :exports none
-party_contact_informations set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+party_contact_informations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -127,14 +127,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-party_contact_informations put-many --count <n> <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+party_contact_informations put-many --count <n> <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.party_contact_informations.put_many=.
 
 #+name: party_contact_informations-put-many
 #+begin_src ores-shell :tangle party_contact_informations-put-many.ores :exports none
-party_contact_informations put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+party_contact_informations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

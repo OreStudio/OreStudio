@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.calendars.put=.
 
 #+name: calendars-add
 #+begin_src ores-shell :tangle calendars-add.ores :exports none
-calendars add __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+calendars add __none__ __none__ __none__ __none__ - __none__ false - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.calendars.put=.
 
 #+name: calendars-set
 #+begin_src ores-shell :tangle calendars-set.ores :exports none
-calendars set __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+calendars set __none__ __none__ __none__ __none__ - __none__ false - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.calendars.put_many=.
 
 #+name: calendars-put-many
 #+begin_src ores-shell :tangle calendars-put-many.ores :exports none
-calendars put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+calendars put-many --count 1 __none__ __none__ __none__ __none__ - __none__ false - system.new_record generated_script
 #+end_src
 
 ** =delete=

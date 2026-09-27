@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.tenors.put=.
 
 #+name: tenors-add
 #+begin_src ores-shell :tangle tenors-add.ores :exports none
-tenors add __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+tenors add __none__ __none__ __none__ 0 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.tenors.put=.
 
 #+name: tenors-set
 #+begin_src ores-shell :tangle tenors-set.ores :exports none
-tenors set __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+tenors set __none__ __none__ __none__ 0 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.tenors.put_many=.
 
 #+name: tenors-put-many
 #+begin_src ores-shell :tangle tenors-put-many.ores :exports none
-tenors put-many --count 1 __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+tenors put-many --count 1 __none__ __none__ __none__ 0 __none__ __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

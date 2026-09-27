@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-portfolios add <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
+portfolios add <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.put=.
 
 #+name: portfolios-add
 #+begin_src ores-shell :tangle portfolios-add.ores :exports none
-portfolios add __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+portfolios add 00000000-0000-0000-0000-000000000000 __none__ __none__ - - __none__ __none__ false __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -106,14 +106,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-portfolios set <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary> [--version <n>]
+portfolios set <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.put=.
 
 #+name: portfolios-set
 #+begin_src ores-shell :tangle portfolios-set.ores :exports none
-portfolios set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+portfolios set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - - __none__ __none__ false __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -127,14 +127,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-portfolios put-many --count <n> <id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
+portfolios put-many --count <n> <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.portfolios.put_many=.
 
 #+name: portfolios-put-many
 #+begin_src ores-shell :tangle portfolios-put-many.ores :exports none
-portfolios put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+portfolios put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - - __none__ __none__ false __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

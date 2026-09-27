@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.ois_conventions.put=.
 
 #+name: ois_conventions-add
 #+begin_src ores-shell :tangle ois_conventions-add.ores :exports none
-ois_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ois_conventions add __none__ 0 __none__ __none__ - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.ois_conventions.put=.
 
 #+name: ois_conventions-set
 #+begin_src ores-shell :tangle ois_conventions-set.ores :exports none
-ois_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ois_conventions set __none__ 0 __none__ __none__ - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.ois_conventions.put_many=.
 
 #+name: ois_conventions-put-many
 #+begin_src ores-shell :tangle ois_conventions-put-many.ores :exports none
-ois_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+ois_conventions put-many --count 1 __none__ 0 __none__ __none__ - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

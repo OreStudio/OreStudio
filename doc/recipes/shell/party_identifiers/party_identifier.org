@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-party_identifiers add <id_scheme> <id_value> <description> <reason> <commentary>
+party_identifiers add <party_id> <id_scheme> <id_value> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.party_identifiers.put=.
 
 #+name: party_identifiers-add
 #+begin_src ores-shell :tangle party_identifiers-add.ores :exports none
-party_identifiers add __none__ __none__ __none__ system.new_record generated_script
+party_identifiers add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -106,14 +106,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-party_identifiers set <id> <id_scheme> <id_value> <description> <reason> <commentary> [--version <n>]
+party_identifiers set <id> <party_id> <id_scheme> <id_value> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.party_identifiers.put=.
 
 #+name: party_identifiers-set
 #+begin_src ores-shell :tangle party_identifiers-set.ores :exports none
-party_identifiers set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+party_identifiers set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -127,14 +127,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-party_identifiers put-many --count <n> <id> <id_scheme> <id_value> <description> <reason> <commentary>
+party_identifiers put-many --count <n> <id> <party_id> <id_scheme> <id_value> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.party_identifiers.put_many=.
 
 #+name: party_identifiers-put-many
 #+begin_src ores-shell :tangle party_identifiers-put-many.ores :exports none
-party_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+party_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

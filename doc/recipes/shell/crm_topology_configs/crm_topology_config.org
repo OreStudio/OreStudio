@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-crm_topology_configs add <name> <pivot_currency_code> <enabled> <reason> <commentary>
+crm_topology_configs add <party_id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.crm_topology_configs.put=.
 
 #+name: crm_topology_configs-add
 #+begin_src ores-shell :tangle crm_topology_configs-add.ores :exports none
-crm_topology_configs add __none__ __none__ false system.new_record generated_script
+crm_topology_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -106,14 +106,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-crm_topology_configs set <id> <name> <pivot_currency_code> <enabled> <reason> <commentary> [--version <n>]
+crm_topology_configs set <id> <party_id> <name> <pivot_currency_code> <enabled> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.crm_topology_configs.put=.
 
 #+name: crm_topology_configs-set
 #+begin_src ores-shell :tangle crm_topology_configs-set.ores :exports none
-crm_topology_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+crm_topology_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -127,14 +127,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-crm_topology_configs put-many --count <n> <id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
+crm_topology_configs put-many --count <n> <id> <party_id> <name> <pivot_currency_code> <enabled> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.crm_topology_configs.put_many=.
 
 #+name: crm_topology_configs-put-many
 #+begin_src ores-shell :tangle crm_topology_configs-put-many.ores :exports none
-crm_topology_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+crm_topology_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.calendar_events.put=.
 
 #+name: calendar_events-add
 #+begin_src ores-shell :tangle calendar_events-add.ores :exports none
-calendar_events add __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_events add __none__ 1970-01-01 __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.calendar_events.put=.
 
 #+name: calendar_events-set
 #+begin_src ores-shell :tangle calendar_events-set.ores :exports none
-calendar_events set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_events set 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.calendar_events.put_many=.
 
 #+name: calendar_events-put-many
 #+begin_src ores-shell :tangle calendar_events-put-many.ores :exports none
-calendar_events put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_events put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

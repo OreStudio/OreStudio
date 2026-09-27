@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.calendar_exceptions.put=.
 
 #+name: calendar_exceptions-add
 #+begin_src ores-shell :tangle calendar_exceptions-add.ores :exports none
-calendar_exceptions add __none__ __none__ false __none__ system.new_record generated_script
+calendar_exceptions add __none__ 1970-01-01 false - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.calendar_exceptions.put=.
 
 #+name: calendar_exceptions-set
 #+begin_src ores-shell :tangle calendar_exceptions-set.ores :exports none
-calendar_exceptions set 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+calendar_exceptions set 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 false - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.calendar_exceptions.put_many=.
 
 #+name: calendar_exceptions-put-many
 #+begin_src ores-shell :tangle calendar_exceptions-put-many.ores :exports none
-calendar_exceptions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+calendar_exceptions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 false - system.new_record generated_script
 #+end_src
 
 ** =delete=

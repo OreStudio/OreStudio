@@ -85,14 +85,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-business_units add <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
+business_units add <party_id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.business_units.put=.
 
 #+name: business_units-add
 #+begin_src ores-shell :tangle business_units-add.ores :exports none
-business_units add __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+business_units add 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ - __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -106,14 +106,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-business_units set <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary> [--version <n>]
+business_units set <id> <party_id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.business_units.put=.
 
 #+name: business_units-set
 #+begin_src ores-shell :tangle business_units-set.ores :exports none
-business_units set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+business_units set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ - __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -127,14 +127,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-business_units put-many --count <n> <id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
+business_units put-many --count <n> <id> <party_id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> <unit_type_id> <status> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.business_units.put_many=.
 
 #+name: business_units-put-many
 #+begin_src ores-shell :tangle business_units-put-many.ores :exports none
-business_units put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+business_units put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ - __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

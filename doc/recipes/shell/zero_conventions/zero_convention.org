@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.zero_conventions.put=.
 
 #+name: zero_conventions-add
 #+begin_src ores-shell :tangle zero_conventions-add.ores :exports none
-zero_conventions add __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+zero_conventions add __none__ false __none__ - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.zero_conventions.put=.
 
 #+name: zero_conventions-set
 #+begin_src ores-shell :tangle zero_conventions-set.ores :exports none
-zero_conventions set __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+zero_conventions set __none__ false __none__ - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.zero_conventions.put_many=.
 
 #+name: zero_conventions-put-many
 #+begin_src ores-shell :tangle zero_conventions-put-many.ores :exports none
-zero_conventions put-many --count 1 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+zero_conventions put-many --count 1 __none__ false __none__ - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.tenor_schedules.put=.
 
 #+name: tenor_schedules-add
 #+begin_src ores-shell :tangle tenor_schedules-add.ores :exports none
-tenor_schedules add __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+tenor_schedules add __none__ __none__ __none__ 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.tenor_schedules.put=.
 
 #+name: tenor_schedules-set
 #+begin_src ores-shell :tangle tenor_schedules-set.ores :exports none
-tenor_schedules set __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+tenor_schedules set __none__ __none__ __none__ 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.tenor_schedules.put_many=.
 
 #+name: tenor_schedules-put-many
 #+begin_src ores-shell :tangle tenor_schedules-put-many.ores :exports none
-tenor_schedules put-many --count 1 __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+tenor_schedules put-many --count 1 __none__ __none__ __none__ 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=
@@ -197,7 +197,7 @@ It is addressed at =refdata.v1.tenor_schedules.list_by_calendar_code=.
 
 #+name: tenor_schedules-by-calendar-code
 #+begin_src ores-shell :tangle tenor_schedules-by-calendar-code.ores :exports none
-tenor_schedules by-calendar-code __none__ --limit 1
+tenor_schedules by-calendar-code - --limit 1
 #+end_src
 
 ** =by-diary-entry-type=
@@ -218,7 +218,7 @@ It is addressed at =refdata.v1.tenor_schedules.list_by_diary_entry_type=.
 
 #+name: tenor_schedules-by-diary-entry-type
 #+begin_src ores-shell :tangle tenor_schedules-by-diary-entry-type.ores :exports none
-tenor_schedules by-diary-entry-type __none__ --limit 1
+tenor_schedules by-diary-entry-type - --limit 1
 #+end_src
 
 ** =versions=

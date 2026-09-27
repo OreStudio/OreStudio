@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.party_id_schemes.put=.
 
 #+name: party_id_schemes-add
 #+begin_src ores-shell :tangle party_id_schemes-add.ores :exports none
-party_id_schemes add __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+party_id_schemes add __none__ __none__ __none__ __none__ 0 - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.party_id_schemes.put=.
 
 #+name: party_id_schemes-set
 #+begin_src ores-shell :tangle party_id_schemes-set.ores :exports none
-party_id_schemes set __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+party_id_schemes set __none__ __none__ __none__ __none__ 0 - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.party_id_schemes.put_many=.
 
 #+name: party_id_schemes-put-many
 #+begin_src ores-shell :tangle party_id_schemes-put-many.ores :exports none
-party_id_schemes put-many --count 1 __none__ __none__ __none__ __none__ 0 __none__ system.new_record generated_script
+party_id_schemes put-many --count 1 __none__ __none__ __none__ __none__ 0 - system.new_record generated_script
 #+end_src
 
 ** =delete=

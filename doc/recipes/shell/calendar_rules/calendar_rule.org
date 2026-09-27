@@ -92,7 +92,7 @@ It is addressed at =refdata.v1.calendar_rules.put=.
 
 #+name: calendar_rules-add
 #+begin_src ores-shell :tangle calendar_rules-add.ores :exports none
-calendar_rules add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_rules add __none__ __none__ - - - - - __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +113,7 @@ It is addressed at =refdata.v1.calendar_rules.put=.
 
 #+name: calendar_rules-set
 #+begin_src ores-shell :tangle calendar_rules-set.ores :exports none
-calendar_rules set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_rules set 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +134,7 @@ It is addressed at =refdata.v1.calendar_rules.put_many=.
 
 #+name: calendar_rules-put-many
 #+begin_src ores-shell :tangle calendar_rules-put-many.ores :exports none
-calendar_rules put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_rules put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

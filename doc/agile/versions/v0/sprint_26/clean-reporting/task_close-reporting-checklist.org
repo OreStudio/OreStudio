@@ -28,9 +28,9 @@ Record a result for every Component Clean Standard item the clean-reporting pass
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] |
-| Now          | The 19 unrecorded items are recorded, G08 and H03 are fixed, and the tree builds again. |
+| Now          | The 19 unrecorded items are recorded, G08 and H03 are fixed, V08 is closed, and V04 is measured: 35 of 51 commands answer. |
 | Waiting on   | Nothing.                               |
-| Next         | Close V04 with a replay and V08 with a database test, then work the six open failures. |
+| Next         | Resolve the =report_definitions= shell menu collision, then work the six open failures plus V04's remaining causes. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -89,6 +89,7 @@ Six items fail, and none of them is a documentation problem.
 | H01 | No written audit record; the three part diagrams have an empty manual section and draw method-only classes as empty boxes; the root diagram has no two-pass structure. | The diagrams and an audit record, in this component. |
 | M04 | Two model keys nothing reads: =report_instance= 's =:parent_id_field:= and =risk_report_config= 's =:parent_entity:=. | The two models. |
 | M08 | Fifteen flags typed =integer= instead of =boolean=, and =numeric(5,4)= where the tree uses =numeric(28, 10)=. | =ores.reporting.risk_report_config.org=, then regenerate. |
+| V04 | Sixteen of the 51 generated commands do not answer. | Three causes, below: a shell menu collision, a =__none__= placeholder where a uuid is required, and the silent step handlers. |
 
 ** A block that has since lifted
 
@@ -106,6 +107,41 @@ include with the FSM repository include in both consumers. On the rebased branch
 the whole tree builds (exit 0), =check_component_drift.py --component reporting=
 reports no drift, and the four reporting suites pass 4 of 4. V01 and P05's build
 half are therefore satisfied, and V04 and V08 are open work rather than a block.
+
+* V04 and V08
+
+** V04: every command replayed, and sixteen fail
+
+All 51 generated commands were replayed with =check_shell_recipes.py= against a
+database rebuilt with =compass db recreate -y -k= and a fleet restarted on the
+rebuilt binaries. Thirty-five answer and sixteen do not. Each cause is a defect,
+and none is a missing test.
+
+| Commands | Count | Cause |
+|----------+-------+-------|
+| =report_definitions= list, get, version, versions, delete | 5 | *The command is not reporting's.* The DQ shell part registers a menu of the same name, and it wins: the request arrives at the DQ service as =dq.v1.report_definitions.list=. It then answers =internal_error=, because the table the DQ command reads, =ores_dq_report_definitions_tbl=, is declared at =ores.dq.report_definition.org:124= and created by no script. |
+| =report_definitions= add, delete-many, get-many, put-many, set | 5 | The same collision, and the failure proves it: the recipes are generated for reporting's signatures, and the DQ menu rejects them with "Expected 8 arguments, got 9" and "Expected 9 arguments, got 10". =get-many= reaches the argument check and fails on "Invalid value for id: __none__". |
+| =report_instances= add, put-many, set | 3 | The generated recipe passes =__none__= for =fsm_state_id=, a required uuid and a server-owned field: "Invalid value for fsm_state_id: __none__". The same placeholder stands where a uuid is required for =id=. |
+| the eight execution steps, =assemble-bundle= to =submit-compute= | 8 | They time out. Every step handler opens with =workflow_step_context::from_message(...)= and returns in silence when the workflow headers are absent, which they are for a shell caller, so the caller learns only that time passed. This repeats the parent task's finding, on a rebuilt fleet. |
+
+The collision is the sharper finding, and it is verified from both ends:
+=dq_commands::register_commands= (=repl.cpp:105=) registers DQ's
+=report_definitions= menu before reporting's at =repl.cpp:116=, and the service
+log records the request at =dq.v1.report_definitions.list= rather than
+=reporting.v1.report_definitions.list=. Until it is resolved the
+=report_definitions= family cannot be exercised from the shell at all, so S01
+passes on the unit and the test rather than on a working command.
+
+** V08: five of six files, and the sixth has a test
+
+=repository_report_input_bundle_repository_tests.cpp= is added. It creates a
+bundle and finds it back by instance id, asserting the literal values it wrote,
+and asserts that an unknown instance id returns nothing. Both cases run and pass
+in =ores.reporting.core.tests=.
+
+That leaves the composition and entry-point files, whose test is the fleet
+starting and whose reason is recorded. The item asks for a test *or* a recorded
+reason for every source file, so it is satisfied.
 
 * Plan
 

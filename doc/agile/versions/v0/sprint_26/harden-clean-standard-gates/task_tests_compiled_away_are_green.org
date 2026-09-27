@@ -8,7 +8,7 @@
 #+filetags: :harden-clean-standard-gates:sprint_26:v0:
 #+owner: marco
 #+branch: feature/gate-dead-test-cases
-#+pr:
+#+pr: 2249
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2249][#2249]] | [codegen] Gate a test case that never reaches the compiler |
 
 * Review
 

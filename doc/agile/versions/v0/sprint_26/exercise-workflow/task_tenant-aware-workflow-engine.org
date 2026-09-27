@@ -8,7 +8,7 @@
 #+filetags: :exercise-workflow:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/tenant-aware-workflow-engine
-#+pr:
+#+pr: 2269
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2269][#2269]] | [workflow] Let the engine read runs of any tenant |
 
 * Review
 

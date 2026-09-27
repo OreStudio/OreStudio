@@ -2,13 +2,13 @@
 :ID: 42C0752B-BB0E-4D26-982D-0BC89DB8EB24
 :END:
 #+title: Story: Stop ores.shell menus from silently shadowing each other
-#+description: Five shell menus are registered twice, and the CLI resolves a duplicate by registration order in repl.cpp. Where both sides define a verb, the loser's implementation is dead: accounts list, roles and permissions get/list, and tenants add/delete/get. The dq side of the same class is fixed in the generator, which no longer renders a shell-command unit for an artefact-staging-only entity.
+#+description: Four shell menus are registered twice, and the CLI resolves a duplicate by registration order in repl.cpp, so the first unit to register a verb owns it. The generated iam units win for accounts list, roles list and roles get, permissions list, and tenants get, add and delete; the hand-written definitions of those seven verbs are unreachable. The help for a menu describes only the first unit, so the other unit's verbs are hidden although they still answer. The dq side of the same class is fixed in the generator, which no longer renders a shell-command unit for an artefact-staging-only entity.
 #+type: story
 #+level: s2
 #+filetags: :shell:cli:defect:sprint_26:v0:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment: festive_dijkstra
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,23 +23,24 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The seven shadowed verbs are measured and deleted. The menu merge and the startup guard are next. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Give each menu one owner, through a registry the generated units insert into. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
 
 - No two shell command units register the same menu name, and a duplicate would fail at startup rather than be shadowed.
-- The eight dead verbs are either migrated to the generated menus or deleted with the reason recorded.
+- The seven dead verbs are either migrated to the generated menus or deleted with the reason recorded.
 - The shell's command surface is unchanged for every verb that currently answers.
+- A menu's help lists every verb that answers at that address, including the ones another unit contributes.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:560DC5AA-C067-4ECA-B12B-1947E89D0319][Scaffold story: Stop ores.shell menus from silently shadowing each other]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:FBFF4403-2636-4D04-9BFA-7146B7D39B60][Implement Stop ores.shell menus from silently shadowing each other]] | BACKLOG | | | Initial task for: Stop ores.shell menus from silently shadowing each other |
+| [[id:FBFF4403-2636-4D04-9BFA-7146B7D39B60][Implement Stop ores.shell menus from silently shadowing each other]] | STARTED | 2026-09-27 | | Initial task for: Stop ores.shell menus from silently shadowing each other |
 
 * Decisions
 

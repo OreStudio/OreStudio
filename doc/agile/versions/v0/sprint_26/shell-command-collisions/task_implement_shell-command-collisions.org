@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :shell-command-collisions:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: fix/shell-menu-collisions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][Stop ores.shell menus from silently shadowing each other]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][Stop ores.shell menus from silently shadowing each other]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

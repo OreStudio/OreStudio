@@ -21,11 +21,11 @@ Every HTTP route the models declare has a generated literate recipe, each recipe
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -40,10 +40,39 @@ Every HTTP route the models declare has a generated literate recipe, each recipe
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B4B9C589-5F1B-47FD-BA9B-CB7E9B11DF6F][Scaffold story: Generate literate HTTP recipes that tangle to runnable Hurl]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:65D35A34-2A96-4B92-A102-B40A2AC71383][Build the HTTP recipe facet and its runner]] | STARTED | 2026-09-27 | | Initial task for: Generate literate HTTP recipes that tangle to runnable Hurl |
+| [[id:65D35A34-2A96-4B92-A102-B40A2AC71383][Build the HTTP recipe facet and its runner]] | DONE | 2026-09-27 | 2026-09-27 | Initial task for: Generate literate HTTP recipes that tangle to runnable Hurl |
+
+* Result
+
+The HTTP surface documents itself and tests itself from one document per
+model, the arrangement the shell surface already has. A codegen facet
+generates one literate recipe per model that renders a route, each endpoint
+tangles to a Hurl file in a committed library, a runner replays a recipe group
+against the live gateway and records a verdict for each, and the generated
+inventory is gated in CI.
+
+Fourteen models generate today — seven entities, one junction and six
+operations — into 82 Hurl files. The task carries the item-by-item account.
+
+The harness found a real defect on its first run, which is what it is for: the
+gateway rejects every token the login route issues, with =JWT verification
+failed: wrong algorithm= in its log. No authenticated recipe can assert a 200
+until that is fixed.
 
 * Decisions
 
+| # | Decision | Why |
+|---+----------+-----|
+| 1 | Hurl is the tangle target. | It is to HTTP what =ores-shell= is to the shell: a plain-text file that is both the readable document and the runnable test, with assertions. The existing =verb= blocks were already most of the way to its syntax. |
+| 2 | A recipe asserts the endpoint's status, not its payload. | A payload assertion would pin the recipe to whatever the populated database happens to hold. |
+| 3 | =REJECTED= is a verdict of its own. | The gateway refusing the caller says something different about the deployment than the endpoint answering wrongly, and the harness exists to tell those apart. |
+| 4 | The generated inventory is its own document. | The curated =doc/recipes/http/http.org= catalogues the hand-written recipes that predate the facet. Regenerating it from filetags would replace headings like "RBAC (Role-Based Access Control)" with "Rbac verb". |
+| 5 | The runner is not a CI job. | CI has no running gateway, and =check_shell_recipes.py= is a manual lever for the same reason. What CI gates is the inventory. |
+
 * Out of scope
 
--
+Recorded rather than done, each with its reason:
+
+- The JWT algorithm defect. It needs a diagnosis of how the gateway and iam agree on a signing key, which is security work rather than recipe work.
+- The hand-written recipes in =doc/recipes/http/= are stale in shape as well as style: login takes =principal= rather than =username=, and the paths are namespaced.
+- The runner replays writes by default. A destructive recipe must be named in =--skip=, which is recorded on the task rather than enforced here.

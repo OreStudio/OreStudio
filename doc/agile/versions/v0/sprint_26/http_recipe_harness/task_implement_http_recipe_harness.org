@@ -26,11 +26,11 @@ Every HTTP route the models declare has a generated literate recipe, each recipe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A2DCE17E-03DE-4C3B-A9A7-E5F3605A1FE0][Generate literate HTTP recipes that tangle to runnable Hurl]] |
-| Now          | The design is recorded; the facet is next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the facet, the archetype and the loader context, then prove one recipe. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -120,3 +120,49 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The HTTP surface now has the arrangement the shell surface has: one literate
+recipe per model, exported to one runnable file per endpoint, replayed by a
+harness that records a verdict for each, with an inventory the build checks.
+
+The facet =ores.doc.http-recipe= has one archetype, rendering
+=doc/recipes/http/<group>/<entity>.org= and requiring =ores.cpp.http-route=,
+so a recipe exists exactly where a route does. Its document is built from the
+route plan rather than a second derivation, so a route the gateway gains
+arrives in the document that documents it. =ores-build-http-recipes.el= is the
+tangle, the twin of the shell one, and moves each exported file into
+=projects/ores.http/scripts/library/=. Fourteen models generate — seven
+entities, one junction and six operations — into 82 Hurl files.
+
+A recipe states no host, no port and no credential: =base_url= and =token= are
+Hurl variables the runner supplies. The template switches its mustache
+delimiters around each Hurl block for that reason.
+
+=check_http_recipes.py= signs in once through the gateway, replays every recipe
+in a named group, and records a verdict per recipe in a TSV and a per-recipe
+log. It separates =REJECTED= from =FAILED=, because the gateway refusing the
+caller says something different about the deployment than the endpoint
+answering wrongly. Replayed against the live gateway it returns all three:
+=bootstrap-status= passes because the route is public, =create-initial-admin=
+fails because the account it creates already exists, and the session routes are
+rejected.
+
+=regenerate_http_recipe_inventory.py= generates the inventory and the CI
+inventory job gates it. It indexes the generated corpus only: those recipes sit
+one directory deep, while the hand-written recipes that predate the facet sit
+flat and are catalogued by hand in =doc/recipes/http/http.org=. Regenerating
+that curated index from filetags would replace its headings, so the generator
+keeps its own document and leaves the curated one alone.
+
+Verification: =pytest projects/ores.codegen/tests= is 824 passed, the codegen
+gates and =validate_docs.sh= are green, and both inventory checks pass.
+
+Two findings are recorded rather than fixed, and both belong to other work:
+
+- The gateway rejects every token the login route issues, with =JWT
+  verification failed: wrong algorithm= in its log. The two disagree about how
+  a token is signed and verified, so no authenticated recipe can assert a 200
+  until it is fixed. This is the defect the harness was written to surface.
+- The hand-written recipes in =doc/recipes/http/= are stale in shape as well as
+  style: login takes =principal= rather than =username=, and the paths are
+  namespaced. They are documentation only and are untouched here.

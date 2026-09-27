@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 7C4E1A62-9B3D-4F58-8E21-5A6C0D9F3B47
+:END:
+#+title: ores.analytics.credit_simulation_transition_matrix_cell_config
+#+description: Codegen entity model for the analytics =credit_simulation_transition_matrix_cell_config= table. One row per cell of an ORE credit simulation transition matrix.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One cell of a credit migration transition matrix.
+#+entity_singular: credit_simulation_transition_matrix_cell_config
+#+entity_plural: credit_simulation_transition_matrix_cell_configs
+#+entity_title: Credit Simulation Transition Matrix Cell Config
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+ORE writes a transition matrix as one =Data= element whose text is a
+whitespace or comma separated square grid, with optional =t0= and =t1=
+attributes naming its states. A matrix carried that way is not queryable
+and not diffable, so the model holds one row per cell: the row names the
+matrix, the state it moves from and the state it moves to, and carries
+the probability.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: analytics
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   fk-scoped-child
+:tablename: ores_analytics_credit_simulation_matrix_cells_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the cell.
+
+** transition_matrix_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The matrix this cell belongs to.
+
+** from_state
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The state the entity migrates from, zero-based, in the order the matrix
+declares its states.
+
+** to_state
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The state the entity migrates to, zero-based.
+
+** probability
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from =from_state= to =to_state= over the
+matrix's period. ORE writes it as text inside the grid, so it is parsed
+on import and formatted on export.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_simulation_transition_matrix_cells_tbl
+:END:
+
+* Foreign keys
+
+** transition_matrix_id
+:PROPERTIES:
+:table:         ores_analytics_credit_simulation_transition_matrix_configs_tbl
+:target_column: id
+:parent_entity: credit_simulation_transition_matrix_config
+:nullable:      false
+:error_message: Invalid transition_matrix_id: %. No active transition matrix found with this id.
+:list_by:       true
+:END:
+
+The matrix this cell belongs to.
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cell
+:entity_plural_short:   cells
+:entity_singular_words: transition matrix cell
+:entity_plural_words:   transition matrix cells
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cell
+:END:
+
+** Table display
+
+| Column      | Header      |
+|-------------+-------------|
+| from_state  | From State  |
+| to_state    | To State    |
+| probability | Probability |
+| version     | Version     |
+| modified_by | Modified By |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.analytics.api/domain/credit_simulation_transition_matrix_cell_config.hpp
+:domain_class:            analytics::domain::credit_simulation_transition_matrix_cell_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_transition_matrix_cell_config_protocol.hpp
+:collection_name:         credit_simulation_transition_matrix_cell_configs
+:item_var:                credit_simulation_transition_matrix_cell_config
+:key_field:               from_state
+:get_request_class:       analytics::messaging::list_credit_simulation_transition_matrix_cell_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_transition_matrix_cell_configs_response
+:get_message_type:        list_credit_simulation_transition_matrix_cell_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_transition_matrix_cell_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_transition_matrix_cell_config_response
+:save_message_type:       put_credit_simulation_transition_matrix_cell_config_request
+:save_request_item_field: credit_simulation_transition_matrix_cell_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_transition_matrix_cell_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_transition_matrix_cell_config_response
+:delete_message_type:     delete_credit_simulation_transition_matrix_cell_config_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: false
+:has_explorer_api:        true
+:has_export_macro:        true
+:parent_entity_singular:  credit_simulation_transition_matrix_config
+:settings_group:          Credit Simulation Transition Matrix Cell ConfigListWindow
+:window_title:            Credit Simulation Transition Matrix Cell Config
+:icon:                    Credit Simulation Transition Matrix Cell Config
+:END:
+
+*** Detail fields
+
+| field       | label       | widget    | type    | is_key | is_required | placeholder        |
+|-------------+-------------+-----------+---------+--------+-------------+--------------------|
+| from_state  | From State  | spin_edit | integer | true   | true        | Enter from state   |
+| to_state    | To State    | spin_edit | integer | true   | true        | Enter to state     |
+| probability | Probability | line_edit | double  |        | true        | Enter probability  |
+
+*** Columns
+
+| enum_name   | field       | header      | type   | width |
+|-------------+-------------+-------------+--------+-------|
+| FromState   | from_state  | From State  | int    | 100   |
+| ToState     | to_state    | To State    | int    | 100   |
+| Probability | probability | Probability | double | 140   |
+| Version     | version     | Version     | int    | 80    |
+| ModifiedBy  | modified_by | Modified By | string | 120   |
+
+** Paste blocks
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

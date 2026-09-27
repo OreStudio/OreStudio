@@ -79,7 +79,7 @@ item asks for.
 
 ** Open failures
 
-Six items fail, and none of them is a documentation problem.
+Seven items fail, and none of them is a documentation problem.
 
 | Item | Cause | Where the fix belongs |
 |------+-------+-----------------------|
@@ -90,6 +90,42 @@ Six items fail, and none of them is a documentation problem.
 | M04 | Two model keys nothing reads: =report_instance= 's =:parent_id_field:= and =risk_report_config= 's =:parent_entity:=. | The two models. |
 | M08 | Fifteen flags typed =integer= instead of =boolean=, and =numeric(5,4)= where the tree uses =numeric(28, 10)=. | =ores.reporting.risk_report_config.org=, then regenerate. |
 | V04 | Sixteen of the 51 generated commands do not answer. | Three causes, below: a shell menu collision, a =__none__= placeholder where a uuid is required, and the silent step handlers. |
+
+** Three findings that are not item failures
+
+These surfaced while checking the items above. None of them breaks an item as
+the standard words it, and all three are this component's own work.
+
+1. *The instance's definition key is unvalidated.* The generated insert
+   function for =report_instance= validates the tenant, the workspace, the
+   change reason and the acting account, and never the definition the instance
+   belongs to: =reporting_report_instances_create.sql:95-145=. The sibling
+   entity does validate its equivalent, because its model declares the key in a
+   =* Foreign keys= drawer with =:target_column:= and =:error_message:=
+   (=risk_report_config.org:504-508=), which produces
+   =reporting_risk_report_configs_create.sql:143=. An instance can therefore
+   name a definition that does not exist, and the failure surfaces later, inside
+   a workflow step, instead of at the write. The fix is to declare the key the
+   same way in the model.
+
+2. *The report input bundle is unmodelled.* The table
+   =ores_reporting_report_input_bundles_tbl=, its entity and its repository are
+   hand-written, all three without the generated marker, and the repository
+   talks to sqlgen directly with no mapper. A search of the modeling directory
+   finds only a mention in =component_overview.org:50=, so nothing generates
+   them and no drift gate covers them: this is the component's only hand-written
+   data layer. Whether it should be modelled is a real question, since every
+   other entity's data layer here is generated, but it is not an item failure.
+   B03's survey called the repository generatable, the parent task called it
+   infrastructure by elimination, and neither reading has been settled.
+
+3. *The cron expression is an unvalidated string.* =report_definition='s
+   =schedule_expression= is =std::string= (=report_definition.org:113-117=),
+   while ores.scheduler types the same concept as =domain::cron_expression=
+   with =:is_value_type: true= (=ores.scheduler.job_definition.org:108-116=),
+   which is what stops an invalid expression from entering that domain. A
+   malformed schedule is accepted here and then rejected, or silently ignored,
+   when the job reaches the scheduler.
 
 ** Line citations are commit-relative
 
@@ -320,5 +356,7 @@ predated its own build, a database 59 SQL files behind, and only the reporting
 suites.
 
 What remains is the seven failing items and V04's three causes, each with a
-named owner in the stocktake table. The component is not clean, and the record
-now says so.
+named owner in the stocktake table, plus three findings that no item names:
+the instance's definition key is unvalidated, the report input bundle is
+unmodelled, and the cron expression is an unvalidated string. The component is
+not clean, and the record now says so.

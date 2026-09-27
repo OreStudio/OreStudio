@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: D15A6807-1264-4427-BE1D-231AFEFA65C7
+:END:
+#+title: No workflow builds or tests C++ on a pull request
+#+description: continuous-linux.yml is the only workflow that compiles the project and runs ctest, and it triggers on a schedule, on tags and on manual dispatch -- never on a pull_request. The checks that do run on a PR are path-filtered to modeling, codegen, web and org files, so a C++-only change gets no checks at all and a mixed change gets Python and TypeScript gates that say nothing about whether it compiles.
+#+type: capture
+#+level: cross
+#+filetags: :ci:process:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give pull requests a gate that compiles the tree and runs the C++ suite.
+Today the four workflow files that trigger on a PR are all filtered by path,
+and the one workflow that builds C++ is not PR-triggered at all.
+
+| Workflow | On a PR? | Paths |
+|----------+----------+-------|
+| =continuous-linux.yml= | **no** — schedule, tags, dispatch | the whole tree |
+| =codegen-drift.yml= | yes | =projects/\*/modeling/\*\*=, =ores.codegen/\*\*=, =ores.http/\*\*=, =ores.sql/populate/\*\*=, =doc/recipes/shell/\*\*= |
+| =doc-lint.yml= | yes | =\*\*.org=, =\*\*.mustache=, a few scripts |
+| =typescript.yml= | yes | =projects/ores.web/\*\*= |
+
+Two consequences, both observed on real PRs:
+
+- A **C++-only** change gets *zero* checks. PR #2251, which changes one
+  scheduler test file, reports "no checks reported on the branch" and is
+  mergeable with nothing having verified it.
+- A **mixed** change gets checks whose names imply more than they cover. PR
+  #2243 (marketdata) shows ten green tick marks — Doc Lint, Codegen drift,
+  Template drift, TypeScript — and not one of them compiles C++. The check
+  named =tests= is in =codegen-drift.yml= and runs =pytest
+  projects/ores.codegen/tests=; it is the codegen suite, not the C++ one.
+
+* Why this is worth fixing rather than noting
+
+The trap is the name. "tests passed" on a PR reads as "the tests passed", and
+a reviewer who has not read the workflow will merge a C++ change believing it
+was built. That is a correctness risk that grows with how much of the change
+is hand-written.
+
+Three shapes are available, and the choice depends on what CI minutes are
+worth:
+
+1. Add =pull_request= to =continuous-linux.yml=. Most correct, most
+   expensive: it is a full vcpkg build on every PR.
+2. Add a PR job that builds and runs the subset the diff touches. Cheaper,
+   and it needs a way to map changed paths to test targets — which is the
+   =COMPONENTS_UNDER_TEST= idea one level down.
+3. Leave the build alone and only rename the misleading job, so =tests=
+   becomes =codegen-tests=. Cheap, honest, and it removes the trap without
+   adding coverage.
+
+* References
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]
+- [[id:C4D6F313-B475-4E81-B743-268050B25430][Story: Clean ores.scheduler to the component clean standard]]
+
+* See also
+
+- [[file:stale_entity_ids_triggers_in_four_components.org][Forty generated notify triggers still emit the retired entity_ids payload]] —
+  the same lesson from the other side: what CI does not run, nobody notices.

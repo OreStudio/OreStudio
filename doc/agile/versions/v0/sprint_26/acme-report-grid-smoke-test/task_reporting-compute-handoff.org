@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3
+:END:
+#+title: Task: Make the reporting to compute handoff drive a job
+#+description: Task for: Run an example bundle through the compute grid from a report definition
+#+type: task
+#+level: s1
+#+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
+#+owner: marco
+#+branch: feature/reporting-compute-handoff
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The reporting submit path cannot run anything: it publishes an assignment on a subject no wrapper subscribes to, leaves result_id, package_uri, config_uri and output_uri empty, and hands over a bucket-prefixed URI where the wrapper fetches an HTTP path. The compute-side dispatch path does all three correctly and is the model to follow.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A workunit submitted through the reporting path is picked up by a wrapper and executes.
+- The wrapper can download the package and the input, and has somewhere to put the output.
+- The subject, the URI shape and the workunit fields match what the working dispatcher produces.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

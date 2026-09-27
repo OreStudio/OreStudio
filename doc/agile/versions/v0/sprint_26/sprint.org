@@ -109,6 +109,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] | DONE | 2026-09-27 | 2026-09-27 | Give the shell a raw storage surface whose verbs take a bucket, a key and a local path, and make the schema setup re-runnable so a second setup_schema.sql run completes. |
 | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] | DONE | 2026-09-27 | 2026-09-27 | Point the reporting storage plan at the protocol bucket and key shape, so the writer and the reader of a report blob agree, and re-verify the compute and ORE consumers on the current tree. |
 | [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] | DONE | 2026-09-27 | 2026-09-27 | Assign the tenant admin role the provisioner forgot, clear the retired bucket directories, and record the instrument-audit defect the ORE import exposes. |
+| [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] | STARTED | 2026-09-27 | | Give ACME corporation a report type and a report definition whose run does no preprocessing: it takes an existing example bundle, submits it to the compute grid and retrieves the results. The point is to prove the report definition and report instance machinery works end to end, not to analyse anything. |
 
 * Achievements
 

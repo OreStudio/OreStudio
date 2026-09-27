@@ -13,7 +13,7 @@ Revoke a role from an account.
 
 #+name: revoke-role
 #+begin_src ores-shell :exports none
-accounts revoke-role 019c2d92-8448-7158-90d0-ccb8b5f7e812 24a02cd6-1a74-4bdf-9169-408227402106
+authorization revoke-role 019c2d92-8448-7158-90d0-ccb8b5f7e812 24a02cd6-1a74-4bdf-9169-408227402106
 exit
 #+end_src
 

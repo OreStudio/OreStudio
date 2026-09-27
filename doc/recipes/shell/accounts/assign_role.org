@@ -14,7 +14,7 @@ Assign a role to an account.
 #+name: assign-role
 #+begin_src ores-shell :exports none
 roles list
-accounts assign-role 019c2d92-8448-7158-90d0-ccb8b5f7e812 24a02cd6-1a74-4bdf-9169-408227402106
+authorization assign-role 019c2d92-8448-7158-90d0-ccb8b5f7e812 24a02cd6-1a74-4bdf-9169-408227402106
 exit
 #+end_src
 

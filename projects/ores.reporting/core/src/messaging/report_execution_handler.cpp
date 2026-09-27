@@ -29,6 +29,7 @@
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.storage.api/net/object_keys.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_generators.hpp>
@@ -177,7 +178,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         const auto key = service::trades_storage_key(req.report_instance_id);
         ores::trading::messaging::export_trades_to_storage_request exp_req;
         exp_req.book_ids = book_ids;
-        exp_req.storage_bucket = std::string(service::report_data_bucket);
+        exp_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         exp_req.storage_key = key;
 
         std::string err;
@@ -231,7 +232,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         // Ask marketdata service to export all series to storage.
         const auto key = service::market_data_storage_key(req.report_instance_id);
         ores::marketdata::messaging::export_market_data_to_storage_request md_req;
-        md_req.storage_bucket = std::string(service::report_data_bucket);
+        md_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         md_req.storage_key = key;
 
         std::string err;

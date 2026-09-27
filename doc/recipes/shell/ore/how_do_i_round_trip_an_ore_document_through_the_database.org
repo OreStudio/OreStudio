@@ -53,8 +53,9 @@ logout
 exit
 #+end_src
 
-=ore upload= packs the whole directory and puts it in the =ore-imports=
-bucket at ={request_id}.tar.gz=. The pack keeps the paths relative to
+=ore upload= packs the whole directory and puts it in the platform bucket
+=ores= at =ore/imports/{request_id}.tar.gz=, the key the platform's bucket and
+key protocol declares for it. The pack keeps the paths relative to
 the directory it is given, so the import reads the tree back exactly as
 staged. =ore import= sends the request on =workflow.v1.ore.import= and
 then waits for the workflow the handler returns. A failed step stops

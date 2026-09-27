@@ -18,12 +18,13 @@
  *
  */
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
+#include "ores.storage.api/net/object_keys.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-// The keys are literals a reader has to agree with: the ore service downloads
-// what the reporting service uploaded, and the bucket name is a contract with
-// the storage server, which answers 404 for one it does not know.
+// The ore service downloads what the reporting service uploaded, so both sides
+// have to agree on the bucket and on the shape of the key. The protocol is
+// where that agreement is written down.
 
 using namespace ores::reporting::service;
 
@@ -31,15 +32,37 @@ namespace {
 const std::string tags("[service][storage]");
 }
 
-TEST_CASE("the report bucket is the one the storage server knows", tags) {
-    CHECK(report_data_bucket == "report-data");
+TEST_CASE("the plan builds against the protocol's one bucket", tags) {
+    CHECK(ores::storage::api::object_keys::ores_bucket == "ores");
 }
 
 TEST_CASE("each gathered set lands under the instance that gathered it", tags) {
     const std::string instance("11111111-2222-3333-4444-555555555555");
-    CHECK(trades_storage_key(instance) == "11111111-2222-3333-4444-555555555555/trades.msgpack");
+    CHECK(trades_storage_key(instance) ==
+          "reporting/runs/11111111-2222-3333-4444-555555555555/trades.msgpack");
     CHECK(market_data_storage_key(instance) ==
-          "11111111-2222-3333-4444-555555555555/market_data.msgpack");
+          "reporting/runs/11111111-2222-3333-4444-555555555555/market_data.msgpack");
+}
+
+TEST_CASE("every key the plan builds is one the protocol parses", tags) {
+    const std::string instance("11111111-2222-3333-4444-555555555555");
+
+    const auto trades = ores::storage::api::object_keys::parse(trades_storage_key(instance));
+    REQUIRE(trades.has_value());
+    CHECK(trades->service == "reporting");
+    CHECK(trades->purpose == "runs");
+    CHECK(trades->id == instance);
+    CHECK(trades->name == "trades.msgpack");
+
+    const auto market_data =
+        ores::storage::api::object_keys::parse(market_data_storage_key(instance));
+    REQUIRE(market_data.has_value());
+    CHECK(market_data->name == "market_data.msgpack");
+}
+
+TEST_CASE("the two sets one run gathers stay apart", tags) {
+    const std::string instance("11111111-2222-3333-4444-555555555555");
+    CHECK(trades_storage_key(instance) != market_data_storage_key(instance));
 }
 
 TEST_CASE("two executions never share a key", tags) {

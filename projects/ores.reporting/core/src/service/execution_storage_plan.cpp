@@ -18,15 +18,28 @@
  *
  */
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
+#include "ores.storage.api/net/object_keys.hpp"
 
 namespace ores::reporting::service {
 
+namespace {
+
+/// The service segment: this component owns every key under it.
+constexpr std::string_view service_segment = "reporting";
+
+/// The purpose segment: one run's gathered inputs.
+constexpr std::string_view runs_segment = "runs";
+
+}
+
 std::string trades_storage_key(const std::string& report_instance_id) {
-    return report_instance_id + "/trades.msgpack";
+    return ores::storage::api::object_keys::make(
+        service_segment, runs_segment, report_instance_id, "trades.msgpack");
 }
 
 std::string market_data_storage_key(const std::string& report_instance_id) {
-    return report_instance_id + "/market_data.msgpack";
+    return ores::storage::api::object_keys::make(
+        service_segment, runs_segment, report_instance_id, "market_data.msgpack");
 }
 
 }

@@ -46,8 +46,8 @@ struct ore_import_item_error {
 /**
  * @brief Request to import an ORE directory already uploaded to storage.
  *
- * The caller uploads the packed directory to the ore-imports bucket as
- * {request_id}.tar.gz before sending this message.
+ * The caller uploads the packed directory to the platform bucket ores at
+ * ore/imports/{request_id}.tar.gz before sending this message.
  */
 struct ore_import_request {
     using response_type = struct ore_import_response;

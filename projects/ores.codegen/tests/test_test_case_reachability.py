@@ -237,6 +237,46 @@ TEST_CASE("vendor", tags) {
     assert "vendor_tests.cpp" not in captured.err
 
 
+def test_a_line_comment_continued_by_a_backslash_hides_the_next_line(
+        tmp_path, monkeypatch, capsys):
+    # The backslash splices the lines, so the compiler reads the #if as comment
+    # text and the case is unconditional. The scan must agree.
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+// the directive below is quoted, not compiled \\
+#if defined(HAS_SOCKETS)
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert "1 declared case(s)" in captured.out
+
+
+def test_a_directive_written_with_a_space_after_the_hash_is_a_directive(
+        tmp_path, monkeypatch, capsys):
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#  if defined(HAS_SOCKETS)
+TEST_CASE("conditional", tags) {
+    CHECK(true);
+}
+#  endif
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "conditional" in captured.err
+    assert "opened at line 3" in captured.err
+
+
 def test_the_real_tree_has_cases_and_declares_none_conditionally(capsys):
     """The invariant the gate exists for, checked against the tree itself."""
     assert check.main() == 0

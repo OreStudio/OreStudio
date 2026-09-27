@@ -115,6 +115,11 @@ def _blank_comments_and_literals(text: str) -> str:
         if c == "/" and i + 1 < n and text[i + 1] == "/":
             stop = text.find("\n", i)
             stop = n if stop == -1 else stop
+            # A line comment ends at the backslash-newline splice, not at the
+            # newline, so a directive on the next line is still inside it.
+            while stop < n and stop > 0 and text[stop - 1] == "\\":
+                stop = text.find("\n", stop + 1)
+                stop = n if stop == -1 else stop
             blank(i, stop)
             i = stop
         elif c == "/" and i + 1 < n and text[i + 1] == "*":
@@ -185,9 +190,10 @@ def scan_source(text: str) -> tuple[int, list[tuple[int, str, int, str]]]:
                 open_stack.pop()
             # ``elif`` and ``else`` continue the region already open.
             continue
-        if not _TEST_MACRO_RE.search(line):
+        matches = _TEST_MACRO_RE.findall(line)
+        if not matches:
             continue
-        declared += len(_TEST_MACRO_RE.findall(line))
+        declared += len(matches)
         if open_stack:
             opened_at, opened_by = open_stack[-1]
             findings.append((lineno, original_lines[lineno - 1].strip(),

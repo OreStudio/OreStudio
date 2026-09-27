@@ -138,7 +138,6 @@ namespace ores #F2F2F2 {
                 +http_server(boost::asio::io_context& io_ctx, const http_server_options& options)
                 +get_router() : shared_ptr<router>
                 +get_registry() : shared_ptr<openapi::endpoint_registry>
-                +get_verifier() : shared_ptr<ores::security::jwt::jwt_authenticator>
                 +set_verifier(shared_ptr<ores::security::jwt::jwt_authenticator> verifier) : void
                 +set_session_bytes_callback(session_bytes_callback callback) : void
                 +run() : boost::asio::awaitable<void>

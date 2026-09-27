@@ -57,13 +57,6 @@ public:
     }
 
     /**
-     * @brief Returns the verifier every session authenticates its caller with.
-     */
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> get_verifier() {
-        return verifier_;
-    }
-
-    /**
      * @brief Sets the verifier every session authenticates its caller with.
      *
      * Session tokens are RS256 and IAM signs them, so the server checks them

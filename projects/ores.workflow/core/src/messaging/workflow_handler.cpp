@@ -20,6 +20,7 @@
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -111,7 +112,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         start_msg.correlation_id = correlation_id;
 
         nats_.js_publish(start_workflow_message::nats_subject,
-                         ores::nats::default_wire_codec().encode(start_msg));
+                         ores::nats::default_wire_codec().encode(start_msg),
+                         ores::nats::service::forwarded_caller_headers(msg));
 
         resp.party_ids.push_back(party_id_str);
     }

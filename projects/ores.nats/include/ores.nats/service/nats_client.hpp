@@ -34,6 +34,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::nats::service {
@@ -321,6 +322,43 @@ private:
  * nats_client::with_delegation.
  */
 [[nodiscard]] ORES_NATS_EXPORT std::string extract_bearer(const ores::nats::message& msg);
+
+/**
+ * @brief Extracts the token that names the actor behind a message.
+ *
+ * X-Delegated-Authorization carries the original end-user JWT when a service
+ * forwards a request on a caller's behalf, so it names the actor; the
+ * Authorization header names whoever made the last hop, which for an
+ * impersonated or service-to-service call is a different party. Prefers the
+ * delegated header and falls back to Authorization.
+ *
+ * Returns empty string when neither header carries a Bearer token.
+ *
+ * Used by a service that records who asked for a change, and by the handlers
+ * that forward that identity onto the fire-and-forget messages they publish.
+ */
+[[nodiscard]] ORES_NATS_EXPORT std::string extract_actor_bearer(const ores::nats::message& msg);
+
+/**
+ * @brief The headers that forward the caller of @p msg onto a publish.
+ *
+ * One X-Delegated-Authorization entry when the message names an actor, and no
+ * entries when it does not: a publisher that forwards nothing must not invent
+ * an identity, because the receiver's fallback for "no caller" is deliberately
+ * different from any token.
+ */
+[[nodiscard]] ORES_NATS_EXPORT std::unordered_map<std::string, std::string>
+forwarded_caller_headers(const ores::nats::message& msg);
+
+/**
+ * @brief The same headers, for a caller that holds the token itself.
+ *
+ * A client originating a request rather than forwarding one -- the shell's
+ * `workflow start` -- has no inbound message to read, so it states the token
+ * it holds and gets the same header shape.
+ */
+[[nodiscard]] ORES_NATS_EXPORT std::unordered_map<std::string, std::string>
+forwarded_caller_headers(std::string_view token);
 
 } // namespace ores::nats::service
 

@@ -3638,6 +3638,31 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     "'true', 'yes' and '1'"
                 )
             entry["http_route"] = True
+        # How long the answer takes. A command whose work outlives the
+        # transport's default request timeout states its own budget, because
+        # otherwise the caller gives up first and the failure reads as a slow
+        # service rather than a ceiling nobody raised. Only a request that
+        # presents a token has a timeout to set, so the fact is refused on a
+        # message that takes no session.
+        timeout = str(props.get("request_timeout_seconds", "")).strip()
+        if timeout:
+            if entry.get("requires_session") != "true":
+                raise ValueError(
+                    f"message {node.title} states :request_timeout_seconds: "
+                    "but does not both address a subject and require a "
+                    "session; only an authenticated request has a timeout the "
+                    "model can raise"
+                )
+            try:
+                seconds = int(timeout)
+            except ValueError:
+                seconds = 0
+            if seconds <= 0:
+                raise ValueError(
+                    f"message {node.title} states :request_timeout_seconds: "
+                    f"{timeout!r}; the value is a positive whole number of seconds"
+                )
+            entry["request_timeout_seconds"] = seconds
         comment = node.src_blocks.get("comment")
         if comment:
             entry["comment"] = comment
@@ -3803,6 +3828,11 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     # The anonymous namespace holds those two helpers, so it is emitted only
     # when one of them is.
     op["shell_has_helpers"] = bool(op["shell_has_bool"] or op["shell_has_list"])
+    # <chrono> is included only when a command states its own timeout, so a
+    # unit that uses the transport default does not carry the header.
+    op["shell_has_request_timeout"] = any(
+        command["request_timeout_seconds"] for command in op["shell_commands"]
+    )
     # Mustache cannot ask a list for its length, so the count the unit's own
     # test asserts is derived here.
     op["shell_command_count"] = len(op["shell_commands"])
@@ -3994,6 +4024,11 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             # in. The model states it, because the shape does not: a reset and
             # a status read are both a bare command name.
             "is_destructive": bool(message.get("destructive")),
+            # How long the command waits for its answer. The model states it
+            # for the few operations whose work outlives the transport's
+            # default, so the generated call raises the ceiling the handler
+            # already works within instead of the caller giving up first.
+            "request_timeout_seconds": message.get("request_timeout_seconds"),
             "positionals": positionals,
             "flags": flags,
             "positional_count": len(positionals),

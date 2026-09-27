@@ -41,6 +41,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -154,14 +155,9 @@ public:
                 const auto& codec = ores::nats::default_wire_codec();
                 const auto bytes = codec.encode(req);
 
-                std::unordered_map<std::string, std::string> hdrs;
-                if (const auto bearer = extract_bearer(msg); !bearer.empty())
-                    hdrs[std::string(ores::nats::headers::delegated_authorization)] =
-                        std::string(ores::nats::headers::bearer_prefix) + bearer;
-
                 const auto resp_msg = nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
                                                          bytes,
-                                                         std::move(hdrs),
+                                                         ores::nats::service::forwarded_caller_headers(msg),
                                                          std::chrono::seconds(5));
                 const auto resp = codec.decode<clear_bootstrap_mode_response>(resp_msg.data);
                 if (resp && resp->result.outcome == ores::utility::domain::outcome::ok) {
@@ -241,7 +237,7 @@ public:
                 return;
             }
 
-            const auto bearer = extract_bearer(msg);
+            const auto bearer = ores::nats::service::extract_actor_bearer(msg);
             auto claims = signer_.validate(bearer);
             if (!claims) {
                 reply(nats_,
@@ -703,18 +699,6 @@ public:
     }
 
 private:
-    // Extract the raw JWT from an incoming message, preferring the delegated
-    // header so the original end-user context propagates to downstream calls.
-    static std::string extract_bearer(const ores::nats::message& msg) {
-        using namespace ores::nats::headers;
-        for (auto hdr : {delegated_authorization, authorization}) {
-            const auto it = msg.headers.find(std::string(hdr));
-            if (it != msg.headers.end() && it->second.starts_with(bearer_prefix))
-                return std::string(it->second.substr(bearer_prefix.size()));
-        }
-        return {};
-    }
-
     static std::string lei_import_params() {
         dq::messaging::publish_bundle_params params;
         params.lei_parties = dq::messaging::lei_parties_params{.root_lei = "9695ACMEGROUP0000030"};

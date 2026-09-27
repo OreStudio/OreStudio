@@ -22,6 +22,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.core/service/workflow_actor.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -52,12 +53,14 @@ workflow_engine::workflow_engine(ores::nats::service::client& nats,
                                  ores::database::context ctx,
                                  std::shared_ptr<const workflow_registry> registry,
                                  fsm_state_map instance_states,
-                                 fsm_state_map step_states)
+                                 fsm_state_map step_states,
+                                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
     , ctx_(std::move(ctx))
     , registry_(std::move(registry))
     , instance_states_(std::move(instance_states))
-    , step_states_(std::move(step_states)) {}
+    , step_states_(std::move(step_states))
+    , verifier_(std::move(verifier)) {}
 
 void workflow_engine::publish_command(const domain::workflow_step& step,
                                       const boost::uuids::uuid& instance_id,
@@ -227,7 +230,9 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     next_step.idempotency_key = boost::uuids::to_string(next_id);
     next_step.compensation_subject = step_def.compensation_subject;
     next_step.recorded_at = std::chrono::system_clock::now();
-    next_step.modified_by = ctx_.service_account();
+    // The instance carries the actor from the start request, so every step of
+    // the run is attributed to the same caller.
+    next_step.modified_by = instance.modified_by;
 
     // Persist before publishing (ensures restart can re-dispatch).
     step_repo_.write(ctx_, next_step);
@@ -310,7 +315,9 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         comp_step.command_json = comp_json;
         comp_step.idempotency_key = boost::uuids::to_string(comp_id);
         comp_step.recorded_at = std::chrono::system_clock::now();
-        comp_step.modified_by = ctx_.service_account();
+        // A compensation step is the same run's work, so it carries the
+        // actor the instance was started by.
+        comp_step.modified_by = instance.modified_by;
         step_repo_.write(ctx_, comp_step);
 
         // Publish compensation command with tenant header.
@@ -528,6 +535,11 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
                                   << e.what();
     }
 
+    // Who asked for the run. The publisher forwards the caller's token, so a
+    // person-initiated workflow is attributed to the person and the service
+    // account is left to the runs that genuinely have no caller.
+    const auto actor = actor_from_message(msg, verifier_, ctx_.service_account());
+
     domain::workflow_instance instance;
     instance.id = instance_id;
     instance.tenant_id = utility::uuid::tenant_id::from_uuid(tenant_id).value();
@@ -535,12 +547,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.state_id = instance_states_.require("in_progress");
     instance.request_json = req.request_json;
     instance.correlation_id = req.correlation_id;
-    instance.created_by = ctx_.service_account();
-    // The insert trigger resolves modified_by as an account username and
-    // raises once the tenant holds one, so every insert sets it. Attribution
-    // to the caller behind the request is a separate change: the request
-    // carries no identity and this service holds no verifier.
-    instance.modified_by = ctx_.service_account();
+    instance.created_by = actor;
+    instance.modified_by = actor;
     instance.current_step_index = 0;
     instance.step_count = static_cast<int>(steps.size());
     instance.materialised_steps_json = materialise_steps_json(steps);
@@ -571,7 +579,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         step.idempotency_key = boost::uuids::to_string(step_id);
         step.compensation_subject = step_def.compensation_subject;
         step.recorded_at = std::chrono::system_clock::now();
-        step.modified_by = ctx_.service_account();
+        step.modified_by = actor;
 
         step_repo_.write(ctx_, step);
         step_created = true;

@@ -25,4 +25,5 @@ set(files
     "domain_wire_codec_tests.cpp"
     "domain_wire_format_tests.cpp"
     "main.cpp"
+    "service_caller_identity_tests.cpp"
 )

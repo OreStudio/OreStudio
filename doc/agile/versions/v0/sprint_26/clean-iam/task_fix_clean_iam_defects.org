@@ -1,0 +1,235 @@
+:PROPERTIES:
+:ID: A7822C2A-5F0C-4ABF-BF4E-1A7FA586BCE8
+:END:
+#+title: Task: Fix the defects the ores.iam clean-up found
+#+description: Task for: Clean ores.iam to the component clean standard
+#+type: task
+#+level: s1
+#+filetags: :clean-iam:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/fix-clean-iam-defects
+#+pr: 2236
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix at root cause the defects the ores.iam component clean-up recorded and deliberately left open: the assets publish-from-DQ function selecting columns its table does not have, the workflow engine attributing records to its service account instead of the caller behind the bearer token, and the tenant provisioning command that cannot answer inside the client's request timeout. Retire the captures whose defects have already merged. Verify each fix against the real artefact -- a recreated database, live NATS, and the real shell recipes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The assets publish-from-DQ function reads the columns ores_assets_images_tbl has, and a live publish inserts instead of aborting
+- The workflow engine records the caller's username from the bearer token on the instance and its steps, and falls back to the service account only when no caller is present
+- The tenant provisioning command completes inside a request timeout the operation model declares
+- Captures whose defects have merged are removed or corrected, and no dangling links remain
+- Build, the iam and workflow suites, drift and lint all pass
+
+* Plan
+
+The three defects are independent, so they are fixed smallest first, each
+verified against the real artefact before the next starts.
+
+1. *assets.* The function names columns its table does not have. Read the
+   table, correct the names, and call the function against the live schema --
+   once to insert and once to update -- because the second call is what
+   exercises the upsert the function claims to implement.
+2. *The request timeout.* Stated in the operation model, not the client: how
+   long an operation takes is a fact about the operation. The codegen facet
+   gains `:request_timeout_seconds:`, refused unless it is a positive whole
+   number of seconds on a message that requires a session, and the profile
+   operation declares 1800 seconds -- above the handler's own 1500-second
+   wait on the base bundle.
+3. *Attribution.* The rule that reads the actor out of a message belongs
+   neither to the engine (which needs a database and a connection to exist)
+   nor to each publisher. It moves to `actor_from_message()` in the workflow
+   core, the nats layer gains one reading and one forwarding helper, the
+   engine takes the verifier the service runner already builds, and every
+   publisher of a start request forwards its caller.
+4. *Captures.* The five whose defects have closed are deleted and the
+   backlog index regenerated, because a capture that describes finished work
+   is work a reader would otherwise start.
+5. *Gates.* Build, the full suite, component drift, lint and the doc check,
+   then the verification runs on a live fleet.
+
+* Notes
+
+- The verification needs a login, and this environment's database holds no
+  Acme tenant: it is the leftovers of earlier test runs. A verification
+  tenant was provisioned with `bootstrap provision-tenant` and an account
+  signed up in the system tenant, because the login handler routes by tenant
+  hostname and refuses an account with no party assignment.
+- Three defects surfaced while verifying and are *not* fixed here, because
+  each belongs to another change. They are recorded so the next reader does
+  not rediscover them:
+  1. The engine writes each `workflow_step` with the domain type's default
+     tenant -- the system tenant -- so a workflow started on behalf of any
+     other tenant fails its soft foreign key. The engine's reads are scoped
+     by `ctx.tenant_id()` as well, so the fix is a per-instance tenant
+     context rather than one more field, and the iam provisioning path does
+     not hit it because it starts its workflows in the system tenant and
+     names the target tenant as a request parameter.
+  2. `identity_workflow` (a fixture another branch added) re-enters the
+     engine: its step handler answers inside the same process, so the
+     step-completed event arrives while `on_start_workflow` is still
+     running. A single-step run completes and a two-step run does not.
+  3. `regenerate_cmake_component_files.py --all --check` is red on main for
+     57 files, all of them the template's own header comment -- the
+     AUTO-GENERATED marker and the reworded install note -- not a missing
+     file. Rolling that out touches every component and belongs to its own
+     change.
+- `compass build --direct settings`, which `bearings` asks for, still reverts
+  `projects/ores.compass/tests/test_deny_bare_stash_hook.py`; the file was
+  restored and the pre-existing capture
+  `settings_build_reverts_bare_stash_test` still describes it.
+- `compass db recreate` was *red on main* and is fixed here, because nothing
+  can be verified without a database. Five hand-written DQ population files
+  lost their licence header -- including the `*/` that closes it -- in
+  `15646f2f67`, so psql aborted on the first with `unterminated /* comment`.
+  The headers are restored; see that commit for the file list.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2236][#2236]] | [iam] Fix the defects the ores.iam clean-up left open |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| S1 | A commit title runs to 73 characters; the convention keeps them under 72 | =git log= | Accepted | The title is shortened and the commit reworded |
+| S2 | Nine of ten commit bodies carry lines over 72 characters | =git log= | Accepted | Every message is rewrapped to 72 and the tree is byte-identical after the rewrite. The lines that still exceed it are single file paths in a changes list, and a path is one token that cannot be broken |
+| S3 | The new =extract_actor_bearer=/=forwarded_caller_headers= duplicate iam's private =extract_bearer= and the generated trading one, so the claim of one reading in one place is overstated | =nats_client.cpp=, =tenant_provisioning_handler.hpp= | Accepted for iam, declined for trading | iam's hand-written copy is deleted and both its call sites use the shared helper. The trading copy is emitted by =cpp_nats_handler.hpp.mustache= into every entity handler; removing it is a template change across the trading component and belongs there |
+| S4 | The task doc still reads =Now: Not yet started= at the commit the review ran against | =task_fix_clean_iam_defects.org= | Accepted | The review ran mid-update; the state, Result and this table land in one commit |
+| S5 | Neither new test file logs the subject under test | =service_caller_identity_tests.cpp=, =workflow_actor_attribution_tests.cpp= | Declined | The convention is not followed by the suites these sit beside; adding logging to two files would make them the only ones |
+| S6 | The shell hand-builds the delegated bearer header instead of using the helper that owns that shape | =workflow_operation_commands.cpp= | Accepted | =forwarded_caller_headers= gains a token overload, which the shell now calls |
+| S7 | The comment above the assets insert still names =image_id=, a column the hunk renames | =assets_publish_from_dq_create.sql= | Accepted | Reworded to describe what the assignment does; the variable already reads as "existing image id" |
+| S8 | Two comments describe the code they replaced rather than the present state | =workflow_engine.cpp= | Accepted | Both reworded |
+| S9 | The regenerated grants file opens an empty =storage_service= section and appends " domain service" to a paragraph-long description | =iam_service_db_grants_create.sql= | Declined | Both are the service-registry template's existing shape for every service; changing it rewrites all eight sections and belongs to the registry's own task |
+| P1 | The cited evidence for the assets fix showed two error contexts, not the counts the Result claimed | =build/audit_iam/verify_defects.txt= | Accepted | The capture had taken only the last four lines of each call. The file is rewritten from a recreated database, where the calls report =inserted 276= then =updated 276= |
+| P2 | Fix 1 and the recreate blockers were never verified on a recreated database | whole change | Accepted in part | The database now in place was recreated from this tree, and defects 1, 2 and 3 are verified on it. Recreating *from scratch* still stops on a fourth blocker, which is another component's and is recorded |
+| P3 | Acceptance 5 names the iam suite, which the Result never reports | task doc | Accepted | The Result now reports the full run, iam included |
+| P4 | Three =compass db recreate= blockers are outside the acceptance list | whole change | Accepted in part | Nothing can be verified without a database, and each was disclosed in Notes and in its own commit. Two of the three turned out to be main's already by the time this branch was rebased onto it -- the storage registration and the tag staging table's unique index -- so those commits were dropped and the branch carries only the licence-header repair |
+| P5 | Acceptance 2 says the service account is the fallback "only when no caller is present", but the engine also falls back on a token it cannot verify or one that names nobody | =workflow_actor.cpp= | Accepted as a recorded limitation | A token that does not verify cannot name anyone, and trusting unverified claims would be worse; the engine logs the rejection and the reason. The gap is real for iam, which forwards a short-lived impersonation token, so a start consumed after its TTL is attributed to the service account. Closing it means carrying the identity on the message or lengthening that token, which is the design change the original capture described |
+| R1 | The artefact index's new =unique= boolean has no unit test; it is exercised only through the regenerated table and the recreate | =org_loader.py= | Accepted | Eight cases added, covering true, false, absent, the columns kept verbatim and the keyword each renders. Writing them found the same gap in the lookup-entity loader, which is fixed in the same commit |
+| R2 | The provisioning comment names the handler's 1500-second wait beside a declared 1800, which reads as a mismatch | =ores.iam.tenant_provisioning_messages.org= | Accepted | Reworded to give both numbers and why they differ |
+
+* Result
+
+Eighteen commits. The three defects are fixed at source, the five captures
+whose defects had closed are retired, and the one blocker left on main that
+stopped the database recreating is fixed, because nothing can be verified
+without one. Every fix is verified against the real artefact, not a proxy.
+
+| # | Change | Evidence |
+|---+--------+----------|
+| 1 | The assets publish-from-DQ function reads =id= and =code=, the columns the table has, and signals the version replace its upsert needs | On the recreated database the base bundle published the country flags through it: the target tenant went from 60 seeded images to 336, and the dataset holds 276 artefacts, so the step inserted 276 rows. Before the fix the same step aborted with 'column "image_id" does not exist' and started compensation |
+| 2 | A workflow run is attributed to the caller: the engine verifies the token its publisher forwarded and takes the username from it, and falls back to the service account only when there is no caller | On the recreated database, =tenant_provisioning provision-acme-tenant= as =verify_admin=: all 13 workflow instances carry =created_by=/=modified_by= = =verify_admin=, and all 72 steps carry =modified_by= = =verify_admin= with =performed_by= = =ores_clever_dijkstra_workflow_service=. =ores.nats.tests= and =ores.workflow.core.tests= pass with 13 new cases |
+| 3 | An operation model can declare its own request timeout, and the Acme provisioning command declares 1800 seconds | The same command answered =success:true= with all eight steps and all 38 base-bundle datasets in 38.4 seconds -- above the transport's 30-second default, so on this main the declared budget is what lets it answer at all. The generated unit passes =std::chrono::seconds{1800}=, and only that unit changed |
+| 4 | The five captures whose defects had closed are deleted and the backlog index regenerated | The only mention of any of the five is a verbatim id in the clean-iam task's record |
+| 5 | =compass db recreate= blocker: five DQ population files lost their licence header, including its closing marker, so psql aborted on 'unterminated /* comment' | The recreate gets past =create/= |
+| 6 | The caller is forwarded through the two publish helpers the later rework created -- the DQ one that starts a bundle or dataset publish workflow, and the reporting one that starts a report execution workflow | Both are threaded the inbound message, so a workflow the platform starts on a user's behalf reaches the engine attributable to that user |
+| 7 | A test pins the artefact index's =unique= property, which the assets work had added without one | Eight cases: true, false and absent through the real parser, the columns kept verbatim, and the rendered keyword for each. Two of them were written against the wrong assumption -- an absent property is absent rather than =False= -- and corrected to what the loader does, which is what a template section reads as false |
+
+Verification: the tree builds clean; the codegen suite is 820 passed; component
+drift reports no drift for every component this change touches; the nats,
+workflow core, workflow api, workflow service, iam core, iam api, iam service,
+shell iam and assets core suites all pass; and the three live runs above, on a
+database recreated from this tree. Evidence:
+=build/audit_iam/verify_defects.txt=.
+
+*The full run has five failing suites, and they are not this change's.*
+=ores.dq.api.tests=, =ores.dq.core.tests=, =ores.shell.api.tests=,
+=ores.refdata.core.tests= and =ores.marketdata.core.tests=, from a run on the
+recreated database. Most failures are one of two shapes. A generated eventing
+integration test whose =!(received.empty())= never fills is the first: the row
+is written, the expected NATS event does not arrive on the first attempt, and
+the test's bounded re-drive then writes version 0 over the live row, which the
+bitemporal insert trigger refuses. =ores.shell.api.tests= carries the
+=to_iso8601_utc= space separator that is already an open capture on main. The
+rest are the DQ component's own: =ores.dq.api.tests= expects a rendered table
+to carry a Description column it does not, and =ores.dq.core.tests= reads
+=ores_dq_lei_entities_tbl= and =ores_dq_lei_relationships_tbl=, which the
+recreated schema does not create. =ores.reporting.core.tests= failed in the
+first full run and passed on its own immediately after, which is the same
+flakiness rather than a defect in the handler this change touches.
+
+No test that fails reads a file this branch changes: the five suites are
+=refdata=, =marketdata=, =shell.api=, =dq.api= and the DQ entity eventing tests,
+and the branch's DQ file is the publish handler, which none of them exercises.
+I did not build =origin/main='s binaries to prove the same failures without
+this branch, so the claim is "no changed file is in their path", not "measured
+on main". =ores.trading.core.tests=, which failed before, passes on the
+recreated database -- those failures were the stale one.
+
+The same fresh run also settled a finding this task had recorded against the
+DQ component. A previous pass here saw =ores_dq_code_domains_publish_fn= state
+version 0 over a live row without signalling the replace, so the base bundle's
+step 2 failed on any database where the code domains already existed. On the
+recreated database that step completes, as do all 38 base-bundle datasets, so
+main has fixed it and the finding is spent.
+
+*The database still does not recreate from scratch, and the cause is not in
+this task.* With all three blockers fixed, =compass db recreate= stops in
+=populate/synthetic/synthetic_fx_spot_configs_uniform_demo_populate.sql=:
+=ores_dq_catalogs_upsert_fn= resolves with =on conflict (tenant_id, name) do
+nothing=, but the table's insert trigger raises =Row already exists= for
+version 0 over a live row *before* the conflict is resolved, so the clause is
+unreachable. Reproduced on a scratch database, one pass, no re-runs: every
+synthetic config populate seeds the same 'Synthetic Market Data' catalog, so
+the second one fails. The badge-severity seed has the same shape. This is a
+conflict between the seed functions' idempotency model and the bitemporal
+store's guard; it is main's, and settling it means deciding which of the two
+gives way. The environment database was completed by running the populate with
+the replace flag on for that session only -- recovery, not a fix.
+
+*The branch sits on current =main=, and the rebase is the record of what main
+had already fixed.* The branch was verified on =9bb6b15b7a= and then rebased
+onto =8f6eb63137=, which raised conflicts in eleven files. Two commits were
+dropped because main had landed the same fix first, both from the DQ and assets
+work: the storage service the registry declares is registered in main's
+generated artefacts, and the tag staging table's unique index is in main's
+artefact template, model and table, under the name =tag_identity=, with the
+same reasoning in a comment. Main also fixed the FSM breakage that had stopped
+it building -- =fsm_state_map.cpp= now reads the states through
+=fsm_state_repository= rather than the removed =fsm_protocol.hpp= -- so the
+earlier note here about main not compiling no longer applies.
+
+The rework main did to the publish path needed two follow-ups on this branch.
+The two DQ publish verbs now share one helper, so the caller-forwarding moved
+with them; and the reporting trigger's dispatch sits two calls below the
+handler that receives the message, so the message is threaded down to it.
+
+Two corrections to this task's own record came out of the same pass. The
+artefact-index test first asserted that an absent =:unique:= parses to =False=;
+the loader leaves the property absent, which a template section reads as false,
+and the test now says so. And the earlier suite results here were taken against
+a database that predated main by three hundred commits: run again on the
+recreated one, =ores.trading.core.tests= passes and the failures are five.

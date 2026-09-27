@@ -29,6 +29,7 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <chrono>
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
@@ -155,7 +156,7 @@ void tenant_provisioning_operations_commands::process_provision_acme_tenant(
     std::optional<ores::iam::messaging::provision_acme_tenant_response> result;
     if constexpr (request_type::requires_session) {
         result = do_auth_request<ores::iam::messaging::provision_acme_tenant_response>(
-            out, session, std::string(req.nats_subject), req);
+            out, session, std::string(req.nats_subject), req, std::chrono::seconds{1800});
     } else {
         result = do_request<ores::iam::messaging::provision_acme_tenant_response>(
             out, session, std::string(req.nats_subject), req);

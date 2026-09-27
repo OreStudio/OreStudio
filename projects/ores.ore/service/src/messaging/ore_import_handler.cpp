@@ -123,7 +123,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     swm.instance_id = instance_id_str;
 
     nats_.js_publish(start_workflow_message::nats_subject,
-                     ores::nats::default_wire_codec().encode(swm));
+                     ores::nats::default_wire_codec().encode(swm),
+                     ores::nats::service::forwarded_caller_headers(msg));
 
     BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
                               << " instance_id=" << instance_id_str;

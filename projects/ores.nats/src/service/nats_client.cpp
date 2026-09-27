@@ -218,6 +218,31 @@ std::string extract_bearer(const ores::nats::message& msg) {
     return val.substr(headers::bearer_prefix.size());
 }
 
+std::string extract_actor_bearer(const ores::nats::message& msg) {
+    for (const auto header : {headers::delegated_authorization, headers::authorization}) {
+        const auto it = msg.headers.find(std::string(header));
+        if (it == msg.headers.end())
+            continue;
+        const auto& val = it->second;
+        if (val.starts_with(headers::bearer_prefix))
+            return val.substr(headers::bearer_prefix.size());
+    }
+    return {};
+}
+
+std::unordered_map<std::string, std::string>
+forwarded_caller_headers(const ores::nats::message& msg) {
+    return forwarded_caller_headers(extract_actor_bearer(msg));
+}
+
+std::unordered_map<std::string, std::string> forwarded_caller_headers(std::string_view token) {
+    std::unordered_map<std::string, std::string> hdrs;
+    if (!token.empty())
+        hdrs[std::string(headers::delegated_authorization)] =
+            std::string(headers::bearer_prefix) + std::string(token);
+    return hdrs;
+}
+
 message nats_client::authenticated_request(std::string_view subject,
                                            std::string_view json_body,
                                            std::chrono::milliseconds timeout) {

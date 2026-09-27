@@ -33,6 +33,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 - Every entity in the seventeen ORE configuration documents is identified and mapped to an owning component.
 - A report definition reaches its configuration through typed entities and foreign keys, never through a flat table of switches or an XML or JSON blob.
 - A new kind of report adds a workflow and a parameter block, not a column on the report definition.
+- Every report type is seeded with a stable code, and each one names the workflow it selects and the configuration types a run of that type requires. The report definition reaches its type by foreign key, not by a text code.
 
 * Tasks
 
@@ -59,6 +60,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:4AC5DEB0-FCE5-485C-BECB-DEDA62C7913B][Round trip the Basel traffic light configuration]] | BACKLOG | | | baselTrafficLightconfig.xml end to end: the MPOR observation buckets and the amber and red limits that classify them, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
 | [[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]] | BACKLOG | | | curveconfig.xml end to end: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes, with both mappers and a round trip over every file in the corpus. |
 | [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | BACKLOG | | | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
+| [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | BACKLOG | | | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
 
 * Decisions
 
@@ -78,6 +80,17 @@ A report definition's configuration is a set of strongly typed entities rather t
   one as a parsed document, and the test names the first difference when they
   differ. The corpus is the evidence, not a hand-written fixture, except for the
   two types the corpus does not contain.
+- The mappers follow the convention already in the tree: a class named
+  /<thing>_mapper/ with static /map/ for ORE XML to our type and /reverse/ for
+  the other direction, beside the generated bindings in /projects/ores.ore/.
+  There is no base class and no registry today, so the harness is what will
+  enforce the convention. The existing /xml::roundtrip/ directory walker covers
+  four document kinds; the harness extends it rather than replacing it.
+- /simmcalibration.xsd/ is included by /external/ore/xsd/input.xsd/ but
+  /SIMMCalibrationData/ appears zero times in the generated
+  /projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp/, so that
+  document cannot be read or written at all today. The SIMM slice generates the
+  binding first; the round trip proves it afterwards.
 
 * Out of scope
 

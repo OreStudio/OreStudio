@@ -24,11 +24,21 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace shell #F2F2F2 {
         namespace app #F2F2F2 {
-            class command_args <<struct>> {
+            class flag_spec <<struct>> {
+                +name : string
+                +requires_value : bool
+                +default_value : string
+            }
+            class parsed_args <<struct>> {
                 +positionals : vector<string>
-                +options : map<string, string>
+                +flags : map<string, string>
+                +flag_set(const string& name) : bool
+                +flag(const string& name) : const string&
             }
             class command_feedback {
+                +reset() : void
+                +mark_failure() : void
+                +failed() : bool
             }
             class entity_page_state <<struct>> {
                 +current_offset : uint32_t
@@ -39,16 +49,57 @@ namespace ores #F2F2F2 {
                 -last_entity_ : string
                 -entity_states_ : unordered_map<string, entity_page_state>
                 -list_callbacks_ : unordered_map<string, list_callback>
+                +page_size() : uint32_t
+                +set_page_size(uint32_t size) : void
+                +state_for(const string& entity_name) : entity_page_state&
+                +last_entity() : const string&
+                +set_last_entity(const string& name) : void
+                +register_list_callback(const string& entity_name, list_callback callback) : void
+                +get_list_callback(const string& entity_name) : const list_callback*
             }
-            namespace commands #F2F2F2 {
-                class history_diff_renderer {
-                }
+            class shell_root_menu {
+                -names_ : set<string>
+                -menus_ : map<string, cli::Menu*>
+                +shell_root_menu()
+                +claim(cli::Menu& menu) : void
+                +claim(const string& name) : void
+                +apply_extensions() : void
+                -take(const string& name) : void
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' The automated pass reads headers, so a facet of free functions arrives as
+' nothing, and two facets of this part are exactly that. They are the seam every
+' shell unit inserts through and the renderer every entity's history --diff
+' shares.
+note bottom of shell_root_menu
+    Free functions in ores::shell::app, declared beside this class:
+    insert_menu(root, menu)     claims the name and inserts the menu
+    claim_name(root, name)      claims a name for a verb inserted at the root
+    extend_menu(root, name, f)  adds verbs to a menu another unit owns
+end note
+note bottom of pagination_context
+    Free functions in ores::shell::app::commands, a formatting facet with no
+    class of its own. The automated pass drew a class for it until this pass
+    and it has none:
+    render_history_diff(out, session, entity_type, entity_id, version) : bool
+end note
+
+' The automated pass drops one member of shell_root_menu: its parameter is a
+' std::function whose argument list carries a comma, and the header parser stops
+' there. Stated here so the box is not read as the whole API.
+class shell_root_menu {
+    +add_extension(const string& name, std::function<void(cli::Menu&)> extend) : void
+}
+
+' shell_root_menu is the only class in this part that inherits, and its base is
+' third-party, so no automated pass can draw the edge.
+class "cli::Menu" as CliMenu <<third-party>>
+CliMenu <|-- shell_root_menu
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.api.puml"

@@ -13,6 +13,12 @@
 #+full_name: ores.shell.refdata
 #+brief: Shell refdata command units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.refdata component diagram
+#+caption: ores.shell.refdata
+[[file:ores.shell.refdata.png][file:ores.shell.refdata.png]]
+
 * Summary
 
 =ores.shell.refdata= is the adapter part that projects the refdata domain onto

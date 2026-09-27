@@ -13,6 +13,12 @@
 #+full_name: ores.shell.iam
 #+brief: Shell IAM command units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.iam component diagram
+#+caption: ores.shell.iam
+[[file:ores.shell.iam.png][file:ores.shell.iam.png]]
+
 * Summary
 
 =ores.shell.iam= is the adapter part that projects the IAM domain onto the

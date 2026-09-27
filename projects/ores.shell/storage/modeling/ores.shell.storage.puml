@@ -26,6 +26,15 @@ namespace ores #F2F2F2 {
         namespace app #F2F2F2 {
             namespace commands #F2F2F2 {
                 class objects_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_put_objects(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_objects(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_objects(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_list_objects(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class raw_storage_commands {
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                 }
             }
         }

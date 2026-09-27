@@ -13,6 +13,12 @@
 #+full_name: ores.shell.dq
 #+brief: Shell dq command units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.dq component diagram
+#+caption: ores.shell.dq
+[[file:ores.shell.dq.png][file:ores.shell.dq.png]]
+
 * Summary
 
 =ores.shell.dq= is the adapter part that projects the dq domain onto the shell's

@@ -13,6 +13,12 @@
 #+full_name: ores.shell.variability
 #+brief: Shell system settings command units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.variability component diagram
+#+caption: ores.shell.variability
+[[file:ores.shell.variability.png][file:ores.shell.variability.png]]
+
 * Summary
 
 =ores.shell.variability= is the adapter part that projects the variability

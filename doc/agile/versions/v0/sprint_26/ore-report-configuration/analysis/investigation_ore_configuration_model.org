@@ -58,11 +58,23 @@ lie: =mporCalendar= holds =EUR= and =US= — calendar names, not currencies —
 
 * The analytics half
 
-#+caption: The whole model in one diagram: the reporting registry at the top left, then one package per configuration type. 210 structs, 304 relationships. Generated from the schemas.
-[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/configuration_model.png]]
+#+caption: The analytics half: one package per configuration type, 85 structs. Structs that differ only in name are drawn once, and the variants are named in a note on the representative.
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/configuration_model_analytics.png]]
 
-Source: =configuration_model.puml=. The image is 4408 by 10909 pixels, so read it
-by package rather than whole.
+Source: =configuration_model_analytics.puml=.
+
+The seven documents describe 202 distinct classes. Drawing every one of them
+hides the design, so two cuts are applied. Containers that carry no data —
+the repetition carriers, 86 of them — are dropped, and the parent edge spliced
+to the child. Structs that are *the same shape* are drawn once, with the
+variants named in a note: eleven such groups collapse, which is what turns
+eighty-five shift families into a handful of drawn shapes.
+
+The result is 85 structs, split as sensitivity 27, simulation 27, stress 14,
+SIMM calibration 12, credit simulation 3, and one each for historical return
+and Basel traffic light. The exhaustive per-document entity diagrams produced by
+=build/scripts/xsd_to_uml.py= remain the reference when a struct's members
+matter.
 
 Each document yields one configuration, whose contents are the file's own
 structure:

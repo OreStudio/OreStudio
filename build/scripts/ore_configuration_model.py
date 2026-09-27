@@ -168,6 +168,32 @@ def emit(inventory: Path, title: str) -> str:
         for name in cs:
             global_docs.setdefault(name, doc)
 
+    # Structs that differ only in name are one shape: draw the first and list
+    # the rest in a note. Eleven stress shift families, twenty-six sensitivity
+    # families and six SIMM risk classes are the same struct three times over,
+    # and drawing each one hides the design.
+    def shape(cls) -> tuple:
+        members = tuple(sorted((snake(a.name), storage_type(a.type_name))
+                               for a in cls.attributes if not a.name.startswith("<<")))
+        kids = tuple(sorted((snake(a.name), a.low, a.high) for a in cls.associations))
+        return members, kids
+
+    groups: dict[str, dict[tuple, list[str]]] = {}
+    for doc in ANALYTICS_DOCUMENTS:
+        for name in sorted(keep[doc]):
+            cls = classes[doc].get(name)
+            if cls is None or not cls.attributes:
+                continue
+            groups.setdefault(doc, {}).setdefault(shape(cls), []).append(name)
+
+    draw: dict[str, set[str]] = {d: set() for d in ANALYTICS_DOCUMENTS}
+    variants: list[str] = []
+    for doc, by_shape in groups.items():
+        for sig, names in by_shape.items():
+            draw[doc].add(names[0])
+            if len(names) > 1:
+                variants.append(f'{doc}__{names[0]} : "… same shape as: {", ".join(names[1:])}"')
+
     out = ["@startuml", f"title {title}", "hide empty members",
            "skinparam classAttributeIconSize 0", "skinparam nodesep 10",
            "skinparam ranksep 22", "left to right direction", ""]
@@ -177,7 +203,7 @@ def emit(inventory: Path, title: str) -> str:
     out.append('package "ores.analytics" #EAF7EA {')
     for doc in ANALYTICS_DOCUMENTS:
         out.append(f'  package "{doc}" {{')
-        for name in sorted(keep[doc]):
+        for name in sorted(draw[doc]):
             cls = classes[doc].get(name)
             if cls is None:
                 continue
@@ -191,7 +217,7 @@ def emit(inventory: Path, title: str) -> str:
         out.append("  }")
     out.append("}")
     for doc in ANALYTICS_DOCUMENTS:
-        for name in sorted(keep[doc]):
+        for name in sorted(draw[doc]):
             cls = classes[doc].get(name)
             if cls is None:
                 continue
@@ -227,6 +253,7 @@ def emit(inventory: Path, title: str) -> str:
     ]
     out.append("")
     out.extend(sorted(set(edges)))
+    out.extend(variants)
     out.append("@enduml")
     return "\n".join(out) + "\n"
 
@@ -240,6 +267,8 @@ def main() -> int:
     ap.add_argument("--title", default="ORE configuration object model")
     ap.add_argument("--reporting-only", action="store_true",
                     help="emit only the reporting half, which is the design core")
+    ap.add_argument("--analytics-only", action="store_true",
+                    help="emit only the analytics half, without the reporting package")
     args = ap.parse_args()
 
     if args.reporting_only:
@@ -259,6 +288,25 @@ def main() -> int:
                 'note bottom of parameter_definition\n  the vocabulary: which names a\n  (type, subtype) accepts, and what\n  domain each value has\nend note',
                 "@enduml"]
         text = "\n".join(body) + "\n"
+    elif args.analytics_only:
+        text = emit(Path(args.inventory), args.title)
+        # Drop the reporting packages: this diagram is the analytics half only.
+        keep_lines, skip = [], False
+        for line in text.splitlines():
+            if line.startswith('package "ores.reporting'):
+                skip = True
+                continue
+            if skip:
+                if line.startswith("package "):
+                    skip = False
+                else:
+                    continue
+            keep_lines.append(line)
+        text = "\n".join(l for l in keep_lines
+                         if not l.startswith(('report_definition', 'report_configuration',
+                                              'configuration ', 'configuration_parameter',
+                                              'parameter_definition', 'configuration_type',
+                                              'value_domain', 'report_type'))) + "\n"
     else:
         text = emit(Path(args.inventory), args.title)
     out = Path(args.out_dir) / args.out_name

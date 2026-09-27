@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 79338DD8-35B5-5905-9DCF-620DCB0161B1
+:END:
+#+title: How do I call the login endpoints over HTTP?
+#+description: Every endpoint the login resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:login:
+
+This file documents the login resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =POST /api/v1/iam/auth/login=
+:PROPERTIES:
+:ID: 45882A82-4865-5B14-B10A-4513A5F62EE5
+:END:
+
+Login. It needs no session.
+
+It forwards to =iam.v1.auth.login=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/auth/login
+#+end_example
+
+#+name: login-login
+#+begin_src hurl :tangle login-login.hurl :exports none
+POST {{base_url}}/api/v1/iam/auth/login
+Accept: application/json
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/auth/logout=
+:PROPERTIES:
+:ID: 6504F620-1AC8-57AB-8593-E0B3464D47AE
+:END:
+
+Logout. It needs a session.
+
+It forwards to =iam.v1.auth.logout=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/auth/logout
+#+end_example
+
+#+name: login-logout
+#+begin_src hurl :tangle login-logout.hurl :exports none
+POST {{base_url}}/api/v1/iam/auth/logout
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

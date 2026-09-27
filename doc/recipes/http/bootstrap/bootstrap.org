@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 567A34ED-0B68-5C66-A733-77163A4B45F6
+:END:
+#+title: How do I call the bootstrap endpoints over HTTP?
+#+description: Every endpoint the bootstrap resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:bootstrap:
+
+This file documents the bootstrap resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =POST /api/v1/iam/bootstrap/status=
+:PROPERTIES:
+:ID: 490E8311-CD27-539E-AB73-84F34E258FB2
+:END:
+
+Bootstrap status. It needs no session.
+
+It forwards to =iam.v1.bootstrap.status=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/bootstrap/status
+#+end_example
+
+#+name: bootstrap-bootstrap-status
+#+begin_src hurl :tangle bootstrap-bootstrap-status.hurl :exports none
+POST {{base_url}}/api/v1/iam/bootstrap/status
+Accept: application/json
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/bootstrap/create-admin=
+:PROPERTIES:
+:ID: 1A0548BD-DAC2-588B-B3FD-67E0A0517055
+:END:
+
+Create initial admin. It needs no session.
+
+It forwards to =iam.v1.bootstrap.create-admin=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/bootstrap/create-admin
+#+end_example
+
+#+name: bootstrap-create-initial-admin
+#+begin_src hurl :tangle bootstrap-create-initial-admin.hurl :exports none
+POST {{base_url}}/api/v1/iam/bootstrap/create-admin
+Accept: application/json
+HTTP 200
+#+end_src
+

@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 84B782E8-D992-574E-8094-29E6454141D7
+:END:
+#+title: How do I call the session_operations endpoints over HTTP?
+#+description: Every endpoint the session_operations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:session_operations:
+
+This file documents the session_operations resource over HTTP. Its one endpoint is =POST /api/v1/iam/sessions/active=, and the section below exports it as a Hurl file into =projects/ores.http/scripts/library/=, which the harness runs.
+
+* Endpoints
+
+** =POST /api/v1/iam/sessions/active=
+:PROPERTIES:
+:ID: F3A62E73-083B-5DF1-BC17-5FC8C27B8275
+:END:
+
+Get active sessions. It needs a session.
+
+It forwards to =iam.v1.sessions.active=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/sessions/active
+#+end_example
+
+#+name: session_operations-get-active-sessions
+#+begin_src hurl :tangle session_operations-get-active-sessions.hurl :exports none
+POST {{base_url}}/api/v1/iam/sessions/active
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 788B9C8F-08A8-5B70-9794-3447973C6090
+:END:
+#+title: How do I call the authorization endpoints over HTTP?
+#+description: Every endpoint the authorization resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:authorization:
+
+This file documents the authorization resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =POST /api/v1/iam/roles/assign=
+:PROPERTIES:
+:ID: 1798A90E-6894-519C-8B53-17F4C968C190
+:END:
+
+Assign role. It needs a session.
+
+It forwards to =iam.v1.roles.assign=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/roles/assign
+#+end_example
+
+#+name: authorization-assign-role
+#+begin_src hurl :tangle authorization-assign-role.hurl :exports none
+POST {{base_url}}/api/v1/iam/roles/assign
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/roles/revoke=
+:PROPERTIES:
+:ID: D1D1CEB5-79B3-5D4D-996B-9C783877489B
+:END:
+
+Revoke role. It needs a session.
+
+It forwards to =iam.v1.roles.revoke=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/roles/revoke
+#+end_example
+
+#+name: authorization-revoke-role
+#+begin_src hurl :tangle authorization-revoke-role.hurl :exports none
+POST {{base_url}}/api/v1/iam/roles/revoke
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/roles/by-account=
+:PROPERTIES:
+:ID: 074D3723-1348-577E-95E7-B9EC90F2343F
+:END:
+
+Get account roles. It needs a session.
+
+It forwards to =iam.v1.roles.by-account=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/roles/by-account
+#+end_example
+
+#+name: authorization-get-account-roles
+#+begin_src hurl :tangle authorization-get-account-roles.hurl :exports none
+POST {{base_url}}/api/v1/iam/roles/by-account
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/roles/permissions-by-account=
+:PROPERTIES:
+:ID: 8210F786-82E7-5973-B1D0-09288524FE0A
+:END:
+
+Get account permissions. It needs a session.
+
+It forwards to =iam.v1.roles.permissions-by-account=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/roles/permissions-by-account
+#+end_example
+
+#+name: authorization-get-account-permissions
+#+begin_src hurl :tangle authorization-get-account-permissions.hurl :exports none
+POST {{base_url}}/api/v1/iam/roles/permissions-by-account
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/roles/permissions=
+:PROPERTIES:
+:ID: D657A55F-ED53-5C39-92DC-F532C984173E
+:END:
+
+Get role permissions. It needs a session.
+
+It forwards to =iam.v1.roles.permissions=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/roles/permissions
+#+end_example
+
+#+name: authorization-get-role-permissions
+#+begin_src hurl :tangle authorization-get-role-permissions.hurl :exports none
+POST {{base_url}}/api/v1/iam/roles/permissions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

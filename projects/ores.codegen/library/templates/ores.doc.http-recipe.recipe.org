@@ -6,7 +6,7 @@
 #+type: archetype
 #+output: doc/recipes/http/{entity_plural}/{entity}.org
 #+facet: ores.doc.http-recipe
-#+model_types: domain_entity
+#+model_types: domain_entity junction operation
 #+requires_facet: ores.cpp.http-route
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

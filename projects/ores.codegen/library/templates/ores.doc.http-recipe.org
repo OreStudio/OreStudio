@@ -4,7 +4,7 @@
 #+title: ores.doc.http-recipe
 #+description: Literate HTTP recipes: one org document per model that renders a route, one section per endpoint, each section exporting its own Hurl file into the gateway's library.
 #+type: facet
-#+model_types: domain_entity
+#+model_types: domain_entity junction operation
 #+level: cross
 #+facet_group: ores.doc
 #+default: enabled

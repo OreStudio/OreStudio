@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 76F232AB-8D75-572F-9309-49288505E73A
+:END:
+#+title: How do I call the account_operations endpoints over HTTP?
+#+description: Every endpoint the account_operations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:account_operations:
+
+This file documents the account_operations resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =POST /api/v1/iam/accounts/save=
+:PROPERTIES:
+:ID: CECDEF58-CA57-54F5-9DE1-B4487D74A8CF
+:END:
+
+Save account. It needs a session.
+
+It forwards to =iam.v1.accounts.save=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/save
+#+end_example
+
+#+name: account_operations-save-account
+#+begin_src hurl :tangle account_operations-save-account.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/save
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/update=
+:PROPERTIES:
+:ID: 659DC575-FC0F-5BBF-9A37-C71962918DFA
+:END:
+
+Update account. It needs a session.
+
+It forwards to =iam.v1.accounts.update=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/update
+#+end_example
+
+#+name: account_operations-update-account
+#+begin_src hurl :tangle account_operations-update-account.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/update
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/delete=
+:PROPERTIES:
+:ID: BA5BEA5E-E4EE-5D2F-8535-29B3391B7A2A
+:END:
+
+Delete account. It needs a session.
+
+It forwards to =iam.v1.accounts.delete=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/delete
+#+end_example
+
+#+name: account_operations-delete-account
+#+begin_src hurl :tangle account_operations-delete-account.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/delete
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/lock=
+:PROPERTIES:
+:ID: 22003F33-BF78-514F-84FC-7176569BD31E
+:END:
+
+Lock account. It needs a session.
+
+It forwards to =iam.v1.accounts.lock=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/lock
+#+end_example
+
+#+name: account_operations-lock-account
+#+begin_src hurl :tangle account_operations-lock-account.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/lock
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/unlock=
+:PROPERTIES:
+:ID: 8C5D1878-DCAD-56A7-B3FB-76D6908BFE68
+:END:
+
+Unlock account. It needs a session.
+
+It forwards to =iam.v1.accounts.unlock=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/unlock
+#+end_example
+
+#+name: account_operations-unlock-account
+#+begin_src hurl :tangle account_operations-unlock-account.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/unlock
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/reset-password=
+:PROPERTIES:
+:ID: 4126C3E1-941E-5C41-BC6E-DB41E44C73F0
+:END:
+
+Reset password. It needs a session.
+
+It forwards to =iam.v1.accounts.reset-password=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/reset-password
+#+end_example
+
+#+name: account_operations-reset-password
+#+begin_src hurl :tangle account_operations-reset-password.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/reset-password
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/update-email=
+:PROPERTIES:
+:ID: B7BB878A-B697-56F8-8C40-3B20843DCE01
+:END:
+
+Update my email. It needs a session.
+
+It forwards to =iam.v1.accounts.update-email=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/update-email
+#+end_example
+
+#+name: account_operations-update-my-email
+#+begin_src hurl :tangle account_operations-update-my-email.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/update-email
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/accounts/change-password=
+:PROPERTIES:
+:ID: 4049DFA2-68BD-5AC0-BAB7-DD226B409AEA
+:END:
+
+Change password. It needs a session.
+
+It forwards to =iam.v1.accounts.change-password=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/accounts/change-password
+#+end_example
+
+#+name: account_operations-change-password
+#+begin_src hurl :tangle account_operations-change-password.hurl :exports none
+POST {{base_url}}/api/v1/iam/accounts/change-password
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -80,3 +80,36 @@ jobs:
       - name: Sweep every catalogue component for drift this branch caused
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --sweep
+
+  # Pasted block symbols: a model can paste hand-written C++ into generated
+  # output through an :implements block, and the block reaches the compiler only
+  # when its component is regenerated. The ores.service clean-up moved three
+  # workflow header names out of ores.service into ores.workflow.api, and
+  # ores.refdata keeps a workflow override as such a block. The generated handler
+  # was hand-edited to the new names and the model was left naming the deleted
+  # ones, so the next refdata regeneration would have reverted the edit and
+  # broken the build. --all was green and CI was green on every head.
+  #
+  # The sweep catches that case because the model and the generated file
+  # disagree; it cannot catch the narrower one where both agree and are both
+  # stale, because the render reproduces the committed bytes. This reads the
+  # model, so it catches both and a rename fails at review without a
+  # regeneration.
+  #
+  # It lives here rather than in codegen-drift.yml because it is sensitive to a
+  # rename in any component's headers, and that workflow fires on the inputs
+  # codegen reads. This one fires on any change under projects/, which is what a
+  # header rename is. It reads the models and the headers only, so it needs
+  # neither codegen nor a formatter and takes about eight seconds.
+  paste-blocks:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every pasted block names symbols that exist
+        run: |
+          python3 projects/ores.codegen/scripts/check_paste_block_symbols.py

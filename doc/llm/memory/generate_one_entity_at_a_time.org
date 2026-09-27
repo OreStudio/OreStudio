@@ -8,12 +8,18 @@
 #+level: cross
 #+filetags: :codegen:drift:hygiene:memory:feedback:
 #+created: 2026-09-19
-#+updated: 2026-09-19
+#+updated: 2026-09-27
 
-Regenerate codegen output one entity at a time, always through an explicit --address, using compass codegen entity generate <entity> --address <facet> (--diff first to preview). Never run a whole-component regeneration or --all to check one model.
+Regenerate codegen output one entity at a time, always through an explicit --address: =compass codegen generate --model <model.org> --address <facet>=, or =compass codegen regenerate --component <component> --address <facet> --entity <names>=. Never run a whole-component regeneration or --all to check one model.
+
+*Do not regenerate the whole tree while any component still carries drift.* A tree-wide run is its own task, taken once the drift is fixed in every component, and never a step inside another change. Until then, regenerate the narrowest owner of the change and keep only the files that change can write.
 
 *Why:* A whole-tree or whole-component run materializes output for every model the facet admits, so one narrow change produces hundreds of files, most of them unrelated. The TypeScript facet widening showed this: a plain check_component_drift.py --all regenerated TypeScript for every drift-free component and aborted on four entities whose response carries ores::utility::domain::hierarchy_node, a gap that has nothing to do with the change under test.
 
-*How to apply:* Preview with --diff, confirm the paths named are the ones the change should touch, then write. Keep check_component_drift.py for verification, and constrain it with --address when a tree-wide proof is needed (--all --address ores.cpp regenerates C++ only and leaves the TypeScript alone).
+It is worse once some components have drifted, because the run then *writes* that drift into the tree. On 2026-09-27, =compass codegen regenerate --all --address ores.sql.schema= was run to fix one template and it rewrote marketdata, refdata and synthetic tables, and created an untracked =workspace_workspaces= table with its notify trigger and both drop scripts. None of that belonged to the change, all of it had to be reverted by hand, and one careless =git add -A= would have committed another component's work.
+
+The drift check does not protect you here. =check_component_drift.py --all= regenerates only the components under test, the list in =component_registry.py=, so "no drift" from that check is not evidence the tree is clean -- it is evidence the components on that list are clean. The files above are outside it.
+
+*How to apply:* Preview with =--dry-run= to see the paths, confirm they are the ones the change should touch, then write. Keep check_component_drift.py for verification, constrained to the component or address the change touches. It compares the working tree against HEAD, so run it after the commit rather than before it, and read it as "this component is clean", never as "the tree is clean".
 
 When a model is being drafted rather than migrated, use the reporting mode: check_component_drift.py --dry-run generates into a temporary root and reports what would change or be created, writing nothing into the repository. Never run the in-place check to find out what a draft would do. It regenerates the whole drift-free set, and a drafted model sitting in a modeling directory makes it write that entity's output over hand-written files. A safe check must not have to move a file out of the way first: on 2026-09-19 a dry run of the drafted login_info model reported seventeen files that would change and thirteen that would be created, and an in-place --all run with that model present wrote all of them over the hand-written tree, which had to be restored by hand.

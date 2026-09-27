@@ -76,3 +76,8 @@ export type {
 // Subjects, so a browser-side module can name one without importing the
 // transport that would know how to reach it.
 export { SUBJECTS } from './operations.js';
+
+// The starting-point read, so the browser parses what the BFF served with the
+// definition the server serialised it from.
+export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';
+export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';

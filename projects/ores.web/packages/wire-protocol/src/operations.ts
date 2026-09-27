@@ -24,6 +24,9 @@ import { accountSchema, partySummarySchema, uuidSchema, wireTimestampSchema } fr
 import type { Account, PartySummary } from './domain.js';
 import { subjects as httpInfoSubjects } from './generated/http/protocol/http_info_protocol.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
+import { subjects as seedProfileSubjects } from './generated/iam/protocol/seed_profile_protocol.js';
+import { subjects as seedProfileParameterSubjects } from './generated/iam/protocol/seed_profile_parameter_protocol.js';
+import { subjects as seedProfileStepSubjects } from './generated/iam/protocol/seed_profile_step_protocol.js';
 import type { Uuid } from './primitives.js';
 
 /**
@@ -49,6 +52,11 @@ export const SUBJECTS = {
     bootstrapStatus: bootstrapSubjects.bootstrap_status_request,
     createInitialAdmin: bootstrapSubjects.create_initial_admin_request,
     httpInfo: httpInfoSubjects.get_http_info_request,
+    listSeedProfiles: seedProfileSubjects.list_seed_profiles_request,
+    listSeedProfileSteps:
+        seedProfileStepSubjects.list_by_seed_profile_id_seed_profile_steps_request,
+    listSeedProfileParameters:
+        seedProfileParameterSubjects.list_by_seed_profile_id_seed_profile_parameters_request,
 } as const;
 
 /**
@@ -397,3 +405,216 @@ export const changeReasonPageSchema = z.object({
     success: z.boolean().default(false),
     message: z.string().default(''),
 });
+
+/**
+ * The result every generated entity response carries.
+ *
+ * Only the outcome and its words: a caller that acts on a failure reads the
+ * code, and the field failures a validation carries are for a form that is
+ * not what reads these.
+ */
+const resultEnvelopeSchema = z.object({
+    outcome: z.enum(['ok', 'invalid', 'denied', 'missing', 'conflict', 'unavailable', 'failed']),
+    code: z.string().default(''),
+    message: z.string().default(''),
+});
+
+/**
+ * One step kind a starting point orders.
+ *
+ * The arguments the kind consumes stay on the server. The kind fixes their
+ * shape in code, so a screen that carried them would be reading a handler's
+ * contract; what the starting-point card shows is the kind and its position.
+ */
+export const seedProfileStepSchema = z.object({
+    step_kind: z.string(),
+    display_order: z.int().default(0),
+});
+
+/**
+ * One input a starting point's form declares.
+ *
+ * The type is a word rather than a value because one table carries every
+ * type, and the default stays text for the same reason: the form reads the
+ * type to pick its widget and parses the default with it.
+ */
+export const seedProfileParameterSchema = z.object({
+    name: z.string(),
+    data_type: z.string().default('string'),
+    default_value: z.string().default(''),
+    is_required: z.boolean().default(false),
+    description: z.string().default(''),
+    display_order: z.int().default(0),
+});
+
+/**
+ * A starting point a new tenant is provisioned from.
+ *
+ * The tenant details are the ones the profile prefills, and an empty one
+ * states that the form starts blank there. The surrogate id is carried
+ * because the steps and the parameters are read by it, and the audit tail
+ * and the tenant the row belongs to are not: nothing that reads a starting
+ * point may act on them.
+ */
+export const seedProfileSchema = z.object({
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+    description: z.string().default(''),
+    audience: z.string().default(''),
+    tenant_name: z.string().default(''),
+    tenant_code: z.string().default(''),
+    tenant_hostname: z.string().default(''),
+    admin_username: z.string().default(''),
+    admin_email: z.string().default(''),
+    inherits_admin_password: z.boolean().default(false),
+    force_password_change: z.boolean().default(false),
+    display_order: z.int().default(0),
+});
+
+/** One page of starting points, and the result the read carries. */
+export const listSeedProfilesRequestSchema = z.object({
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(200).default(50),
+    order: z
+        .object({
+            field: z.string().default(''),
+            descending: z.boolean().default(false),
+        })
+        .default({ field: '', descending: false }),
+});
+
+/**
+ * One profile's steps, or its parameters.
+ *
+ * Every field is stated rather than left out, including the filter, because
+ * the server decodes the request into a struct that names them all. The
+ * scope and the order are stated and the server's own read decides both: a
+ * profile's children are a flat list ordered by the display order the rows
+ * carry.
+ */
+export const listSeedProfileChildrenRequestSchema = z.object({
+    seed_profile_id: uuidSchema,
+    scope: z.enum(['direct', 'subtree']).default('direct'),
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(1000).default(200),
+    order: z
+        .object({
+            field: z.string().default(''),
+            descending: z.boolean().default(false),
+        })
+        .default({ field: '', descending: false }),
+    filter: z.null().default(null),
+});
+
+export const seedProfilePageSchema = z.object({
+    result: resultEnvelopeSchema,
+    seed_profiles: z.array(seedProfileSchema).default([]),
+    total: z.int().nonnegative().default(0),
+});
+
+export const seedProfileStepPageSchema = z.object({
+    result: resultEnvelopeSchema,
+    seed_profile_steps: z.array(seedProfileStepSchema).default([]),
+    total: z.int().nonnegative().default(0),
+});
+
+export const seedProfileParameterPageSchema = z.object({
+    result: resultEnvelopeSchema,
+    seed_profile_parameters: z.array(seedProfileParameterSchema).default([]),
+    total: z.int().nonnegative().default(0),
+});
+
+/**
+ * A starting point as the interface reads it.
+ *
+ * The three reads behind it are composed into one shape, because the screen
+ * that chooses a starting point shows the profile, the steps it orders and
+ * the form it declares at once, and a browser that joined three replies would
+ * be holding the profile's structure itself. The names are camelCase from
+ * here on: this is the shape the browser parses, not the wire.
+ */
+export const seedProfileChoiceSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    description: z.string().default(''),
+    audience: z.string().default(''),
+    tenant: z.object({
+        name: z.string().default(''),
+        code: z.string().default(''),
+        hostname: z.string().default(''),
+        adminUsername: z.string().default(''),
+        adminEmail: z.string().default(''),
+    }),
+    inheritsAdminPassword: z.boolean().default(false),
+    forcePasswordChange: z.boolean().default(false),
+    order: z.int().default(0),
+    steps: z
+        .array(
+            z.object({
+                kind: z.string(),
+                order: z.int().default(0),
+            }),
+        )
+        .default([]),
+    parameters: z
+        .array(
+            z.object({
+                name: z.string(),
+                dataType: z.string().default('string'),
+                defaultValue: z.string().default(''),
+                required: z.boolean().default(false),
+                description: z.string().default(''),
+                order: z.int().default(0),
+            }),
+        )
+        .default([]),
+});
+
+export type SeedProfileChoice = z.infer<typeof seedProfileChoiceSchema>;
+
+/**
+ * Joins a profile and its two child reads into the shape the interface reads.
+ *
+ * The children are the server's order, which is the display order they
+ * carry. The profile itself is not: its page is ordered by the key, so the
+ * caller sorts the joined list by the order the profile declares.
+ */
+export function toSeedProfileChoice(
+    profile: z.infer<typeof seedProfileSchema>,
+    steps: readonly z.infer<typeof seedProfileStepSchema>[],
+    parameters: readonly z.infer<typeof seedProfileParameterSchema>[],
+): SeedProfileChoice {
+    return {
+        code: profile.code,
+        name: profile.name,
+        description: profile.description,
+        audience: profile.audience,
+        tenant: {
+            name: profile.tenant_name,
+            code: profile.tenant_code,
+            hostname: profile.tenant_hostname,
+            adminUsername: profile.admin_username,
+            adminEmail: profile.admin_email,
+        },
+        inheritsAdminPassword: profile.inherits_admin_password,
+        forcePasswordChange: profile.force_password_change,
+        order: profile.display_order,
+        steps: steps.map((step) => ({ kind: step.step_kind, order: step.display_order })),
+        parameters: parameters.map((parameter) => ({
+            name: parameter.name,
+            dataType: parameter.data_type,
+            defaultValue: parameter.default_value,
+            required: parameter.is_required,
+            description: parameter.description,
+            order: parameter.display_order,
+        })),
+    };
+}
+
+/** The body of the browser's starting-point read. */
+export const seedProfilesResponseSchema = z.object({
+    profiles: z.array(seedProfileChoiceSchema).default([]),
+});
+
+export type SeedProfilesResponse = z.infer<typeof seedProfilesResponseSchema>;

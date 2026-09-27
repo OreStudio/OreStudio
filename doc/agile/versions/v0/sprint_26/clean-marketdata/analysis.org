@@ -944,7 +944,8 @@ in isolation from a schema change.
 
 *Known prerequisite inside it.* The =recorded_at= member is dropped by the
 current template for =:no_audit_columns:= entities
-(id:table_less_and_no_audit_columns_consequences), so =market_fixing= and
+([[id:7CA3D478-597A-4175-A753-A88FFB463A4E][Bring the no-audit-columns
+entities over with the domain member gone]]), so =market_fixing= and
 =market_observation= and the two hand-written tests that populate it move
 together.
 

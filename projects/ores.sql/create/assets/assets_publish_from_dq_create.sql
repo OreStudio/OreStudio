@@ -108,7 +108,8 @@ begin
         end if;
 
         -- Insert image - trigger handles versioning automatically.
-        -- Use existing image_id when updating to preserve referential integrity.
+        -- Updating reuses the id of the image already stored under this code,
+        -- so the rows that reference it keep pointing at it.
         -- DQ artefact staging is SVG-only text; base64-encode into the
         -- generalised (mime_type, data) shape of the live table.
         insert into ores_assets_images_tbl (

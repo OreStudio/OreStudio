@@ -1,6 +1,0 @@
-# =add=
-#
-# GENERATED from doc/recipes/shell/lei_entities/lei_entity.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-lei_entities add __none__ __none__ __none__ - __none__ - - - - - - __none__ - - - - - - - - - - - - - system.new_record generated_script

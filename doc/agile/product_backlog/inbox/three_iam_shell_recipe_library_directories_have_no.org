@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 8A64C295-BAA8-41C8-9EED-C7D6BC13B929
+:END:
+#+title: Three iam shell recipe library directories have no committed…
+#+description: Three iam shell recipe library directories have no committed scripts on main.
+
+doc/recipes/shell/seed_profiles, seed_profile_parameters and seed_profile_steps each carry a tracked recipe document, and projects/ores.shell/scripts/library/ carries none of the three directories at all. Tangling the recipes -- compass build --direct tangle_shell_scripts -- materialises them as untracked files, so the recipe and its runnable script are out of step in the tree: the /Commands/ sections of those recipes document scripts a caller does not have.
+
+This is the same shape as the recipe drift that nothing gates, from the other side. The tangle writes the scripts, and nothing commits them, because the shell script drift workflow compares the tangled output against the tree in a way that did not fail on the three missing directories when main was last green.
+
+Found while running the tangle for ores.dq, whose own library directories are committed. Recorded rather than fixed here because the recipes are ores.iams, and the fix is to commit the three directories after tangling, or to remove the recipe documents if the surfaces were retired.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

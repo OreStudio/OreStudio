@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
-#+branch: feature/dq-clean-batch-6
-#+pr: 2305
+#+branch: feature/dq-v03-fleet
+#+pr: 2309
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -30,9 +30,9 @@ This is pass 2. Pass 1, [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the han
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Three defect batches have landed, #2286, #2291 and #2296. Of the 49 items, all but two now pass: H01 with both diagram passes run and the audit record written, V07 fixed and proven, V08 with every untouched file given its reason, M09 fixed for this component, and B06 with a measured second finding. V03 and V04 need a fleet this sandbox cannot start, and M08 has its own task. V06 puts the V03 and V04 decision to the review. |
+| Now          | Three defect batches have landed, #2286, #2291 and #2296. Of the 49 items, all but one now pass. The fleet came up in this environment once two faults were cleared, so V03 and V04 were verified rather than excepted: the database recreates and 25 of 25 units run, and the recipe replay answers 181 of 229 with the other 48 recorded as destructive. The one item open is M08, which is a real defect in this component's model and is carried by its own task. |
 | Waiting on   | Nothing for the fixed items. V03 and V04 need a running fleet, which this sandbox cannot start: =systemctl --user= cannot reach the user manager, so =compass services start= fails and bearings reports 24 units missing. |
-| Next         | Run V03 and V04 where the fleet runs. Then the two things this pass deliberately left: the generator gate that would keep every diagram current, and pass 1's seven unmodelled artefact tables. |
+| Next         | M08, =ores.dq.fsm_state='s two integer flags, which its own task carries. Then the things this pass deliberately left: the generator gate that would keep every diagram current, and pass 1's seven unmodelled artefact tables. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -102,10 +102,10 @@ record each item's result in the table below.
 | H05 | Fix, with one part recorded. =ores.dq.core='s overview named =soci= as its SQL ORM; the component has zero references to soci and the real dependency is =sqlgen=. The root index is recorded under M10. | =projects/ores.dq/core/modeling/component_overview.org= |
 | V01 | Pass. Every affected target builds with zero errors: =ores.dq.api.tests=, =ores.dq.core.tests=, =ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.application.tests=. | The build log reported by =compass build= |
 | V02 | Pass. All five suites pass on the committed tree: =ores.dq.api.tests=, =ores.dq.core.tests= (111 cases), =ores.dq.service.tests=, =ores.shell.dq.tests= and =ores.shell.application.tests=. =ores.dq.core.tests= failed once first, in the eventing integration test the =subject_area= bind had just created, because the model's synthetic generator wrote =domain_name = "reference_data"= where the validator accepts the seeded =Reference Data=. That is a latent defect the new test exposed rather than caused; the generator value is corrected and the suite re-run green. | =compass test run=; =projects/ores.dq/api/src/generators/subject_area_generator.cpp= |
-| V03 | Blocked by the environment, not by the component. The database recreates, but a fleet cannot be started here: =systemctl --user= cannot reach the user manager, so =compass services start= fails and bearings reports 24 units missing. | =compass services status=; =compass.sh bearings= |
-| V04 | Blocked by the same environment limit: replaying the recipes needs a live fleet. Note that this batch adds ten recipes and twenty shell units to the surface V04 must replay. | =check_shell_recipes.py= — needs =V04_PRINCIPAL= and =V04_PASSWORD= |
+| V03 | Pass. =compass db recreate -y -k= recreated the schema from scratch and reseeded it, and =compass services start= brought the fleet up: =services: running=25 starting=0 stopped=0 missing=0=. Two environment faults had to be cleared first, and neither was the component's. A manual =nats-server= left over from an earlier session held port 21805, so the fleet's own nats unit failed to bind; and the checkout's =.env= was stale, which =compass env configure= regenerated, dropping a dead =ORES_HTTP_SERVER_JWT_SECRET= that nothing reads and fixing =ores.http.server=, the one unit that had been dying at startup. | =compass db recreate -y -k=; =compass services start=; =compass services status=; the capture about the harness |
+| V04 | Pass. =check_shell_recipes.py= replayed every dq recipe against the live fleet: 229 recipes, 181 answered, 48 recorded as not replayed because they are destructive, and no failure. Getting there meant fixing two things the replay exposed. The harness invokes =ores.shell= directly and needs the checkout's =.env= exported, which its docstring does not say, and without it every recipe aborted at the sign-in line with a message about login rather than about the connection. And 24 of the library scripts were orphans: ten hand-written sub-recipes whose commands name the retired hyphenated menus, and fourteen for =lei_entities= and =lei_relationships= verbs that a read-only entity does not have. The ten documents and all 24 scripts are deleted. | =.audit/clean-shell-recipes/recipes.tsv=; the capture about the harness |
 | V05 | Pass. Every gate is green with dq registered: component drift (dq and the whole registry), model drift, protocol twin coverage, handler permissions, populate references, shell menu collisions, route auth declarations, registry exceptions, test-case reachability, paste-block symbols, oresmd coverage, and both recipe inventories. The shell script drift gate is also green, and it is the one that caught the missing re-tangle of the two =ores.reporting= recipe libraries: refreshing a recipe without re-tangling its scripts leaves the script stale even though both were generated. | The local gate runs in this batch; PR #2291's fifteen checks, twice |
-| V06 | Decision, for the review. dq is listed in =COMPONENTS_UNDER_TEST= from #2286 and every gate runs against it. With H01 and V08 now passing, two items remain that this environment cannot verify -- V03 and V04, which need a fleet -- and M08, which its own task covers. V03 and V04 are the exception the standard describes: a check that needs a live fleet. The review decides whether to record them as accepted exceptions against the component, which needs whoever accepts them to say so, or to run them where a fleet runs and close them there. The entry is kept either way, because withdrawing it switches every gate off for the component. | =component_registry.py=; the item table above |
+| V06 | Pass. dq has been listed in =COMPONENTS_UNDER_TEST= since #2286 and every gate runs against it, which is why the item is not the decision it once was: the fleet came up here after the two environment faults above were cleared, so V03 and V04 were verified rather than excepted. Every item in the table now passes except M08, which is a real defect in this component's model and is carried by its own task; the entry stays and no exception is needed. | =component_registry.py=; the item table above |
 | V07 | Fix, and proven the way the item asks. A census of all 551 dq test cases found 71 that asserted only a non-throw, a container length, a truthiness or one run against another, in four uniform families: =write_single_X= and =write_multiple_X= (only =CHECK_NOTHROW=), =read_latest_X= (only emptiness and length), =read_all_X_versions= (only a length), =read_nonexistent_X= (=size() == 0=, which also passes when the lookup ignores the key), plus the generator and parser cases. All 71 now assert a value the test itself set: the write cases read their row back by its natural key and compare two fields, the collection cases assert each written row is present by key with a matching field, the version cases assert the written descriptions are present, the nonexistent cases write a real row first so a key-ignoring lookup fails, and the generator cases assert the two literals their =*_produces_valid_instance= sibling pins, for every instance. Re-run census: 0 of 551. Proven by stubbing: with =catalog_repository::write= made a no-op on both overloads, all seven catalog repository cases fail (=write_single=, =write_multiple=, =read_latest=, =read_latest_by_name=, =read_all_versions=, =read_nonexistent=, =roundtrip=); before the fix the two write cases passed under that stub. | =projects/ores.codegen/scripts/survey_vacuous_tests.py --component dq=; =compass test run -R "ores.dq"= — three suites, all pass; the stub run recorded on this task |
 | V08 | Pass, with every untouched file given its reason. Static include reachability over 331 source files, seeded from 79 test sources and following each reachable header's implementation, puts 154 behind a test and 177 not. The 177, grouped with the reason none is reached: *messaging* 68 -- the generated per-entity registrars, history-provider registrars and the component registrar, which are NATS subscription wiring and need a broker, so they belong to V04 rather than the unit suite. *domain* 42 -- the generated =*_table_io.cpp= family, 26 of them, whose headers nothing includes; that is the B06 finding above, measured. *repository* 24 -- the entity, mapper and repository triples for the eleven entities whose repository tests do not exist, against 16 test files for 27 repositories. *presentation* 19 -- the generated history field mappers, exercised through the shell's history commands rather than in a unit. *service* 13 -- the generated per-entity services for those same eleven entities. *generators* 8 -- the synthetic generators with no case in =generators_tests.cpp=, which has 24 cases for 26 sources. *app* 2 and =main.cpp= 1 -- the service entry point, which boots a process and a NATS connection and is what V03 and V04 exercise. The method is static reachability, not branch coverage, so a NATS-only path is invisible to it and "touched" does not mean exercised; this list is the coverage work item. | =projects/ores.codegen/scripts/survey_test_reachability.py --component dq --list= |
 
@@ -237,6 +237,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2309][#2309]] | [dq] Verify V03 and V04 against a live fleet |
 | [[https://github.com/OreStudio/OreStudio/pull/2305][#2305]] | [agile] Close the dq V08 item with a reason for every untouched file |
 | [[https://github.com/OreStudio/OreStudio/pull/2304][#2304]] | [dq] Pass H01: run both diagram passes and write the architecture audit |
 | [[https://github.com/OreStudio/OreStudio/pull/2303][#2303]] | [agile] Correct the dq H01 finding: the diagram generator exists |
@@ -256,6 +257,10 @@ via its "Verifies task" field.
 * Result
 
 The task is *not* complete, and this section says so rather than closing it. Three batches have landed, #2286, #2291 and #2296, and the item table above records each item's result with the command or file that proves it.
+
+*Landed on =feature/dq-v03-fleet=*:
+
+- *V03 and V04 pass.* The database recreates from scratch and all 25 units run, so the fleet was verified rather than excepted: the recipe replay answers 181 of 229 and records the other 48 as destructive. Two environment faults had to be cleared, and the replay exposed 24 orphan library scripts and a harness that needs the checkout .env exported. All three are recorded above.
 
 *Landed on =feature/dq-clean-batch-5=*:
 
@@ -283,7 +288,7 @@ The task is *not* complete, and this section says so rather than closing it. Thr
 
 *What is open*, recorded in the item table and the list above it:
 
-- *V03, V04* — both need a running fleet, which this sandbox cannot start. They are the exception the standard describes, and V06 above puts the decision to the review.
+- *M08* — =is_initial= and =is_terminal= are integer flags where the standard wants booleans. It is the one item left, and its own task carries the change and its acceptance.
 - *M08* — =is_initial= and =is_terminal=, tracked by its own task.
 - *Pass 1's artefact tail* — seven artefact tables with no model and, for four of them, no recorded reason. Recorded on the pass 1 task.
 - *V08's coverage work item* — the 177 source files no test reaches, each with its reason recorded. Writing tests for them is its own task.

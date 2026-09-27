@@ -30,11 +30,11 @@ rule and needs no build, so it runs on every pull request.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
-| Now          | Writing the gate and restructuring the six cases it flags. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Verify the gate against the whole tree. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

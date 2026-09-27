@@ -57,7 +57,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| corpus files of this kind | 14 | `find external/ore/examples -iname "creditsimulation*.xml" \| wc -l` | abff31c9f0 |
+| distinct documents behind them | 7, each appearing twice | `find external/ore/examples -iname "creditsimulation*.xml" \| sort \| xargs md5sum \| sort \| awk '{print $1}' \| uniq -c \| sort -rn` | abff31c9f0 |
+| matrix cells in the largest file | 64 (an 8x8 grid in one `Data` element) | see the slice notes | |
 
 * Notes
 

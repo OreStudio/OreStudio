@@ -8,7 +8,7 @@
 #+filetags: :harden-clean-standard-gates:sprint_26:v0:
 #+owner: marco
 #+branch: feature/paste-block-symbols
-#+pr:
+#+pr: 2276
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2276][#2276]] | [codegen] Check that a pasted block names symbols that exist |
 
 * Review
 

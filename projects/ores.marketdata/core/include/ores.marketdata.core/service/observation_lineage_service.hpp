@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
+#include "ores.marketdata.api/messaging/observation_lineage_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include <chrono>
@@ -66,6 +67,36 @@ public:
     explicit observation_lineage_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_observation_lineages_response
+    list_observation_lineages(const messaging::list_observation_lineages_request& request);
+    messaging::get_observation_lineage_response
+    get_observation_lineage(const messaging::get_observation_lineage_request& request);
+    messaging::get_many_observation_lineages_response
+    get_many_observation_lineages(const messaging::get_many_observation_lineages_request& request);
+    messaging::put_observation_lineage_response
+    put_observation_lineage(const messaging::put_observation_lineage_request& request);
+    messaging::put_many_observation_lineages_response
+    put_many_observation_lineages(const messaging::put_many_observation_lineages_request& request);
+    messaging::delete_observation_lineage_response
+    delete_observation_lineage(const messaging::delete_observation_lineage_request& request);
+    messaging::delete_many_observation_lineages_response delete_many_observation_lineages(
+        const messaging::delete_many_observation_lineages_request& request);
+    messaging::list_observation_lineage_versions_response list_observation_lineage_versions(
+        const messaging::list_observation_lineage_versions_request& request);
+    messaging::get_observation_lineage_version_response get_observation_lineage_version(
+        const messaging::get_observation_lineage_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists observation lineages with pagination support.
      *
      * @param offset Number of records to skip.
@@ -91,14 +122,24 @@ public:
      * @return The observation lineage at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::observation_lineage>
-    get_observation_lineage_at_version(const std::string& id, std::uint32_t version);
+    get_observation_lineage_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single observation lineage by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The observation lineage if found, std::nullopt otherwise.
      */
-    std::optional<domain::observation_lineage> get_observation_lineage(const std::string& id);
+    std::optional<domain::observation_lineage>
+    get_observation_lineage(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of observation lineages by primary key.
+     */
+    std::vector<domain::observation_lineage>
+    get_observation_lineages(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a observation lineage (creates or updates).
@@ -122,7 +163,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_observation_lineage(const std::string& id);
+    void delete_observation_lineage(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes observation lineages by their primary keys.
@@ -131,12 +172,32 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a observation lineage.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::observation_lineage> get_observation_lineage_history(const std::string& id);
 
 private:
     context ctx_;
     repository::observation_lineage_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::observation_lineage_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::observation_lineage& out);
 };
 
 }

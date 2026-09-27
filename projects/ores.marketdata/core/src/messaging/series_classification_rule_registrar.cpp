@@ -40,20 +40,48 @@ std::vector<ores::nats::service::subscription> register_series_classification_ru
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<series_classification_rule_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(get_series_classification_rules_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(save_series_classification_rule_request::nats_subject,
-                                        queue_group,
-                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_series_classification_rules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_series_classification_rules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_series_classification_rule_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_series_classification_rule(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_series_classification_rules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_many_series_classification_rules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_series_classification_rule_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_series_classification_rule(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_series_classification_rules_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->put_many_series_classification_rules(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_series_classification_rule_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_series_classification_rule(std::move(msg)); }));
     subs.push_back(
-        nats.queue_subscribe(delete_series_classification_rule_request::nats_subject,
+        nats.queue_subscribe(delete_many_series_classification_rules_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->delete_many_series_classification_rules(std::move(msg));
+                             }));
     subs.push_back(
-        nats.queue_subscribe(get_series_classification_rule_history_request::nats_subject,
+        nats.queue_subscribe(list_series_classification_rule_versions_request::nats_subject,
                              queue_group,
-                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+                             [h](ores::nats::message msg) {
+                                 h->list_series_classification_rule_versions(std::move(msg));
+                             }));
+    subs.push_back(
+        nats.queue_subscribe(get_series_classification_rule_version_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->get_series_classification_rule_version(std::move(msg));
+                             }));
     return subs;
 }
 

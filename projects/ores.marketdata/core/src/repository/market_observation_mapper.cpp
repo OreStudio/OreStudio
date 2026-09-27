@@ -54,7 +54,6 @@ domain::market_observation market_observation_mapper::map(const market_observati
 
     r.value = v.value;
     r.source = v.source.value_or("");
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

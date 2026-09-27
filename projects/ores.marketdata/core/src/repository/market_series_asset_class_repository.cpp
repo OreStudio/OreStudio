@@ -29,7 +29,10 @@
 #include "ores.marketdata.core/repository/market_series_asset_class_entity.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_mapper.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <cstddef>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
 
 namespace ores::marketdata::repository {
 
@@ -45,23 +48,77 @@ std::string market_series_asset_class_repository::sql() {
 market_series_asset_class_repository::market_series_asset_class_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
+ores::utility::domain::precondition
+market_series_asset_class_repository::replace_claim(const domain::market_series_asset_class& v) {
+    const auto current = read_latest(v.market_series_id, v.asset_class_code);
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
+}
+
+domain::market_series_asset_class market_series_asset_class_repository::apply_claim(
+    const domain::market_series_asset_class& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(v.market_series_id, v.asset_class_code);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
+}
+
 void market_series_asset_class_repository::write(
     const domain::market_series_asset_class& asset_class) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing asset class to database: "
-                               << asset_class.market_series_id << "/"
-                               << asset_class.asset_class_code;
-    execute_write_query(ctx_,
-                        market_series_asset_class_mapper::map(asset_class),
-                        lg(),
-                        "writing asset class to database");
+    write(asset_class, replace_claim(asset_class));
 }
 
 void market_series_asset_class_repository::write(
     const std::vector<domain::market_series_asset_class>& asset_classes) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(asset_classes.size());
+    for (const auto& item : asset_classes)
+        claims.push_back(replace_claim(item));
+    write(asset_classes, claims);
+}
+
+void market_series_asset_class_repository::write(
+    const domain::market_series_asset_class& asset_class,
+    const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing asset class to database: "
+                               << asset_class.market_series_id << "/"
+                               << asset_class.asset_class_code;
+    const auto t = apply_claim(asset_class, claim);
+    execute_write_query(
+        ctx_, market_series_asset_class_mapper::map(t), lg(), "writing asset class to database");
+}
+
+void market_series_asset_class_repository::write(
+    const std::vector<domain::market_series_asset_class>& asset_classes,
+    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset classes to database. Count: "
                                << asset_classes.size();
+    std::vector<domain::market_series_asset_class> batch;
+    batch.reserve(asset_classes.size());
+    for (std::size_t i = 0; i < asset_classes.size(); ++i)
+        batch.push_back(apply_claim(asset_classes[i], claims[i]));
     execute_write_query(ctx_,
-                        market_series_asset_class_mapper::map(asset_classes),
+                        market_series_asset_class_mapper::map(batch),
                         lg(),
                         "writing asset classes to database");
 }
@@ -98,6 +155,28 @@ market_series_asset_class_repository::read_latest(std::uint32_t offset, std::uin
         [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
         lg(),
         "Reading latest asset classes (paginated).");
+}
+
+std::vector<domain::market_series_asset_class>
+market_series_asset_class_repository::read_latest(const boost::uuids::uuid& market_series_id,
+                                                  const std::string& asset_class_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class. " << market_series_id << "/"
+                               << asset_class_code;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto market_series_id_str = boost::uuids::to_string(market_series_id);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<market_series_asset_class_entity>> |
+        where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+              "asset_class_code"_c == asset_class_code && "valid_to"_c == max.value());
+
+    return execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
+        ctx_,
+        query,
+        [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
+        lg(),
+        "Reading latest asset class by key.");
 }
 
 std::uint32_t market_series_asset_class_repository::get_total_asset_class_count() {
@@ -221,16 +300,56 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
 
 void market_series_asset_class_repository::remove(const boost::uuids::uuid& market_series_id,
                                                   const std::string& asset_class_code) {
+    static_cast<void>(remove(market_series_id, asset_class_code, std::nullopt));
+}
+
+market_series_asset_class_repository::remove_status
+market_series_asset_class_repository::remove(const boost::uuids::uuid& market_series_id,
+                                             const std::string& asset_class_code,
+                                             std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing asset class from database: " << market_series_id << "/"
                                << asset_class_code;
 
+    const auto current = read_latest(market_series_id, asset_class_code);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<market_series_asset_class_entity> |
                        where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-                             "asset_class_code"_c == asset_class_code);
+                             "asset_class_code"_c == asset_class_code &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx_, query, lg(), "removing asset class from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(market_series_id, asset_class_code).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void market_series_asset_class_repository::remove(
+    const std::vector<boost::uuids::uuid>& market_series_ids,
+    const std::vector<std::string>& asset_class_codes) {
+    // A junction's key is the pair of columns, and a per-column .in() DELETE
+    // would be a cross-product over-delete (rows outside the requested pairs),
+    // so each pair is removed on its own.
+    if (market_series_ids.size() != asset_class_codes.size())
+        throw std::invalid_argument("market_series_asset_class_repository::remove: key column "
+                                    "vectors must be the same length");
+    for (std::size_t i = 0; i < market_series_ids.size(); ++i)
+        static_cast<void>(remove(market_series_ids[i], asset_class_codes[i], std::nullopt));
 }
 
 void market_series_asset_class_repository::remove_by_series(
@@ -244,5 +363,6 @@ void market_series_asset_class_repository::remove_by_series(
 
     execute_delete_query(ctx_, query, lg(), "removing all asset classes from database");
 }
+
 
 }

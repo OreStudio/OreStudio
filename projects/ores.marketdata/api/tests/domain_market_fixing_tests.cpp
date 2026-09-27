@@ -39,7 +39,6 @@ market_fixing make_euribor_fixing(const std::string& value = "0.038940") {
     f.fixing_date = std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20};
     f.value = value;
     f.source = "ECB";
-    f.recorded_at = std::chrono::system_clock::now();
     return f;
 }
 
@@ -71,7 +70,6 @@ TEST_CASE("create_fixing_without_source", tags) {
     sut.series_id = gen();
     sut.fixing_date = std::chrono::year{2024} / std::chrono::month{1} / std::chrono::day{15};
     sut.value = "0.052300";
-    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Fixing without source: " << sut;
 
     CHECK(sut.source.empty());
@@ -107,7 +105,6 @@ TEST_CASE("create_fixing_history_series", tags) {
         f.fixing_date = std::chrono::year{2024} / std::chrono::month{3} /
                         std::chrono::day{static_cast<unsigned>(day)};
         f.value = std::to_string(0.039 + day * 0.0001);
-        f.recorded_at = std::chrono::system_clock::now();
         fixings.push_back(f);
     }
     BOOST_LOG_SEV(lg, info) << "Fixing history size: " << fixings.size();

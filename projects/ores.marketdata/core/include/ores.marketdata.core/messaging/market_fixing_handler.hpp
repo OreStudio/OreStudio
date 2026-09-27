@@ -64,7 +64,16 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    /**
+     * @brief Serves marketdata.v1.market_fixings.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_market_fixings(ores::nats::message msg) {
         BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -72,29 +81,125 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::market_fixing_service svc(req_ctx);
-        get_market_fixings_response resp;
-        if (auto req = decode<get_market_fixings_request>(msg)) {
-            try {
-                resp.market_fixings = svc.list_market_fixings(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_market_fixings());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
+        auto req = decode<list_market_fixings_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.list_market_fixings(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_market_fixings_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void save(ores::nats::message msg) {
+    /**
+     * @brief Serves marketdata.v1.market_fixings.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_market_fixing(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_market_fixing_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.get_market_fixing(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_market_fixing_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves marketdata.v1.market_fixings.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_market_fixings(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_market_fixings_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_market_fixings(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_market_fixings_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves marketdata.v1.market_fixings.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_market_fixing(ores::nats::message msg) {
         BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -106,25 +211,41 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::market_fixing_service svc(req_ctx);
-        if (auto req = decode<save_market_fixing_request>(msg)) {
-            try {
-                svc.save_market_fixing(req->data);
-                BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, save_market_fixing_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(
-                    nats_, msg, save_market_fixing_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<put_market_fixing_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.put_market_fixing(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_market_fixing_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
+    /**
+     * @brief Serves marketdata.v1.market_fixings.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_market_fixings(ores::nats::message msg) {
         BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -132,29 +253,45 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::market_fixing_service svc(req_ctx);
-        if (auto req = decode<get_market_fixing_history_request>(msg)) {
-            try {
-                auto hist = svc.get_market_fixing_history(req->id);
-                BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_,
-                      msg,
-                      get_market_fixing_history_response{.history = std::move(hist),
-                                                         .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      get_market_fixing_history_response{.success = false, .message = e.what()});
-            }
-        } else {
+        if (!has_permission(req_ctx, "marketdata::market_fixings:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_many_market_fixings_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.put_many_market_fixings(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_many_market_fixings_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void remove(ores::nats::message msg) {
+    /**
+     * @brief Serves marketdata.v1.market_fixings.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_market_fixing(ores::nats::message msg) {
         BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -166,22 +303,74 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::market_fixing_service svc(req_ctx);
-        if (auto req = decode<delete_market_fixing_request>(msg)) {
-            try {
-                svc.delete_market_fixings(req->ids);
-                BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, delete_market_fixing_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_,
-                      msg,
-                      delete_market_fixing_response{.success = false, .message = e.what()});
-            }
-        } else {
+        auto req = decode<delete_market_fixing_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.delete_market_fixing(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_market_fixing_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves marketdata.v1.market_fixings.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_market_fixings(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_fixings:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<delete_many_market_fixings_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::market_fixing_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_market_fixings(*req);
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            delete_many_market_fixings_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

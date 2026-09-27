@@ -58,7 +58,6 @@ domain::market_fixing market_fixing_mapper::map(const market_fixing_entity& v) {
 
     r.value = v.value;
     r.source = v.source.value_or("");
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

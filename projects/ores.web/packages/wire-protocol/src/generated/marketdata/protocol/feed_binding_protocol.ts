@@ -23,50 +23,185 @@
  * To modify, update the template and regenerate.
  */
 import type { FeedBinding } from '../domain/feed_binding.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetFeedBindingsRequest {
+export interface FeedBindingKey {
+    ore_key: string;
+}
+
+export interface FeedBindingWrite {
+    id: string;
+    party_id: string;
+    ore_key: string;
+    source_name: string;
+    asset_class: string;
+    enabled: boolean;
+}
+
+export interface FeedBindingChange {
+    write: FeedBindingWrite;
+    precondition: Precondition;
+}
+
+export interface FeedBindingRemoval {
+    key: FeedBindingKey;
+    precondition: Precondition;
+}
+
+export interface FeedBindingLookup {
+    key: FeedBindingKey;
+    feed_binding: FeedBinding | null;
+}
+
+export interface FeedBindingEvent {
+    event_id: string;
+    key: FeedBindingKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface FeedBindingVersionKey {
+    feed_binding: FeedBindingKey;
+    version: number;
+}
+
+export interface FeedBindingVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListFeedBindingsRequest {
     offset: number;
     limit: number;
+    order: Order;
 }
 
-export interface GetFeedBindingsResponse {
+export interface ListFeedBindingsResponse {
+    result: Result;
     feed_bindings: FeedBinding[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
+    total: number;
 }
 
-export interface SaveFeedBindingRequest {
-    data: FeedBinding;
+export interface GetFeedBindingRequest {
+    key: FeedBindingKey;
 }
 
-export interface SaveFeedBindingResponse {
-    success: boolean;
-    message: string;
+export interface GetFeedBindingResponse {
+    result: Result;
+    feed_binding: FeedBinding | null;
+}
+
+export interface GetManyFeedBindingsRequest {
+    keys: FeedBindingKey[];
+}
+
+export interface GetManyFeedBindingsResponse {
+    result: Result;
+    entries: FeedBindingLookup[];
+}
+
+export interface PutFeedBindingRequest {
+    change: FeedBindingChange;
+    intent: ChangeIntent;
+}
+
+export interface PutFeedBindingResponse {
+    result: Result;
+    feed_binding: FeedBinding;
+}
+
+export interface PutManyFeedBindingsRequest {
+    changes: FeedBindingChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyFeedBindingsResponse {
+    result: Result;
+    feed_bindings: FeedBinding[];
 }
 
 export interface DeleteFeedBindingRequest {
-    ids: string[];
+    removal: FeedBindingRemoval;
+    intent: ChangeIntent;
 }
 
 export interface DeleteFeedBindingResponse {
-    success: boolean;
-    message: string;
+    result: Result;
 }
 
-export interface GetFeedBindingHistoryRequest {
-    id: string;
+export interface DeleteManyFeedBindingsRequest {
+    removals: FeedBindingRemoval[];
+    intent: ChangeIntent;
 }
 
-export interface GetFeedBindingHistoryResponse {
-    history: FeedBinding[];
-    success: boolean;
-    message: string;
+export interface DeleteManyFeedBindingsResponse {
+    result: Result;
+}
+
+export interface ListFeedBindingVersionsRequest {
+    key: FeedBindingKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: FeedBindingVersionsFilter | null;
+}
+
+export interface ListFeedBindingVersionsResponse {
+    result: Result;
+    versions: FeedBinding[];
+    total: number;
+}
+
+export interface GetFeedBindingVersionRequest {
+    key: FeedBindingVersionKey;
+}
+
+export interface GetFeedBindingVersionResponse {
+    result: Result;
+    version: FeedBinding;
 }
 
 export const subjects = {
-    get_feed_bindings_request: "marketdata.v1.feed_bindings.list",
-    save_feed_binding_request: "marketdata.v1.feed_bindings.save",
+    list_feed_bindings_request: "marketdata.v1.feed_bindings.list",
+    get_feed_binding_request: "marketdata.v1.feed_bindings.get",
+    get_many_feed_bindings_request: "marketdata.v1.feed_bindings.get_many",
+    put_feed_binding_request: "marketdata.v1.feed_bindings.put",
+    put_many_feed_bindings_request: "marketdata.v1.feed_bindings.put_many",
     delete_feed_binding_request: "marketdata.v1.feed_bindings.delete",
-    get_feed_binding_history_request: "marketdata.v1.feed_bindings.history",
+    delete_many_feed_bindings_request: "marketdata.v1.feed_bindings.delete_many",
+    list_feed_binding_versions_request: "marketdata.v1.feed_bindings_versions.list",
+    get_feed_binding_version_request: "marketdata.v1.feed_bindings_versions.get",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_feed_bindings_request: true,
+    get_feed_binding_request: true,
+    get_many_feed_bindings_request: true,
+    put_feed_binding_request: true,
+    put_many_feed_bindings_request: true,
+    delete_feed_binding_request: true,
+    delete_many_feed_bindings_request: true,
+    list_feed_binding_versions_request: true,
+    get_feed_binding_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "marketdata.v1.feed_bindings_events.created",
+    updated: "marketdata.v1.feed_bindings_events.updated",
+    deleted: "marketdata.v1.feed_bindings_events.deleted",
 } as const;

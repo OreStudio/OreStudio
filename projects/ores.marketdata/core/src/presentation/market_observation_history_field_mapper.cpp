@@ -43,9 +43,6 @@ render_market_observation_fields(const domain::market_observation& v) {
     fields.push_back({.name = "Point ID", .value = v.point_id});
     fields.push_back({.name = "Value", .value = v.value});
     fields.push_back({.name = "Source", .value = v.source});
-    using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::recorded_at,
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;
 }

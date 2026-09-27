@@ -38,5 +38,4 @@ export interface MarketFixing {
     fixing_date: string;
     value: string;
     source: string;
-    recorded_at: string;
 }

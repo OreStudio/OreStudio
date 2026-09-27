@@ -103,9 +103,16 @@ struct market_observation final {
     std::string source;
 
     /**
-     * @brief Timestamp when this version of the record was recorded.
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
      */
-    std::chrono::system_clock::time_point recorded_at;
+    friend bool operator==(const market_observation&, const market_observation&) = default;
 };
 
 /**

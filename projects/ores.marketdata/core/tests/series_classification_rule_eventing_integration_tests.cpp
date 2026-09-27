@@ -23,7 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -31,8 +32,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule_json_io.hpp" // IWYU pragma: keep.
-#include "ores.marketdata.api/eventing/series_classification_rule_changed_event.hpp"
+#include "ores.marketdata.api/eventing/series_classification_rule_event.hpp"
 #include "ores.marketdata.api/generators/series_classification_rule_generator.hpp"
+#include "ores.marketdata.api/messaging/series_classification_rule_protocol.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
 #include "ores.marketdata.core/service/series_classification_rule_service.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -66,7 +68,7 @@ using ores::marketdata::repository::series_classification_rule_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_series_classification_rule_publishes_nats_changed_event", tags) {
+TEST_CASE("write_series_classification_rule_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -84,31 +86,23 @@ TEST_CASE("write_series_classification_rule_publishes_nats_changed_event", tags)
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    auto sub = bus.subscribe<ores::marketdata::eventing::series_classification_rule_changed_event>(
-        [&nats](const ores::marketdata::eventing::series_classification_rule_changed_event& e) {
-            ev::service::publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<ores::marketdata::eventing::
-                                                 series_classification_rule_changed_event>::name),
-                ev::domain::entity_change_event{.entity =
-                                                    "ores.marketdata.series_classification_rule",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.series_types,
-                                                .tenant_id = e.tenant_id});
-        });
+    using event_type = ores::marketdata::messaging::series_classification_rule_event;
+    auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
+        // One payload is addressed by three subjects, so the subject is the
+        // collection's prefix and the action the event reports.
+        ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
+    });
 
-    event_source
-        .register_mapping<ores::marketdata::eventing::series_classification_rule_changed_event>(
-            "ores.marketdata.series_classification_rule",
-            "ores_marketdata_series_classification_rules");
+    event_source.register_entity_event_mapping<event_type>(
+        "ores_marketdata_series_classification_rules");
 
     // 2. Subscribe as an external observer would, on the relative subject --
-    // client::subscribe() prepends the subject_prefix itself.
+    // client::subscribe() prepends the subject_prefix itself. The wildcard
+    // takes every action: the first write creates the row and a re-drive
+    // updates it, and the chain is what is under test rather than which of
+    // the three subjects carried it.
     auto observer = nats.subscribe_buffered(
-        std::string(ev::domain::event_traits<
-                    ores::marketdata::eventing::series_classification_rule_changed_event>::name),
-        10);
+        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before
@@ -150,19 +144,12 @@ TEST_CASE("write_series_classification_rule_publishes_nats_changed_event", tags)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             auto snap = observer.snapshot();
             for (const auto& msg : snap) {
-                auto decoded =
-                    ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
-                        msg.data);
-                if (decoded && decoded->entity == "ores.marketdata.series_classification_rule") {
-                    const bool is_this_row =
-                        std::all_of(key_parts.begin(), key_parts.end(), [&](const auto& part) {
-                            return std::find(decoded->entity_ids.begin(),
-                                             decoded->entity_ids.end(),
-                                             part) != decoded->entity_ids.end();
-                        });
-                    if (is_this_row)
-                        received.push_back(msg);
-                }
+                auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
+                // The event carries the row's own key record, so the row under
+                // test is recognised by comparing it with the row written.
+                if (decoded && decoded->key.series_type == v.series_type &&
+                    decoded->key.metric == v.metric)
+                    received.push_back(msg);
             }
         }
     }

@@ -23,10 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.service/messaging/feed_binding_event_registrar.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
+#include "ores.marketdata.api/eventing/feed_binding_event.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 
 namespace ores::marketdata::service::messaging {
 
@@ -38,19 +39,19 @@ namespace ev = ores::eventing;
 register_feed_binding_event_mapping(ev::service::postgres_event_source& event_source,
                                     ev::service::event_bus& event_bus,
                                     ores::nats::service::client& nats) {
-    ev::service::registrar::register_mapping<marketdata::eventing::feed_binding_changed_event>(
-        event_source, "ores.marketdata.feed_binding", "ores_marketdata_feed_bindings");
+    // The trigger publishes on the table's own channel, and the mapping turns
+    // what it says into this entity's event.
+    event_source.register_entity_event_mapping<marketdata::messaging::feed_binding_event>(
+        "ores_marketdata_feed_bindings");
 
-    return event_bus.subscribe<marketdata::eventing::feed_binding_changed_event>(
-        [&nats](const marketdata::eventing::feed_binding_changed_event& e) {
+    return event_bus.subscribe<marketdata::messaging::feed_binding_event>(
+        [&nats](const marketdata::messaging::feed_binding_event& e) {
+            // One payload is addressed by three subjects, so the subject is
+            // the collection's prefix and the action the event reports.
             ev::service::publish_entity_event(
                 nats,
-                std::string(ev::domain::event_traits<
-                            marketdata::eventing::feed_binding_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.marketdata.feed_binding",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.feed_binding_ids,
-                                                .tenant_id = e.tenant_id});
+                ev::domain::event_subject<marketdata::messaging::feed_binding_event>(e.action),
+                e);
         });
 }
 

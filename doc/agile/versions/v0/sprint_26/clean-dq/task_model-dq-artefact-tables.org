@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-dq-artefact-tables
-#+pr:
+#+pr: 2231
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -32,9 +32,9 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired. =check_component_drift.py --component dq= reports no drift twice in a row, so dq regenerates cleanly. |
+| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired. =check_component_drift.py --component dq= reports no drift twice in a row, so dq regenerates cleanly. Both publish verbs live in a handler of their own, so the two stashed entities are unblocked. |
 | Waiting on   | Nothing.                              |
-| Next         | Model the twelve entities whose protocol headers are still hand-written, which is what keeps dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
+| Next         | Land the =dataset= and =publication= models held in =git stash=, now that neither entity's handler owns a publish verb. The twelve entities whose protocol headers are still hand-written are what keep dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -105,6 +105,48 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 8 part eighteen: the publish verbs get a handler of their own
+
+Run on 2026-09-26. The separation part seventeen named is done.
+=dataset_handler= and =publication_handler= no longer serve a publish verb, so
+both entities can now migrate.
+
+**One handler, two verbs.** =publish_handler.hpp= is new and hand-written. It
+serves both publication verbs: =publish_datasets= names the datasets to publish,
+and =publish_bundle= names a bundle. Both resolve their datasets to the same
+=bundle_publishable_dataset= entries and dispatch the same
+=bundle_publish_workflow=, so the class also pays for itself. The two methods
+shared a tenant lookup, a workflow request, an instance id and a dispatch, and
+that shared part is now one private =start_publish_workflow= method rather than
+two copies.
+
+**The verb is a model now, so its protocol is generated.** =publish_datasets= is
+declared as a second =ores.codegen.operation= beside =publish_bundle=, and it
+renders =publish_datasets_protocol.hpp= and its TypeScript twin.
+=dataset_protocol.hpp= therefore no longer carries =publish_datasets_request= or
+its response; the two structs move to the generated header with the same names,
+subject and fields. =mode= is a string here for the same reason it is on the
+bundle verb: the publication mode is a hand-written enum with no model, and the
+twin gate refuses an opt-out.
+
+**What moved where.** =dataset_publish_params= moved out of the anonymous
+namespace of =dataset_handler.hpp= into =publish_params.hpp=, beside
+=publish_bundle_params=, with the matching =build_params_json= overload. The
+registrar composes one =publish_handler= instance and subscribes both subjects to
+it. Nothing else in the tree sends either request, so no caller changed and no
+SQL changed.
+
+**Evidence.** The dq core library, the dq service and the shell executable build
+and link. Twin coverage reports 45 generated headers in 8 components, all
+twinned; handler permissions, registry exceptions, populate references, cmake
+component files, shell recipe inventory, physical space inventories,
+=validate_docs.sh= and =compass lint= all pass. The drift check compares the
+whole tree against HEAD, so it runs after the commit rather than before it.
+
+**Next.** The two stashed entities. =dataset= and =publication= are modelled and
+their tables were verified in parts nine and thirteen, and the block that stopped
+both -- a handler that owns a publish verb -- is now gone.
 
 * Step 8 part seventeen: the publish verb is an operation, and one header fewer
 
@@ -944,6 +986,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2231][#2231]] | [dq] Move the publish verbs into a handler of their own |
 | https://github.com/OreStudio/OreStudio/pull/2189 | [dq] Generate the ores.dq artefact tables from the entity models |
 | https://github.com/OreStudio/OreStudio/pull/2190 | [dq] Put the badge family on the generated stack and wire its history |
 | https://github.com/OreStudio/OreStudio/pull/2193 | [dq] Migrate the last three entities and wire the shell adapter |

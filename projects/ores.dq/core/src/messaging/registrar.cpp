@@ -29,6 +29,7 @@
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.dq.core/messaging/artefact_type_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/artefact_type_registrar.hpp"
@@ -68,6 +69,7 @@
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.dq.core/messaging/publish_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
@@ -242,11 +244,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ds->history(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        publish_datasets_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
-            ds->publish(std::move(msg));
-        }));
-
     // Dataset bundles and their members moved to the standard generated
     // stack; see register_dataset_bundle_handlers below alongside the other
     // generated registrars.
@@ -283,9 +280,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
             pub->list_publications(std::move(msg));
         }));
 
+    // =========================================================================
+    // Publication verbs. Both resolve their datasets and dispatch the same
+    // bundle-publish workflow, so one handler serves them; see
+    // publish_handler.hpp. A direct publication names datasets, a bundle
+    // publication names a bundle.
+    // =========================================================================
+
+    auto pubh = std::make_shared<publish_handler>(nats, ctx, verifier);
+
     subs.push_back(nats.queue_subscribe(
-        publish_bundle_request::nats_subject, queue_group, [pub](ores::nats::message msg) {
-            pub->publish_bundle(std::move(msg));
+        publish_datasets_request::nats_subject, queue_group, [pubh](ores::nats::message msg) {
+            pubh->publish_datasets(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        publish_bundle_request::nats_subject, queue_group, [pubh](ores::nats::message msg) {
+            pubh->publish_bundle(std::move(msg));
         }));
 
     // =========================================================================

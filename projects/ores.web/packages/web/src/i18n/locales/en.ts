@@ -444,8 +444,8 @@ export const en: SourceCatalogue = {
     setup: {
         title: 'Set up this installation',
         bootstrapMode:
-            'This installation has no administrator yet. It is in bootstrap mode, so there is nothing to sign in to.',
-        next: 'Creating the first administrator is what starts the setup journey. Until that journey is built, this page is where the browser stops.',
+            'This installation does not have an administrator account yet and is running in bootstrap mode. No one can sign in until an administrator exists.',
+        next: 'The setup process begins by creating the first administrator account.',
     },
 
     gate: {

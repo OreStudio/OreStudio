@@ -84,9 +84,16 @@ describe('the bootstrap gate', () => {
         const html = render('/iam/account', inBootstrap, anonymous);
 
         expect(html).toContain('Set up this installation');
+        expect(html).toContain('does not have an administrator account yet');
         expect(html).toContain('This deployment has not been provisioned.');
         expect(html).not.toContain('Username');
         expect(html).not.toContain('type="password"');
+    });
+
+    it('carries the banner, so the first screen of an installation looks like the product', () => {
+        const html = render('/', inBootstrap, anonymous);
+
+        expect(html).toContain('ore-studio-splash');
     });
 
     it('renders the setup page at the sign-in path too, so the form is never offered', () => {

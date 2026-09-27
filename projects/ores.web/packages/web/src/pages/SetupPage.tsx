@@ -22,6 +22,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
+import { heroSplash } from '../assets/brand.js';
 
 /**
  * The screen a browser shows while the deployment has no administrator.
@@ -31,23 +32,29 @@ import { Notice } from '../ui/Primitives.js';
  * be at, and a redirect would leave a URL somebody could share that leads
  * nowhere.
  *
- * The two facts a person needs are the mode and the server's own sentence about
- * it. What comes next — creating the administrator — is the setup journey, so
- * this page states the mode and does not pretend to be the journey.
+ * It is also the first thing an empty installation ever shows, so it carries the
+ * banner and reads like an installation screen: the condition, the consequence,
+ * and what the setup process begins with. It states the mode and does not
+ * pretend to be the journey that creates the administrator.
  */
 export function SetupPage({ message }: { readonly message: string }): ReactNode {
     const { t } = useTranslation();
 
     return (
-        <div className="card p-6">
-            <h1 className="text-lg font-semibold text-ink">{t('setup.title')}</h1>
-            <p className="mt-2 text-sm text-ink-muted">{t('setup.bootstrapMode')}</p>
-            {message !== '' && (
-                <div className="mt-4">
-                    <Notice tone="info">{message}</Notice>
-                </div>
-            )}
-            <p className="mt-4 text-sm text-ink-muted">{t('setup.next')}</p>
+        <div className="card overflow-hidden">
+            {/* The banner the landing page uses, so the first screen of an
+                installation looks like the product rather than like a notice. */}
+            <img src={heroSplash} alt="" className="w-full border-b border-line" />
+            <div className="p-6">
+                <h1 className="text-lg font-semibold text-ink">{t('setup.title')}</h1>
+                <p className="mt-3 text-sm text-ink-muted">{t('setup.bootstrapMode')}</p>
+                {message !== '' && (
+                    <div className="mt-4">
+                        <Notice tone="info">{message}</Notice>
+                    </div>
+                )}
+                <p className="mt-4 text-sm text-ink-muted">{t('setup.next')}</p>
+            </div>
         </div>
     );
 }

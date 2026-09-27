@@ -158,3 +158,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The task is *not* complete, and this section says so rather than closing it. Two batches have landed, #2286 and #2291, and the item table above records each item's result with the command or file that proves it.
+
+*Landed in #2291*, on =feature/dq-clean-batch-2=, as seven commits:
+
+- =485a1212f4= gives the api module the namespace header =core= and =service= already had.
+- =5d001d773e= fixes two generator defects at source. The protocol-dependent facet gate asked whether the *run* rendered =ores.cpp.protocol= rather than whether the *model* enables it, which emptied every doc-only run and meant no component had ever produced a shell recipe. And the create archetype's primary-key block dropped a declared default in silence. Each fix carries a regression test, and each test is mutation-proven.
+- =df60ea85fc= restores the LEI summary responder, derives the publish-from-dq function name from its subject, seeds the permission codes the dq handlers check, binds =badge_severity= and =subject_area= to =simple-lookup=, sweeps the comments, retires five change-reason constants that name a retired taxonomy, and reconciles the messaging reference with the registered surface.
+- =0f8a368785= points the subject-area synthetic generator at a seeded data domain, a latent defect the new eventing test exposed.
+- =42755a9b4c= gives =publication= the shell unit its CRUD surface needs.
+- =3593ea312e= records this pass and retires the two captures it closed.
+- =b8692288ad= and =e4d5a7befd= refresh two =ores.reporting= recipes and their scripts, which the fixed gate had never rendered.
+
+*What is open*, recorded in the item table and the list above it:
+
+- *H01* — the architecture audit record and the manual pass below each diagram's sentinel.
+- *V07, V08* — the vacuous-assertion and test-coverage surveys.
+- *V03, V04* — both need a running fleet, which this sandbox cannot start.
+- *M08* — =is_initial= and =is_terminal=, tracked by its own task.
+- *Pass 1's artefact tail* — seven artefact tables with no model and, for four of them, no recorded reason. Recorded on the pass 1 task.
+
+*What this pass changed about the component*: dq regenerates with no drift at every address and across the whole registry, the codegen suite is 924 tests, the fifteen checks on #2291 are green, and all five of its test suites pass. The shell surface grew from 211 to 214 root menus and dq's recipes from 12 to 25, and the thirteen additions are ones the models already implied.

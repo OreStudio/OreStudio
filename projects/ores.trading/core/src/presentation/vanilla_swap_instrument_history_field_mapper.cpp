@@ -43,7 +43,8 @@ render_vanilla_swap_instrument_fields(const domain::vanilla_swap_instrument& v) 
                                                      std::string{}});
     fields.push_back({.name = "Start Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back(
         {.name = "Settlement Lag",
          .value = v.settlement_lag ? std::to_string(*v.settlement_lag) : std::string{}});

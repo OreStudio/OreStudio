@@ -169,8 +169,8 @@ public:
 private:
     static ores::trading::domain::swap_leg map_leg(const legData& ld, int leg_number);
 
-    static legData reverse_leg(const std::string& start_date,
-                               const std::string& maturity_date,
+    static legData reverse_leg(const std::optional<std::chrono::year_month_day>& start_date,
+                               const std::optional<std::chrono::year_month_day>& maturity_date,
                                const ores::trading::domain::swap_leg& sl);
 
     static legData_Notionals_t make_notionals(double notional);

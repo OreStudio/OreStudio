@@ -158,27 +158,27 @@ std::string("TotalReturn")
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date.
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date.
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 ** long_short
@@ -284,6 +284,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
 #+end_src
 

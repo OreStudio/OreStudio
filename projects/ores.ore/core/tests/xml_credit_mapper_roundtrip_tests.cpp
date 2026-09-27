@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -65,6 +66,20 @@ credit_instrument load_and_map(const std::string& filename) {
 
 } // namespace
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Credit_Default_Swap.xml");
@@ -74,8 +89,8 @@ TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     CHECK(!r.currency.empty());
     CHECK(r.notional > 0.0);
     CHECK(r.spread > 0.0);
-    CHECK(!r.start_date.empty());
-    CHECK(!r.maturity_date.empty());
+    CHECK(r.start_date.ok());
+    CHECK(r.maturity_date.ok());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_cds(r);
@@ -108,7 +123,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
 
     CHECK(r.identity.trade_type_code == "IndexCreditDefaultSwapOption");
     CHECK(!r.reference_entity.empty());
-    CHECK(!r.option_expiry_date.empty());
+    CHECK(r.option_expiry_date.has_value());
     CHECK(r.option_strike.has_value());
 
     // Reverse roundtrip
@@ -117,7 +132,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
     CHECK(rt.IndexCreditDefaultSwapOptionData->Strike);
 
     BOOST_LOG_SEV(lg, info) << "IndexCDSOption roundtrip passed. Expiry: "
-                            << r.option_expiry_date;
+                            << ore_iso(r.option_expiry_date);
 }
 
 TEST_CASE("credit_mapper_roundtrip_credit_linked_swap", tags) {
@@ -161,8 +176,8 @@ TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
 
     CHECK(r.identity.trade_type_code == "RiskParticipationAgreement");
     CHECK(!r.reference_entity.empty());
-    CHECK(!r.start_date.empty());
-    CHECK(!r.maturity_date.empty());
+    CHECK(r.start_date.ok());
+    CHECK(r.maturity_date.ok());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_rpa(r);

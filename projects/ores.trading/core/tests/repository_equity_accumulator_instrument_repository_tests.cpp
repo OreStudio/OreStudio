@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
@@ -50,8 +51,8 @@ equity_accumulator_instrument make_instrument(database_helper& h) {
     r.currency = "EUR";
     r.strike = 4000.0;
     r.fixing_amount = 30.0;
-    r.start_date = "2025-02-05";
-    r.expiry_date = "2026-02-05";
+    r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-02-05");
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2026-02-05");
     r.fixing_frequency = "Monthly";
     r.long_short = "Long";
     r.knock_out_level = 3500.0;
@@ -87,8 +88,8 @@ TEST_CASE("equity_accumulator_instrument_write_and_read_latest", tags) {
     CHECK(read[0].currency == "EUR");
     CHECK(read[0].strike == 4000.0);
     CHECK(read[0].fixing_amount == 30.0);
-    CHECK(read[0].start_date == "2025-02-05");
-    CHECK(read[0].expiry_date == "2026-02-05");
+    CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-02-05"));
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-02-05"));
     CHECK(read[0].fixing_frequency == "Monthly");
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].knock_out_level == 3500.0);

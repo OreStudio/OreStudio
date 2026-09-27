@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -74,12 +75,12 @@ struct equity_swap_instrument final {
     /**
      * @brief ISO 8601 date.
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief ISO 8601 date.
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Long or Short.

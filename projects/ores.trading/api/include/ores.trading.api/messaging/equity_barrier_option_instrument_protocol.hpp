@@ -48,7 +48,7 @@ struct equity_barrier_option_instrument_write {
     double notional;
     std::string option_type;
     double strike;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string exercise_type;
     std::string long_short;
     double lower_barrier;

@@ -45,8 +45,10 @@ render_equity_accumulator_instrument_fields(const domain::equity_accumulator_ins
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
     fields.push_back({.name = "Fixing Amount", .value = std::to_string(v.fixing_amount)});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Fixing Frequency", .value = v.fixing_frequency});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back(

@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/equity_accumulator_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -51,8 +53,8 @@ equity_accumulator_instrument_mapper::map(const equity_accumulator_instrument_en
     r.currency = v.currency;
     r.strike = v.strike;
     r.fixing_amount = v.fixing_amount;
-    r.start_date = v.start_date;
-    r.expiry_date = v.expiry_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.fixing_frequency = v.fixing_frequency;
     r.long_short = v.long_short;
     r.knock_out_level = v.knock_out_level;
@@ -88,8 +90,8 @@ equity_accumulator_instrument_mapper::map(const domain::equity_accumulator_instr
     r.currency = v.currency;
     r.strike = v.strike;
     r.fixing_amount = v.fixing_amount;
-    r.start_date = v.start_date;
-    r.expiry_date = v.expiry_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.fixing_frequency = v.fixing_frequency;
     r.long_short = v.long_short;
     r.knock_out_level = v.knock_out_level;

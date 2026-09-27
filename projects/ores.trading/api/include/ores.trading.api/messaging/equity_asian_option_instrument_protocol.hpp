@@ -48,12 +48,12 @@ struct equity_asian_option_instrument_write {
     double notional;
     std::string option_type;
     double strike;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string exercise_type;
     std::string long_short;
     std::string average_type;
-    std::string averaging_start_date;
-    std::string averaging_end_date;
+    std::chrono::year_month_day averaging_start_date;
+    std::chrono::year_month_day averaging_end_date;
     std::string description;
 };
 

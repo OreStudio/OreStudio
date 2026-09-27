@@ -41,8 +41,10 @@ render_cap_floor_instrument_fields(const domain::cap_floor_instrument& v) {
     fields.push_back({.name = "Trade ID",
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.core/repository/bond_forward_repository.hpp"
 #include "ores.trading.core/repository/bond_future_delivery_basket_repository.hpp"
@@ -125,7 +126,7 @@ bond_issue make_issue(const stamps& s, const std::string& security_id) {
     r.coupon_rate = 5.0;
     r.coupon_frequency_code = "Annual";
     r.day_count_code = "ACT/365";
-    r.issue_date = "2024-01-15";
+    r.issue_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     r.settlement_days = 2;
     return r;
 }
@@ -154,7 +155,7 @@ bond_issue_call_date make_call_date(const stamps& s,
     stamp(r, s);
     r.issue_id = issue_id;
     r.sequence_number = sequence_number;
-    r.call_date = call_date;
+    r.call_date = ores::platform::time::datetime::from_iso8601_date(call_date);
     return r;
 }
 
@@ -195,7 +196,7 @@ make_premium(const stamps& s, const boost::uuids::uuid& instrument_id, int seque
     r.sequence_number = sequence_number;
     r.amount = 1000.0;
     r.currency = "EUR";
-    r.pay_date = "2024-01-20";
+    r.pay_date = ores::platform::time::datetime::from_iso8601_date("2024-01-20");
     return r;
 }
 
@@ -217,7 +218,7 @@ instrument_option_payment_date make_payment_date(const stamps& s,
     stamp(r, s);
     r.instrument_id = instrument_id;
     r.sequence_number = sequence_number;
-    r.payment_date = payment_date;
+    r.payment_date = ores::platform::time::datetime::from_iso8601_date(payment_date);
     return r;
 }
 
@@ -358,7 +359,7 @@ instrument_schedule_date make_schedule_date(const stamps& s,
     r.schedule_role = schedule_role;
     r.schedule_sequence_number = schedule_sequence_number;
     r.sequence_number = sequence_number;
-    r.schedule_date = schedule_date;
+    r.schedule_date = ores::platform::time::datetime::from_iso8601_date(schedule_date);
     return r;
 }
 
@@ -394,9 +395,12 @@ TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", tags) {
     CHECK(data.issue.issue_id == issue.issue_id);
 
     REQUIRE(data.call_dates.size() == 3);
-    CHECK(data.call_dates[0].call_date == "2028-01-15");
-    CHECK(data.call_dates[1].call_date == "2029-01-15");
-    CHECK(data.call_dates[2].call_date == "2030-01-15");
+    CHECK(data.call_dates[0].call_date ==
+          ores::platform::time::datetime::from_iso8601_date("2028-01-15"));
+    CHECK(data.call_dates[1].call_date ==
+          ores::platform::time::datetime::from_iso8601_date("2029-01-15"));
+    CHECK(data.call_dates[2].call_date ==
+          ores::platform::time::datetime::from_iso8601_date("2030-01-15"));
 
     REQUIRE(data.conversion_targets.size() == 2);
     CHECK(data.conversion_targets[0].underlying_id == "UND-1");
@@ -486,7 +490,7 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     bond_leg_amortization_repository().write(ctx, amortization);
 
     auto rules = make_schedule(s, instrument_id, "bond", 1, "schedule", 1, "rules");
-    rules.start_date = "2024-01-15";
+    rules.start_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     rules.tenor = "1Y";
     rules.calendar = "TARGET";
     rules.convention = "ModifiedFollowing";
@@ -737,7 +741,7 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     block.notice_period = "5D";
     block.automatic_exercise = "false";
     block.has_exercise_data = true;
-    block.exercise_date = "2025-01-15";
+    block.exercise_date = ores::platform::time::datetime::from_iso8601_date("2025-01-15");
     block.exercise_price = 101.0;
     block.has_payment_data = true;
     block.payment_lag = 2;

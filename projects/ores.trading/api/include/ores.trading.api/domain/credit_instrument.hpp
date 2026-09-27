@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -90,12 +91,12 @@ struct credit_instrument final {
     /**
      * @brief Start date (ISO 8601 date string, e.g. 2026-01-15).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Maturity date (ISO 8601 date string, e.g. 2031-01-15).
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Day count convention code (e.g. Actual365Fixed, Thirty360).
@@ -148,7 +149,7 @@ struct credit_instrument final {
     /**
      * @brief Option expiry date (ISO 8601) for CDS options. Empty otherwise.
      */
-    std::string option_expiry_date;
+    std::optional<std::chrono::year_month_day> option_expiry_date;
 
     /**
      * @brief Option strike spread in bps for CDS options. Null when not set.

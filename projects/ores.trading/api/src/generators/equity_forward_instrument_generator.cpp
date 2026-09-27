@@ -51,7 +51,7 @@ generate_synthetic_equity_forward_instrument(utility::generation::generation_con
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.quantity = 100.0;
-    r.expiry_date = std::string("2025-01-15");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/commodity_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/commodity_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -51,15 +53,27 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.currency = v.currency;
     r.quantity = v.quantity;
     r.unit = v.unit;
-    r.start_date = v.start_date.value_or("");
-    r.maturity_date = v.maturity_date.value_or("");
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
+            std::nullopt;
+    r.maturity_date =
+        v.maturity_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.maturity_date)) :
+            std::nullopt;
     r.fixed_price = v.fixed_price;
     r.option_type = v.option_type.value_or("");
     r.strike_price = v.strike_price;
     r.exercise_type = v.exercise_type.value_or("");
     r.average_type = v.average_type.value_or("");
-    r.averaging_start_date = v.averaging_start_date.value_or("");
-    r.averaging_end_date = v.averaging_end_date.value_or("");
+    r.averaging_start_date = v.averaging_start_date.has_value() ?
+                                 std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                     *v.averaging_start_date)) :
+                                 std::nullopt;
+    r.averaging_end_date = v.averaging_end_date.has_value() ?
+                               std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                   *v.averaging_end_date)) :
+                               std::nullopt;
     r.spread_commodity_code = v.spread_commodity_code.value_or("");
     r.spread_amount = v.spread_amount;
     r.strip_frequency_code = v.strip_frequency_code.value_or("");
@@ -72,7 +86,10 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.basket_json = v.basket_json.value_or("");
     r.day_count_code = v.day_count_code.value_or("");
     r.payment_frequency_code = v.payment_frequency_code.value_or("");
-    r.swaption_expiry_date = v.swaption_expiry_date.value_or("");
+    r.swaption_expiry_date = v.swaption_expiry_date.has_value() ?
+                                 std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                     *v.swaption_expiry_date)) :
+                                 std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -102,17 +119,27 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.currency = v.currency;
     r.quantity = v.quantity;
     r.unit = v.unit;
-    r.start_date = v.start_date.empty() ? std::nullopt : std::optional(v.start_date);
-    r.maturity_date = v.maturity_date.empty() ? std::nullopt : std::optional(v.maturity_date);
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
+            std::nullopt;
+    r.maturity_date =
+        v.maturity_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.maturity_date)) :
+            std::nullopt;
     r.fixed_price = v.fixed_price;
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
     r.strike_price = v.strike_price;
     r.exercise_type = v.exercise_type.empty() ? std::nullopt : std::optional(v.exercise_type);
     r.average_type = v.average_type.empty() ? std::nullopt : std::optional(v.average_type);
-    r.averaging_start_date =
-        v.averaging_start_date.empty() ? std::nullopt : std::optional(v.averaging_start_date);
+    r.averaging_start_date = v.averaging_start_date.has_value() ?
+                                 std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                     *v.averaging_start_date)) :
+                                 std::nullopt;
     r.averaging_end_date =
-        v.averaging_end_date.empty() ? std::nullopt : std::optional(v.averaging_end_date);
+        v.averaging_end_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.averaging_end_date)) :
+            std::nullopt;
     r.spread_commodity_code =
         v.spread_commodity_code.empty() ? std::nullopt : std::optional(v.spread_commodity_code);
     r.spread_amount = v.spread_amount;
@@ -128,8 +155,10 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.day_count_code = v.day_count_code.empty() ? std::nullopt : std::optional(v.day_count_code);
     r.payment_frequency_code =
         v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
-    r.swaption_expiry_date =
-        v.swaption_expiry_date.empty() ? std::nullopt : std::optional(v.swaption_expiry_date);
+    r.swaption_expiry_date = v.swaption_expiry_date.has_value() ?
+                                 std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                     *v.swaption_expiry_date)) :
+                                 std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

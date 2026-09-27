@@ -44,13 +44,20 @@ render_bond_future_fields(const domain::bond_future& v) {
     fields.push_back({.name = "Fair Price", .value = std::to_string(v.fair_price)});
     fields.push_back({.name = "Settlement", .value = v.settlement});
     fields.push_back({.name = "Settlement Dirty", .value = v.settlement_dirty ? "true" : "false"});
-    fields.push_back({.name = "Root Date", .value = v.root_date});
+    fields.push_back({.name = "Root Date",
+                      .value = v.root_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.root_date) :
+                                   std::string{}});
     fields.push_back({.name = "Expiry Basis", .value = v.expiry_basis});
     fields.push_back({.name = "Settlement Basis", .value = v.settlement_basis});
     fields.push_back({.name = "Expiry Lag", .value = std::to_string(v.expiry_lag)});
     fields.push_back({.name = "Settlement Lag", .value = std::to_string(v.settlement_lag)});
-    fields.push_back({.name = "Last Trading Date", .value = v.last_trading_date});
-    fields.push_back({.name = "Last Delivery Date", .value = v.last_delivery_date});
+    fields.push_back(
+        {.name = "Last Trading Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.last_trading_date)});
+    fields.push_back(
+        {.name = "Last Delivery Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.last_delivery_date)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

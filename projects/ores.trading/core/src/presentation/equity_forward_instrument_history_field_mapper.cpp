@@ -46,7 +46,8 @@ render_equity_forward_instrument_fields(const domain::equity_forward_instrument&
     fields.push_back({.name = "Quantity", .value = std::to_string(v.quantity)});
     fields.push_back({.name = "Forward Price",
                       .value = v.forward_price ? std::to_string(*v.forward_price) : std::string{}});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Settlement Type", .value = v.settlement_type});
     fields.push_back({.name = "Description", .value = v.description});

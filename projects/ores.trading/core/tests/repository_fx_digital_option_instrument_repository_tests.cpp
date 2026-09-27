@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
@@ -55,7 +56,7 @@ fx_digital_option_instrument make_instrument(database_helper& h) {
     r.payoff_currency = "EUR";
     r.payoff_amount = 100.0;
     r.option_type = "Call";
-    r.expiry_date = "2033-02-20";
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.long_short = "Long";
     r.strike = 1.1;
     r.audit.modified_by = h.db_user();
@@ -89,7 +90,7 @@ TEST_CASE("fx_digital_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].payoff_currency == "EUR");
     CHECK(read[0].payoff_amount == 100.0);
     CHECK(read[0].option_type == "Call");
-    CHECK(read[0].expiry_date == "2033-02-20");
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].long_short == "Long");
     REQUIRE(read[0].strike.has_value());
     CHECK(*read[0].strike == 1.1);

@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -76,7 +77,7 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Settlement payment date (ISO 8601 date string).
      */
-    std::string payment_date;
+    std::optional<std::chrono::year_month_day> payment_date;
 
     /**
      * @brief Position direction: Long or Short. Hardcoded to Long by the mapper.

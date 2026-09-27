@@ -53,7 +53,7 @@ generate_synthetic_fx_vanilla_option_instrument(utility::generation::generation_
     r.sold_currency = std::string("USD");
     r.sold_amount = 1100000.0;
     r.option_type = std::string("Call");
-    r.expiry_date = std::string("2025-01-15");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.exercise_style = std::string("European");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

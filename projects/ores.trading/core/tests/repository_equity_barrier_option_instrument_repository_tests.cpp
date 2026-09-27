@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
@@ -51,7 +52,7 @@ equity_barrier_option_instrument make_instrument(database_helper& h) {
     r.notional = 1000.0;
     r.option_type = "Call";
     r.strike = 3200.0;
-    r.expiry_date = "2026-08-15";
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2026-08-15");
     r.exercise_type = "European";
     r.long_short = "Long";
     r.lower_barrier = 3500.0;
@@ -88,7 +89,7 @@ TEST_CASE("equity_barrier_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].notional == 1000.0);
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].strike == 3200.0);
-    CHECK(read[0].expiry_date == "2026-08-15");
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-08-15"));
     CHECK(read[0].exercise_type == "European");
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].lower_barrier == 3500.0);

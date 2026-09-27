@@ -186,27 +186,27 @@ std::string("5Y")
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Start date (ISO 8601 date string, e.g. 2026-01-15).
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Maturity date (ISO 8601 date string, e.g. 2031-01-15).
 
 #+begin_src cpp :name generator
-std::string("2031-01-15")
+std::chrono::year_month_day{std::chrono::year{2031}/1/15}
 #+end_src
 
 ** day_count_code
@@ -301,11 +301,15 @@ Call or Put for CreditDefaultSwapOption; empty otherwise.
 ** option_expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Option expiry date (ISO 8601) for CDS options. Empty otherwise.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
 
 ** option_strike
 :PROPERTIES:
@@ -412,6 +416,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

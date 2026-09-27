@@ -19,6 +19,8 @@
  */
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <chrono>
 #include <map>
 #include <stdexcept>
 
@@ -31,6 +33,19 @@ using namespace ores::logging;
 // ---------------------------------------------------------------------------
 
 namespace {
+
+// The trading domain holds a date as std::chrono::year_month_day; the ORE XML
+// holds its ISO-8601 spelling. An absent ORE date maps to a default
+// (invalid) calendar date, which renders back to an empty string.
+std::chrono::year_month_day to_domain_date(const std::string& s) {
+    if (s.empty())
+        return {};
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::string to_ore_date(const std::chrono::year_month_day& d) {
+    return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
+}
 
 std::string json_escape(const std::string& s) {
     std::string out;
@@ -79,10 +94,11 @@ optionData make_option_data(const T& instr) {
             od.Style = std::move(st);
         }
     }
-    if (!instr.expiry_date.empty()) {
+    if (instr.expiry_date.ok()) {
         _ExerciseDates_t exd;
         date ed;
-        static_cast<std::string&>(ed) = instr.expiry_date;
+        static_cast<std::string&>(ed) =
+            ores::platform::time::datetime::to_iso8601_date(instr.expiry_date);
         exd.ExerciseDate.push_back(ed);
         exerciseDatesGroup_group_t eg;
         eg.ExerciseDates = std::move(exd);
@@ -199,14 +215,15 @@ std::string equity_instrument_mapper::extract_exercise_style(const optionData& o
     return {};
 }
 
-std::string equity_instrument_mapper::first_exercise_date(const optionData& od) {
+std::chrono::year_month_day equity_instrument_mapper::first_exercise_date(const optionData& od) {
     if (!od.exerciseDatesGroup)
         return {};
     if (!od.exerciseDatesGroup->ExerciseDates)
         return {};
     if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
         return {};
-    return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    return ores::platform::time::datetime::from_iso8601_date(
+        std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()));
 }
 
 double equity_instrument_mapper::extract_strike(const strikeGroup_group_t& sg) {
@@ -299,7 +316,7 @@ equity_instrument_mapper::forward_equity_forward(const trade& t) {
     inst.currency = std::string(d.Currency);
     inst.quantity = static_cast<double>(d.Quantity);
     inst.forward_price = static_cast<double>(d.Strike);
-    inst.expiry_date = std::string(d.Maturity);
+    inst.expiry_date = to_domain_date(std::string(d.Maturity));
     return result;
 }
 
@@ -342,9 +359,9 @@ equity_instrument_mapper::forward_equity_swap(const trade& t) {
                 inst.notional = static_cast<double>(ld.Notionals->Notional.front());
             if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
                 const auto& rule = ld.ScheduleData->Rules.front();
-                inst.start_date = std::string(rule.StartDate);
+                inst.start_date = to_domain_date(std::string(rule.StartDate));
                 if (rule.EndDate)
-                    inst.maturity_date = std::string(*rule.EndDate);
+                    inst.maturity_date = to_domain_date(std::string(*rule.EndDate));
                 inst.payment_frequency = tenor_to_payment_frequency(std::string(rule.Tenor));
             }
         }
@@ -374,8 +391,8 @@ equity_instrument_mapper::forward_equity_variance_swap(const trade& t) {
     inst.currency = to_string(d.Currency);
     inst.notional = static_cast<double>(d.Notional);
     inst.variance_strike = static_cast<double>(d.Strike);
-    inst.start_date = std::string(d.StartDate);
-    inst.maturity_date = std::string(d.EndDate);
+    inst.start_date = to_domain_date(std::string(d.StartDate));
+    inst.maturity_date = to_domain_date(std::string(d.EndDate));
     return result;
 }
 
@@ -438,7 +455,8 @@ equity_instrument_mapper::forward_equity_asian_option(const trade& t) {
     inst.expiry_date = first_exercise_date(d.OptionData);
     inst.strike = extract_strike(d.strikeGroup);
     if (d.ObservationDates && !d.ObservationDates->Rules.empty())
-        inst.averaging_start_date = std::string(d.ObservationDates->Rules.front().StartDate);
+        inst.averaging_start_date =
+            to_domain_date(std::string(d.ObservationDates->Rules.front().StartDate));
     return result;
 }
 
@@ -558,7 +576,7 @@ equity_instrument_mapper::forward_equity_accumulator(const trade& t) {
     if (d.Strike)
         inst.strike = static_cast<double>(*d.Strike);
     if (d.StartDate)
-        inst.start_date = std::string(*d.StartDate);
+        inst.start_date = to_domain_date(std::string(*d.StartDate));
 
     // Capture first knock-out barrier
     if (d.Barriers) {
@@ -635,7 +653,8 @@ equity_instrument_mapper::forward_equity_cliquet_option(const trade& t) {
         inst.cliquet_frequency = std::string(d.ScheduleData.Rules.front().Tenor);
     else if (!d.ScheduleData.Dates.empty() && d.ScheduleData.Dates.front().Dates.Date.size() >= 2) {
         // For date-based schedules store the maturity date
-        inst.expiry_date = std::string(d.ScheduleData.Dates.front().Dates.Date.back());
+        inst.expiry_date =
+            to_domain_date(std::string(d.ScheduleData.Dates.front().Dates.Date.back()));
     }
     return result;
 }
@@ -700,7 +719,7 @@ trade equity_instrument_mapper::reverse_equity_forward(
     t.TradeType = oreTradeType::EquityForward;
     equityForwardData d;
     d.LongShort = longShort::Long;
-    static_cast<std::string&>(d.Maturity) = instr.expiry_date;
+    static_cast<std::string&>(d.Maturity) = to_ore_date(instr.expiry_date);
     d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.Currency) = instr.currency;
     d.Strike = static_cast<float>(instr.forward_price.value_or(0.0));
@@ -766,8 +785,8 @@ trade equity_instrument_mapper::reverse_equity_variance_swap(
     trade t;
     t.TradeType = oreTradeType::EquityVarianceSwap;
     varianceSwapData d;
-    static_cast<std::string&>(d.StartDate) = instr.start_date;
-    static_cast<std::string&>(d.EndDate) = instr.maturity_date;
+    static_cast<std::string&>(d.StartDate) = to_ore_date(instr.start_date);
+    static_cast<std::string&>(d.EndDate) = to_ore_date(instr.maturity_date);
     d.Currency = parse_currency_code(instr.currency);
     d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.LongShort) = "Long";
@@ -945,15 +964,15 @@ trade equity_instrument_mapper::reverse_equity_accumulator(
     static_cast<std::string&>(d.Underlying.Name) = instr.underlying_name;
     static_cast<std::string&>(d.Underlying.Type) = "Equity";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";
-    if (!instr.start_date.empty()) {
+    if (instr.start_date.ok()) {
         date sd;
-        static_cast<std::string&>(sd) = instr.start_date;
+        static_cast<std::string&>(sd) = to_ore_date(instr.start_date);
         d.StartDate = std::move(sd);
     }
     // Minimal observation schedule
     scheduleData_Rules_t rule;
-    if (!instr.start_date.empty())
-        static_cast<std::string&>(rule.StartDate) = instr.start_date;
+    if (instr.start_date.ok())
+        static_cast<std::string&>(rule.StartDate) = to_ore_date(instr.start_date);
     static_cast<std::string&>(rule.Tenor) = "1D";
     d.ObservationDates.Rules.push_back(std::move(rule));
     t.EquityAccumulatorData = std::move(d);

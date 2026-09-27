@@ -71,7 +71,7 @@ private:
     static std::string extract_underlying_name(const underlyingTypes_group_t& u);
     static std::string extract_option_type(const optionData& od);
     static std::string extract_exercise_style(const optionData& od);
-    static std::string first_exercise_date(const optionData& od);
+    static std::chrono::year_month_day first_exercise_date(const optionData& od);
     static double extract_strike(const strikeGroup_group_t& sg);
     static std::string barrier_type_str(const barrierData& bd);
     static double first_barrier_level(const barrierData& bd);

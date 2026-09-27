@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
@@ -52,7 +53,7 @@ equity_digital_option_instrument make_instrument(database_helper& h) {
     r.option_type = "Call";
     r.strike = 3300.0;
     r.barrier_type = "";
-    r.expiry_date = "2026-07-17";
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2026-07-17");
     r.long_short = "Long";
     r.payout_amount = 1000.0;
     r.audit.modified_by = h.db_user();
@@ -86,7 +87,7 @@ TEST_CASE("equity_digital_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].notional == 1000.0);
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].strike == 3300.0);
-    CHECK(read[0].expiry_date == "2026-07-17");
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-07-17"));
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].payout_amount == 1000.0);
     BOOST_LOG_SEV(lg, debug) << "Read equity digital option instrument: " << read[0];

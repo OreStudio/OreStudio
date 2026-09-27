@@ -41,8 +41,10 @@ render_fx_variance_swap_instrument_fields(const domain::fx_variance_swap_instrum
     fields.push_back({.name = "Trade ID",
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "End Date", .value = v.end_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back(
+        {.name = "End Date", .value = ores::platform::time::datetime::to_iso8601_date(v.end_date)});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Underlying Code", .value = v.underlying_code});
     fields.push_back({.name = "Long Short", .value = v.long_short});

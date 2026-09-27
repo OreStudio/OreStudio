@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -117,7 +118,7 @@ struct bond_issue final {
     /**
      * @brief Issue date of the bond (ISO 8601 date string).
      */
-    std::string issue_date;
+    std::optional<std::chrono::year_month_day> issue_date;
 
     /**
      * @brief Settlement days of the bond, a market convention of the issue.

@@ -52,6 +52,11 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
     r.currency = std::string("USD");
     r.quantity = 1000.0;
     r.unit = std::string("MMBTU");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
+    r.averaging_start_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
+    r.averaging_end_date = std::chrono::year_month_day{std::chrono::year{2025} / 6 / 15};
+    r.swaption_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

@@ -53,7 +53,7 @@ generate_synthetic_fx_barrier_option_instrument(utility::generation::generation_
     r.sold_currency = std::string("USD");
     r.sold_amount = 1100000.0;
     r.option_type = std::string("Call");
-    r.expiry_date = std::string("2033-02-20");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2033} / 2 / 20};
     r.barrier_type = std::string("UpAndIn");
     r.lower_barrier = 1.2;
     r.audit.modified_by = modified_by;

@@ -45,7 +45,7 @@ struct instrument_option_premium_write {
     int sequence_number;
     double amount;
     std::string currency;
-    std::string pay_date;
+    std::chrono::year_month_day pay_date;
     bool has_settlement;
     std::optional<std::string> settlement_pay_currency;
     std::optional<std::string> settlement_fx_index;

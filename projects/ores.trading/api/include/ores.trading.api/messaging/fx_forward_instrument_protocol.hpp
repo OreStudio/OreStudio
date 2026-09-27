@@ -47,7 +47,7 @@ struct fx_forward_instrument_write {
     double bought_amount;
     std::string sold_currency;
     double sold_amount;
-    std::string value_date;
+    std::chrono::year_month_day value_date;
     std::string settlement;
     std::string description;
 };

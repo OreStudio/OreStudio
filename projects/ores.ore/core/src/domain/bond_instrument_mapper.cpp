@@ -18,7 +18,9 @@
  *
  */
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <chrono>
 #include <charconv>
 #include <optional>
 #include <stdexcept>
@@ -62,6 +64,29 @@ using ores::trading::domain::bond_stub_interpolation;
 using ores::trading::domain::bond_trs;
 
 namespace {
+
+// The trading domain holds a date as std::chrono::year_month_day; the ORE XML
+// holds its ISO-8601 spelling. An absent ORE date maps to an invalid calendar
+// date (or no date), which renders back to an empty string.
+std::chrono::year_month_day to_domain_date(const std::string& s) {
+    if (s.empty())
+        return {};
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::optional<std::chrono::year_month_day> to_optional_domain_date(const std::string& s) {
+    if (s.empty())
+        return std::nullopt;
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::string to_ore_date(const std::chrono::year_month_day& d) {
+    return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
+}
+
+std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
 
 std::string first_tenor(const xsd::optional<scheduleData>& sd) {
     if (!sd || sd->Rules.empty())
@@ -1048,7 +1073,7 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
     if (bd.IssuerId)
         issue.issuer = std::string(*bd.IssuerId);
     if (bd.IssueDate)
-        issue.issue_date = std::string(*bd.IssueDate);
+        issue.issue_date = to_optional_domain_date(std::string(*bd.IssueDate));
     if (bd.SettlementDays)
         issue.settlement_days = count_of(*bd.SettlementDays, 0);
 
@@ -1097,9 +1122,9 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
         static_cast<std::string&>(id) = issue.issuer;
         bd.IssuerId = std::move(id);
     }
-    if (!issue.issue_date.empty()) {
+    if (issue.issue_date) {
         bondData_IssueDate_t d;
-        static_cast<std::string&>(d) = issue.issue_date;
+        static_cast<std::string&>(d) = to_ore_date(issue.issue_date);
         bd.IssueDate = std::move(d);
     }
     if (issue.settlement_days != 0) {
@@ -1154,8 +1179,8 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
                 if (!ld.ScheduleData && !issue.coupon_frequency_code.empty()) {
                     scheduleData_Rules_t rule;
                     static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
-                    if (!issue.issue_date.empty())
-                        rule.StartDate = issue.issue_date;
+                    if (issue.issue_date)
+                        rule.StartDate = to_ore_date(issue.issue_date);
                     scheduleData sched;
                     sched.Rules.push_back(std::move(rule));
                     ld.ScheduleData = std::move(sched);
@@ -1193,7 +1218,7 @@ void bond_instrument_mapper::map_call_dates(const callableBondCallData& call_dat
             bond_issue_call_date row;
             row.issue_id = issue_id;
             row.sequence_number = ++sequence;
-            row.call_date = static_cast<const std::string&>(d);
+            row.call_date = to_domain_date(static_cast<const std::string&>(d));
             stamp_audit(row);
             dates.push_back(std::move(row));
         }
@@ -1206,7 +1231,7 @@ void bond_instrument_mapper::reverse_call_dates(const std::vector<bond_issue_cal
     scheduleData_Dates_t block;
     for (const auto& row : dates) {
         domain::date d;
-        static_cast<std::string&>(d) = row.call_date;
+        static_cast<std::string&>(d) = to_ore_date(row.call_date);
         block.Dates.Date.push_back(std::move(d));
     }
     call_data.ScheduleData.Dates.push_back(std::move(block));

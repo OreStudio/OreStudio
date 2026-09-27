@@ -50,7 +50,7 @@ generate_synthetic_vanilla_swap_instrument(utility::generation::generation_conte
     r.identity.party_id = ctx.generate_uuid();
     r.start_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
-    r.maturity_date = std::string("2029-01-15");
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
@@ -55,7 +56,7 @@ fx_accumulator_instrument make_instrument(database_helper& h) {
     r.strike = 122.0;
     r.underlying_code = "TR20H-EUR-JPY";
     r.long_short = "Long";
-    r.start_date = "2026-01-12";
+    r.start_date = ores::platform::time::datetime::from_iso8601_date("2026-01-12");
     r.knock_out_barrier = 126.0;
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
@@ -88,7 +89,7 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", tags) {
     CHECK(read[0].strike == 122.0);
     CHECK(read[0].underlying_code == "TR20H-EUR-JPY");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].start_date == "2026-01-12");
+    CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2026-01-12"));
     REQUIRE(read[0].knock_out_barrier.has_value());
     CHECK(*read[0].knock_out_barrier == 126.0);
     BOOST_LOG_SEV(lg, debug) << "Read FX accumulator instrument: " << read[0];

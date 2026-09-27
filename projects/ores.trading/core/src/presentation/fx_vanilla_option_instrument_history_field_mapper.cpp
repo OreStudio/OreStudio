@@ -46,7 +46,8 @@ render_fx_vanilla_option_instrument_fields(const domain::fx_vanilla_option_instr
     fields.push_back({.name = "Sold Currency", .value = v.sold_currency});
     fields.push_back({.name = "Sold Amount", .value = std::to_string(v.sold_amount)});
     fields.push_back({.name = "Option Type", .value = v.option_type});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Exercise Style", .value = v.exercise_style});
     fields.push_back({.name = "Settlement", .value = v.settlement});
     fields.push_back({.name = "Description", .value = v.description});

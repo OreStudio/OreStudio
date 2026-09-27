@@ -48,8 +48,8 @@ generate_synthetic_cap_floor_instrument(utility::generation::generation_context&
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("CapFloor");
     r.identity.party_id = ctx.generate_uuid();
-    r.start_date = std::string("2024-01-15");
-    r.maturity_date = std::string("2026-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

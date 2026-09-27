@@ -47,14 +47,14 @@ struct fra_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief FRA end date.
      *
      * Must be after start_date.
      */
-    std::string end_date;
+    std::chrono::year_month_day end_date;
 
     /**
      * @brief ISO 4217 currency code.

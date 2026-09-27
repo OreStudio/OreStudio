@@ -85,7 +85,7 @@ std::string("USD")
 ** pay_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -96,7 +96,7 @@ already parsed it and the writer re-emits a canonical form. A date
 column therefore carries the member whole.
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 ** has_settlement
@@ -171,6 +171,7 @@ Date the premium's settlement block fixes on.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

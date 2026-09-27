@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -67,7 +68,7 @@ struct instrument_option_payment_date final {
     /**
      * @brief The payment date.
      */
-    std::string payment_date;
+    std::chrono::year_month_day payment_date;
 
     /**
      * @brief Username of the person who last modified this instrument option payment date.

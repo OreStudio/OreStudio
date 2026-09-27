@@ -43,8 +43,8 @@ struct fra_instrument_write {
     boost::uuids::uuid instrument_id;
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string start_date;
-    std::string end_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day end_date;
     std::string currency;
     std::string rate_index;
     std::string long_short;

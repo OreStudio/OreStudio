@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -74,7 +75,7 @@ struct equity_asian_option_instrument final {
     /**
      * @brief Expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief European or American.
@@ -94,12 +95,12 @@ struct equity_asian_option_instrument final {
     /**
      * @brief Averaging period start (ISO 8601 date string).
      */
-    std::string averaging_start_date;
+    std::chrono::year_month_day averaging_start_date;
 
     /**
      * @brief Averaging period end (ISO 8601 date string).
      */
-    std::string averaging_end_date;
+    std::chrono::year_month_day averaging_end_date;
 
     /**
      * @brief Optional free-text description.

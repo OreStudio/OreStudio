@@ -157,14 +157,14 @@ Strike price. Must be non-negative.
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Expiry date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2026-01-28")
+std::chrono::year_month_day{std::chrono::year{2026}/1/28}
 #+end_src
 
 ** exercise_type
@@ -209,27 +209,27 @@ std::string("Arithmetic")
 ** averaging_start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Averaging period start (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2025-07-12")
+std::chrono::year_month_day{std::chrono::year{2025}/7/12}
 #+end_src
 
 ** averaging_end_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Averaging period end (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2026-01-19")
+std::chrono::year_month_day{std::chrono::year{2026}/1/19}
 #+end_src
 
 ** description
@@ -308,6 +308,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

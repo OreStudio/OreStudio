@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/service/ascot_service.hpp"
 #include "ores.trading.core/service/bond_future_service.hpp"
@@ -41,6 +42,23 @@ namespace ores::trading::service {
 using namespace ores::logging;
 
 namespace {
+
+// The bond schedule aggregates the reader builds are hand-written string
+// carriers; the repository entities now hold calendar dates. Convert at this
+// boundary, one spelling each way.
+std::string iso_or_empty(const std::chrono::year_month_day& d) {
+    return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
+}
+
+std::string iso_or_empty(const std::optional<std::chrono::year_month_day>& d) {
+    return d && d->ok() ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+std::optional<std::string> iso_optional(const std::optional<std::chrono::year_month_day>& d) {
+    if (!d || !d->ok())
+        return std::nullopt;
+    return ores::platform::time::datetime::to_iso8601_date(*d);
+}
 
 /**
  * @brief The instrument's own rows, as the tables hold them.
@@ -128,8 +146,8 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& in
 
 domain::bond_schedule_rules to_rules(const domain::instrument_schedule& row) {
     domain::bond_schedule_rules rules;
-    rules.start_date = row.start_date.value_or("");
-    rules.end_date = row.end_date;
+    rules.start_date = iso_or_empty(row.start_date);
+    rules.end_date = iso_optional(row.end_date);
     rules.adjust_end_date_to_previous_month_end = row.adjust_end_date_to_previous_month_end;
     rules.tenor = row.tenor.value_or("");
     rules.calendar = row.calendar;
@@ -138,8 +156,8 @@ domain::bond_schedule_rules to_rules(const domain::instrument_schedule& row) {
     rules.rule = row.rule;
     rules.end_of_month = row.end_of_month;
     rules.end_of_month_convention = row.end_of_month_convention;
-    rules.first_date = row.first_date;
-    rules.last_date = row.last_date;
+    rules.first_date = iso_optional(row.first_date);
+    rules.last_date = iso_optional(row.last_date);
     rules.remove_first_date = row.remove_first_date;
     rules.remove_last_date = row.remove_last_date;
     return rules;
@@ -166,7 +184,7 @@ to_schedule_data(const std::vector<const domain::instrument_schedule*>& rows,
         dates.include_duplicate_dates = row->include_duplicate_dates;
         if (auto it = by_sequence.find(row->sequence_number); it != by_sequence.end())
             for (const auto* date_row : it->second)
-                dates.dates.push_back(date_row->schedule_date);
+                dates.dates.push_back(iso_or_empty(date_row->schedule_date));
         schedule.dates.push_back(std::move(dates));
     }
     return schedule;
@@ -414,7 +432,7 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         for (const auto& premium : rows.option_premiums)
             block.premiums.push_back({premium.amount,
                                       premium.currency,
-                                      premium.pay_date,
+                                      iso_or_empty(premium.pay_date),
                                       to_option_settlement(premium.has_settlement,
                                                            premium.settlement_pay_currency,
                                                            premium.settlement_fx_index,
@@ -431,12 +449,12 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
 
         if (row.has_exercise_data)
             block.exercise_data =
-                domain::bond_option_exercise{row.exercise_date.value_or(""), row.exercise_price};
+                domain::bond_option_exercise{iso_or_empty(row.exercise_date), row.exercise_price};
 
         if (row.has_payment_data) {
             domain::bond_option_payment_data payment;
             for (const auto& date : rows.option_payment_dates)
-                payment.dates.push_back(date.payment_date);
+                payment.dates.push_back(iso_or_empty(date.payment_date));
             payment.rules = to_payment_rules(row);
             block.payment_data = std::move(payment);
         }

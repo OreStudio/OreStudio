@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -64,7 +65,7 @@ struct equity_forward_instrument final {
     /**
      * @brief ISO 8601 date string.
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Long or Short.

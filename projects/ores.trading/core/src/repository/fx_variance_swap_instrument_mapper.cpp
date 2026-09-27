@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/fx_variance_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -47,8 +49,8 @@ fx_variance_swap_instrument_mapper::map(const fx_variance_swap_instrument_entity
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.start_date = v.start_date;
-    r.end_date = v.end_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.end_date = ores::platform::time::datetime::from_iso8601_date(v.end_date);
     r.currency = v.currency;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
@@ -80,8 +82,8 @@ fx_variance_swap_instrument_mapper::map(const domain::fx_variance_swap_instrumen
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.start_date = v.start_date;
-    r.end_date = v.end_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.end_date = ores::platform::time::datetime::to_iso8601_date(v.end_date);
     r.currency = v.currency;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;

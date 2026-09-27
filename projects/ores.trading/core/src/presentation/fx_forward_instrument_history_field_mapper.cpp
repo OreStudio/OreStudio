@@ -45,7 +45,8 @@ render_fx_forward_instrument_fields(const domain::fx_forward_instrument& v) {
     fields.push_back({.name = "Bought Amount", .value = std::to_string(v.bought_amount)});
     fields.push_back({.name = "Sold Currency", .value = v.sold_currency});
     fields.push_back({.name = "Sold Amount", .value = std::to_string(v.sold_amount)});
-    fields.push_back({.name = "Value Date", .value = v.value_date});
+    fields.push_back({.name = "Value Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.value_date)});
     fields.push_back({.name = "Settlement", .value = v.settlement});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;

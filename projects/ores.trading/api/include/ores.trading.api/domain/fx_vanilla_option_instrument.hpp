@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -69,7 +70,7 @@ struct fx_vanilla_option_instrument final {
     /**
      * @brief Option expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Exercise style: European or American.

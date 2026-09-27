@@ -43,12 +43,12 @@ struct swaption_instrument_write {
     boost::uuids::uuid instrument_id;
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string exercise_type;
     std::string settlement_type;
     std::string long_short;
-    std::string start_date;
-    std::string maturity_date;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
     std::string description;
 };
 

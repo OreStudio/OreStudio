@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/domain/commodity_instrument_table_io.hpp" // IWYU pragma: keep.
@@ -275,17 +276,24 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     v.currency = std::move(currency);
     v.quantity = quantity;
     v.unit = std::move(unit);
-    v.start_date = (start_date == "-") ? "" : std::move(start_date);
-    v.maturity_date = (maturity_date == "-") ? "" : std::move(maturity_date);
+    v.start_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(start_date);
+    v.maturity_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(maturity_date);
     v.day_count_code = (day_count_code == "-") ? "" : std::move(day_count_code);
     v.payment_frequency_code =
         (payment_frequency_code == "-") ? "" : std::move(payment_frequency_code);
     v.option_type = (option_type == "-") ? "" : std::move(option_type);
     v.exercise_type = (exercise_type == "-") ? "" : std::move(exercise_type);
-    v.swaption_expiry_date = (swaption_expiry_date == "-") ? "" : std::move(swaption_expiry_date);
+    v.swaption_expiry_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(
+            swaption_expiry_date);
     v.average_type = (average_type == "-") ? "" : std::move(average_type);
-    v.averaging_start_date = (averaging_start_date == "-") ? "" : std::move(averaging_start_date);
-    v.averaging_end_date = (averaging_end_date == "-") ? "" : std::move(averaging_end_date);
+    v.averaging_start_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(
+            averaging_start_date);
+    v.averaging_end_date = ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(
+        averaging_end_date);
     v.spread_commodity_code =
         (spread_commodity_code == "-") ? "" : std::move(spread_commodity_code);
     v.strip_frequency_code = (strip_frequency_code == "-") ? "" : std::move(strip_frequency_code);

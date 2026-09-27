@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -71,7 +72,7 @@ struct fx_accumulator_instrument final {
     /**
      * @brief Accumulation start date (ISO 8601 date string).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Primary UpAndOut knock-out barrier level. Absent when no barrier.

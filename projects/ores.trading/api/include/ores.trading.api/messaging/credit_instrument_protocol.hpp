@@ -49,8 +49,8 @@ struct credit_instrument_write {
     double spread;
     double recovery_rate;
     std::string tenor;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string day_count_code;
     std::string payment_frequency_code;
     std::string index_name;
@@ -59,7 +59,7 @@ struct credit_instrument_write {
     std::string restructuring;
     std::string description;
     std::string option_type;
-    std::string option_expiry_date;
+    std::optional<std::chrono::year_month_day> option_expiry_date;
     std::optional<double> option_strike;
     std::string linked_asset_code;
     std::optional<double> tranche_attachment;

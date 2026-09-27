@@ -48,7 +48,7 @@ struct fx_vanilla_option_instrument_write {
     std::string sold_currency;
     double sold_amount;
     std::string option_type;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string exercise_style;
     std::string settlement;
     std::string description;

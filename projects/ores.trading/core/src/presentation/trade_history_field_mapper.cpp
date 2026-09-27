@@ -61,13 +61,25 @@ std::vector<ores::diff::domain::field_value> render_trade_fields(const domain::t
     fields.push_back(
         {.name = "Status ID", .value = boost::uuids::to_string(v.classification.status_id)});
     fields.push_back(
-        {.name = "Trade Date", .value = v.lifecycle.trade_date.value_or(std::string{})});
+        {.name = "Trade Date",
+         .value = v.lifecycle.trade_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.lifecycle.trade_date) :
+                      std::string{}});
     fields.push_back({.name = "Execution Timestamp",
-                      .value = v.lifecycle.execution_timestamp.value_or(std::string{})});
+                      .value = v.lifecycle.execution_timestamp ?
+                                   ores::platform::time::datetime::to_iso8601_utc(
+                                       *v.lifecycle.execution_timestamp) :
+                                   std::string{}});
     fields.push_back(
-        {.name = "Effective Date", .value = v.lifecycle.effective_date.value_or(std::string{})});
+        {.name = "Effective Date",
+         .value = v.lifecycle.effective_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.lifecycle.effective_date) :
+                      std::string{}});
     fields.push_back({.name = "Termination Date",
-                      .value = v.lifecycle.termination_date.value_or(std::string{})});
+                      .value = v.lifecycle.termination_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(
+                                       *v.lifecycle.termination_date) :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/trade_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -66,12 +68,22 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     r.classification.netting_set_id = v.netting_set_id;
     r.classification.activity_type_code = v.activity_type_code;
     r.classification.status_id = boost::lexical_cast<boost::uuids::uuid>(v.status_id);
-    r.lifecycle.trade_date = v.trade_date;
-    r.lifecycle.execution_timestamp = v.execution_timestamp.has_value() ?
-                                          std::optional(v.execution_timestamp->str()) :
-                                          std::nullopt;
-    r.lifecycle.effective_date = v.effective_date;
-    r.lifecycle.termination_date = v.termination_date;
+    r.lifecycle.trade_date =
+        v.trade_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
+            std::nullopt;
+    r.lifecycle.execution_timestamp =
+        v.execution_timestamp.has_value() ?
+            std::optional(timestamp_to_timepoint(*v.execution_timestamp)) :
+            std::nullopt;
+    r.lifecycle.effective_date =
+        v.effective_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.effective_date)) :
+            std::nullopt;
+    r.lifecycle.termination_date =
+        v.termination_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.termination_date)) :
+            std::nullopt;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -113,13 +125,22 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.netting_set_id = v.classification.netting_set_id;
     r.activity_type_code = v.classification.activity_type_code;
     r.status_id = boost::uuids::to_string(v.classification.status_id);
-    r.trade_date = v.lifecycle.trade_date;
-    if (v.lifecycle.execution_timestamp.has_value())
-        r.execution_timestamp.emplace(*v.lifecycle.execution_timestamp);
-    else
-        r.execution_timestamp = std::nullopt;
-    r.effective_date = v.lifecycle.effective_date;
-    r.termination_date = v.lifecycle.termination_date;
+    r.trade_date = v.lifecycle.trade_date.has_value() ?
+                       std::optional(ores::platform::time::datetime::to_iso8601_date(
+                           *v.lifecycle.trade_date)) :
+                       std::nullopt;
+    r.execution_timestamp = v.lifecycle.execution_timestamp.has_value() ?
+                                std::optional(ores::platform::time::datetime::to_db_string(
+                                    *v.lifecycle.execution_timestamp)) :
+                                std::nullopt;
+    r.effective_date = v.lifecycle.effective_date.has_value() ?
+                           std::optional(ores::platform::time::datetime::to_iso8601_date(
+                               *v.lifecycle.effective_date)) :
+                           std::nullopt;
+    r.termination_date = v.lifecycle.termination_date.has_value() ?
+                             std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                 *v.lifecycle.termination_date)) :
+                             std::nullopt;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_repository.hpp"
@@ -51,7 +52,7 @@ fx_vanilla_option_instrument make_instrument(database_helper& h) {
     r.sold_currency = "USD";
     r.sold_amount = 1100000.0;
     r.option_type = "Call";
-    r.expiry_date = "2033-02-20";
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.exercise_style = "European";
     r.settlement = "Cash";
     r.audit.modified_by = h.db_user();
@@ -85,7 +86,7 @@ TEST_CASE("fx_vanilla_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].sold_currency == "USD");
     CHECK(read[0].sold_amount == 1100000.0);
     CHECK(read[0].option_type == "Call");
-    CHECK(read[0].expiry_date == "2033-02-20");
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].exercise_style == "European");
     CHECK(read[0].settlement == "Cash");
     BOOST_LOG_SEV(lg, debug) << "Read FX vanilla option instrument: " << read[0];

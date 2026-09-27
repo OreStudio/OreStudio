@@ -46,7 +46,7 @@ generate_synthetic_instrument_option_payment_date(utility::generation::generatio
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
     r.sequence_number = 0;
-    r.payment_date = std::string("2026-01-15");
+    r.payment_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -37,7 +37,8 @@ render_instrument_option_premium_fields(const domain::instrument_option_premium&
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
     fields.push_back({.name = "Amount", .value = std::to_string(v.amount)});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Pay Date", .value = v.pay_date});
+    fields.push_back(
+        {.name = "Pay Date", .value = ores::platform::time::datetime::to_iso8601_date(v.pay_date)});
     fields.push_back({.name = "Has Settlement", .value = v.has_settlement ? "true" : "false"});
     fields.push_back({.name = "Settlement Pay Currency",
                       .value = v.settlement_pay_currency.value_or(std::string{})});

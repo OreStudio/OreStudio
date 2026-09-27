@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/fx_barrier_option_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -52,7 +54,7 @@ fx_barrier_option_instrument_mapper::map(const fx_barrier_option_instrument_enti
     r.sold_currency = v.sold_currency;
     r.sold_amount = v.sold_amount;
     r.option_type = v.option_type.value_or("");
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.settlement = v.settlement.value_or("");
     r.barrier_type = v.barrier_type;
     r.lower_barrier = v.lower_barrier;
@@ -88,7 +90,7 @@ fx_barrier_option_instrument_mapper::map(const domain::fx_barrier_option_instrum
     r.sold_currency = v.sold_currency;
     r.sold_amount = v.sold_amount;
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.settlement = v.settlement.empty() ? std::nullopt : std::optional(v.settlement);
     r.barrier_type = v.barrier_type;
     r.lower_barrier = v.lower_barrier;

@@ -50,7 +50,10 @@ render_fx_asian_forward_instrument_fields(const domain::fx_asian_forward_instrum
     fields.push_back(
         {.name = "Settlement Notional",
          .value = v.settlement_notional ? std::to_string(*v.settlement_notional) : std::string{}});
-    fields.push_back({.name = "Payment Date", .value = v.payment_date});
+    fields.push_back({.name = "Payment Date",
+                      .value = v.payment_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                    *v.payment_date) :
+                                                std::string{}});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Fixing Amount",

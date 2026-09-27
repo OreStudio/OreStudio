@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/equity_barrier_option_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -52,7 +54,7 @@ equity_barrier_option_instrument_mapper::map(const equity_barrier_option_instrum
     r.notional = v.notional;
     r.option_type = v.option_type;
     r.strike = v.strike;
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
     r.lower_barrier = v.lower_barrier;
@@ -90,7 +92,7 @@ equity_barrier_option_instrument_mapper::map(const domain::equity_barrier_option
     r.notional = v.notional;
     r.option_type = v.option_type;
     r.strike = v.strike;
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
     r.lower_barrier = v.lower_barrier;

@@ -268,7 +268,7 @@ true
 ** exercise_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
@@ -277,6 +277,10 @@ Date the exercise block names.
 The schema types this member as a date, so the generated reader has
 already parsed it and the writer re-emits a canonical form. A date
 column therefore carries the member whole.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
 
 ** exercise_price
 :PROPERTIES:
@@ -408,6 +412,7 @@ Date the settlement block fixes on, when the document states one.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>

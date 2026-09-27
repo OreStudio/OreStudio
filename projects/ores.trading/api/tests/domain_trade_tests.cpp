@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_table.hpp"
@@ -44,9 +45,9 @@ trade make_trade(const std::string& trade_type = "Swap") {
     t.classification.trade_type = trade_type;
     t.classification.activity_type_code = "new_booking";
     t.classification.status_id = boost::uuids::random_generator()();
-    t.lifecycle.trade_date = "2026-01-15";
-    t.lifecycle.effective_date = "2026-01-20";
-    t.lifecycle.termination_date = "2031-01-20";
+    t.lifecycle.trade_date = ores::platform::time::datetime::from_iso8601_date("2026-01-15");
+    t.lifecycle.effective_date = ores::platform::time::datetime::from_iso8601_date("2026-01-20");
+    t.lifecycle.termination_date = ores::platform::time::datetime::from_iso8601_date("2031-01-20");
     t.audit.modified_by = "system";
     t.audit.performed_by = "system";
     t.audit.change_reason_code = "system.new";
@@ -74,10 +75,12 @@ TEST_CASE("create_trade_with_valid_fields", tags) {
     sut.classification.netting_set_id = "NS-001";
     sut.classification.activity_type_code = "new_booking";
     sut.classification.status_id = boost::uuids::random_generator()();
-    sut.lifecycle.trade_date = "2026-01-15";
-    sut.lifecycle.execution_timestamp = "2026-01-15 09:30:00+00";
-    sut.lifecycle.effective_date = "2026-01-20";
-    sut.lifecycle.termination_date = "2031-01-20";
+    sut.lifecycle.trade_date = ores::platform::time::datetime::from_iso8601_date("2026-01-15");
+    sut.lifecycle.execution_timestamp =
+        ores::platform::time::datetime::from_iso8601_utc("2026-01-15 09:30:00+00");
+    sut.lifecycle.effective_date = ores::platform::time::datetime::from_iso8601_date("2026-01-20");
+    sut.lifecycle.termination_date =
+        ores::platform::time::datetime::from_iso8601_date("2031-01-20");
     sut.audit.modified_by = "admin";
     sut.audit.performed_by = "admin";
     sut.audit.change_reason_code = "system.new";
@@ -89,7 +92,8 @@ TEST_CASE("create_trade_with_valid_fields", tags) {
     CHECK(!sut.identity.id.is_nil());
     CHECK(!sut.identity.party_id.is_nil());
     CHECK(sut.classification.trade_type == "Swap");
-    CHECK(sut.lifecycle.trade_date == "2026-01-15");
+    CHECK(sut.lifecycle.trade_date ==
+          ores::platform::time::datetime::from_iso8601_date("2026-01-15"));
     CHECK(sut.audit.modified_by == "admin");
     CHECK(!sut.parties.successor_trade_id.has_value());
     CHECK(!sut.parties.counterparty_id.has_value());
@@ -109,9 +113,10 @@ TEST_CASE("create_trade_with_optional_fields", tags) {
     sut.classification.trade_type = "FxForward";
     sut.classification.activity_type_code = "novation";
     sut.classification.status_id = boost::uuids::random_generator()();
-    sut.lifecycle.trade_date = "2026-02-01";
-    sut.lifecycle.effective_date = "2026-02-05";
-    sut.lifecycle.termination_date = "2026-08-05";
+    sut.lifecycle.trade_date = ores::platform::time::datetime::from_iso8601_date("2026-02-01");
+    sut.lifecycle.effective_date = ores::platform::time::datetime::from_iso8601_date("2026-02-05");
+    sut.lifecycle.termination_date =
+        ores::platform::time::datetime::from_iso8601_date("2026-08-05");
     sut.audit.modified_by = "system";
     sut.audit.performed_by = "system";
     sut.audit.change_reason_code = "system.novation";
@@ -137,9 +142,10 @@ TEST_CASE("trade_insertion_operator", tags) {
     sut.classification.trade_type = "Swaption";
     sut.classification.activity_type_code = "new_booking";
     sut.classification.status_id = boost::uuids::random_generator()();
-    sut.lifecycle.trade_date = "2026-03-01";
-    sut.lifecycle.effective_date = "2026-03-05";
-    sut.lifecycle.termination_date = "2031-03-05";
+    sut.lifecycle.trade_date = ores::platform::time::datetime::from_iso8601_date("2026-03-01");
+    sut.lifecycle.effective_date = ores::platform::time::datetime::from_iso8601_date("2026-03-05");
+    sut.lifecycle.termination_date =
+        ores::platform::time::datetime::from_iso8601_date("2031-03-05");
     sut.audit.modified_by = "system";
     sut.audit.performed_by = "system";
     sut.audit.change_reason_code = "system.new";
@@ -167,9 +173,10 @@ TEST_CASE("create_trade_with_faker", tags) {
     sut.classification.trade_type = std::string(faker::word::noun()) + "_trade";
     sut.classification.activity_type_code = "new_booking";
     sut.classification.status_id = boost::uuids::random_generator()();
-    sut.lifecycle.trade_date = "2026-01-01";
-    sut.lifecycle.effective_date = "2026-01-05";
-    sut.lifecycle.termination_date = "2031-01-05";
+    sut.lifecycle.trade_date = ores::platform::time::datetime::from_iso8601_date("2026-01-01");
+    sut.lifecycle.effective_date = ores::platform::time::datetime::from_iso8601_date("2026-01-05");
+    sut.lifecycle.termination_date =
+        ores::platform::time::datetime::from_iso8601_date("2031-01-05");
     sut.audit.modified_by = std::string(faker::internet::username());
     sut.audit.performed_by = std::string(faker::internet::username());
     sut.audit.change_reason_code = "system.new";
@@ -245,9 +252,11 @@ TEST_CASE("trade_table_with_faker_data", tags) {
         t.classification.trade_type = std::string(faker::word::noun()) + "_" + std::to_string(i);
         t.classification.activity_type_code = "new_booking";
         t.classification.status_id = boost::uuids::random_generator()();
-        t.lifecycle.trade_date = "2026-01-01";
-        t.lifecycle.effective_date = "2026-01-05";
-        t.lifecycle.termination_date = "2031-01-05";
+        t.lifecycle.trade_date = ores::platform::time::datetime::from_iso8601_date("2026-01-01");
+        t.lifecycle.effective_date =
+            ores::platform::time::datetime::from_iso8601_date("2026-01-05");
+        t.lifecycle.termination_date =
+            ores::platform::time::datetime::from_iso8601_date("2031-01-05");
         t.audit.modified_by = "system";
         t.audit.performed_by = "system";
         t.audit.change_reason_code = "system.new";

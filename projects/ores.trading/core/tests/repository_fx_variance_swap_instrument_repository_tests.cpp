@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
@@ -50,8 +51,8 @@ fx_variance_swap_instrument make_instrument(database_helper& h) {
     r.identity.instrument_id = boost::uuids::random_generator()();
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "FxVarianceSwap";
-    r.start_date = "2025-10-22";
-    r.end_date = "2026-04-26";
+    r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-10-22");
+    r.end_date = ores::platform::time::datetime::from_iso8601_date("2026-04-26");
     r.currency = "USD";
     r.underlying_code = "TR20H-EUR-USD";
     r.long_short = "Long";
@@ -84,8 +85,8 @@ TEST_CASE("fx_variance_swap_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].identity.trade_type_code == "FxVarianceSwap");
-    CHECK(read[0].start_date == "2025-10-22");
-    CHECK(read[0].end_date == "2026-04-26");
+    CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-10-22"));
+    CHECK(read[0].end_date == ores::platform::time::datetime::from_iso8601_date("2026-04-26"));
     CHECK(read[0].currency == "USD");
     CHECK(read[0].underlying_code == "TR20H-EUR-USD");
     CHECK(read[0].long_short == "Long");

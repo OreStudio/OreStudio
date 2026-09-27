@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -67,6 +68,20 @@ fx_instrument_variant load_and_map(const std::string& filename) {
     auto r = ores::ore::domain::trade_mapper::map_fx_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
+}
+
+} // namespace
+
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
 } // namespace
@@ -177,8 +192,8 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     CHECK(!instr.underlying_code.empty());
     CHECK(instr.strike > 0.0);
     CHECK(instr.notional > 0.0);
-    CHECK(!instr.start_date.empty());
-    CHECK(!instr.end_date.empty());
+    CHECK(instr.start_date.ok());
+    CHECK(instr.end_date.ok());
 
     const auto rt = fx_instrument_mapper::reverse_fx_variance_swap(instr);
     const bool has_data = rt.FxVarianceSwapData.operator bool();
@@ -193,7 +208,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     const auto& instr = std::get<fx_asian_forward_instrument>(r);
 
     CHECK(instr.identity.trade_type_code == "FxAverageForward");
-    CHECK(!instr.payment_date.empty());
+    CHECK(instr.payment_date.has_value());
     CHECK(!instr.reference_currency.empty());
     CHECK(!instr.settlement_currency.empty());
     CHECK(!instr.fx_index.empty());

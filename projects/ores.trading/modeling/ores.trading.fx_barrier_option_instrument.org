@@ -155,14 +155,14 @@ std::string("Call")
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Option expiry date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2033-02-20")
+std::chrono::year_month_day{std::chrono::year{2033}/2/20}
 #+end_src
 
 ** settlement
@@ -297,6 +297,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

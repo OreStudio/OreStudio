@@ -48,8 +48,8 @@ generate_synthetic_fx_variance_swap_instrument(utility::generation::generation_c
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxVarianceSwap");
     r.identity.party_id = ctx.generate_uuid();
-    r.start_date = std::string("2024-01-15");
-    r.end_date = std::string("2025-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.end_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.currency = std::string("USD");
     r.underlying_code = std::string("TR20H-EUR-USD");
     r.long_short = std::string("Long");

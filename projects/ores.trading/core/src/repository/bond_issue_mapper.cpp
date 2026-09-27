@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/bond_issue_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_issue_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -48,7 +50,10 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.coupon_rate = v.coupon_rate.value_or(0);
     r.coupon_frequency_code = v.coupon_frequency_code.value_or("");
     r.day_count_code = v.day_count_code.value_or("");
-    r.issue_date = v.issue_date.value_or("");
+    r.issue_date =
+        v.issue_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.issue_date)) :
+            std::nullopt;
     r.settlement_days = v.settlement_days.value_or(0);
     r.calendar = v.calendar;
     r.credit_curve_id = v.credit_curve_id;
@@ -81,7 +86,10 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.coupon_frequency_code =
         v.coupon_frequency_code.empty() ? std::nullopt : std::optional(v.coupon_frequency_code);
     r.day_count_code = v.day_count_code.empty() ? std::nullopt : std::optional(v.day_count_code);
-    r.issue_date = v.issue_date.empty() ? std::nullopt : std::optional(v.issue_date);
+    r.issue_date =
+        v.issue_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.issue_date)) :
+            std::nullopt;
     r.settlement_days = v.settlement_days == 0 ? std::nullopt : std::optional(v.settlement_days);
     r.calendar = v.calendar;
     r.credit_curve_id = v.credit_curve_id;

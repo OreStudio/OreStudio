@@ -47,15 +47,15 @@ struct commodity_instrument_write {
     std::string currency;
     double quantity;
     std::string unit;
-    std::string start_date;
-    std::string maturity_date;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
     std::optional<double> fixed_price;
     std::string option_type;
     std::optional<double> strike_price;
     std::string exercise_type;
     std::string average_type;
-    std::string averaging_start_date;
-    std::string averaging_end_date;
+    std::optional<std::chrono::year_month_day> averaging_start_date;
+    std::optional<std::chrono::year_month_day> averaging_end_date;
     std::string spread_commodity_code;
     std::optional<double> spread_amount;
     std::string strip_frequency_code;
@@ -68,7 +68,7 @@ struct commodity_instrument_write {
     std::string basket_json;
     std::string day_count_code;
     std::string payment_frequency_code;
-    std::string swaption_expiry_date;
+    std::optional<std::chrono::year_month_day> swaption_expiry_date;
     std::string description;
 };
 

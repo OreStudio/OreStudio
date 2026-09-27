@@ -52,7 +52,7 @@ domain::bond_issue generate_synthetic_bond_issue(utility::generation::generation
     r.coupon_rate = 0.0425;
     r.coupon_frequency_code = std::string("SemiAnnual");
     r.day_count_code = std::string("30/360");
-    r.issue_date = std::string("2024-01-15");
+    r.issue_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.settlement_days = 2;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

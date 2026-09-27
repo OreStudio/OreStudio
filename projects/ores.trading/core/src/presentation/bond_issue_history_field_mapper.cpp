@@ -41,7 +41,10 @@ std::vector<ores::diff::domain::field_value> render_bond_issue_fields(const doma
     fields.push_back({.name = "Coupon Rate", .value = std::to_string(v.coupon_rate)});
     fields.push_back({.name = "Coupon Frequency Code", .value = v.coupon_frequency_code});
     fields.push_back({.name = "Day Count Code", .value = v.day_count_code});
-    fields.push_back({.name = "Issue Date", .value = v.issue_date});
+    fields.push_back({.name = "Issue Date",
+                      .value = v.issue_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.issue_date) :
+                                   std::string{}});
     fields.push_back({.name = "Settlement Days", .value = std::to_string(v.settlement_days)});
     fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
     fields.push_back(

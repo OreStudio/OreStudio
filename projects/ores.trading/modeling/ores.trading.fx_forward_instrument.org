@@ -143,7 +143,7 @@ Amount sold in sold_currency. Must be positive.
 ** value_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -152,7 +152,7 @@ Settlement / value date (ISO 8601 date string).
 For FxSwap this is the near leg date only.
 
 #+begin_src cpp :name generator
-std::string("2024-06-15")
+std::chrono::year_month_day{std::chrono::year{2024}/6/15}
 #+end_src
 
 ** settlement
@@ -241,6 +241,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
 #+end_src
 

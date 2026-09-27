@@ -21,6 +21,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -79,8 +80,8 @@ TEST_CASE("mapper_roundtrip_fx_forward_forward", tags) {
     const auto& instr = std::get<fx_forward_instrument>(result);
 
     CHECK(instr.identity.trade_type_code == "FxForward");
-    CHECK(!instr.value_date.empty());
-    CHECK(instr.value_date == "2033-02-20");
+    CHECK(instr.value_date.ok());
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.value_date) == "2033-02-20");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");
@@ -119,8 +120,8 @@ TEST_CASE("mapper_roundtrip_fx_swap_forward", tags) {
     const auto& instr = std::get<fx_forward_instrument>(result);
 
     CHECK(instr.identity.trade_type_code == "FxSwap");
-    CHECK(!instr.value_date.empty());
-    CHECK(instr.value_date == "2025-08-23");
+    CHECK(instr.value_date.ok());
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.value_date) == "2025-08-23");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");
@@ -162,7 +163,7 @@ TEST_CASE("mapper_roundtrip_fx_option_forward", tags) {
     CHECK(instr.sold_currency == "USD");
     CHECK(instr.sold_amount == Approx(1100000.0).epsilon(0.001));
     CHECK(instr.option_type == "Call");
-    CHECK(instr.expiry_date == "2033-02-20");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.expiry_date) == "2033-02-20");
     BOOST_LOG_SEV(lg, info) << "FxOption forward-mapper test passed";
 }
 

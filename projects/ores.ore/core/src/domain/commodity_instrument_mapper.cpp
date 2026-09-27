@@ -18,7 +18,10 @@
  *
  */
 #include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <chrono>
 #include <map>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::ore::domain {
@@ -31,6 +34,18 @@ using ores::trading::domain::commodity_instrument;
 // ---------------------------------------------------------------------------
 
 namespace {
+
+// The trading domain holds a date as std::chrono::year_month_day; the ORE XML
+// holds its ISO-8601 spelling. An absent ORE date maps to no date.
+std::optional<std::chrono::year_month_day> to_optional_domain_date(const std::string& s) {
+    if (s.empty())
+        return std::nullopt;
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
 
 commodity_instrument make_base(const std::string& trade_type_code) {
     commodity_instrument r;
@@ -131,14 +146,15 @@ std::string extract_exercise_style(const optionData& od) {
 }
 
 // Extract first exercise date from optionData.
-std::string first_exercise_date(const optionData& od) {
+std::optional<std::chrono::year_month_day> first_exercise_date(const optionData& od) {
     if (!od.exerciseDatesGroup)
-        return {};
+        return std::nullopt;
     if (!od.exerciseDatesGroup->ExerciseDates)
-        return {};
+        return std::nullopt;
     if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        return {};
-    return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+        return std::nullopt;
+    return ores::platform::time::datetime::from_iso8601_date(
+        std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()));
 }
 
 // Extract underlying name from underlyingTypes_group_t.
@@ -155,8 +171,8 @@ std::string extract_underlying_name(const underlyingTypes_group_t& u) {
 struct swap_leg_info {
     std::string commodity_code;
     std::string currency;
-    std::string start_date;
-    std::string maturity_date;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
 };
 
 swap_leg_info extract_floating_leg_info(const xsd::vector<legData>& legs) {
@@ -172,14 +188,14 @@ swap_leg_info extract_floating_leg_info(const xsd::vector<legData>& legs) {
             info.currency = std::string(*leg.Currency);
         if (leg.ScheduleData && !leg.ScheduleData->Rules.empty()) {
             const auto& r = leg.ScheduleData->Rules.front();
-            info.start_date = std::string(r.StartDate);
+            info.start_date = to_optional_domain_date(std::string(r.StartDate));
             if (r.EndDate)
-                info.maturity_date = std::string(*r.EndDate);
+                info.maturity_date = to_optional_domain_date(std::string(*r.EndDate));
         } else if (leg.ScheduleData && !leg.ScheduleData->Dates.empty()) {
             const auto& dates = leg.ScheduleData->Dates.front().Dates.Date;
             if (!dates.empty()) {
-                info.start_date = std::string(dates.front());
-                info.maturity_date = std::string(dates.back());
+                info.start_date = to_optional_domain_date(std::string(dates.front()));
+                info.maturity_date = to_optional_domain_date(std::string(dates.back()));
             }
         }
         break; // use first floating leg
@@ -200,10 +216,10 @@ optionData make_option_data(const commodity_instrument& instr) {
         static_cast<std::string&>(st) = instr.exercise_type;
         od.Style = std::move(st);
     }
-    if (!instr.maturity_date.empty()) {
+    if (instr.maturity_date) {
         _ExerciseDates_t exd;
         date ed;
-        static_cast<std::string&>(ed) = instr.maturity_date;
+        static_cast<std::string&>(ed) = to_ore_date(instr.maturity_date);
         exd.ExerciseDate.push_back(ed);
         exerciseDatesGroup_group_t eg;
         eg.ExerciseDates = std::move(exd);
@@ -230,7 +246,7 @@ commodity_instrument_mapper::forward_commodity_forward(const trade& t) {
     result.currency = to_string(d.Currency);
     result.quantity = static_cast<double>(d.Quantity);
     result.fixed_price = static_cast<double>(d.Strike);
-    result.maturity_date = std::string(d.Maturity);
+    result.maturity_date = to_optional_domain_date(std::string(d.Maturity));
     return result;
 }
 
@@ -317,8 +333,8 @@ commodity_instrument_mapper::forward_commodity_variance_swap(const trade& t) {
 
     result.commodity_code = extract_underlying_name(d.underlyingTypes);
     result.currency = to_string(d.Currency);
-    result.start_date = std::string(d.StartDate);
-    result.maturity_date = std::string(d.EndDate);
+    result.start_date = to_optional_domain_date(std::string(d.StartDate));
+    result.maturity_date = to_optional_domain_date(std::string(d.EndDate));
     result.variance_strike = static_cast<double>(d.Strike);
     result.quantity = static_cast<double>(d.Notional);
     return result;
@@ -344,8 +360,8 @@ commodity_instrument_mapper::forward_commodity_apo(const trade& t) {
     result.option_type = extract_option_type(d.OptionData);
     result.exercise_type = extract_exercise_style(d.OptionData);
     result.maturity_date = first_exercise_date(d.OptionData);
-    result.averaging_start_date = std::string(d.StartDate);
-    result.averaging_end_date = std::string(d.EndDate);
+    result.averaging_start_date = to_optional_domain_date(std::string(d.StartDate));
+    result.averaging_end_date = to_optional_domain_date(std::string(d.EndDate));
     result.average_type = to_string(d.PriceType);
     return result;
 }
@@ -384,7 +400,7 @@ trade commodity_instrument_mapper::reverse_commodity_forward(const commodity_ins
     t.TradeType = oreTradeType::CommodityForward;
     commodityForwardData d;
     d.Position = longShort::Long;
-    static_cast<std::string&>(d.Maturity) = instr.maturity_date;
+    static_cast<std::string&>(d.Maturity) = to_ore_date(instr.maturity_date);
     static_cast<std::string&>(d.Name) = instr.commodity_code;
     d.Currency = parse_currency_code(instr.currency);
     d.Strike = static_cast<float>(instr.fixed_price.value_or(0.0));
@@ -450,13 +466,13 @@ trade commodity_instrument_mapper::reverse_commodity_swap(const commodity_instru
     legDataType_group_t flt2;
     flt2.CommodityFloatingLegData = std::move(cfl);
     floatLeg.legDataType = std::move(flt2);
-    if (!instr.start_date.empty()) {
+    if (instr.start_date) {
         scheduleData sd;
         scheduleData_Rules_t rule;
-        static_cast<std::string&>(rule.StartDate) = instr.start_date;
-        if (!instr.maturity_date.empty()) {
+        static_cast<std::string&>(rule.StartDate) = to_ore_date(instr.start_date);
+        if (instr.maturity_date) {
             date ed;
-            static_cast<std::string&>(ed) = instr.maturity_date;
+            static_cast<std::string&>(ed) = to_ore_date(instr.maturity_date);
             rule.EndDate = std::move(ed);
         }
         static_cast<std::string&>(rule.Tenor) = "1M";
@@ -481,10 +497,10 @@ trade commodity_instrument_mapper::reverse_commodity_swaption(const commodity_in
 
     optionData od;
     static_cast<std::string&>(od.LongShort) = "Long";
-    if (!instr.swaption_expiry_date.empty()) {
+    if (instr.swaption_expiry_date) {
         _ExerciseDates_t exd;
         date ed;
-        static_cast<std::string&>(ed) = instr.swaption_expiry_date;
+        static_cast<std::string&>(ed) = to_ore_date(instr.swaption_expiry_date);
         exd.ExerciseDate.push_back(ed);
         exerciseDatesGroup_group_t eg;
         eg.ExerciseDates = std::move(exd);
@@ -520,8 +536,8 @@ trade commodity_instrument_mapper::reverse_commodity_variance_swap(
     trade t;
     t.TradeType = oreTradeType::CommodityVarianceSwap;
     varianceSwapData d;
-    static_cast<std::string&>(d.StartDate) = instr.start_date;
-    static_cast<std::string&>(d.EndDate) = instr.maturity_date;
+    static_cast<std::string&>(d.StartDate) = to_ore_date(instr.start_date);
+    static_cast<std::string&>(d.EndDate) = to_ore_date(instr.maturity_date);
     d.Currency = parse_currency_code(instr.currency);
     // Set underlying via Name field of underlyingTypes_group_t
     _Name_t n;
@@ -550,8 +566,8 @@ trade commodity_instrument_mapper::reverse_commodity_apo(const commodity_instrum
     d.Quantity = static_cast<float>(instr.quantity);
     d.Strike = static_cast<float>(instr.strike_price.value_or(0.0));
     d.PriceType = priceType::FutureSettlement;
-    static_cast<std::string&>(d.StartDate) = instr.averaging_start_date;
-    static_cast<std::string&>(d.EndDate) = instr.averaging_end_date;
+    static_cast<std::string&>(d.StartDate) = to_ore_date(instr.averaging_start_date);
+    static_cast<std::string&>(d.EndDate) = to_ore_date(instr.averaging_end_date);
     static_cast<std::string&>(d.PaymentCalendar) = "US-NYSE";
     static_cast<std::string&>(d.PaymentLag) = "5";
     d.PaymentConvention = businessDayConvention::Following;

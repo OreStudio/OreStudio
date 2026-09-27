@@ -21,6 +21,7 @@
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -62,6 +63,20 @@ ores::ore::domain::trade load_trade(const std::string& filename, std::size_t ind
 // Bond mapper tests (first trade in Cash_Bonds.xml)
 // =============================================================================
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_trade("Cash_Bonds.xml", 0);
@@ -72,7 +87,7 @@ TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     CHECK(instr.instrument.identity.trade_type_code == "Bond");
     CHECK(instr.instrument.issue_id == instr.issue.issue_id);
     CHECK(instr.issue.issuer == "CPTY_C");
-    CHECK(instr.issue.issue_date == "2025-02-03");
+    CHECK(ore_iso(instr.issue.issue_date) == "2025-02-03");
     CHECK(instr.issue.currency == "EUR");
     CHECK(instr.issue.face_value == Approx(10000000.0).epsilon(0.001));
     CHECK(instr.issue.coupon_rate == Approx(0.05).epsilon(0.0001));

@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/fx_accumulator_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -52,7 +54,7 @@ fx_accumulator_instrument_mapper::map(const fx_accumulator_instrument_entity& v)
     r.strike = v.strike;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
-    r.start_date = v.start_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.knock_out_barrier = v.knock_out_barrier;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -84,7 +86,7 @@ fx_accumulator_instrument_mapper::map(const domain::fx_accumulator_instrument& v
     r.strike = v.strike;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
-    r.start_date = v.start_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.knock_out_barrier = v.knock_out_barrier;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

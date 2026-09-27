@@ -50,6 +50,10 @@ generate_synthetic_instrument_schedule(utility::generation::generation_context& 
     r.schedule_role = std::string(faker::word::noun());
     r.sequence_number = 0;
     r.schedule_kind = std::string("rules");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.end_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
+    r.first_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.last_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

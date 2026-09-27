@@ -53,7 +53,7 @@ generate_synthetic_equity_digital_option_instrument(utility::generation::generat
     r.notional = 1000.0;
     r.option_type = std::string("Call");
     r.strike = std::make_optional(3300.0);
-    r.expiry_date = std::string("2026-07-17");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 7 / 17};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

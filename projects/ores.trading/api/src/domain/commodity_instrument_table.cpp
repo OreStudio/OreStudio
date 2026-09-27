@@ -25,9 +25,22 @@
 #include "ores.trading.api/domain/commodity_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<commodity_instrument>& v) {
     fort::char_table table;
@@ -38,8 +51,8 @@ std::string convert_to_table(const std::vector<commodity_instrument>& v) {
 
     for ([[maybe_unused]] const auto& ci : v) {
         table << ci.identity.instrument_id << ci.identity.trade_type_code << ci.commodity_code
-              << ci.currency << ci.quantity << ci.unit << ci.maturity_date << ci.audit.recorded_at
-              << fort::endr;
+              << ci.currency << ci.quantity << ci.unit << opt_str(ci.maturity_date)
+              << ci.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

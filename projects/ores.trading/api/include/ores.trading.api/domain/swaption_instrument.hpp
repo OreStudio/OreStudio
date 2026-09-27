@@ -48,7 +48,7 @@ struct swaption_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Exercise type: European, Bermudan, or American.
@@ -76,14 +76,14 @@ struct swaption_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
      */
-    std::string start_date;
+    std::optional<std::chrono::year_month_day> start_date;
 
     /**
      * @brief Optional underlying swap maturity date.
      *
      * ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
      */
-    std::string maturity_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
 
     /**
      * @brief Optional free-text description.

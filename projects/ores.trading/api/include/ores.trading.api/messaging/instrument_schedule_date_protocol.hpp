@@ -51,7 +51,7 @@ struct instrument_schedule_date_write {
     std::string schedule_role;
     int schedule_sequence_number;
     int sequence_number;
-    std::string schedule_date;
+    std::chrono::year_month_day schedule_date;
 };
 
 struct instrument_schedule_date_change {

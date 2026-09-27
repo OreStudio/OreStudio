@@ -46,12 +46,17 @@ render_equity_asian_option_instrument_fields(const domain::equity_asian_option_i
     fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Average Type", .value = v.average_type});
-    fields.push_back({.name = "Averaging Start Date", .value = v.averaging_start_date});
-    fields.push_back({.name = "Averaging End Date", .value = v.averaging_end_date});
+    fields.push_back(
+        {.name = "Averaging Start Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.averaging_start_date)});
+    fields.push_back(
+        {.name = "Averaging End Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.averaging_end_date)});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

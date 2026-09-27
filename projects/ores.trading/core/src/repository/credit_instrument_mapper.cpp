@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/credit_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/credit_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -52,8 +54,8 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
     r.spread = v.spread;
     r.recovery_rate = v.recovery_rate;
     r.tenor = v.tenor;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.day_count_code = v.day_count_code;
     r.payment_frequency_code = v.payment_frequency_code;
     r.index_name = v.index_name.value_or("");
@@ -62,7 +64,10 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
     r.restructuring = v.restructuring.value_or("");
     r.description = v.description.value_or("");
     r.option_type = v.option_type.value_or("");
-    r.option_expiry_date = v.option_expiry_date.value_or("");
+    r.option_expiry_date = v.option_expiry_date.has_value() ?
+                               std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                   *v.option_expiry_date)) :
+                               std::nullopt;
     r.option_strike = v.option_strike;
     r.linked_asset_code = v.linked_asset_code.value_or("");
     r.tranche_attachment = v.tranche_attachment;
@@ -96,8 +101,8 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
     r.spread = v.spread;
     r.recovery_rate = v.recovery_rate;
     r.tenor = v.tenor;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.day_count_code = v.day_count_code;
     r.payment_frequency_code = v.payment_frequency_code;
     r.index_name = v.index_name.empty() ? std::nullopt : std::optional(v.index_name);
@@ -107,7 +112,9 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
     r.option_expiry_date =
-        v.option_expiry_date.empty() ? std::nullopt : std::optional(v.option_expiry_date);
+        v.option_expiry_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.option_expiry_date)) :
+            std::nullopt;
     r.option_strike = v.option_strike;
     r.linked_asset_code =
         v.linked_asset_code.empty() ? std::nullopt : std::optional(v.linked_asset_code);

@@ -18,7 +18,10 @@
  *
  */
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <chrono>
 #include <map>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::ore::domain {
@@ -37,6 +40,30 @@ using ores::trading::domain::fx_variance_swap_instrument;
 // ---------------------------------------------------------------------------
 
 namespace {
+
+// The trading domain holds a date as std::chrono::year_month_day, while the
+// ORE XML holds its ISO-8601 spelling. An absent or empty ORE date maps to a
+// default-constructed (invalid) calendar date, which renders back to an empty
+// string, so a missing date round-trips as missing.
+std::chrono::year_month_day to_domain_date(const std::string& s) {
+    if (s.empty())
+        return {};
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::optional<std::chrono::year_month_day> to_optional_domain_date(const std::string& s) {
+    if (s.empty())
+        return std::nullopt;
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::string to_ore_date(const std::chrono::year_month_day& d) {
+    return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
+}
+
+std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
 
 constexpr const char* k_modified_by = "ores";
 constexpr const char* k_performed_by = "ores";
@@ -124,14 +151,15 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
-std::string expiry_date_from_single(const optionData& od) {
+std::chrono::year_month_day expiry_date_from_single(const optionData& od) {
     if (!od.exerciseDatesGroup)
         return {};
     if (!od.exerciseDatesGroup->ExerciseDates)
         return {};
     if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
         return {};
-    return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    return ores::platform::time::datetime::from_iso8601_date(
+        std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()));
 }
 
 std::string option_type_from_single(const optionData& od) {
@@ -165,9 +193,9 @@ void validate_option_type(const std::string& v) {
         throw std::invalid_argument("Unrecognised OptionType value: '" + v + "'");
 }
 
-// Build an OptionData element from option_type + expiry_date strings.
+// Build an OptionData element from an option_type and its expiry date.
 optionData make_option_entry(const std::string& option_type,
-                             const std::string& expiry_date,
+                             const std::chrono::year_month_day& expiry_date,
                              const std::string& long_short = "Long") {
     validate_long_short(long_short);
     optionData od;
@@ -178,10 +206,10 @@ optionData make_option_entry(const std::string& option_type,
         static_cast<std::string&>(ot) = option_type;
         od.OptionType = std::move(ot);
     }
-    if (!expiry_date.empty()) {
+    if (expiry_date.ok()) {
         _ExerciseDates_t ed;
         date dt;
-        static_cast<std::string&>(dt) = expiry_date;
+        static_cast<std::string&>(dt) = ores::platform::time::datetime::to_iso8601_date(expiry_date);
         ed.ExerciseDate.push_back(dt);
         exerciseDatesGroup_group_t edg;
         edg.ExerciseDates = std::move(ed);
@@ -254,7 +282,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_forward(
         return r;
     const auto& fwd = *t.FxForwardData;
 
-    r.value_date = std::string(fwd.ValueDate);
+    r.value_date = to_domain_date(std::string(fwd.ValueDate));
     r.bought_currency = to_string(fwd.BoughtCurrency);
     r.bought_amount = static_cast<double>(fwd.BoughtAmount);
     r.sold_currency = to_string(fwd.SoldCurrency);
@@ -279,7 +307,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_swap(con
     const auto& sw = *t.FxSwapData;
 
     // Near leg only; far leg is a documented coverage gap.
-    r.value_date = std::string(sw.NearDate);
+    r.value_date = to_domain_date(std::string(sw.NearDate));
     r.bought_currency = to_string(sw.NearBoughtCurrency);
     r.bought_amount = static_cast<double>(sw.NearBoughtAmount);
     r.sold_currency = to_string(sw.NearSoldCurrency);
@@ -566,8 +594,8 @@ fx_instrument_mapper::forward_fx_variance_swap(const trade& t) {
     else if (d.underlyingTypes.Underlying)
         r.underlying_code = std::string(d.underlyingTypes.Underlying->Name);
 
-    r.start_date = std::string(d.StartDate);
-    r.end_date = std::string(d.EndDate);
+    r.start_date = to_domain_date(std::string(d.StartDate));
+    r.end_date = to_domain_date(std::string(d.EndDate));
     r.strike = static_cast<double>(d.Strike);
     r.notional = static_cast<double>(d.Notional);
     r.currency = to_string(d.Currency);
@@ -589,7 +617,7 @@ fx_instrument_mapper::forward_fx_average_forward(const trade& t) {
         return r;
     const auto& d = *t.FxAverageForwardData;
 
-    r.payment_date = std::string(d.PaymentDate);
+    r.payment_date = to_optional_domain_date(std::string(d.PaymentDate));
     r.reference_currency = to_string(d.ReferenceCurrency);
     r.reference_notional = static_cast<double>(d.ReferenceNotional);
     r.settlement_currency = to_string(d.SettlementCurrency);
@@ -620,7 +648,7 @@ fx_instrument_mapper::forward_fx_accumulator(const trade& t) {
     if (d.Strike)
         r.strike = static_cast<double>(*d.Strike);
     if (d.StartDate)
-        r.start_date = std::string(*d.StartDate);
+        r.start_date = to_domain_date(std::string(*d.StartDate));
 
     if (d.Barriers) {
         for (const auto& bd : d.Barriers->BarrierData) {
@@ -675,7 +703,7 @@ trade fx_instrument_mapper::reverse_fx_forward(const fx_forward_instrument& inst
     t.TradeType = oreTradeType::FxForward;
 
     fxForwardData fwd;
-    static_cast<std::string&>(fwd.ValueDate) = instr.value_date;
+    static_cast<std::string&>(fwd.ValueDate) = to_ore_date(instr.value_date);
     fwd.BoughtCurrency = parse_currency_code(instr.bought_currency);
     static_cast<float&>(fwd.BoughtAmount) = static_cast<float>(instr.bought_amount);
     fwd.SoldCurrency = parse_currency_code(instr.sold_currency);
@@ -695,7 +723,7 @@ trade fx_instrument_mapper::reverse_fx_swap(const fx_forward_instrument& instr) 
     t.TradeType = oreTradeType::FxSwap;
 
     fxSwapData sw;
-    static_cast<std::string&>(sw.NearDate) = instr.value_date;
+    static_cast<std::string&>(sw.NearDate) = to_ore_date(instr.value_date);
     sw.NearBoughtCurrency = parse_currency_code(instr.bought_currency);
     static_cast<float&>(sw.NearBoughtAmount) = static_cast<float>(instr.bought_amount);
     sw.NearSoldCurrency = parse_currency_code(instr.sold_currency);
@@ -942,8 +970,8 @@ trade fx_instrument_mapper::reverse_fx_variance_swap(const fx_variance_swap_inst
     t.TradeType = oreTradeType::FxVarianceSwap;
 
     varianceSwapData d;
-    static_cast<std::string&>(d.StartDate) = instr.start_date;
-    static_cast<std::string&>(d.EndDate) = instr.end_date;
+    static_cast<std::string&>(d.StartDate) = to_ore_date(instr.start_date);
+    static_cast<std::string&>(d.EndDate) = to_ore_date(instr.end_date);
     if (!instr.currency.empty())
         d.Currency = parse_currency_code(instr.currency);
     d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
@@ -967,7 +995,7 @@ trade fx_instrument_mapper::reverse_fx_average_forward(const fx_asian_forward_in
     t.TradeType = oreTradeType::FxAverageForward;
 
     fxAverageForwardData d;
-    static_cast<std::string&>(d.PaymentDate) = instr.payment_date;
+    static_cast<std::string&>(d.PaymentDate) = to_ore_date(instr.payment_date);
     if (!instr.reference_currency.empty())
         d.ReferenceCurrency = parse_currency_code(instr.reference_currency);
     d.ReferenceNotional = static_cast<float>(instr.reference_notional.value_or(0.0));
@@ -1004,15 +1032,15 @@ trade fx_instrument_mapper::reverse_fx_accumulator(const fx_accumulator_instrume
     static_cast<std::string&>(d.Underlying.Type) = "FX";
     validate_long_short(instr.long_short);
     static_cast<std::string&>(d.OptionData.LongShort) = instr.long_short;
-    if (!instr.start_date.empty()) {
+    if (instr.start_date.ok()) {
         date sd;
-        static_cast<std::string&>(sd) = instr.start_date;
+        static_cast<std::string&>(sd) = to_ore_date(instr.start_date);
         d.StartDate = std::move(sd);
     }
     // Minimal observation schedule
     scheduleData_Rules_t rule;
-    if (!instr.start_date.empty())
-        static_cast<std::string&>(rule.StartDate) = instr.start_date;
+    if (instr.start_date.ok())
+        static_cast<std::string&>(rule.StartDate) = to_ore_date(instr.start_date);
     static_cast<std::string&>(rule.Tenor) = "1D";
     d.ObservationDates.Rules.push_back(std::move(rule));
 

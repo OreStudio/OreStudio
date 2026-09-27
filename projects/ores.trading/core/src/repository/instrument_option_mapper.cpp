@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/instrument_option_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/instrument_option_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -61,7 +63,10 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
     r.exercise_fee_settlement_convention = v.exercise_fee_settlement_convention;
     r.automatic_exercise = v.automatic_exercise;
     r.has_exercise_data = v.has_exercise_data;
-    r.exercise_date = v.exercise_date;
+    r.exercise_date =
+        v.exercise_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.exercise_date)) :
+            std::nullopt;
     r.exercise_price = v.exercise_price;
     r.has_payment_data = v.has_payment_data;
     r.payment_lag = v.payment_lag;
@@ -110,7 +115,10 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
     r.exercise_fee_settlement_convention = v.exercise_fee_settlement_convention;
     r.automatic_exercise = v.automatic_exercise;
     r.has_exercise_data = v.has_exercise_data;
-    r.exercise_date = v.exercise_date;
+    r.exercise_date =
+        v.exercise_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.exercise_date)) :
+            std::nullopt;
     r.exercise_price = v.exercise_price;
     r.has_payment_data = v.has_payment_data;
     r.payment_lag = v.payment_lag;

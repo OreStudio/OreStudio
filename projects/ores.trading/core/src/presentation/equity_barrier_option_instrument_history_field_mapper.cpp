@@ -46,7 +46,8 @@ render_equity_barrier_option_instrument_fields(const domain::equity_barrier_opti
     fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Lower Barrier", .value = std::to_string(v.lower_barrier)});

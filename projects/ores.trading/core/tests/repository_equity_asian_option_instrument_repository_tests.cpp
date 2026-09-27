@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
@@ -51,12 +52,12 @@ equity_asian_option_instrument make_instrument(database_helper& h) {
     r.notional = 1.0;
     r.option_type = "Call";
     r.strike = 3100.0;
-    r.expiry_date = "2026-01-28";
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2026-01-28");
     r.exercise_type = "European";
     r.long_short = "Long";
     r.average_type = "Arithmetic";
-    r.averaging_start_date = "2025-07-12";
-    r.averaging_end_date = "2026-01-19";
+    r.averaging_start_date = ores::platform::time::datetime::from_iso8601_date("2025-07-12");
+    r.averaging_end_date = ores::platform::time::datetime::from_iso8601_date("2026-01-19");
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
@@ -88,12 +89,14 @@ TEST_CASE("equity_asian_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].notional == 1.0);
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].strike == 3100.0);
-    CHECK(read[0].expiry_date == "2026-01-28");
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-01-28"));
     CHECK(read[0].exercise_type == "European");
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].average_type == "Arithmetic");
-    CHECK(read[0].averaging_start_date == "2025-07-12");
-    CHECK(read[0].averaging_end_date == "2026-01-19");
+    CHECK(read[0].averaging_start_date ==
+          ores::platform::time::datetime::from_iso8601_date("2025-07-12"));
+    CHECK(read[0].averaging_end_date ==
+          ores::platform::time::datetime::from_iso8601_date("2026-01-19"));
     BOOST_LOG_SEV(lg, debug) << "Read equity asian option instrument: " << read[0];
 }
 

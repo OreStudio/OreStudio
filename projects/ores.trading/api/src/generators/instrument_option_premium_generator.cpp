@@ -48,7 +48,7 @@ generate_synthetic_instrument_option_premium(utility::generation::generation_con
     r.sequence_number = 0;
     r.amount = 1000.0;
     r.currency = std::string("USD");
-    r.pay_date = std::string("2026-01-15");
+    r.pay_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.has_settlement = true;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

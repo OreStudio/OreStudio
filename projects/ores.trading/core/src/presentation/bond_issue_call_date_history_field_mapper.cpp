@@ -35,7 +35,8 @@ render_bond_issue_call_date_fields(const domain::bond_issue_call_date& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Issue ID", .value = boost::uuids::to_string(v.issue_id)});
-    fields.push_back({.name = "Call Date", .value = v.call_date});
+    fields.push_back({.name = "Call Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.call_date)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

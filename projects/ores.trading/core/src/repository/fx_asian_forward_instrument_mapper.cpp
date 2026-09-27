@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/fx_asian_forward_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -52,7 +54,10 @@ fx_asian_forward_instrument_mapper::map(const fx_asian_forward_instrument_entity
     r.reference_notional = v.reference_notional;
     r.settlement_currency = v.settlement_currency.value_or("");
     r.settlement_notional = v.settlement_notional;
-    r.payment_date = v.payment_date.value_or("");
+    r.payment_date =
+        v.payment_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.payment_date)) :
+            std::nullopt;
     r.long_short = v.long_short.value_or("");
     r.currency = v.currency.value_or("");
     r.fixing_amount = v.fixing_amount;
@@ -90,7 +95,10 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
     r.settlement_currency =
         v.settlement_currency.empty() ? std::nullopt : std::optional(v.settlement_currency);
     r.settlement_notional = v.settlement_notional;
-    r.payment_date = v.payment_date.empty() ? std::nullopt : std::optional(v.payment_date);
+    r.payment_date =
+        v.payment_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.payment_date)) :
+            std::nullopt;
     r.long_short = v.long_short.empty() ? std::nullopt : std::optional(v.long_short);
     r.currency = v.currency.empty() ? std::nullopt : std::optional(v.currency);
     r.fixing_amount = v.fixing_amount;

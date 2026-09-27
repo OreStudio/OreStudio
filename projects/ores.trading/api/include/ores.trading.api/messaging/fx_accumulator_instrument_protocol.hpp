@@ -48,7 +48,7 @@ struct fx_accumulator_instrument_write {
     double strike;
     std::string underlying_code;
     std::string long_short;
-    std::string start_date;
+    std::chrono::year_month_day start_date;
     std::optional<double> knock_out_barrier;
     std::string description;
 };

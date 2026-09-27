@@ -43,8 +43,8 @@ struct inflation_swap_instrument_write {
     boost::uuids::uuid instrument_id;
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string inflation_index_code;
     std::optional<double> base_cpi;
     std::string lag_convention;

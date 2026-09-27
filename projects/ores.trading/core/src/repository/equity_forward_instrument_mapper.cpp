@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/equity_forward_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -51,7 +53,7 @@ equity_forward_instrument_mapper::map(const equity_forward_instrument_entity& v)
     r.currency = v.currency;
     r.quantity = v.quantity;
     r.forward_price = v.forward_price;
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
     r.settlement_type = v.settlement_type.value_or("");
     r.description = v.description.value_or("");
@@ -83,7 +85,7 @@ equity_forward_instrument_mapper::map(const domain::equity_forward_instrument& v
     r.currency = v.currency;
     r.quantity = v.quantity;
     r.forward_price = v.forward_price;
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
     r.settlement_type = v.settlement_type.empty() ? std::nullopt : std::optional(v.settlement_type);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

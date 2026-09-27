@@ -21,6 +21,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -62,6 +63,20 @@ ores::ore::domain::trade load_trade(const std::string& filename, std::size_t ind
 // Swaption (European) mapper tests
 // =============================================================================
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_trade("IR_Swaption_European.xml", 0);
@@ -70,8 +85,8 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
 
     CHECK(instr.exercise_type == "European");
-    CHECK(instr.expiry_date == "2033-02-20"); // first exercise date
-    CHECK(instr.maturity_date == "2043-02-21");
+    CHECK(ore_iso(instr.expiry_date) == "2033-02-20"); // first exercise date
+    CHECK(ore_iso(instr.maturity_date) == "2043-02-21");
     REQUIRE(result.legs.size() == 2u);
     // leg 0: floating (EUR-EURIBOR-3M)
     CHECK(result.legs[0].leg_type_code == "Floating");
@@ -123,7 +138,7 @@ TEST_CASE("mapper_roundtrip_swaption_bermudan_forward", tags) {
 
     CHECK(instr.exercise_type == "Bermudan");
     // First exercise date from the 6 listed
-    CHECK(instr.expiry_date == "2035-09-23");
+    CHECK(ore_iso(instr.expiry_date) == "2035-09-23");
     REQUIRE(result.legs.size() == 2u);
     BOOST_LOG_SEV(lg, info) << "Swaption Bermudan forward-mapper test passed";
 }

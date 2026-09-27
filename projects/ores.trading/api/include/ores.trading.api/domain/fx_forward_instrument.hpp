@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -67,7 +68,7 @@ struct fx_forward_instrument final {
      *
      * For FxSwap this is the near leg date only.
      */
-    std::string value_date;
+    std::chrono::year_month_day value_date;
 
     /**
      * @brief Optional settlement method (e.g. Cash, Physical).

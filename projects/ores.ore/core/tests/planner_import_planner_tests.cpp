@@ -27,6 +27,7 @@
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -110,6 +111,20 @@ using namespace ores::logging;
 // =============================================================================
 // Currency tests
 // =============================================================================
+
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
 
 TEST_CASE("plan_includes_all_currencies_when_mode_is_all", tags) {
     auto lg(make_logger(test_suite));
@@ -443,7 +458,7 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
 
     for (const auto& item : plan.trades) {
         INFO("Trade: " << item.trade.identity.external_id);
-        CHECK(item.trade.lifecycle.trade_date == "2026-01-01");
+        CHECK(ore_iso(item.trade.lifecycle.trade_date) == "2026-01-01");
         CHECK(item.trade.classification.activity_type_code == "novation");
     }
 }

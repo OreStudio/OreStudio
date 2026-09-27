@@ -53,7 +53,7 @@ generate_synthetic_fx_asian_forward_instrument(utility::generation::generation_c
     r.reference_notional = 8614.0;
     r.settlement_currency = std::string("USD");
     r.settlement_notional = 10000.0;
-    r.payment_date = std::string("2025-09-30");
+    r.payment_date = std::chrono::year_month_day{std::chrono::year{2025} / 9 / 30};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

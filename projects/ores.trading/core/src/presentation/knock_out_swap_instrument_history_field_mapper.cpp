@@ -41,8 +41,10 @@ render_knock_out_swap_instrument_fields(const domain::knock_out_swap_instrument&
     fields.push_back({.name = "Trade ID",
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Barrier Level", .value = std::to_string(v.barrier_level)});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
     fields.push_back({.name = "Knock Out Dates Json", .value = v.knock_out_dates_json});

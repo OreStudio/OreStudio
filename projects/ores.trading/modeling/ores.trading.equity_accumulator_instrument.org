@@ -145,27 +145,27 @@ Per-fixing accumulation amount. Must be positive.
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Start date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2025-02-05")
+std::chrono::year_month_day{std::chrono::year{2025}/2/5}
 #+end_src
 
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Expiry date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2026-02-05")
+std::chrono::year_month_day{std::chrono::year{2026}/2/5}
 #+end_src
 
 ** fixing_frequency
@@ -311,6 +311,7 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

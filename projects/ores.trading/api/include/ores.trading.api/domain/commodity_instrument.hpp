@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -69,12 +70,12 @@ struct commodity_instrument final {
     /**
      * @brief Start date for swaps, forwards, and strips.
      */
-    std::string start_date;
+    std::optional<std::chrono::year_month_day> start_date;
 
     /**
      * @brief Maturity or expiry date.
      */
-    std::string maturity_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
 
     /**
      * @brief Fixed price for forwards and fixed-leg swaps.
@@ -104,12 +105,12 @@ struct commodity_instrument final {
     /**
      * @brief Start of the averaging window for Asian options.
      */
-    std::string averaging_start_date;
+    std::optional<std::chrono::year_month_day> averaging_start_date;
 
     /**
      * @brief End of the averaging window for Asian options.
      */
-    std::string averaging_end_date;
+    std::optional<std::chrono::year_month_day> averaging_end_date;
 
     /**
      * @brief Second commodity code for spread options.
@@ -174,7 +175,7 @@ struct commodity_instrument final {
     /**
      * @brief Swaption expiry date for CommoditySwaption.
      */
-    std::string swaption_expiry_date;
+    std::optional<std::chrono::year_month_day> swaption_expiry_date;
 
     /**
      * @brief Optional free-text description.

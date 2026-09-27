@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
@@ -50,8 +51,8 @@ equity_variance_swap_instrument make_instrument(database_helper& h) {
     r.currency = "USD";
     r.notional = 50000.0;
     r.variance_strike = 0.20;
-    r.start_date = "2025-02-20";
-    r.maturity_date = "2025-05-20";
+    r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-02-20");
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date("2025-05-20");
     r.long_short = "Long";
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
@@ -83,8 +84,8 @@ TEST_CASE("equity_variance_swap_instrument_write_and_read_latest", tags) {
     CHECK(read[0].currency == "USD");
     CHECK(read[0].notional == 50000.0);
     CHECK(read[0].variance_strike == 0.20);
-    CHECK(read[0].start_date == "2025-02-20");
-    CHECK(read[0].maturity_date == "2025-05-20");
+    CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-02-20"));
+    CHECK(read[0].maturity_date == ores::platform::time::datetime::from_iso8601_date("2025-05-20"));
     CHECK(read[0].long_short == "Long");
     BOOST_LOG_SEV(lg, debug) << "Read equity variance swap instrument: " << read[0];
 }

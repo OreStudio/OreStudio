@@ -50,7 +50,7 @@ struct equity_digital_option_instrument_write {
     std::optional<double> strike;
     std::optional<double> barrier_level;
     std::string barrier_type;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string long_short;
     std::optional<double> payout_amount;
     std::string description;

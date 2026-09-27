@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -65,6 +66,20 @@ commodity_instrument load_and_map(const std::string& filename) {
 
 } // namespace
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("commodity_mapper_roundtrip_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Forward.xml");
@@ -75,7 +90,7 @@ TEST_CASE("commodity_mapper_roundtrip_forward", tags) {
     CHECK(r.quantity > 0.0);
     CHECK(r.fixed_price.has_value());
     CHECK(*r.fixed_price > 0.0);
-    CHECK(!r.maturity_date.empty());
+    CHECK(r.maturity_date.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_forward(r);
     REQUIRE(rt.CommodityForwardData.operator bool());
@@ -93,7 +108,7 @@ TEST_CASE("commodity_mapper_roundtrip_option", tags) {
     CHECK(r.quantity > 0.0);
     CHECK(r.strike_price.has_value());
     CHECK(!r.option_type.empty());
-    CHECK(!r.maturity_date.empty());
+    CHECK(r.maturity_date.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_option(r);
     REQUIRE(rt.CommodityOptionData.operator bool());
@@ -108,8 +123,8 @@ TEST_CASE("commodity_mapper_roundtrip_swap", tags) {
     CHECK(r.identity.trade_type_code == "CommoditySwap");
     CHECK(!r.commodity_code.empty());
     CHECK(!r.currency.empty());
-    CHECK(!r.start_date.empty());
-    CHECK(!r.maturity_date.empty());
+    CHECK(r.start_date.has_value());
+    CHECK(r.maturity_date.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_swap(r);
     REQUIRE(rt.SwapData.operator bool());
@@ -123,13 +138,13 @@ TEST_CASE("commodity_mapper_roundtrip_swaption", tags) {
 
     CHECK(r.identity.trade_type_code == "CommoditySwaption");
     CHECK(!r.commodity_code.empty());
-    CHECK(!r.swaption_expiry_date.empty());
+    CHECK(r.swaption_expiry_date.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_swaption(r);
     REQUIRE(rt.CommoditySwaptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommoditySwaption roundtrip passed. Expiry: "
-                            << r.swaption_expiry_date;
+                            << ore_iso(r.swaption_expiry_date);
 }
 
 TEST_CASE("commodity_mapper_roundtrip_variance_swap", tags) {
@@ -139,8 +154,8 @@ TEST_CASE("commodity_mapper_roundtrip_variance_swap", tags) {
     CHECK(r.identity.trade_type_code == "CommodityVarianceSwap");
     CHECK(!r.commodity_code.empty());
     CHECK(!r.currency.empty());
-    CHECK(!r.start_date.empty());
-    CHECK(!r.maturity_date.empty());
+    CHECK(r.start_date.has_value());
+    CHECK(r.maturity_date.has_value());
     CHECK(r.variance_strike.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_variance_swap(r);
@@ -159,8 +174,8 @@ TEST_CASE("commodity_mapper_roundtrip_apo", tags) {
     CHECK(!r.currency.empty());
     CHECK(r.quantity > 0.0);
     CHECK(r.strike_price.has_value());
-    CHECK(!r.averaging_start_date.empty());
-    CHECK(!r.averaging_end_date.empty());
+    CHECK(r.averaging_start_date.has_value());
+    CHECK(r.averaging_end_date.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_apo(r);
     REQUIRE(rt.CommodityAveragePriceOptionData.operator bool());

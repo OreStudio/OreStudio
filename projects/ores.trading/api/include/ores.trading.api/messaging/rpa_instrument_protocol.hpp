@@ -42,8 +42,8 @@ struct rpa_instrument_key {
 struct rpa_instrument_write {
     boost::uuids::uuid instrument_id;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string reference_counterparty;
     double participation_rate;
     std::optional<double> protection_fee;

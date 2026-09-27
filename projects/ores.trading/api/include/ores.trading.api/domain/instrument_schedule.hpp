@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -142,12 +143,12 @@ struct instrument_schedule final {
      * The schema requires this member on a rule block and states no equivalent on a date list, so
      * the column is nullable and a dates row leaves it unset.
      */
-    std::optional<std::string> start_date;
+    std::optional<std::chrono::year_month_day> start_date;
 
     /**
      * @brief Last date of the rule block, when the document states one.
      */
-    std::optional<std::string> end_date;
+    std::optional<std::chrono::year_month_day> end_date;
 
     /**
      * @brief The document's spelling of the flag that pulls the end date back to the previous month
@@ -207,12 +208,12 @@ struct instrument_schedule final {
     /**
      * @brief First date of the rule block, stated outright.
      */
-    std::optional<std::string> first_date;
+    std::optional<std::chrono::year_month_day> first_date;
 
     /**
      * @brief Last date of the rule block, stated outright.
      */
-    std::optional<std::string> last_date;
+    std::optional<std::chrono::year_month_day> last_date;
 
     /**
      * @brief True when the rule block drops its first date.

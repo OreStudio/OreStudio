@@ -50,8 +50,8 @@ struct instrument_schedule_write {
     std::string schedule_role;
     int sequence_number;
     std::string schedule_kind;
-    std::optional<std::string> start_date;
-    std::optional<std::string> end_date;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> end_date;
     std::optional<std::string> adjust_end_date_to_previous_month_end;
     std::optional<std::string> tenor;
     std::optional<std::string> calendar;
@@ -60,8 +60,8 @@ struct instrument_schedule_write {
     std::optional<std::string> rule;
     std::optional<std::string> end_of_month;
     std::optional<std::string> end_of_month_convention;
-    std::optional<std::string> first_date;
-    std::optional<std::string> last_date;
+    std::optional<std::chrono::year_month_day> first_date;
+    std::optional<std::chrono::year_month_day> last_date;
     std::optional<bool> remove_first_date;
     std::optional<bool> remove_last_date;
     std::optional<std::string> include_duplicate_dates;

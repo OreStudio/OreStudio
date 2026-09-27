@@ -44,7 +44,7 @@ struct vanilla_swap_instrument_write {
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
     std::chrono::year_month_day start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
     std::optional<int> settlement_lag;
     std::string netting_set_id;
     std::string description;

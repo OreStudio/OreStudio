@@ -53,7 +53,7 @@ generate_synthetic_equity_option_instrument(utility::generation::generation_cont
     r.notional = 775.0;
     r.option_type = std::string("Call");
     r.strike = 2800.0;
-    r.expiry_date = std::string("2025-02-20");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 2 / 20};
     r.exercise_type = std::string("European");
     r.long_short = std::string("Long");
     r.settlement_type = std::string("Cash");

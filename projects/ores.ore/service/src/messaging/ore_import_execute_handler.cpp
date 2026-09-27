@@ -24,6 +24,7 @@
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
@@ -142,6 +143,29 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
         out_error = std::format("Exception calling {}: {}", Req::nats_subject, e.what());
         return std::nullopt;
     }
+}
+
+// The document mirror types carry a date as the ISO spelling the XML
+// states, while the flat protocol writes carry a calendar date. These
+// helpers cross that boundary in both directions; an absent or empty
+// spelling stays an unengaged optional.
+std::optional<std::chrono::year_month_day> parse_date(const std::string& text) {
+    if (text.empty())
+        return std::nullopt;
+    return ores::platform::time::datetime::from_iso8601_date(text);
+}
+
+std::optional<std::chrono::year_month_day>
+parse_optional_date(const std::optional<std::string>& text) {
+    return text ? parse_date(*text) : std::nullopt;
+}
+
+std::string iso_or_empty(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+std::string iso_or_empty(const std::optional<std::chrono::system_clock::time_point>& t) {
+    return t ? ores::platform::time::datetime::to_iso8601_utc(*t) : std::string{};
 }
 
 // The canonical write record carries what the caller owns. The imported
@@ -318,8 +342,8 @@ std::string save_schedule(Nats& nats,
         req.change.write.schedule_role = schedule_role;
         req.change.write.sequence_number = ++sequence_number;
         req.change.write.schedule_kind = "rules";
-        req.change.write.start_date = rule.start_date;
-        req.change.write.end_date = rule.end_date;
+        req.change.write.start_date = parse_date(rule.start_date);
+        req.change.write.end_date = parse_optional_date(rule.end_date);
         req.change.write.adjust_end_date_to_previous_month_end =
             rule.adjust_end_date_to_previous_month_end;
         req.change.write.tenor = rule.tenor;
@@ -329,8 +353,8 @@ std::string save_schedule(Nats& nats,
         req.change.write.rule = rule.rule;
         req.change.write.end_of_month = rule.end_of_month;
         req.change.write.end_of_month_convention = rule.end_of_month_convention;
-        req.change.write.first_date = rule.first_date;
-        req.change.write.last_date = rule.last_date;
+        req.change.write.first_date = parse_optional_date(rule.first_date);
+        req.change.write.last_date = parse_optional_date(rule.last_date);
         req.change.write.remove_first_date = rule.remove_first_date;
         req.change.write.remove_last_date = rule.remove_last_date;
         auto resp = nats_call(nats, req, error);
@@ -364,7 +388,8 @@ std::string save_schedule(Nats& nats,
             date_req.change.write.schedule_role = schedule_role;
             date_req.change.write.schedule_sequence_number = req.change.write.sequence_number;
             date_req.change.write.sequence_number = ++date_number;
-            date_req.change.write.schedule_date = date;
+            date_req.change.write.schedule_date =
+                ores::platform::time::datetime::from_iso8601_date(date);
             auto date_resp = nats_call(nats, date_req, error);
             if (!date_resp || date_resp->result.outcome != ores::utility::domain::outcome::ok)
                 return error.empty() ? "save_instrument_schedule_date failed" : error;
@@ -650,7 +675,7 @@ std::string save_option_block(Nats& nats,
 
         req.change.write.has_exercise_data = block.exercise_data.has_value();
         if (block.exercise_data) {
-            req.change.write.exercise_date = block.exercise_data->date;
+            req.change.write.exercise_date = parse_date(block.exercise_data->date);
             req.change.write.exercise_price = block.exercise_data->price;
         }
 
@@ -681,7 +706,8 @@ std::string save_option_block(Nats& nats,
             child.change.write.sequence_number = ++sequence_number;
             child.change.write.amount = premium.amount;
             child.change.write.currency = premium.currency;
-            child.change.write.pay_date = premium.pay_date;
+            child.change.write.pay_date =
+                ores::platform::time::datetime::from_iso8601_date(premium.pay_date);
             child.change.write.has_settlement = premium.settlement.has_value();
             if (premium.settlement) {
                 child.change.write.settlement_pay_currency = premium.settlement->pay_currency;
@@ -713,7 +739,8 @@ std::string save_option_block(Nats& nats,
                 put_instrument_option_payment_date_request child;
                 child.change.write.instrument_id = instrument_id;
                 child.change.write.sequence_number = ++payment_number;
-                child.change.write.payment_date = date;
+                child.change.write.payment_date =
+                    ores::platform::time::datetime::from_iso8601_date(date);
                 auto child_resp = nats_call(nats, child, error);
                 if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
                     return error.empty() ? "save_instrument_option_payment_date failed" : error;
@@ -1369,10 +1396,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             change.write.netting_set_id = trade.classification.netting_set_id;
             change.write.activity_type_code = trade.classification.activity_type_code;
             change.write.status_id = trade.classification.status_id;
-            change.write.trade_date = trade.lifecycle.trade_date.value_or("");
-            change.write.execution_timestamp = trade.lifecycle.execution_timestamp.value_or("");
-            change.write.effective_date = trade.lifecycle.effective_date.value_or("");
-            change.write.termination_date = trade.lifecycle.termination_date.value_or("");
+            change.write.trade_date = iso_or_empty(trade.lifecycle.trade_date);
+            change.write.execution_timestamp = iso_or_empty(trade.lifecycle.execution_timestamp);
+            change.write.effective_date = iso_or_empty(trade.lifecycle.effective_date);
+            change.write.termination_date = iso_or_empty(trade.lifecycle.termination_date);
             save_req.changes.push_back(std::move(change));
         }
 

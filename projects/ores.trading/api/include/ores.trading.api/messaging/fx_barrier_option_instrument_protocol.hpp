@@ -48,7 +48,7 @@ struct fx_barrier_option_instrument_write {
     std::string sold_currency;
     double sold_amount;
     std::string option_type;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string settlement;
     std::string barrier_type;
     double lower_barrier;

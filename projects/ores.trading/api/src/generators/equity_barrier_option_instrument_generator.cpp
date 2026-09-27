@@ -53,7 +53,7 @@ generate_synthetic_equity_barrier_option_instrument(utility::generation::generat
     r.notional = 1000.0;
     r.option_type = std::string("Call");
     r.strike = 3200.0;
-    r.expiry_date = std::string("2026-08-15");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 8 / 15};
     r.exercise_type = std::string("European");
     r.long_short = std::string("Long");
     r.lower_barrier = 3500.0;

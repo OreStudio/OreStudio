@@ -166,14 +166,14 @@ false
 ** root_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Root date of the contract's expiry basis (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2029-03-01")
+std::chrono::year_month_day{std::chrono::year{2029}/3/1}
 #+end_src
 
 ** expiry_basis
@@ -233,20 +233,20 @@ Lag in days between the expiry basis and the settlement basis.
 ** last_trading_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Last trading date of the contract (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2029-09-27")
+std::chrono::year_month_day{std::chrono::year{2029}/9/27}
 #+end_src
 
 ** last_delivery_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -254,7 +254,7 @@ Last delivery date of the contract (ISO 8601 date string). The ER
 names this the delivery date of the fact row.
 
 #+begin_src cpp :name generator
-std::string("2029-09-28")
+std::chrono::year_month_day{std::chrono::year{2029}/9/28}
 #+end_src
 
 * SQL
@@ -290,6 +290,7 @@ std::string("2029-09-28")
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

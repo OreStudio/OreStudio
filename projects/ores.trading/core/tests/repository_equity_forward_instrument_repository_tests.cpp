@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
@@ -50,7 +51,7 @@ equity_forward_instrument make_instrument(database_helper& h) {
     r.currency = "USD";
     r.quantity = 775.0;
     r.forward_price = 2800.0;
-    r.expiry_date = "2025-02-20";
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2025-02-20");
     r.long_short = "Long";
     r.settlement_type = "";
     r.audit.modified_by = h.db_user();
@@ -83,7 +84,7 @@ TEST_CASE("equity_forward_instrument_write_and_read_latest", tags) {
     CHECK(read[0].currency == "USD");
     CHECK(read[0].quantity == 775.0);
     CHECK(read[0].forward_price == 2800.0);
-    CHECK(read[0].expiry_date == "2025-02-20");
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2025-02-20"));
     CHECK(read[0].long_short == "Long");
     BOOST_LOG_SEV(lg, debug) << "Read equity forward instrument: " << read[0];
 }

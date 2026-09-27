@@ -46,7 +46,7 @@ generate_synthetic_bond_issue_call_date(utility::generation::generation_context&
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.issue_id = ctx.generate_uuid();
     r.sequence_number = 0;
-    r.call_date = std::string("2029-01-15");
+    r.call_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

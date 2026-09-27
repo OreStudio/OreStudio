@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -70,6 +71,20 @@ equity_instrument_variant load_and_map(const std::string& filename) {
 // Phase 4 — vanilla equity
 // ---------------------------------------------------------------------------
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("equity_mapper_roundtrip_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Option_European.xml");
@@ -80,7 +95,7 @@ TEST_CASE("equity_mapper_roundtrip_option", tags) {
     CHECK(!inst.currency.empty());
     CHECK(inst.notional > 0.0);
     CHECK(!inst.option_type.empty());
-    CHECK(!inst.expiry_date.empty());
+    CHECK(inst.expiry_date.ok());
 
     const auto rt = equity_instrument_mapper::reverse_equity_option(inst);
     REQUIRE(rt.EquityOptionData);
@@ -98,7 +113,7 @@ TEST_CASE("equity_mapper_roundtrip_forward", tags) {
     CHECK(!inst.underlying_name.empty());
     CHECK(!inst.currency.empty());
     CHECK(inst.quantity > 0.0);
-    CHECK(!inst.expiry_date.empty());
+    CHECK(inst.expiry_date.ok());
 
     const auto rt = equity_instrument_mapper::reverse_equity_forward(inst);
     REQUIRE(rt.EquityForwardData);
@@ -132,8 +147,8 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
     CHECK(inst.identity.trade_type_code == "EquityVarianceSwap");
     CHECK(!inst.underlying_name.empty());
     CHECK(inst.variance_strike > 0.0);
-    CHECK(!inst.start_date.empty());
-    CHECK(!inst.maturity_date.empty());
+    CHECK(inst.start_date.ok());
+    CHECK(inst.maturity_date.ok());
 
     const auto rt = equity_instrument_mapper::reverse_equity_variance_swap(inst);
     REQUIRE(rt.EquityVarianceSwapData);
@@ -167,7 +182,7 @@ TEST_CASE("equity_mapper_roundtrip_asian_option", tags) {
     CHECK(inst.identity.trade_type_code == "EquityAsianOption");
     CHECK(!inst.underlying_name.empty());
     CHECK(inst.strike > 0.0);
-    CHECK(!inst.averaging_start_date.empty());
+    CHECK(inst.averaging_start_date.ok());
 
     const auto rt = equity_instrument_mapper::reverse_equity_asian_option(inst);
     REQUIRE(rt.EquityAsianOptionData);

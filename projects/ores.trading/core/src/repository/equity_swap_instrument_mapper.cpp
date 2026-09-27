@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/equity_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -52,8 +54,8 @@ equity_swap_instrument_mapper::map(const equity_swap_instrument_entity& v) {
     r.currency = v.currency;
     r.notional = v.notional;
     r.return_type = v.return_type;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
     r.payment_frequency = v.payment_frequency;
     r.description = v.description.value_or("");
@@ -86,8 +88,8 @@ equity_swap_instrument_mapper::map(const domain::equity_swap_instrument& v) {
     r.currency = v.currency;
     r.notional = v.notional;
     r.return_type = v.return_type;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
     r.payment_frequency = v.payment_frequency;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

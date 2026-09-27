@@ -47,8 +47,10 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
     fields.push_back({.name = "Spread", .value = std::to_string(v.spread)});
     fields.push_back({.name = "Recovery Rate", .value = std::to_string(v.recovery_rate)});
     fields.push_back({.name = "Tenor", .value = v.tenor});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Day Count Code", .value = v.day_count_code});
     fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
     fields.push_back({.name = "Index Name", .value = v.index_name});
@@ -58,7 +60,11 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
     fields.push_back({.name = "Restructuring", .value = v.restructuring});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Option Type", .value = v.option_type});
-    fields.push_back({.name = "Option Expiry Date", .value = v.option_expiry_date});
+    fields.push_back(
+        {.name = "Option Expiry Date",
+         .value = v.option_expiry_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.option_expiry_date) :
+                      std::string{}});
     fields.push_back({.name = "Option Strike",
                       .value = v.option_strike ? std::to_string(*v.option_strike) : std::string{}});
     fields.push_back({.name = "Linked Asset Code", .value = v.linked_asset_code});

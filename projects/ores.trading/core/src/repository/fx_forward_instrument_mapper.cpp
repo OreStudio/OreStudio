@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/fx_forward_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -51,7 +53,7 @@ fx_forward_instrument_mapper::map(const fx_forward_instrument_entity& v) {
     r.bought_amount = v.bought_amount;
     r.sold_currency = v.sold_currency;
     r.sold_amount = v.sold_amount;
-    r.value_date = v.value_date;
+    r.value_date = ores::platform::time::datetime::from_iso8601_date(v.value_date);
     r.settlement = v.settlement.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -82,7 +84,7 @@ fx_forward_instrument_mapper::map(const domain::fx_forward_instrument& v) {
     r.bought_amount = v.bought_amount;
     r.sold_currency = v.sold_currency;
     r.sold_amount = v.sold_amount;
-    r.value_date = v.value_date;
+    r.value_date = ores::platform::time::datetime::to_iso8601_date(v.value_date);
     r.settlement = v.settlement.empty() ? std::nullopt : std::optional(v.settlement);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

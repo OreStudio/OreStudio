@@ -47,14 +47,14 @@ struct cap_floor_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Cap/floor maturity date.
      *
      * Must be after start_date.
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Optional free-text description.

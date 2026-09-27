@@ -47,6 +47,7 @@ generate_synthetic_instrument_option(utility::generation::generation_context& ct
     r.instrument_id = ctx.generate_uuid();
     r.long_short = std::string("Long");
     r.has_exercise_data = true;
+    r.exercise_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.has_payment_data = true;
     r.has_settlement_data = true;
     r.modified_by = modified_by;

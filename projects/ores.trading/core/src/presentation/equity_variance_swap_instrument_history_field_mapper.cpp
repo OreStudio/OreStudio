@@ -45,8 +45,10 @@ render_equity_variance_swap_instrument_fields(const domain::equity_variance_swap
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
     fields.push_back({.name = "Variance Strike", .value = std::to_string(v.variance_strike)});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;

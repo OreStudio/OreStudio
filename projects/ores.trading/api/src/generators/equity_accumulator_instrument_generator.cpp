@@ -52,8 +52,8 @@ generate_synthetic_equity_accumulator_instrument(utility::generation::generation
     r.currency = std::string("EUR");
     r.strike = 4000.0;
     r.fixing_amount = 30.0;
-    r.start_date = std::string("2025-02-05");
-    r.expiry_date = std::string("2026-02-05");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2025} / 2 / 5};
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 2 / 5};
     r.fixing_frequency = std::string("Monthly");
     r.long_short = std::string("Long");
     r.payoff_type = std::string("Decumulator");

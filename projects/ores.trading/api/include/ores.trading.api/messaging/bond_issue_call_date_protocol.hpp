@@ -43,7 +43,7 @@ struct bond_issue_call_date_key {
 struct bond_issue_call_date_write {
     boost::uuids::uuid issue_id;
     int sequence_number;
-    std::string call_date;
+    std::chrono::year_month_day call_date;
 };
 
 struct bond_issue_call_date_change {

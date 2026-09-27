@@ -47,8 +47,8 @@ generate_synthetic_rpa_instrument(utility::generation::generation_context& ctx) 
     r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
-    r.start_date = std::string("2024-01-15");
-    r.maturity_date = std::string("2027-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2027} / 1 / 15};
     r.reference_counterparty = std::string("ACME Corp");
     r.participation_rate = 0.5;
     r.audit.modified_by = modified_by;

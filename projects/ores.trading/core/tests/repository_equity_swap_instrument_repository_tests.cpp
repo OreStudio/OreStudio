@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
@@ -51,8 +52,8 @@ equity_swap_instrument make_instrument(database_helper& h) {
     r.currency = "USD";
     r.notional = 2000000.0;
     r.return_type = "TotalReturn";
-    r.start_date = "2025-10-16";
-    r.maturity_date = "2025-12-31";
+    r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-10-16");
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date("2025-12-31");
     r.long_short = "Long";
     r.payment_frequency = "Monthly";
     r.audit.modified_by = h.db_user();
@@ -85,8 +86,8 @@ TEST_CASE("equity_swap_instrument_write_and_read_latest", tags) {
     CHECK(read[0].currency == "USD");
     CHECK(read[0].notional == 2000000.0);
     CHECK(read[0].return_type == "TotalReturn");
-    CHECK(read[0].start_date == "2025-10-16");
-    CHECK(read[0].maturity_date == "2025-12-31");
+    CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-10-16"));
+    CHECK(read[0].maturity_date == ores::platform::time::datetime::from_iso8601_date("2025-12-31"));
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].payment_frequency == "Monthly");
     BOOST_LOG_SEV(lg, debug) << "Read equity swap instrument: " << read[0];

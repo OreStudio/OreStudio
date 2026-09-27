@@ -47,8 +47,8 @@ struct equity_variance_swap_instrument_write {
     std::string currency;
     double notional;
     double variance_strike;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string long_short;
     std::string description;
 };

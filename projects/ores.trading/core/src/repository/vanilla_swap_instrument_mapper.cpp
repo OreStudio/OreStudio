@@ -50,7 +50,7 @@ vanilla_swap_instrument_mapper::map(const vanilla_swap_instrument_entity& v) {
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
-    r.maturity_date = v.maturity_date;
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.settlement_lag = v.settlement_lag;
     r.netting_set_id = v.netting_set_id.value_or("");
     r.description = v.description.value_or("");
@@ -79,7 +79,7 @@ vanilla_swap_instrument_mapper::map(const domain::vanilla_swap_instrument& v) {
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
-    r.maturity_date = v.maturity_date;
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.settlement_lag = v.settlement_lag;
     r.netting_set_id = v.netting_set_id.empty() ? std::nullopt : std::optional(v.netting_set_id);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

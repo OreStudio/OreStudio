@@ -53,8 +53,8 @@ generate_synthetic_equity_swap_instrument(utility::generation::generation_contex
     r.currency = std::string("USD");
     r.notional = 1000000.0;
     r.return_type = std::string("TotalReturn");
-    r.start_date = std::string("2024-01-15");
-    r.maturity_date = std::string("2026-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.long_short = std::string("Long");
     r.payment_frequency = std::string("Quarterly");
     r.audit.modified_by = modified_by;

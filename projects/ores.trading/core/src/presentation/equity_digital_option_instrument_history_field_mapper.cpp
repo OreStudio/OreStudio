@@ -50,7 +50,8 @@ render_equity_digital_option_instrument_fields(const domain::equity_digital_opti
     fields.push_back({.name = "Barrier Level",
                       .value = v.barrier_level ? std::to_string(*v.barrier_level) : std::string{}});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Payout Amount",
                       .value = v.payout_amount ? std::to_string(*v.payout_amount) : std::string{}});

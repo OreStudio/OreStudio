@@ -48,7 +48,7 @@ struct fx_asian_forward_instrument_write {
     std::optional<double> reference_notional;
     std::string settlement_currency;
     std::optional<double> settlement_notional;
-    std::string payment_date;
+    std::optional<std::chrono::year_month_day> payment_date;
     std::string long_short;
     std::string currency;
     std::optional<double> fixing_amount;

@@ -47,8 +47,8 @@ struct equity_accumulator_instrument_write {
     std::string currency;
     double strike;
     double fixing_amount;
-    std::string start_date;
-    std::string expiry_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day expiry_date;
     std::string fixing_frequency;
     std::string long_short;
     std::optional<double> knock_out_level;

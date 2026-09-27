@@ -251,7 +251,7 @@ Date the trade was agreed.
 ISO 8601 date: YYYY-MM-DD.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** execution_timestamp
@@ -266,7 +266,7 @@ Timestamp when the trade was executed (with timezone).
 ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15 10:00:00")
+ctx.past_timepoint()
 #+end_src
 
 ** effective_date
@@ -281,7 +281,7 @@ Date from which the trade is effective.
 ISO 8601 date: YYYY-MM-DD.
 
 #+begin_src cpp :name generator
-std::string("2025-01-16")
+std::chrono::year_month_day{std::chrono::year{2025}/1/16}
 #+end_src
 
 ** termination_date
@@ -296,7 +296,7 @@ Date on which the trade matures or terminates.
 ISO 8601 date: YYYY-MM-DD.
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 * Foreign keys

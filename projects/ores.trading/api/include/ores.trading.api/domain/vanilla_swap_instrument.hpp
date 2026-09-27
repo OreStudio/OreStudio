@@ -54,7 +54,7 @@ struct vanilla_swap_instrument final {
      *
      * Must be after start_date.
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Optional settlement lag in business days.

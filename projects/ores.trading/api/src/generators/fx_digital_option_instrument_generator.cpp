@@ -53,7 +53,7 @@ generate_synthetic_fx_digital_option_instrument(utility::generation::generation_
     r.payoff_currency = std::string("EUR");
     r.payoff_amount = 100.0;
     r.option_type = std::string("Call");
-    r.expiry_date = std::string("2033-02-20");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2033} / 2 / 20};
     r.long_short = std::string("Long");
     r.strike = 1.1;
     r.audit.modified_by = modified_by;

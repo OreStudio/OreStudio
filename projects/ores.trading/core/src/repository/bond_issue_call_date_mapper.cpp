@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/bond_issue_call_date_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -42,7 +44,7 @@ bond_issue_call_date_mapper::map(const bond_issue_call_date_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
-    r.call_date = v.call_date;
+    r.call_date = ores::platform::time::datetime::from_iso8601_date(v.call_date);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -62,7 +64,7 @@ bond_issue_call_date_mapper::map(const domain::bond_issue_call_date& v) {
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.call_date = v.call_date;
+    r.call_date = ores::platform::time::datetime::to_iso8601_date(v.call_date);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

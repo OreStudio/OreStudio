@@ -98,7 +98,7 @@ std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timep
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -107,7 +107,7 @@ Swap maturity/termination date.
 Must be after start_date.
 
 #+begin_src cpp :name generator
-std::string("2029-01-15")
+std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 #+end_src
 
 ** settlement_lag

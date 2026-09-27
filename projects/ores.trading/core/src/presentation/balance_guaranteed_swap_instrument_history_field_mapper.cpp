@@ -41,8 +41,10 @@ std::vector<ores::diff::domain::field_value> render_balance_guaranteed_swap_inst
     fields.push_back({.name = "Trade ID",
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Lockout Days",
                       .value = v.lockout_days ? std::to_string(*v.lockout_days) : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});

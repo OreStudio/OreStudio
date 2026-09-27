@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -200,7 +201,7 @@ struct instrument_option final {
      * The schema types this member as a date, so the generated reader has already parsed it and the
      * writer re-emits a canonical form. A date column therefore carries the member whole.
      */
-    std::optional<std::string> exercise_date;
+    std::optional<std::chrono::year_month_day> exercise_date;
 
     /**
      * @brief Price the exercise block states, when it states one.

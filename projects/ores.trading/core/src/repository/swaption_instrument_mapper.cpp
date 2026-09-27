@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/swaption_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/swaption_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -46,12 +48,18 @@ domain::swaption_instrument swaption_instrument_mapper::map(const swaption_instr
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.settlement_type = v.settlement_type;
     r.long_short = v.long_short;
-    r.start_date = v.start_date.value_or("");
-    r.maturity_date = v.maturity_date.value_or("");
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
+            std::nullopt;
+    r.maturity_date =
+        v.maturity_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.maturity_date)) :
+            std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -76,12 +84,18 @@ swaption_instrument_entity swaption_instrument_mapper::map(const domain::swaptio
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.expiry_date = v.expiry_date;
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.settlement_type = v.settlement_type;
     r.long_short = v.long_short;
-    r.start_date = v.start_date.empty() ? std::nullopt : std::optional(v.start_date);
-    r.maturity_date = v.maturity_date.empty() ? std::nullopt : std::optional(v.maturity_date);
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
+            std::nullopt;
+    r.maturity_date =
+        v.maturity_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.maturity_date)) :
+            std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

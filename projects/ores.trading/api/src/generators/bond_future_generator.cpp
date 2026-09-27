@@ -53,13 +53,13 @@ domain::bond_future generate_synthetic_bond_future(utility::generation::generati
     r.fair_price = 98.5;
     r.settlement = std::string("Cash");
     r.settlement_dirty = false;
-    r.root_date = std::string("2029-03-01");
+    r.root_date = std::chrono::year_month_day{std::chrono::year{2029} / 3 / 1};
     r.expiry_basis = std::string("Futures");
     r.settlement_basis = std::string("Futures");
     r.expiry_lag = 1;
     r.settlement_lag = 2;
-    r.last_trading_date = std::string("2029-09-27");
-    r.last_delivery_date = std::string("2029-09-28");
+    r.last_trading_date = std::chrono::year_month_day{std::chrono::year{2029} / 9 / 27};
+    r.last_delivery_date = std::chrono::year_month_day{std::chrono::year{2029} / 9 / 28};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

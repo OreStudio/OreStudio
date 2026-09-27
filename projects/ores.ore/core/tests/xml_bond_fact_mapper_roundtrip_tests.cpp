@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -85,6 +86,20 @@ bond_instrument_data map_inline(const std::string& xml) {
 // The coupon leg keeps its own schedule
 // =============================================================================
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags) {
     auto lg(make_logger(test_suite));
 
@@ -133,7 +148,7 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    CHECK(r.issue.issue_date == "2025-02-01");
+    CHECK(ore_iso(r.issue.issue_date) == "2025-02-01");
     CHECK(r.issue.coupon_frequency_code == "1Y");
 
     REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
@@ -691,7 +706,7 @@ TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {
 )";
     const auto r = map_inline(xml);
     CHECK(r.instrument.identity.trade_type_code == "ForwardBond");
-    CHECK(r.issue.issue_date == "2025-02-01");
+    CHECK(ore_iso(r.issue.issue_date) == "2025-02-01");
 
     const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
     REQUIRE(rt.ForwardBondData);
@@ -1603,9 +1618,9 @@ TEST_CASE("callable_bond_call_dates_become_rows", tags) {
     CHECK(r.instrument.identity.trade_type_code == "CallableBond");
     REQUIRE(r.call_dates.size() == 2);
     CHECK(r.call_dates[0].sequence_number == 1);
-    CHECK(r.call_dates[0].call_date == "2024-05-01");
+    CHECK(ore_iso(r.call_dates[0].call_date) == "2024-05-01");
     CHECK(r.call_dates[1].sequence_number == 2);
-    CHECK(r.call_dates[1].call_date == "2027-04-01");
+    CHECK(ore_iso(r.call_dates[1].call_date) == "2027-04-01");
     CHECK(r.call_dates[0].issue_id == r.issue.issue_id);
     CHECK(r.call_dates[1].issue_id == r.issue.issue_id);
     CHECK(r.call_dates[0].modified_by == "ores");

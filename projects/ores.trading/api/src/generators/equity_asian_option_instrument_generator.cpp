@@ -53,12 +53,12 @@ generate_synthetic_equity_asian_option_instrument(utility::generation::generatio
     r.notional = 1.0;
     r.option_type = std::string("Call");
     r.strike = 3100.0;
-    r.expiry_date = std::string("2026-01-28");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 28};
     r.exercise_type = std::string("European");
     r.long_short = std::string("Long");
     r.average_type = std::string("Arithmetic");
-    r.averaging_start_date = std::string("2025-07-12");
-    r.averaging_end_date = std::string("2026-01-19");
+    r.averaging_start_date = std::chrono::year_month_day{std::chrono::year{2025} / 7 / 12};
+    r.averaging_end_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 19};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

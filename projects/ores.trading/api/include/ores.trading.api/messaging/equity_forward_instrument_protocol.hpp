@@ -47,7 +47,7 @@ struct equity_forward_instrument_write {
     std::string currency;
     double quantity;
     std::optional<double> forward_price;
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
     std::string long_short;
     std::string settlement_type;
     std::string description;

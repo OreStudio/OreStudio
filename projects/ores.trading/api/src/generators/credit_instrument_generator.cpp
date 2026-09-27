@@ -54,10 +54,11 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.spread = 100.0;
     r.recovery_rate = 0.4;
     r.tenor = std::string("5Y");
-    r.start_date = std::string("2026-01-15");
-    r.maturity_date = std::string("2031-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2031} / 1 / 15};
     r.day_count_code = std::string("Actual365Fixed");
     r.payment_frequency_code = std::string("Quarterly");
+    r.option_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

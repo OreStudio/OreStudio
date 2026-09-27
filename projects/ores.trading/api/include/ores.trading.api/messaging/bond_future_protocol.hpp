@@ -50,13 +50,13 @@ struct bond_future_write {
     double fair_price;
     std::string settlement;
     bool settlement_dirty;
-    std::string root_date;
+    std::optional<std::chrono::year_month_day> root_date;
     std::string expiry_basis;
     std::string settlement_basis;
     int expiry_lag;
     int settlement_lag;
-    std::string last_trading_date;
-    std::string last_delivery_date;
+    std::chrono::year_month_day last_trading_date;
+    std::chrono::year_month_day last_delivery_date;
 };
 
 struct bond_future_change {

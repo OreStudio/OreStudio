@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/instrument_option_premium_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/instrument_option_premium_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -44,7 +46,7 @@ instrument_option_premium_mapper::map(const instrument_option_premium_entity& v)
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.amount = v.amount;
     r.currency = v.currency;
-    r.pay_date = v.pay_date;
+    r.pay_date = ores::platform::time::datetime::from_iso8601_date(v.pay_date);
     r.has_settlement = v.has_settlement;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
@@ -70,7 +72,7 @@ instrument_option_premium_mapper::map(const domain::instrument_option_premium& v
     r.version = v.version;
     r.amount = v.amount;
     r.currency = v.currency;
-    r.pay_date = v.pay_date;
+    r.pay_date = ores::platform::time::datetime::to_iso8601_date(v.pay_date);
     r.has_settlement = v.has_settlement;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;

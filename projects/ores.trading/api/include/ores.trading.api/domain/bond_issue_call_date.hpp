@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -73,7 +74,7 @@ struct bond_issue_call_date final {
     /**
      * @brief The call date (ISO 8601 date string).
      */
-    std::string call_date;
+    std::chrono::year_month_day call_date;
 
     /**
      * @brief Username of the person who last modified this bond issue call date.

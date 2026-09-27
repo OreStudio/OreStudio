@@ -48,8 +48,8 @@ struct equity_swap_instrument_write {
     std::string currency;
     double notional;
     std::string return_type;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string long_short;
     std::string payment_frequency;
     std::string description;

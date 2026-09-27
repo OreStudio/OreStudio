@@ -39,7 +39,6 @@
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
-#include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
@@ -491,28 +490,6 @@ public:
             failure.result.message = e.what();
             reply(nats_, msg, failure);
         }
-    }
-
-    void list_activity_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        // Activity types are system-level configuration; look them up under
-        // the system tenant so all tenants see the same standard set.
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::activity_type_service svc(sys_ctx);
-        get_activity_types_response resp;
-        try {
-            resp.activity_types = svc.list_types();
-        } catch (...) {
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
     }
 
     void instrument(ores::nats::message msg) {

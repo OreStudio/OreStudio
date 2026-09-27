@@ -19,25 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.hpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_TABLE_IO_HPP
-#define ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_TABLE_IO_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_ACTIVITY_TYPE_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_ACTIVITY_TYPE_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/activity_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Dumps the activity_type objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<activity_type>& v);
+std::vector<ores::nats::service::subscription>
+register_activity_type_handlers(ores::nats::service::client& nats,
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

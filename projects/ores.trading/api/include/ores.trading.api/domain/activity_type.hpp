@@ -17,27 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_ACTIVITY_TYPE_HPP
-#define ORES_TRADING_DOMAIN_ACTIVITY_TYPE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_HPP
+#define ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Internal trade activity classification.
+ * @brief Internal trade activity classification (e.g. new_booking, amendment, novation).
  *
- * Each activity type classifies what happened to a trade (e.g. new_booking,
- * amendment, novation). It optionally maps to an FpML event type code for
- * wire-format messages, and optionally links to an FSM transition that drives
- * the trade's operational status change.
+ * Internal trade activity classification. Each activity type states what
+ * happened to a trade (e.g. new_booking, amendment, novation). It optionally
+ * maps to an FpML event type code for wire-format messages, and optionally
+ * links to an FSM transition that drives the trade's operational status
+ * change.
  *
- * Category values: new_activity, lifecycle_event, misbooking,
- *                  valuation_change, cancellation.
+ * The table is bi-temporal and audited: it carries version, the four audit
+ * columns and the valid_from/valid_to pair with the GIST exclusion and the
+ * delete rule, so the model takes the ordinary audited shape and needs no
+ * shape flag.
  */
 struct activity_type final {
     /**
@@ -51,20 +60,21 @@ struct activity_type final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique activity type code (e.g. 'new_booking', 'novation').
+     * @brief Unique activity type code.
+     *
+     * Examples: 'new_booking', 'amendment', 'novation'.
      */
     std::string code;
 
     /**
      * @brief High-level category grouping this activity type.
      *
-     * One of: new_activity, lifecycle_event, misbooking,
-     *         valuation_change, cancellation.
+     * One of: new_activity, lifecycle_event, misbooking, valuation_change, cancellation.
      */
     std::string category;
 
     /**
-     * @brief Whether this activity type requires counterparty confirmation.
+     * @brief True when this activity type requires counterparty confirmation.
      */
     bool requires_confirmation = false;
 
@@ -76,19 +86,19 @@ struct activity_type final {
     /**
      * @brief Optional FpML event type code for wire-format mapping.
      *
-     * Soft FK to ores_trading_fpml_event_types_tbl. Empty if no FpML equivalent.
+     * Soft FK to ores_trading_fpml_event_types_tbl. Empty when no FpML equivalent is stated.
      */
     std::string fpml_event_type_code;
 
     /**
      * @brief Optional FSM transition that this activity triggers.
      *
-     * Soft FK to ores_dq_fsm_transitions_tbl. Nil UUID if no status change.
+     * Soft FK to ores_dq_fsm_transitions_tbl. Null when the activity drives no status change.
      */
     std::optional<boost::uuids::uuid> fsm_transition_id;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this activity type.
      */
     std::string modified_by;
 
@@ -111,9 +121,37 @@ struct activity_type final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const activity_type&, const activity_type&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for activity_type, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const activity_type&) {
+    return "ores.trading.activity_type";
+}
 
 }
 

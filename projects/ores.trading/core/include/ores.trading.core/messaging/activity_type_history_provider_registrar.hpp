@@ -19,25 +19,18 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.hpp.mustache
+ * Template: cpp_history_provider_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_TABLE_IO_HPP
-#define ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_TABLE_IO_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_ACTIVITY_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_ACTIVITY_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/activity_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Dumps the activity_type objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<activity_type>& v);
+void register_activity_type_history_provider(ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

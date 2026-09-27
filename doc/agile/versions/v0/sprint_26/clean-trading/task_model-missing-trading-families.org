@@ -370,6 +370,28 @@ the readiness check waits on units that can never become ready.
 On the fixed main the rebuild needs no workaround, the default build
 exits zero, and the fleet reaches twenty-four units in two seconds.
 
+** 2e. The ports, one at a time
+
+Each port is one commit: the model, its regeneration, its consumers, and
+the proof.
+
+| Family               | Profile             | Model                                  | State |
+|----------------------+---------------------+----------------------------------------+-------|
+| commodity_instrument | trading-instrument  | ores.trading.commodity_instrument.org  | Done: build green, eight suites pass, drift empty |
+| activity_type        | simple-lookup       | ores.trading.activity_type.org         | Done: build green, eight suites pass, drift empty |
+| fpml_event_type      | simple-lookup       | --                                     | Next |
+| composite_instrument | trading-instrument  | --                                     | Pending |
+| composite_leg        | trading-instrument  | --                                     | Pending |
+| credit_instrument    | trading-instrument  | --                                     | Pending |
+| scripted_instrument  | trading-instrument  | --                                     | Pending |
+| swap_leg             | trading-instrument  | --                                     | Pending |
+
+A port rewrites its family's generated SQL, and the notify trigger's
+payload changes with it, so the development database takes the
+regenerated create and trigger scripts before the eventing suites pass. A
+=compass db recreate -y -k= does that. The port itself needs no database
+change to build.
+
 ** 3. Classify the unmodelled hand-written domain types
 
 Done. Measured 2026-09-27. The twenty-four types fall into four states,

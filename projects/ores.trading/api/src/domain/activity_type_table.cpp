@@ -17,25 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/activity_type_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
+
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<activity_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "version" << "code" << "category" << "requires_confirmation"
-          << "description" << "fpml_event_type_code" << "fsm_transition_id" << "modified_by"
-          << fort::endr;
+    table << fort::header << "Code" << "Category" << "Requires Confirmation" << "Description"
+          << "FpML Event Type" << "FSM Transition ID" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& at : v) {
-        table << at.version << at.code << at.category << at.requires_confirmation << at.description
-              << at.fpml_event_type_code
-              << (at.fsm_transition_id ? boost::uuids::to_string(*at.fsm_transition_id) : "")
-              << at.modified_by << fort::endr;
+    for ([[maybe_unused]] const auto& at : v) {
+        table << at.code << at.category << (at.requires_confirmation ? "true" : "false")
+              << at.description << at.fpml_event_type_code << opt_str(at.fsm_transition_id)
+              << at.modified_by << at.version << fort::endr;
     }
     return table.to_string();
 }

@@ -25,7 +25,6 @@
 #ifndef ORES_TRADING_API_MESSAGING_TRADE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_TRADE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
@@ -289,15 +288,6 @@ inline constexpr std::string_view created = "trading.v1.trades_events.created";
 inline constexpr std::string_view updated = "trading.v1.trades_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.trades_events.deleted";
 }
-
-struct get_activity_types_request {
-    using response_type = struct get_activity_types_response;
-    static constexpr std::string_view nats_subject = "trading.v1.activity_types.list";
-};
-
-struct get_activity_types_response {
-    std::vector<ores::trading::domain::activity_type> activity_types;
-};
 
 /**
  * @brief One trade plus its resolved instrument data.

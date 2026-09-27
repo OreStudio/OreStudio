@@ -20,6 +20,8 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "messaging/activity_type_history_provider_registrar.cpp"
+    "messaging/activity_type_registrar.cpp"
     "messaging/ascot_history_provider_registrar.cpp"
     "messaging/ascot_registrar.cpp"
     "messaging/balance_guaranteed_swap_instrument_registrar.cpp"
@@ -119,6 +121,7 @@ set(files
     "messaging/trade_type_history_provider_registrar.cpp"
     "messaging/trade_type_registrar.cpp"
     "messaging/vanilla_swap_instrument_registrar.cpp"
+    "presentation/activity_type_history_field_mapper.cpp"
     "presentation/ascot_history_field_mapper.cpp"
     "presentation/balance_guaranteed_swap_instrument_history_field_mapper.cpp"
     "presentation/bond_forward_history_field_mapper.cpp"
@@ -443,6 +446,9 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/activity_type_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/activity_type_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/activity_type_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/ascot_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/ascot_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/ascot_registrar.hpp"
@@ -596,6 +602,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/vanilla_swap_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/vanilla_swap_instrument_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/ores.trading.core.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/activity_type_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/ascot_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/balance_guaranteed_swap_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/bond_forward_history_field_mapper.hpp"

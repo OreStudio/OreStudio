@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
+#include "ores.shell/app/commands/trading/activity_type_commands.hpp"
 #include "ores.shell/app/commands/trading/balance_guaranteed_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/bond_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
@@ -65,6 +66,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session,
                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
+    activity_type_commands::register_commands(root_menu, session);
     balance_guaranteed_swap_instrument_commands::register_commands(root_menu, session);
     bond_instrument_commands::register_commands(root_menu, session);
     callable_swap_instrument_commands::register_commands(root_menu, session);

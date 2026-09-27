@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: 9695568B-0A54-4DEE-952A-EC284ED635C7
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.activity_type
+#+description: Codegen entity model for the trading =activity_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Internal trade activity classification (e.g. new_booking, amendment, novation).
+#+entity_singular: activity_type
+#+entity_plural: activity_types
+#+entity_title: Activity Type
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Internal trade activity classification. Each activity type states what
+happened to a trade (e.g. new_booking, amendment, novation). It optionally
+maps to an FpML event type code for wire-format messages, and optionally
+links to an FSM transition that drives the trade's operational status
+change.
+
+The table is bi-temporal and audited: it carries =version=, the four audit
+columns and the =valid_from=/=valid_to= pair with the GIST exclusion and the
+delete rule, so the model takes the ordinary audited shape and needs no
+shape flag.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Natural keys
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique activity type code.
+
+Examples: 'new_booking', 'amendment', 'novation'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_activity"
+#+end_src
+
+** category
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+High-level category grouping this activity type.
+
+One of: new_activity, lifecycle_event, misbooking, valuation_change,
+cancellation.
+
+#+begin_src cpp :name generator
+std::string("new_activity")
+#+end_src
+
+** requires_confirmation
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+True when this activity type requires counterparty confirmation.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the activity type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** fpml_event_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional FpML event type code for wire-format mapping.
+
+Soft FK to ores_trading_fpml_event_types_tbl. Empty when no FpML equivalent
+is stated.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** fsm_transition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional FSM transition that this activity triggers.
+
+Soft FK to ores_dq_fsm_transitions_tbl. Null when the activity drives no
+status change.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_activity_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_activity_type_fn;
+#+end_src
+
+** Checks
+
+| expression |
+|---|
+| "category" in ('new_activity', 'lifecycle_event', 'misbooking', 'valuation_change', 'cancellation') |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column                | validation_function                  |
+|-----------------------+--------------------------------------|
+| fpml_event_type_code  | ores_trading_validate_fpml_event_type_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: activity_type
+:entity_plural_short:   activity_types
+:entity_singular_words: activity type
+:entity_plural_words:   activity types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column                | header                |
+|-----------------------+-----------------------|
+| code                  | Code                  |
+| category              | Category              |
+| requires_confirmation | Requires Confirmation |
+| description           | Description           |
+| fpml_event_type_code  | FpML Event Type       |
+| fsm_transition_id     | FSM Transition ID     |
+| modified_by           | Modified By           |
+| version               | Version               |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

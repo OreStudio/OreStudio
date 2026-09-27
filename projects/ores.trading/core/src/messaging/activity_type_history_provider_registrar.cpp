@@ -19,25 +19,25 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.hpp.mustache
+ * Template: cpp_history_provider_registrar.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_TABLE_IO_HPP
-#define ORES_TRADING_API_DOMAIN_ACTIVITY_TYPE_TABLE_IO_HPP
+#include "ores.trading.core/messaging/activity_type_history_provider_registrar.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.trading.core/presentation/activity_type_history_field_mapper.hpp"
+#include "ores.trading.core/service/activity_type_service.hpp"
 
-#include "ores.trading.api/domain/activity_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+namespace ores::trading::messaging {
 
-namespace ores::trading::domain {
-
-/**
- * @brief Dumps the activity_type objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<activity_type>& v);
-
+void register_activity_type_history_provider(ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.trading.activity_type",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::activity_type_service svc(scoped_ctx);
+            auto versions = svc.get_activity_type_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_activity_type_fields);
+        });
 }
 
-#endif
+} // namespace ores::trading::messaging

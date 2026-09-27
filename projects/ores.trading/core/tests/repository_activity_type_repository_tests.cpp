@@ -35,7 +35,7 @@ const std::string tags("[repository]");
 }
 
 using namespace ores::logging;
-using namespace ores::trading::generator;
+using namespace ores::trading::generators;
 
 using ores::testing::database_helper;
 using ores::trading::repository::activity_type_repository;

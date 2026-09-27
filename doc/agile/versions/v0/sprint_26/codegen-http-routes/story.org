@@ -70,12 +70,13 @@ generated entity route answered 401 without a token, a generated public
 operation answered 200, an unexposed operation answered 404, and an
 unknown path answered 404.
 
-Three failures remain and none belongs to this story. The whole tree does
-not build: =ores.trading.core= and =ores.workflow.core= include
+Three failures remained and none belonged to this story. The whole tree
+did not build: =ores.trading.core= and =ores.workflow.core= included
 =ores.dq.api/messaging/fsm_protocol.hpp=, which =dd131c388b= split into
 =fsm_state_protocol.hpp= and =fsm_transition_protocol.hpp= without
-migrating the including sites. Two other components own those files, so
-the repair goes there. =regenerate_cmake_component_files.py --all
+migrating the including sites. Two other components owned those files, so
+the repair went there, and main has since repaired it: the whole tree
+builds again. =regenerate_cmake_component_files.py --all
 --check= reports stale lists in =ores.workspace=. =ores.iam.core.tests=
 fails against the restored database because its stored
 =ores_iam_accounts_insert_fn()= predates the tree's SQL and reads a
@@ -125,12 +126,13 @@ Recorded rather than done, each with its reason:
   to generate from.
 - =variability= keeps its one route hand-written. It has no models, so it
   has nothing for the facet to read.
-- The whole tree build. It fails on a pre-existing break in other
-  components: =ores.trading.core= and =ores.workflow.core= include
+- The whole tree build, at the time. It failed on a pre-existing break in
+  other components: =ores.trading.core= and =ores.workflow.core= included
   =ores.dq.api/messaging/fsm_protocol.hpp=, which =dd131c388b= split into
   two headers and did not migrate the including sites. Both components
-  have active owners, so the repair belongs there. No CI job builds the
-  tree, which is how main broke without a check noticing.
+  had active owners, so the repair belonged there, and main has since
+  repaired it. No CI job builds the tree, which is how main broke without
+  a check noticing.
 - The trade and market series export handlers carry the reporting service's token, not the end user's, because the reporting service calls them without delegation. Authorization there is service-level; propagating the caller needs a reporting-side change.
 - The compute wrapper has its own HTTP client and holds no JWT, so its storage transfers still receive 401. No credential exists to give it.
 - A trailing ={key}= GET shadows the versions path beneath it, so =/roles/{name}= hides =/roles/{name}/versions=. Assets has the same shape with images. Pre-existing and worth its own fix.

@@ -93,10 +93,23 @@ mismatch compare_matrices(const creditsimulation& original,
         const auto original_grid = parse_credit_simulation_grid(l.Data);
         const auto exported_grid = parse_credit_simulation_grid(r.Data);
 
-        // The state labels cannot be compared here. The binding strips XML
-        // comments when it loads a document, so a grid parsed out of either
-        // side never carries labels at all; the comment the mapper writes is
-        // checked against the serialised text in require_in_memory_roundtrip.
+        // The binding drops the document's own comment on load, so the
+        // exported comment is compared against the fixed scale instead.
+        if (exported_grid.labels.size() != credit_rating_scale.size())
+            return {false,
+                    describe(path,
+                             "matrix '" + std::string(l.Name) + "' exported label count differs: " +
+                                 std::to_string(exported_grid.labels.size()) + ", expected " +
+                                 std::to_string(credit_rating_scale.size()))};
+        for (std::size_t label = 0; label < credit_rating_scale.size(); ++label) {
+            if (exported_grid.labels[label] != credit_rating_scale[label])
+                return {false,
+                        describe(path,
+                                 "matrix '" + std::string(l.Name) + "' state label " +
+                                     std::to_string(label) + " differs: expected '" +
+                                     std::string(credit_rating_scale[label]) + "', exported '" +
+                                     exported_grid.labels[label] + "'")};
+        }
 
         if (original_grid.values.size() != exported_grid.values.size())
             return {false,
@@ -271,16 +284,6 @@ void require_in_memory_roundtrip(const std::string& relative_path) {
 
     const creditsimulation rebuilt = credit_simulation_mapper::reverse(mapped);
     const std::string exported_xml = ores::ore::domain::save_data(rebuilt);
-
-    // The comment naming the states is part of the document, but the binding
-    // drops comments on load, so it is asserted against the serialised text
-    // rather than through a re-parse.
-    bool carries_all_labels = true;
-    for (const auto label : credit_rating_scale)
-        carries_all_labels = carries_all_labels &&
-            exported_xml.find(std::string(label)) != std::string::npos;
-    INFO("exported document starts: " << exported_xml.substr(0, 300));
-    CHECK(carries_all_labels);
 
     creditsimulation exported;
     ores::ore::domain::load_data(exported_xml, exported);

@@ -174,13 +174,21 @@ ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
         AcceptedException(
             item="S01",
             reason=(
-                "Four hand-written shell units survive and are registered "
-                "after the generated aggregator, so some overlapping verbs are "
-                "shadowed and the rest duplicate generated behaviour. Which "
-                "verbs the generation supersedes is a per-verb call-site "
-                "question, and login has no generated unit, so the wholesale "
-                "deletion the item asks for would remove live behaviour. The "
-                "mapping is on the task."
+                "Three hand-written units extend generated menus rather than "
+                "registering menus of their own: accounts carries twelve verbs "
+                "(create, login, lock, unlock, list-logins, logout, sessions, "
+                "sessions-for, active-sessions, history, info and "
+                "set-default-party), permissions carries suggest, and tenants "
+                "carries history and complete-provisioning. The root-level "
+                "login and logout aliases are the same kind of remnant. None of "
+                "these can be shadowed any more: the shell's root refuses a "
+                "second claim on a name at startup, which is what the menu "
+                "collision story changed, so the overlapping-registration half "
+                "of this exception no longer describes anything. What remains "
+                "open is only which of these verbs the generation supersedes, "
+                "and that is a per-verb call-site question: login has no "
+                "generated unit, so the wholesale deletion the item asks for "
+                "would remove live behaviour. The mapping is on the task."
             ),
             accepted_by="marco",
             accepted_on="2026-09-27",

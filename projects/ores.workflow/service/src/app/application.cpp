@@ -21,9 +21,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -84,11 +82,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    ores::nats::service::nats_client svc_nats(
-        nats,
-        ores::iam::client::make_service_token_provider(
-            nats, cfg.database.user, cfg.database.password()));
-
     // =========================================================================
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish
     // =========================================================================
@@ -117,9 +110,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.workflow.service",
-        [&svc_nats](auto& n, auto c, auto v) {
+        [](auto& n, auto c, auto v) {
             return ores::workflow::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(*v), svc_nats);
+                n, std::move(c), std::move(*v));
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

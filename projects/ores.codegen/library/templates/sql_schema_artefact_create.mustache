@@ -52,7 +52,7 @@ on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{entity.artefact_key_column}}
 {{/entity.artefact_columns}}
 {{#entity.artefact_indexes}}
 
-create index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx
+create {{#unique}}unique {{/unique}}index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx
 on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{columns}});
 {{/entity.artefact_indexes}}
 {{#entity.has_artefact_insert_fn}}

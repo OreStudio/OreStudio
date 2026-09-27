@@ -41,4 +41,5 @@ SERVICE_NAMES=(
     ore
     marketdata
     analytics
+    storage
 )

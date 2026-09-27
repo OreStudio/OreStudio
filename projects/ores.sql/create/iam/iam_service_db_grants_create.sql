@@ -111,7 +111,8 @@ grant usage, select on all sequences in schema public
     :workflow_service_user,
     :ore_service_user,
     :marketdata_service_user,
-    :analytics_service_user;
+    :analytics_service_user,
+    :storage_service_user;
 
 alter default privileges in schema public
     grant usage, select on sequences
@@ -131,7 +132,8 @@ alter default privileges in schema public
     :workflow_service_user,
     :ore_service_user,
     :marketdata_service_user,
-    :analytics_service_user;
+    :analytics_service_user,
+    :storage_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Per-service grants
@@ -184,6 +186,7 @@ select _ores_grant_dml_fn('ores_scheduler_', :'scheduler_service_user');
 -- reporting_service: Reporting domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_reporting_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_dq_fsm_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
@@ -221,6 +224,7 @@ select _ores_grant_execute_fn('ores_synthetic_publish_', :'synthetic_service_use
 -- workflow_service: Workflow Orchestration domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
+select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 
 -- ---------------------------------------------------------------------------
 -- ore_service: ORE Import domain service
@@ -237,6 +241,10 @@ select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 -- analytics_service: Analytics domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
+
+-- ---------------------------------------------------------------------------
+-- storage_service: Object Storage domain service
+-- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

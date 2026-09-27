@@ -61,6 +61,7 @@ returns table (
     license_info text
 ) as $$
 begin
+    perform ores_utility_allow_version_replace_fn();
     return query
     -- Images datasets
     select
@@ -190,6 +191,7 @@ declare
     v_deleted bigint := 0;
     v_dataset_name text;
 begin
+    perform ores_utility_allow_version_replace_fn();
     -- Validate dataset exists
     select name into v_dataset_name
     from ores_dq_datasets_tbl

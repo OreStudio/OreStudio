@@ -35,6 +35,7 @@ declare
     v_exists boolean;
     v_new_version integer;
 begin
+    perform ores_utility_allow_version_replace_fn();
     select name into v_dataset_name
     from ores_dq_datasets_tbl
     where id = p_dataset_id

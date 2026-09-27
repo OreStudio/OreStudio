@@ -185,6 +185,14 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    /**
+     * @brief Reads the latest states of the machine with the given name.
+     *
+     * Throws nothing and returns empty when no machine carries the name, so
+     * a caller can tell an unknown machine from one with no states.
+     */
+    std::vector<domain::fsm_state> read_latest_by_machine_name(context ctx,
+                                                               const std::string& machine_name);
 
 private:
     /**

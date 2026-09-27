@@ -213,6 +213,11 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     domain::workflow_step next_step;
     next_step.id = next_id;
     next_step.workflow_id = instance.id;
+    // The step belongs to the instance's tenant, not to the session's. The
+    // insert trigger validates the workflow_id within the step's own tenant,
+    // so a step left to its default of "system" is refused for every instance
+    // started on behalf of anyone else.
+    next_step.tenant_id = instance.tenant_id;
     next_step.step_index = next_index;
     next_step.name = step_def.name;
     next_step.state_id = step_states_.require("in_progress");
@@ -296,6 +301,7 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         domain::workflow_step comp_step;
         comp_step.id = comp_id;
         comp_step.workflow_id = instance.id;
+        comp_step.tenant_id = instance.tenant_id;
         comp_step.step_index = -(s.step_index + 1);
         comp_step.name = step_def.name + "_compensation";
         comp_step.state_id = step_states_.require("in_progress");
@@ -555,6 +561,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         domain::workflow_step step;
         step.id = step_id;
         step.workflow_id = instance_id;
+        step.tenant_id = instance.tenant_id;
         step.step_index = 0;
         step.name = step_def.name;
         step.state_id = step_states_.require("in_progress");

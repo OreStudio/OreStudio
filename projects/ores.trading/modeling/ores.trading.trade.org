@@ -654,12 +654,10 @@ std::uint32_t trade_repository::count_latest_for_node_id(context ctx,
 
 ** Handler includes
 
-The instrument services the export path resolves through, the storage
-and msgpack headers the storage export needs, and the FSM protocol the
-save path reads its transitions from.
+The instrument services the export path resolves through, and the storage
+and msgpack headers the storage export needs.
 
 #+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
@@ -1043,15 +1041,6 @@ type, then read each product's table in one batch.
         }
     }
 
-    /**
-     * @brief Fetches all FSM transitions from the DQ service via NATS.
-     *
-     * Results are cached process-wide for 5 minutes; FSM transitions are
-     * system-level reference data that change only on schema migrations.
-     * The cache avoids an extra NATS round-trip per trade when the ore import
-     * handler sends one save_trade message per trade.
-     * Throws std::runtime_error on failure; callers must handle or propagate.
-     */
     // Extract the raw JWT from an incoming message, preferring the delegated
     // header so the original end-user context propagates to downstream calls.
     static std::string extract_bearer(const ores::nats::message& msg) {

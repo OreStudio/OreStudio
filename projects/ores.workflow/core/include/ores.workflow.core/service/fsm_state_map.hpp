@@ -20,7 +20,7 @@
 #ifndef ORES_WORKFLOW_CORE_SERVICE_FSM_STATE_MAP_HPP
 #define ORES_WORKFLOW_CORE_SERVICE_FSM_STATE_MAP_HPP
 
-#include "ores.nats/service/nats_client.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.workflow.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <stdexcept>
@@ -33,9 +33,8 @@ namespace ores::workflow::service {
 /**
  * @brief Maps FSM state names to their UUIDs for a given machine.
  *
- * Loaded once per workflow execution via a single NATS round-trip to
- * dq.v1.fsm-states.list. Use require() to look up a state UUID or throw
- * if the name is absent.
+ * Loaded once at service startup, from the store dq owns. Use require() to
+ * look up a state UUID or throw if the name is absent.
  */
 struct fsm_state_map {
     std::unordered_map<std::string, boost::uuids::uuid> states;
@@ -52,13 +51,18 @@ struct fsm_state_map {
 };
 
 /**
- * @brief Loads FSM states for @p machine_name via a NATS call to the DQ service.
+ * @brief Loads the states of the machine named @p machine_name.
  *
- * Sends a dq.v1.fsm-states.list request and builds the name→UUID map.
- * Throws std::runtime_error on NATS error or if the response indicates failure.
+ * The read goes to the store rather than over NATS, because a state's name is
+ * unique only within its machine and the generated wire surface addresses a
+ * state by name alone. The machine therefore has to be resolved where its name
+ * lives, which is the database.
+ *
+ * Throws std::runtime_error when no machine of that name has any state, which
+ * at startup means the seed is missing rather than that a workflow is broken.
  */
 [[nodiscard]] ORES_WORKFLOW_CORE_EXPORT fsm_state_map
-load_fsm_states(ores::nats::service::nats_client& nats, const std::string& machine_name);
+load_fsm_states(ores::database::context ctx, const std::string& machine_name);
 
 }
 

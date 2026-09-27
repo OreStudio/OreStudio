@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 02AB0E19-9F53-4DD4-B609-A2DED9824EA5
+:END:
+#+title: Task: Make the workflow engine act across tenants
+#+description: Task for: Exercise the workflow engine end to end
+#+type: task
+#+level: s1
+#+filetags: :exercise-workflow:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/tenant-aware-workflow-engine
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The engine's entry points read and write through generated repositories, which compare tenant_id with ctx.tenant_id(). The engine's context is the service's own tenant, so a workflow started on behalf of any other tenant is invisible to it from the second write onwards: the step insert is refused, the command stamp and the step progress are silent no-ops, and the completion event finds no step. Every engine path works for whichever tenant the service runs in.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A workflow started for a non-system tenant runs to completion, with each step advanced by its own completion event.
+- A start for a non-system tenant reports success only after the instance, its first step and the step's published marker are all written.
+- Recovery finds in-progress instances in every tenant, not only the service's own.
+- An integration test starts a workflow for a tenant other than the service's and asserts its steps advance.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.workflow.core/export.hpp"
@@ -36,16 +35,13 @@ namespace ores::workflow::messaging {
  * @param nats          Raw NATS client for subscriptions and replies.
  * @param ctx           Base database context (connection pool + service account).
  * @param signer        JWT authenticator for validating inbound bearer tokens.
- * @param outbound_nats Authenticated NATS client used for outgoing service calls.
- *                      Must be constructed with a service-level token_provider.
  */
 class ORES_WORKFLOW_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       ores::database::context ctx,
-                      ores::security::jwt::jwt_authenticator signer,
-                      ores::nats::service::nats_client outbound_nats);
+                      ores::security::jwt::jwt_authenticator signer);
 };
 
 }

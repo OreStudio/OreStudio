@@ -114,6 +114,13 @@ A report definition's configuration is a set of strongly typed entities rather t
   =historicalreturnconfig.xsd= declares no global element at all and is a section
   of the documents that reference it, not a file type. The two with a root
   element generate their binding first.
+- The existing binding round trips do not prove the content of every document.
+  In `creditsimulation.xml` the transition matrix is carried as one `Data`
+  element whose text is a whitespace or comma separated grid, with optional
+  `t0` and `t1` attributes, and the existing
+  `xml_creditsimulation_roundtrip_tests.cpp` deliberately does not compare
+  `Data`. A test can therefore pass while the matrix is lost. Our round trip
+  compares the grid cell by cell and names the first difference.
 
 * Out of scope
 

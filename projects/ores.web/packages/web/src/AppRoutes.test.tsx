@@ -93,12 +93,23 @@ describe('the bootstrap gate', () => {
         expect(html).not.toContain('current-password');
     });
 
-    it('offers the action that closes bootstrap mode', () => {
+    it('offers the action that closes bootstrap mode, with the identity proposed', () => {
         const html = render('/', inBootstrap, anonymous);
 
         expect(html).toContain('Create administrator');
         expect(html).toContain('Administrator username');
         expect(html).toContain('Administrator email');
+        // Proposed, and editable: a person who wants another name types one.
+        expect(html).toContain('value="super_admin"');
+        expect(html).toContain('value="super_admin@system.ores"');
+    });
+
+    it('proposes no password, because a password that ships with the product is not one', () => {
+        const html = render('/', inBootstrap, anonymous);
+        const passwordInput = /<input[^>]*type="password"[^>]*>/.exec(html)?.[0] ?? '';
+
+        expect(passwordInput).toContain('value=""');
+        expect(passwordInput).not.toContain('super_admin');
     });
 
     it('carries the banner, so the first screen of an installation looks like the product', () => {

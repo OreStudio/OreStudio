@@ -78,6 +78,7 @@
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
@@ -1954,10 +1955,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else if constexpr (std::is_same_v<T, scripted_instrument>) {
-                    save_scripted_instrument_request req;
-                    req.data = r;
+                    put_scripted_instrument_request req;
+                    req.change.write.instrument_id = r.identity.instrument_id;
+                    req.change.write.trade_type_code = r.identity.trade_type_code;
+                    req.change.write.trade_id = r.identity.trade_id;
+                    req.change.write.script_name = r.script_name;
+                    req.change.write.script_body = r.script_body;
+                    req.change.write.events_json = r.events_json;
+                    req.change.write.underlyings_json = r.underlyings_json;
+                    req.change.write.parameters_json = r.parameters_json;
+                    req.change.write.description = r.description;
                     auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->success;
+                    return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else {
                     return true;
                 }

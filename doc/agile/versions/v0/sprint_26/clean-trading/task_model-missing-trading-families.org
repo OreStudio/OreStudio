@@ -384,8 +384,8 @@ the proof.
 | composite_instrument | trading-instrument  | ores.trading.composite_instrument.org  | Done: build green, eight suites pass, drift empty |
 | composite_leg        | trading-instrument  | ores.trading.composite_leg.org, with a new identity field group | Done: build green, eight suites pass, drift empty |
 | credit_instrument    | trading-instrument  | ores.trading.credit_instrument.org     | Done: build green, eight suites pass, drift empty |
-| scripted_instrument  | trading-instrument  | --                                     | Next |
-| swap_leg             | trading-instrument  | --                                     | Pending |
+| scripted_instrument  | trading-instrument  | ores.trading.scripted_instrument.org   | Done: build green, eight suites pass, drift empty |
+| swap_leg             | trading-instrument  | --                                     | Next |
 
 The composite port found a generator defect and fixed it at its source:
 the eventing integration test template read a mandatory FK parent's key as

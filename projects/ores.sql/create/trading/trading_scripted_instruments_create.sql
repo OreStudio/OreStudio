@@ -17,24 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Scripted Instruments Table
---
--- Holds scripted instrument economics for ORE AMC script-based product types.
--- The trade_type_code discriminates the exact product (ScriptedTrade,
--- Autocallable_01, DoubleDigitalOption, PerformanceOption_01). The script_body,
--- events_json, underlyings_json, and parameters_json fields carry the embedded
--- ORE script definition and parameterisation.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Scripted Instrument Table
+ *
+ * Represents the AMC script-based product types ORE states:
+ * ScriptedTrade with its inline or library script, Autocallable_01,
+ * DoubleDigitalOption and PerformanceOption_01. trade_type_code
+ * discriminates the exact product and script_name names the payoff
+ * script, while the optional JSON fields carry the script's events, its
+ * underlyings and its parameters. The table stays flat by design: it holds
+ * no nested sub-struct, because the script definition is embedded text and
+ * not a set of typed columns.
+ *
+ * The table is a flat instrument sub-type, so it binds
+ * :profile: trading-instrument. Three table features justify that binding:
+ * the table is tenant-scoped through tenant_id and the tenant isolation
+ * policy, it is workspace-scoped through workspace_id, and its insert
+ * trigger stamps party_id from the session variable app.current_party_id
+ * rather than taking it from the client. The profile also fixes the identity
+ * and audit field groups, the batch read and the generator facet, and leaves
+ * the table with no UI surface -- the per-instrument forms were hand-crafted
+ * in the removed desktop client and consumed the generated messaging
+ * protocol.
+ */
 
 create table if not exists "ores_trading_scripted_instruments_tbl" (
-    "id" uuid not null,
+    "instrument_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_type_code" text not null,
     "party_id" uuid not null,
     "trade_id" uuid null,
-    "trade_type_code" text not null,
     "script_name" text not null,
     "script_body" text null,
     "events_json" text null,
@@ -48,48 +65,42 @@ create table if not exists "ores_trading_scripted_instruments_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, instrument_id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        instrument_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'PerformanceOption_01')),
+    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("script_name" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists scripted_instruments_version_uniq_idx
-on "ores_trading_scripted_instruments_tbl" (tenant_id, id, version)
+on "ores_trading_scripted_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists scripted_instruments_id_uniq_idx
-on "ores_trading_scripted_instruments_tbl" (tenant_id, id)
+on "ores_trading_scripted_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists scripted_instruments_tenant_idx
 on "ores_trading_scripted_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for party isolation
 create index if not exists scripted_instruments_party_idx
 on "ores_trading_scripted_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Trade type index for product filtering
-create index if not exists scripted_instruments_trade_type_idx
-on "ores_trading_scripted_instruments_tbl" (tenant_id, trade_type_code)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists scripted_instruments_trade_id_idx
 on "ores_trading_scripted_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
+
+create index if not exists scripted_instruments_trade_type_idx
+on "ores_trading_scripted_instruments_tbl" (tenant_id, trade_type_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists scripted_instruments_workspace_idx
 on "ores_trading_scripted_instruments_tbl" (workspace_id)
@@ -102,6 +113,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
@@ -116,45 +130,60 @@ begin
     select version into current_version
     from "ores_trading_scripted_instruments_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and instrument_id = NEW.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_scripted_instruments_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_scripted_instruments_insert_trg
 before insert on "ores_trading_scripted_instruments_tbl"
 for each row execute function ores_trading_scripted_instruments_insert_fn();
 
 create or replace rule ores_trading_scripted_instruments_delete_rule as
-on delete to "ores_trading_scripted_instruments_tbl" do instead
+on delete to "ores_trading_scripted_instruments_tbl" do instead (
     update "ores_trading_scripted_instruments_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and instrument_id = OLD.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

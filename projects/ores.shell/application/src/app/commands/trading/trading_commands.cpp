@@ -101,7 +101,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     ore_commands::register_commands(root_menu, session);
     party_role_type_commands::register_commands(root_menu, session);
     rpa_instrument_commands::register_commands(root_menu, session);
-    scripted_instrument_commands::register_commands(root_menu, session, pagination);
+    scripted_instrument_commands::register_commands(root_menu, session);
     swaption_instrument_commands::register_commands(root_menu, session);
     trade_commands::register_commands(root_menu, session);
     trade_id_type_commands::register_commands(root_menu, session);

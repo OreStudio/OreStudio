@@ -19,20 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.cpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/scripted_instrument_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_CORE_MESSAGING_SCRIPTED_INSTRUMENT_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_SCRIPTED_INSTRUMENT_REGISTRAR_HPP
 
-namespace ores::trading::domain {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const scripted_instrument& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::trading::messaging {
 
-}
+std::vector<ores::nats::service::subscription> register_scripted_instrument_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::trading::messaging
+
+#endif

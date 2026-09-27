@@ -22,63 +22,11 @@
 
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.api/domain/scripted_instrument.hpp"
 #include <string>
 #include <variant>
 #include <vector>
 
 namespace ores::trading::messaging {
-
-// ---- Scripted instrument protocol ----
-
-struct get_scripted_instruments_request {
-    using response_type = struct get_scripted_instruments_response;
-    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_scripted_instruments_response {
-    std::vector<ores::trading::domain::scripted_instrument> instruments;
-    int total_available_count = 0;
-    bool success = true;
-    std::string message;
-};
-
-struct save_scripted_instrument_request {
-    using response_type = struct save_scripted_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.save";
-    ores::trading::domain::scripted_instrument data;
-};
-
-struct save_scripted_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_scripted_instrument_request {
-    using response_type = struct delete_scripted_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.delete";
-    std::vector<std::string> ids;
-};
-
-struct delete_scripted_instrument_response {
-    bool success = false;
-    std::string message;
-    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
-};
-
-struct get_scripted_instrument_history_request {
-    using response_type = struct get_scripted_instrument_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.history";
-    std::string id;
-};
-
-struct get_scripted_instrument_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::trading::domain::scripted_instrument> history;
-};
 
 }
 

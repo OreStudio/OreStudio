@@ -31,14 +31,10 @@
 \ir ./analytics_pricing_engine_types_notify_trigger_drop.sql
 \ir ./analytics_pricing_engine_types_drop.sql
 
-\ir ./analytics_credit_simulation_matrix_cell_configs_notify_trigger_drop.sql
-\ir ./analytics_credit_simulation_matrix_cell_configs_drop.sql
 
 \ir ./analytics_credit_simulation_entity_configs_notify_trigger_drop.sql
 \ir ./analytics_credit_simulation_entity_configs_drop.sql
 
-\ir ./analytics_credit_simulation_matrix_state_configs_notify_trigger_drop.sql
-\ir ./analytics_credit_simulation_matrix_state_configs_drop.sql
 
 \ir ./analytics_credit_simulation_matrix_row_configs_notify_trigger_drop.sql
 \ir ./analytics_credit_simulation_matrix_row_configs_drop.sql
@@ -48,5 +44,3 @@
 
 \ir ./analytics_credit_simulation_configs_notify_trigger_drop.sql
 \ir ./analytics_credit_simulation_configs_drop.sql
-\ir ./analytics_credit_ratings_notify_trigger_drop.sql
-\ir ./analytics_credit_ratings_drop.sql

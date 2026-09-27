@@ -47,21 +47,15 @@
 -- Credit simulation configuration (ORE credit simulation document root)
 \ir ./analytics_credit_simulation_configs_create.sql
 \ir ./analytics_credit_simulation_configs_notify_trigger_create.sql
-\ir ./analytics_credit_ratings_create.sql
-\ir ./analytics_credit_ratings_notify_trigger_create.sql
 
 -- Credit simulation transition matrices (named, reusable)
 \ir ./analytics_credit_simulation_matrix_configs_create.sql
 \ir ./analytics_credit_simulation_matrix_configs_notify_trigger_create.sql
 \ir ./analytics_credit_simulation_matrix_row_configs_create.sql
 \ir ./analytics_credit_simulation_matrix_row_configs_notify_trigger_create.sql
-\ir ./analytics_credit_simulation_matrix_state_configs_create.sql
-\ir ./analytics_credit_simulation_matrix_state_configs_notify_trigger_create.sql
 
 -- Credit simulation entities (one row per migrating entity)
 \ir ./analytics_credit_simulation_entity_configs_create.sql
 \ir ./analytics_credit_simulation_entity_configs_notify_trigger_create.sql
 
 -- Credit simulation transition matrix cells (one row per grid cell)
-\ir ./analytics_credit_simulation_matrix_cell_configs_create.sql
-\ir ./analytics_credit_simulation_matrix_cell_configs_notify_trigger_create.sql

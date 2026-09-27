@@ -54,15 +54,21 @@ struct credit_simulation_grid {
 inline credit_simulation_grid parse_credit_simulation_grid(std::string_view text) {
     credit_simulation_grid grid;
     std::string body(text);
-    const auto open = body.find("<!--");
-    if (open != std::string::npos) {
-        const auto close = body.find("-->", open);
-        if (close != std::string::npos) {
-            std::istringstream labels(body.substr(open + 4, close - open - 4));
+    // The XML writer escapes < and > in element text, so a comment that has
+    // been through a save/load cycle arrives as &lt;!-- ... --&gt;.
+    const bool escaped = body.find("&lt;!--") != std::string::npos;
+    const std::string open = escaped ? "&lt;!--" : "<!--";
+    const std::string close = escaped ? "--&gt;" : "-->";
+    const auto open_at = body.find(open);
+    if (open_at != std::string::npos) {
+        const auto close_at = body.find(close, open_at);
+        if (close_at != std::string::npos) {
+            std::istringstream labels(
+                body.substr(open_at + open.size(), close_at - open_at - open.size()));
             std::string label;
             while (labels >> label)
                 grid.labels.push_back(label);
-            body.erase(open, close - open + 3);
+            body.erase(open_at, close_at - open_at + close.size());
         }
     }
     for (auto& c : body) {

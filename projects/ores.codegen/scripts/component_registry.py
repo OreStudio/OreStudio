@@ -211,4 +211,13 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # codegen owns its composite root CMakeLists.txt. Its regeneration is
 # byte-identical across every address, and its CMake source lists are
 # current.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "http-cpp", "ore", "reporting", "telemetry-cpp", "workflow-cpp", "variability-cpp")
+#
+# shell joins at the end of its clean-standard pass. It is a component of kind
+# All with no entity, junction or operation model: its one model is the
+# component model, and the shell units in its tree are output of the other
+# components' models. Its regeneration is byte-identical at all six addresses,
+# its two CMake source lists are current, it carries one namespace
+# documentation header for its outermost namespace, and every item that does
+# not apply to a component of kind All is recorded with its reason on
+# doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "http-cpp", "ore", "reporting", "shell", "telemetry-cpp", "workflow-cpp", "variability-cpp")

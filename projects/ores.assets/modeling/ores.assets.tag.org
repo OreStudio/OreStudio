@@ -92,6 +92,19 @@ The import names the key =tag_id= where the store's own key is =id=. Both =ores_
 :type: text
 :END:
 
+* Artefact indexes
+
+** tag_identity
+:PROPERTIES:
+:columns: tenant_id, dataset_id, name
+:unique: true
+:END:
+
+The seed's upsert resolves a tag by name within a dataset with
+=on conflict (tenant_id, dataset_id, name)=, so the staging table needs a
+unique index on exactly those columns. Without it PostgreSQL finds no arbiter
+index for the clause and the upsert fails at run time.
+
 * SQL
 
 ** Flags

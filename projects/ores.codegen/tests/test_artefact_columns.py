@@ -145,6 +145,31 @@ EMPTY_SECTION = """\
 * Artefact columns
 """
 
+# A declared extra index, and the unique flag the tags staging table needs:
+# its seed writes `on conflict (tenant_id, dataset_id, name)`, which needs a
+# unique arbiter index or PostgreSQL refuses the clause at run time.
+ARTEFACT_INDEXES = """\
+
+* Artefact indexes
+
+** tag_identity
+:PROPERTIES:
+:columns: tenant_id, dataset_id, name
+:unique: true
+:END:
+"""
+
+ARTEFACT_INDEXES_NOT_UNIQUE = """\
+
+* Artefact indexes
+
+** tag_identity
+:PROPERTIES:
+:columns: tenant_id, dataset_id, name
+:unique: false
+:END:
+"""
+
 INSERT_FN_WITH_SECTION = ARTEFACT_COLUMNS
 
 
@@ -209,14 +234,43 @@ def test_a_declared_section_drops_the_entity_columns_it_does_not_list(tmp_path):
     assert '"code" text not null' not in sql
 
 
-def test_the_key_index_is_built_on_the_declared_key(tmp_path):
+def test_the_key_index_is_built_once_for_the_declared_key(tmp_path):
+    """The key index belongs to the staging table, not to each column.
+
+    It was emitted inside the artefact-columns loop, so a three-column table
+    rendered it three times and ores.dq.currencies rendered its own seventeen
+    times. Asserting the exact count is the point: asserting that the text is
+    present passed for the whole life of the defect.
+    """
     sql = generate_domain(tmp_path, ARTEFACT_COLUMNS)
 
+    assert sql.count("create index if not exists dq_test_entities_artefact_tag_id_idx") == 1
     assert (
         "create index if not exists dq_test_entities_artefact_tag_id_idx\n"
         "on ores_dq_test_entities_artefact_tbl (tag_id);"
     ) in sql
     assert "artefact_code_idx" not in sql
+
+
+def test_a_declared_artefact_index_is_unique_when_it_says_so(tmp_path):
+    sql = generate_domain(tmp_path, ARTEFACT_COLUMNS + ARTEFACT_INDEXES)
+
+    assert (
+        "create unique index if not exists dq_test_entities_artefact_tag_identity_idx\n"
+        "on ores_dq_test_entities_artefact_tbl (tenant_id, dataset_id, name);"
+    ) in sql
+
+
+def test_a_declared_artefact_index_is_not_unique_when_it_says_false(tmp_path):
+    """``:unique: false:`` must be false, not the non-empty string "false",
+    which a mustache section reads as true."""
+    sql = generate_domain(tmp_path, ARTEFACT_COLUMNS + ARTEFACT_INDEXES_NOT_UNIQUE)
+
+    assert (
+        "create index if not exists dq_test_entities_artefact_tag_identity_idx\n"
+        "on ores_dq_test_entities_artefact_tbl (tenant_id, dataset_id, name);"
+    ) in sql
+    assert "create unique index if not exists dq_test_entities_artefact_tag_identity_idx" not in sql
 
 
 def test_the_key_property_overrides_the_first_column(tmp_path):

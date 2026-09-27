@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 94424F3A-5FF9-415E-B9ED-8067C84CB7C2
+:END:
+#+title: Task: Fix the artefact index emission and the tags ON CONFLICT
+#+description: Task for: Clean ores.dq to the component clean standard
+#+type: task
+#+level: s1
+#+filetags: :clean-dq:sprint_26:v0:
+#+owner: marco
+#+branch: feature/fix-artefact-schema-defects
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
+| Now          | The template emits the artefact key index once, the tags staging table has the unique index its seed needs, and a hygiene check covers both classes. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A staging table emits its key index once, however many artefact columns it declares.
+- =ores_dq_tags_artefact_tbl= carries a unique index on =(tenant_id, dataset_id, name)=, so the seed's =on conflict= clause has an arbiter.
+- A declared artefact index is unique only when it says =:unique: true=.
+- A check fails on an unterminated block comment and on a repeated index in one file, and it runs on the pull request as well as in Continuous Linux.
+
+* Plan
+
+1. *Confirm the two defects.* The five population-function comments were already fixed by PR #2227; a PostgreSQL-aware scan proves the current tree is balanced. The tags =on conflict= and the repeated indexes are live.
+2. *Fix the index emission at source.* Move the artefact key index out of the artefact-columns loop in =ores.sql.schema.domain_entity_artefact_create=, and teach the =* Artefact indexes= section a =:unique:= flag.
+3. *Declare the arbiter.* Add the unique =tag_identity= artefact index to =ores.assets.tag=, which owns the staging table the seed writes.
+4. *Regenerate and narrow the diff.* Regenerate the SQL facet tree-wide, then keep only the ten =dq_*_artefact_create.sql= files this template can write and revert the drift the run materialized elsewhere.
+5. *Pin both behaviours in tests.* The key index count is asserted exactly, which the old presence assertion did not do, and the unique flag is asserted both ways.
+6. *Encode the classes as a check.* =check_sql_hygiene.py= reads the tree for unterminated block comments and repeated indexes; =validate_schemas.sh= and the codegen-drift job both call it.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both defects are fixed at source and both classes are gated.
+
+**The index emission.** The key index was inside the =artefact_columns= loop, so a table rendered one copy per artefact column: 245 lines of duplicate index across ten staging tables, worst =dq_currencies_artefact_iso_code_idx= at seventeen copies. It is now emitted once, under =artefact_key_column=.
+
+**The missing arbiter.** =ores_dq_tags_artefact_tbl= had no unique index at all, so the seed's =on conflict (tenant_id, dataset_id, name)= had nothing to infer and would have failed at run time. The =* Artefact indexes= section gained a =:unique:= flag and the tag model declares the index.
+
+**The five comments were already fixed.** PR #2227 closed them. The scan written here confirms the tree is balanced and would have caught the original five, which is the evidence that the fix holds.
+
+**Two findings recorded, not fixed here.** Regenerating the SQL facet tree-wide materialized generated SQL that main has never committed -- =marketdata=, =refdata=, =synthetic= and a whole =workspace= table with its trigger and drops. They are reverted here and belong to their own tasks. And =regenerate_physical_space_inventories.py --check= reports three stale facet inventories (=ores.org=, =ores.cpp.org=, =ores.cpp.http-route.org=); it reproduces on a stashed clean tree, the staleness is a row reordering, and the gate is in no workflow, so it is recorded rather than swept into this change.

@@ -143,17 +143,6 @@ REPORTING = '''package "ores.reporting" #E8F4FF {
     storage_type : text
     referenced_entity : text
   }
-  class configuration_xml_element {
-    id : uuid
-    configuration_type_id : uuid
-    element_name : text
-    path : text
-    parent_path : text
-    node_kind : text
-    ordinal : integer
-    repeated : boolean
-    value_domain_id : uuid
-  }
 }'''
 
 
@@ -192,8 +181,6 @@ REPORTING_RELS = [
     'configuration_parameter *-- "1" parameter_definition : named by',
     'parameter_definition *-- "1" value_domain : valued as',
     'parameter_definition *-- "1" configuration_type : belongs to',
-    'configuration_type *-- "0..*" configuration_xml_element : serialised by',
-    'configuration_xml_element *-- "1" value_domain : valued as',
 ]
 
 def load(inventory: Path) -> dict:

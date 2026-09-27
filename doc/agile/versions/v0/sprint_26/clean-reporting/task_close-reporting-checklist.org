@@ -274,3 +274,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered, and the component is not clean.
+
+The parent task claimed a recorded result for all 49 Component Clean Standard
+items. Nineteen had no row. This task records them from fresh evidence, so the
+checklist now carries a result for every item, and seven of them fail: P01,
+S01, G04, H01, M04, M08 and V04.
+
+Two of those were cheap and are fixed here. *G08*: the api module had no
+namespace documentation header at all, and the core module's sat at the required
+path holding an unused aggregate include; both are now namespace headers
+matching the cleaned components. *H03*: four comments narrated edit history and
+now state the rule.
+
+*V08 is closed.* =report_input_bundle_repository.cpp= had neither a test nor a
+recorded reason. It now has a test that creates a bundle, finds it back by
+instance id and asserts the literal values it wrote, and that an unknown
+instance id returns nothing. The composition and entry-point files carry their
+reason, which the item accepts in place of a test.
+
+*V04 is measured rather than passed.* All 51 generated commands were replayed
+against a database rebuilt from scratch and a fleet on the current binaries:
+35 answer and 16 do not, and every cause is a defect. The
+=report_definitions= family is routed to DQ by a duplicate shell menu, so ten
+of its commands exercise the wrong component; three recipes pass =__none__=
+where a uuid is required; and the eight execution-step handlers return in
+silence when the workflow headers are absent, so the caller learns only that
+time passed. The result reproduces exactly on a second run, so it is not an
+artifact of a stale fleet.
+
+Two of those causes are outside this component and are captured rather than
+fixed: the duplicate =report_definitions= shell menu, and
+=ores_dq_report_definitions_tbl=, which DQ's own model names and no script
+creates.
+
+Verification, on the current tree: the whole tree builds; the four reporting
+suites pass and so does the 824-case codegen suite; the full 86-binary suite is
+81 of 86, and the five failures belong to ores.dq, ores.refdata, ores.marketdata
+and ores.platform, which this branch does not touch. They are captured.
+
+One correction to this task's own process, recorded above rather than quietly
+repaired: the first verification pass ran against a fleet whose binaries
+predated its own build, a database 59 SQL files behind, and only the reporting
+suites.
+
+What remains is the seven failing items and V04's three causes, each with a
+named owner in the stocktake table. The component is not clean, and the record
+now says so.

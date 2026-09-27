@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: E67FFEDC-F880-4FBD-BD59-9DCE3D2BC68C
+:END:
+#+title: The component class-diagram generator is tracked but run by …
+#+description: The component class-diagram generator is tracked but run by no gate, so every diagram in the tree is behind the code.
+
+The generator is build/scripts/generate_component_puml.py. It reads projects/<component>/include/<component>/**/*.hpp and rewrites everything above the manual sentinel in projects/<component>/modeling/<component>.puml, preserving the hand-authored section below it. It handles composite parts (ores.dq.core resolves to projects/ores.dq/core). It is tracked, it is not gitignored, and it has a suite of parser tests under projects/ores.codegen/tests/test_plantuml_component_parse_*.py.
+
+Nothing runs it. It is not in a cmake target, and the generate_<name>_diagram cmake target only runs PlantUML over the existing .puml to refresh the PNG. The codegen drift check cannot see the file either: resolve_targets(address="ores.plantuml") returns no units for a component model, so the ores.plantuml pass renders nothing and compares nothing.
+
+The result is that the committed diagrams are far behind. Running it for the three ores.dq parts changes all three -- api 208 boxes to 641 and 1042 lines to 3118, core 88 to 140, service 4 to 7 -- and removes names the protocol migration retired, such as save_catalog_request and get_catalogs_request, which the api diagram still draws. Every other component is presumably in the same state.
+
+Two things want deciding together. First, whether the generator becomes a gate, so a diagram cannot fall behind again; that is what would have caught this. Second, what a component class diagram is for: the regenerated ores.dq.api diagram is 641 boxes, 610 of them messaging request and response structs, which is the skeleton the generator is documented to produce and not yet a diagram a person reads. H01 asks for a manual pass that fills boxes, draws the relationships the automated pass cannot see and deletes edges the code does not support, and that pass needs the scoping decided first rather than 641 boxes annotated one by one.
+
+Found while starting the ores.dq H01 pass. An earlier capture claiming nothing regenerates these diagrams was wrong and has been retired.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

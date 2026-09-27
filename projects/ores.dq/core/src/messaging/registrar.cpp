@@ -45,7 +45,9 @@
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_authority_type_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_authority_type_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_registrar.hpp"
@@ -57,12 +59,17 @@
 #include "ores.dq.core/messaging/dataset_handler.hpp"
 #include "ores.dq.core/messaging/dataset_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_registrar.hpp"
+#include "ores.dq.core/messaging/fsm_state_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_state_registrar.hpp"
+#include "ores.dq.core/messaging/fsm_transition_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
+#include "ores.dq.core/messaging/methodology_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
+#include "ores.dq.core/messaging/nature_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
+#include "ores.dq.core/messaging/origin_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_registrar.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
@@ -73,6 +80,7 @@
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
+#include "ores.dq.core/messaging/treatment_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
 #include "ores.dq.core/service/subject_area_service.hpp"
@@ -198,10 +206,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // =========================================================================
     // Dimensions are on the standard generated stack; see each entity's own
-    // _handler/_registrar pair. nature_dimension is registered above with the
-    // other generated registrars.
+    // _handler/_registrar pair.
     // =========================================================================
 
+    {
+        auto nature_dimension_subs = register_nature_dimension_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(nature_dimension_subs.begin()),
+                    std::make_move_iterator(nature_dimension_subs.end()));
+    }
     {
         auto origin_dimension_subs = register_origin_dimension_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
@@ -386,11 +399,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_change_reason_category_history_provider(hist_registry);
         register_change_reason_history_provider(hist_registry);
         register_code_domain_history_provider(hist_registry);
+        register_coding_scheme_history_provider(hist_registry);
+        register_coding_scheme_authority_type_history_provider(hist_registry);
         register_data_domain_history_provider(hist_registry);
         register_dataset_bundle_history_provider(hist_registry);
         register_dataset_history_provider(hist_registry);
+        register_fsm_state_history_provider(hist_registry);
+        register_fsm_transition_history_provider(hist_registry);
+        register_methodology_history_provider(hist_registry);
+        register_nature_dimension_history_provider(hist_registry);
+        register_origin_dimension_history_provider(hist_registry);
         register_report_definition_history_provider(hist_registry);
         register_synthetic_fx_spot_config_history_provider(hist_registry);
+        register_treatment_dimension_history_provider(hist_registry);
 
         // subject_area keeps a hand-written provider. Its history identity is
         // the composite (name, domain_name) that the Qt client sends as

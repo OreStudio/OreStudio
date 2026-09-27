@@ -32,28 +32,24 @@ The environment load is not optional: the binary aborts with
 
 ## Not proven
 
-- **The database leg has never been attempted.** Nothing in the round trip
-  writes to or reads from PostgreSQL. This is the objective's central claim
-  and the largest gap. The next step is a sibling test that takes the mapped
-  entities, writes them through the generated repositories, reads them back,
-  and only then calls `reverse`.
-
-  The wiring is known, from
-  `projects/ores.analytics/core/tests/repository_pricing_model_config_repository_tests.cpp:38-55`:
-
-  ```cpp
-  using ores::testing::scoped_database_helper;
-  scoped_database_helper h;
-  auto ctx = ores::testing::make_generation_context(h);   // for generators only
-  repo.write(h.context(), entity);
-  auto read = repo.read_latest(h.context());
-  ```
-
-  A repository needs no synthetic data: map a corpus document, then write the
-  four vectors and read them back. Compare the re-read rows against the mapped
-  ones before calling `reverse`, so a failure names which leg broke. Note that
-  a re-read regenerates nothing but does reorder, so match rows by their
-  natural key — matrix plus `from_rating` — and not by position.
+- **The database leg now passes** (`485b3fe2e0`): one document goes parsed →
+  mapped → written through the generated repositories → read back → exported,
+  nine assertions, and the full suite is green at 551 cases. Three defects
+  blocked it and are worth knowing before the next document:
+  1. **codegen does not add new entities to the component file lists.** The
+     repositories were written to disk but never compiled, so the library had
+     zero symbols and the link failed. Add the sources to
+     `projects/ores.<c>/{api,core}/src/component_files.cmake`, in the
+     `set(files ...)` block and not the `HEADERS` one.
+  2. **The table-display header row must be lowercase** `| column | header |`.
+     Capitalised, the generator emits `table << cfg.<< cfg.<<` with empty
+     field names, which does not compile.
+  3. **New tables need grants for the test role.** Apply with
+     `grant select, insert, update, delete on <tables> to ores_bright_faraday_test_dml_user;`
+     A fresh database should not need this by hand.
+- The database test reads rows back with
+  `read_latest_by_transition_matrix_id(ctx, id, offset, limit)` — it takes
+  offset and limit, not just the id.
 - Nine of eleven document kinds have no tables at all.
 - 121 generated files still exist for the three retired entities
   (`credit_ratings`, `matrix_state_config`, `matrix_cell_config`). The models

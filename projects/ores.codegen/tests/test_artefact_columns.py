@@ -335,6 +335,26 @@ def test_the_lookup_entity_template_honours_the_section_too(tmp_path):
     ) in sql
 
 
+def test_the_lookup_entity_template_marks_a_unique_index_too(tmp_path):
+    """The loader decodes the flag for both archetypes, so a template that
+    ignored it would render a plain index and say nothing about it."""
+    body = HEADER.replace(
+        "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"
+    ) + FLAGS + COLUMNS + ARTEFACT_INDEXES
+
+    sql = _render(
+        tmp_path,
+        body,
+        "sql_schema_artefact_create.mustache",
+        "lookup_artefact_unique",
+    )
+
+    assert (
+        "create unique index if not exists dq_test_entities_artefact_tag_identity_idx\n"
+        "on ores_dq_test_entities_artefact_tbl (tenant_id, dataset_id, name);"
+    ) in sql
+
+
 def test_the_lookup_entity_template_is_unchanged_without_the_section(tmp_path):
     body = HEADER.replace(
         "#+type: ores.codegen.entity", "#+type: ores.codegen.lookup_entity"

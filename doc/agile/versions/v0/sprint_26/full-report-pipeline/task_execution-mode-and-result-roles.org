@@ -26,11 +26,11 @@ Give the report definition a run configuration, carry it into the workflow start
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
-| Now          | Implemented and verified; raising the PR. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Review.                                |
+| Next         | Nothing.                               |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -87,16 +87,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Step consumers that read a previous result by index | 0 (was 8) | =grep -rnE "(results\|prev)\[[0-9]+\]" projects/ores.reporting/api/include/ores.reporting.api/workflow projects/ores.refdata/api/include/ores.refdata.api/workflow \| wc -l= | =f498ec543e= |
-| =build_command= definitions carried to the named-result signature | 5 | =grep -rln build_command projects/ --include=*.hpp --include=*.cpp= | =f498ec543e= |
-| Steps the =execute= and =execute= configuration builds | 7 | =ores.reporting.api.tests "[workflow][reporting]"= | =f498ec543e= |
-| Steps the =substitute= and =ignore= configuration builds | 4 | =ores.reporting.api.tests "[workflow][reporting]"= | =f498ec543e= |
-| Chain cases in the new suite | 10 cases, 31 assertions | =ores.reporting.api.tests "[workflow][reporting]"= | =f498ec543e= |
-| =ores.reporting.api.tests= | 64 cases, 248 assertions | =ores.reporting.api.tests= | =f498ec543e= |
-| =ores.shell.reporting.tests= | 108 cases, 283 assertions (was 102 and 269) | =ores.shell.reporting.tests= | =f498ec543e= |
-| =ores.workflow.core.tests= | 17 cases, 85 assertions | =ores.workflow.core.tests= | =f498ec543e= |
-| Schema validator warnings | 4, all pre-existing =workspace_workspaces= aggregation warnings | =projects/ores.sql/utility/validate_schemas.sh= | =f498ec543e= |
-| Reporting codegen drift | none | =projects/ores.codegen/scripts/check_component_drift.py --component reporting= | =f498ec543e= |
+| Step consumers that read a previous result by index | 0 (was 8) | =grep -rnE "(results\|prev)\[[0-9]+\]" projects/ores.reporting/api/include/ores.reporting.api/workflow projects/ores.refdata/api/include/ores.refdata.api/workflow \| wc -l= | =f4ffb3c216= |
+| =build_command= definitions carried to the named-result signature | 5 | =grep -rln build_command projects/ --include=*.hpp --include=*.cpp= | =f4ffb3c216= |
+| Steps the =execute= and =execute= configuration builds | 7 | =ores.reporting.api.tests "[workflow][reporting]"= | =f4ffb3c216= |
+| Steps the =substitute= and =ignore= configuration builds | 4 | =ores.reporting.api.tests "[workflow][reporting]"= | =f4ffb3c216= |
+| Chain cases in the new suite | 10 cases, 31 assertions | =ores.reporting.api.tests "[workflow][reporting]"= | =f4ffb3c216= |
+| =ores.reporting.api.tests= | 64 cases, 248 assertions | =ores.reporting.api.tests= | =f4ffb3c216= |
+| =ores.shell.reporting.tests= | 108 cases, 283 assertions (was 102 and 269) | =ores.shell.reporting.tests= | =f4ffb3c216= |
+| =ores.workflow.core.tests= | 17 cases, 85 assertions | =ores.workflow.core.tests= | =f4ffb3c216= |
+| Schema validator warnings | 0, on the rebased tree (was 4 before main disabled the =workspace= SQL facet) | =projects/ores.sql/utility/validate_schemas.sh= | =f4ffb3c216= |
+| Reporting codegen drift | none | =projects/ores.codegen/scripts/check_component_drift.py --component reporting= | =f4ffb3c216= |
 
 * Notes
 
@@ -169,5 +169,52 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
 * Result
+
+A report definition now says how much of the pipeline a run executes, and the
+workflow builds the chain that configuration names.
+
+The run configuration is three columns on =ores_reporting_report_definitions_tbl=
+— =pre_processing=, =prepared_input_key= and =post_processing= — so it is
+definition state and a run is reproducible from the database with no operator
+present. The trigger validates the codes, refuses a substituting definition that
+names no archive, and copies the configuration into the workflow start payload,
+which the engine rebuilds the chain from on every dispatch and on recovery.
+
+Step results are addressed by the name of the step that produced them. The engine
+now carries an entry for every forwarded step rather than only the ones that
+answered, because the old list's positions were not step indices and one silent
+step shifted every later result. A builder that cannot find or read what it
+consumes throws, and the engine turns that into compensation, so a missing result
+fails the run instead of publishing a command with an empty field. Five
+=build_command= definitions moved to the signature; the provisioning workflow,
+the only other consumer that read a result by position, reads =save_account= by
+name.
+
+One registered definition builds both chains. =execute= and =execute= are the
+seven steps the definition ran before; =substitute= replaces the four
+pre-processing steps with =resolve_prepared_input=; =ignore= replaces result
+collection with =ignore_compute_results=. Both substitutes are reporting
+operations and both answer in the result type of the phase they replace, which is
+what makes them indistinguishable to the step after them, and submission is given
+the name of whichever step filled the input role, so neither phase knows about the
+other.
+
+Deferred on purpose, and owned by other tasks in the story: the instance does not
+record which phases were substituted, retrieval is not yet separated from result
+collection, and resolving a prepared archive does not read it, so nothing checks
+that it is a valid engine input or digests it.
+
+The branch also carries one unrelated fix. The clean-http change stopped
+=env_init.py= generating =ORES_HTTP_SERVER_JWT_SECRET= without recording a new
+=.env= format version, so no checkout was ever told to regenerate and every one of
+them kept a line that =make_mapper("HTTP_SERVER")= maps onto an option no parser
+registers — which stops =ores.http.server= at its next start. Version 26 records
+the removal, and this checkout's =.env= was regenerated and the gateway restarted
+to confirm.
+
+Verified locally, since CI runs no full build: the whole tree builds, the
+reporting, shell-reporting, workflow core and api, refdata api and reporting
+service suites all pass, =compass lint= and the structure-note link check are
+clean, the schema validator reports no warnings, and the reporting component has
+no codegen drift.

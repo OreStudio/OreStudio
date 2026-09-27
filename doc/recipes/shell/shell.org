@@ -647,7 +647,7 @@ tangled into the runnable script library
 
 * Report Definitions
 
-- [[id:2780B6E3-0EBE-5518-9134-B6EA0294A5C9][How do I run the report_definitions commands from the shell?]]
+- [[id:8F7DD182-B1ED-5933-B377-9C0066D96489][How do I run the report_definitions commands from the shell?]]
 
 * Synthetic Fx Spot Configs
 
@@ -655,9 +655,113 @@ tangled into the runnable script library
 
 * Workflow
 
-- [[id:868ceef2-f845-41d0-995d-90d93bf6e9b7][How do I run a workflow that compensates?]]
-- [[id:72d3431d-10d9-48eb-ac4f-3a634d3b1dba][How do I run a workflow that fails?]]
-- [[id:aa39b1e4-de76-433e-9de3-d16c0bd40241][How do I run a workflow to completion?]]
-- [[id:719cbdca-3dae-46c5-bb89-d5401fbe7b5a][How do I run a workflow where a step reports warnings?]]
-- [[id:bc01755c-69fc-48c1-96d6-2efd8e1bef1d][How do I run a workflow with many steps?]]
-- [[id:5d5afece-2061-44ff-a851-f62bfde758df][How do I watch a workflow that takes its time?]]
+- [[id:868CEEF2-F845-41D0-995D-90D93BF6E9B7][How do I run a workflow that compensates?]]
+- [[id:72D3431D-10D9-48EB-AC4F-3A634D3B1DBA][How do I run a workflow that fails?]]
+- [[id:AA39B1E4-DE76-433E-9DE3-D16C0BD40241][How do I run a workflow to completion?]]
+- [[id:719CBDCA-3DAE-46C5-BB89-D5401FBE7B5A][How do I run a workflow where a step reports warnings?]]
+- [[id:BC01755C-69FC-48C1-96D6-2EFD8E1BEF1D][How do I run a workflow with many steps?]]
+- [[id:5D5AFECE-2061-44FF-A851-F62BFDE758DF][How do I watch a workflow that takes its time?]]
+
+* Concurrency Policies
+
+- [[id:AEB1BB00-0503-5BB2-9A2F-9AAC8A9C929E][How do I run the concurrency_policies commands from the shell?]]
+
+* Equity Accumulator Instruments
+
+- [[id:384232C0-B215-5394-8808-EA1B0FB0D153][How do I run the equity_accumulator_instruments commands from the shell?]]
+
+* Equity Asian Option Instruments
+
+- [[id:59B22122-3AB0-5853-99D4-DF91120AB583][How do I run the equity_asian_option_instruments commands from the shell?]]
+
+* Equity Barrier Option Instruments
+
+- [[id:F4751013-C336-5F25-9116-5E9A521DAADE][How do I run the equity_barrier_option_instruments commands from the shell?]]
+
+* Equity Digital Option Instruments
+
+- [[id:2162E85C-CA17-5666-9B1F-6544C341EABB][How do I run the equity_digital_option_instruments commands from the shell?]]
+
+* Equity Forward Instruments
+
+- [[id:6C33B7E9-4DC1-54C6-8606-989D027270D0][How do I run the equity_forward_instruments commands from the shell?]]
+
+* Equity Option Instruments
+
+- [[id:D0C4E959-D25F-5FC0-980D-159920EF48B1][How do I run the equity_option_instruments commands from the shell?]]
+
+* Equity Position Instruments
+
+- [[id:8255D54F-6D95-588F-BDF8-1E06BBFC7B68][How do I run the equity_position_instruments commands from the shell?]]
+
+* Equity Swap Instruments
+
+- [[id:BD3BB49E-C252-5274-8A20-30A17E5385ED][How do I run the equity_swap_instruments commands from the shell?]]
+
+* Equity Variance Swap Instruments
+
+- [[id:EE48156B-E386-5263-8A18-B3B361FE494B][How do I run the equity_variance_swap_instruments commands from the shell?]]
+
+* Fx Accumulator Instruments
+
+- [[id:A1438125-412B-5FF7-96EB-CB8DEB8E477F][How do I run the fx_accumulator_instruments commands from the shell?]]
+
+* Fx Asian Forward Instruments
+
+- [[id:774C2505-6BBD-5EFF-B749-2B7068EF9945][How do I run the fx_asian_forward_instruments commands from the shell?]]
+
+* Fx Barrier Option Instruments
+
+- [[id:5A439E3C-126A-550D-812F-CE1ECB81F7AD][How do I run the fx_barrier_option_instruments commands from the shell?]]
+
+* Fx Digital Option Instruments
+
+- [[id:B770F15A-D256-5FD2-A967-49332A2119C3][How do I run the fx_digital_option_instruments commands from the shell?]]
+
+* Fx Forward Instruments
+
+- [[id:8F3A3A44-D28F-5064-A4BB-2167FF836A59][How do I run the fx_forward_instruments commands from the shell?]]
+
+* Fx Vanilla Option Instruments
+
+- [[id:6CDE7FDD-633C-50FC-BB31-63E4C1AD1F29][How do I run the fx_vanilla_option_instruments commands from the shell?]]
+
+* Fx Variance Swap Instruments
+
+- [[id:5D8DF61B-D774-510C-8A63-BFC543186AD6][How do I run the fx_variance_swap_instruments commands from the shell?]]
+
+* Lifecycle Events
+
+- [[id:4F3BF010-EA22-5293-A3EF-BD608B810F4C][How do I run the lifecycle_events commands from the shell?]]
+
+* Party Role Types
+
+- [[id:A9F15744-5DAD-524E-91B5-8BA3DBD8D9CF][How do I run the party_role_types commands from the shell?]]
+
+* Report Instances
+
+- [[id:D3BF8572-BC25-53F3-80CA-8CB254DA5946][How do I run the report_instances commands from the shell?]]
+
+* Report Operations
+
+- [[id:C6D0B07C-5C48-5AC1-8053-2D0B36A2D3CD][How do I run the report_operations commands from the shell?]]
+
+* Report Types
+
+- [[id:189AF09C-4D20-5F21-A7BD-D0254585EC6C][How do I run the report_types commands from the shell?]]
+
+* Trade Id Types
+
+- [[id:43A2CAE6-BAB9-5371-BFBB-4F396F14208A][How do I run the trade_id_types commands from the shell?]]
+
+* Trade Identifiers
+
+- [[id:6BCB9BAC-789A-5D5F-9AE3-B803F0358655][How do I run the trade_identifiers commands from the shell?]]
+
+* Trade Party Roles
+
+- [[id:3907B9D9-5A0A-5533-910F-C42F701E6BA7][How do I run the trade_party_roles commands from the shell?]]
+
+* Trade Types
+
+- [[id:571DB331-F3D8-5715-86C9-18ED3958B95E][How do I run the trade_types commands from the shell?]]

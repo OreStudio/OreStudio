@@ -32,9 +32,9 @@
 #include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.platform/environment/environment.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/http_base_url.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -53,16 +53,11 @@ namespace ores::shell::app::commands {
 
 using namespace logging;
 using ores::nats::service::nats_client;
-using ores::platform::environment::environment;
 
 namespace {
 
 constexpr std::string_view default_reason_code =
     dq::domain::change_reason_constants::codes::new_record;
-
-std::string default_http_base_url() {
-    return "http://localhost:" + environment::get_value_or_default("ORES_HTTP_PORT", "20600");
-}
 
 std::optional<compute::domain::app>
 find_app_by_name(std::ostream& out, nats_client& session, const std::string& name) {

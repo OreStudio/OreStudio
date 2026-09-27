@@ -32,6 +32,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_feedback.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/command_token.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/history_diff_renderer.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/http_base_url.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/ores.shell.app.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/pagination_context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/request_helpers.hpp"

@@ -83,6 +83,34 @@ public:
                                           const std::filesystem::path& src,
                                           const std::string& bearer_token);
 
+    /**
+     * @brief Downloads a remote resource into memory via HTTP GET.
+     *
+     * Same wire behaviour as get(), but returns the response body instead of
+     * writing it to a file -- e.g. so a caller can read a listing document.
+     *
+     * @param url           Full URL of the resource (http://host:port/path)
+     * @param bearer_token  The caller's bearer token, without the "Bearer " prefix
+     * @return              The response body.
+     * @throws std::runtime_error on connection, HTTP, or I/O failure
+     */
+    static std::string get_returning_body(const std::string& url,
+                                         const std::string& bearer_token);
+
+    /**
+     * @brief Deletes a remote resource via HTTP DELETE, returning the response
+     * body.
+     *
+     * The body carries the server's answer, so a caller can tell a removal from
+     * a key that held nothing.
+     *
+     * @param url           Full URL of the resource (http://host:port/path)
+     * @param bearer_token  The caller's bearer token, without the "Bearer " prefix
+     * @return              The response body.
+     * @throws std::runtime_error on connection, HTTP, or I/O failure
+     */
+    static std::string del(const std::string& url, const std::string& bearer_token);
+
 private:
     struct url_parts {
         std::string host;

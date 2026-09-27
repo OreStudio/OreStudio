@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 8B82EA9B-0D2E-4D1D-B463-FD01C91F9717
+:END:
+#+title: Task: Give the shell a raw storage surface over a local path
+#+description: A shell menu whose verbs are a bucket, a key and a local path, over the storage HTTP interface.
+#+type: task
+#+level: s1
+#+filetags: :close_storage_leftovers:sprint_26:v0:
+#+owner: marco
+#+branch: feature/close-storage-leftovers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A caller that only wants bytes somewhere reaches storage from the shell with
+nothing but a bucket, a key and a local path. The verbs move files over the HTTP
+interface, so no value is bounded by a message size, and a caller never learns a
+domain verb to put bytes away.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] |
+| Now          | Implementation complete; verified live. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge with the story branch.           |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- =storage put <bucket> <key> <path>= uploads a local file, and
+  =storage get <bucket> <key> <path>= writes it back byte-identical.
+- =storage delete= and =storage list= complete the raw verb set.
+- The client can delete and list, with tests that assert the verb and the URL it
+  lands on.
+- The consumer verbs that wrap storage keep working on the protocol keys.
+
+* Plan
+
+1. Add what the client lacks, because a raw surface needs operations the client
+   does not have: =GET= of a body for a listing, and =DELETE=.
+2. Add the two transfer helpers over them.
+3. Write the menu as a hand-written unit, because no model declares a local path.
+4. Resolve the HTTP base URL through one shell helper instead of a third copy.
+5. Prove it live, then make the two transports agree on the listing document.
+
+* Notes
+
+- The generated =objects= menu already covered the NATS protocol, so the new work
+  was the HTTP half. The two menus now keep both interfaces exercisable by hand,
+  which is what the interface story set out to do.
+- The base URL had two identical copies in the shell before this.
+  =ores.shell.api= now holds the one definition and both old copies are gone.
+- =storage list= could not parse the server's reply at first: the HTTP document
+  omitted =message=, which the protocol's listing reply declares. The route now
+  emits it, so one parser reads a listing off either interface. The same was done
+  for =DELETE=.
+- The route patterns now compose from =storage_paths::prefix=, so the client and
+  the server cannot drift apart on the path.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The shell has a raw storage surface, and the client behind it is complete for
+every operation the routes serve except =HEAD=.
+
+*What was built.*
+
+- =ores.shell.storage=' =raw_storage_commands=: a =storage= menu with =put=,
+  =get=, =delete= and =list=. It is hand-written because no model declares a
+  local path; the generated =objects= menu stays as the NATS surface.
+- =http_client= gained =get_returning_body= and =del=, and lost four copies of
+  its connect boilerplate to one =connected_stream= helper.
+- =storage_transfer= gained =remove= and =list=, and =storage_paths= gained the
+  bucket and listing URL builders with query escaping.
+- =default_http_base_url= moved into =ores.shell.api=, replacing two identical
+  copies in the compute and ore command units.
+- The storage routes compose their patterns from =storage_paths::prefix=, and
+  their listing and delete documents carry the protocol's own shape.
+
+*Verified.* A live shell run against the running fleet uploaded a 4096-byte
+random file, downloaded it, and the two hashes matched: =storage get= is
+byte-identical. =storage list --prefix= reported the object and then reported
+none after =storage delete= reported removing it. A put of a path that is not a
+file failed with "Not a file" and no HTTP call. The storage core suite passes 79
+assertions in 24 cases, including the new delete, list and query-escaping tests.
+
+*Left over.* =http_client= still cannot ask with =HEAD=, so existence stays a
+read; the protocol declares no =exists= operation either. That is recorded on
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]].

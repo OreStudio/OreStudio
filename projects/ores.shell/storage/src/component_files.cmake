@@ -21,9 +21,11 @@
 # To modify, update the template and regenerate.
 set(files
     "app/commands/storage/objects_operations_commands.cpp"
+    "app/commands/storage/raw_storage_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/storage/objects_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/storage/raw_storage_commands.hpp"
 )

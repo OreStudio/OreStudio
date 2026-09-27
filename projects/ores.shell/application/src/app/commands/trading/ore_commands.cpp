@@ -22,10 +22,10 @@
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
-#include "ores.platform/environment/environment.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
+#include "ores.shell/app/http_base_url.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
@@ -45,7 +45,6 @@ namespace ores::shell::app::commands {
 
 using namespace logging;
 using ores::nats::service::nats_client;
-using ores::platform::environment::environment;
 
 namespace {
 
@@ -53,10 +52,6 @@ constexpr std::chrono::seconds default_import_timeout(600);
 constexpr std::chrono::seconds import_request_timeout(60);
 constexpr std::chrono::seconds export_request_timeout(300);
 constexpr std::uint32_t default_export_limit = 10000;
-
-std::string default_http_base_url() {
-    return "http://localhost:" + environment::get_value_or_default("ORES_HTTP_PORT", "20600");
-}
 
 std::optional<boost::uuids::uuid>
 parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {

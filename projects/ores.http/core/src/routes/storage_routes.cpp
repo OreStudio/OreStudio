@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.utility/crypto/sha256.hpp"
 #include <algorithm>
 #include <charconv>
@@ -111,12 +112,19 @@ void storage_routes::register_routes(
 
     BOOST_LOG_SEV(lg(), info) << "Registering storage routes";
 
+    // The prefix is the contract's, not this file's, so the routes and the
+    // callers that build URLs from it cannot drift apart.
+    const std::string object_pattern =
+        std::string(storage::net::storage_paths::prefix) + "/{bucket}/{key}";
+    const std::string bucket_pattern =
+        std::string(storage::net::storage_paths::prefix) + "/{bucket}";
+
     // The {key} path parameter may contain slashes (e.g. "workunit-id/input.tar.gz").
     // The router captures everything after {bucket}/ as the key. The object
     // routes are registered before the listing route, because a bare
     // /api/v1/storage/{bucket} also matches a path with a slash: registration
     // order is what keeps the longer pattern in front.
-    router->add_route(router->put("/api/v1/storage/{bucket}/{key}")
+    router->add_route(router->put(object_pattern)
                           .summary("Upload storage object")
                           .description("Upload an object into the named bucket under the given key")
                           .tags({"storage"})
@@ -124,7 +132,7 @@ void storage_routes::register_routes(
                           .handler([this](const http_request& req) { return handle_put(req); })
                           .build());
 
-    router->add_route(router->get("/api/v1/storage/{bucket}/{key}")
+    router->add_route(router->get(object_pattern)
                           .summary("Download storage object")
                           .description("Download an object from the named bucket by key")
                           .tags({"storage"})
@@ -132,7 +140,7 @@ void storage_routes::register_routes(
                           .handler([this](const http_request& req) { return handle_get(req); })
                           .build());
 
-    router->add_route(router->head("/api/v1/storage/{bucket}/{key}")
+    router->add_route(router->head(object_pattern)
                           .summary("Check storage object")
                           .description("Report whether an object exists and how large it is, "
                                        "without transferring it")
@@ -141,7 +149,7 @@ void storage_routes::register_routes(
                           .handler([this](const http_request& req) { return handle_head(req); })
                           .build());
 
-    router->add_route(router->delete_("/api/v1/storage/{bucket}/{key}")
+    router->add_route(router->delete_(object_pattern)
                           .summary("Delete storage object")
                           .description("Delete an object from the named bucket by key")
                           .tags({"storage"})
@@ -150,7 +158,7 @@ void storage_routes::register_routes(
                           .build());
 
     router->add_route(
-        router->get("/api/v1/storage/{bucket}")
+        router->get(bucket_pattern)
             .summary("List storage objects")
             .description("List a page of the objects in a bucket, filtered by "
                          "key prefix")
@@ -281,7 +289,7 @@ asio::awaitable<http_response> storage_routes::handle_delete(const http_request&
 
     try {
         const bool removed = store_.remove(bucket, key);
-        co_return http_response::json(std::string(R"({"success":true,"removed":)") +
+        co_return http_response::json(std::string(R"({"success":true,"message":"","removed":)") +
                                       (removed ? "true" : "false") + "}");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "DELETE error: " << e.what();
@@ -310,8 +318,11 @@ asio::awaitable<http_response> storage_routes::handle_list(const http_request& r
     const auto first = std::min<std::size_t>(offset, total);
     const auto last = std::min<std::size_t>(first + limit, total);
 
+    // The document is the listing reply the NATS interface declares, field for
+    // field, so one parser reads a listing off either interface.
     std::ostringstream body;
-    body << R"({"success":true,"total_available_count":)" << total << R"(,"objects":[)";
+    body << R"({"success":true,"message":"","total_available_count":)" << total
+         << R"(,"objects":[)";
     for (std::size_t i = first; i < last; ++i) {
         if (i != first)
             body << ',';

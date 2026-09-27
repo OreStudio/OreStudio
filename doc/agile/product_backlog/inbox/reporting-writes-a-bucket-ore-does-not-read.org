@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5A66C421-B55C-408D-9897-19E1290064F6
+:END:
+#+title: Reporting writes the report blobs to a bucket ore does not read
+#+description: ores.reporting hands ores.trading and ores.marketdata the bucket 'report-data' and a two-segment key '<instance_id>/trades.msgpack', while ores.ore reads the same keys from the protocol bucket 'ores'. The write and the read of one object therefore disagree, so the ORE packaging step cannot find the blobs. The retired name also survives the migration the storage interface task recorded as complete.
+#+type: capture
+#+level: cross
+#+filetags: :storage:reporting:ore:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

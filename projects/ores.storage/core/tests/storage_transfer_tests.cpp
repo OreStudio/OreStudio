@@ -167,3 +167,53 @@ TEST_CASE("upload_blob_then_download_blob_round_trips_arbitrary_bytes", tags) {
     BOOST_LOG_SEV(lg, info) << "Round-tripped " << round_tripped.size() << " bytes";
     CHECK(round_tripped == original);
 }
+
+TEST_CASE("remove_targets_the_object_url_and_returns_the_server_answer", tags) {
+    auto lg(make_logger(test_suite));
+
+    loopback_http_server server;
+    storage_transfer sut(server.base_url(), test_token);
+
+    const std::string answer = R"({"success":true,"removed":true})";
+    server.set_get_body(answer);
+
+    const auto actual = sut.remove("ores", "ore/imports/abc.tar.gz");
+
+    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_method() << " " << server.last_target();
+    CHECK(server.last_method() == "DELETE");
+    CHECK(server.last_target() == "/api/v1/storage/ores/ore/imports/abc.tar.gz");
+    CHECK(server.last_authorization() == "Bearer " + test_token);
+    CHECK(actual == answer);
+}
+
+TEST_CASE("list_asks_the_bucket_url_for_the_requested_page", tags) {
+    auto lg(make_logger(test_suite));
+
+    loopback_http_server server;
+    storage_transfer sut(server.base_url(), test_token);
+
+    const std::string listing =
+        R"({"success":true,"total_available_count":2,)"
+        R"("objects":[{"key":"ore/imports/a.tar.gz","size_bytes":12}]})";
+    server.set_get_body(listing);
+
+    const auto actual = sut.list("ores", "ore/imports/", 5, 25);
+
+    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_target();
+    CHECK(server.last_method() == "GET");
+    CHECK(server.last_target() ==
+          "/api/v1/storage/ores?prefix=ore/imports/&offset=5&limit=25");
+    CHECK(actual == listing);
+}
+
+TEST_CASE("list_escapes_a_prefix_that_would_otherwise_change_the_query", tags) {
+    auto lg(make_logger(test_suite));
+
+    loopback_http_server server;
+    storage_transfer sut(server.base_url(), test_token);
+
+    sut.list("ores", "a b&c=d", 0, 100);
+
+    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_target();
+    CHECK(server.last_target() == "/api/v1/storage/ores?prefix=a%20b%26c%3Dd&offset=0&limit=100");
+}

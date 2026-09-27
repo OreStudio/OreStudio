@@ -22,6 +22,7 @@
 
 #include "ores.storage.core/export.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <span>
 #include <string>
@@ -118,6 +119,33 @@ public:
     void download(const std::string& bucket,
                   const std::string& key,
                   const std::filesystem::path& dest_file);
+
+    /**
+     * @brief Delete an object from storage via HTTP DELETE.
+     *
+     * @param bucket    Bucket holding the object.
+     * @param key       Object key within the bucket.
+     * @return          The server's response body, which reports whether an
+     *                  object was there to remove.
+     * @throws std::runtime_error on HTTP or I/O failure.
+     */
+    std::string remove(const std::string& bucket, const std::string& key);
+
+    /**
+     * @brief List one page of a bucket's keys, filtered by prefix.
+     *
+     * @param bucket    Bucket to list.
+     * @param prefix    Only keys that start with this; empty means every key.
+     * @param offset    How many matching keys to skip.
+     * @param limit     How many keys to return.
+     * @return          The server's listing document: the page, and the total
+     *                  the caller is paging through.
+     * @throws std::runtime_error on HTTP or I/O failure.
+     */
+    std::string list(const std::string& bucket,
+                     const std::string& prefix,
+                     std::uint32_t offset,
+                     std::uint32_t limit);
 
     // ── Composite helpers ─────────────────────────────────────────────────
 

@@ -40,11 +40,11 @@ wrong port.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CC5F510F-28C4-40F8-B1F3-D5F666F3EDB9][Remove the ores.web fleet workaround]] |
-| Now          | The scripts are deleted and the referencing files are updated. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Run the gates and raise the pull request. |
+| Next          | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -137,3 +137,29 @@ via its "Verifies task" field.
 | 1 | The middle =process.env[...]= fallback in the two port reads is probably dead, since =loadEnv= with an empty prefix already merges =process.env= | =packages/web/vite.config.ts= | Accept | Confirmed in the installed Vite rather than from memory: =loadEnv= ends with a loop that copies every =process.env= key whose name starts with a prefix, so an empty prefix copies them all, and it runs last, which means it also overrides the file. The fallback could never run. Dropping it leaves one source for each port instead of three, and the reason is now in the comment so the next reader does not put it back. |
 
 * Result
+
+Both scripts are gone, and so is everything that offered them: the README's
+standalone-path section, the =stack= npm script, the prerequisites comment
+in =verify-login.ts=, and the reproduction step of the live capture on
+=iam.v1.accounts.list=. The closed sprint 25 review record that names the
+script is left as it was written, because it records a decision as it was
+taken.
+
+The capability the script was covering is kept. =npm run dev:web= starts
+the Vite server that proxies =/api= to the BFF, and it now reads the
+checkout's =.env= rather than depending on its caller to export the ports,
+which is what the deleted script was doing for it. Two numbers worth
+carrying: the scripts were 316 lines, and they started four of the
+twenty-five units the fleet generates.
+
+Verified on the branch: =npm run build=, =npm run typecheck=, =npm test=
+with 10 test files and 70 cases, =compass lint= and =validate_docs.sh= all
+pass. The dev server was started against the running fleet, read 21402 from
+the checkout =.env=, and proxied =/api/health= to the BFF, answering
+={"status":"ok"}=.
+
+One review note was taken and fixed: the middle =process.env= fallback in
+the port reads was dead, which the installed Vite confirms. The round also
+rebased the branch onto main and resolved one conflict in the sprint's
+hotfix table, where main had added a build-restoration hotfix in the same
+place this story appends its own row.

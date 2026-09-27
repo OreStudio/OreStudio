@@ -8,7 +8,7 @@
 #+filetags: :shell-command-collisions:sprint_26:v0:
 #+owner: marco
 #+branch: fix/shell-menu-collisions
-#+pr: 2272
+#+pr: 2273
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -79,6 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2273][#2273]] | [agile] Close the shell menu collision story |
 | [[https://github.com/OreStudio/OreStudio/pull/2272][#2272]] | [shell] Give every shell menu one owner and stop the silent shadowing |
 
 * Review

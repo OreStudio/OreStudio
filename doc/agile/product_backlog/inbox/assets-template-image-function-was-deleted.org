@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 9449262A-491F-475F-9753-FC853D0BC390
+:END:
+#+title: The assets clean pass dropped the template-image function refdata still calls
+#+description: The assets clean pass regenerated assets_images_create.sql from the model and dropped the hand-written ores_assets_get_template_image_fn. Refdata's LEI party publish still calls it and iam_service is still granted execute on it, so Acme provisioning fails at step 1 with: function ores_assets_get_template_image_fn(unknown) does not exist.
+#+type: capture
+#+level: cross
+#+filetags: :assets:refdata:sql:codegen:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Commit =119efdee23= ("[assets] Apply the generation and clear the superseded
+hand-written files") regenerated =projects/ores.sql/create/assets/assets_images_create.sql=
+from the assets model. The file had carried a hand-written
+=ores_assets_get_template_image_fn=, and the generated replacement does not.
+Nothing defines the function anywhere in the tree today.
+
+Three callers still expect it:
+
+- =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql:2370=
+  calls it in the LEI party publish, to attach the system tenant's template logo
+  to a known-LEI counterparty.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp:1048=
+  selects from it when it copies the template logo.
+- =projects/ores.sql/create/iam/iam_service_db_grants_create.sql:148= still grants
+  =execute= on it to =iam_service=, so the grant itself outlived the function.
+
+* Why
+
+A freshly recreated database can no longer provision the Acme tenant. The
+tenant-aware workflow engine fix let the base bundle publish leave step 0 for
+the first time, and it then failed on the missing function. The provisioning
+record on the day reads:
+
+=✗ Failed to provision Acme tenant: Query execution failed: ERROR: function
+ores_assets_get_template_image_fn(unknown) does not exist=
+
+This is the same class the generation gate exists for: a hand-written SQL object
+lived inside a generated file, so regenerating the file deleted it silently.
+Either the model must express the function (as the assets publish-from-DQ and
+RLS scripts now are), or the function must move to a hand-written file that the
+aggregator includes.
+
+* References
+
+- The removal: =git show 119efdee23 -- projects/ores.sql/create/assets/assets_create.sql=;
+  the definition was in the pre-image of =assets_images_create.sql=.
+- The design intent for the logo copy:
+  =doc/agile/versions/v0/sprint_25/acme_corporation_followups/task_gleif_import_should_attach_counterparty_logos.org=.
+- The grant drift that left the grant behind:
+  =doc/agile/versions/v0/sprint_25/investigate-hand-added-service-grants/task_investigate-grants-drift.org=.
+- Found while re-provisioning Acme after the =feature/clean-refdata= rebase, on
+  a database built from nothing.
+
+* See also
+
+- [[id:1117D49B-5460-4A3A-AE4F-8263A3270251][Bring ores.refdata to the clean standard]]

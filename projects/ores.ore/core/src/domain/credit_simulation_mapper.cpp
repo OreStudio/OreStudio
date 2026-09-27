@@ -18,11 +18,11 @@
  *
  */
 #include "ores.ore.core/domain/credit_simulation_mapper.hpp"
+#include "ores.ore.core/domain/credit_simulation_grid.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <cctype>
 #include <charconv>
-#include <cmath>
 #include <cstddef>
 #include <stdexcept>
 #include <unordered_map>
@@ -50,8 +50,32 @@ void set_audit(T& r) {
     r.change_commentary = std::string(audit_commentary);
 }
 
+// Every generated text field is a distinct struct derived from xsd::string, so
+// the base subobject is the only assignment target a std::string converts to.
+template <typename T>
+void assign_text(T& target, const std::string& value) {
+    static_cast<xsd::string&>(target) = value;
+}
+
 bool parse_bool_string(const std::string& v) {
     return v == "Y" || v == "YES" || v == "TRUE" || v == "True" || v == "true" || v == "1";
+}
+
+double parse_double(const std::string& text) {
+    double value = 0.0;
+    const auto parsed =
+        std::from_chars(text.data(), text.data() + text.size(), value);
+    if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size())
+        throw std::runtime_error("A transition matrix bound is not a number: " + text);
+    return value;
+}
+
+std::string format_double(double value) {
+    char buffer[64];
+    const auto written = std::to_chars(buffer, buffer + sizeof(buffer), value);
+    if (written.ec != std::errc{})
+        throw std::runtime_error("Could not format a transition matrix bound");
+    return std::string(buffer, written.ptr);
 }
 
 }
@@ -73,79 +97,6 @@ bool credit_simulation_mapper::parse_bool(domain::bool_ v) {
 
 domain::bool_ credit_simulation_mapper::make_bool(bool v) {
     return v ? domain::bool_::Y : domain::bool_::N;
-}
-
-std::string credit_simulation_mapper::format_number(double value) {
-    char buffer[64];
-    const auto written = std::to_chars(buffer, buffer + sizeof(buffer), value);
-    if (written.ec != std::errc{})
-        throw std::runtime_error("Could not format a transition matrix probability");
-    return std::string(buffer, written.ptr);
-}
-
-std::vector<std::vector<double>>
-credit_simulation_mapper::parse_grid(const std::string& text) {
-    std::vector<double> values;
-    const char* pos = text.data();
-    const char* const end = pos + text.size();
-    while (pos != end) {
-        while (pos != end && (std::isspace(static_cast<unsigned char>(*pos)) || *pos == ','))
-            ++pos;
-        if (pos == end)
-            break;
-        const char* const token = pos;
-        while (pos != end && !std::isspace(static_cast<unsigned char>(*pos)) && *pos != ',')
-            ++pos;
-        double value = 0.0;
-        const auto parsed = std::from_chars(token, pos, value);
-        if (parsed.ec == std::errc{} && parsed.ptr == pos)
-            values.push_back(value);
-    }
-
-    const auto size = values.size();
-    const auto dimension = static_cast<std::size_t>(
-        std::llround(std::sqrt(static_cast<double>(size))));
-    if (dimension == 0 || dimension * dimension != size)
-        throw std::runtime_error("A transition matrix Data grid is not square");
-
-    std::vector<std::vector<double>> grid(dimension, std::vector<double>(dimension, 0.0));
-    for (std::size_t i = 0; i < dimension; ++i)
-        for (std::size_t j = 0; j < dimension; ++j)
-            grid[i][j] = values[i * dimension + j];
-    return grid;
-}
-
-std::string credit_simulation_mapper::format_grid(const std::vector<std::vector<double>>& grid) {
-    std::string text;
-    for (std::size_t i = 0; i < grid.size(); ++i) {
-        if (i != 0)
-            text += '\n';
-        for (std::size_t j = 0; j < grid[i].size(); ++j) {
-            if (j != 0)
-                text += ", ";
-            text += format_number(grid[i][j]);
-        }
-    }
-    return text;
-}
-
-std::vector<std::vector<double>> credit_simulation_mapper::assemble_grid(
-    const std::vector<analytics::domain::credit_simulation_matrix_cell_config>& cells) {
-    std::size_t dimension = 0;
-    for (const auto& cell : cells) {
-        const auto from = static_cast<std::size_t>(std::max(cell.from_state, 0));
-        const auto to = static_cast<std::size_t>(std::max(cell.to_state, 0));
-        dimension = std::max(dimension, std::max(from, to) + 1);
-    }
-
-    std::vector<std::vector<double>> grid(dimension, std::vector<double>(dimension, 0.0));
-    for (const auto& cell : cells) {
-        if (cell.from_state < 0 || cell.to_state < 0)
-            throw std::runtime_error("A transition matrix cell carries a negative state");
-        grid[static_cast<std::size_t>(cell.from_state)][static_cast<std::size_t>(cell.to_state)] =
-            cell.probability;
-    }
-    return grid;
 }
 
 mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v) {
@@ -170,32 +121,36 @@ mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v
         analytics::domain::credit_simulation_matrix_config matrix;
         matrix.id = new_uuid();
         matrix.name = tm.Name;
+        matrix.t0 = tm.Data.t0 ? parse_double(*tm.Data.t0) : 0.0;
+        matrix.t1 = tm.Data.t1 ? parse_double(*tm.Data.t1) : 0.0;
         set_audit(matrix);
         matrix_ids[matrix.name] = matrix.id;
 
-        mapped_matrix_states states;
-        states.matrix_id = matrix.id;
-        if (tm.Data.t0)
-            states.t0 = *tm.Data.t0;
-        if (tm.Data.t1)
-            states.t1 = *tm.Data.t1;
-
-        const auto grid = parse_grid(tm.Data);
-        for (std::size_t i = 0; i < grid.size(); ++i) {
-            for (std::size_t j = 0; j < grid[i].size(); ++j) {
+        const auto grid = parse_credit_simulation_grid(tm.Data);
+        const auto side = grid.side();
+        for (std::size_t position = 0; position < grid.labels.size(); ++position) {
+            analytics::domain::credit_simulation_matrix_state_config state;
+            state.id = new_uuid();
+            state.transition_matrix_id = matrix.id;
+            state.position = static_cast<int>(position);
+            state.credit_rating_code = grid.labels[position];
+            set_audit(state);
+            mapped.states.push_back(std::move(state));
+        }
+        for (std::size_t row = 0; row < side; ++row) {
+            for (std::size_t col = 0; col < side; ++col) {
                 analytics::domain::credit_simulation_matrix_cell_config cell;
                 cell.id = new_uuid();
                 cell.transition_matrix_id = matrix.id;
-                cell.from_state = static_cast<int>(i);
-                cell.to_state = static_cast<int>(j);
-                cell.probability = grid[i][j];
+                cell.from_state = static_cast<int>(row);
+                cell.to_state = static_cast<int>(col);
+                cell.probability = grid.values[row * side + col];
                 set_audit(cell);
                 mapped.cells.push_back(std::move(cell));
             }
         }
 
         mapped.matrices.push_back(std::move(matrix));
-        mapped.matrix_states.push_back(std::move(states));
     }
 
     for (const auto& e : v.Entities.Entity) {
@@ -221,16 +176,18 @@ mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v
 creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulation& v) {
     creditsimulation document;
 
-    std::unordered_map<std::string, mapped_matrix_states> states_by_matrix;
-    for (const auto& states : v.matrix_states)
-        states_by_matrix[boost::uuids::to_string(states.matrix_id)] = states;
-
     std::unordered_map<std::string, std::string> matrix_names;
     for (const auto& matrix : v.matrices) {
         matrix_names[boost::uuids::to_string(matrix.id)] = matrix.name;
 
-        domain::transitionmatrix tm;
-        tm.Name = matrix.name;
+        std::vector<analytics::domain::credit_simulation_matrix_state_config> states;
+        for (const auto& state : v.states) {
+            if (state.transition_matrix_id == matrix.id)
+                states.push_back(state);
+        }
+        std::sort(states.begin(), states.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.position < rhs.position;
+        });
 
         std::vector<analytics::domain::credit_simulation_matrix_cell_config> cells;
         for (const auto& cell : v.cells) {
@@ -242,42 +199,55 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
                 return lhs.from_state < rhs.from_state;
             return lhs.to_state < rhs.to_state;
         });
-        tm.Data = format_grid(assemble_grid(cells));
 
-        const auto states = states_by_matrix.find(boost::uuids::to_string(matrix.id));
-        if (states != states_by_matrix.end()) {
-            if (!states->second.t0.empty())
-                tm.Data.t0 = states->second.t0;
-            if (!states->second.t1.empty())
-                tm.Data.t1 = states->second.t1;
+        std::size_t side = states.size();
+        for (const auto& cell : cells)
+            side = std::max(
+                side, static_cast<std::size_t>(std::max(cell.from_state, cell.to_state)) + 1);
+
+        credit_simulation_grid grid;
+        grid.values.assign(side * side, 0.0);
+        for (const auto& state : states)
+            grid.labels.push_back(state.credit_rating_code);
+        for (const auto& cell : cells) {
+            if (cell.from_state < 0 || cell.to_state < 0)
+                throw std::runtime_error("A transition matrix cell carries a negative state");
+            grid.values[static_cast<std::size_t>(cell.from_state) * side +
+                        static_cast<std::size_t>(cell.to_state)] = cell.probability;
         }
+
+        domain::transitionmatrix tm;
+        assign_text(tm.Name, matrix.name);
+        assign_text(tm.Data, format_credit_simulation_grid(grid));
+        tm.Data.t0 = format_double(matrix.t0);
+        tm.Data.t1 = format_double(matrix.t1);
 
         document.TransitionMatrices.TransitionMatrix.push_back(std::move(tm));
     }
 
     for (const auto& entity : v.entities) {
         domain::entity e;
-        e.Name = entity.name;
-        e.FactorLoadings = entity.factor_loadings;
+        assign_text(e.Name, entity.name);
+        assign_text(e.FactorLoadings, entity.factor_loadings);
         const auto matrix = matrix_names.find(boost::uuids::to_string(entity.transition_matrix_id));
         if (matrix == matrix_names.end())
             throw std::runtime_error("An entity points at a transition matrix that is not mapped");
-        e.TransitionMatrix = matrix->second;
+        assign_text(e.TransitionMatrix, matrix->second);
         e.InitialState = entity.initial_state;
         document.Entities.Entity.push_back(std::move(e));
     }
 
-    document.NettingSetIds = v.netting_set_ids;
+    assign_text(document.NettingSetIds, v.netting_set_ids);
 
     document.Risk.Market = make_bool(parse_bool_string(v.config.market));
     document.Risk.Credit = make_bool(parse_bool_string(v.config.credit));
     document.Risk.ZeroMarketPnl = make_bool(v.config.zero_market_pnl);
-    document.Risk.Evaluation = v.config.evaluation;
+    assign_text(document.Risk.Evaluation, v.config.evaluation);
     document.Risk.DoubleDefault = make_bool(v.config.double_default);
     document.Risk.Seed = v.config.seed;
     document.Risk.Paths = v.config.paths;
-    document.Risk.CreditMode = v.config.credit_mode;
-    document.Risk.LoanExposureMode = v.config.loan_exposure_mode;
+    assign_text(document.Risk.CreditMode, v.config.credit_mode);
+    assign_text(document.Risk.LoanExposureMode, v.config.loan_exposure_mode);
 
     return document;
 }

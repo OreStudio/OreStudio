@@ -24,10 +24,10 @@
 #include "ores.analytics.api/domain/credit_simulation_entity_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_cell_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_config.hpp"
+#include "ores.analytics.api/domain/credit_simulation_matrix_state_config.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -35,36 +35,20 @@
 namespace ores::ore::domain {
 
 /**
- * @brief The state labels one transition matrix's Data element declares.
- *
- * ORE names a matrix's states through the optional @c t0 and @c t1 attributes
- * of the @c Data element, beside the grid of probabilities. The analytics
- * matrix table carries only the matrix's name, so the labels are held here
- * while a document is in flight and written back on export. A caller that
- * persists the mapped matrices cannot recover them, exactly as with
- * @c mapped_fx::advance_calendars.
- */
-struct mapped_matrix_states {
-    boost::uuids::uuid matrix_id;
-    std::string t0;
-    std::string t1;
-};
-
-/**
  * @brief One ORE CreditSimulation document, mapped to the analytics entities.
  *
- * The four entity lists are the tables a document decomposes into: the root
+ * The five entity lists are the tables a document decomposes into: the root
  * configuration with its Risk block, the entities that migrate, the named
- * matrices and the matrix cells. Two values on the ORE document have no
- * column of their own and ride beside the entities: the netting set ids and
- * each matrix's state labels.
+ * matrices with their bounds, the states each matrix spans and the matrix
+ * cells. The netting set ids have no column of their own and ride beside the
+ * entities.
  */
 struct mapped_credit_simulation {
     analytics::domain::credit_simulation_config config;
     std::vector<analytics::domain::credit_simulation_entity_config> entities;
     std::vector<analytics::domain::credit_simulation_matrix_config> matrices;
+    std::vector<analytics::domain::credit_simulation_matrix_state_config> states;
     std::vector<analytics::domain::credit_simulation_matrix_cell_config> cells;
-    std::vector<mapped_matrix_states> matrix_states;
     std::string netting_set_ids;
 };
 
@@ -72,11 +56,11 @@ struct mapped_credit_simulation {
  * @brief Maps between an ORE CreditSimulation XML document and the analytics
  * credit simulation entities.
  *
- * Import turns each matrix's Data grid into one cell row per entry, keyed to
- * the matrix and the (from_state, to_state) pair; a matrix's name becomes its
- * identity within the document and an entity refers to it by that id, never
- * by text. Export reassembles each matrix's grid from its rows, ordered by
- * from_state and then to_state, so the document comes back cell for cell.
+ * Import turns each matrix's Data grid into a matrix row, one state row per
+ * label the grid's comment names, and one cell row per entry, keyed to the
+ * matrix and the (from_state, to_state) pair; an entity refers to its matrix
+ * by id, never by text. Export reassembles the grid from the state and cell
+ * rows, so the document comes back cell for cell and label for label.
  */
 class ORES_ORE_CORE_EXPORT credit_simulation_mapper {
 private:
@@ -91,44 +75,22 @@ private:
     static bool parse_bool(domain::bool_ v);
     static domain::bool_ make_bool(bool v);
 
-    static std::string format_number(double value);
-    static std::vector<std::vector<double>>
-    assemble_grid(const std::vector<analytics::domain::credit_simulation_matrix_cell_config>& cells);
-
 public:
     /**
      * @brief Maps an ORE CreditSimulation document to the analytics entities.
      *
-     * Every matrix becomes a matrix row plus one cell row per grid entry, and
-     * every entity points at the matrix id its TransitionMatrix name resolves
-     * to.
+     * Every matrix becomes a matrix row plus a state row per label and a cell
+     * row per grid entry, and every entity points at the matrix id its
+     * TransitionMatrix name resolves to.
      */
     static mapped_credit_simulation map(const creditsimulation& v);
 
     /**
      * @brief Reconstructs an ORE CreditSimulation document from mapped entities.
      *
-     * Each matrix's grid is reassembled from its cell rows and the state
-     * labels recorded at import are restored.
+     * Each matrix's grid is reassembled from its state and cell rows.
      */
     static creditsimulation reverse(const mapped_credit_simulation& v);
-
-    /**
-     * @brief Parses a Data element's whitespace or comma separated square grid.
-     *
-     * Tokens that are not numbers are skipped, so a comment the decoder left in
-     * the character data cannot derail the grid. A grid that is not square is
-     * an error.
-     */
-    static std::vector<std::vector<double>> parse_grid(const std::string& text);
-
-    /**
-     * @brief Formats a square grid as the text of a Data element.
-     *
-     * Numbers use the shortest representation that parses back to the same
-     * value, so a round trip is exact.
-     */
-    static std::string format_grid(const std::vector<std::vector<double>>& grid);
 };
 
 }

@@ -46,6 +46,7 @@ set(files
     "xml_counterpartyinformation_roundtrip_tests.cpp"
     "xml_credit_golden_roundtrip_tests.cpp"
     "xml_credit_mapper_roundtrip_tests.cpp"
+    "xml_creditsimulation_mapper_roundtrip_tests.cpp"
     "xml_creditsimulation_roundtrip_tests.cpp"
     "xml_crossassetmodel_roundtrip_tests.cpp"
     "xml_currency_config_tests.cpp"

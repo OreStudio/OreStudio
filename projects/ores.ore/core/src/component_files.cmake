@@ -59,6 +59,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/composite_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/conventions_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/credit_instrument_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/credit_simulation_grid.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/credit_simulation_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/currency_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/domain.hpp"

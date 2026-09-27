@@ -28,15 +28,15 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][Stop ores.shell menus from silently shadowing each other]] |
-| Now          | Not yet started.                       |
+| Now          | The seven shadowed verbs are deleted, the menus they were shadowed by are merged, and a duplicate now fails at startup. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review round on PR 1.                  |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
 
 - No two shell command units register the same menu name, and a duplicate would fail at startup rather than be shadowed.
-- The eight dead verbs are either migrated to the generated menus or deleted with the reason recorded.
+- The seven dead verbs are either migrated to the generated menus or deleted with the reason recorded.
 - The shell's command surface is unchanged for every verb that currently answers.
 
 * Plan
@@ -44,6 +44,20 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Five commits, each verified before the next.
+
+1. Measure the census against the live fleet, then delete the seven verbs the
+   generated units already answer, with the helpers only they called.
+2. Give the root one owner per name: a =shell_root_menu= that claims a name once
+   and refuses a second claim, an =insert_menu= seam every generated unit calls
+   through the template, and =extend_menu= so a second unit contributes verbs to
+   a menu another unit owns instead of registering a second menu.
+3. A gate, =check_shell_menu_collisions.py=, plus a CI job that runs its
+   self-test before the check.
+4. Fix the provisioning smoke recipe, whose =tenants add= has been aborting.
+5. Route the twenty drifted refdata and synthetic units through the seam without
+   absorbing their model drift.
 
 * Notes
 
@@ -71,3 +85,59 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The census, measured before any edit. Four menus were registered twice, not the
+five the story recorded: the dq/reporting =report_definitions= collision went
+with the generator fix. Seven verbs were dead, not eight: the story counted
+=permissions get=, and the hand-written permissions menu defined only =list= and
+=suggest=. The dead seven were =accounts list=, =roles list= and =roles get=,
+=permissions list=, and =tenants get=, =tenants add= and =tenants delete=, each
+confirmed against the live fleet by a flag only the generated verb accepts.
+
+The symptom the census had missed, and the one the report named. Only the first
+unit's verbs appear in a menu's help, so =help= inside =accounts= listed five
+verbs and hid the seventeen the hand-written unit answered. That is the "menu
+options hidden" report; a caller reading the help could not see them, and the
+provisioning smoke recipe had been written against the hidden five-argument
+=tenants add=, so it aborted on its first tenant.
+
+One owner per name, verified two ways. =shell_root_menu= claims a name once and
+throws naming the name and the reason; =insert_menu= is what every unit inserts
+through, declared in the codegen template so a component that gains a unit joins
+the rule with no edit. All 167 generated units that build a menu claim their
+name, and the run against the live fleet is the proof: 207 root names claimed, no
+collision, and the shell starts.
+
+Both units' verbs answer at one address. =extend_menu= records the verbs a
+second unit contributes and the root applies them once every unit has registered,
+so registration order cannot decide whether an extension lands. =accounts=,
+=permissions= and =tenants= went from two menus each to one. The help inside
+=accounts= now lists all twenty-two verbs and =tenants= lists =history= and
+=complete-provisioning= beside the generated ten.
+
+The surface is unchanged, checked verb by verb against the live fleet rather than
+assumed: =accounts list=, =accounts info=, =roles list=, =roles get=,
+=permissions list=, =permissions suggest=, =tenants history=, and =page-size= in
+both of its forms.
+
+Two further defects the work forced, because the guard cannot hold otherwise.
+=page-size= was registered twice in =navigation_commands.cpp=, a show form and a
+set form, and the CLI answered by falling through from the first to the second
+when the arity did not match; they are one command now. And =tenants add= in
+=doc/recipes/shell/provisioning/bootstrap_smoke.org= used the hand-written
+five-argument form and the type =organisation=, which no tenant type seed
+defines.
+
+What this does not close. The runtime check reads a menu's name through
+=Menu::Prompt()=, because =cli::Command= keeps the name protected; the gate
+rejects any =cli::Menu= construction that passes a separate prompt, which is what
+holds the two together. The gate reads nested menu constructions as if they were
+root ones, so it can report a collision the runtime would not; a false positive
+names both files, and no such pair exists today. And =check_shell_menu_collisions=
+is not yet in the local =compass lint= set, only in the codegen-drift workflow.
+
+Evidence: the gate reports 411 files, 207 root names, 0 collisions, 0 prompt
+defects, and its =--self-test= fails on a planted duplicate and a planted prompt.
+Test suites: ores.shell.iam 245 cases, ores.shell.refdata 1212,
+ores.shell.trading 374, ores.shell.api 30 of 31 where the one failure is a
+pre-existing =ores.platform= date-format expectation this branch does not touch.

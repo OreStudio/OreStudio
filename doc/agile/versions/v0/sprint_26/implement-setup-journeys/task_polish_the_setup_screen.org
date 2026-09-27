@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/polish-the-setup-screen
-#+pr:
+#+pr: 2297
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2297][#2297]] | [web] Give the setup screen its banner and its copy |
 
 * Review
 

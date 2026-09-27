@@ -169,14 +169,16 @@ std::string(faker::lorem::sentence())
 
 ** Table display
 
-| column         | header         |
-|----------------+----------------|
-| code           | Code           |
-| name           | Name           |
-| authority_type | Authority      |
-| domain_name    | Domain         |
-| modified_by    | Modified By    |
-| version        | Version        |
+| column            | header         |
+|-------------------+----------------|
+| code              | Code           |
+| name              | Name           |
+| authority_type    | Authority Type |
+| subject_area_name | Subject Area   |
+| domain_name       | Domain         |
+| description       | Description    |
+| modified_by       | Modified By    |
+| version           | Version        |
 
 ** Custom repository methods
 

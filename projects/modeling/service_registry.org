@@ -181,6 +181,13 @@
 
 - ores_reporting_
 
+** Select prefixes
+
+# The report_instance_lifecycle state map loads from DQ's own tables, through
+# fsm_state_repository::read_latest_by_machine_name: a state's name is unique
+# only within its machine, so the machine is resolved where its name lives.
+- ores_dq_fsm_
+
 ** Execute prefixes
 
 - ores_reporting_publish_
@@ -285,6 +292,14 @@
 ** DML prefixes
 
 - ores_workflow_
+
+** Select prefixes
+
+# The workflow_instance and workflow_step state maps load from DQ's own
+# tables, through fsm_state_repository::read_latest_by_machine_name: a
+# state's name is unique only within its machine, so the machine is resolved
+# where its name lives.
+- ores_dq_fsm_
 
 * ores.ore.service
 :PROPERTIES:

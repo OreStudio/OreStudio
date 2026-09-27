@@ -186,6 +186,7 @@ select _ores_grant_dml_fn('ores_scheduler_', :'scheduler_service_user');
 -- reporting_service: Reporting domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_reporting_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_dq_fsm_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
@@ -223,6 +224,7 @@ select _ores_grant_execute_fn('ores_synthetic_publish_', :'synthetic_service_use
 -- workflow_service: Workflow Orchestration domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
+select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 
 -- ---------------------------------------------------------------------------
 -- ore_service: ORE Import domain service

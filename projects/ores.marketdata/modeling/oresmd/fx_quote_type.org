@@ -97,3 +97,4 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | oresmd://fx/eurusd?type=quote&role=discount | reject_fx_uri_with_ir_only_role_field |
 | oresmd://fx/eurusd?type=quote&index=libor | reject_fx_uri_with_ir_only_index_field |
 | oresmd://fx/eurusd?type=quote&ccy=usd | reject_fx_uri_with_ccy_query_key |
+| oresmd://fx/eurusd?type=quote&model=rate_lnvol | reject_fx_model_when_type_not_vol |

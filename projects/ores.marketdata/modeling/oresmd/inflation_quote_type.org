@@ -87,3 +87,9 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00 | round_trip_inflation_zc_capfloor_price |
 | oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00 | round_trip_inflation_cf_price |
 | oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02 | round_trip_inflation_yy_capfloor_normal_vol |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y&model=rate_lnvol | reject_inflation_model_when_type_not_vol |

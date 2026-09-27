@@ -6,7 +6,6 @@
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: credit
 #+validate: inline_delegate
-#+quote_type_checked: false
 #+authority: credit
 #+component: ores.marketdata
 #+level: s2
@@ -111,3 +110,5 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 |-----+-------------|
 | oresmd://credit/itraxx-europe?ccy=eur&type=quote&index=libor | reject_credit_uri_with_ir_only_index_field |
 | oresmd://credit/itraxx-europe?type=quote&point=sr,5y | reject_credit_uri_missing_mandatory_ccy |
+| oresmd://credit/itraxx-europe?ccy=eur&type=curve&quote=cds | reject_credit_quote_when_type_not_quote |
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&model=rate_lnvol | reject_credit_model_when_type_not_vol |

@@ -95,3 +95,4 @@ A logical, possibly-partial oresmd requirement for a rating provider.
 |-----+-------------|
 | oresmd://rating/provider_1?ccy=usd&type=quote&quote=transition_probability&point=aaa,aa | reject_rating_uri_with_ccy |
 | oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa&metric=rate | reject_rating_uri_with_ir_only_metric |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa&model=rate_lnvol | reject_rating_model_query_key |

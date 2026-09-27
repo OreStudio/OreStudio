@@ -97,3 +97,4 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | oresmd://equity/aapl?ccy=usd&type=quote&tenor=3m | reject_equity_uri_with_ir_only_tenor_field |
 | oresmd://equity/aapl?ccy=usd&type=fixing&quote=dividend | reject_equity_quote_when_type_not_quote |
 | oresmd://equity/aapl?type=quote | reject_equity_uri_missing_mandatory_ccy |
+| oresmd://equity/aapl?ccy=usd&type=quote&model=rate_lnvol | reject_equity_model_when_type_not_vol |

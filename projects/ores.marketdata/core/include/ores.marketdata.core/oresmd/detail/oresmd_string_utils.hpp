@@ -42,6 +42,18 @@ inline std::string to_lower(std::string_view s) {
     return r;
 }
 
+/**
+ * @brief Whether @p s is shaped like an ISO 4217 code: three alphabetic characters.
+ *
+ * Both grammars place a currency in a fixed segment, so both have to answer this.
+ * The check is on shape alone -- which currencies exist is ores.refdata's question,
+ * not this library's.
+ */
+inline bool is_currency_code(std::string_view s) {
+    return s.size() == 3 &&
+           std::ranges::all_of(s, [](unsigned char c) { return std::isalpha(c); });
+}
+
 }
 
 #endif

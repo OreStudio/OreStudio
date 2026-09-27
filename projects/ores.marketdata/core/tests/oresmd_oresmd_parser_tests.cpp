@@ -980,6 +980,11 @@ TEST_CASE("reject_fx_uri_with_ccy_query_key", tags) {
                       oresmd_exception);
 }
 
+TEST_CASE("reject_fx_model_when_type_not_vol", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&model=rate_lnvol")),
+                      oresmd_exception);
+}
+
 TEST_CASE("reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?type=fixing&index=sofr&ccy=usd")),
                       oresmd_exception);
@@ -988,6 +993,23 @@ TEST_CASE("reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency
 TEST_CASE("reject_ir_metric_present_when_type_is_not_quote", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_ir_model_when_type_not_vol", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?type=quote&model=rate_lnvol")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_ir_entity_that_is_not_a_currency", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/notaccy?type=quote")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_ir_bond_option_ccy_query_key", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(
+            uri("oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm&ccy=eur")),
         oresmd_exception);
 }
 
@@ -1029,6 +1051,12 @@ TEST_CASE("reject_equity_uri_missing_mandatory_ccy", tags) {
                       oresmd_exception);
 }
 
+TEST_CASE("reject_equity_model_when_type_not_vol", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&model=rate_lnvol")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_credit_uri_with_ir_only_index_field", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&index=libor")),
@@ -1039,6 +1067,18 @@ TEST_CASE("reject_credit_uri_missing_mandatory_ccy", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?type=quote&point=sr,5y")),
         oresmd_exception);
+}
+
+TEST_CASE("reject_credit_quote_when_type_not_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?ccy=eur&type=curve&quote=cds")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_credit_model_when_type_not_vol", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(
+                          uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&model=rate_lnvol")),
+                      oresmd_exception);
 }
 
 TEST_CASE("parse_correlation_pairwise", tags) {
@@ -1340,6 +1380,12 @@ TEST_CASE("reject_commodity_uri_missing_mandatory_ccy", tags) {
                       oresmd_exception);
 }
 
+TEST_CASE("reject_commodity_model_when_type_not_vol", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&model=rate_lnvol")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_security_uri_with_ccy", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(
                           uri("oresmd://security/security_1?ccy=usd&type=quote&quote=bond_price")),
@@ -1350,6 +1396,13 @@ TEST_CASE("reject_security_uri_with_ir_only_metric", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri(
                           "oresmd://security/security_1?type=quote&quote=bond_price&metric=price")),
                       oresmd_exception);
+}
+
+TEST_CASE("reject_security_model_query_key", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(
+            uri("oresmd://security/security_1?type=quote&quote=bond_price&model=rate_lnvol")),
+        oresmd_exception);
 }
 
 TEST_CASE("reject_shape_profile_uri_with_ccy", tags) {
@@ -1367,6 +1420,14 @@ TEST_CASE("reject_shape_profile_uri_with_ir_only_metric", tags) {
         oresmd_exception);
 }
 
+TEST_CASE("reject_shape_profile_model_query_key", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri(
+            "oresmd://shape_profile/"
+            "pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&model=rate_lnvol")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_rating_uri_with_ccy", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(
@@ -1380,6 +1441,28 @@ TEST_CASE("reject_rating_uri_with_ir_only_metric", tags) {
         oresmd_parser::parse(
             uri("oresmd://rating/"
                 "provider_1?type=quote&quote=transition_probability&point=aaa,aa&metric=rate")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_rating_model_query_key", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri(
+            "oresmd://rating/"
+            "provider_1?type=quote&quote=transition_probability&point=aaa,aa&model=rate_lnvol")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_correlation_model_query_key", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(
+            uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise&model=rate_lnvol")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_inflation_model_when_type_not_vol", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(
+            uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y&model=rate_lnvol")),
         oresmd_exception);
 }
 

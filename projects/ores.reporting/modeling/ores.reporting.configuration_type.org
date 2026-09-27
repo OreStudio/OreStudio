@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 2E7A4C18-9F63-4D05-B8A2-6C1E3D7F9042
+:END:
+#+title: ores.reporting.configuration_type
+#+description: Codegen entity model for the reporting =configuration_type= table. The kinds of configuration a report can bind.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A kind of configuration a report can bind.
+#+entity_singular: configuration_type
+#+entity_plural: configuration_types
+#+entity_title: Configuration Type
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Reference data naming the kinds of configuration a report can bind: the ORE
+run itself, a stress library, a sensitivity analysis, a simulation, a SIMM
+calibration, a credit simulation, a historical return set, a Basel traffic
+light set, and the curve and reference documents.
+
+This is a seeded vocabulary, not free text. A discriminator stored as a bare
+code cannot be constrained, counted or joined, which is why every
+configuration carries one of these rows by foreign key. Adding a kind is a
+row here plus a workflow, never a column on the report definition.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_configuration_types_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code for the kind, for example ore_run or stress_testing.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the kind.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the kind appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_configuration_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: configuration type
+:entity_plural_words:   configuration types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ct
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/configuration_type.hpp
+:domain_class:           reporting::domain::configuration_type
+:protocol_include:       ores.reporting.api/messaging/configuration_type_protocol.hpp
+:collection_name:        types
+:key_field:              code
+:get_request_class:      reporting::messaging::get_configuration_types_request
+:get_response_class:     reporting::messaging::get_configuration_types_response
+:get_message_type:       get_configuration_types_request
+:save_request_class:     reporting::messaging::save_configuration_type_request
+:save_response_class:    reporting::messaging::save_configuration_type_response
+:save_message_type:      save_configuration_type_request
+:delete_request_class:   reporting::messaging::delete_configuration_type_request
+:delete_response_class:  reporting::messaging::delete_configuration_type_response
+:delete_message_type:    delete_configuration_type_request
+:END:
+
+*** Detail fields
+
+| field         | label | type      | is_key | is_required | placeholder |
+|---------------+-------+-----------+--------+-------------+-------------|
+| code          | Code  | line_edit | true   | true        | Enter configuration type code |
+| name          | Name  | line_edit |        | true        | Enter display name |
+| display_order | Order | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name    | field         | header | type   | width |
+|--------------+---------------+--------+--------+-------|
+| Code         | code          | Code   | string | 160   |
+| Name         | name          | Name   | string | 220   |
+| DisplayOrder | display_order | Order  | int    | 80    |
+| Version      | version       | Version | int   | 80    |
+| ModifiedBy   | modified_by   | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

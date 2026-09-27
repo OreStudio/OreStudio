@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: D697A04C-387C-451E-AC90-1989FCDFCAB9
+:END:
+#+title: Report post-processing
+#+description: Ingesting the engine's results: unpacking the output archive, parsing the tabular result files, and loading them into a queryable result store.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:postprocessing:results:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+Post-processing reads the archive the engine produced and records what it
+contains. The output is a set of delimited files, one per analytic: net present
+values, cashflows, curve points and whatever else the run's configuration asked
+for. Post-processing parses them and loads them into tables shaped for the
+queries that will read them.
+
+It is the phase whose cost is proportional to the size of the result, and the
+one where throughput is decided. Like pre-processing it has a documented
+substitute: a run configured to ignore results records where the output is and
+stops, so the pipeline and the workflow can be exercised without ingestion
+working.
+
+* Detail
+
+** The steps
+
+| Step | Reads | Produces |
+|------+-------+----------|
+| Fetch | object storage, by the recorded output location | the output archive |
+| Unpack | the archive | one delimited file per analytic |
+| Parse | each file | typed rows, in batches |
+| Load | the rows | rows in the result store |
+| Record | the counts | the run's result summary |
+
+Fetch and unpack are the same for every analytic. Parse and load are per
+analytic family, because the columns differ.
+
+** The result store
+
+The results are tabular and homogeneous, and the queries against them are
+columnar: one analytic, many keys, one run. Three properties follow.
+
+- *One narrow table per analytic family.* The columns are the analytic's own
+  keys and measures. A single table keyed by analytic name and row key would be
+  an entity-attribute-value layout and would cost a join for every read.
+- *Provenance is separated from measures.* The run identifier, the engine
+  version and the timestamps are written once per file and read rarely; keeping
+  them out of the measure rows keeps the scanned relation narrow.
+- *Loaded in bulk.* The ingestion path is a bulk load of a parsed file, not a
+  sequence of row writes through an entity interface. The volume makes the
+  difference between the two decisive.
+
+Ownership of the store is the open question on this page. The results are the
+output of a run, and reporting owns the run, so a result store in reporting is
+the shortest path and has one writer. The alternative is that each analytic's
+results belong to the domain that owns the underlying data — valuations to
+trading, curves to market data — with =ores.ore= still supplying the parser,
+because the engine's output formats are its subject. That distributes one file
+across several writers.
+
+The cost of the shortest path should be stated rather than discovered: results
+landing in reporting's database make them a reporting asset, so moving them to a
+domain later is a migration.
+
+** What is not bound to ORE
+
+The result files are delimited tables, not an ORE document. Their shape — a
+header, then rows of keys and measures — is the same shape any analytic engine
+produces. Binding the store to ORE's schema would tie a reporting concern to one
+engine's output format for no benefit, and the parser is the only part that
+needs to know the format at all.
+
+** The substitute: ignoring results
+
+When the run's configuration selects the substitute, the phase is not executed.
+The workflow dispatches a step that records the output location on the run and
+completes. Nothing is fetched, parsed or loaded.
+
+This is what allows a run to complete while the result store is unwritten, and
+it is deliberately the weakest of the substitutes: it proves that a run can
+reach a terminal state and that its output exists, and it proves nothing about
+the contents. Three conditions hold, as for pre-processing:
+
+- *The output must still be recorded.* A run that ignores its results must still
+  name where they are, or the work is lost the moment the archive expires.
+- *The parallel phase must be indistinguishable.* Finalisation knows that the
+  run completed and where the output is; it is not told whether the results were
+  read.
+- *The substitution must be recorded on the run.* A completed instance whose
+  results were never ingested must not be mistaken for one whose results are
+  queryable.
+
+** What does not exist today
+
+- No parsing of the engine's output at all. The archive is uploaded and
+  archived; nothing reads it.
+- No result store, and no model for one.
+- The phase that was meant to do this is a stub that records completion without
+  fetching anything, and its own comment says the work is deferred.

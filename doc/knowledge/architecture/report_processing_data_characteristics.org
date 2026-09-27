@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 12CE932E-6562-4D4D-A66E-C910E6423ED1
+:END:
+#+title: Report processing data characteristics
+#+description: The three data regimes a report run spans, the access pattern of each, and what they require of the interfaces.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:performance:data_oriented_design:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A report run moves through three kinds of data, and they do not resemble one
+another. The first is domain rows in PostgreSQL — trades and market data — read
+in large quantities and written not at all. The second is a document the ORE
+engine consumes, assembled once from those rows and then discarded. The third is
+a set of tabular result files, written once and read many times afterwards.
+
+The cost of a run is dominated by reading the first and writing the third.
+Mapping is the next largest, and the engine's own computation is not ORE
+Studio's cost at all. Concurrency multiplies the reads, so much of the design is
+concerned with not doing the same work twice.
+
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+supplies the criteria; this page applies them to a report run and states what
+the measurements are expected to show.
+
+* Detail
+
+** The three regimes
+
+| Regime | Data | Access pattern | What it requires |
+|--------+------+----------------+------------------|
+| Domain rows | trades, market data | large reads, no writes | bulk, scope-limited reads; never one call per entity |
+| Input document | the engine's input files | written once, read once, discarded | a boundary mapping layer; a reusable artifact keyed by its inputs |
+| Result files | tabular engine output | written once, read repeatedly | bulk load into narrow tables shaped for the query that will read them |
+
+A run reads the first regime, transforms it into the second, and produces the
+third. Each transition changes the data's shape, and each therefore needs a
+different interface.
+
+** Domain rows are read in bulk
+
+The quantity of trades and market data a single report needs can be very large,
+and the same books are read by many reports at once. An interface that returns
+one entity per call, or a page per book, turns a report's input into thousands
+of round trips and makes the interactive service that answers them the
+bottleneck.
+
+The requirement is a *scope read*: a defined scope and an as-of timestamp in, a
+bounded columnar batch out, computed by the component that owns the selection
+rules. Trading owns which trades a scope contains; market data owns which items
+those trades require. Neither is asked to know what a report is.
+
+Two further requirements follow from the same reasoning:
+
+- *Resolution, not a dump.* Reading every market series the tenant holds is
+  correct only by accident, and it makes the run's cost independent of the
+  report's size. What is needed is the set the selected trades require,
+  including the dependency closure of any curve those trades reference.
+- *Selection is part of the read.* Filtering after transfer moves the cost
+  rather than reducing it. The scope belongs in the query.
+
+** The input document is transient and reusable
+
+An ORE input is a document: a fixed set of XML files and flat files whose names
+and references to one another matter. It is assembled from domain rows, consumed
+once by the engine, and of no further use to the database. It is therefore a
+boundary artifact in the sense the data-oriented design page describes: a
+document tree that a mapping layer produces and discards.
+
+Its value is that it is *determined* by its inputs. The same scope, the same
+market data timestamp and the same engine configuration produce byte-identical
+input. That makes it addressable by a digest of those inputs, and it makes the
+second and subsequent runs over the same scope cost a lookup rather than a
+generation.
+
+One condition must hold for this to be sound: every input to the digest must be
+immutable. The market data timestamp qualifies only because market data is
+temporal, so a correction produces a new timestamp and therefore a new digest.
+Any input that can change without changing the digest would silently serve stale
+data.
+
+** Result files are tabular and large
+
+The engine's output is a set of delimited files, one per analytic, each with a
+header and a rectangular body. They are the shape a relational database loads
+best: parse once, load in bulk, index for the query that will read them.
+
+Three consequences:
+
+- *Load by bulk insert, not by row.* A per-row write path spends its time in
+  round trips; the volume here is large enough that the difference is the
+  difference between seconds and hours.
+- *One narrow table per analytic family.* Queries read one analytic across many
+  keys for one run, which is a columnar access. A single generic table keyed by
+  analytic and key would be an entity-attribute-value layout and would destroy
+  that access.
+- *Separate provenance from measures.* The values are read; the run identifier,
+  engine version and timestamps are not. Keeping provenance out of the wide path
+  keeps the table narrow.
+
+** What the measurements must establish
+
+The reasoning above is a set of predictions, and the predictions should be
+checked before more is built on them. Each measurement below decides something
+specific; none is collected for its own sake.
+
+| Measurement | Taken where | What it decides |
+|-------------+-------------+-----------------|
+| Rows and bytes read per run, against rows and bytes the report needs | scope reads | whether selection is selective enough, or whether a dump is being filtered downstream |
+| Duration of each pre-processing step: read, resolve, map, package, upload | pre-processing | which step to optimise first; whether the cost is mapping or I/O |
+| Artifact cache hit rate across runs | the artifact store | whether addressing by digest repays its cost, or whether inputs churn |
+| Peak resident memory against input size | pre-processing and post-processing | whether the transforms stream, or materialise |
+| Rows per second on result ingestion, per file | post-processing | whether bulk load is being used effectively |
+| Queue wait against engine duration | the grid | whether the pipeline or the grid is the bottleneck |
+| Re-dispatched steps and compensations per run | the workflow engine | whether idempotency holds in practice, and how often work repeats |
+| Schedule-to-trigger and trigger-to-running latency | scheduler, reporting | whether orchestration overhead is material next to execution |
+
+The first two are the ones that test the architecture: if reads are not
+selective, or if mapping dominates, the decomposition is wrong and the answers
+change. The cache hit rate decides whether the artifact should be addressed by
+digest at all, or whether a simpler scheme would do.
+
+** What would falsify the design
+
+- If the cache hit rate is near zero because every run names a different
+  timestamp or scope, digest addressing is complexity without benefit and the
+  artifact should simply be written per run.
+- If reads dominate by an order of magnitude and scope reads cannot be made
+  selective, the data needs a projection of its own — a prepared read model —
+  rather than a query over the transactional tables.
+- If post-processing cannot exceed the rate at which runs produce output, then
+  ingestion needs to be decoupled from the run rather than performed inside it.

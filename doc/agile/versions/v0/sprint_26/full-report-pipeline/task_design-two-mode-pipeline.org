@@ -88,11 +88,18 @@ via its "Verifies task" field.
 
 * Result
 
-Delivered as [[id:259EA767-EDF7-45EF-BE4D-B1A8FA96F7BD][Report execution
-modes]]. It states the stage list with an owner for each, the storage-URI seam
-that makes the two modes interchangeable, the rule that step results are
-addressed by role rather than index, the full NATS contract hop by hop, and
-two PlantUML interaction diagrams whose rendered images were read.
+Delivered first as *Report execution modes*, then replaced. A review found that
+document mis-shaped: its subject was a configuration mechanism rather than the
+architecture, and it was written as one page where the documentation convention
+asks for a structure note and atomic notes. The replacement is
+[[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]], a cluster of
+nine pages, and the record of what it contains is on that task.
+
+The first version stated the stage list with an owner for each, the storage
+arrangement that made the two modes interchangeable, the rule that step results
+are addressed by role rather than index, the full NATS contract hop by hop, and
+two PlantUML interaction diagrams whose rendered images were read. Most of that
+survives in the cluster; what changed is the frame and the wording.
 
 The design's most useful output is not the diagram but the distance it
 measured, because that is what changes the plan:

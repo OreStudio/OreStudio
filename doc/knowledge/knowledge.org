@@ -41,6 +41,7 @@ one, start there rather than here.
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order an entity's layers must be built in |
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
+| [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |
 
 Every structure note carries the =structure_note= tag, so listing that
 tag returns the complete set.

@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 01083101-A83A-4294-81A4-DDF3192CEB14
+:END:
+#+title: Report Processing
+#+description: Structure note for the report processing cluster — the definition and its schedule, the phases of a run, the workflow that executes them, the data characteristics that shape the interfaces, pre-processing, the compute handoff, post-processing, substitution, and the message reference.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:structure_note:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+A report in ORE Studio is a scheduled request for the ORE engine to value a
+scope of trades as at a date. Processing one means reading those trades and the
+market data they need out of the domain databases, assembling them into the
+input the engine consumes, handing that input to the compute grid, and recording
+what the engine returns.
+
+The cluster covers that path end to end: where a run comes from, what it does,
+what executes it, what data it moves, how each end of it is built, and how part
+of it can be replaced while its dependencies are still being built. It is the
+architecture a report feature is implemented against, and it is written to be
+read before changing any of the components on the path —
+[[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]],
+[[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]],
+[[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] and
+[[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]].
+
+* Reading order
+
+** What a report is, and how a run comes to exist
+
+[[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] —
+start here. The definition, its parameters and its run configuration, the job
+the scheduler holds on its behalf, and the instance that records a run. Read it
+first because everything below assumes the distinction it draws: the definition
+is configuration, the instance is state.
+
+** What a run does
+
+[[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the six
+phases end to end, what each is responsible for, which of them can be replaced,
+and what every phase may assume of the phase before it.
+
+** What executes the phases
+
+[[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] —
+read immediately after the pipeline, because it answers the question the
+pipeline raises: nothing calls a phase directly. The workflow engine invokes
+each one, rebuilds the chain on every dispatch, and re-dispatches unfinished
+work after a restart. The obligations this puts on a phase — idempotence above
+all — are what the phase pages below must satisfy.
+
+** Why the phases are shaped the way they are
+
+[[id:12CE932E-6562-4D4D-A66E-C910E6423ED1][Report processing data characteristics]] —
+the three kinds of data a run moves and the access pattern of each. Read it
+before the phase pages, because it explains their interfaces: why the domain
+reads must be bulk and scope-limited, why the engine's input is addressed by a
+digest of its inputs, and why results are loaded in bulk into narrow tables. It
+also states what to measure, and what each measurement would falsify.
+
+** The phases, in the order they run
+
+[[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] — selecting the
+trades, resolving the market data they need, mapping both into the engine's
+documents, and packaging an archive named by a digest of its inputs. The most
+expensive phase, and the one with the most dependencies.
+
+[[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]] — the contract
+with the grid: what a run submits, what a workunit requires, what the worker
+does, what comes back, and what a run must guarantee about submitting twice.
+
+[[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] — unpacking the
+engine's output and loading it into a result store shaped for the queries that
+will read it.
+
+** Running part of it
+
+[[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] — read
+after the phases it replaces. The two ends of the pipeline can each be replaced
+by a prepared substitute: pre-processing by an input archive that already
+exists, post-processing by recording only where the output is. This is what
+allows the pipeline and the workflow around it to be exercised before the trade
+and market data components are ready, and the page states what such a run proves
+and what it does not.
+
+** The reference
+
+[[id:8DAB4D55-9D53-48FA-96B0-2EA432B4B42C][Report processing interfaces]] — every
+message and every storage key a run uses, with its publisher and consumer. Read
+last, or alongside whichever phase page you are implementing; it is a list
+rather than an argument.
+
+* What this cluster does not cover
+
+[[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] owns the subject
+grammar and the message contract every interface above is written in. Read it
+before adding a subject; this cluster says which subjects a report uses, not
+what a well-formed one looks like.
+
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] owns the grid's
+own states and vocabulary — batches, workunits, results, hosts. This cluster
+starts at the boundary of that: what a report run sends and what it must do with
+what comes back.
+
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]]
+owns how a logical need for market data becomes concrete items. Pre-processing
+consumes that resolution; it does not define it.
+
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+supplies the criteria the data characteristics page applies. It judges the
+shapes; it does not describe a report.
+
+[[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] owns where durable data
+lives and which interface reaches each store. This cluster names the objects a
+run writes and does not choose the store.
+
+[[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] and its
+neighbours own what the engine's configuration documents mean. Pre-processing
+produces them; what a curve configuration or a pricing configuration should
+contain is decided there.

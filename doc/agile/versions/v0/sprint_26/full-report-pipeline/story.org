@@ -45,6 +45,9 @@ One report definition runs end to end from the scheduler through the workflow to
 | [[id:68A0FEFB-2567-4CD0-AF2C-3DBEC9EE75FD][Implement demo mode end to end from a schedule]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
 | [[id:AF4AA624-EC1E-47C1-98B1-E0598653CC38][Implement full mode: selection, ORE export and result import]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
 | [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
+| [[id:FF1B7C3A-85E3-442B-801F-0B25ECF58E39][Implement report pre-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
+| [[id:6AB675A3-BFCE-4607-96AB-F74144AF93AC][Implement report post-processing]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
+| [[id:AF9F5930-3D00-4EF7-AA4B-B6996AB71C13][Measure report processing and record a baseline]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute in two modes |
 
 * Decisions
 

@@ -69,3 +69,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered. Seven tasks now carry the remaining work, each with a goal, a
+testable acceptance and its own branch:
+
+- Correct the ores.reporting entity models, for M04 and M08.
+- Validate the instance's definition key and type the schedule, two of the
+  three defects no checklist item names.
+- Decide and act on the report input bundle model, the third.
+- Complete the reporting diagrams and write the audit record, for H01.
+- Repair the registrar composition and generate the risk_report_config
+  surface, for P01 and S01.
+- Make reporting's shell commands answer, for V04's reporting-owned causes.
+- Fix the three shared codegen template defects, for G04.
+
+The work itself is not done here: this task creates the units and nothing else.
+The one judgement worth recording is the split. The shell menu collision is not
+among them, because it already has its own story with five menus to fix, and
+the ten =report_definitions= commands that fail on it are that story's, not
+this component's.

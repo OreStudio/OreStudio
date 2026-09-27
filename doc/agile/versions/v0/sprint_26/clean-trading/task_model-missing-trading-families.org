@@ -36,9 +36,9 @@ to the reference-data work and are out of scope, per decision D5.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Branch =feature/model-missing-trading-families= cut from main at the PR 2 merge. |
+| Now          | M09's model half is done and verified in trading: the generator facets are collapsed, the retired presentation properties are gone, the three trading libs and their tests build, the three suites pass and the drift dry run is empty. The whole-tree build is blocked by =ores.workflow=, which still consumes the dq protocol dq deleted. |
 | Waiting on   | PR 2 merged, so the model work starts from a drift-clean tree. |
-| Next         | Bind the 26 unbound entities, then author the seven missing models. |
+| Next         | Bind the 26 unbound entities or record each no-match with its features, then author the seven missing models. Re-verify the whole-tree build once the workflow consumer lands on main. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance

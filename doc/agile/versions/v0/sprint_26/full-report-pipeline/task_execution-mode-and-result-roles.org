@@ -8,7 +8,7 @@
 #+filetags: :full-report-pipeline:sprint_26:v0:
 #+owner: marco
 #+branch: feature/execution-mode-and-result-roles
-#+pr:
+#+pr: 2289
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2289][#2289]] | [reporting] Select a report's phases from its run configuration |
 
 * Review
 

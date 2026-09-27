@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: EE473AFD-DFAB-4F72-97B0-F74D56BE9BA8
+:END:
+#+title: Task: Sweep every catalogue component for drift the registry cannot see
+#+description: The drift gate's coverage is the registry, which lists ten components; the catalogue holds twenty-four. Output that an archetype routes into another component's tree, and any generated file under a component the registry does not list, has no gate. Add a dry-run sweep over every catalogue component that fails only on files the branch touched, so a cross-component rename cannot pass review unseen.
+#+type: task
+#+level: s1
+#+filetags: :harden-clean-standard-gates:sprint_26:v0:
+#+owner: marco
+#+branch: feature/sweep-catalogue-drift
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Widen the drift gate so it covers generated output that no run of a component's
+own models can reach.
+
+The gate's coverage is the registry, and the registry lists the components that
+are already clean. Two holes follow. An archetype can route a model's output
+into another component's tree, so no run of either component reaches it. And the
+catalogue holds components the registry does not list, so their generated output
+has no gate at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
+| Now          | Writing the sweep and its tests.       |
+| Waiting on   | Nothing.                               |
+| Next         | Verify the sweep catches the measured case end to end. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A sweep renders every catalogue component, not the registry, so output an
+  archetype routes into another component's tree is reached.
+- It fails only on files the branch touched, because a component's remaining
+  drift belongs to that component's own clean-up story.
+- It renders into a temporary root and writes nothing, so it is safe on a branch
+  whose templates are older than main's.
+- It refuses when the commit to compare against cannot be resolved, rather than
+  treating every component's clean-up debt as a failure.
+- A test fails when the sweep stops finding anything, so it cannot pass a tree
+  by finding nothing.
+
+* Plan
+
+*Two holes, one cause.* =check_component_drift.py --all= renders the components
+in =COMPONENTS_UNDER_TEST= and compares the tree. That set is ten components;
+the catalogue holds twenty-one with a modeling directory. So a component waiting
+its turn has no gate, and neither does output an archetype routes into another
+component's tree.
+
+*Measured, for hole A.* The shell-command facet's output pattern routes by the
+*model's* component rather than by the catalogue component a run names, so
+rendering =ores.trading= at the =ores.cpp= address writes 66 files under
+=projects/ores.shell/=. Rendering =ores.shell= cannot reach them, because shell
+owns one model and it produces the composite root. There are 102 generated files
+under =projects/ores.shell/trading/= in the tree.
+
+*Measured, for hole B.* The =ores.service= clean-up moved three workflow header
+names out of =ores.service= into =ores.workflow.api=, and =ores.refdata= keeps a
+workflow override as a source block pasted into a generated handler. The
+generated file was hand-edited and the model left naming the deleted symbols.
+=check_component_drift.py --all= was green and CI was green on every head,
+because refdata is not in the registry.
+
+*The rule, and why it needs a base.* A full comparison cannot be the rule: 645
+files would change across the catalogue today, and that debt belongs to each
+component's own clean-up. So the sweep fails only on a path it would change that
+the branch also touched. That needs the commit the branch diverged from, so the
+sweep takes the merge base with =origin/main= and refuses when it cannot resolve
+one. A wrong answer there is silent, which is worse than a refusal.
+
+*Why a render and not a symbol check.* The capture proposed a cheaper half as
+well: a check that every symbol a model's pasted block names resolves in the
+tree. That is a different guarantee and it is not in this task. It would catch a
+model and its generated file that agree with each other and are both stale,
+which the sweep cannot see because the render reproduces the committed bytes.
+The sweep catches the disagreement, which is the measured case.
+
+*Cost.* A full sweep is 21 components and takes about 80 seconds, which is why
+it is its own workflow rather than another step in =codegen-drift.yml=. That
+workflow fires on the inputs codegen reads; the sweep exists for the output
+codegen writes, and the measured case touched no model at all, so it fires on
+any change under =projects/=.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

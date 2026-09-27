@@ -55,6 +55,24 @@ inline std::string build_params_json(const publish_bundle_params& params) {
     return rfl::json::write(params);
 }
 
+/**
+ * @brief The per-dataset parameters a direct dataset publication carries.
+ *
+ * Deliberately narrower than publish_bundle_params, which carries bundle-only
+ * fields (opted_in_datasets, lei_parties) that a direct publication does not
+ * use.
+ */
+struct dataset_publish_params {
+    std::optional<std::string> party_id;
+};
+
+/**
+ * @brief Renders the parameters as the JSON the publish path carries.
+ */
+inline std::string build_params_json(const dataset_publish_params& params) {
+    return rfl::json::write(params);
+}
+
 }
 
 #endif

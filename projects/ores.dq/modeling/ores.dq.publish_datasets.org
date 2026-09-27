@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 881A3BB1-4995-47D9-AAAB-7B8CC183A65E
+:END:
+#+title: ores.dq.publish_datasets
+#+description: Codegen operation model for the dq per-dataset publish verb, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: publish_datasets
+#+namespace: ores::dq::messaging
+#+brief: Publishes a set of datasets to their target tables.
+#+filetags: :model:operation:dq:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The per-dataset publish verb: one request that names the datasets to publish and
+one reply that reports what was dispatched.
+
+It is the sibling of [[id:1166DC86-77A8-4E93-A3D9-E35E40550A01][ores.dq.publish_bundle]], and an operation for the same
+reasons: it addresses no row by key and returns a dispatch count rather than a
+record. Both verbs build the same bundle-publish workflow request, so they also
+share one hand-written handler, =ores.dq.core/messaging/publish_handler.hpp=.
+
+The datasets are dispatched individually rather than as a bundle member list, so
+the request carries dataset identifiers and no bundle code. =mode= is a string
+for the same reason the bundle verb's is: the publication mode is a hand-written
+enum with no model, so a generated TypeScript twin cannot import it.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** publish_datasets_request
+:PROPERTIES:
+:subject:  dq.v1.datasets.publish
+:response: publish_datasets_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for a set of datasets to be published.
+ */
+#+end_src
+
+*** dataset_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The datasets to publish.
+ */
+#+end_src
+
+*** mode
+:PROPERTIES:
+:cpp_type: std::string
+:default:  "upsert"
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How records are written to the target tables.
+ */
+#+end_src
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Who asked for the publication.
+ */
+#+end_src
+
+*** resolve_dependencies
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether a dataset's dependencies are published with it.
+ */
+#+end_src
+
+** publish_datasets_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports what the publication dispatched.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the publication was accepted.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was refused, when it was.
+ */
+#+end_src
+
+*** instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow instance the publication started.
+ */
+#+end_src
+
+*** datasets_dispatched
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many datasets were dispatched.
+ */
+#+end_src
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

@@ -106,6 +106,45 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part twenty-one: the report_definition staging shim stops owning reporting's menu
+
+Run on 2026-09-27. Replaying the shell's generated commands against a rebuilt
+database found that ten of them do not answer. The cause is here: dq's
+=report_definition= model binds =artefact-staging-only=, so it is the staging
+table reporting's entity is imported through -- its only SQL is
+=dq_report_definitions_artefact_create.sql= -- and it nevertheless generated a
+user-facing command unit. The shell names a menu after the entity's plural, so
+the shim generated =report_definitions=, the same menu reporting generates, and
+=dq_commands= registers before reporting's unit in =repl.cpp=. The shim won.
+
+**Why nothing noticed.** =cli::Menu::Insert= appends without a duplicate check
+and dispatch answers from the first menu that has the verb, so the collision is
+silent and the winner is decided by the order of the calls in =repl.cpp=. Five
+commands returned dq's internal error and five were rejected with an arity that
+belongs to reporting: the recipe is generated correctly for reporting's
+signature, and dq's menu is what ran.
+
+**The gate, and why the profile alone is not the condition.** The generator now
+drops =ores.cpp.shell-command= and =ores.doc.shell-recipe= for an
+=artefact-staging-only= model **whose plural another component also models**.
+The profile alone would have been wrong: three further dq models bind it
+(=lei_entity=, =lei_relationship=, =synthetic_fx_spot_config=), dq is their only
+owner, and their command units are the only surface those entities have.
+Suppressing them would trade a collision for a lost capability. The ownership
+test reads every component's modeling directory, cached per run, on the same
+reasoning as the operation-protocol scan.
+
+**Evidence.** =project(ores.dq.report_definition)= now resolves no shell unit and
+no recipe, and the other three resolve both. Regenerating dq's =ores.shell= and
+=ores.doc= facets writes nothing, so the unit is gone rather than re-emitted.
+The duplicate menu count in the shell falls from five to four; the remainder are
+ores.shell's and are carried by the [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][shell command collision story]].
+Codegen suite 805 passing, including three new tests that fail when the gate is
+disabled and only those; the shell and its dq tests build and link; twin
+coverage, handler permissions, registry exceptions, populate references, the
+shell component file lists, the recipe inventory, =validate_docs.sh= and
+=compass lint= all pass.
+
 * Step 8 part twenty: the publication run log is modelled
 
 Run on 2026-09-27. =ores_dq_dataset_publications_tbl= is modelled, so every

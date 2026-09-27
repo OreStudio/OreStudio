@@ -100,3 +100,7 @@ the contents. Three conditions hold, as for pre-processing:
 - No result store, and no model for one.
 - The phase that was meant to do this is a stub that records completion without
   fetching anything, and its own comment says the work is deferred.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

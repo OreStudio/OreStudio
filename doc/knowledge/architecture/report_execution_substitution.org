@@ -135,3 +135,7 @@ configuration exists so that the pipeline can be developed and tested ahead of
 its dependencies, and it is expected to be used in that period and then rarely.
 Nothing in the design should depend on substitution to make a run work; a run
 that needs a substitute to complete is a run whose dependencies are missing.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

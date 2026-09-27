@@ -133,3 +133,7 @@ digest at all, or whether a simpler scheme would do.
   rather than a query over the transactional tables.
 - If post-processing cannot exceed the rate at which runs produce output, then
   ingestion needs to be decoupled from the run rather than performed inside it.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

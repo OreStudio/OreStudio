@@ -107,3 +107,7 @@ be corrected before a run can submit anything:
 
 A run also needs an application version to exist for its tenant. Submission
 fails without one, and nothing in the pipeline creates it.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

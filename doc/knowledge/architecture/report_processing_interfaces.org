@@ -94,3 +94,7 @@ The three keys disappear with the phases that produced them.
   is an action rather than a resource.
 - The subject of a substitute names what it does — =use-prepared-input=,
   =ignore-results= — rather than naming the phase it replaces plus a flag.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

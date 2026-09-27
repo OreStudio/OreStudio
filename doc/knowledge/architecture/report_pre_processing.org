@@ -130,3 +130,7 @@ from the rest of the service. The interfaces above are the same either way.
 - No packaging that produces what the wrapper expects. The step named for the
   job ships two MsgPack files rather than =Input/ore.xml= and the six files it
   names.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

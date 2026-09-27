@@ -120,3 +120,7 @@ Every phase records enough for two readers: the next phase, which needs a
 location or an identifier, and an operator, who needs to know what happened. A
 phase that succeeds silently and a phase that fails silently are both defects;
 the run's record must name the phase, its outcome and the artifact it produced.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

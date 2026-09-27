@@ -140,3 +140,7 @@ A change to the definition affects the next run and no earlier one. That is why
 the workflow start message carries a copy of what the run needs rather than a
 reference to re-read: a definition edited while a run is in flight must not
 change that run's shape.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

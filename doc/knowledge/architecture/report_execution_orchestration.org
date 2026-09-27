@@ -114,3 +114,7 @@ Two failure modes are not covered by this and must be designed for:
   and dropped while the trigger has already answered that the run started, so a
   mis-selected chain looks like a success. A run must fail when its chain cannot
   be built.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

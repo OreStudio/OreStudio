@@ -288,6 +288,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
+        std::string(resolve_prepared_input_request::nats_subject),
+        group,
+        [reh](ores::nats::message msg) { reh->resolve_prepared_input(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ignore_compute_results_request::nats_subject),
+        group,
+        [reh](ores::nats::message msg) { reh->ignore_compute_results(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
         std::string(finalise_report_request::nats_subject), group, [reh](ores::nats::message msg) {
             reh->finalise(std::move(msg));
         }));

@@ -298,6 +298,41 @@ struct report_execution_request {
     std::string definition_id;
     std::string tenant_id;
     std::string correlation_id;
+    std::string pre_processing;
+    std::string prepared_input_key;
+    std::string post_processing;
+};
+
+struct resolve_prepared_input_request {
+    using response_type = struct prepare_ore_package_result;
+    static constexpr std::string_view nats_subject = "reporting.v1.report.resolve-prepared-input";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string report_instance_id;
+    std::string tenant_id;
+    std::string correlation_id;
+    std::string prepared_input_key;
+};
+
+struct ignore_compute_results_request {
+    using response_type = struct collect_compute_results_result;
+    static constexpr std::string_view nats_subject = "reporting.v1.report.ignore-compute-results";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string report_instance_id;
+    std::string tenant_id;
+    std::string correlation_id;
+    std::string batch_id;
 };
 
 }

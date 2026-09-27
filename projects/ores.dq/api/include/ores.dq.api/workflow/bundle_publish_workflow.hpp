@@ -99,7 +99,7 @@ inline void register_bundle_publish_workflow(ores::workflow::service::workflow_r
 
             s.build_command = [dataset_id, tenant_id_v, mode, params](
                                   const std::string& /*request_json*/,
-                                  const std::vector<std::string>& /*step_results*/) -> std::string {
+                                  const workflow_step_results& /*step_results*/) -> std::string {
                 ores::dq::messaging::publish_from_dq_command cmd;
                 cmd.dataset_id = dataset_id;
                 cmd.tenant_id = tenant_id_v;

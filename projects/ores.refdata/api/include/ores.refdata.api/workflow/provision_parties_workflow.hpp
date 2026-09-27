@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::refdata::workflow {
 
@@ -82,7 +83,7 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             s.compensation_subject = "refdata.v1.parties.delete";
 
             s.build_command = [](const std::string& request_json,
-                                 const std::vector<std::string>&) -> std::string {
+                                 const workflow_step_results&) -> std::string {
                 auto wr = rfl::json::read<wf::provision_party_workflow_request>(request_json);
                 if (!wr)
                     return "{}";
@@ -136,7 +137,7 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
                 std::string(ores::iam::messaging::delete_account_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                                 const std::vector<std::string>&) -> std::string {
+                                 const workflow_step_results&) -> std::string {
                 auto wr = rfl::json::read<wf::provision_party_workflow_request>(request_json);
                 if (!wr)
                     return "{}";
@@ -175,15 +176,18 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
                 std::string(ores::iam::messaging::delete_account_party_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                                 const std::vector<std::string>& prev) -> std::string {
-                if (prev.size() < 2)
-                    return "{}";
-
+                                 const workflow_step_results& prev) -> std::string {
                 auto wr = rfl::json::read<wf::provision_party_workflow_request>(request_json);
                 if (!wr)
                     return "{}";
 
-                auto ar = rfl::json::read<ores::iam::messaging::save_account_response>(prev[1]);
+                const auto* account_json = find_step_result(prev, "save_account");
+                if (!account_json)
+                    throw std::runtime_error(
+                        "link_account_party: the step 'save_account' has produced no result");
+
+                auto ar =
+                    rfl::json::read<ores::iam::messaging::save_account_response>(*account_json);
                 if (!ar || ar->account_id.empty())
                     return "{}";
 

@@ -602,6 +602,100 @@ on a subject of its own.
 :cpp_type: std::string
 :END:
 
+*** pre_processing
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Whether the run generates its engine input or resolves a prepared one. Copied
+from the definition, so the chain the workflow builds is a function of this
+message alone.
+
+*** prepared_input_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Storage key of the prepared input archive. Empty unless pre_processing is
+=substitute=.
+
+*** post_processing
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Whether the run ingests the engine's results or records only that they were
+produced. Copied from the definition.
+
+** resolve_prepared_input_request
+:PROPERTIES:
+:subject: reporting.v1.report.resolve-prepared-input
+:response: prepare_ore_package_result
+:END:
+
+Pre-processing, substituted: resolve the prepared input archive the run's
+configuration names instead of generating one from trading and market data.
+
+It answers with =prepare_ore_package_result= rather than a type of its own
+because the step that follows it must not be able to tell which of the two ran.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** prepared_input_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The archive to resolve. A run that states none is a run whose configuration is
+incomplete, and the step fails rather than answering an empty location.
+
+** ignore_compute_results_request
+:PROPERTIES:
+:subject: reporting.v1.report.ignore-compute-results
+:response: collect_compute_results_result
+:END:
+
+Post-processing, substituted: record that the engine produced results and do not
+ingest them. The archive is not fetched, parsed or loaded.
+
+It answers with =collect_compute_results_result= for the same reason
+=resolve_prepared_input_request= answers with the packaging result.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The batch whose results are left unread, so the run's record names them.
+
 * See also
 
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the operation rules this model follows.

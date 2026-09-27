@@ -180,6 +180,23 @@ export interface ReportExecutionRequest {
     definition_id: string;
     tenant_id: string;
     correlation_id: string;
+    pre_processing: string;
+    prepared_input_key: string;
+    post_processing: string;
+}
+
+export interface ResolvePreparedInputRequest {
+    report_instance_id: string;
+    tenant_id: string;
+    correlation_id: string;
+    prepared_input_key: string;
+}
+
+export interface IgnoreComputeResultsRequest {
+    report_instance_id: string;
+    tenant_id: string;
+    correlation_id: string;
+    batch_id: string;
 }
 
 export const subjects = {
@@ -195,6 +212,20 @@ export const subjects = {
     collect_compute_results_request: 'reporting.v1.report.collect-compute-results',
     finalise_report_request: 'reporting.v1.report.finalise',
     fail_report_request: 'reporting.v1.report.fail',
+    trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
+    schedule_report_definitions_request: 'reporting.v1.report-definitions.schedule',
+    unschedule_report_definitions_request: 'reporting.v1.report-definitions.unschedule',
+    publish_report_definitions_from_dq_request: 'reporting.v1.report-definitions.publish-from-dq',
+    gather_trades_request: 'reporting.v1.report.gather-trades',
+    gather_market_data_request: 'reporting.v1.report.gather-market-data',
+    assemble_bundle_request: 'reporting.v1.report.assemble-bundle',
+    prepare_ore_package_request: 'ore.v1.report.prepare-package',
+    submit_compute_request: 'compute.v1.report.submit',
+    collect_compute_results_request: 'reporting.v1.report.collect-compute-results',
+    finalise_report_request: 'reporting.v1.report.finalise',
+    fail_report_request: 'reporting.v1.report.fail',
+    resolve_prepared_input_request: 'reporting.v1.report.resolve-prepared-input',
+    ignore_compute_results_request: 'reporting.v1.report.ignore-compute-results',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -214,4 +245,6 @@ export const requiresSession = {
     collect_compute_results_request: true,
     finalise_report_request: true,
     fail_report_request: true,
+    resolve_prepared_input_request: true,
+    ignore_compute_results_request: true,
 } as const;

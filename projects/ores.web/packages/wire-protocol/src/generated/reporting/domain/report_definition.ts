@@ -43,6 +43,9 @@ export interface ReportDefinition {
     schedule_expression: string;
     concurrency_policy: string;
     scheduler_job_id: string | null;
+    pre_processing: string;
+    prepared_input_key: string;
+    post_processing: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

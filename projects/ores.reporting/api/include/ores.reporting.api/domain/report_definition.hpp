@@ -37,8 +37,14 @@ namespace ores::reporting::domain {
  * @brief Persistent template for a scheduled report.
  *
  * The persistent template for a report. Describes what to run, when to run it,
- * and how to handle concurrent executions. Type-specific configuration (e.g.
- * risk parameters) lives in a separate table keyed by report_definition_id.
+ * how to handle concurrent executions, and how much of the processing pipeline a
+ * run executes. Type-specific configuration (e.g. risk parameters) lives in a
+ * separate table keyed by report_definition_id.
+ *
+ * The run configuration is held here rather than in the environment so that a run
+ * is reproducible from the database alone. pre_processing and post_processing
+ * name, for each substitutable phase, whether the phase runs or is replaced by a
+ * prepared substitute.
  *
  * Lifecycle is managed through the report_definition_lifecycle FSM machine.
  * fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
@@ -110,6 +116,24 @@ struct report_definition final {
      * status is active.
      */
     std::optional<boost::uuids::uuid> scheduler_job_id;
+
+    /**
+     * @brief What a run does to prepare the engine's input: execute generates it from the
+     * definition's scope, substitute resolves the prepared archive named by prepared_input_key.
+     */
+    std::string pre_processing;
+
+    /**
+     * @brief Storage key of the prepared input archive that a substituting run resolves. Set only
+     * when pre_processing is substitute.
+     */
+    std::string prepared_input_key;
+
+    /**
+     * @brief What a run does with the engine's results: execute ingests them into the result store,
+     * ignore records only that the engine produced them.
+     */
+    std::string post_processing;
 
     /**
      * @brief Username of the person who last modified this report definition.

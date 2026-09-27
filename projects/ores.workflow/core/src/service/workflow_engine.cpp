@@ -204,13 +204,29 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
 
     // Only include forward step results (step_index >= 0), not compensation.
-    std::vector<std::string> results;
+    // Each result is named by the step that produced it, so a step that
+    // answered nothing cannot shift what a later step reads.
+    workflow_step_results results;
     for (const auto& s : all_steps) {
-        if (s.step_index >= 0 && !s.response_json.empty())
-            results.push_back(s.response_json);
+        if (s.step_index >= 0)
+            results.push_back(
+                workflow_step_result{.name = s.name, .response_json = s.response_json});
     }
 
-    const auto cmd_json = step_def.build_command(instance.request_json, results);
+    // A builder that cannot produce a command — a result it depends on is
+    // missing, or the request no longer parses — has nothing to publish, so the
+    // run is failed here rather than left in progress waiting for a step that
+    // was never dispatched.
+    std::string cmd_json;
+    try {
+        cmd_json = step_def.build_command(instance.request_json, results);
+    } catch (const std::exception& ex) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Cannot build the command for step " << step_def.name << " of workflow "
+            << boost::uuids::to_string(instance.id) << ": " << ex.what();
+        begin_compensation(instance, ex.what());
+        return;
+    }
     const auto next_id = boost::uuids::random_generator()();
 
     domain::workflow_step next_step;
@@ -495,8 +511,18 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         return;
     }
 
-    // Build the step list for this specific instance.
-    const auto steps = def->build_steps(req.request_json, req.tenant_id, req.correlation_id);
+    // Build the step list for this specific instance. A definition that cannot
+    // read the start message, or that does not recognise the chain the message
+    // asks for, has no run to create; the refusal is recorded here rather than
+    // thrown back at a publisher that has already been answered.
+    std::vector<workflow_step_def> steps;
+    try {
+        steps = def->build_steps(req.request_json, req.tenant_id, req.correlation_id);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Cannot build the step list for workflow type " << req.type << ": " << e.what();
+        return;
+    }
     if (steps.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Workflow definition has no steps: " << req.type;
         return;

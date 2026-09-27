@@ -30,6 +30,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
+#include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -172,6 +173,43 @@ private:
             return;
         }
 
+        // The run's configuration decides which phases the workflow builds, so a
+        // definition that states a code nobody implements is refused before an
+        // instance exists to be stuck in.
+        if (!workflow::is_known_pre_processing(def->pre_processing)) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unknown_pre_processing";
+            response.result.message =
+                std::format("Report definition {} states pre-processing '{}', which is not one of "
+                            "execute or substitute.",
+                            definition_id,
+                            def->pre_processing);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+        if (def->pre_processing == workflow::pre_processing_substitute &&
+            def->prepared_input_key.empty()) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "missing_prepared_input";
+            response.result.message =
+                std::format("Report definition {} substitutes pre-processing but names no "
+                            "prepared input archive.",
+                            definition_id);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+        if (!workflow::is_known_post_processing(def->post_processing)) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unknown_post_processing";
+            response.result.message =
+                std::format("Report definition {} states post-processing '{}', which is not one of "
+                            "execute or ignore.",
+                            definition_id,
+                            def->post_processing);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
         const auto in_flight = find_in_flight(tenant, definition_id);
 
         boost::uuids::uuid initial_state = instance_states_.require("pending");
@@ -228,7 +266,7 @@ private:
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
         if (dispatch) {
-            dispatch_workflow(req, definition_id, inst_id_str, rg, msg);
+            dispatch_workflow(req, *def, inst_id_str, rg, msg);
         }
 
         response.result.code = dispatch ? "triggered" : "not_dispatched";
@@ -256,14 +294,19 @@ private:
     }
 
     void dispatch_workflow(const trigger_report_instance_request& req,
-                           const std::string& definition_id,
+                           const ores::reporting::domain::report_definition& def,
                            const std::string& instance_id,
                            boost::uuids::random_generator& rg,
                            const ores::nats::message& msg) {
+        // The run's configuration travels into the start message so the chain
+        // the workflow builds is reproducible from the definition row alone.
         report_execution_request exec_req{.report_instance_id = instance_id,
-                                          .definition_id = definition_id,
+                                          .definition_id = boost::uuids::to_string(def.id),
                                           .tenant_id = boost::uuids::to_string(req.tenant_id),
-                                          .correlation_id = instance_id};
+                                          .correlation_id = instance_id,
+                                          .pre_processing = def.pre_processing,
+                                          .prepared_input_key = def.prepared_input_key,
+                                          .post_processing = def.post_processing};
         ores::workflow::messaging::start_workflow_message swm{
             .type = "report_execution_workflow",
             .tenant_id = boost::uuids::to_string(req.tenant_id),

@@ -25,8 +25,14 @@
  * Report Definition Table
  *
  * The persistent template for a report. Describes what to run, when to run it,
- * and how to handle concurrent executions. Type-specific configuration (e.g.
- * risk parameters) lives in a separate table keyed by report_definition_id.
+ * how to handle concurrent executions, and how much of the processing pipeline a
+ * run executes. Type-specific configuration (e.g. risk parameters) lives in a
+ * separate table keyed by report_definition_id.
+ *
+ * The run configuration is held here rather than in the environment so that a run
+ * is reproducible from the database alone. pre_processing and post_processing
+ * name, for each substitutable phase, whether the phase runs or is replaced by a
+ * prepared substitute.
  *
  * Lifecycle is managed through the report_definition_lifecycle FSM machine.
  * fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
@@ -48,6 +54,9 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "schedule_expression" text not null,
     "concurrency_policy" text not null,
     "scheduler_job_id" uuid null,
+    "pre_processing" text not null,
+    "prepared_input_key" text null,
+    "post_processing" text not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,

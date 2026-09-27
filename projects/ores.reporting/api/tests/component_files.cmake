@@ -28,4 +28,5 @@ set(files
     "eventing_reporting_events_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
+    "workflow_report_execution_tests.cpp"
 )

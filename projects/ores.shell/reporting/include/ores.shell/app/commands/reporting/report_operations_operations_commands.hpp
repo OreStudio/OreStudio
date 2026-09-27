@@ -140,6 +140,21 @@ public:
     static void process_fail_report(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief resolve-prepared-input <report_instance_id> <tenant_id> <correlation_id>
+     * <prepared_input_key>
+     */
+    static void process_resolve_prepared_input(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               const std::vector<std::string>& args);
+
+    /**
+     * @brief ignore-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+     */
+    static void process_ignore_compute_results(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               const std::vector<std::string>& args);
 };
 
 }

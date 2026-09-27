@@ -56,6 +56,9 @@ struct report_definition_entity {
     std::string schedule_expression;
     std::string concurrency_policy;
     std::optional<std::string> scheduler_job_id;
+    std::string pre_processing;
+    std::optional<std::string> prepared_input_key;
+    std::string post_processing;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

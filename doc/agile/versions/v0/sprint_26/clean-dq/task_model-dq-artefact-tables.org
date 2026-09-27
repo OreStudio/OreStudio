@@ -32,10 +32,10 @@ The design question is already answered: an artefact table *can* generate from t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | All fifteen entities are canonical and =ores.shell.dq= is wired. =check_component_drift.py --component dq= reports no drift twice in a row, so dq regenerates cleanly. Both publish verbs live in a handler of their own, so the two stashed entities are unblocked. |
+| Now          | dq has no failing test case this task owns: =ores.dq.api.tests=, =ores.dq.service.tests= and =ores.shell.dq.tests= pass, and the two remaining =ores.dq.core.tests= failures are the LEI cases that carry their own task. All fifteen entities are canonical and =ores.shell.dq= is wired. |
 | Waiting on   | Nothing.                              |
-| Next         | Land the =dataset= and =publication= models held in =git stash=, now that neither entity's handler owns a publish verb. The twelve entities whose protocol headers are still hand-written are what keep dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
-| Last touched | 2026-09-26                               |
+| Next         | Land the LEI staging-entity task, which is the last dq failure. The twelve entities whose protocol headers are still hand-written are what keep dq out of =COMPONENTS_UNDER_TEST=; the grouped work list is Step 8 in progress above. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
@@ -105,6 +105,46 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 - The umbrella headers and the bespoke handlers they carry (=badge_handler=, =badge_service=, =data_organization_handler=, =dimension_handler=) are consumed only by =registrar.cpp=, so they can go. But each carries registrations for entities that are not modelled yet — methodologies, dimensions, datasets, coding schemes, publications — and those have to move before the umbrella can be deleted.
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
+
+* Step 8 part twenty-three: the coding scheme's display drawer, and the column it lost
+
+Run on 2026-09-27. The one dq test failure part twenty-two left undiagnosed is
+now understood and fixed.
+
+**The drawer was transcribed incompletely.** When the coding scheme pair was
+modelled, =** Table display= was written with six columns. The hand-written
+renderer it replaced had eight: =Code=, =Name=, =Authority Type=, =Subject
+Area=, =Domain=, =Description=, =Modified By=, =Version=. The model dropped
+=subject_area_name= and =description=, and shortened the =authority_type=
+header to =Authority=. The generated table streamed six fields, and
+=domain_coding_scheme_tests.cpp= -- which asserts the rendered table contains
+=Description= and the description's own value -- was the only thing that
+noticed.
+
+**Why nothing else caught it.** The commit that modelled the pair reports that
+"the generated tables match the hand-written ones column for column", and that
+was true of the SQL tables. The display drawer is a separate list with no gate
+behind it, so a column can leave it silently. The census that bounds the damage:
+five dq models declare a =description= column, and coding_scheme is the only one
+whose hand-written table displayed it.
+
+**The fix.** The drawer is restated with all eight columns in the hand-written
+order, so the regenerated renderer is behaviourally identical to the one the
+model replaced. =compass codegen generate --model
+projects/ores.dq/modeling/ores.dq.coding_scheme.org --address ores.cpp= rewrote
+exactly one file, =coding_scheme_table.cpp=, which is the whole of the diff.
+
+**Evidence.** =ores.dq.api.tests= passes 50 of 50, up from 49. =ores.dq.core.tests=
+is unchanged at 109 of 111, its two failures being the LEI cases part twenty-two
+gave their own task. =ores.dq.service.tests= and =ores.shell.dq.tests= pass. The
+codegen suite passes 845. dq has no failing test case that this task owns.
+
+**The wider sweep, for the record.** All 83 test binaries were run against a
+freshly recreated database, first run. Six are red, and five are not dq: refdata
+core (11 cases) and marketdata core (2) both follow from =48f4282df6=, which made
+a version-zero create strict and moved the refdata notify payload from =id= to
+=short_code=; scheduler core (1) and shell api (1) are tests added on 2026-09-26
+that fail on their own subjects. None of the five is caused by this task.
 
 * Step 8 part twenty-two: two of the three dq test-suite defects, and one that needs its own unit
 

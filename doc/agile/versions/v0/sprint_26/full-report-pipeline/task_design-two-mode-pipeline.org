@@ -8,7 +8,7 @@
 #+filetags: :full-report-pipeline:sprint_26:v0:
 #+owner: marco
 #+branch: feature/design-two-mode-pipeline
-#+pr: 2278
+#+pr: 2279
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -76,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2279][#2279]] | [reporting] State the orchestration contract in the two-mode design |
 | [[https://github.com/OreStudio/OreStudio/pull/2278][#2278]] | [reporting] Design the two-mode report pipeline |
 
 * Review

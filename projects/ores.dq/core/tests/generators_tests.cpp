@@ -32,6 +32,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -67,9 +68,15 @@ TEST_CASE("catalog_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_catalogs(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> names;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.name.empty());
+        names.insert(item.name);
     }
+    CHECK(names.size() == count);
 }
 
 // --- change_reason_category ---
@@ -93,9 +100,15 @@ TEST_CASE("change_reason_category_generator_produces_multiple_instances", tags) 
     auto items = generate_synthetic_change_reason_categories(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- change_reason ---
@@ -122,10 +135,16 @@ TEST_CASE("change_reason_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_change_reasons(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
         CHECK(!item.category_code.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- coding_scheme_authority_type ---
@@ -150,9 +169,15 @@ TEST_CASE("coding_scheme_authority_type_generator_produces_multiple_instances", 
     auto items = generate_synthetic_coding_scheme_authority_types(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- coding_scheme ---
@@ -180,10 +205,16 @@ TEST_CASE("coding_scheme_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_coding_schemes(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
         CHECK(!item.name.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- data_domain ---
@@ -207,9 +238,15 @@ TEST_CASE("data_domain_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_data_domains(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> names;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.name.empty());
+        names.insert(item.name);
     }
+    CHECK(names.size() == count);
 }
 
 // --- dataset ---
@@ -243,10 +280,17 @@ TEST_CASE("dataset_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_datasets(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.id.is_nil());
+        CHECK(!item.code.empty());
         CHECK(!item.name.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- methodology ---
@@ -271,10 +315,16 @@ TEST_CASE("methodology_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_methodologies(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> names;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.id.is_nil());
         CHECK(!item.name.empty());
+        names.insert(item.name);
     }
+    CHECK(names.size() == count);
 }
 
 // --- origin_dimension ---
@@ -299,9 +349,15 @@ TEST_CASE("origin_dimension_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_origin_dimensions(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- nature_dimension ---
@@ -326,9 +382,15 @@ TEST_CASE("nature_dimension_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_nature_dimensions(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }
 
 // --- subject_area ---
@@ -353,10 +415,16 @@ TEST_CASE("subject_area_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_subject_areas(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> names;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.name.empty());
         CHECK(!item.domain_name.empty());
+        names.insert(item.name);
     }
+    CHECK(names.size() == count);
 }
 
 // --- treatment_dimension ---
@@ -381,7 +449,13 @@ TEST_CASE("treatment_dimension_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_treatment_dimensions(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        CHECK(item.version == 0);
+        CHECK(item.change_commentary == "Synthetic test data");
         CHECK(!item.code.empty());
+        codes.insert(item.code);
     }
+    CHECK(codes.size() == count);
 }

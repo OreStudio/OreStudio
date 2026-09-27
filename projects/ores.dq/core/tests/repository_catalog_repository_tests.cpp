@@ -56,7 +56,14 @@ TEST_CASE("write_single_catalog", tags) {
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
-    CHECK_NOTHROW(repo.write(h.context(), catalog));
+    repo.write(h.context(), catalog);
+
+    auto read_catalogs = repo.read_latest(h.context(), catalog.name);
+    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+
+    REQUIRE(read_catalogs.size() == 1);
+    CHECK(read_catalogs[0].name == catalog.name);
+    CHECK(read_catalogs[0].description == catalog.description);
 }
 
 TEST_CASE("write_multiple_catalogs", tags) {
@@ -73,7 +80,21 @@ TEST_CASE("write_multiple_catalogs", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Catalogs: " << catalogs;
 
-    CHECK_NOTHROW(repo.write(h.context(), catalogs));
+    repo.write(h.context(), catalogs);
+
+    auto read_catalogs = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
+
+    for (const auto& written : catalogs) {
+        bool found = false;
+        for (const auto& read_row : read_catalogs) {
+            if (read_row.name == written.name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_catalogs", tags) {
@@ -95,8 +116,16 @@ TEST_CASE("read_latest_catalogs", tags) {
     auto read_catalogs = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
-    CHECK(!read_catalogs.empty());
-    CHECK(read_catalogs.size() >= written_catalogs.size());
+    for (const auto& written : written_catalogs) {
+        bool found = false;
+        for (const auto& read_row : read_catalogs) {
+            if (read_row.name == written.name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_catalog_by_name", tags) {
@@ -151,7 +180,18 @@ TEST_CASE("read_all_catalog_versions", tags) {
     auto read_catalogs = repo.read_all(h.context(), test_name);
     BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_catalogs;
 
-    CHECK(read_catalogs.size() >= 2);
+    REQUIRE(read_catalogs.size() >= 2);
+
+    bool found_v1 = false;
+    bool found_v2 = false;
+    for (const auto& read_row : read_catalogs) {
+        if (read_row.description == cat1.description)
+            found_v1 = true;
+        if (read_row.description == cat2.description)
+            found_v2 = true;
+    }
+    CHECK(found_v1);
+    CHECK(found_v2);
 }
 
 TEST_CASE("read_nonexistent_catalog", tags) {
@@ -160,6 +200,17 @@ TEST_CASE("read_nonexistent_catalog", tags) {
     database_helper h;
 
     catalog_repository repo;
+
+    generation_context ctx;
+    auto catalog = generate_synthetic_catalog(ctx);
+    catalog.tenant_id = h.tenant_id();
+    catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
+    repo.write(h.context(), catalog);
+
+    auto read_written = repo.read_latest(h.context(), catalog.name);
+    BOOST_LOG_SEV(lg, debug) << "Read catalogs: " << read_written;
+    REQUIRE(read_written.size() == 1);
+    CHECK(read_written[0].description == catalog.description);
 
     const std::string nonexistent_name = "nonexistent.catalog.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;

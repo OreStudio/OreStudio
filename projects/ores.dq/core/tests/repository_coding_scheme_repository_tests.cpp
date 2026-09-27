@@ -55,7 +55,14 @@ TEST_CASE("write_single_coding_scheme", tags) {
     coding_scheme.tenant_id = h.tenant_id();
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme: " << coding_scheme;
-    CHECK_NOTHROW(repo.write(h.context(), coding_scheme));
+    repo.write(h.context(), coding_scheme);
+
+    auto read_coding_schemes = repo.read_latest(h.context(), coding_scheme.code);
+    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+
+    REQUIRE(read_coding_schemes.size() == 1);
+    CHECK(read_coding_schemes[0].code == coding_scheme.code);
+    CHECK(read_coding_schemes[0].name == coding_scheme.name);
 }
 
 TEST_CASE("write_multiple_coding_schemes", tags) {
@@ -71,7 +78,21 @@ TEST_CASE("write_multiple_coding_schemes", tags) {
         c.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Coding schemes: " << coding_schemes;
 
-    CHECK_NOTHROW(repo.write(h.context(), coding_schemes));
+    repo.write(h.context(), coding_schemes);
+
+    auto read_coding_schemes = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+
+    for (const auto& written : coding_schemes) {
+        bool found = false;
+        for (const auto& read_row : read_coding_schemes) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_coding_schemes", tags) {
@@ -92,8 +113,16 @@ TEST_CASE("read_latest_coding_schemes", tags) {
     auto read_coding_schemes = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
-    CHECK(!read_coding_schemes.empty());
-    CHECK(read_coding_schemes.size() >= written_coding_schemes.size());
+    for (const auto& written : written_coding_schemes) {
+        bool found = false;
+        for (const auto& read_row : read_coding_schemes) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_coding_scheme_by_code", tags) {
@@ -129,6 +158,16 @@ TEST_CASE("read_nonexistent_coding_scheme", tags) {
     database_helper h;
 
     coding_scheme_repository repo;
+
+    generation_context ctx;
+    auto coding_scheme = generate_synthetic_coding_scheme(ctx);
+    coding_scheme.tenant_id = h.tenant_id();
+    repo.write(h.context(), coding_scheme);
+
+    auto read_written = repo.read_latest(h.context(), coding_scheme.code);
+    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_written;
+    REQUIRE(read_written.size() == 1);
+    CHECK(read_written[0].name == coding_scheme.name);
 
     const std::string nonexistent_code = "nonexistent.coding_scheme.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;

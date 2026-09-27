@@ -56,7 +56,14 @@ TEST_CASE("write_single_artefact_type", tags) {
     artefact_type.code = artefact_type.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Artefact type: " << artefact_type;
-    CHECK_NOTHROW(repo.write(h.context(), artefact_type));
+    repo.write(h.context(), artefact_type);
+
+    auto read_artefact_types = repo.read_latest(h.context(), artefact_type.code);
+    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+
+    REQUIRE(read_artefact_types.size() == 1);
+    CHECK(read_artefact_types[0].code == artefact_type.code);
+    CHECK(read_artefact_types[0].name == artefact_type.name);
 }
 
 TEST_CASE("write_multiple_artefact_types", tags) {
@@ -73,7 +80,21 @@ TEST_CASE("write_multiple_artefact_types", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Artefact types: " << artefact_types;
 
-    CHECK_NOTHROW(repo.write(h.context(), artefact_types));
+    repo.write(h.context(), artefact_types);
+
+    auto read_artefact_types = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+
+    for (const auto& written : artefact_types) {
+        bool found = false;
+        for (const auto& read_row : read_artefact_types) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_artefact_types", tags) {
@@ -95,8 +116,16 @@ TEST_CASE("read_latest_artefact_types", tags) {
     auto read_artefact_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
-    CHECK(!read_artefact_types.empty());
-    CHECK(read_artefact_types.size() >= written_artefact_types.size());
+    for (const auto& written : written_artefact_types) {
+        bool found = false;
+        for (const auto& read_row : read_artefact_types) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_artefact_type_by_code", tags) {
@@ -151,7 +180,18 @@ TEST_CASE("read_all_artefact_type_versions", tags) {
     auto read_artefact_types = repo.read_all(h.context(), test_code);
     BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
-    CHECK(read_artefact_types.size() >= 2);
+    REQUIRE(read_artefact_types.size() >= 2);
+
+    bool found_v1 = false;
+    bool found_v2 = false;
+    for (const auto& read_row : read_artefact_types) {
+        if (read_row.description == at1.description)
+            found_v1 = true;
+        if (read_row.description == at2.description)
+            found_v2 = true;
+    }
+    CHECK(found_v1);
+    CHECK(found_v2);
 }
 
 TEST_CASE("read_nonexistent_artefact_type", tags) {
@@ -160,6 +200,17 @@ TEST_CASE("read_nonexistent_artefact_type", tags) {
     database_helper h;
 
     artefact_type_repository repo;
+
+    generation_context ctx;
+    auto artefact_type = generate_synthetic_artefact_type(ctx);
+    artefact_type.tenant_id = h.tenant_id();
+    artefact_type.code = artefact_type.code + "_" + std::string(faker::string::alphanumeric(8));
+    repo.write(h.context(), artefact_type);
+
+    auto read_written = repo.read_latest(h.context(), artefact_type.code);
+    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_written;
+    REQUIRE(read_written.size() == 1);
+    CHECK(read_written[0].name == artefact_type.name);
 
     const std::string nonexistent_code = "nonexistent.artefact_type.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;

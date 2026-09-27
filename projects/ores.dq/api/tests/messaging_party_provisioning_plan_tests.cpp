@@ -58,13 +58,26 @@ TEST_CASE("publish_party_provisioning_plan_calls_on_step_once_per_step_in_order"
 }
 
 TEST_CASE("publish_party_provisioning_plan_returns_true_when_every_step_succeeds", tags) {
+    std::vector<std::string> published;
+    std::vector<std::string> waited_instance_ids;
+    std::vector<std::size_t> waited_dataset_counts;
     bool ok = publish_party_provisioning_plan(
         three_step_plan,
         boost::uuids::random_generator()(),
-        [](const std::string&, const std::string&) { return make_response(); },
-        [](const std::string&, std::size_t) { return true; });
+        [&](const std::string& bundle_code, const std::string&) {
+            published.push_back(bundle_code);
+            return make_response();
+        },
+        [&](const std::string& instance_id, std::size_t dataset_count) {
+            waited_instance_ids.push_back(instance_id);
+            waited_dataset_counts.push_back(dataset_count);
+            return true;
+        });
 
     CHECK(ok);
+    CHECK(published == std::vector<std::string>{"bundle_a", "bundle_b", "bundle_c"});
+    CHECK(waited_instance_ids == std::vector<std::string>{"instance", "instance", "instance"});
+    CHECK(waited_dataset_counts == std::vector<std::size_t>{1, 1, 1});
 }
 
 TEST_CASE("publish_party_provisioning_plan_stops_and_returns_false_on_publish_failure", tags) {
@@ -86,16 +99,24 @@ TEST_CASE("publish_party_provisioning_plan_stops_and_returns_false_on_publish_fa
 }
 
 TEST_CASE("publish_party_provisioning_plan_stops_and_returns_false_on_wait_failure", tags) {
-    std::vector<std::string> waited;
+    std::vector<std::string> published;
+    std::vector<std::string> waited_instance_ids;
+    std::vector<std::size_t> waited_dataset_counts;
     bool ok = publish_party_provisioning_plan(
         three_step_plan,
         boost::uuids::random_generator()(),
-        [](const std::string&, const std::string&) { return make_response(); },
-        [&](const std::string&, std::size_t) {
-            waited.push_back("wait");
-            return waited.size() != 1;
+        [&](const std::string& bundle_code, const std::string&) {
+            published.push_back(bundle_code);
+            return make_response();
+        },
+        [&](const std::string& instance_id, std::size_t dataset_count) {
+            waited_instance_ids.push_back(instance_id);
+            waited_dataset_counts.push_back(dataset_count);
+            return false;
         });
 
     CHECK(!ok);
-    CHECK(waited.size() == 1);
+    CHECK(published == std::vector<std::string>{"bundle_a"});
+    CHECK(waited_instance_ids == std::vector<std::string>{"instance"});
+    CHECK(waited_dataset_counts == std::vector<std::size_t>{1});
 }

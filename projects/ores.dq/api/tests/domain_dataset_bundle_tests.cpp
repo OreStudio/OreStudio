@@ -27,6 +27,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -119,8 +120,14 @@ TEST_CASE("dataset_bundle_generator_produces_multiple_instances", tags) {
     BOOST_LOG_SEV(lg, info) << bundles;
 
     CHECK(bundles.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& b : bundles) {
+        CHECK(b.version == 0);
+        CHECK(b.change_reason_code == "system.test");
         CHECK(!b.code.empty());
         CHECK(!b.name.empty());
+        codes.insert(b.code);
     }
+    CHECK(codes.size() == count);
 }

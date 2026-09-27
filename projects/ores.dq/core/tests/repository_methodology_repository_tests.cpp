@@ -56,7 +56,15 @@ TEST_CASE("write_single_methodology", tags) {
     methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
-    CHECK_NOTHROW(repo.write(h.context(), methodology));
+    repo.write(h.context(), methodology);
+
+    const auto methodology_id = boost::uuids::to_string(methodology.id);
+    auto read_methodologies = repo.read_latest(h.context(), methodology_id);
+    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+
+    REQUIRE(read_methodologies.size() == 1);
+    CHECK(read_methodologies[0].id == methodology.id);
+    CHECK(read_methodologies[0].name == methodology.name);
 }
 
 TEST_CASE("write_multiple_methodologies", tags) {
@@ -72,8 +80,21 @@ TEST_CASE("write_multiple_methodologies", tags) {
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
+    repo.write(h.context(), methodologies);
 
-    CHECK_NOTHROW(repo.write(h.context(), methodologies));
+    auto read_methodologies = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+
+    for (const auto& written : methodologies) {
+        bool found = false;
+        for (const auto& read_row : read_methodologies) {
+            if (read_row.name == written.name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_methodologies", tags) {
@@ -95,8 +116,16 @@ TEST_CASE("read_latest_methodologies", tags) {
     auto read_methodologies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
 
-    CHECK(!read_methodologies.empty());
-    CHECK(read_methodologies.size() >= written_methodologies.size());
+    for (const auto& written : written_methodologies) {
+        bool found = false;
+        for (const auto& read_row : read_methodologies) {
+            if (read_row.name == written.name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_methodology_by_id", tags) {
@@ -133,12 +162,29 @@ TEST_CASE("read_nonexistent_methodology_by_id", tags) {
 
     methodology_repository repo;
 
+    generation_context ctx;
+    auto methodology = generate_synthetic_methodology(ctx);
+    methodology.tenant_id = h.tenant_id();
+    methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
+
+    BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
+
+    // Seed a real row, so a miss below proves the key was respected.
+    repo.write(h.context(), methodology);
+
+    const auto methodology_id = boost::uuids::to_string(methodology.id);
+    auto read_methodologies = repo.read_latest(h.context(), methodology_id);
+    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+
+    REQUIRE(read_methodologies.size() == 1);
+    CHECK(read_methodologies[0].id == methodology.id);
+    CHECK(read_methodologies[0].name == methodology.name);
+
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_methodologies =
-        repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+    auto read_missing = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
+    BOOST_LOG_SEV(lg, debug) << "Read by non-existent ID: " << read_missing;
 
-    CHECK(read_methodologies.size() == 0);
+    CHECK(read_missing.size() == 0);
 }

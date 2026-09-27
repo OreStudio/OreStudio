@@ -56,7 +56,14 @@ TEST_CASE("write_single_coding_scheme_authority_type", tags) {
     authority_type.code = authority_type.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme authority type: " << authority_type;
-    CHECK_NOTHROW(repo.write(h.context(), authority_type));
+    repo.write(h.context(), authority_type);
+
+    auto read_authority_types = repo.read_latest(h.context(), authority_type.code);
+    BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
+
+    REQUIRE(read_authority_types.size() == 1);
+    CHECK(read_authority_types[0].code == authority_type.code);
+    CHECK(read_authority_types[0].name == authority_type.name);
 }
 
 TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
@@ -72,8 +79,21 @@ TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Coding scheme authority types: " << authority_types;
+    repo.write(h.context(), authority_types);
 
-    CHECK_NOTHROW(repo.write(h.context(), authority_types));
+    auto read_authority_types = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
+
+    for (const auto& written : authority_types) {
+        bool found = false;
+        for (const auto& read_row : read_authority_types) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
@@ -95,8 +115,16 @@ TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
     auto read_authority_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read authority types: " << read_authority_types;
 
-    CHECK(!read_authority_types.empty());
-    CHECK(read_authority_types.size() >= written_authority_types.size());
+    for (const auto& written : written_authority_types) {
+        bool found = false;
+        for (const auto& read_row : read_authority_types) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_coding_scheme_authority_type_by_code", tags) {

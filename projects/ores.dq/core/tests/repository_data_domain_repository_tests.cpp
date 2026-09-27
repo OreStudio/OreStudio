@@ -56,7 +56,14 @@ TEST_CASE("write_single_data_domain", tags) {
     data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
-    CHECK_NOTHROW(repo.write(h.context(), data_domain));
+    repo.write(h.context(), data_domain);
+
+    auto read_data_domains = repo.read_latest(h.context(), data_domain.name);
+    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+
+    REQUIRE(read_data_domains.size() == 1);
+    CHECK(read_data_domains[0].name == data_domain.name);
+    CHECK(read_data_domains[0].description == data_domain.description);
 }
 
 TEST_CASE("write_multiple_data_domains", tags) {
@@ -72,8 +79,21 @@ TEST_CASE("write_multiple_data_domains", tags) {
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Data domains: " << data_domains;
+    repo.write(h.context(), data_domains);
 
-    CHECK_NOTHROW(repo.write(h.context(), data_domains));
+    auto read_data_domains = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
+
+    for (const auto& written : data_domains) {
+        bool found = false;
+        for (const auto& read_row : read_data_domains) {
+            if (read_row.name == written.name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_data_domains", tags) {
@@ -95,8 +115,16 @@ TEST_CASE("read_latest_data_domains", tags) {
     auto read_data_domains = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read data domains: " << read_data_domains;
 
-    CHECK(!read_data_domains.empty());
-    CHECK(read_data_domains.size() >= written_data_domains.size());
+    for (const auto& written : written_data_domains) {
+        bool found = false;
+        for (const auto& read_row : read_data_domains) {
+            if (read_row.name == written.name) {
+                found = true;
+                CHECK(read_row.description == written.description);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_data_domain_by_name", tags) {
@@ -132,6 +160,17 @@ TEST_CASE("read_nonexistent_data_domain", tags) {
     database_helper h;
 
     data_domain_repository repo;
+
+    generation_context ctx;
+    auto data_domain = generate_synthetic_data_domain(ctx);
+    data_domain.tenant_id = h.tenant_id();
+    data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
+    BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
+    repo.write(h.context(), data_domain);
+
+    auto written_data_domains = repo.read_latest(h.context(), data_domain.name);
+    REQUIRE(written_data_domains.size() == 1);
+    CHECK(written_data_domains[0].description == data_domain.description);
 
     const std::string nonexistent_name = "nonexistent.data_domain.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;

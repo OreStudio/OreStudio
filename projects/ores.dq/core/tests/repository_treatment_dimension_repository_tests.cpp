@@ -57,7 +57,14 @@ TEST_CASE("write_single_treatment_dimension", tags) {
         treatment_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Treatment dimension: " << treatment_dimension;
-    CHECK_NOTHROW(repo.write(h.context(), treatment_dimension));
+    repo.write(h.context(), treatment_dimension);
+
+    auto read_treatment_dimensions = repo.read_latest(h.context(), treatment_dimension.code);
+    BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
+
+    REQUIRE(read_treatment_dimensions.size() == 1);
+    CHECK(read_treatment_dimensions[0].code == treatment_dimension.code);
+    CHECK(read_treatment_dimensions[0].name == treatment_dimension.name);
 }
 
 TEST_CASE("write_multiple_treatment_dimensions", tags) {
@@ -73,8 +80,21 @@ TEST_CASE("write_multiple_treatment_dimensions", tags) {
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Treatment dimensions: " << treatment_dimensions;
+    repo.write(h.context(), treatment_dimensions);
 
-    CHECK_NOTHROW(repo.write(h.context(), treatment_dimensions));
+    auto read_treatment_dimensions = repo.read_latest(h.context());
+    BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
+
+    for (const auto& written : treatment_dimensions) {
+        bool found = false;
+        for (const auto& read_row : read_treatment_dimensions) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_treatment_dimensions", tags) {
@@ -96,8 +116,16 @@ TEST_CASE("read_latest_treatment_dimensions", tags) {
     auto read_treatment_dimensions = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read treatment dimensions: " << read_treatment_dimensions;
 
-    CHECK(!read_treatment_dimensions.empty());
-    CHECK(read_treatment_dimensions.size() >= written_treatment_dimensions.size());
+    for (const auto& written : written_treatment_dimensions) {
+        bool found = false;
+        for (const auto& read_row : read_treatment_dimensions) {
+            if (read_row.code == written.code) {
+                found = true;
+                CHECK(read_row.name == written.name);
+            }
+        }
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_treatment_dimension_by_code", tags) {

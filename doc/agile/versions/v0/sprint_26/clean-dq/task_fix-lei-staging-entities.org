@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/fix-lei-staging-entities
-#+pr: 2268
+#+pr: 2270
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -33,11 +33,11 @@ honour.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Implemented and verified; three commits on =feature/fix-lei-staging-entities=, PR to raise. dq is green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, then return to the story's remaining tail. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -151,6 +151,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2270][#2270]] | [agile] Close the LEI staging-entity task |
 | [[https://github.com/OreStudio/OreStudio/pull/2268][#2268]] | [dq] Point the LEI staging entities at the table they read |
 | [[https://github.com/OreStudio/OreStudio/pull/2253][#2253]] | [dq] Scaffold the LEI staging-entity task with its diagnosis |
 

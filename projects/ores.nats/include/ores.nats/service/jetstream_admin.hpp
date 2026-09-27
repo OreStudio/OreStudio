@@ -21,6 +21,7 @@
 #define ORES_NATS_SERVICE_JETSTREAM_ADMIN_HPP
 
 #include "ores.nats/export.hpp"
+#include <string>
 #include <string_view>
 #include <vector>
 

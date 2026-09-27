@@ -24,53 +24,369 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace dq #F2F2F2 {
         namespace messaging #F2F2F2 {
-            class change_management_handler {
+            class artefact_type_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_artefact_types(ores::nats::message msg) : void
+                +get_artefact_type(ores::nats::message msg) : void
+                +get_many_artefact_types(ores::nats::message msg) : void
+                +put_artefact_type(ores::nats::message msg) : void
+                +put_many_artefact_types(ores::nats::message msg) : void
+                +delete_artefact_type(ores::nats::message msg) : void
+                +delete_many_artefact_types(ores::nats::message msg) : void
+                +list_artefact_type_versions(ores::nats::message msg) : void
+                +get_artefact_type_version(ores::nats::message msg) : void
+            }
+            class badge_definition_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_badge_definitions(ores::nats::message msg) : void
+                +get_badge_definition(ores::nats::message msg) : void
+                +get_many_badge_definitions(ores::nats::message msg) : void
+                +put_badge_definition(ores::nats::message msg) : void
+                +put_many_badge_definitions(ores::nats::message msg) : void
+                +delete_badge_definition(ores::nats::message msg) : void
+                +delete_many_badge_definitions(ores::nats::message msg) : void
+                +list_badge_definition_versions(ores::nats::message msg) : void
+                +get_badge_definition_version(ores::nats::message msg) : void
+            }
+            class badge_mapping_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_badge_mappings(ores::nats::message msg) : void
+                +get_badge_mapping(ores::nats::message msg) : void
+                +get_many_badge_mappings(ores::nats::message msg) : void
+                +put_badge_mapping(ores::nats::message msg) : void
+                +put_many_badge_mappings(ores::nats::message msg) : void
+                +delete_badge_mapping(ores::nats::message msg) : void
+                +delete_many_badge_mappings(ores::nats::message msg) : void
+                +list_by_code_domain_code_badge_mappings(ores::nats::message msg) : void
+            }
+            class badge_severity_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_badge_severities(ores::nats::message msg) : void
+                +get_badge_severity(ores::nats::message msg) : void
+                +get_many_badge_severities(ores::nats::message msg) : void
+                +put_badge_severity(ores::nats::message msg) : void
+                +put_many_badge_severities(ores::nats::message msg) : void
+                +delete_badge_severity(ores::nats::message msg) : void
+                +delete_many_badge_severities(ores::nats::message msg) : void
+                +list_badge_severity_versions(ores::nats::message msg) : void
+                +get_badge_severity_version(ores::nats::message msg) : void
+            }
+            class catalog_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_catalogs(ores::nats::message msg) : void
+                +get_catalog(ores::nats::message msg) : void
+                +get_many_catalogs(ores::nats::message msg) : void
+                +put_catalog(ores::nats::message msg) : void
+                +put_many_catalogs(ores::nats::message msg) : void
+                +delete_catalog(ores::nats::message msg) : void
+                +delete_many_catalogs(ores::nats::message msg) : void
+                +list_catalog_versions(ores::nats::message msg) : void
+                +get_catalog_version(ores::nats::message msg) : void
+            }
+            class change_reason_category_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_change_reason_categories(ores::nats::message msg) : void
+                +get_change_reason_category(ores::nats::message msg) : void
+                +get_many_change_reason_categories(ores::nats::message msg) : void
+                +put_change_reason_category(ores::nats::message msg) : void
+                +put_many_change_reason_categories(ores::nats::message msg) : void
+                +delete_change_reason_category(ores::nats::message msg) : void
+                +delete_many_change_reason_categories(ores::nats::message msg) : void
+                +list_change_reason_category_versions(ores::nats::message msg) : void
+                +get_change_reason_category_version(ores::nats::message msg) : void
+            }
+            class change_reason_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_change_reasons(ores::nats::message msg) : void
+                +get_change_reason(ores::nats::message msg) : void
+                +get_many_change_reasons(ores::nats::message msg) : void
+                +put_change_reason(ores::nats::message msg) : void
+                +put_many_change_reasons(ores::nats::message msg) : void
+                +delete_change_reason(ores::nats::message msg) : void
+                +delete_many_change_reasons(ores::nats::message msg) : void
+                +list_change_reason_versions(ores::nats::message msg) : void
+                +get_change_reason_version(ores::nats::message msg) : void
+            }
+            class code_domain_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_code_domains(ores::nats::message msg) : void
+                +get_code_domain(ores::nats::message msg) : void
+                +get_many_code_domains(ores::nats::message msg) : void
+                +put_code_domain(ores::nats::message msg) : void
+                +put_many_code_domains(ores::nats::message msg) : void
+                +delete_code_domain(ores::nats::message msg) : void
+                +delete_many_code_domains(ores::nats::message msg) : void
+                +list_code_domain_versions(ores::nats::message msg) : void
+                +get_code_domain_version(ores::nats::message msg) : void
+            }
+            class coding_scheme_authority_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_coding_scheme_authority_types(ores::nats::message msg) : void
+                +get_coding_scheme_authority_type(ores::nats::message msg) : void
+                +get_many_coding_scheme_authority_types(ores::nats::message msg) : void
+                +put_coding_scheme_authority_type(ores::nats::message msg) : void
+                +put_many_coding_scheme_authority_types(ores::nats::message msg) : void
+                +delete_coding_scheme_authority_type(ores::nats::message msg) : void
+                +delete_many_coding_scheme_authority_types(ores::nats::message msg) : void
+                +list_coding_scheme_authority_type_versions(ores::nats::message msg) : void
+                +get_coding_scheme_authority_type_version(ores::nats::message msg) : void
             }
             class coding_scheme_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_coding_schemes(ores::nats::message msg) : void
+                +get_coding_scheme(ores::nats::message msg) : void
+                +get_many_coding_schemes(ores::nats::message msg) : void
+                +put_coding_scheme(ores::nats::message msg) : void
+                +put_many_coding_schemes(ores::nats::message msg) : void
+                +delete_coding_scheme(ores::nats::message msg) : void
+                +delete_many_coding_schemes(ores::nats::message msg) : void
+                +list_coding_scheme_versions(ores::nats::message msg) : void
+                +get_coding_scheme_version(ores::nats::message msg) : void
+            }
+            class data_domain_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_data_domains(ores::nats::message msg) : void
+                +get_data_domain(ores::nats::message msg) : void
+                +get_many_data_domains(ores::nats::message msg) : void
+                +put_data_domain(ores::nats::message msg) : void
+                +put_many_data_domains(ores::nats::message msg) : void
+                +delete_data_domain(ores::nats::message msg) : void
+                +delete_many_data_domains(ores::nats::message msg) : void
+                +list_data_domain_versions(ores::nats::message msg) : void
+                +get_data_domain_version(ores::nats::message msg) : void
             }
             class dataset_bundle_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_dataset_bundles(ores::nats::message msg) : void
+                +get_dataset_bundle(ores::nats::message msg) : void
+                +get_many_dataset_bundles(ores::nats::message msg) : void
+                +put_dataset_bundle(ores::nats::message msg) : void
+                +put_many_dataset_bundles(ores::nats::message msg) : void
+                +delete_dataset_bundle(ores::nats::message msg) : void
+                +delete_many_dataset_bundles(ores::nats::message msg) : void
+                +list_dataset_bundle_versions(ores::nats::message msg) : void
+                +get_dataset_bundle_version(ores::nats::message msg) : void
             }
             class dataset_bundle_member_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_dataset_bundle_members(ores::nats::message msg) : void
+                +get_dataset_bundle_member(ores::nats::message msg) : void
+                +get_many_dataset_bundle_members(ores::nats::message msg) : void
+                +put_dataset_bundle_member(ores::nats::message msg) : void
+                +put_many_dataset_bundle_members(ores::nats::message msg) : void
+                +delete_dataset_bundle_member(ores::nats::message msg) : void
+                +delete_many_dataset_bundle_members(ores::nats::message msg) : void
+                +list_by_bundle_code_dataset_bundle_members(ores::nats::message msg) : void
             }
             class dataset_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_datasets(ores::nats::message msg) : void
+                +get_dataset(ores::nats::message msg) : void
+                +get_many_datasets(ores::nats::message msg) : void
+                +put_dataset(ores::nats::message msg) : void
+                +put_many_datasets(ores::nats::message msg) : void
+                +delete_dataset(ores::nats::message msg) : void
+                +delete_many_datasets(ores::nats::message msg) : void
+                +list_dataset_versions(ores::nats::message msg) : void
+                +get_dataset_version(ores::nats::message msg) : void
             }
-            class dimension_handler {
+            class fsm_state_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_fsm_states(ores::nats::message msg) : void
+                +get_fsm_state(ores::nats::message msg) : void
+                +get_many_fsm_states(ores::nats::message msg) : void
+                +put_fsm_state(ores::nats::message msg) : void
+                +put_many_fsm_states(ores::nats::message msg) : void
+                +delete_fsm_state(ores::nats::message msg) : void
+                +delete_many_fsm_states(ores::nats::message msg) : void
+                +list_fsm_state_versions(ores::nats::message msg) : void
+                +get_fsm_state_version(ores::nats::message msg) : void
             }
-            class fsm_handler {
+            class fsm_transition_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_fsm_transitions(ores::nats::message msg) : void
+                +get_fsm_transition(ores::nats::message msg) : void
+                +get_many_fsm_transitions(ores::nats::message msg) : void
+                +put_fsm_transition(ores::nats::message msg) : void
+                +put_many_fsm_transitions(ores::nats::message msg) : void
+                +delete_fsm_transition(ores::nats::message msg) : void
+                +delete_many_fsm_transitions(ores::nats::message msg) : void
+                +list_fsm_transition_versions(ores::nats::message msg) : void
+                +get_fsm_transition_version(ores::nats::message msg) : void
             }
             class lei_entity_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_lei_entities(ores::nats::message msg) : void
+                +get_lei_entity(ores::nats::message msg) : void
+                +get_many_lei_entities(ores::nats::message msg) : void
+            }
+            class lei_entity_summary_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +summary(ores::nats::message msg) : void
+            }
+            class lei_relationship_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_lei_relationships(ores::nats::message msg) : void
+                +get_lei_relationship(ores::nats::message msg) : void
+                +get_many_lei_relationships(ores::nats::message msg) : void
+            }
+            class methodology_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_methodologies(ores::nats::message msg) : void
+                +get_methodology(ores::nats::message msg) : void
+                +get_many_methodologies(ores::nats::message msg) : void
+                +put_methodology(ores::nats::message msg) : void
+                +put_many_methodologies(ores::nats::message msg) : void
+                +delete_methodology(ores::nats::message msg) : void
+                +delete_many_methodologies(ores::nats::message msg) : void
+                +list_methodology_versions(ores::nats::message msg) : void
+                +get_methodology_version(ores::nats::message msg) : void
+            }
+            class nature_dimension_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_nature_dimensions(ores::nats::message msg) : void
+                +get_nature_dimension(ores::nats::message msg) : void
+                +get_many_nature_dimensions(ores::nats::message msg) : void
+                +put_nature_dimension(ores::nats::message msg) : void
+                +put_many_nature_dimensions(ores::nats::message msg) : void
+                +delete_nature_dimension(ores::nats::message msg) : void
+                +delete_many_nature_dimensions(ores::nats::message msg) : void
+                +list_nature_dimension_versions(ores::nats::message msg) : void
+                +get_nature_dimension_version(ores::nats::message msg) : void
+            }
+            class origin_dimension_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_origin_dimensions(ores::nats::message msg) : void
+                +get_origin_dimension(ores::nats::message msg) : void
+                +get_many_origin_dimensions(ores::nats::message msg) : void
+                +put_origin_dimension(ores::nats::message msg) : void
+                +put_many_origin_dimensions(ores::nats::message msg) : void
+                +delete_origin_dimension(ores::nats::message msg) : void
+                +delete_many_origin_dimensions(ores::nats::message msg) : void
+                +list_origin_dimension_versions(ores::nats::message msg) : void
+                +get_origin_dimension_version(ores::nats::message msg) : void
             }
             class publication_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_publications(ores::nats::message msg) : void
+                +get_publication(ores::nats::message msg) : void
+                +get_many_publications(ores::nats::message msg) : void
+                +put_publication(ores::nats::message msg) : void
+                +put_many_publications(ores::nats::message msg) : void
+                +delete_publication(ores::nats::message msg) : void
+                +delete_many_publications(ores::nats::message msg) : void
+            }
+            class publish_from_dq_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                +publish_from_dq_handler(ores::nats::service::client& nats, ores::database::context ctx)
+                +handle(ores::nats::message msg) : void
+            }
+            class publish_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +publish_datasets(ores::nats::message msg) : void
+                +publish_bundle(ores::nats::message msg) : void
             }
             class registrar {
-                +verifier : optional<ores::security::jwt::jwt_authenticator>
+                +register_handlers(ores::nats::service::client& nats, ores::database::context ctx, optional<ores::security::jwt::jwt_authenticator> verifier) : vector<ores::nats::service::subscription>
+            }
+            class report_definition_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_report_definitions(ores::nats::message msg) : void
+                +get_report_definition(ores::nats::message msg) : void
+                +get_many_report_definitions(ores::nats::message msg) : void
+            }
+            class report_definition_template_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list(ores::nats::message msg) : void
+            }
+            class subject_area_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_subject_areas(ores::nats::message msg) : void
+                +get_subject_area(ores::nats::message msg) : void
+                +get_many_subject_areas(ores::nats::message msg) : void
+                +put_subject_area(ores::nats::message msg) : void
+                +put_many_subject_areas(ores::nats::message msg) : void
+                +delete_subject_area(ores::nats::message msg) : void
+                +delete_many_subject_areas(ores::nats::message msg) : void
+                +list_subject_area_versions(ores::nats::message msg) : void
+                +get_subject_area_version(ores::nats::message msg) : void
+            }
+            class synthetic_fx_spot_config_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_synthetic_fx_spot_configs(ores::nats::message msg) : void
+                +get_synthetic_fx_spot_config(ores::nats::message msg) : void
+                +get_many_synthetic_fx_spot_configs(ores::nats::message msg) : void
+            }
+            class treatment_dimension_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_treatment_dimensions(ores::nats::message msg) : void
+                +get_treatment_dimension(ores::nats::message msg) : void
+                +get_many_treatment_dimensions(ores::nats::message msg) : void
+                +put_treatment_dimension(ores::nats::message msg) : void
+                +put_many_treatment_dimensions(ores::nats::message msg) : void
+                +delete_treatment_dimension(ores::nats::message msg) : void
+                +delete_many_treatment_dimensions(ores::nats::message msg) : void
+                +list_treatment_dimension_versions(ores::nats::message msg) : void
+                +get_treatment_dimension_version(ores::nats::message msg) : void
             }
         }
         namespace repository #F2F2F2 {
@@ -79,17 +395,47 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +code : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +version : int
                 +name : string
                 +description : optional<string>
                 +artefact_table : optional<string>
                 +target_table : optional<string>
-                +populate_function : optional<string>
+                +target_subject : optional<string>
                 +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class artefact_type_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const artefact_type_entity& v) : domain::artefact_type
+                +map(const domain::artefact_type& v) : artefact_type_entity
+                +map(const vector<artefact_type_entity>& v) : vector<domain::artefact_type>
+                +map(const vector<domain::artefact_type>& v) : vector<artefact_type_entity>
             }
             class artefact_type_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::artefact_type& v) : void
+                +write(context ctx, const vector<domain::artefact_type>& v) : void
+                +write(context ctx, const domain::artefact_type& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::artefact_type>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::artefact_type>
+                +read_latest(context ctx, const string& code) : vector<domain::artefact_type>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::artefact_type>
+                +read_all(context ctx, const string& code) : vector<domain::artefact_type>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::artefact_type>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::artefact_type>
+                +get_total_type_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::artefact_type& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::artefact_type& v, const ores::utility::domain::precondition& claim) : domain::artefact_type
             }
             class badge_definition_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -108,25 +454,84 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class badge_definition_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const badge_definition_entity& v) : domain::badge_definition
+                +map(const domain::badge_definition& v) : badge_definition_entity
+                +map(const vector<badge_definition_entity>& v) : vector<domain::badge_definition>
+                +map(const vector<domain::badge_definition>& v) : vector<badge_definition_entity>
             }
             class badge_definition_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::badge_definition& v) : void
+                +write(context ctx, const vector<domain::badge_definition>& v) : void
+                +write(context ctx, const domain::badge_definition& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::badge_definition>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::badge_definition>
+                +read_latest(context ctx, const string& code) : vector<domain::badge_definition>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::badge_definition>
+                +read_all(context ctx, const string& code) : vector<domain::badge_definition>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::badge_definition>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::badge_definition>
+                +get_total_definition_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::badge_definition& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::badge_definition& v, const ores::utility::domain::precondition& claim) : domain::badge_definition
             }
             class badge_mapping_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code_domain_code : string
+                +code_domain_code : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +entity_code : string
+                +version : int
                 +badge_code : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class badge_mapping_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const badge_mapping_entity& v) : domain::badge_mapping
+                +map(const domain::badge_mapping& v) : badge_mapping_entity
+                +map(const vector<badge_mapping_entity>& v) : vector<domain::badge_mapping>
+                +map(const vector<domain::badge_mapping>& v) : vector<badge_mapping_entity>
             }
             class badge_mapping_repository {
+                +remove_status : enum class
                 -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +badge_mapping_repository(context ctx)
+                +sql() : string
+                +write(const domain::badge_mapping& v) : void
+                +write(const vector<domain::badge_mapping>& v) : void
+                +write(const domain::badge_mapping& v, const ores::utility::domain::precondition& claim) : void
+                +write(const vector<domain::badge_mapping>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest() : vector<domain::badge_mapping>
+                +read_latest(uint32_t offset, uint32_t limit) : vector<domain::badge_mapping>
+                +read_latest(const string& code_domain_code, const string& entity_code) : vector<domain::badge_mapping>
+                +get_total_mapping_count() : uint32_t
+                +read_latest_by_code_domain(const string& code_domain_code) : vector<domain::badge_mapping>
+                +read_latest_by_code_domain(const string& code_domain_code, uint32_t offset, uint32_t limit) : vector<domain::badge_mapping>
+                +get_total_mapping_count_by_code_domain(const string& code_domain_code) : uint32_t
+                +read_latest_by_entity(const string& entity_code) : vector<domain::badge_mapping>
+                +get_total_mapping_count_by_entity(const string& entity_code) : uint32_t
+                +remove(const string& code_domain_code, const string& entity_code) : void
+                +remove(const string& code_domain_code, const string& entity_code, optional<uint32_t> version) : remove_status
+                +remove(const vector<string>& code_domain_codes, const vector<string>& entity_codes) : void
+                +remove_by_code_domain(const string& code_domain_code) : void
+                -replace_claim(const domain::badge_mapping& v) : ores::utility::domain::precondition
+                -apply_claim(const domain::badge_mapping& v, const ores::utility::domain::precondition& claim) : domain::badge_mapping
             }
             class badge_severity_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -141,12 +546,36 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class badge_severity_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const badge_severity_entity& v) : domain::badge_severity
+                +map(const domain::badge_severity& v) : badge_severity_entity
+                +map(const vector<badge_severity_entity>& v) : vector<domain::badge_severity>
+                +map(const vector<domain::badge_severity>& v) : vector<badge_severity_entity>
             }
             class badge_severity_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::badge_severity& v) : void
+                +write(context ctx, const vector<domain::badge_severity>& v) : void
+                +write(context ctx, const domain::badge_severity& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::badge_severity>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::badge_severity>
+                +read_latest(context ctx, const string& code) : vector<domain::badge_severity>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::badge_severity>
+                +read_all(context ctx, const string& code) : vector<domain::badge_severity>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::badge_severity>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::badge_severity>
+                +get_total_severity_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::badge_severity& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::badge_severity& v, const ores::utility::domain::precondition& claim) : domain::badge_severity
             }
             class catalog_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -158,14 +587,38 @@ namespace ores #F2F2F2 {
                 +owner : optional<string>
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class catalog_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const catalog_entity& v) : domain::catalog
+                +map(const domain::catalog& v) : catalog_entity
+                +map(const vector<catalog_entity>& v) : vector<domain::catalog>
+                +map(const vector<domain::catalog>& v) : vector<catalog_entity>
             }
             class catalog_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::catalog& v) : void
+                +write(context ctx, const vector<domain::catalog>& v) : void
+                +write(context ctx, const domain::catalog& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::catalog>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::catalog>
+                +read_latest(context ctx, const string& name) : vector<domain::catalog>
+                +read_latest(context ctx, const vector<string>& names) : vector<domain::catalog>
+                +read_all(context ctx, const string& name) : vector<domain::catalog>
+                +read_at_version(context ctx, const string& name, uint32_t version) : optional<domain::catalog>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::catalog>
+                +get_total_catalog_count(context ctx) : uint32_t
+                +remove(context ctx, const string& name) : void
+                +remove(context ctx, const string& name, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& names) : void
+                -replace_claim(context ctx, const domain::catalog& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::catalog& v, const ores::utility::domain::precondition& claim) : domain::catalog
             }
             class change_reason_category_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -176,14 +629,38 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class change_reason_category_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const change_reason_category_entity& v) : domain::change_reason_category
+                +map(const domain::change_reason_category& v) : change_reason_category_entity
+                +map(const vector<change_reason_category_entity>& v) : vector<domain::change_reason_category>
+                +map(const vector<domain::change_reason_category>& v) : vector<change_reason_category_entity>
             }
             class change_reason_category_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::change_reason_category& v) : void
+                +write(context ctx, const vector<domain::change_reason_category>& v) : void
+                +write(context ctx, const domain::change_reason_category& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::change_reason_category>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::change_reason_category>
+                +read_latest(context ctx, const string& code) : vector<domain::change_reason_category>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::change_reason_category>
+                +read_all(context ctx, const string& code) : vector<domain::change_reason_category>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::change_reason_category>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::change_reason_category>
+                +get_total_category_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::change_reason_category& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::change_reason_category& v, const ores::utility::domain::precondition& claim) : domain::change_reason_category
             }
             class change_reason_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -200,14 +677,38 @@ namespace ores #F2F2F2 {
                 +display_order : int
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class change_reason_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const change_reason_entity& v) : domain::change_reason
+                +map(const domain::change_reason& v) : change_reason_entity
+                +map(const vector<change_reason_entity>& v) : vector<domain::change_reason>
+                +map(const vector<domain::change_reason>& v) : vector<change_reason_entity>
             }
             class change_reason_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::change_reason& v) : void
+                +write(context ctx, const vector<domain::change_reason>& v) : void
+                +write(context ctx, const domain::change_reason& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::change_reason>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::change_reason>
+                +read_latest(context ctx, const string& code) : vector<domain::change_reason>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::change_reason>
+                +read_all(context ctx, const string& code) : vector<domain::change_reason>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::change_reason>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::change_reason>
+                +get_total_reason_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::change_reason& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::change_reason& v, const ores::utility::domain::precondition& claim) : domain::change_reason
             }
             class code_domain_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -222,12 +723,36 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class code_domain_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const code_domain_entity& v) : domain::code_domain
+                +map(const domain::code_domain& v) : code_domain_entity
+                +map(const vector<code_domain_entity>& v) : vector<domain::code_domain>
+                +map(const vector<domain::code_domain>& v) : vector<code_domain_entity>
             }
             class code_domain_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::code_domain& v) : void
+                +write(context ctx, const vector<domain::code_domain>& v) : void
+                +write(context ctx, const domain::code_domain& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::code_domain>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::code_domain>
+                +read_latest(context ctx, const string& code) : vector<domain::code_domain>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::code_domain>
+                +read_all(context ctx, const string& code) : vector<domain::code_domain>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::code_domain>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::code_domain>
+                +get_total_domain_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::code_domain& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::code_domain& v, const ores::utility::domain::precondition& claim) : domain::code_domain
             }
             class coding_scheme_authority_type_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -239,14 +764,38 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class coding_scheme_authority_type_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const coding_scheme_authority_type_entity& v) : domain::coding_scheme_authority_type
+                +map(const domain::coding_scheme_authority_type& v) : coding_scheme_authority_type_entity
+                +map(const vector<coding_scheme_authority_type_entity>& v) : vector<domain::coding_scheme_authority_type>
+                +map(const vector<domain::coding_scheme_authority_type>& v) : vector<coding_scheme_authority_type_entity>
             }
             class coding_scheme_authority_type_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::coding_scheme_authority_type& v) : void
+                +write(context ctx, const vector<domain::coding_scheme_authority_type>& v) : void
+                +write(context ctx, const domain::coding_scheme_authority_type& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::coding_scheme_authority_type>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::coding_scheme_authority_type>
+                +read_latest(context ctx, const string& code) : vector<domain::coding_scheme_authority_type>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::coding_scheme_authority_type>
+                +read_all(context ctx, const string& code) : vector<domain::coding_scheme_authority_type>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::coding_scheme_authority_type>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::coding_scheme_authority_type>
+                +get_total_authority_type_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::coding_scheme_authority_type& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::coding_scheme_authority_type& v, const ores::utility::domain::precondition& claim) : domain::coding_scheme_authority_type
             }
             class coding_scheme_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -262,14 +811,38 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class coding_scheme_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const coding_scheme_entity& v) : domain::coding_scheme
+                +map(const domain::coding_scheme& v) : coding_scheme_entity
+                +map(const vector<coding_scheme_entity>& v) : vector<domain::coding_scheme>
+                +map(const vector<domain::coding_scheme>& v) : vector<coding_scheme_entity>
             }
             class coding_scheme_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::coding_scheme& v) : void
+                +write(context ctx, const vector<domain::coding_scheme>& v) : void
+                +write(context ctx, const domain::coding_scheme& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::coding_scheme>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::coding_scheme>
+                +read_latest(context ctx, const string& code) : vector<domain::coding_scheme>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::coding_scheme>
+                +read_all(context ctx, const string& code) : vector<domain::coding_scheme>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::coding_scheme>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::coding_scheme>
+                +get_total_scheme_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::coding_scheme& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::coding_scheme& v, const ores::utility::domain::precondition& claim) : domain::coding_scheme
             }
             class data_domain_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -280,14 +853,38 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class data_domain_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const data_domain_entity& v) : domain::data_domain
+                +map(const domain::data_domain& v) : data_domain_entity
+                +map(const vector<data_domain_entity>& v) : vector<domain::data_domain>
+                +map(const vector<domain::data_domain>& v) : vector<data_domain_entity>
             }
             class data_domain_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::data_domain& v) : void
+                +write(context ctx, const vector<domain::data_domain>& v) : void
+                +write(context ctx, const domain::data_domain& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::data_domain>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::data_domain>
+                +read_latest(context ctx, const string& name) : vector<domain::data_domain>
+                +read_latest(context ctx, const vector<string>& names) : vector<domain::data_domain>
+                +read_all(context ctx, const string& name) : vector<domain::data_domain>
+                +read_at_version(context ctx, const string& name, uint32_t version) : optional<domain::data_domain>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::data_domain>
+                +get_total_domain_count(context ctx) : uint32_t
+                +remove(context ctx, const string& name) : void
+                +remove(context ctx, const string& name, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& names) : void
+                -replace_claim(context ctx, const domain::data_domain& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::data_domain& v, const ores::utility::domain::precondition& claim) : domain::data_domain
             }
             class dataset_bundle_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -306,6 +903,11 @@ namespace ores #F2F2F2 {
                 +valid_to : db_timestamp
             }
             class dataset_bundle_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const dataset_bundle_entity& v) : domain::dataset_bundle
+                +map(const domain::dataset_bundle& v) : dataset_bundle_entity
+                +map(const vector<dataset_bundle_entity>& v) : vector<domain::dataset_bundle>
+                +map(const vector<domain::dataset_bundle>& v) : vector<dataset_bundle_entity>
             }
             class dataset_bundle_member_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -324,12 +926,60 @@ namespace ores #F2F2F2 {
                 +valid_to : db_timestamp
             }
             class dataset_bundle_member_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const dataset_bundle_member_entity& v) : domain::dataset_bundle_member
+                +map(const domain::dataset_bundle_member& v) : dataset_bundle_member_entity
+                +map(const vector<dataset_bundle_member_entity>& v) : vector<domain::dataset_bundle_member>
+                +map(const vector<domain::dataset_bundle_member>& v) : vector<dataset_bundle_member_entity>
             }
             class dataset_bundle_member_repository {
+                +remove_status : enum class
                 -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +dataset_bundle_member_repository(context ctx)
+                +sql() : string
+                +write(const domain::dataset_bundle_member& v) : void
+                +write(const vector<domain::dataset_bundle_member>& v) : void
+                +write(const domain::dataset_bundle_member& v, const ores::utility::domain::precondition& claim) : void
+                +write(const vector<domain::dataset_bundle_member>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest() : vector<domain::dataset_bundle_member>
+                +read_latest(uint32_t offset, uint32_t limit) : vector<domain::dataset_bundle_member>
+                +read_latest(const string& bundle_code, const string& dataset_code) : vector<domain::dataset_bundle_member>
+                +get_total_member_count() : uint32_t
+                +read_latest_by_bundle(const string& bundle_code) : vector<domain::dataset_bundle_member>
+                +read_latest_by_bundle(const string& bundle_code, uint32_t offset, uint32_t limit) : vector<domain::dataset_bundle_member>
+                +get_total_member_count_by_bundle(const string& bundle_code) : uint32_t
+                +read_latest_by_dataset(const string& dataset_code) : vector<domain::dataset_bundle_member>
+                +get_total_member_count_by_dataset(const string& dataset_code) : uint32_t
+                +remove(const string& bundle_code, const string& dataset_code) : void
+                +remove(const string& bundle_code, const string& dataset_code, optional<uint32_t> version) : remove_status
+                +remove(const vector<string>& bundle_codes, const vector<string>& dataset_codes) : void
+                +remove_by_bundle(const string& bundle_code) : void
+                -replace_claim(const domain::dataset_bundle_member& v) : ores::utility::domain::precondition
+                -apply_claim(const domain::dataset_bundle_member& v, const ores::utility::domain::precondition& claim) : domain::dataset_bundle_member
             }
             class dataset_bundle_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::dataset_bundle& v) : void
+                +write(context ctx, const vector<domain::dataset_bundle>& v) : void
+                +write(context ctx, const domain::dataset_bundle& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::dataset_bundle>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::dataset_bundle>
+                +read_latest(context ctx, const string& id) : vector<domain::dataset_bundle>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::dataset_bundle>
+                +read_latest_by_code(context ctx, const string& code) : vector<domain::dataset_bundle>
+                +read_any_by_code(context ctx, const string& code) : vector<domain::dataset_bundle>
+                +read_all(context ctx, const string& id) : vector<domain::dataset_bundle>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::dataset_bundle>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::dataset_bundle>
+                +get_total_bundle_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::dataset_bundle& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::dataset_bundle& v, const ores::utility::domain::precondition& claim) : domain::dataset_bundle
             }
             class dataset_dependency_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -345,9 +995,15 @@ namespace ores #F2F2F2 {
                 +valid_to : db_timestamp
             }
             class dataset_dependency_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const dataset_dependency_entity& v) : domain::dataset_dependency
+                +map(const vector<dataset_dependency_entity>& v) : vector<domain::dataset_dependency>
             }
             class dataset_dependency_repository {
                 -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +dataset_dependency_repository(context ctx)
+                +read_latest() : vector<domain::dataset_dependency>
             }
             class dataset_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -370,20 +1026,46 @@ namespace ores #F2F2F2 {
                 +business_context : string
                 +upstream_derivation_id : optional<string>
                 +lineage_depth : int
-                +as_of_date : db_timestamp
-                +ingestion_timestamp : db_timestamp
+                +as_of_date : string
+                +ingestion_timestamp : string
                 +license_info : optional<string>
-                +artefact_type : optional<string>
+                +artefact_type : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class dataset_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const dataset_entity& v) : domain::dataset
+                +map(const domain::dataset& v) : dataset_entity
+                +map(const vector<dataset_entity>& v) : vector<domain::dataset>
+                +map(const vector<domain::dataset>& v) : vector<dataset_entity>
             }
             class dataset_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::dataset& v) : void
+                +write(context ctx, const vector<domain::dataset>& v) : void
+                +write(context ctx, const domain::dataset& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::dataset>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::dataset>
+                +read_latest(context ctx, const string& id) : vector<domain::dataset>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::dataset>
+                +read_latest_by_code(context ctx, const string& code) : vector<domain::dataset>
+                +read_any_by_code(context ctx, const string& code) : vector<domain::dataset>
+                +read_all(context ctx, const string& id) : vector<domain::dataset>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::dataset>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::dataset>
+                +get_total_dataset_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::dataset& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::dataset& v, const ores::utility::domain::precondition& claim) : domain::dataset
             }
             class fsm_state_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -399,12 +1081,39 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class fsm_state_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const fsm_state_entity& v) : domain::fsm_state
+                +map(const domain::fsm_state& v) : fsm_state_entity
+                +map(const vector<fsm_state_entity>& v) : vector<domain::fsm_state>
+                +map(const vector<domain::fsm_state>& v) : vector<fsm_state_entity>
             }
             class fsm_state_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::fsm_state& v) : void
+                +write(context ctx, const vector<domain::fsm_state>& v) : void
+                +write(context ctx, const domain::fsm_state& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::fsm_state>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::fsm_state>
+                +read_latest(context ctx, const string& id) : vector<domain::fsm_state>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::fsm_state>
+                +read_latest_by_name(context ctx, const string& name) : vector<domain::fsm_state>
+                +read_any_by_name(context ctx, const string& name) : vector<domain::fsm_state>
+                +read_all(context ctx, const string& id) : vector<domain::fsm_state>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::fsm_state>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::fsm_state>
+                +get_total_state_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                +read_latest_by_machine_name(context ctx, const string& machine_name) : vector<domain::fsm_state>
+                -replace_claim(context ctx, const domain::fsm_state& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::fsm_state& v, const ores::utility::domain::precondition& claim) : domain::fsm_state
             }
             class fsm_transition_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -413,7 +1122,7 @@ namespace ores #F2F2F2 {
                 +tenant_id : string
                 +version : int
                 +machine_id : string
-                +from_state_id : optional<string>
+                +from_state_id : string
                 +to_state_id : string
                 +name : string
                 +guard_function : optional<string>
@@ -421,12 +1130,131 @@ namespace ores #F2F2F2 {
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +valid_from : optional<db_timestamp>
-                +valid_to : optional<db_timestamp>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class fsm_transition_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const fsm_transition_entity& v) : domain::fsm_transition
+                +map(const domain::fsm_transition& v) : fsm_transition_entity
+                +map(const vector<fsm_transition_entity>& v) : vector<domain::fsm_transition>
+                +map(const vector<domain::fsm_transition>& v) : vector<fsm_transition_entity>
             }
             class fsm_transition_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::fsm_transition& v) : void
+                +write(context ctx, const vector<domain::fsm_transition>& v) : void
+                +write(context ctx, const domain::fsm_transition& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::fsm_transition>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::fsm_transition>
+                +read_latest(context ctx, const string& id) : vector<domain::fsm_transition>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::fsm_transition>
+                +read_latest_by_name(context ctx, const string& name) : vector<domain::fsm_transition>
+                +read_any_by_name(context ctx, const string& name) : vector<domain::fsm_transition>
+                +read_all(context ctx, const string& id) : vector<domain::fsm_transition>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::fsm_transition>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::fsm_transition>
+                +get_total_transition_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::fsm_transition& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::fsm_transition& v, const ores::utility::domain::precondition& claim) : domain::fsm_transition
+            }
+            class lei_entity_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +lei : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +entity_legal_name : string
+                +entity_entity_category : string
+                +entity_entity_sub_category : optional<string>
+                +entity_entity_status : string
+                +entity_legal_form_entity_legal_form_code : optional<string>
+                +entity_legal_form_other_legal_form : optional<string>
+                +entity_legal_jurisdiction : optional<string>
+                +entity_legal_address_first_address_line : optional<string>
+                +entity_legal_address_city : optional<string>
+                +entity_legal_address_region : optional<string>
+                +entity_legal_address_country : string
+                +entity_legal_address_postal_code : optional<string>
+                +entity_headquarters_address_first_address_line : optional<string>
+                +entity_headquarters_address_city : optional<string>
+                +entity_headquarters_address_region : optional<string>
+                +entity_headquarters_address_country : optional<string>
+                +entity_headquarters_address_postal_code : optional<string>
+                +registration_registration_status : optional<string>
+                +entity_transliterated_name_1 : optional<string>
+                +entity_transliterated_name_1_type : optional<string>
+            }
+            class lei_entity_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const lei_entity_entity& v) : domain::lei_entity
+                +map(const domain::lei_entity& v) : lei_entity_entity
+                +map(const vector<lei_entity_entity>& v) : vector<domain::lei_entity>
+                +map(const vector<domain::lei_entity>& v) : vector<lei_entity_entity>
+            }
+            class lei_entity_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::lei_entity& v) : void
+                +write(context ctx, const vector<domain::lei_entity>& v) : void
+                +write(context ctx, const domain::lei_entity& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::lei_entity>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::lei_entity>
+                +read_latest(context ctx, const string& lei) : vector<domain::lei_entity>
+                +read_latest(context ctx, const vector<string>& leis) : vector<domain::lei_entity>
+                +read_all(context ctx, const string& lei) : vector<domain::lei_entity>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::lei_entity>
+                +get_total_entity_count(context ctx) : uint32_t
+                +remove(context ctx, const string& lei) : void
+                +remove(context ctx, const string& lei, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& leis) : void
+                -replace_claim(context ctx, const domain::lei_entity& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::lei_entity& v, const ores::utility::domain::precondition& claim) : domain::lei_entity
+            }
+            class lei_relationship_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +relationship_start_node_node_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +relationship_start_node_node_id_type : string
+                +relationship_end_node_node_id : string
+                +relationship_end_node_node_id_type : string
+                +relationship_relationship_type : string
+                +relationship_relationship_status : string
+                +registration_registration_status : optional<string>
+                +registration_validation_sources : optional<string>
+            }
+            class lei_relationship_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const lei_relationship_entity& v) : domain::lei_relationship
+                +map(const domain::lei_relationship& v) : lei_relationship_entity
+                +map(const vector<lei_relationship_entity>& v) : vector<domain::lei_relationship>
+                +map(const vector<domain::lei_relationship>& v) : vector<lei_relationship_entity>
+            }
+            class lei_relationship_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::lei_relationship& v) : void
+                +write(context ctx, const vector<domain::lei_relationship>& v) : void
+                +write(context ctx, const domain::lei_relationship& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::lei_relationship>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::lei_relationship>
+                +read_latest(context ctx, const string& relationship_start_node_node_id) : vector<domain::lei_relationship>
+                +read_latest(context ctx, const vector<string>& relationship_start_node_node_ids) : vector<domain::lei_relationship>
+                +read_all(context ctx, const string& relationship_start_node_node_id) : vector<domain::lei_relationship>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::lei_relationship>
+                +get_total_relationship_count(context ctx) : uint32_t
+                +remove(context ctx, const string& relationship_start_node_node_id) : void
+                +remove(context ctx, const string& relationship_start_node_node_id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& relationship_start_node_node_ids) : void
+                -replace_claim(context ctx, const domain::lei_relationship& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::lei_relationship& v, const ores::utility::domain::precondition& claim) : domain::lei_relationship
             }
             class methodology_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -440,14 +1268,40 @@ namespace ores #F2F2F2 {
                 +implementation_details : optional<string>
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class methodology_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const methodology_entity& v) : domain::methodology
+                +map(const domain::methodology& v) : methodology_entity
+                +map(const vector<methodology_entity>& v) : vector<domain::methodology>
+                +map(const vector<domain::methodology>& v) : vector<methodology_entity>
             }
             class methodology_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::methodology& v) : void
+                +write(context ctx, const vector<domain::methodology>& v) : void
+                +write(context ctx, const domain::methodology& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::methodology>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::methodology>
+                +read_latest(context ctx, const string& id) : vector<domain::methodology>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::methodology>
+                +read_latest_by_name(context ctx, const string& name) : vector<domain::methodology>
+                +read_any_by_name(context ctx, const string& name) : vector<domain::methodology>
+                +read_all(context ctx, const string& id) : vector<domain::methodology>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::methodology>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::methodology>
+                +get_total_methodology_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::methodology& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::methodology& v, const ores::utility::domain::precondition& claim) : domain::methodology
             }
             class nature_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -459,14 +1313,38 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class nature_dimension_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const nature_dimension_entity& v) : domain::nature_dimension
+                +map(const domain::nature_dimension& v) : nature_dimension_entity
+                +map(const vector<nature_dimension_entity>& v) : vector<domain::nature_dimension>
+                +map(const vector<domain::nature_dimension>& v) : vector<nature_dimension_entity>
             }
             class nature_dimension_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::nature_dimension& v) : void
+                +write(context ctx, const vector<domain::nature_dimension>& v) : void
+                +write(context ctx, const domain::nature_dimension& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::nature_dimension>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::nature_dimension>
+                +read_latest(context ctx, const string& code) : vector<domain::nature_dimension>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::nature_dimension>
+                +read_all(context ctx, const string& code) : vector<domain::nature_dimension>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::nature_dimension>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::nature_dimension>
+                +get_total_dimension_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::nature_dimension& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::nature_dimension& v, const ores::utility::domain::precondition& claim) : domain::nature_dimension
             }
             class origin_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -478,14 +1356,38 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class origin_dimension_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const origin_dimension_entity& v) : domain::origin_dimension
+                +map(const domain::origin_dimension& v) : origin_dimension_entity
+                +map(const vector<origin_dimension_entity>& v) : vector<domain::origin_dimension>
+                +map(const vector<domain::origin_dimension>& v) : vector<origin_dimension_entity>
             }
             class origin_dimension_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::origin_dimension& v) : void
+                +write(context ctx, const vector<domain::origin_dimension>& v) : void
+                +write(context ctx, const domain::origin_dimension& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::origin_dimension>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::origin_dimension>
+                +read_latest(context ctx, const string& code) : vector<domain::origin_dimension>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::origin_dimension>
+                +read_all(context ctx, const string& code) : vector<domain::origin_dimension>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::origin_dimension>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::origin_dimension>
+                +get_total_dimension_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::origin_dimension& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::origin_dimension& v, const ores::utility::domain::precondition& claim) : domain::origin_dimension
             }
             class publication_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -501,12 +1403,73 @@ namespace ores #F2F2F2 {
                 +records_skipped : int64_t
                 +records_deleted : int64_t
                 +published_by : string
-                +published_at : db_timestamp
+                +published_at : string
             }
             class publication_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const publication_entity& v) : domain::publication
+                +map(const domain::publication& v) : publication_entity
+                +map(const vector<publication_entity>& v) : vector<domain::publication>
+                +map(const vector<domain::publication>& v) : vector<publication_entity>
             }
             class publication_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::publication& v) : void
+                +write(context ctx, const vector<domain::publication>& v) : void
+                +write(context ctx, const domain::publication& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::publication>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::publication>
+                +read_latest(context ctx, const string& id) : vector<domain::publication>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::publication>
+                +read_all(context ctx, const string& id) : vector<domain::publication>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::publication>
+                +get_total_publication_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::publication& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::publication& v, const ores::utility::domain::precondition& claim) : domain::publication
+            }
+            class report_definition_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +name : string
+                +description : optional<string>
+                +report_type : string
+                +schedule_expression : string
+                +concurrency_policy : string
+                +display_order : int
+            }
+            class report_definition_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const report_definition_entity& v) : domain::report_definition
+                +map(const domain::report_definition& v) : report_definition_entity
+                +map(const vector<report_definition_entity>& v) : vector<domain::report_definition>
+                +map(const vector<domain::report_definition>& v) : vector<report_definition_entity>
+            }
+            class report_definition_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::report_definition& v) : void
+                +write(context ctx, const vector<domain::report_definition>& v) : void
+                +write(context ctx, const domain::report_definition& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::report_definition>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::report_definition>
+                +read_latest(context ctx, const string& id) : vector<domain::report_definition>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::report_definition>
+                +read_all(context ctx, const string& id) : vector<domain::report_definition>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::report_definition>
+                +get_total_definition_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::report_definition& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::report_definition& v, const ores::utility::domain::precondition& claim) : domain::report_definition
             }
             class subject_area_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -518,14 +1481,83 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class subject_area_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const subject_area_entity& v) : domain::subject_area
+                +map(const domain::subject_area& v) : subject_area_entity
+                +map(const vector<subject_area_entity>& v) : vector<domain::subject_area>
+                +map(const vector<domain::subject_area>& v) : vector<subject_area_entity>
             }
             class subject_area_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::subject_area& v) : void
+                +write(context ctx, const vector<domain::subject_area>& v) : void
+                +write(context ctx, const domain::subject_area& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::subject_area>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::subject_area>
+                +read_latest(context ctx, const string& name, const string& domain_name) : vector<domain::subject_area>
+                +read_latest(context ctx, const vector<string>& names, const vector<string>& domain_names) : vector<domain::subject_area>
+                +read_all(context ctx, const string& name, const string& domain_name) : vector<domain::subject_area>
+                +read_at_version(context ctx, const string& name, const string& domain_name, uint32_t version) : optional<domain::subject_area>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::subject_area>
+                +get_total_area_count(context ctx) : uint32_t
+                +remove(context ctx, const string& name, const string& domain_name) : void
+                +remove(context ctx, const string& name, const string& domain_name, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& names, const vector<string>& domain_names) : void
+                -replace_claim(context ctx, const domain::subject_area& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::subject_area& v, const ores::utility::domain::precondition& claim) : domain::subject_area
+            }
+            class synthetic_fx_spot_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +name : string
+                +description : optional<string>
+                +enabled : bool
+                +auto_start : bool
+                +base_currency_code : string
+                +quote_currency_code : string
+                +gmm_initial_price : double
+                +ticks_per_hour : int
+                +process_type : string
+                +price_source : string
+                +vintage_source : optional<string>
+                +vintage_date : optional<string>
+            }
+            class synthetic_fx_spot_config_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const synthetic_fx_spot_config_entity& v) : domain::synthetic_fx_spot_config
+                +map(const domain::synthetic_fx_spot_config& v) : synthetic_fx_spot_config_entity
+                +map(const vector<synthetic_fx_spot_config_entity>& v) : vector<domain::synthetic_fx_spot_config>
+                +map(const vector<domain::synthetic_fx_spot_config>& v) : vector<synthetic_fx_spot_config_entity>
+            }
+            class synthetic_fx_spot_config_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::synthetic_fx_spot_config& v) : void
+                +write(context ctx, const vector<domain::synthetic_fx_spot_config>& v) : void
+                +write(context ctx, const domain::synthetic_fx_spot_config& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::synthetic_fx_spot_config>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::synthetic_fx_spot_config>
+                +read_latest(context ctx, const string& id) : vector<domain::synthetic_fx_spot_config>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::synthetic_fx_spot_config>
+                +read_all(context ctx, const string& id) : vector<domain::synthetic_fx_spot_config>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::synthetic_fx_spot_config>
+                +get_total_config_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::synthetic_fx_spot_config& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::synthetic_fx_spot_config& v, const ores::utility::domain::precondition& claim) : domain::synthetic_fx_spot_config
             }
             class treatment_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -537,81 +1569,752 @@ namespace ores #F2F2F2 {
                 +description : string
                 +modified_by : string
                 +performed_by : string
+                +change_reason_code : string
                 +change_commentary : string
                 +valid_from : db_timestamp
                 +valid_to : db_timestamp
             }
             class treatment_dimension_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const treatment_dimension_entity& v) : domain::treatment_dimension
+                +map(const domain::treatment_dimension& v) : treatment_dimension_entity
+                +map(const vector<treatment_dimension_entity>& v) : vector<domain::treatment_dimension>
+                +map(const vector<domain::treatment_dimension>& v) : vector<treatment_dimension_entity>
             }
             class treatment_dimension_repository {
-                -ctx_ : context
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::treatment_dimension& v) : void
+                +write(context ctx, const vector<domain::treatment_dimension>& v) : void
+                +write(context ctx, const domain::treatment_dimension& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::treatment_dimension>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::treatment_dimension>
+                +read_latest(context ctx, const string& code) : vector<domain::treatment_dimension>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::treatment_dimension>
+                +read_all(context ctx, const string& code) : vector<domain::treatment_dimension>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::treatment_dimension>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::treatment_dimension>
+                +get_total_dimension_count(context ctx) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::treatment_dimension& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::treatment_dimension& v, const ores::utility::domain::precondition& claim) : domain::treatment_dimension
             }
         }
         namespace service #F2F2F2 {
-            class change_management_service {
-                -category_repo_ : repository::change_reason_category_repository
-                -reason_repo_ : repository::change_reason_repository
+            class artefact_type_service {
+                -ctx_ : context
+                -repo_ : repository::artefact_type_repository
+                -lg() : [[nodiscard]] static auto&
+                +artefact_type_service(context ctx)
+                +list_artefact_types(const messaging::list_artefact_types_request& request) : messaging::list_artefact_types_response
+                +get_artefact_type(const messaging::get_artefact_type_request& request) : messaging::get_artefact_type_response
+                +get_many_artefact_types(const messaging::get_many_artefact_types_request& request) : messaging::get_many_artefact_types_response
+                +put_artefact_type(const messaging::put_artefact_type_request& request) : messaging::put_artefact_type_response
+                +put_many_artefact_types(const messaging::put_many_artefact_types_request& request) : messaging::put_many_artefact_types_response
+                +delete_artefact_type(const messaging::delete_artefact_type_request& request) : messaging::delete_artefact_type_response
+                +delete_many_artefact_types(const messaging::delete_many_artefact_types_request& request) : messaging::delete_many_artefact_types_response
+                +list_artefact_type_versions(const messaging::list_artefact_type_versions_request& request) : messaging::list_artefact_type_versions_response
+                +get_artefact_type_version(const messaging::get_artefact_type_version_request& request) : messaging::get_artefact_type_version_response
+                +list_types(uint32_t offset, uint32_t limit) : vector<domain::artefact_type>
+                +count_types() : uint32_t
+                +get_type_at_version(const string& code, uint32_t version) : optional<domain::artefact_type>
+                +get_type(const string& code) : optional<domain::artefact_type>
+                +get_types(const vector<string>& codes) : vector<domain::artefact_type>
+                +save_type(const domain::artefact_type& type) : void
+                +save_types(const vector<domain::artefact_type>& types) : void
+                +delete_type(const string& code) : void
+                +delete_types(const vector<string>& codes) : void
+                +get_type_history(const string& code) : vector<domain::artefact_type>
+                -prepare_change(const messaging::artefact_type_change& change, const ores::utility::domain::change_intent& intent, domain::artefact_type& out) : ores::utility::domain::result
+            }
+            class badge_definition_service {
+                -ctx_ : context
+                -repo_ : repository::badge_definition_repository
+                -lg() : [[nodiscard]] static auto&
+                +badge_definition_service(context ctx)
+                +list_badge_definitions(const messaging::list_badge_definitions_request& request) : messaging::list_badge_definitions_response
+                +get_badge_definition(const messaging::get_badge_definition_request& request) : messaging::get_badge_definition_response
+                +get_many_badge_definitions(const messaging::get_many_badge_definitions_request& request) : messaging::get_many_badge_definitions_response
+                +put_badge_definition(const messaging::put_badge_definition_request& request) : messaging::put_badge_definition_response
+                +put_many_badge_definitions(const messaging::put_many_badge_definitions_request& request) : messaging::put_many_badge_definitions_response
+                +delete_badge_definition(const messaging::delete_badge_definition_request& request) : messaging::delete_badge_definition_response
+                +delete_many_badge_definitions(const messaging::delete_many_badge_definitions_request& request) : messaging::delete_many_badge_definitions_response
+                +list_badge_definition_versions(const messaging::list_badge_definition_versions_request& request) : messaging::list_badge_definition_versions_response
+                +get_badge_definition_version(const messaging::get_badge_definition_version_request& request) : messaging::get_badge_definition_version_response
+                +list_definitions(uint32_t offset, uint32_t limit) : vector<domain::badge_definition>
+                +count_definitions() : uint32_t
+                +get_definition_at_version(const string& code, uint32_t version) : optional<domain::badge_definition>
+                +get_definition(const string& code) : optional<domain::badge_definition>
+                +get_definitions(const vector<string>& codes) : vector<domain::badge_definition>
+                +save_definition(const domain::badge_definition& definition) : void
+                +save_definitions(const vector<domain::badge_definition>& definitions) : void
+                +delete_definition(const string& code) : void
+                +delete_definitions(const vector<string>& codes) : void
+                +get_definition_history(const string& code) : vector<domain::badge_definition>
+                -prepare_change(const messaging::badge_definition_change& change, const ores::utility::domain::change_intent& intent, domain::badge_definition& out) : ores::utility::domain::result
+            }
+            class badge_mapping_service {
+                -ctx_ : context
+                -repo_ : repository::badge_mapping_repository
+                -lg() : [[nodiscard]] static auto&
+                +badge_mapping_service(context ctx)
+                +list_badge_mappings(const messaging::list_badge_mappings_request& request) : messaging::list_badge_mappings_response
+                +get_badge_mapping(const messaging::get_badge_mapping_request& request) : messaging::get_badge_mapping_response
+                +get_many_badge_mappings(const messaging::get_many_badge_mappings_request& request) : messaging::get_many_badge_mappings_response
+                +put_badge_mapping(const messaging::put_badge_mapping_request& request) : messaging::put_badge_mapping_response
+                +put_many_badge_mappings(const messaging::put_many_badge_mappings_request& request) : messaging::put_many_badge_mappings_response
+                +delete_badge_mapping(const messaging::delete_badge_mapping_request& request) : messaging::delete_badge_mapping_response
+                +delete_many_badge_mappings(const messaging::delete_many_badge_mappings_request& request) : messaging::delete_many_badge_mappings_response
+                +list_by_code_domain_code_badge_mappings(const messaging::list_by_code_domain_code_badge_mappings_request& request) : messaging::list_by_code_domain_code_badge_mappings_response
+                -prepare_change(const messaging::badge_mapping_change& change, const ores::utility::domain::change_intent& intent, domain::badge_mapping& out) : ores::utility::domain::result
+            }
+            class badge_severity_service {
+                -ctx_ : context
+                -repo_ : repository::badge_severity_repository
+                -lg() : [[nodiscard]] static auto&
+                +badge_severity_service(context ctx)
+                +list_badge_severities(const messaging::list_badge_severities_request& request) : messaging::list_badge_severities_response
+                +get_badge_severity(const messaging::get_badge_severity_request& request) : messaging::get_badge_severity_response
+                +get_many_badge_severities(const messaging::get_many_badge_severities_request& request) : messaging::get_many_badge_severities_response
+                +put_badge_severity(const messaging::put_badge_severity_request& request) : messaging::put_badge_severity_response
+                +put_many_badge_severities(const messaging::put_many_badge_severities_request& request) : messaging::put_many_badge_severities_response
+                +delete_badge_severity(const messaging::delete_badge_severity_request& request) : messaging::delete_badge_severity_response
+                +delete_many_badge_severities(const messaging::delete_many_badge_severities_request& request) : messaging::delete_many_badge_severities_response
+                +list_badge_severity_versions(const messaging::list_badge_severity_versions_request& request) : messaging::list_badge_severity_versions_response
+                +get_badge_severity_version(const messaging::get_badge_severity_version_request& request) : messaging::get_badge_severity_version_response
+                +list_severities(uint32_t offset, uint32_t limit) : vector<domain::badge_severity>
+                +count_severities() : uint32_t
+                +get_severity_at_version(const string& code, uint32_t version) : optional<domain::badge_severity>
+                +get_severity(const string& code) : optional<domain::badge_severity>
+                +get_severities(const vector<string>& codes) : vector<domain::badge_severity>
+                +save_severity(const domain::badge_severity& severity) : void
+                +save_severities(const vector<domain::badge_severity>& severities) : void
+                +delete_severity(const string& code) : void
+                +delete_severities(const vector<string>& codes) : void
+                +get_severity_history(const string& code) : vector<domain::badge_severity>
+                -prepare_change(const messaging::badge_severity_change& change, const ores::utility::domain::change_intent& intent, domain::badge_severity& out) : ores::utility::domain::result
+            }
+            class catalog_service {
+                -ctx_ : context
+                -repo_ : repository::catalog_repository
+                -lg() : [[nodiscard]] static auto&
+                +catalog_service(context ctx)
+                +list_catalogs(const messaging::list_catalogs_request& request) : messaging::list_catalogs_response
+                +get_catalog(const messaging::get_catalog_request& request) : messaging::get_catalog_response
+                +get_many_catalogs(const messaging::get_many_catalogs_request& request) : messaging::get_many_catalogs_response
+                +put_catalog(const messaging::put_catalog_request& request) : messaging::put_catalog_response
+                +put_many_catalogs(const messaging::put_many_catalogs_request& request) : messaging::put_many_catalogs_response
+                +delete_catalog(const messaging::delete_catalog_request& request) : messaging::delete_catalog_response
+                +delete_many_catalogs(const messaging::delete_many_catalogs_request& request) : messaging::delete_many_catalogs_response
+                +list_catalog_versions(const messaging::list_catalog_versions_request& request) : messaging::list_catalog_versions_response
+                +get_catalog_version(const messaging::get_catalog_version_request& request) : messaging::get_catalog_version_response
+                +list_catalogs(uint32_t offset, uint32_t limit) : vector<domain::catalog>
+                +count_catalogs() : uint32_t
+                +get_catalog_at_version(const string& name, uint32_t version) : optional<domain::catalog>
+                +get_catalog(const string& name) : optional<domain::catalog>
+                +get_catalogs(const vector<string>& names) : vector<domain::catalog>
+                +save_catalog(const domain::catalog& catalog) : void
+                +save_catalogs(const vector<domain::catalog>& catalogs) : void
+                +delete_catalog(const string& name) : void
+                +delete_catalogs(const vector<string>& names) : void
+                +get_catalog_history(const string& name) : vector<domain::catalog>
+                -prepare_change(const messaging::catalog_change& change, const ores::utility::domain::change_intent& intent, domain::catalog& out) : ores::utility::domain::result
+            }
+            class change_reason_category_service {
+                -ctx_ : context
+                -repo_ : repository::change_reason_category_repository
+                -lg() : [[nodiscard]] static auto&
+                +change_reason_category_service(context ctx)
+                +list_change_reason_categories(const messaging::list_change_reason_categories_request& request) : messaging::list_change_reason_categories_response
+                +get_change_reason_category(const messaging::get_change_reason_category_request& request) : messaging::get_change_reason_category_response
+                +get_many_change_reason_categories(const messaging::get_many_change_reason_categories_request& request) : messaging::get_many_change_reason_categories_response
+                +put_change_reason_category(const messaging::put_change_reason_category_request& request) : messaging::put_change_reason_category_response
+                +put_many_change_reason_categories(const messaging::put_many_change_reason_categories_request& request) : messaging::put_many_change_reason_categories_response
+                +delete_change_reason_category(const messaging::delete_change_reason_category_request& request) : messaging::delete_change_reason_category_response
+                +delete_many_change_reason_categories(const messaging::delete_many_change_reason_categories_request& request) : messaging::delete_many_change_reason_categories_response
+                +list_change_reason_category_versions(const messaging::list_change_reason_category_versions_request& request) : messaging::list_change_reason_category_versions_response
+                +get_change_reason_category_version(const messaging::get_change_reason_category_version_request& request) : messaging::get_change_reason_category_version_response
+                +list_categories(uint32_t offset, uint32_t limit) : vector<domain::change_reason_category>
+                +count_categories() : uint32_t
+                +get_category_at_version(const string& code, uint32_t version) : optional<domain::change_reason_category>
+                +get_category(const string& code) : optional<domain::change_reason_category>
+                +get_categories(const vector<string>& codes) : vector<domain::change_reason_category>
+                +save_category(const domain::change_reason_category& category) : void
+                +save_categories(const vector<domain::change_reason_category>& categories) : void
+                +delete_category(const string& code) : void
+                +delete_categories(const vector<string>& codes) : void
+                +get_category_history(const string& code) : vector<domain::change_reason_category>
+                -prepare_change(const messaging::change_reason_category_change& change, const ores::utility::domain::change_intent& intent, domain::change_reason_category& out) : ores::utility::domain::result
+            }
+            class change_reason_service {
+                -ctx_ : context
+                -repo_ : repository::change_reason_repository
+                -lg() : [[nodiscard]] static auto&
+                +change_reason_service(context ctx)
+                +list_change_reasons(const messaging::list_change_reasons_request& request) : messaging::list_change_reasons_response
+                +get_change_reason(const messaging::get_change_reason_request& request) : messaging::get_change_reason_response
+                +get_many_change_reasons(const messaging::get_many_change_reasons_request& request) : messaging::get_many_change_reasons_response
+                +put_change_reason(const messaging::put_change_reason_request& request) : messaging::put_change_reason_response
+                +put_many_change_reasons(const messaging::put_many_change_reasons_request& request) : messaging::put_many_change_reasons_response
+                +delete_change_reason(const messaging::delete_change_reason_request& request) : messaging::delete_change_reason_response
+                +delete_many_change_reasons(const messaging::delete_many_change_reasons_request& request) : messaging::delete_many_change_reasons_response
+                +list_change_reason_versions(const messaging::list_change_reason_versions_request& request) : messaging::list_change_reason_versions_response
+                +get_change_reason_version(const messaging::get_change_reason_version_request& request) : messaging::get_change_reason_version_response
+                +list_reasons(uint32_t offset, uint32_t limit) : vector<domain::change_reason>
+                +count_reasons() : uint32_t
+                +get_reason_at_version(const string& code, uint32_t version) : optional<domain::change_reason>
+                +get_reason(const string& code) : optional<domain::change_reason>
+                +get_reasons(const vector<string>& codes) : vector<domain::change_reason>
+                +save_reason(const domain::change_reason& reason) : void
+                +save_reasons(const vector<domain::change_reason>& reasons) : void
+                +delete_reason(const string& code) : void
+                +delete_reasons(const vector<string>& codes) : void
+                +get_reason_history(const string& code) : vector<domain::change_reason>
+                -prepare_change(const messaging::change_reason_change& change, const ores::utility::domain::change_intent& intent, domain::change_reason& out) : ores::utility::domain::result
+            }
+            class code_domain_service {
+                -ctx_ : context
+                -repo_ : repository::code_domain_repository
+                -lg() : [[nodiscard]] static auto&
+                +code_domain_service(context ctx)
+                +list_code_domains(const messaging::list_code_domains_request& request) : messaging::list_code_domains_response
+                +get_code_domain(const messaging::get_code_domain_request& request) : messaging::get_code_domain_response
+                +get_many_code_domains(const messaging::get_many_code_domains_request& request) : messaging::get_many_code_domains_response
+                +put_code_domain(const messaging::put_code_domain_request& request) : messaging::put_code_domain_response
+                +put_many_code_domains(const messaging::put_many_code_domains_request& request) : messaging::put_many_code_domains_response
+                +delete_code_domain(const messaging::delete_code_domain_request& request) : messaging::delete_code_domain_response
+                +delete_many_code_domains(const messaging::delete_many_code_domains_request& request) : messaging::delete_many_code_domains_response
+                +list_code_domain_versions(const messaging::list_code_domain_versions_request& request) : messaging::list_code_domain_versions_response
+                +get_code_domain_version(const messaging::get_code_domain_version_request& request) : messaging::get_code_domain_version_response
+                +list_domains(uint32_t offset, uint32_t limit) : vector<domain::code_domain>
+                +count_domains() : uint32_t
+                +get_domain_at_version(const string& code, uint32_t version) : optional<domain::code_domain>
+                +get_domain(const string& code) : optional<domain::code_domain>
+                +get_domains(const vector<string>& codes) : vector<domain::code_domain>
+                +save_domain(const domain::code_domain& domain) : void
+                +save_domains(const vector<domain::code_domain>& domains) : void
+                +delete_domain(const string& code) : void
+                +delete_domains(const vector<string>& codes) : void
+                +get_domain_history(const string& code) : vector<domain::code_domain>
+                -prepare_change(const messaging::code_domain_change& change, const ores::utility::domain::change_intent& intent, domain::code_domain& out) : ores::utility::domain::result
+            }
+            class coding_scheme_authority_type_service {
+                -ctx_ : context
+                -repo_ : repository::coding_scheme_authority_type_repository
+                -lg() : [[nodiscard]] static auto&
+                +coding_scheme_authority_type_service(context ctx)
+                +list_coding_scheme_authority_types(const messaging::list_coding_scheme_authority_types_request& request) : messaging::list_coding_scheme_authority_types_response
+                +get_coding_scheme_authority_type(const messaging::get_coding_scheme_authority_type_request& request) : messaging::get_coding_scheme_authority_type_response
+                +get_many_coding_scheme_authority_types(const messaging::get_many_coding_scheme_authority_types_request& request) : messaging::get_many_coding_scheme_authority_types_response
+                +put_coding_scheme_authority_type(const messaging::put_coding_scheme_authority_type_request& request) : messaging::put_coding_scheme_authority_type_response
+                +put_many_coding_scheme_authority_types(const messaging::put_many_coding_scheme_authority_types_request& request) : messaging::put_many_coding_scheme_authority_types_response
+                +delete_coding_scheme_authority_type(const messaging::delete_coding_scheme_authority_type_request& request) : messaging::delete_coding_scheme_authority_type_response
+                +delete_many_coding_scheme_authority_types(const messaging::delete_many_coding_scheme_authority_types_request& request) : messaging::delete_many_coding_scheme_authority_types_response
+                +list_coding_scheme_authority_type_versions(const messaging::list_coding_scheme_authority_type_versions_request& request) : messaging::list_coding_scheme_authority_type_versions_response
+                +get_coding_scheme_authority_type_version(const messaging::get_coding_scheme_authority_type_version_request& request) : messaging::get_coding_scheme_authority_type_version_response
+                +list_authority_types(uint32_t offset, uint32_t limit) : vector<domain::coding_scheme_authority_type>
+                +count_authority_types() : uint32_t
+                +get_authority_type_at_version(const string& code, uint32_t version) : optional<domain::coding_scheme_authority_type>
+                +get_authority_type(const string& code) : optional<domain::coding_scheme_authority_type>
+                +get_authority_types(const vector<string>& codes) : vector<domain::coding_scheme_authority_type>
+                +save_authority_type(const domain::coding_scheme_authority_type& authority_type) : void
+                +save_authority_types(const vector<domain::coding_scheme_authority_type>& authority_types) : void
+                +delete_authority_type(const string& code) : void
+                +delete_authority_types(const vector<string>& codes) : void
+                +get_authority_type_history(const string& code) : vector<domain::coding_scheme_authority_type>
+                -prepare_change(const messaging::coding_scheme_authority_type_change& change, const ores::utility::domain::change_intent& intent, domain::coding_scheme_authority_type& out) : ores::utility::domain::result
             }
             class coding_scheme_service {
-                -coding_scheme_repo_ : repository::coding_scheme_repository
-                -authority_type_repo_ : repository::coding_scheme_authority_type_repository
+                -ctx_ : context
+                -repo_ : repository::coding_scheme_repository
+                -lg() : [[nodiscard]] static auto&
+                +coding_scheme_service(context ctx)
+                +list_coding_schemes(const messaging::list_coding_schemes_request& request) : messaging::list_coding_schemes_response
+                +get_coding_scheme(const messaging::get_coding_scheme_request& request) : messaging::get_coding_scheme_response
+                +get_many_coding_schemes(const messaging::get_many_coding_schemes_request& request) : messaging::get_many_coding_schemes_response
+                +put_coding_scheme(const messaging::put_coding_scheme_request& request) : messaging::put_coding_scheme_response
+                +put_many_coding_schemes(const messaging::put_many_coding_schemes_request& request) : messaging::put_many_coding_schemes_response
+                +delete_coding_scheme(const messaging::delete_coding_scheme_request& request) : messaging::delete_coding_scheme_response
+                +delete_many_coding_schemes(const messaging::delete_many_coding_schemes_request& request) : messaging::delete_many_coding_schemes_response
+                +list_coding_scheme_versions(const messaging::list_coding_scheme_versions_request& request) : messaging::list_coding_scheme_versions_response
+                +get_coding_scheme_version(const messaging::get_coding_scheme_version_request& request) : messaging::get_coding_scheme_version_response
+                +list_schemes(uint32_t offset, uint32_t limit) : vector<domain::coding_scheme>
+                +count_schemes() : uint32_t
+                +get_scheme_at_version(const string& code, uint32_t version) : optional<domain::coding_scheme>
+                +get_scheme(const string& code) : optional<domain::coding_scheme>
+                +get_schemes(const vector<string>& codes) : vector<domain::coding_scheme>
+                +save_scheme(const domain::coding_scheme& scheme) : void
+                +save_schemes(const vector<domain::coding_scheme>& schemes) : void
+                +delete_scheme(const string& code) : void
+                +delete_schemes(const vector<string>& codes) : void
+                +get_scheme_history(const string& code) : vector<domain::coding_scheme>
+                -prepare_change(const messaging::coding_scheme_change& change, const ores::utility::domain::change_intent& intent, domain::coding_scheme& out) : ores::utility::domain::result
+            }
+            class data_domain_service {
+                -ctx_ : context
+                -repo_ : repository::data_domain_repository
+                -lg() : [[nodiscard]] static auto&
+                +data_domain_service(context ctx)
+                +list_data_domains(const messaging::list_data_domains_request& request) : messaging::list_data_domains_response
+                +get_data_domain(const messaging::get_data_domain_request& request) : messaging::get_data_domain_response
+                +get_many_data_domains(const messaging::get_many_data_domains_request& request) : messaging::get_many_data_domains_response
+                +put_data_domain(const messaging::put_data_domain_request& request) : messaging::put_data_domain_response
+                +put_many_data_domains(const messaging::put_many_data_domains_request& request) : messaging::put_many_data_domains_response
+                +delete_data_domain(const messaging::delete_data_domain_request& request) : messaging::delete_data_domain_response
+                +delete_many_data_domains(const messaging::delete_many_data_domains_request& request) : messaging::delete_many_data_domains_response
+                +list_data_domain_versions(const messaging::list_data_domain_versions_request& request) : messaging::list_data_domain_versions_response
+                +get_data_domain_version(const messaging::get_data_domain_version_request& request) : messaging::get_data_domain_version_response
+                +list_domains(uint32_t offset, uint32_t limit) : vector<domain::data_domain>
+                +count_domains() : uint32_t
+                +get_domain_at_version(const string& name, uint32_t version) : optional<domain::data_domain>
+                +get_domain(const string& name) : optional<domain::data_domain>
+                +get_domains(const vector<string>& names) : vector<domain::data_domain>
+                +save_domain(const domain::data_domain& domain) : void
+                +save_domains(const vector<domain::data_domain>& domains) : void
+                +delete_domain(const string& name) : void
+                +delete_domains(const vector<string>& names) : void
+                +get_domain_history(const string& name) : vector<domain::data_domain>
+                -prepare_change(const messaging::data_domain_change& change, const ores::utility::domain::change_intent& intent, domain::data_domain& out) : ores::utility::domain::result
             }
             class dataset_bundle_member_service {
+                -ctx_ : context
                 -repo_ : repository::dataset_bundle_member_repository
+                -lg() : [[nodiscard]] static auto&
+                +dataset_bundle_member_service(context ctx)
+                +list_dataset_bundle_members(const messaging::list_dataset_bundle_members_request& request) : messaging::list_dataset_bundle_members_response
+                +get_dataset_bundle_member(const messaging::get_dataset_bundle_member_request& request) : messaging::get_dataset_bundle_member_response
+                +get_many_dataset_bundle_members(const messaging::get_many_dataset_bundle_members_request& request) : messaging::get_many_dataset_bundle_members_response
+                +put_dataset_bundle_member(const messaging::put_dataset_bundle_member_request& request) : messaging::put_dataset_bundle_member_response
+                +put_many_dataset_bundle_members(const messaging::put_many_dataset_bundle_members_request& request) : messaging::put_many_dataset_bundle_members_response
+                +delete_dataset_bundle_member(const messaging::delete_dataset_bundle_member_request& request) : messaging::delete_dataset_bundle_member_response
+                +delete_many_dataset_bundle_members(const messaging::delete_many_dataset_bundle_members_request& request) : messaging::delete_many_dataset_bundle_members_response
+                +list_by_bundle_code_dataset_bundle_members(const messaging::list_by_bundle_code_dataset_bundle_members_request& request) : messaging::list_by_bundle_code_dataset_bundle_members_response
+                -prepare_change(const messaging::dataset_bundle_member_change& change, const ores::utility::domain::change_intent& intent, domain::dataset_bundle_member& out) : ores::utility::domain::result
             }
             class dataset_bundle_service {
+                -ctx_ : context
                 -repo_ : repository::dataset_bundle_repository
+                -lg() : [[nodiscard]] static auto&
+                +dataset_bundle_service(context ctx)
+                +list_dataset_bundles(const messaging::list_dataset_bundles_request& request) : messaging::list_dataset_bundles_response
+                +get_dataset_bundle(const messaging::get_dataset_bundle_request& request) : messaging::get_dataset_bundle_response
+                +get_many_dataset_bundles(const messaging::get_many_dataset_bundles_request& request) : messaging::get_many_dataset_bundles_response
+                +put_dataset_bundle(const messaging::put_dataset_bundle_request& request) : messaging::put_dataset_bundle_response
+                +put_many_dataset_bundles(const messaging::put_many_dataset_bundles_request& request) : messaging::put_many_dataset_bundles_response
+                +delete_dataset_bundle(const messaging::delete_dataset_bundle_request& request) : messaging::delete_dataset_bundle_response
+                +delete_many_dataset_bundles(const messaging::delete_many_dataset_bundles_request& request) : messaging::delete_many_dataset_bundles_response
+                +list_dataset_bundle_versions(const messaging::list_dataset_bundle_versions_request& request) : messaging::list_dataset_bundle_versions_response
+                +get_dataset_bundle_version(const messaging::get_dataset_bundle_version_request& request) : messaging::get_dataset_bundle_version_response
+                +list_bundles(uint32_t offset, uint32_t limit) : vector<domain::dataset_bundle>
+                +count_bundles() : uint32_t
+                +get_bundle_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::dataset_bundle>
+                +get_bundle(const boost::uuids::uuid& id) : optional<domain::dataset_bundle>
+                +get_bundle_by_code(const string& code) : optional<domain::dataset_bundle>
+                +get_bundles(const vector<string>& ids) : vector<domain::dataset_bundle>
+                +save_bundle(const domain::dataset_bundle& bundle) : void
+                +save_bundles(const vector<domain::dataset_bundle>& bundles) : void
+                +delete_bundle(const boost::uuids::uuid& id) : void
+                +delete_bundles(const vector<string>& ids) : void
+                +get_bundle_history(const string& key) : vector<domain::dataset_bundle>
+                -prepare_change(const messaging::dataset_bundle_change& change, const ores::utility::domain::change_intent& intent, domain::dataset_bundle& out) : ores::utility::domain::result
             }
             class dataset_service {
-                -dataset_repo_ : repository::dataset_repository
-                -methodology_repo_ : repository::methodology_repository
-            }
-            class dimension_service {
-                -nature_repo_ : repository::nature_dimension_repository
-                -origin_repo_ : repository::origin_dimension_repository
-                -treatment_repo_ : repository::treatment_dimension_repository
-            }
-            class fsm_service {
                 -ctx_ : context
+                -repo_ : repository::dataset_repository
+                -lg() : [[nodiscard]] static auto&
+                +dataset_service(context ctx)
+                +list_datasets(const messaging::list_datasets_request& request) : messaging::list_datasets_response
+                +get_dataset(const messaging::get_dataset_request& request) : messaging::get_dataset_response
+                +get_many_datasets(const messaging::get_many_datasets_request& request) : messaging::get_many_datasets_response
+                +put_dataset(const messaging::put_dataset_request& request) : messaging::put_dataset_response
+                +put_many_datasets(const messaging::put_many_datasets_request& request) : messaging::put_many_datasets_response
+                +delete_dataset(const messaging::delete_dataset_request& request) : messaging::delete_dataset_response
+                +delete_many_datasets(const messaging::delete_many_datasets_request& request) : messaging::delete_many_datasets_response
+                +list_dataset_versions(const messaging::list_dataset_versions_request& request) : messaging::list_dataset_versions_response
+                +get_dataset_version(const messaging::get_dataset_version_request& request) : messaging::get_dataset_version_response
+                +list_datasets(uint32_t offset, uint32_t limit) : vector<domain::dataset>
+                +count_datasets() : uint32_t
+                +get_dataset_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::dataset>
+                +get_dataset(const boost::uuids::uuid& id) : optional<domain::dataset>
+                +get_dataset_by_code(const string& code) : optional<domain::dataset>
+                +get_datasets(const vector<string>& ids) : vector<domain::dataset>
+                +save_dataset(const domain::dataset& dataset) : void
+                +save_datasets(const vector<domain::dataset>& datasets) : void
+                +delete_dataset(const boost::uuids::uuid& id) : void
+                +delete_datasets(const vector<string>& ids) : void
+                +get_dataset_history(const string& key) : vector<domain::dataset>
+                -prepare_change(const messaging::dataset_change& change, const ores::utility::domain::change_intent& intent, domain::dataset& out) : ores::utility::domain::result
             }
-            class bundle_dataset_result <<struct>> {
-                +dataset_code : string
-                +dataset_name : string
-                +status : string
-                +error_message : string
-                +records_inserted : uint64_t
-                +records_updated : uint64_t
-                +records_skipped : uint64_t
-                +records_deleted : uint64_t
+            class fsm_state_service {
+                -ctx_ : context
+                -repo_ : repository::fsm_state_repository
+                -lg() : [[nodiscard]] static auto&
+                +fsm_state_service(context ctx)
+                +list_fsm_states(const messaging::list_fsm_states_request& request) : messaging::list_fsm_states_response
+                +get_fsm_state(const messaging::get_fsm_state_request& request) : messaging::get_fsm_state_response
+                +get_many_fsm_states(const messaging::get_many_fsm_states_request& request) : messaging::get_many_fsm_states_response
+                +put_fsm_state(const messaging::put_fsm_state_request& request) : messaging::put_fsm_state_response
+                +put_many_fsm_states(const messaging::put_many_fsm_states_request& request) : messaging::put_many_fsm_states_response
+                +delete_fsm_state(const messaging::delete_fsm_state_request& request) : messaging::delete_fsm_state_response
+                +delete_many_fsm_states(const messaging::delete_many_fsm_states_request& request) : messaging::delete_many_fsm_states_response
+                +list_fsm_state_versions(const messaging::list_fsm_state_versions_request& request) : messaging::list_fsm_state_versions_response
+                +get_fsm_state_version(const messaging::get_fsm_state_version_request& request) : messaging::get_fsm_state_version_response
+                +list_states(uint32_t offset, uint32_t limit) : vector<domain::fsm_state>
+                +count_states() : uint32_t
+                +get_state_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::fsm_state>
+                +get_state(const boost::uuids::uuid& id) : optional<domain::fsm_state>
+                +get_state_by_name(const string& name) : optional<domain::fsm_state>
+                +get_states(const vector<string>& ids) : vector<domain::fsm_state>
+                +save_state(const domain::fsm_state& state) : void
+                +save_states(const vector<domain::fsm_state>& states) : void
+                +delete_state(const boost::uuids::uuid& id) : void
+                +delete_states(const vector<string>& ids) : void
+                +get_state_history(const string& key) : vector<domain::fsm_state>
+                -prepare_change(const messaging::fsm_state_change& change, const ores::utility::domain::change_intent& intent, domain::fsm_state& out) : ores::utility::domain::result
             }
-            class publish_bundle_result <<struct>> {
-                +success : bool
-                +error_message : string
-                +datasets_processed : uint32_t
-                +datasets_succeeded : uint32_t
-                +datasets_failed : uint32_t
-                +datasets_skipped : uint32_t
-                +total_records_inserted : uint64_t
-                +total_records_updated : uint64_t
-                +total_records_skipped : uint64_t
-                +total_records_deleted : uint64_t
-                +dataset_results : vector<bundle_dataset_result>
+            class fsm_transition_service {
+                -ctx_ : context
+                -repo_ : repository::fsm_transition_repository
+                -lg() : [[nodiscard]] static auto&
+                +fsm_transition_service(context ctx)
+                +list_fsm_transitions(const messaging::list_fsm_transitions_request& request) : messaging::list_fsm_transitions_response
+                +get_fsm_transition(const messaging::get_fsm_transition_request& request) : messaging::get_fsm_transition_response
+                +get_many_fsm_transitions(const messaging::get_many_fsm_transitions_request& request) : messaging::get_many_fsm_transitions_response
+                +put_fsm_transition(const messaging::put_fsm_transition_request& request) : messaging::put_fsm_transition_response
+                +put_many_fsm_transitions(const messaging::put_many_fsm_transitions_request& request) : messaging::put_many_fsm_transitions_response
+                +delete_fsm_transition(const messaging::delete_fsm_transition_request& request) : messaging::delete_fsm_transition_response
+                +delete_many_fsm_transitions(const messaging::delete_many_fsm_transitions_request& request) : messaging::delete_many_fsm_transitions_response
+                +list_fsm_transition_versions(const messaging::list_fsm_transition_versions_request& request) : messaging::list_fsm_transition_versions_response
+                +get_fsm_transition_version(const messaging::get_fsm_transition_version_request& request) : messaging::get_fsm_transition_version_response
+                +list_transitions(uint32_t offset, uint32_t limit) : vector<domain::fsm_transition>
+                +count_transitions() : uint32_t
+                +get_transition_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::fsm_transition>
+                +get_transition(const boost::uuids::uuid& id) : optional<domain::fsm_transition>
+                +get_transition_by_name(const string& name) : optional<domain::fsm_transition>
+                +get_transitions(const vector<string>& ids) : vector<domain::fsm_transition>
+                +save_transition(const domain::fsm_transition& transition) : void
+                +save_transitions(const vector<domain::fsm_transition>& transitions) : void
+                +delete_transition(const boost::uuids::uuid& id) : void
+                +delete_transitions(const vector<string>& ids) : void
+                +get_transition_history(const string& key) : vector<domain::fsm_transition>
+                -prepare_change(const messaging::fsm_transition_change& change, const ores::utility::domain::change_intent& intent, domain::fsm_transition& out) : ores::utility::domain::result
+            }
+            class lei_entity_service {
+                -ctx_ : context
+                -repo_ : repository::lei_entity_repository
+                -lg() : [[nodiscard]] static auto&
+                +lei_entity_service(context ctx)
+                +list_lei_entities(const messaging::list_lei_entities_request& request) : messaging::list_lei_entities_response
+                +get_lei_entity(const messaging::get_lei_entity_request& request) : messaging::get_lei_entity_response
+                +get_many_lei_entities(const messaging::get_many_lei_entities_request& request) : messaging::get_many_lei_entities_response
+                +list_entities(uint32_t offset, uint32_t limit) : vector<domain::lei_entity>
+                +count_entities() : uint32_t
+                +get_entity(const string& lei) : optional<domain::lei_entity>
+                +get_entities(const vector<string>& leis) : vector<domain::lei_entity>
+                +save_entity(const domain::lei_entity& entity) : void
+                +save_entities(const vector<domain::lei_entity>& entities) : void
+                +delete_entity(const string& lei) : void
+                +delete_entities(const vector<string>& leis) : void
+            }
+            class lei_relationship_service {
+                -ctx_ : context
+                -repo_ : repository::lei_relationship_repository
+                -lg() : [[nodiscard]] static auto&
+                +lei_relationship_service(context ctx)
+                +list_lei_relationships(const messaging::list_lei_relationships_request& request) : messaging::list_lei_relationships_response
+                +get_lei_relationship(const messaging::get_lei_relationship_request& request) : messaging::get_lei_relationship_response
+                +get_many_lei_relationships(const messaging::get_many_lei_relationships_request& request) : messaging::get_many_lei_relationships_response
+                +list_relationships(uint32_t offset, uint32_t limit) : vector<domain::lei_relationship>
+                +count_relationships() : uint32_t
+                +get_relationship(const string& relationship_start_node_node_id) : optional<domain::lei_relationship>
+                +get_relationships(const vector<string>& relationship_start_node_node_ids) : vector<domain::lei_relationship>
+                +save_relationship(const domain::lei_relationship& relationship) : void
+                +save_relationships(const vector<domain::lei_relationship>& relationships) : void
+                +delete_relationship(const string& relationship_start_node_node_id) : void
+                +delete_relationships(const vector<string>& relationship_start_node_node_ids) : void
+            }
+            class methodology_service {
+                -ctx_ : context
+                -repo_ : repository::methodology_repository
+                -lg() : [[nodiscard]] static auto&
+                +methodology_service(context ctx)
+                +list_methodologies(const messaging::list_methodologies_request& request) : messaging::list_methodologies_response
+                +get_methodology(const messaging::get_methodology_request& request) : messaging::get_methodology_response
+                +get_many_methodologies(const messaging::get_many_methodologies_request& request) : messaging::get_many_methodologies_response
+                +put_methodology(const messaging::put_methodology_request& request) : messaging::put_methodology_response
+                +put_many_methodologies(const messaging::put_many_methodologies_request& request) : messaging::put_many_methodologies_response
+                +delete_methodology(const messaging::delete_methodology_request& request) : messaging::delete_methodology_response
+                +delete_many_methodologies(const messaging::delete_many_methodologies_request& request) : messaging::delete_many_methodologies_response
+                +list_methodology_versions(const messaging::list_methodology_versions_request& request) : messaging::list_methodology_versions_response
+                +get_methodology_version(const messaging::get_methodology_version_request& request) : messaging::get_methodology_version_response
+                +list_methodologies(uint32_t offset, uint32_t limit) : vector<domain::methodology>
+                +count_methodologies() : uint32_t
+                +get_methodology_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::methodology>
+                +get_methodology(const boost::uuids::uuid& id) : optional<domain::methodology>
+                +get_methodology_by_name(const string& name) : optional<domain::methodology>
+                +get_methodologies(const vector<string>& ids) : vector<domain::methodology>
+                +save_methodology(const domain::methodology& methodology) : void
+                +save_methodologies(const vector<domain::methodology>& methodologies) : void
+                +delete_methodology(const boost::uuids::uuid& id) : void
+                +delete_methodologies(const vector<string>& ids) : void
+                +get_methodology_history(const string& key) : vector<domain::methodology>
+                -prepare_change(const messaging::methodology_change& change, const ores::utility::domain::change_intent& intent, domain::methodology& out) : ores::utility::domain::result
+            }
+            class nature_dimension_service {
+                -ctx_ : context
+                -repo_ : repository::nature_dimension_repository
+                -lg() : [[nodiscard]] static auto&
+                +nature_dimension_service(context ctx)
+                +list_nature_dimensions(const messaging::list_nature_dimensions_request& request) : messaging::list_nature_dimensions_response
+                +get_nature_dimension(const messaging::get_nature_dimension_request& request) : messaging::get_nature_dimension_response
+                +get_many_nature_dimensions(const messaging::get_many_nature_dimensions_request& request) : messaging::get_many_nature_dimensions_response
+                +put_nature_dimension(const messaging::put_nature_dimension_request& request) : messaging::put_nature_dimension_response
+                +put_many_nature_dimensions(const messaging::put_many_nature_dimensions_request& request) : messaging::put_many_nature_dimensions_response
+                +delete_nature_dimension(const messaging::delete_nature_dimension_request& request) : messaging::delete_nature_dimension_response
+                +delete_many_nature_dimensions(const messaging::delete_many_nature_dimensions_request& request) : messaging::delete_many_nature_dimensions_response
+                +list_nature_dimension_versions(const messaging::list_nature_dimension_versions_request& request) : messaging::list_nature_dimension_versions_response
+                +get_nature_dimension_version(const messaging::get_nature_dimension_version_request& request) : messaging::get_nature_dimension_version_response
+                +list_dimensions(uint32_t offset, uint32_t limit) : vector<domain::nature_dimension>
+                +count_dimensions() : uint32_t
+                +get_dimension_at_version(const string& code, uint32_t version) : optional<domain::nature_dimension>
+                +get_dimension(const string& code) : optional<domain::nature_dimension>
+                +get_dimensions(const vector<string>& codes) : vector<domain::nature_dimension>
+                +save_dimension(const domain::nature_dimension& dimension) : void
+                +save_dimensions(const vector<domain::nature_dimension>& dimensions) : void
+                +delete_dimension(const string& code) : void
+                +delete_dimensions(const vector<string>& codes) : void
+                +get_dimension_history(const string& code) : vector<domain::nature_dimension>
+                -prepare_change(const messaging::nature_dimension_change& change, const ores::utility::domain::change_intent& intent, domain::nature_dimension& out) : ores::utility::domain::result
+            }
+            class origin_dimension_service {
+                -ctx_ : context
+                -repo_ : repository::origin_dimension_repository
+                -lg() : [[nodiscard]] static auto&
+                +origin_dimension_service(context ctx)
+                +list_origin_dimensions(const messaging::list_origin_dimensions_request& request) : messaging::list_origin_dimensions_response
+                +get_origin_dimension(const messaging::get_origin_dimension_request& request) : messaging::get_origin_dimension_response
+                +get_many_origin_dimensions(const messaging::get_many_origin_dimensions_request& request) : messaging::get_many_origin_dimensions_response
+                +put_origin_dimension(const messaging::put_origin_dimension_request& request) : messaging::put_origin_dimension_response
+                +put_many_origin_dimensions(const messaging::put_many_origin_dimensions_request& request) : messaging::put_many_origin_dimensions_response
+                +delete_origin_dimension(const messaging::delete_origin_dimension_request& request) : messaging::delete_origin_dimension_response
+                +delete_many_origin_dimensions(const messaging::delete_many_origin_dimensions_request& request) : messaging::delete_many_origin_dimensions_response
+                +list_origin_dimension_versions(const messaging::list_origin_dimension_versions_request& request) : messaging::list_origin_dimension_versions_response
+                +get_origin_dimension_version(const messaging::get_origin_dimension_version_request& request) : messaging::get_origin_dimension_version_response
+                +list_dimensions(uint32_t offset, uint32_t limit) : vector<domain::origin_dimension>
+                +count_dimensions() : uint32_t
+                +get_dimension_at_version(const string& code, uint32_t version) : optional<domain::origin_dimension>
+                +get_dimension(const string& code) : optional<domain::origin_dimension>
+                +get_dimensions(const vector<string>& codes) : vector<domain::origin_dimension>
+                +save_dimension(const domain::origin_dimension& dimension) : void
+                +save_dimensions(const vector<domain::origin_dimension>& dimensions) : void
+                +delete_dimension(const string& code) : void
+                +delete_dimensions(const vector<string>& codes) : void
+                +get_dimension_history(const string& code) : vector<domain::origin_dimension>
+                -prepare_change(const messaging::origin_dimension_change& change, const ores::utility::domain::change_intent& intent, domain::origin_dimension& out) : ores::utility::domain::result
             }
             class publication_service {
-                +resolve_dependencies : bool
-                +params_json : const string&
-                +limit : uint32_t
+                -ctx_ : context
+                -repo_ : repository::publication_repository
+                -lg() : [[nodiscard]] static auto&
+                +publication_service(context ctx)
+                +list_publications(const messaging::list_publications_request& request) : messaging::list_publications_response
+                +get_publication(const messaging::get_publication_request& request) : messaging::get_publication_response
+                +get_many_publications(const messaging::get_many_publications_request& request) : messaging::get_many_publications_response
+                +put_publication(const messaging::put_publication_request& request) : messaging::put_publication_response
+                +put_many_publications(const messaging::put_many_publications_request& request) : messaging::put_many_publications_response
+                +delete_publication(const messaging::delete_publication_request& request) : messaging::delete_publication_response
+                +delete_many_publications(const messaging::delete_many_publications_request& request) : messaging::delete_many_publications_response
+                +list_publications(uint32_t offset, uint32_t limit) : vector<domain::publication>
+                +count_publications() : uint32_t
+                +get_publication(const boost::uuids::uuid& id) : optional<domain::publication>
+                +get_publications(const vector<string>& ids) : vector<domain::publication>
+                +save_publication(const domain::publication& publication) : void
+                +save_publications(const vector<domain::publication>& publications) : void
+                +delete_publication(const boost::uuids::uuid& id) : void
+                +delete_publications(const vector<string>& ids) : void
+                -prepare_change(const messaging::publication_change& change, const ores::utility::domain::change_intent& intent, domain::publication& out) : ores::utility::domain::result
+            }
+            class bundle_publishable_dataset <<struct>> {
+                +dataset_id : string
+                +dataset_code : string
+                +target_subject : string
+                +optional : bool
+            }
+            class publish_service {
                 -ctx_ : context
                 -dataset_repo_ : repository::dataset_repository
                 -dependency_repo_ : repository::dataset_dependency_repository
-                -publication_repo_ : repository::publication_repository
                 -artefact_type_repo_ : repository::artefact_type_repository
+                -lg() : [[nodiscard]] static auto&
+                +publish_service(context ctx)
+                +publish(const vector<boost::uuids::uuid>& dataset_ids, domain::publication_mode mode, const string& published_by, bool resolve_dependencies) : vector<domain::publication_result>
+                +list_bundle_publishable_datasets(const string& bundle_code, bool resolve_dependencies) : vector<bundle_publishable_dataset>
+                +list_publishable_datasets(const vector<boost::uuids::uuid>& dataset_ids, bool resolve_dependencies) : vector<bundle_publishable_dataset>
+                +resolve_publication_order(const vector<boost::uuids::uuid>& dataset_ids) : vector<domain::dataset>
+                -build_artefact_type_cache(const vector<domain::dataset>& datasets) : map<string, domain::artefact_type>
+                -publish_dataset(const domain::dataset& dataset, domain::publication_mode mode, const string& published_by, const map<string, domain::artefact_type>& artefact_type_cache) : domain::publication_result
+                -record_publication(const domain::publication_result& result, domain::publication_mode mode, const string& published_by) : void
+                -call_populate_function(const domain::dataset& dataset, const domain::artefact_type& artefact_type, domain::publication_mode mode, const string& published_by) : domain::publication_result
+            }
+            class report_definition_service {
+                -ctx_ : context
+                -repo_ : repository::report_definition_repository
+                -lg() : [[nodiscard]] static auto&
+                +report_definition_service(context ctx)
+                +list_report_definitions(const messaging::list_report_definitions_request& request) : messaging::list_report_definitions_response
+                +get_report_definition(const messaging::get_report_definition_request& request) : messaging::get_report_definition_response
+                +get_many_report_definitions(const messaging::get_many_report_definitions_request& request) : messaging::get_many_report_definitions_response
+                +list_definitions(uint32_t offset, uint32_t limit) : vector<domain::report_definition>
+                +count_definitions() : uint32_t
+                +get_definition(const boost::uuids::uuid& id) : optional<domain::report_definition>
+                +get_definitions(const vector<string>& ids) : vector<domain::report_definition>
+                +save_definition(const domain::report_definition& definition) : void
+                +save_definitions(const vector<domain::report_definition>& definitions) : void
+                +delete_definition(const boost::uuids::uuid& id) : void
+                +delete_definitions(const vector<string>& ids) : void
+            }
+            class subject_area_service {
+                -ctx_ : context
+                -repo_ : repository::subject_area_repository
+                -lg() : [[nodiscard]] static auto&
+                +subject_area_service(context ctx)
+                +list_subject_areas(const messaging::list_subject_areas_request& request) : messaging::list_subject_areas_response
+                +get_subject_area(const messaging::get_subject_area_request& request) : messaging::get_subject_area_response
+                +get_many_subject_areas(const messaging::get_many_subject_areas_request& request) : messaging::get_many_subject_areas_response
+                +put_subject_area(const messaging::put_subject_area_request& request) : messaging::put_subject_area_response
+                +put_many_subject_areas(const messaging::put_many_subject_areas_request& request) : messaging::put_many_subject_areas_response
+                +delete_subject_area(const messaging::delete_subject_area_request& request) : messaging::delete_subject_area_response
+                +delete_many_subject_areas(const messaging::delete_many_subject_areas_request& request) : messaging::delete_many_subject_areas_response
+                +list_subject_area_versions(const messaging::list_subject_area_versions_request& request) : messaging::list_subject_area_versions_response
+                +get_subject_area_version(const messaging::get_subject_area_version_request& request) : messaging::get_subject_area_version_response
+                +list_areas(uint32_t offset, uint32_t limit) : vector<domain::subject_area>
+                +count_areas() : uint32_t
+                +get_area_at_version(const string& name, const string& domain_name, uint32_t version) : optional<domain::subject_area>
+                +get_area(const string& name, const string& domain_name) : optional<domain::subject_area>
+                +get_areas(const vector<string>& names, const vector<string>& domain_names) : vector<domain::subject_area>
+                +save_area(const domain::subject_area& area) : void
+                +save_areas(const vector<domain::subject_area>& areas) : void
+                +delete_area(const string& name, const string& domain_name) : void
+                +delete_areas(const vector<string>& names, const vector<string>& domain_names) : void
+                +get_area_history(const string& name, const string& domain_name) : vector<domain::subject_area>
+                -prepare_change(const messaging::subject_area_change& change, const ores::utility::domain::change_intent& intent, domain::subject_area& out) : ores::utility::domain::result
+            }
+            class synthetic_fx_spot_config_service {
+                -ctx_ : context
+                -repo_ : repository::synthetic_fx_spot_config_repository
+                -lg() : [[nodiscard]] static auto&
+                +synthetic_fx_spot_config_service(context ctx)
+                +list_synthetic_fx_spot_configs(const messaging::list_synthetic_fx_spot_configs_request& request) : messaging::list_synthetic_fx_spot_configs_response
+                +get_synthetic_fx_spot_config(const messaging::get_synthetic_fx_spot_config_request& request) : messaging::get_synthetic_fx_spot_config_response
+                +get_many_synthetic_fx_spot_configs(const messaging::get_many_synthetic_fx_spot_configs_request& request) : messaging::get_many_synthetic_fx_spot_configs_response
+                +list_configs(uint32_t offset, uint32_t limit) : vector<domain::synthetic_fx_spot_config>
+                +count_configs() : uint32_t
+                +get_config(const boost::uuids::uuid& id) : optional<domain::synthetic_fx_spot_config>
+                +get_configs(const vector<string>& ids) : vector<domain::synthetic_fx_spot_config>
+                +save_config(const domain::synthetic_fx_spot_config& config) : void
+                +save_configs(const vector<domain::synthetic_fx_spot_config>& configs) : void
+                +delete_config(const boost::uuids::uuid& id) : void
+                +delete_configs(const vector<string>& ids) : void
+            }
+            class treatment_dimension_service {
+                -ctx_ : context
+                -repo_ : repository::treatment_dimension_repository
+                -lg() : [[nodiscard]] static auto&
+                +treatment_dimension_service(context ctx)
+                +list_treatment_dimensions(const messaging::list_treatment_dimensions_request& request) : messaging::list_treatment_dimensions_response
+                +get_treatment_dimension(const messaging::get_treatment_dimension_request& request) : messaging::get_treatment_dimension_response
+                +get_many_treatment_dimensions(const messaging::get_many_treatment_dimensions_request& request) : messaging::get_many_treatment_dimensions_response
+                +put_treatment_dimension(const messaging::put_treatment_dimension_request& request) : messaging::put_treatment_dimension_response
+                +put_many_treatment_dimensions(const messaging::put_many_treatment_dimensions_request& request) : messaging::put_many_treatment_dimensions_response
+                +delete_treatment_dimension(const messaging::delete_treatment_dimension_request& request) : messaging::delete_treatment_dimension_response
+                +delete_many_treatment_dimensions(const messaging::delete_many_treatment_dimensions_request& request) : messaging::delete_many_treatment_dimensions_response
+                +list_treatment_dimension_versions(const messaging::list_treatment_dimension_versions_request& request) : messaging::list_treatment_dimension_versions_response
+                +get_treatment_dimension_version(const messaging::get_treatment_dimension_version_request& request) : messaging::get_treatment_dimension_version_response
+                +list_dimensions(uint32_t offset, uint32_t limit) : vector<domain::treatment_dimension>
+                +count_dimensions() : uint32_t
+                +get_dimension_at_version(const string& code, uint32_t version) : optional<domain::treatment_dimension>
+                +get_dimension(const string& code) : optional<domain::treatment_dimension>
+                +get_dimensions(const vector<string>& codes) : vector<domain::treatment_dimension>
+                +save_dimension(const domain::treatment_dimension& dimension) : void
+                +save_dimensions(const vector<domain::treatment_dimension>& dimensions) : void
+                +delete_dimension(const string& code) : void
+                +delete_dimensions(const vector<string>& codes) : void
+                +get_dimension_history(const string& code) : vector<domain::treatment_dimension>
+                -prepare_change(const messaging::treatment_dimension_change& change, const ores::utility::domain::change_intent& intent, domain::treatment_dimension& out) : ores::utility::domain::result
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+ores::dq::repository::artefact_type_mapper ..> ores::dq::repository::artefact_type_entity
+ores::dq::repository::badge_definition_mapper ..> ores::dq::repository::badge_definition_entity
+ores::dq::repository::badge_mapping_mapper ..> ores::dq::repository::badge_mapping_entity
+ores::dq::repository::badge_severity_mapper ..> ores::dq::repository::badge_severity_entity
+ores::dq::repository::catalog_mapper ..> ores::dq::repository::catalog_entity
+ores::dq::repository::change_reason_category_mapper ..> ores::dq::repository::change_reason_category_entity
+ores::dq::repository::change_reason_mapper ..> ores::dq::repository::change_reason_entity
+ores::dq::repository::code_domain_mapper ..> ores::dq::repository::code_domain_entity
+ores::dq::repository::coding_scheme_authority_type_mapper ..> ores::dq::repository::coding_scheme_authority_type_entity
+ores::dq::repository::coding_scheme_mapper ..> ores::dq::repository::coding_scheme_entity
+ores::dq::repository::data_domain_mapper ..> ores::dq::repository::data_domain_entity
+ores::dq::repository::dataset_bundle_mapper ..> ores::dq::repository::dataset_bundle_entity
+ores::dq::repository::dataset_bundle_member_mapper ..> ores::dq::repository::dataset_bundle_member_entity
+ores::dq::repository::dataset_dependency_mapper ..> ores::dq::repository::dataset_dependency_entity
+ores::dq::repository::dataset_mapper ..> ores::dq::repository::dataset_entity
+ores::dq::repository::fsm_state_mapper ..> ores::dq::repository::fsm_state_entity
+ores::dq::repository::fsm_transition_mapper ..> ores::dq::repository::fsm_transition_entity
+ores::dq::repository::lei_entity_mapper ..> ores::dq::repository::lei_entity_entity
+ores::dq::repository::lei_relationship_mapper ..> ores::dq::repository::lei_relationship_entity
+ores::dq::repository::methodology_mapper ..> ores::dq::repository::methodology_entity
+ores::dq::repository::nature_dimension_mapper ..> ores::dq::repository::nature_dimension_entity
+ores::dq::repository::origin_dimension_mapper ..> ores::dq::repository::origin_dimension_entity
+ores::dq::repository::publication_mapper ..> ores::dq::repository::publication_entity
+ores::dq::repository::report_definition_mapper ..> ores::dq::repository::report_definition_entity
+ores::dq::repository::subject_area_mapper ..> ores::dq::repository::subject_area_entity
+ores::dq::repository::synthetic_fx_spot_config_mapper ..> ores::dq::repository::synthetic_fx_spot_config_entity
+ores::dq::repository::treatment_dimension_mapper ..> ores::dq::repository::treatment_dimension_entity
+ores::dq::service::artefact_type_service *-- ores::dq::repository::artefact_type_repository
+ores::dq::service::badge_definition_service *-- ores::dq::repository::badge_definition_repository
+ores::dq::service::badge_mapping_service *-- ores::dq::repository::badge_mapping_repository
+ores::dq::service::badge_severity_service *-- ores::dq::repository::badge_severity_repository
+ores::dq::service::catalog_service *-- ores::dq::repository::catalog_repository
+ores::dq::service::change_reason_category_service *-- ores::dq::repository::change_reason_category_repository
+ores::dq::service::change_reason_service *-- ores::dq::repository::change_reason_repository
+ores::dq::service::code_domain_service *-- ores::dq::repository::code_domain_repository
+ores::dq::service::coding_scheme_authority_type_service *-- ores::dq::repository::coding_scheme_authority_type_repository
+ores::dq::service::coding_scheme_service *-- ores::dq::repository::coding_scheme_repository
+ores::dq::service::data_domain_service *-- ores::dq::repository::data_domain_repository
+ores::dq::service::dataset_bundle_member_service *-- ores::dq::repository::dataset_bundle_member_repository
+ores::dq::service::dataset_bundle_service *-- ores::dq::repository::dataset_bundle_repository
+ores::dq::service::dataset_service *-- ores::dq::repository::dataset_repository
+ores::dq::service::fsm_state_service *-- ores::dq::repository::fsm_state_repository
+ores::dq::service::fsm_transition_service *-- ores::dq::repository::fsm_transition_repository
+ores::dq::service::lei_entity_service *-- ores::dq::repository::lei_entity_repository
+ores::dq::service::lei_relationship_service *-- ores::dq::repository::lei_relationship_repository
+ores::dq::service::methodology_service *-- ores::dq::repository::methodology_repository
+ores::dq::service::nature_dimension_service *-- ores::dq::repository::nature_dimension_repository
+ores::dq::service::origin_dimension_service *-- ores::dq::repository::origin_dimension_repository
+ores::dq::service::publication_service *-- ores::dq::repository::publication_repository
+ores::dq::service::publish_service *-- ores::dq::repository::artefact_type_repository
+ores::dq::service::publish_service *-- ores::dq::repository::dataset_dependency_repository
+ores::dq::service::publish_service *-- ores::dq::repository::dataset_repository
+ores::dq::service::report_definition_service *-- ores::dq::repository::report_definition_repository
+ores::dq::service::subject_area_service *-- ores::dq::repository::subject_area_repository
+ores::dq::service::synthetic_fx_spot_config_service *-- ores::dq::repository::synthetic_fx_spot_config_repository
+ores::dq::service::treatment_dimension_service *-- ores::dq::repository::treatment_dimension_repository
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.dq.core.puml"

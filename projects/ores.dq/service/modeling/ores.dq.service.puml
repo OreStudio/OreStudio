@@ -26,8 +26,18 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    -lg() : auto&
+                    +application()
+                    -make_context(const ores::database::database_options& db_opts) : ores::database::context
+                    +run(boost::asio::io_context& io_ctx, const config::options& cfg) : boost::asio::awaitable<void>
+                }
+                class application_exception {
+                    -message_ : string
+                    +what() : [[nodiscard]] const char*
                 }
                 class host {
+                    -lg() : auto&
+                    +execute(const vector<string>& args, ostream& std_output, ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>
                 }
             }
             namespace config #F2F2F2 {
@@ -37,6 +47,16 @@ namespace ores #F2F2F2 {
                     +database : ores::database::database_options
                 }
                 class parser {
+                    +parse(const vector<string>& arguments, ostream& info, ostream& error) : optional<options>
+                }
+                class parser_exception {
+                    -message_ : string
+                    +what() : [[nodiscard]] const char*
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class event_registrar {
+                    +register_event_mappings(ores::eventing::service::postgres_event_source& event_source, ores::eventing::service::event_bus& event_bus, ores::nats::service::client& nats) : vector<ores::eventing::service::subscription>
                 }
             }
         }
@@ -44,6 +64,17 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+ores::dq::service::app::application ..> ores::dq::service::config::options
+ores::dq::service::config::parser ..> ores::dq::service::config::options
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.dq.service.puml"

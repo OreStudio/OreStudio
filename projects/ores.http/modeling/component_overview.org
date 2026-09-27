@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 09BD5681-9C12-469A-80DA-27D1DF9D0808
+:END:
+#+title: ores.http
+#+description: HTTP gateway component: the server library, the route engine, the process entry point, and the per-component adapters that project other components' models onto the REST surface.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :http:component:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+name: http
+#+full_name: ores.http
+#+brief: HTTP gateway
+#+component_kind: composite
+#+parts: api assets core iam refdata server
+
+* Summary
+
+=ores.http= is the platform's REST gateway. It terminates HTTP,
+authenticates the caller, and forwards each request to the owning service
+over NATS, so it depends on the services' wire protocols and not on their
+libraries. It is a composite of six parts: three hand-written
+infrastructure parts, and one adapter per component whose routes it
+serves.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] | Boost.Beast server, JWT authentication, routing and OpenAPI support. |
+| [[id:66E4F171-4D0C-4081-8C76-E5459AD2A516][ores.http.assets]] | Generated route units for the assets domain. |
+| [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]] | Hand-written storage and variability routes. |
+| [[id:137AABDF-7F6F-403D-BA9C-471BCF8FB910][ores.http.iam]] | Generated route units for the identity-and-access domain. |
+| [[id:15D11FDE-4606-4D9C-87D2-D5AD548E2D63][ores.http.refdata]] | Generated route units for the reference-data domain. |
+| [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] | Process entry point that wires the routes and runs the event loop. |

@@ -136,7 +136,7 @@ void bundles_commands::process_publish(std::ostream& out,
 
     dq::messaging::publish_bundle_request req;
     req.bundle_code = code;
-    req.mode = dq::domain::publication_mode::upsert;
+    req.mode = "upsert";
     req.published_by = session.auth().username;
     req.atomic = true;
     const bool has_params = !params.opted_in_datasets.empty() || params.lei_parties.has_value() ||

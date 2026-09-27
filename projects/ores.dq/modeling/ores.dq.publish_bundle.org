@@ -1,9 +1,8 @@
 :PROPERTIES:
 :ID: 1166DC86-77A8-4E93-A3D9-E35E40550A01
-:ores.ts.protocol.enabled: false
 :END:
 #+title: ores.dq.publish_bundle
-#+description: Codegen operation model for the dq bundle publish verb, rendered to the C++ protocol from one source.
+#+description: Codegen operation model for the dq bundle publish verb, rendered to C++ and TypeScript from one source.
 #+type: ores.codegen.operation
 #+component: dq
 #+subcomponent: api
@@ -26,7 +25,6 @@ bundle-publish workflow and reads the publishable datasets.
 * Includes
 
 #+begin_src cpp :name includes
-#include "ores.dq.api/domain/publication_mode.hpp"
 #include <optional>
 #include <string>
 #include <string_view>
@@ -60,8 +58,8 @@ bundle-publish workflow and reads the publishable datasets.
 
 *** mode
 :PROPERTIES:
-:cpp_type: ores::dq::domain::publication_mode
-:default:  ores::dq::domain::publication_mode::upsert
+:cpp_type: std::string
+:default:  "upsert"
 :END:
 
 #+begin_src cpp :name comment

@@ -367,7 +367,7 @@ void provision_commands::process_tenant(std::ostream& out,
         out << "[1/4] Publishing base reference data bundle..." << std::endl;
         dq::messaging::publish_bundle_request publish_req;
         publish_req.bundle_code = "base";
-        publish_req.mode = dq::domain::publication_mode::upsert;
+        publish_req.mode = "upsert";
         publish_req.published_by = username;
         publish_req.atomic = true;
         // opted_in_datasets: same subset the --source acme flow
@@ -553,7 +553,7 @@ void provision_commands::process_party(std::ostream& out,
     {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = "base";
-        req.mode = dq::domain::publication_mode::upsert;
+        req.mode = "upsert";
         req.published_by = username;
         req.atomic = true;
         dq::messaging::publish_bundle_params params;
@@ -604,7 +604,7 @@ void provision_commands::process_party(std::ostream& out,
             -> std::optional<dq::messaging::publish_bundle_response> {
             dq::messaging::publish_bundle_request req;
             req.bundle_code = bundle_code;
-            req.mode = dq::domain::publication_mode::upsert;
+            req.mode = "upsert";
             req.published_by = username;
             req.atomic = true;
             req.params_json = params_json;

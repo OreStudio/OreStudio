@@ -19,20 +19,32 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_json_io.cpp.mustache
+ * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/commodity_instrument_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_API_GENERATORS_COMMODITY_INSTRUMENT_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_COMMODITY_INSTRUMENT_GENERATOR_HPP
 
-namespace ores::trading::domain {
+#include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const commodity_instrument& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::trading::generators {
+
+/**
+ * @brief Generates a synthetic commodity_instrument.
+ */
+ORES_TRADING_API_EXPORT domain::commodity_instrument
+generate_synthetic_commodity_instrument(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic commodity_instruments.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::commodity_instrument>
+generate_synthetic_commodity_instruments(std::size_t n,
+                                         utility::generation::generation_context& ctx);
+
 }
 
-}
+#endif

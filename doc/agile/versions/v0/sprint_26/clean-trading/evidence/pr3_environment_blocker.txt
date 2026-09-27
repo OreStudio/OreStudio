@@ -1,0 +1,68 @@
+PR 3: the environment cannot be rebuilt from main's tree
+
+Measured 2026-09-27 on feature/model-missing-trading-families, while
+verifying the commodity family port.
+
+Why the database was rebuilt
+----------------------------
+The port renames the commodity table's surrogate key from id to
+instrument_id, so the live schema had to follow before the suites could
+run. The sanctioned way is =./compass.sh db recreate -y -k=.
+
+Three defects on main stop it
+-----------------------------
+1. Five dq population-function scripts open a leading block comment and
+   never close it. psql aborts with "unterminated /* comment" at the
+   first of them, part way through =setup_schema.sql=:
+
+     projects/ores.sql/create/dq/dq_coding_schemes_population_functions_create.sql
+     projects/ores.sql/create/dq/dq_badge_definitions_population_functions_create.sql
+     projects/ores.sql/create/dq/dq_badge_mappings_population_functions_create.sql
+     projects/ores.sql/create/dq/dq_badge_severities_population_functions_create.sql
+     projects/ores.sql/create/dq/dq_code_domains_population_functions_create.sql
+
+   Each begins with =/* -*- sql-product: postgres; ... -*-=, then a blank
+   line and =-- ==== =, and the copyright block and its closing =*/= are
+   missing, so the whole file is one comment. The fix is to restore the
+   header the generator dropped.
+
+2. The populate scripts use =:'storage_service_user'= and
+   =:'storage_service_password'=, but compass passes only the services
+   named in =projects/ores.sql/service_vars.sh=, whose =SERVICE_NAMES=
+   list has no =storage=. compass fails with:
+
+     psql:populate/iam/iam_service_account_roles_populate.sql:63:
+     ERROR: syntax error at or near ":"
+
+3. With the variable passed, the same script fails again because the
+   storage service account row is never seeded:
+
+     ERROR: Account not found: ores_merry_newton_storage_service
+
+   So the storage service is in the environment (.env format 25) and in
+   the populate scripts, and is missing from the role and account
+   seeding.
+
+Consequence
+-----------
+No worktree can rebuild its database from main's tree. Against the half
+seeded database left by attempt three, =ores.trading.core.tests= reports
+103 cases, 99 failed, across the whole suite rather than in the commodity
+family: the failures are the missing seed data, not the port.
+
+What was done about it
+----------------------
+The three defects were worked around locally, one at a time, to get far
+enough to see the next: the five SQL headers were closed, =storage= was
+added to =SERVICE_NAMES=, and the database was recreated. Attempt three
+stopped at defect 3. All the workarounds were then reverted, so this
+branch carries only trading work; the database is left half seeded and
+needs the storage owner's fix before any DB-backed suite can pass.
+
+What this means for the port
+----------------------------
+=ores.trading.api.lib=, =ores.trading.core.lib=,
+=ores.trading.service.lib=, the ORE core and service libraries, the shell
+application library and their test binaries all compile, and the drift
+dry run reports no drift. The suites are the missing evidence, and they
+are missing for an environment reason, not a code one.

@@ -17,24 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_COMMODITY_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_COMMODITY_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Core economic terms common to commodity products.
+ * @brief Commodity instrument.
  *
- * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See the decomposition section of
- * doc/knowledge/architecture/data_oriented_design.org.
+ * Represents every commodity product type ORE states. trade_type_code
+ * discriminates the exact product, and each optional field block is null
+ * when the sub-type does not state it: the option block for option
+ * products, the pricing block for average-price and spread products, and
+ * the exotic block for variance, accumulator, barrier and basket
+ * products.
  */
-struct commodity_terms final {
+struct commodity_instrument final {
+    instrument_identity identity;
+
     /**
      * @brief Commodity identifier code (e.g. NGAS, WTI, GOLD).
      */
@@ -61,65 +72,32 @@ struct commodity_terms final {
     std::string start_date;
 
     /**
-     * @brief Maturity/expiry date.
+     * @brief Maturity or expiry date.
      */
     std::string maturity_date;
 
     /**
-     * @brief Fixed price for forwards and fixed-leg swaps. Nullopt if not applicable.
+     * @brief Fixed price for forwards and fixed-leg swaps.
      */
     std::optional<double> fixed_price;
 
     /**
-     * @brief Day count fraction code for swap products.
-     */
-    std::string day_count_code;
-
-    /**
-     * @brief Payment frequency code for swap products.
-     */
-    std::string payment_frequency_code;
-};
-
-/**
- * @brief Vanilla option terms for commodity option products.
- *
- * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See the decomposition section of
- * doc/knowledge/architecture/data_oriented_design.org.
- */
-struct commodity_option final {
-    /**
-     * @brief Option type: 'Call' or 'Put'. Empty for non-option products.
+     * @brief Call or Put; null for non-option products.
      */
     std::string option_type;
 
     /**
-     * @brief Option strike price. Nullopt for non-option products.
+     * @brief Option strike price.
      */
     std::optional<double> strike_price;
 
     /**
-     * @brief Exercise type: 'European' or 'American'.
+     * @brief European or American exercise.
      */
     std::string exercise_type;
 
     /**
-     * @brief Swaption expiry date for CommoditySwaption products.
-     */
-    std::string swaption_expiry_date;
-};
-
-/**
- * @brief Averaging and spread pricing terms for commodity products.
- *
- * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See the decomposition section of
- * doc/knowledge/architecture/data_oriented_design.org.
- */
-struct commodity_pricing final {
-    /**
-     * @brief Averaging type for Asian options: 'Arithmetic' or 'Geometric'.
+     * @brief Arithmetic or Geometric averaging for Asian options.
      */
     std::string average_type;
 
@@ -139,7 +117,7 @@ struct commodity_pricing final {
     std::string spread_commodity_code;
 
     /**
-     * @brief Spread amount for spread options. Nullopt when not applicable.
+     * @brief Spread amount for spread options.
      */
     std::optional<double> spread_amount;
 
@@ -147,18 +125,9 @@ struct commodity_pricing final {
      * @brief Strip frequency code for option strips (e.g. Monthly, Quarterly).
      */
     std::string strip_frequency_code;
-};
 
-/**
- * @brief Exotic and barrier terms for structured commodity products.
- *
- * Extracted as a plain nested sub-struct to keep each rfl::Literal below
- * the MSVC C1202 threshold. See the decomposition section of
- * doc/knowledge/architecture/data_oriented_design.org.
- */
-struct commodity_exotic final {
     /**
-     * @brief Strike variance for variance swap products. Nullopt when not applicable.
+     * @brief Strike variance for variance swap products.
      */
     std::optional<double> variance_strike;
 
@@ -173,17 +142,17 @@ struct commodity_exotic final {
     std::optional<double> knock_out_barrier;
 
     /**
-     * @brief Barrier type: e.g. 'UpIn', 'UpOut', 'DownIn', 'DownOut'.
+     * @brief UpAndIn, UpAndOut, DownAndIn, DownAndOut.
      */
     std::string barrier_type;
 
     /**
-     * @brief Lower barrier level. Nullopt when not applicable.
+     * @brief Lower barrier level.
      */
     std::optional<double> lower_barrier;
 
     /**
-     * @brief Upper barrier level. Nullopt when not applicable.
+     * @brief Upper barrier level.
      */
     std::optional<double> upper_barrier;
 
@@ -191,31 +160,21 @@ struct commodity_exotic final {
      * @brief JSON array of {code, weight} constituents for basket products.
      */
     std::string basket_json;
-};
 
-/**
- * @brief Commodity instrument economics for all commodity ORE product types.
- *
- * Discriminated by trade_type_code. Optional fields are empty/zero when not
- * applicable to the specific sub-type:
- *   option_type/strike_price/exercise_type: CommodityOption* products
- *   barrier_type/lower_barrier/upper_barrier: barrier option products
- *   average_type/averaging_start_date/averaging_end_date: Asian/average-price
- *   spread_commodity_code/spread_amount: CommoditySpreadOption
- *   strip_frequency_code: CommodityOptionStrip
- *   variance_strike: CommodityVarianceSwap and variants
- *   accumulation_amount/knock_out_barrier: CommodityAccumulator, CommodityTaRF
- *   basket_json: CommodityBasketOption, CommodityRainbowOption,
- *                CommodityWorstOfBasketSwap
- *   day_count_code/payment_frequency_code: CommoditySwap
- *   swaption_expiry_date: CommoditySwaption
- */
-struct commodity_instrument final {
-    instrument_identity identity;
-    commodity_terms terms;
-    commodity_option option;
-    commodity_pricing pricing;
-    commodity_exotic exotic;
+    /**
+     * @brief Day count fraction code for swap products.
+     */
+    std::string day_count_code;
+
+    /**
+     * @brief Payment frequency code for swap products.
+     */
+    std::string payment_frequency_code;
+
+    /**
+     * @brief Swaption expiry date for CommoditySwaption.
+     */
+    std::string swaption_expiry_date;
 
     /**
      * @brief Optional free-text description.
@@ -223,7 +182,28 @@ struct commodity_instrument final {
     std::string description;
 
     ores::dq::domain::audit_record audit;
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const commodity_instrument&, const commodity_instrument&) = default;
 };
+
+/**
+ * @brief Dispatch-key identifier for commodity_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const commodity_instrument&) {
+    return "ores.trading.commodity_instrument";
+}
 
 }
 

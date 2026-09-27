@@ -227,6 +227,30 @@ table:
   today: it is an enumeration on the trades table, so authoring it as an
   entity is a schema change with a data migration, not a transcription.
 
+** 2b. The commodity port, and the environment blocker
+
+The commodity family is ported end to end in the tree: the model (450
+lines, =trading-instrument=), its regeneration (twenty-one files changed,
+twelve created), the four consumers that read the nested shape, and the
+two supporting files the generated handler displaced. The model found and
+fixed a real defect on the way: it named its identity primary key =id=
+while the bound =instrument_identity= field group names it
+=instrument_id=, which the generated table, mapper and test all emit.
+The eight table-backed ports after it will hit the same choice, so their
+models must name the key =instrument_id= as the nine modelled siblings do.
+
+The port compiles and the drift dry run is empty. Its suites are not run,
+and cannot be: the environment cannot be rebuilt from main's tree. Three
+defects stack up in the database setup, all of them another component's:
+five dq population-function SQL files with an unterminated leading
+comment; =:'storage_service_user'= used by the populate scripts but not
+passed, because =service_vars.sh= does not list =storage=; and the storage
+service account row never seeded. =evidence/pr3_environment_blocker.txt=
+records them, the local workarounds that got past the first two, and the
+half-seeded database they left behind. Every DB-backed suite fails
+wholesale against it, so the port's suite evidence waits on the storage
+owner.
+
 ** 3. Classify the unmodelled hand-written domain types
 
 Twenty-four hand-written domain types have no model:

@@ -47,6 +47,7 @@
 #include "ores.trading.api/messaging/bond_trs_protocol.hpp"
 #include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/commodity_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -1888,10 +1889,39 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         },
                         r);
                 } else if constexpr (std::is_same_v<T, commodity_instrument>) {
-                    save_commodity_instrument_request req;
-                    req.data = r;
+                    put_commodity_instrument_request req;
+                    req.change.write.instrument_id = r.identity.instrument_id;
+                    req.change.write.trade_type_code = r.identity.trade_type_code;
+                    req.change.write.trade_id = r.identity.trade_id;
+                    req.change.write.commodity_code = r.commodity_code;
+                    req.change.write.currency = r.currency;
+                    req.change.write.quantity = r.quantity;
+                    req.change.write.unit = r.unit;
+                    req.change.write.start_date = r.start_date;
+                    req.change.write.maturity_date = r.maturity_date;
+                    req.change.write.fixed_price = r.fixed_price;
+                    req.change.write.option_type = r.option_type;
+                    req.change.write.strike_price = r.strike_price;
+                    req.change.write.exercise_type = r.exercise_type;
+                    req.change.write.average_type = r.average_type;
+                    req.change.write.averaging_start_date = r.averaging_start_date;
+                    req.change.write.averaging_end_date = r.averaging_end_date;
+                    req.change.write.spread_commodity_code = r.spread_commodity_code;
+                    req.change.write.spread_amount = r.spread_amount;
+                    req.change.write.strip_frequency_code = r.strip_frequency_code;
+                    req.change.write.variance_strike = r.variance_strike;
+                    req.change.write.accumulation_amount = r.accumulation_amount;
+                    req.change.write.knock_out_barrier = r.knock_out_barrier;
+                    req.change.write.barrier_type = r.barrier_type;
+                    req.change.write.lower_barrier = r.lower_barrier;
+                    req.change.write.upper_barrier = r.upper_barrier;
+                    req.change.write.basket_json = r.basket_json;
+                    req.change.write.day_count_code = r.day_count_code;
+                    req.change.write.payment_frequency_code = r.payment_frequency_code;
+                    req.change.write.swaption_expiry_date = r.swaption_expiry_date;
+                    req.change.write.description = r.description;
                     auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->success;
+                    return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                     save_composite_instrument_request req;
                     req.data = r.instrument;

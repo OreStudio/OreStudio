@@ -176,7 +176,8 @@ none of them depends on it and all of them are permanent.
   commands — =provision system=, =provision tenant= and =provision
   party=. Three recipes under =doc/recipes/shell/provisioning/= run a
   whole system provisioning, one per value the =--source= flag accepts,
-  and each is the sequence this story builds in the browser:
+  and between them they cover the three journeys this story builds in the
+  browser:
 
   - =acme_system_provision.org= creates a tenant called =acme=,
     provisions it with =--source synthetic=, then adds a party and sets

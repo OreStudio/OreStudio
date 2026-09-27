@@ -2,7 +2,7 @@
 :ID: 946954A3-23B7-43AC-A4AB-42E65698FED7
 :END:
 #+title: Task: Line the shell's provisioning up with the journey contract
-#+description: Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the Acme end-to-end script working through them.
+#+description: Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the three end-to-end provisioning scripts working through them.
 #+type: task
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:

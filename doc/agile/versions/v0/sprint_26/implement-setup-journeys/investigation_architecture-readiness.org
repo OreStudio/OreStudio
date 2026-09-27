@@ -186,7 +186,8 @@ it is not counted as clean: see the table below.
    decided the outcome: the shell becomes a thin caller and its
    client-side orchestration is deleted. So this is accepted,
    unimplemented scope rather than new work, and the audit missed it
-   because it read the shell only as a consumer of two recipes.
+   because it read the shell only as a consumer of the recipes that named
+   the subjects being retired.
 
 ** Stale documents, with the evidence
 

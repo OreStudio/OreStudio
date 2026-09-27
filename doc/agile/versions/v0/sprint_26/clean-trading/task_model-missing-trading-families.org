@@ -394,6 +394,15 @@ identity group. The template's org and its tangled mustache both state
 =identity.= for such a parent. The all-component dry run stays empty and
 the codegen suite passes 790 cases.
 
+The composite read needed a correction after the port. The trade read
+passed composite instrument ids to the generated =read_latest(ctx, ids)=,
+which filters the leg's own =id=, so a composite instrument came back with
+no legs. The read now takes the workspace's current legs and keeps the
+wanted instruments, and the service registers the composite leg event
+mapping the port had left unwired. A literate batch read, as the
+=swap_leg= model carries, is the next step for this table: the same
+section added to the =composite_leg= model produced no generated method.
+
 A port rewrites its family's generated SQL, and the notify trigger's
 payload changes with it, so the development database takes the
 regenerated create and trigger scripts before the eventing suites pass. A

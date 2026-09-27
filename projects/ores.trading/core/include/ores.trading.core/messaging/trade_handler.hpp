@@ -78,6 +78,7 @@
 #include <optional>
 #include <rfl/msgpack.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace ores::trading::messaging {
 
@@ -758,9 +759,13 @@ private:
             comp_legs_map;
         if (!composite_ids.empty()) {
             repository::composite_leg_repository comp_leg_repo;
-            for (auto& leg : comp_leg_repo.read_latest(ctx, composite_ids))
-                comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
-                    std::move(leg));
+            const std::unordered_set<std::string> wanted(composite_ids.begin(),
+                                                         composite_ids.end());
+            for (auto& leg : comp_leg_repo.read_latest(ctx)) {
+                const auto key = boost::uuids::to_string(leg.identity.instrument_id);
+                if (wanted.contains(key))
+                    comp_legs_map[key].push_back(std::move(leg));
+            }
         }
 
         // Phase 3: batch-fetch instruments, build lookup map

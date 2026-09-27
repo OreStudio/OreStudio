@@ -51,6 +51,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.marketdata.api.lib
         ores.service.lib
+        ores.storage.api.lib
         ores.storage.core.lib
         ores.trading.api.lib
         ores.utility.lib

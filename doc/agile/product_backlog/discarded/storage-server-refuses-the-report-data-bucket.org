@@ -7,9 +7,17 @@
 #+level: cross
 #+filetags: :storage:http:reporting:defect:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-27
+#+state: ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*ABANDONED 2026-09-27* — Superseded twice over. The server keeps no bucket
+allow-list now, so the 404 this page describes cannot happen, and
+=ores.reporting=' write path builds the protocol's key under its own service
+segment, so the bucket it names is the one the reader reads. Closed by
+[[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the
+storage protocol]]. Kept as the record of how the unowned literal failed.
 
 * What
 

@@ -39,7 +39,7 @@ namespace ores::shell::app::commands {
  *
  * The three steps of that path already exist as services; this unit adds
  * the verbs that reach them. Upload packs a directory of ORE documents
- * into the ore-imports bucket over HTTP, import starts the
+ * into the platform bucket over HTTP, import starts the
  * ore_import_workflow and waits for its single step, and export asks the
  * trading service for a portfolio's trades, reconstructs the ORE XML from
  * them and writes it to disk.
@@ -67,11 +67,12 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief Pack a directory and upload it to the ore-imports bucket.
+     * @brief Pack a directory and upload it to the platform bucket.
      *
      * Generates a request id when @p request_id is empty and prints the
      * effective one, so an interactive caller can feed it to import. The
-     * object key is "{request_id}.tar.gz", as the import handler expects.
+     * object key is "ore/imports/{request_id}.tar.gz", as the import handler
+     * expects.
      * The upload carries @p session's own bearer token, because the storage
      * routes authenticate. Marks command failure when no session is
      * established, when the directory is unreadable, or when the upload

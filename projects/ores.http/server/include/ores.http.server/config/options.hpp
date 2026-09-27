@@ -57,8 +57,9 @@ struct options final {
     /**
      * @brief Root directory for object storage (all buckets live under this path).
      *
-     * Each well-known bucket (compute-packages, compute-inputs, compute-outputs,
-     * ore-imports, …) maps to a subdirectory of this root.
+     * Each bucket maps to a subdirectory of this root. The server names no
+     * bucket of its own: it creates one on the first write to it, so the
+     * callers' bucket and key protocol decides what appears here.
      */
     std::string storage_dir{"/var/ores/http-server/storage"};
 

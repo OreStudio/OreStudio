@@ -223,10 +223,12 @@ segments, not a rule the protocol enforces.
 
 One bucket, because a bucket is an allocation and services come and go inside an
 allocation. A bucket per service would change the deployment's storage layout
-every time a service is added, and =report-data= shows what that costs: it named
+every time a service is added, and =report-data= showed what that costs: it named
 a *purpose* as if it were an allocation, two callers shared the literal, and the
 server's own allow-list had already fallen behind it. A server that keeps no
-list cannot fall behind one, so the server holds no bucket name at all.
+list cannot fall behind one, so the server holds no bucket name at all. The
+retired name is gone from the tree too, so a conforming caller has nothing left
+to invent.
 
 The protocol is a convention the domains keep, and
 =ores.storage.api/net/object_keys.hpp= is where it is written down and checked,
@@ -283,10 +285,9 @@ Recorded so that the target is not mistaken for the tree. The first list is what
 the interface work had to close and is kept as the record of that scope; the
 second is what is still open.
 
-Almost all of the first list is closed. Two halves remain, and each says so in
-the second list: =ores.reporting= keeps a retired bucket name on its write path
-([[id:5A66C421-B55C-408D-9897-19E1290064F6][Reporting writes the report blobs to
-a bucket ore does not read]]), and =http_client= cannot ask with =HEAD=.
+Almost all of the first list is closed, and the last consumer moved onto the
+protocol with the rest. What remains is in the second list: =http_client= cannot
+ask with =HEAD=, and a few smaller items stand.
 
 One item on that list was a live blocker, and main has since closed it: the
 routes authenticate, and every caller that moves bytes now presents a token.
@@ -311,20 +312,17 @@ caller sends]].
 - The path prefix is declared once in =storage_paths.hpp=, and the routes compose
   their patterns from it.
 - The server keeps no bucket allow-list, so none can fall behind its callers.
-- The consumers build their keys from the protocol: =compute=, =ore= and the
-  shell. =object_keys= publishes a parser as well as a builder.
+- The consumers build their keys from the protocol: =compute=, =ore=, =reporting=
+  and the shell. =object_keys= publishes a parser as well as a builder.
 - =ores.compute.wrapper= links the component instead of keeping its own copy.
 - The component's own tests use protocol bucket names.
+- =reporting=' write path builds the protocol's key under its own service segment,
+  so the blob it stores is the one =ore= fetches back.
 
 *Still open*
 
 - *The client cannot ask with =HEAD=,* so existence stays a read. The protocol
   declares no =exists= operation either.
-- *=ores.reporting= writes a bucket =ores.ore= does not read.* Its write path
-  keeps =report-data= and a two-segment key while the reader uses =ores=, so the
-  writer and the reader of one object disagree. The capture is
-  [[id:5A66C421-B55C-408D-9897-19E1290064F6][Reporting writes the report blobs to
-  a bucket ore does not read]].
 - *Key encoding and traversal rules are not stated once.* The server guards
   traversal; the archive extractor does not.
 - *No test drives the real client against the real server.* The component's tests

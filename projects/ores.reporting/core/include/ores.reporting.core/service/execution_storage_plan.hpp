@@ -22,25 +22,15 @@
 
 #include "ores.reporting.core/export.hpp"
 #include <string>
-#include <string_view>
 
 namespace ores::reporting::service {
 
 /**
- * @brief The bucket every report execution writes its gathered data to.
- *
- * The storage server refuses a bucket it does not know with a 404, so this name
- * is a contract with that server rather than a local choice. It is stated once
- * here; the ore service names the same bucket for the packaging step, and the
- * two spellings have to agree.
- */
-inline constexpr std::string_view report_data_bucket = "report-data";
-
-/**
  * @brief Where one execution's gathered trades land.
  *
- * The key is namespaced by the instance, so two executions never collide and a
- * key names the run it belongs to.
+ * The key is the one the platform's bucket and key protocol declares, under
+ * this component's own service segment, so the reader that fetches it back
+ * needs no out-of-band index and no second name for the bucket.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
 trades_storage_key(const std::string& report_instance_id);

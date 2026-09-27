@@ -86,7 +86,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                                         parsed->positionals.front(),
                                         parsed->flag("request-id"));
                      },
-                     "Pack a directory of ORE documents and upload it to the ore-imports bucket",
+                     "Pack a directory of ORE documents and upload it to the platform bucket",
                      {"src_dir [--request-id <uuid>]"});
 
     ore_menu->Insert("import",

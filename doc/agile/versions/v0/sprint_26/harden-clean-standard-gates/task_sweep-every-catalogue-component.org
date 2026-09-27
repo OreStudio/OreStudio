@@ -53,8 +53,8 @@ has no gate at all.
 - It fails when the catalogue yields no component to render, rather than passing
   a tree it read nothing from.
 - A file the branch deleted whose model still produces it fails, as a
-  would-create. A generated file no render produces is out of scope and recorded
-  as such.
+  would-create. A committed deletion of a path no model produces any more is out
+  of scope, and the limit is recorded.
 
 * Plan
 
@@ -110,17 +110,26 @@ by a test.
 
 - *Generated recipes are not reached.* The recipe facets declare
   =#+requires_facet:= on a facet in another technical space, so they fire only at
-  the whole =ores= address. Measured for =ores.trading=: per-space rendering
-  gives 1,867 files and no recipe, the whole address gives 2,003 files and 22
-  recipes. The 247 generated recipes under =doc/recipes/shell/= and
-  =doc/recipes/http/= therefore have no gate, and a branch that deletes one
-  cannot be caught either.
+  the whole =ores= address. Measured for =ores.trading=, whose 64 models make the
+  two paths comparable: rendering each model at the whole =ores= address gives
+  2,003 files, 22 of them recipes; the sweep's own path, which expands =ores= into
+  the technical spaces, gives 1,867 files and no recipe at all. The two calls are
+  easy to confuse, because passing =ores= to =_render_components= expands it
+  rather than rendering it, so a measurement of the whole address has to go
+  through =_generate_single=. The 247 files at the generated recipe path shape
+  under =doc/recipes/shell/= and =doc/recipes/http= -- 233 and 14, of which 172
+  carry the =:tangle= block a generated recipe exports -- therefore have no gate,
+  and a branch that deletes one cannot be caught either.
 - *A generated file no render produces is invisible.* The comparison walks the
   render's output, so a tree file the models do not produce is never examined.
   That is what keeps each component's 645 files of clean-up debt out of the
   result, but it also means the sweep cannot report a file that should exist and
   does not, once its model no longer produces it. A file the branch deleted whose
-  model still produces it *is* caught, as a would-create.
+  model still produces it *is* caught, as a would-create; the deletion is caught
+  only while some model still produces the path. A committed deletion of a path
+  no model produces any more -- the shape a retired, renamed or moved template
+  leaves behind, and so the shape a cross-component rename leaves behind -- is
+  silent.
 
 * Notes
 
@@ -157,5 +166,13 @@ two runs. The rule resisted all four attack vectors.
 | 4 | A generated file the branch deletes never fails, because the comparison walks the render's output. | task doc, tests | Partly refuted | A deleted file whose model still produces it reads as a would-create and does fail; a test now pins that. The genuine residue is a file no render produces, which is recorded as the second limit. |
 | 5 | "about 80 seconds" is not the measured time. | task doc | Fixed | 74 seconds measured here, 61 on the reviewing machine, both named. |
 | 6 | The nine tests have no case for deletion, an untouched create, or a render failure. | tests | Fixed | Four tests added, thirteen now. |
+
+Second round, on the head the first round's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 7 | The recipe count matches no definition: =find= gives 294 files under the two directories and 172 carrying a =:tangle= block. | task doc | Fixed | 247 is the count at the generated path shape, since the output patterns are nested; the record now says 247 nested, 233 and 14, of which 172 carry the =:tangle= block. |
+| 8 | The trade render figures are wrong: both paths give 1,866 files and no recipe, so 2,003 and 22 is unreachable. | task doc | Refuted | The verifier passed =ores= to =_render_components= for the whole-address case, which expands =ores= into the technical spaces rather than rendering it, so it measured the sweep's path twice. Re-measured here through =_generate_single=: the whole address gives 2,003 files and 22 recipes, the sweep's path 1,867 and none, over 64 models. The record now names both calls, because the trap is easy to fall into and I fell into it once myself. |
+| 9 | The deletion residue is wider than the record says: the rule catches a deletion only while some model still produces the path, and a committed deletion of a path no model produces is silent. | task doc | Fixed | Both the limit and the acceptance bullet now say that, and name it as the shape a cross-component rename leaves behind. |
 
 * Result

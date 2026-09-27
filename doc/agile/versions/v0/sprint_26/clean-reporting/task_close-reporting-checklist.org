@@ -8,7 +8,7 @@
 #+filetags: :clean-reporting:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/close-reporting-checklist
-#+pr:
+#+pr: 2242
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -194,7 +194,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2242][#2242]] | [reporting] Record the checklist results the clean pass never wrote |
 
 * Review
 

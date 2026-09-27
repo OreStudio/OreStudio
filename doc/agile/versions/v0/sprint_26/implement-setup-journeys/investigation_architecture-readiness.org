@@ -279,10 +279,10 @@ it is not counted as clean: see the table below.
 2. *Correct the superseded catalogue task in place.* Its items 5 and 6
    must be marked superseded rather than silently ignored, because the
    setup and programme stories both cite that document as a target.
-3. *Correct [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].* The
-   progress *reads* exist, the progress *event payload* does not reach the
-   browser, and retry does not exist at all; the document has the first and
-   the last the other way round. It is also the right owner for the step
+3. *Correct [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].* It
+   described progress as one missing thing; the progress *reads* exist and
+   are subscribed, the progress *event payload* does not reach the browser,
+   and retry does not exist at all. It is also the right owner for the step
    vocabulary and for the definition of a human step.
 4. *Correct the three setup journeys' `* What is missing` sections, their
    operation tables and their prototype source paths.* The extraction

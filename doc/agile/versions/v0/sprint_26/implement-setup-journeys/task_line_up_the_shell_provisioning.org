@@ -25,13 +25,14 @@ same server-side operations, so that neither is the reference and neither
 can drift.
 
 The shell is not a bystander in this work. It already carries the three
-Setup journeys as porcelain commands, and
-=doc/recipes/shell/provisioning/acme_system_provision.org= runs the whole
-sequence end to end: create the system administrator with an Acme tenant,
-sign out, sign in as the tenant administrator, provision the tenant, sign
-out, sign in again, provision a party, set the default party. That recipe
-is the only artefact in the tree that takes an empty database to a working
-tenant, and it is the sequence the browser is being built to match.
+Setup journeys as porcelain commands, and two recipes under
+=doc/recipes/shell/provisioning/= run the whole sequence end to end:
+=acme_system_provision.org= with =--source synthetic=, and
+=how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+with =--source acme=. Each creates the system administrator and a tenant,
+signs out, signs in as the tenant administrator, and provisions the tenant
+through the porcelain command. They are the sequences the browser is being
+built to match.
 
 Those three commands orchestrate on the client today. This task removes
 that orchestration, because the accepted
@@ -60,8 +61,10 @@ both clients become callers of one contract.
   administrator with the operational parties — happens on the server, in
   one request per stage, or is recorded as deliberately staying in the
   client with the reason.
-- =doc/recipes/shell/provisioning/acme_system_provision.org= runs from an
-  empty database to a working tenant, and it is the proof.
+- =doc/recipes/shell/provisioning/acme_system_provision.org= and
+  =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+  both run from an empty database to a working tenant, and they are the
+  proof.
 - The generated recipes that name the retired subjects —
   =doc/recipes/shell/bootstrap/bootstrap.org= and
   =doc/recipes/shell/tenant_provisioning/tenant_provisioning.org= — are
@@ -114,16 +117,29 @@ description of what those wizards did. That makes them evidence as well as
 code: the inventory in step 1 is the record of the wizard behaviour the
 journeys replace, and it should not be deleted with the orchestration.
 
-The Acme script in the same folder is the sequence, and it is one of the
-six recipes under =doc/recipes/shell/provisioning/=. Two other things in
-the tree drive provisioning, and each retires its own way. The porcelain
-=provision tenant= takes a =--source= flag of =gleif=, =synthetic= or
-=acme=; the Acme script passes =--source synthetic=, so the =acme= value
-is the one that reaches the synchronous =provision-acme= handler and goes
-with it. And =doc/recipes/shell/tenant_provisioning/= carries a recipe
-per command in that submenu, including one that calls
-=tenant_provisioning provision-acme-tenant=; those regenerate from their
-models rather than being edited.
+All six recipes under =doc/recipes/shell/provisioning/= are hand-written
+and tangle to scripts in the shell's library. Two of them run a whole
+system provisioning, and they exercise both provisioning paths that exist
+today:
+
+- =acme_system_provision.org= creates a tenant called =acme=, provisions
+  it with =--source synthetic=, then adds a party and sets the default
+  party.
+- =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+  creates =acme_corporation=, provisions it with =--source acme=, which
+  reaches the synchronous =provision-acme= handler, and publishes the
+  risk-management bundle.
+
+=--source= is a flag of the porcelain =provision tenant= and not of a
+script; its permitted values are =gleif=, =synthetic= and =acme=. The
+=acme= value is the one that depends on the handler the generic request
+replaces, so it is the value this task has to re-point.
+
+=doc/recipes/shell/tenant_provisioning/tenant_provisioning.org= is a
+different thing: one generated recipe with a section per command in that
+submenu, including one that calls =tenant_provisioning
+provision-acme-tenant=. It is generated, so it regenerates when the
+command changes and is never edited by hand.
 
 * Test Scenarios
 

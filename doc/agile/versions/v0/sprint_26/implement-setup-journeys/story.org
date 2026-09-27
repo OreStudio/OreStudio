@@ -77,9 +77,10 @@ state and the progress are real.
 - The shell drives the same three journeys through the same contract.
   =provision system=, =provision tenant= and =provision party= call the
   generic provision request once this story has added it, and
-  =doc/recipes/shell/provisioning/acme_system_provision.org= runs from an
-  empty installation to a working tenant without orchestrating anything
-  client-side.
+  =doc/recipes/shell/provisioning/acme_system_provision.org= and
+  =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+  both run from an empty installation to a working tenant without
+  orchestrating anything client-side.
 - Every gap the three journey documents record is closed, or stated on
   the screen and recorded in this story.
 
@@ -174,14 +175,16 @@ none of them depends on it and all of them are permanent.
 - *Every journey has two clients, and the shell is the other one.*
   =ores.shell= already carries the three Setup journeys as porcelain
   commands — =provision system=, =provision tenant= and =provision
-  party= — and
-  =doc/recipes/shell/provisioning/acme_system_provision.org= runs all
-  three end to end: create the system administrator with the Acme
-  tenant, log out, log in as the tenant administrator, provision the
-  tenant, log out, log in again, provision a party, set the default
-  party. That script is the sequence this story builds in the browser.
-  A step's contract therefore has two callers from the day it lands, and
-  a contract that suits only one of them is wrong.
+  party= — and two scripts under =doc/recipes/shell/provisioning/= run
+  them end to end. =acme_system_provision.org= creates a tenant called
+  =acme=, provisions it with =--source synthetic=, then adds a party and
+  sets the default party.
+  =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+  creates =acme_corporation= and provisions it with =--source acme=,
+  which reaches the synchronous =provision-acme= handler. Both run the
+  same three journeys, and both are the sequence this story builds in the
+  browser. A step's contract therefore has two callers from the day it
+  lands, and a contract that suits only one of them is wrong.
 - *The shell's provisioning orchestration is replaced, not preserved.*
   The accepted
   [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][seed profile contract]] already
@@ -195,11 +198,12 @@ none of them depends on it and all of them are permanent.
 - *The shell is lined up in the same group, not afterwards.* A shell
   that still drives the retired subjects while the browser uses the new
   one is two clients disagreeing about what provisioning is, and the
-  disagreement is invisible until somebody runs the Acme script.
-- *The Acme script is the end-to-end acceptance sequence.* It proves the
-  three journeys on both clients, and it is the only existing artefact
-  that runs the whole path from an empty database. It is kept working,
-  and it is the script the story's last step runs.
+  disagreement is invisible until somebody runs an Acme script.
+- *The two Acme scripts are the end-to-end acceptance sequence.* Between
+  them they prove the three journeys on both provisioning paths, and they
+  are the only artefacts in the tree that take an empty database to a
+  working tenant. Both are kept working, and they are what the story's
+  last plan step runs.
 
 * Out of scope
 
@@ -224,5 +228,6 @@ none of them depends on it and all of them are permanent.
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why the state is a workflow instance. |
 | [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] | knowledge | The standard the C++ work in this story is held to. |
 | [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the TypeScript work in this story is held to: the full strictness set, no unchecked escape hatch, parse at the boundary, and one gate per item. |
-| =doc/recipes/shell/provisioning/acme_system_provision.org= | recipe | The shell's end-to-end Acme sequence: system, tenant and party, with the sign-ins between them. The script the story's last plan step runs, and the sequence the browser must match. |
+| =doc/recipes/shell/provisioning/acme_system_provision.org= | recipe | The shell's end-to-end sequence with a synthetic organisation: system, tenant and party, with the sign-ins between them. The sequence the browser must match, and one of the scripts the story's last plan step runs. |
+| =doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org= | recipe | The shell's end-to-end sequence on the other provisioning path: a tenant provisioned with =--source acme=, which reaches the synchronous =provision-acme= handler that retires with the generic request. |
 | [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][Audit the journey, provisioning and web-client architecture before the first implementation story]] | investigation | What the architecture documents say today, what is stale, and what is written nowhere. The story starts only after this is signed off. |

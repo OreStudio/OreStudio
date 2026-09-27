@@ -37,11 +37,13 @@ Each item has an identifier, the kind of package it applies to, and the
 evidence that proves it. The kinds are:
 
 - *All*: every TypeScript package in the tree.
-- *Shared*: a package that carries no Node dependency, so both the
-  browser and the server may parse it. That is =@ores/wire-protocol=,
-  through its =/browser= entry, and =@ores/contracts=. Only the BFF
-  imports =@ores/contracts= today, and closing that gap is one of the
-  defects the audit below records.
+- *Shared*: a package the browser can reach without pulling in Node. That
+  is =@ores/wire-protocol= through its =/browser= entry, whose root entry
+  does carry the NATS client, and =@ores/contracts=, which has no Node
+  dependency at all. Only the BFF imports =@ores/contracts= today, and
+  closing that gap is one of the defects
+  [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][the architecture audit]]
+  records.
 - *Browser*: code the browser runs, in =packages/web=.
 - *Server*: code Node runs, in =packages/bff=.
 - *Generated*: a file =ores.codegen= writes into

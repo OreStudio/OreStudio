@@ -8,7 +8,7 @@
 #+filetags: :clean-iam:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/fix-clean-iam-defects
-#+pr:
+#+pr: 2236
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2236][#2236]] | [iam] Fix the defects the ores.iam clean-up left open |
 
 * Review
 

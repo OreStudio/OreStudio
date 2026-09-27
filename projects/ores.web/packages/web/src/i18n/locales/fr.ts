@@ -262,6 +262,12 @@ const fr: SourceCatalogue = {
         entities: 'entités',
         planned: 'prévues',
         whatIs: 'Ce qui se trouve ici',
+        title: 'Connecté',
+        next: 'Les parcours sont les écrans qui remplissent cette coque. Ils arrivent un groupe à la fois.',
+        username: 'Compte',
+        email: 'Courriel',
+        tenant: 'Locataire',
+        party: 'Partie',
     },
 
     component: {
@@ -427,6 +433,23 @@ const fr: SourceCatalogue = {
         search: 'Rechercher des images',
         none: 'Aucune image',
         noneAvailable: 'Aucune image n’est disponible dans ce locataire.',
+    },
+
+    shell: {
+        session: '{username} · {tenant}',
+    },
+
+    setup: {
+        title: 'Configurer cette installation',
+        bootstrapMode:
+            "Cette installation n'a pas encore d'administrateur. Elle est en mode amorçage, il n'y a donc rien pour se connecter.",
+        next: "La création du premier administrateur est ce qui commence le parcours de configuration. Tant que ce parcours n'existe pas, cette page est le point d'arrêt du navigateur.",
+    },
+
+    gate: {
+        unreachable:
+            "Le serveur n'a pas répondu : l'interface ne peut pas savoir si cette installation doit encore être configurée. {reason}",
+        retry: 'Réessayer',
     },
 
     journey: {

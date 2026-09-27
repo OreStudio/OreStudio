@@ -19,65 +19,25 @@
  *
  */
 
-import { StrictMode, type ReactNode } from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
-import {
-    AppProviders,
-    SessionProvider,
-    createQueryClient,
-    useSession,
-    type SessionState,
-} from './session/SessionProvider.js';
+import { AppProviders, SessionProvider, createQueryClient } from './session/SessionProvider.js';
+import { BootstrapProvider } from './session/BootstrapProvider.js';
 import { TranslationProvider } from './i18n/Provider.js';
+import { ConnectedApp } from './AppRoutes.js';
 import './styles.css';
 
 /**
  * Application entry point.
  *
  * The environment is fixed when the process starts, so there is nothing here
- * about choosing where to connect. The providers stay composed as they were:
- * one query client, the translations, the session, and the router.
+ * about choosing where to connect. The providers are the whole of the wiring:
+ * one query client, the translations, the session, the bootstrap gate, and the
+ * router. What renders is `ConnectedApp`, which is the route table and the gate
+ * the story decided on.
  */
 const queryClient = createQueryClient();
-
-/**
- * Reading the session is what makes the transport visible: the placeholder
- * looks the same whether the server answered or not, and a shell that cannot
- * tell the difference is not a shell anybody can debug.
- */
-function sessionLine(state: SessionState): string {
-    switch (state.status) {
-        case 'authenticated':
-            return `Signed in as ${state.session.username}.`;
-        case 'loading':
-            return 'Checking the session...';
-        default:
-            return 'No session.';
-    }
-}
-
-/**
- * What the browser renders today.
- *
- * The interface is not built yet. There are no screens and no routes, so this
- * states that in one place rather than rendering nothing, which reads as a
- * broken deployment rather than an unbuilt one.
- */
-function App(): ReactNode {
-    const { state } = useSession();
-
-    return (
-        <main className="mx-auto max-w-[680px] px-5 py-16">
-            <h1 className="text-xl font-semibold tracking-tight text-ink">ORE Studio</h1>
-            <p className="mt-3 text-sm text-ink-muted">
-                The interface is not built yet. This build is the application shell and the
-                transport that talks to the server; no screens are wired to it.
-            </p>
-            <p className="mt-2 text-xs text-ink-faint">{sessionLine(state)}</p>
-        </main>
-    );
-}
 
 const container = document.getElementById('root');
 if (container === null) {
@@ -89,9 +49,14 @@ createRoot(container).render(
         <AppProviders queryClient={queryClient}>
             <TranslationProvider>
                 <SessionProvider>
-                    <BrowserRouter>
-                        <App />
-                    </BrowserRouter>
+                    {/* Inside the session, because the gate decides what the
+                        session may even be used for, and inside the query
+                        client, because asking is a query. */}
+                    <BootstrapProvider>
+                        <BrowserRouter>
+                            <ConnectedApp />
+                        </BrowserRouter>
+                    </BootstrapProvider>
                 </SessionProvider>
             </TranslationProvider>
         </AppProviders>

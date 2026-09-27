@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 373D9586-AB40-4D87-BBF7-C393CD3F8D42
+:END:
+#+title: The i18n catalogue keeps the keys of the deleted screens
+#+description: No check finds an unused key, so the words of the deleted entity screens sit in three catalogues and are translated forever.
+#+type: capture
+#+level: cross
+#+filetags: :web:i18n:defect:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The English catalogue carries keys that no code reaches, because the screens
+that used them are deleted. Measured on 2026-09-27 against the component's
+sources, these name nothing:
+
+- =home.quickActions=, =home.components=, =home.entities=, =home.planned=,
+  =home.whatIs= and =home.greeting= — the deleted home screen and shortcut grid.
+- =nav.site= and its neighbours — the deleted sidebar.
+- =component.entities=, the =shortcut.*= keys, and the history, entity and
+  dialog blocks that belonged to the generated entity screens.
+
+The catalogue test does not see them. It compares the key *sets* of the three
+languages, so a key present in all three passes whether or not anything reads
+it.
+
+* Why
+
+Two costs, and the second is the one that compounds. A reader looking for the
+words of a screen finds three other screens' words beside them, and cannot tell
+which are live. And every language is translated against the source catalogue,
+so deleting a screen does not delete its words: they are carried, reviewed and
+translated again for as long as nobody looks.
+
+The check is cheap and belongs with the catalogue test: for each key, search
+the sources for the literal, and fail on a key that only the catalogue names.
+It cannot be exact — a key built by interpolation, such as =password.rule.${rule}=,
+never appears as a literal — so the check needs a declared allowance for the
+dynamically built families, which is a list somebody can review.
+
+* References
+
+- =projects/ores.web/packages/web/src/i18n/locales/en.ts= — the source catalogue.
+- =projects/ores.web/packages/web/src/i18n/catalogue.test.ts= — what the suite checks today.
+- =projects/ores.web/packages/web/src/i18n/Provider.tsx= — the lookup the check would search for.
+- [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] — TS-C04 for the key rule, TS-H02 for dead code.
+
+* See also
+
+- [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] — the work that found it, while building the shells the journeys render in.

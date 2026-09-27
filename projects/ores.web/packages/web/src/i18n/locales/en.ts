@@ -270,6 +270,12 @@ export const en: SourceCatalogue = {
         entities: 'entities',
         planned: 'planned',
         whatIs: 'What is here',
+        title: 'Signed in',
+        next: 'The journeys are the screens that fill this shell. They arrive a group at a time.',
+        username: 'Account',
+        email: 'Email',
+        tenant: 'Tenant',
+        party: 'Party',
     },
 
     component: {
@@ -429,6 +435,23 @@ export const en: SourceCatalogue = {
         search: 'Search images',
         none: 'No image',
         noneAvailable: 'No images are available in this tenant.',
+    },
+
+    shell: {
+        session: '{username} · {tenant}',
+    },
+
+    setup: {
+        title: 'Set up this installation',
+        bootstrapMode:
+            'This installation has no administrator yet. It is in bootstrap mode, so there is nothing to sign in to.',
+        next: 'Creating the first administrator is what starts the setup journey. Until that journey is built, this page is where the browser stops.',
+    },
+
+    gate: {
+        unreachable:
+            'The server did not answer, so the interface cannot tell whether this installation still needs setting up. {reason}',
+        retry: 'Try again',
     },
 
     journey: {

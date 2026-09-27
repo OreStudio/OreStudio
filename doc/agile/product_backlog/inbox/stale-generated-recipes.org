@@ -27,10 +27,10 @@ started rendering the whole =ores= address.
 
 ** 1. Fifty-eight recipes are a placeholder behind the template
 
-Every one differs in the same way and only in the same way: inside its
+Every one differs in the same region and nowhere else: inside its
 =#+begin_src ores-shell :tangle ...= blocks, an argument placeholder that the
-committed file writes as =__none__= is a hyphen in the current render, and
-sometimes the render also carries trailing entries the committed file does not.
+committed file writes as =__none__= is a hyphen in the current render, and in
+some files the render also carries trailing entries the committed file does not.
 Not one byte of prose differs, so these are stale rather than hand-edited. The
 direction is the shell owner's call: either the recipes are behind the template
 and want regenerating, or the template is ahead of the shell and wants
@@ -41,8 +41,9 @@ correcting.
 =doc/recipes/shell/lei_entities/lei_entity.org= and
 =doc/recipes/shell/lei_relationships/lei_relationship.org= are staging shims, and
 main's staging-only change means the generator now renders them with no command
-sections at all: 77 lines where the tree holds 224. Regenerating would delete 147
-lines of generated recipe content, and whether a staging shim should keep a
+sections at all: 77 lines, where the tree held 224 before this branch added the
+marker and holds 223 once it is removed. Regenerating would delete 146 lines of
+generated recipe content, and whether a staging shim should keep a
 recipe at all is the =dq= owner's call. These two are why the marker task
 carries 111 marked recipes rather than 113.
 

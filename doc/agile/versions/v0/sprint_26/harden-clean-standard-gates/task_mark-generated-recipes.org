@@ -100,9 +100,11 @@ is what keeps a hand edit from being overwritten by a marker pass.
   =git grep -l "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY" -- '*.cpp' '*.hpp'=.
   That is the figure the comparison is against, and it is smaller than the number
   of files on disk because generated trees outside version control do not count.
-- The sweep renders the whole address now and reports 858 files drifting across
-  the catalogue, against 645 before it reached the recipes. It takes about a
-  minute and stays green: none of that drift is this branch's.
+- The sweep renders the whole address now and reports 857 files drifting across
+  the catalogue in CI, against 645 before it reached the recipes; the same run
+  reports 858 locally, so the figure moves by one with the clang-format version
+  the machine has. It takes about a minute and stays green: none of that drift
+  is this branch's.
 - Proved end to end: appending a line to
   =doc/recipes/shell/trade_types/trade_type.org= makes the sweep exit 1 and name
   that file, where before the change it could not see a recipe at all.
@@ -159,7 +161,7 @@ recipes end to end, and the tests constrain in both directions.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | "the sweep reports 969 files drifting" sits under a heading that says measured at this head, and measures 856. 856 + 113 = 969, so it was taken before the rollout and never re-measured. | task doc | Fixed | The sweep reports 858 at the rebased head, and the figure is named as such. |
+| 1 | "the sweep reports 969 files drifting" sits under a heading that says measured at this head, and measures 856. 856 + 113 = 969, so it was taken before the rollout and never re-measured. | task doc | Fixed | The sweep reports 857 in CI and 858 locally at the rebased head, and both are named. |
 | 2 | "7,854 C++ files" carrying the marker does not reproduce: 6,494 tracked =.cpp=/=.hpp= on the verifier's count, 6,478 by =git grep -l= over the index here. | task doc, story | Fixed | The claim now names its command and the figure that command returns, 6,478. |
 | 3 | The arithmetic is inconsistent: 247 = 185 + 62, yet 14 of the 185 are absent from the tree, which leaves 76 files with no model behind them, not 62. | task doc | Fixed | Corrected to 76: the shape holds 247, the render accounts for 171 of them, and 76 have no model behind them. |
 | 4 | The 185/58/14 split was not re-measured for want of budget. | task doc | Fixed | Re-measured, and it moved: 111 marked, 60 stale, 14 absent. |

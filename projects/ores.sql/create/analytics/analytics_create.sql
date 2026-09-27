@@ -53,6 +53,8 @@
 -- Credit simulation transition matrices (named, reusable)
 \ir ./analytics_credit_simulation_matrix_configs_create.sql
 \ir ./analytics_credit_simulation_matrix_configs_notify_trigger_create.sql
+\ir ./analytics_credit_simulation_matrix_row_configs_create.sql
+\ir ./analytics_credit_simulation_matrix_row_configs_notify_trigger_create.sql
 \ir ./analytics_credit_simulation_matrix_state_configs_create.sql
 \ir ./analytics_credit_simulation_matrix_state_configs_notify_trigger_create.sql
 

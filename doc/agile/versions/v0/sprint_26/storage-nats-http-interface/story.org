@@ -43,11 +43,11 @@ consumer-named shell verbs go.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The interface shipped on PR #2188. The consumer migration is under way on feature/storage-bucket-protocol: the bucket and key protocol is in the tree, and compute, ore, reporting and the shell write it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the migration: delete ores.compute.wrapper's duplicate client and archiver, expose the raw shell surface, and plumb the base URL one way. Then the story closes. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -81,7 +81,7 @@ consumer-named shell verbs go.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F7564B4B-EDCF-46F4-BB8B-DE88449BEC70][Add the NATS and HTTP interface to ores.storage, with authentication]] | DONE | 2026-09-26 | 2026-09-26 | Split the component into api, core and service parts, model the storage surface as an operation model so its protocol, TypeScript twin and shell commands generate, hand-write the handler and service no facet will generate, and give both the NATS handler and the existing HTTP routes real authentication and per-operation permission checks. |
-| [[id:97D5B848-DCF9-4E10-B71A-0F8BA866AE8F][Migrate the storage consumers onto the shared interface]] | STARTED | 2026-09-26 | | Move ores.compute.wrapper, ores.ore, ores.reporting and the shell verbs onto the storage service contract, and delete the duplicate HTTP client, archiver and key builders the migration leaves behind. |
+| [[id:97D5B848-DCF9-4E10-B71A-0F8BA866AE8F][Migrate the storage consumers onto the shared interface]] | DONE | 2026-09-26 | 2026-09-27 | Move ores.compute.wrapper, ores.ore, ores.reporting and the shell verbs onto the storage service contract, and delete the duplicate HTTP client, archiver and key builders the migration leaves behind. |
 
 * Decisions
 

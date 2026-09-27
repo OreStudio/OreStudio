@@ -35,3 +35,72 @@ Two details the run adds to the list above.
 * See also
 
 - [[id:44FA7541-D3E2-4D46-9D60-8C8517A64980][to_iso8601_utc emits a space separator]] — the fifth target, whose cause is its own.
+
+* Update 2026-09-27, later the same day
+
+Four of the five targets pass now, measured on the hotfix branch that
+cleared the continuous builds ([[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on
+main]], 87 targets, =ctest --preset linux-clang-debug-make -j 4=): 86
+pass and the only failure is =ores.refdata.core.tests=. =ores.dq.core.tests=,
+=ores.dq.api.tests=, =ores.marketdata.core.tests= and =ores.shell.api.tests=
+are green, so the four causes behind them were fixed by the work that
+landed in between.
+
+=ores.refdata.core.tests= still fails, in isolation as well as in the full
+run, at ten assertions across ten eventing integration tests:
+=business_unit=, =book=, =portfolio=, =party_identifier= and
+=party_contact_information= report a refused write; =counterparty=,
+=counterparty_identifier=, =counterparty_contact_information=, =party=
+and =crm_topology_config= report a changed event that never arrived.
+
+**The cause, established by direct experiment.** The notification itself is
+correct and does arrive. A second session listening on
+=ores_refdata_business_units= while the business_unit test ran received it:
+
+#+begin_src text
+Asynchronous notification "ores_refdata_business_units" with payload
+{"key": "{\"unit_code\": \"DESK0\"}", "action": "created",
+ "entity": "ores.refdata.business_unit", "version": 1, ...}
+#+end_src
+
+The trigger therefore announces the *declared* key, =unit_code=, which is
+what the model declares (=:key_field: unit_code=) and what the current
+notify-trigger template builds. The checked-in C++ disagrees with it:
+=ores.refdata.api/messaging/business_unit_protocol.hpp= still declares
+=struct business_unit_key { boost::uuids::uuid id; }=, so
+=rfl::json::read<business_unit_key>= fails on that payload, the decoded
+event keeps a nil key, and the test's =decoded->key.id == v.id= never
+matches. After ten seconds of polling the test re-drives the write with
+the same version-0 object, which the store refuses -- the refusal is the
+second failure, not the first.
+
+So the refdata C++ and its eventing tests are stale, while the SQL is
+current: regenerating the entity yields =business_unit_key{
+std::string unit_code; }= and a test that compares =key.unit_code=, which
+is the agreement the installed trigger already implements. That is the
+same class as the other four targets: generated output that moved on and
+was never regenerated. Refdata is one of the components the drift gate
+does not cover.
+
+**Why it is not a one-line regeneration.** Regenerating refdata onto the
+current models produces 499 files, and two of them say it cannot be
+committed blind:
+
+1. It reverts a deliberate change. =ores.iam.core/service/cache/
+   party_cache.hpp= is generated from the refdata =party= model, and the
+   checked-in copy carries a hand-written tenant-isolation filter ("only
+   this partition's rows may enter it"); the regenerated copy drops the
+   filter and the counter that goes with it. Committing the regeneration
+   would silently reopen that hole.
+2. It does not compile. The regenerated refdata removal type breaks two
+   hand-written call sites in =ores.ore/service/src/messaging/
+   ore_import_execute_handler.cpp= (lines 2049 and 2071, =push_back= into
+   =del_req.removals=), so the regeneration is a migration of refdata and
+   its consumers, not a regeneration.
+
+The eventing tests cannot be fixed on their own: the test's comparison and
+the key type it compares against are emitted by the same codegen, so
+fixing one without the other leaves the payload undecodable. Whoever
+takes this does the regeneration, re-expresses or re-applies the party
+cache filter, migrates the =ores.ore= callers, and then adds refdata to
+the drift gate so the next 499 files cannot accumulate unnoticed.

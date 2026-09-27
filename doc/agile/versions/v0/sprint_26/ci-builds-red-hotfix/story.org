@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B
+:END:
+#+title: Story: Hotfix: Restore every red build on main
+#+description: Four independent defects put the continuous builds in the red. The Linux jobs stop in validate_schemas.sh because four regenerated workspace SQL files duplicate the hand-written schema and are wired into neither aggregator. The macOS jobs cannot compile the iam handlers because libc++ has no std::atomic<std::shared_ptr<T>>. The Windows and nightly jobs stop in the database recreation on an undefined psql variable. The site build aborts on a file: link to a Python line number. Two of the four are already fixed on main; one PR carries the two that are not.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sql:platform:cpp20:site:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every continuous build on main is red. Each red job stops on a different
+defect, and each defect is independent of the others:
+
+| Job | Where it stops | Root cause |
+|-----+----------------+------------|
+| Continuous Linux (4 of 4 jobs) | =validate_schemas.sh= | Four regenerated =ores.workspace= SQL files define the same table, indexes and insert function as the hand-written, wired schema, and no aggregator includes them, so the strict wire check refuses the tree. |
+| Continuous macOS (2 of 2 jobs) | compile of =ores.iam= | Both iam handlers declare =std::atomic<std::shared_ptr<const token_settings>>=. libc++ has no such specialisation, so the name resolves to the generic =std::atomic<T>= primary template, which static_asserts that T is trivially copyable. |
+| Continuous Windows (4 of 4 jobs) | =compass db recreate=, Phase 2 | =populate/iam/iam_service_account_roles_populate.sql= uses =:'storage_service_user'=, which the psql invocation did not define. |
+| Nightly Linux (2 of 2 jobs) | =compass db recreate=, Phase 2 | The same undefined =storage_service_user=. |
+| Product website and CDash site | =org-publish= of one page | The dq artefact task carried =[[file:...org_loader.py::943]]=. Org cannot resolve a line-number search inside a Python file. |
+
+The storage defect and the site defect are already fixed on main: the
+storage service was added to =service_registry.org=, to the generated
+=service_vars.sh= and to the =env configure= output, and the dq page now
+links through the =proj:= link type, which renders a GitHub URL and
+searches nothing. The Linux and macOS defects are still red, and this
+hotfix carries those two.
+
+The macOS defect is the one with a design decision behind it. The estate
+already met it once, in =crm_ingest_bridge=, and chose a mutex-guarded
+=shared_ptr= there, recording the reasoning in
+[[id:2CA8864F-336E-4632-A510-FC503213165B][Revisit std::atomic<std::shared_ptr<T>> once macOS libc++ supports it]].
+The iam handlers were written with the atomic form afterwards and never
+met a macOS compiler, because the macOS build had been red on other
+grounds for long enough that nobody saw the failure. The fix puts the
+portable form in =ores.platform=, so the decision is made once and the
+callers carry no preprocessor branch.
+
+The workspace defect is wiring debt that one commit created. It is not a
+defect in the workspace feature itself.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- =validate_schemas.sh= passes with no warnings, and no generated file
+  under =projects/ores.sql= duplicates a wired, hand-written schema file.
+- Both iam handlers compile against a standard library with no
+  =std::atomic<std::shared_ptr<T>>= specialisation, and no header in the
+  estate names that specialisation.
+- The portable snapshot is tested, and the test fails on a torn read.
+- =compass db recreate= completes on this tree.
+- The site build publishes every page, the dq artefact page included.
+- Every codegen gate, the codegen test suite and the full build pass.
+- =ores.refdata.core.tests= is the one ctest target still red on this
+  tree. It fails because the checked-in refdata C++ and its eventing tests
+  are stale while the SQL is current, so the event's key record does not
+  decode. The capture
+  [[id:6C0DA430-B5BC-447C-8BBC-72B4DBDE9420][Five test binaries fail on main, and four of them share one …]]
+  owns it, four of its five targets are green now, and its fix is a
+  refdata migration rather than a hotfix line.
+- The only build left red is the Windows one, on the =ores.shell.trading=
+  translation unit. That is a separate, known defect and this story does
+  not own it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B41649FD-4B6B-4A7F-8BB5-B99FFEA36880][Implement Hotfix: Restore every red build on main]] | DONE | 2026-09-27 | 2026-09-27 | Turn off the workspace entity's SQL facet and delete the four generated files that duplicate the hand-written schema, add the portable atomic snapshot to ores.platform and move both iam handlers onto it, confirm the storage service variable reaches psql, and confirm the site link resolves. Verify every gate, then raise the PR. |
+
+* Decisions
+
+- The workspace entity's SQL facet is switched off in its model rather
+  than silenced in =validation_ignore.txt=. The generated schema cannot
+  be wired while the model is stale, because it drops =party_id= and
+  =name=, which the hand-written schema and the hand-written repository
+  both use. A disabled facet is reversible in one line and the generator
+  enforces it; an ignore entry leaves two competing definitions of the
+  same table in the tree for the next reader to wire by mistake.
+- The portable snapshot joins =ores.platform=, not =ores.utility=. The
+  choice it encodes is a standard-library gap, which is what that
+  component exists for, and both iam handlers already link it.
+- The portable snapshot is mutex-backed on every platform, not
+  atomic-backed on the platforms that support it. One code path ships
+  everywhere and the tests exercise it everywhere; a conditional would
+  leave the macOS path compiled only on macOS.
+
+* Out of scope
+
+- The =ores.shell.trading= translation unit that MSVC and clang-cl cannot
+  compile. Continuous Windows stays red on it, by agreement.
+- The refdata migration: regenerate the component onto its current
+  models, reconcile the hand-written tenant-isolation filter in the
+  generated =party_cache.hpp=, and migrate the two =ores.ore= call sites
+  the regenerated removal type breaks. That is what makes
+  =ores.refdata.core.tests= green, and it also wants refdata added to the
+  codegen drift gate so the next 499 files cannot accumulate unnoticed.
+- The workspace model migration itself, which moves =name= into
+  =* Columns= as a flagged natural key, states =party_id= the way the
+  other models state it, and reconciles the generated schema with the
+  hand-written one. [[id:EF349D87-4D3A-4F98-A454-7DBB2A80E48B][Fix workspace entity model drift]]
+  owns it; re-enabling the facet is part of that work.
+- Moving =crm_ingest_bridge= onto the platform snapshot. It keeps its own
+  mutex for now; the capture that records the switch-back now names the
+  shim as the place the switch-back happens.

@@ -1,0 +1,236 @@
+:PROPERTIES:
+:ID: B41649FD-4B6B-4A7F-8BB5-B99FFEA36880
+:END:
+#+title: Task: Implement Hotfix: Restore every red build on main
+#+description: Clear each red gate: disable the workspace entity's SQL facet and delete the four generated files that duplicate the hand-written schema, add ores.platform's portable atomic snapshot and move the two iam handlers onto it, confirm the storage service variable now reaches psql, and confirm the site link resolves. Verify every gate green, then raise the PR.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:ci:sql:platform:cpp20:site:sprint_26:v0:ci-builds-red-hotfix:
+#+owner: marco
+#+branch: hotfix/green-builds
+#+pr: 2283
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every continuous build on main is red, each job stopped on a different
+defect. Two are already fixed on main and two are not:
+
+- Continuous Linux (4 of 4 jobs) stops in =validate_schemas.sh=, which
+  refuses the tree with four WIRE_001 warnings for the four
+  =ores.workspace= SQL files that commit =48f4282df6= added and no
+  aggregator includes. **Not fixed.**
+- Continuous macOS (2 of 2 jobs) cannot compile either iam handler,
+  because libc++ has no =std::atomic<std::shared_ptr<T>>=
+  specialisation. **Not fixed.**
+- Continuous Windows (4 of 4 jobs) and Nightly Linux (2 of 2 jobs) stop
+  in =compass db recreate=, Phase 2, on =:'storage_service_user'=, which
+  the psql invocation did not define. Fixed on main by commit
+  =7476116c70=, which added =storage= to the service registry and to
+  =service_vars.sh=, and by the =env configure= output that follows it.
+- Product website and the CDash site job abort in =org-publish= on
+  =[[file:projects/ores.codegen/src/codegen/org_loader.py::943]]=, a
+  line-number search inside a Python file. Fixed on main by PR #2262,
+  which points the two dq references at the =proj:= link type.
+
+This task carries the first two, confirms the other two on the current
+tree, and leaves Continuous Windows red on the =ores.shell.trading=
+translation unit, which is a separate known defect.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- =validate_schemas.sh= passes with 0 warnings and the workspace table
+  keeps the =party_id= and =name= columns its repository reads.
+- No file in the estate names =std::atomic<std::shared_ptr=, and the
+  platform shim is covered by tests.
+- =compass db recreate= completes and provisions the storage service
+  account.
+- The full site build publishes every page.
+- Every codegen gate, the codegen test suite, the full build and ctest
+  pass.
+
+* Plan
+
+1. Read every red run, not the latest one only, and pin each job's failing
+   step and root cause. Three of the four defects are masked by a defect
+   ahead of them in the same job, so the newest run of a job is not
+   evidence that the older defect is still there.
+2. Workspace SQL: switch the entity's =ores.sql.schema= facet off in the
+   model, delete the four generated files, and record why on the model
+   page and on the drift task that owns the migration. Confirm
+   =validate_schemas.sh= goes from four warnings to none, and confirm by
+   regeneration that the facet emits nothing.
+3. macOS: add =ores.platform/concurrency/atomic_shared_ptr.hpp=, move
+   both iam handlers onto it, and prove the shim with a test that fails
+   on a torn read.
+4. Confirm the two already-fixed defects on the current tree: =compass db
+   recreate= for the storage variable, the full site build for the link.
+5. Run every gate on the committed tree, then raise the PR.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| WIRE_001 warnings before the fix | 4, exit 1 | =projects/ores.sql/utility/validate_schemas.sh= | =b961b14561= |
+| WIRE_001 warnings after the fix | 0, exit 0, 1535 files checked | =projects/ores.sql/utility/validate_schemas.sh= | =18313812f2= |
+| Files the disabled facet still emits | 0 | =codegen.sh regenerate --component workspace-cpp --address ores.sql= | =18313812f2= |
+| Headers naming =atomic<shared_ptr>= | 0 | =grep -rn "std::atomic<std::shared_ptr" projects/= | =18313812f2= |
+| Platform shim tests | 4 cases, 10 assertions, all pass | =build/.../publish/bin/ores.platform.tests "[atomic_shared_ptr]"= | =18313812f2= |
+| Codegen suite | 922 passed | =venv/bin/python -m pytest projects/ores.codegen/tests -q= | =18313812f2= |
+| Codegen drift | No drift | =check_component_drift.py --all= | =18313812f2= |
+| Build | 0 errors, every target built | =cmake --build --preset linux-clang-debug-make -j 8= | =18313812f2= |
+| ctest | 86 of 87 pass; =ores.refdata.core.tests= fails | =ctest --preset linux-clang-debug-make -j 4= | =18313812f2= |
+| Site build | Build succeeded, every page published | =emacs -Q --script projects/ores.lisp/src/ores-build-site.el= | =18313812f2= |
+| Workspace table columns | 17, including =party_id= and =name= | =select string_agg(column_name, ...) from information_schema.columns= | =18313812f2= |
+| Storage service account | 1 row, =ores_clever_dijkstra_storage_service= | =select username from ores_iam_accounts_tbl where username like '%storage_service%'= | =18313812f2= |
+| Ungated stale CMake file lists | 31 files, 16 components | =regenerate_cmake_component_files.py --all --check= | =18313812f2= |
+
+* Notes
+
+- The workspace defect is wiring debt a single commit created, not a
+  defect in the workspace feature. =48f4282df6= says so itself: "the
+  workspace entity's SQL files were absent from the tree entirely". It
+  regenerated the entity for an unrelated policy fix and carried the four
+  files it emitted.
+- The macOS defect is masked twice over. The nightly and macOS runs
+  between 2026-09-26T23:13 and 2026-09-27T10:47 stopped at Setup
+  Database, ahead of the compile, so no job reached the iam handlers.
+  macOS last compiled this code on 2026-09-25, before commit =2b82e0c4a8=
+  introduced the atomic member. The first job to see it was the run at
+  14:22 on 2026-09-27, which is the one that reports the six errors.
+- The storage defect was fixed between the runs and this analysis. The
+  failing Windows run is from 04:16 and the failing nightly from 03:37;
+  =7476116c70= landed at 10:47. The registry entry
+  (=ores.storage.service=, =:psql_var: storage_service=) is what
+  =compass env configure= reads to emit =ORES_STORAGE_SERVICE_DB_USER=,
+  so the fix is complete rather than partial.
+- The Windows failure has a second cause behind the first. Both MSVC jobs
+  stop on C1202 in =rfl/internal/no_duplicate_field_names.hpp= while
+  compiling =ores.trading/api/src/domain/instrument_payload.cpp=; both
+  clang jobs crash the compiler frontend on
+  =credit_instrument_commands=. That is the translation-unit size problem
+  the sprint already knows about, and this hotfix does not own it.
+- The Nightly Linux clang job had a third cause behind the database one:
+  =ores.synthetic.core.tests= failed, and the two gcc jobs were killed by
+  a runner shutdown signal rather than by the tree.
+- =check_component_drift.py= reports drift from any uncommitted change,
+  so it is only meaningful on a committed tree. Both of its runs for this
+  task were made on commits, not on a dirty working tree.
+- =regenerate_cmake_component_files.py --all --check= is red on main,
+  independently of this branch: 31 =component_files.cmake= files across 16
+  components are stale (analytics, database, diff, eventing, history,
+  orgmode, refdata, security, synthetic, utility, workspace and others).
+  No workflow and no compass command runs that script, which is why it
+  has stayed red unnoticed. =ores.platform= is not among the 31, so this
+  branch did not contribute to it. Filed as
+  [[id:4DC90DE5-F3A5-4E77-8999-6E1EE57BA030][Check the generated CMake file lists in CI]], because a gate nobody
+  runs is a gate that cannot hold.
+- The local fleet could not start =ores.http.server= after the database
+  recreation, and the cause is an environment file rather than the tree:
+  this worktree's git-ignored =/.env= still carried
+  =ORES_HTTP_SERVER_JWT_SECRET=, which =env_init.py= stopped emitting when
+  the gateway moved to RS256 ([[id:F1E98183-5526-4A8D-82BB-7C1C033511F1][Verify session tokens at the gateway with
+  IAM's key alone]]), and the environment mapper
+  hands it to a parser that no longer has the option, so the parse fails
+  at startup. Removing the stale line from the local =/.env= fixed it and
+  the fleet came up 25 of 25. CI is unaffected, because =compass env
+  configure= writes that file from scratch.
+- =ores.refdata.core.tests= still fails on this tree, and it is not this
+  branch's doing: an earlier capture,
+  [[id:6C0DA430-B5BC-447C-8BBC-72B4DBDE9420][Five test binaries fail on main, and four of them share one …]],
+  records the same failures. This branch's run puts four of those five
+  back in the green and leaves only refdata, which the capture now
+  records. It is the one thing left between this PR and a green local
+  test run.
+- The refdata cause was found by experiment, and the obvious fix was
+  tried and rejected. A second session listening on the channel while the
+  business_unit test ran received the notification, so the trigger is
+  correct: it announces the declared key =unit_code=, which is what the
+  model declares. The checked-in C++ still declares
+  =business_unit_key{ boost::uuids::uuid id; }=, so the payload does not
+  decode, the event keeps a nil key, the test's =key.id == v.id= never
+  matches, and the test re-drives until the store refuses the duplicate
+  create. The C++ and the eventing tests are stale while the SQL is
+  current; refdata is one of the components the drift gate does not cover.
+  Regenerating it produces 499 files and cannot be committed as it
+  stands: it reverts the hand-written tenant-isolation filter in the
+  generated =party_cache.hpp=, and it breaks two hand-written
+  =push_back= sites in =ores.ore/service/src/messaging/
+  ore_import_execute_handler.cpp=. Both facts are in the capture. The
+  fix is a refdata migration, not a hotfix line, and the test cannot be
+  fixed alone because its comparison and the key type it compares against
+  come from the same codegen.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 2283 | [hotfix] Restore every red build on main |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | @claude review: both fixes are narrow, well-justified and match the diff; no functional or correctness issues found. Two non-blocking notes. | whole PR | Accept the review; acted on one note. | The reviewer confirmed the workspace deletion (with no dangling references anywhere), the `:ores.sql.schema.enabled: false` choice over a `validation_ignore.txt` entry, and the shim's snapshot semantics and torn-read test. |
+| 2 | Non-blocking: `load()` copies the `shared_ptr` under the lock, which is correct, but check that no caller holds the lock across a call into user code that could recursively call `load()` or `store()` on the same instance. | `projects/ores.platform/include/ores.platform/concurrency/atomic_shared_ptr.hpp` | Fixed by documenting the contract. | The reviewer is right that the mutex is not recursive. Neither handler nests — `token_settings()` and `reload_token_settings()` are separate functions — so there is no defect to fix. The class doc now states that the lock never spans a call into the caller's code and that a nested call on the same instance would deadlock, so a future caller reads the constraint from the type rather than from this review. |
+| 3 | Non-blocking: `ores.refdata.core.tests` is still red post-hotfix, a pre-existing tracked failure rather than a regression this PR introduces. | - | No change; recorded. | The review's reading matches the task's own scope note, and the newer measurement was written into the owning capture while the branch was open. |
+
+* Result
+
+The two defects that were still red on main are fixed and the two that
+were fixed before this branch started are confirmed on this tree. Every
+codegen gate, the codegen suite, =validate_docs.sh=, =compass lint=, the
+full build and the full site build are green on commit =18313812f2=.
+
+The branch was rebased twice as main moved, the second time onto
+=ef8df25c61= after main had advanced 14 further commits. The only
+conflicts were in generated and hand-maintained agile indexes
+(=inbox.org=, =sprint.org=), resolved by keeping both sprint rows and
+regenerating the index. Every gate was then re-run on the rebased tip,
+with the same results, and the numbers above are the re-run. The review
+by @claude found no functional or correctness issue; its one actionable
+note, the non-recursive lock, is answered in the shim's class doc.
+
+=validate_schemas.sh= reports 0 warnings where it reported 4; the
+workspace entity's SQL facet emits nothing; both iam handlers compile
+against a standard library with no =atomic<shared_ptr>=; =compass db
+recreate= completes and the storage service account exists; and the site
+publishes every page, the dq artefact page included.
+
+Three things are deliberately not done here. Continuous Windows may stay
+red on the =ores.shell.trading= translation unit, by agreement -- this
+branch fixes the other Windows blocker, the missing =<string>= include in
+=jetstream_admin.hpp= that stopped every Windows job before it could
+reach the translation unit. =ores.refdata.core.tests= fails on the
+condition the five-binaries capture owns, which is 1 of 87 ctest targets
+and the only red left locally; its cause is now established and its fix
+is a 499-file refdata regeneration that first has to reconcile a
+hand-written security filter and migrate the =ores.ore= callers. And
+=regenerate_cmake_component_files.py --all --check= stays red and
+ungated, captured separately.

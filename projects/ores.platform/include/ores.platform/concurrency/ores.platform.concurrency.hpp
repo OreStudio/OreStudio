@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -9,14 +9,23 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_PLATFORM_CONCURRENCY_HPP
+#define ORES_PLATFORM_CONCURRENCY_HPP
 
-drop trigger if exists ores_workspaces_notify_trg on "ores_workspaces_tbl";
-drop function if exists ores_workspaces_notify_fn;
+/**
+ * @brief Concurrency primitives whose standard spelling is not portable.
+ *
+ * Holds the types that stand in for a C++20 standard facility a supported
+ * standard library does not implement, so the portability decision lives here
+ * rather than as a preprocessor branch in every caller.
+ */
+namespace ores::platform::concurrency {}
+
+#endif

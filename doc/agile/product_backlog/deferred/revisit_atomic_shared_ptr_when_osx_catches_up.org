@@ -2,30 +2,35 @@
 :ID: 2CA8864F-336E-4632-A510-FC503213165B
 :END:
 #+title: Revisit std::atomic<std::shared_ptr<T>> once macOS libc++ supports it
-#+description: crm_ingest_bridge uses a mutex-guarded shared_ptr snapshot instead of std::atomic<std::shared_ptr<const T>> because the macOS CI toolchain (Xcode 16.2 libc++) doesn't implement the C++20 atomic<shared_ptr> specialization for non-trivially-copyable T and fails to compile. Revisit once macOS/libc++ catches up: the atomic form is the more idiomatic modern-C++ expression of the same lock-free-reads-mostly snapshot-swap pattern.
+#+description: The estate publishes shared_ptr snapshots through ores.platform's atomic_shared_ptr, which is mutex-backed because the macOS CI toolchain (Xcode 16.2 libc++) doesn't implement the C++20 atomic<shared_ptr> specialization for non-trivially-copyable T and fails to compile. Revisit once macOS/libc++ catches up: the switch back to the standard type is then a one-file change in the shim.
 #+type: capture
 #+level: cross
-#+filetags: :build:osx:cpp20:crm:marketdata:
+#+filetags: :build:osx:cpp20:crm:marketdata:platform:
 #+created: 2026-07-13
-#+updated: 2026-07-13
+#+updated: 2026-09-27
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-=crm_ingest_bridge= (=projects/ores.marketdata/service/.../app/crm_ingest_bridge.hpp=)
-guards its =engines_map= snapshot with a plain =std::mutex= + =shared_ptr=
-instead of =std::atomic<std::shared_ptr<const engines_map>>=, because the
-macOS CI toolchain (Xcode 16.2, libc++) fails to compile the atomic form:
-it falls through to libc++'s generic =atomic<T>= primary template for
+=ores.platform= carries =concurrency/atomic_shared_ptr.hpp=, a
+=shared_ptr= plus a =std::mutex= that publishes an immutable snapshot: a
+reader gets one whole object and the object survives a later store.
+It stands in for =std::atomic<std::shared_ptr<T>>=, which the macOS CI
+toolchain (Xcode 16.2, libc++) fails to compile: the name falls through
+to libc++'s generic =atomic<T>= primary template for
 non-trivially-copyable =T=, which =static_assert=s trivial copyability --
 =shared_ptr= isn't trivially copyable. Linux/clang (libstdc++) accepts
 the atomic form fine, implementing the C++20 P0718 =atomic<shared_ptr>=
-specialization. Once macOS's libc++ (or whatever Xcode ships by then)
-implements that specialization for this case, switch back: it's the more
-idiomatic, self-documenting expression of the same lock-free-reads-mostly
-snapshot-swap pattern used elsewhere for this problem (cf.
-=ores.analytics.quant='s use of =immer::atom= for the same need).
+specialization.
+
+Once macOS's libc++ (or whatever Xcode ships by then) implements that
+specialization, switch the shim's implementation to it: it's the more
+idiomatic, self-documenting expression of the same snapshot-swap pattern
+(cf. =ores.analytics.quant='s use of =immer::atom= for the same need).
+Because every caller now names the shim and not the standard type, the
+switch is one file, and this capture is the only place that has to
+change with it.
 
 * Why
 
@@ -38,11 +43,18 @@ shared_ptr copy is not measurably slower than the atomic form on this
 workload, since refresh() is rare and the critical section is just a
 refcount bump).
 
-* References
+* History
 
-- [[id:41B8DCE5-AC29-4DDF-94D7-652225B9EE08][The OSX build fix task]] that introduced the mutex-guarded form.
-- [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][The multi-named-CRM engine task]] this landed alongside.
-
-* See also
-
--
+- 2026-07-13: =crm_ingest_bridge= guards its =engines_map= snapshot with
+  its own =std::mutex= + =shared_ptr= for this reason.
+- 2026-09-27: the same defect recurred in the two iam handlers
+  (=auth_handler= and =account_operations_handler=), which commit
+  =2b82e0c4a8= gave a =std::atomic<std::shared_ptr<const
+  token_settings>>= member. It compiled on Linux and macOS never reached
+  the file until the database-recreation defect ahead of it was cleared,
+  so the macOS build had been red on it since. Both handlers now use the
+  platform shim ([[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on main]]). The
+  repeated failure is what moved the decision out of the callers and into
+  =ores.platform=.
+- Still to do: move =crm_ingest_bridge= onto the shim, so the estate has
+  one expression of the pattern rather than two.

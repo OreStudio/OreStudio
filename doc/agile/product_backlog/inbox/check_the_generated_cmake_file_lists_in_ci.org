@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4DC90DE5-F3A5-4E77-8999-6E1EE57BA030
+:END:
+#+title: Check the generated CMake file lists in CI
+#+description: regenerate_cmake_component_files.py --all --check is red on main: 31 component_files.cmake files across 16 components are stale. No workflow and no compass command runs the script, so nothing reports it. Wire it into the codegen drift job so a stale file list fails a pull request.
+#+type: capture
+#+level: cross
+#+filetags: :build:ci:cmake:codegen:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Each component's =src/component_files.cmake= and =tests/component_files.cmake=
+is generated from a directory scan by
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py=, and the
+script has a =--check= mode that fails when the checked-in list no longer
+matches the scan. On main, =--all --check= reports *31 stale files across 16
+components* -- analytics, database, diff, eventing, history, orgmode, refdata,
+security, synthetic, utility, workspace and five more -- and the count grows
+every time a component gains or loses a file between regenerations.
+
+Nothing reports it. No workflow names the script and no compass command calls
+it, so the lists have drifted under a green tree. The two symptoms a stale list
+produces are silent: a new source file is missing from the build, or a deleted
+one is still named and the build breaks in a corner nobody built.
+
+Wire the check into the =Codegen drift= job, next to the template, model and
+protocol-twin checks it already runs, and regenerate the 31 files in the same
+wave.
+
+* Why
+
+The estate's rule is that a gate nobody runs is not a gate. This one exists,
+works and reports real drift; the only reason the tree is red under it is that
+the tree is never asked. Every other generated artefact -- templates, models,
+SQL, TypeScript, recipe inventories -- is checked in CI. The CMake file lists
+are the one generation step that is not.
+
+* References
+
+- [[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on main]], which measured the 31 files
+  while clearing the continuous builds.
+- =doc/recipes/cmake/how_do_i_regenerate_cmake_component_file_lists.org=,
+  the recipe that runs the script by hand.
+
+* See also
+
+-

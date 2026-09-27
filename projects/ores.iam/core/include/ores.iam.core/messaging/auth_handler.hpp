@@ -41,6 +41,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/concurrency/atomic_shared_ptr.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -51,7 +52,6 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <memory>
 #include <rfl/json.hpp>
@@ -199,7 +199,7 @@ public:
      * already answering with.
      */
     [[nodiscard]] std::shared_ptr<const domain::token_settings> token_settings() const {
-        return token_settings_.load(std::memory_order_acquire);
+        return token_settings_.load();
     }
 
     void reload_token_settings() {
@@ -208,8 +208,7 @@ public:
                 ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
             token_settings_.store(
-                std::make_shared<const domain::token_settings>(domain::token_settings::load(svc)),
-                std::memory_order_release);
+                std::make_shared<const domain::token_settings>(domain::token_settings::load(svc)));
         } catch (const std::exception& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(auth_handler_lg(), warn)
@@ -708,8 +707,8 @@ private:
     // reader sees one whole settings object rather than a half-written one.
     // Initialised rather than left empty, because the reload can fail and a
     // handler that reads it anyway must find the defaults, not a null pointer.
-    std::atomic<std::shared_ptr<const domain::token_settings>> token_settings_{
-        std::make_shared<const domain::token_settings>()};
+    platform::concurrency::atomic_shared_ptr<const domain::token_settings>
+        token_settings_{std::make_shared<const domain::token_settings>()};
 };
 
 } // namespace ores::iam::messaging

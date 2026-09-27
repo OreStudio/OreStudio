@@ -4,6 +4,8 @@
 # GENERATED from doc/recipes/shell/provisioning/bootstrap_smoke.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
+reset reset-system
+
 connect $ORES_NATS_URL
 
 bootstrap super_admin Secure-Password-123 super_admin@localhost.com

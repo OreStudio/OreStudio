@@ -13,7 +13,7 @@ List effective permissions for an account.
 
 #+name: account-permissions
 #+begin_src ores-shell :exports none
-accounts permissions 019c2d92-8448-7158-90d0-ccb8b5f7e812
+authorization get-account-permissions 019c2d92-8448-7158-90d0-ccb8b5f7e812
 exit
 #+end_src
 

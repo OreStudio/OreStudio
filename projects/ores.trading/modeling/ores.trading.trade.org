@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.trade
 #+description: Codegen entity model for the trading =trade= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

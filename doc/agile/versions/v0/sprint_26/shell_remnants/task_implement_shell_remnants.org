@@ -1,0 +1,213 @@
+:PROPERTIES:
+:ID: 664F4EF8-4F93-4938-9D67-88729CACE86B
+:END:
+#+title: Task: Close the ores.shell remnants
+#+description: Initial task for: Clean up the ores.shell remnants
+#+type: task
+#+level: s1
+#+filetags: :shell_remnants:sprint_26:v0:
+#+owner: marco
+#+branch: feature/shell-remnants
+#+pr: 2281
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9][Clean up the ores.shell remnants]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell holds no hand-written unit that generation supersedes, the three defects the clean-standard pass found are fixed rather than remembered, and every accepted exception that the menu-ownership change invalidated reads the way the code now behaves.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9][Clean up the ores.shell remnants]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The fourteen hand-written trading instrument units are gone, and every verb they answered is answered by a generated unit, or its removal is recorded with its reason.
+- accounts sessions answers against the live fleet, with the parse defect fixed at its source.
+- bootstrap_smoke.ores runs twice in a row without colliding on the tenants it creates.
+- The hand-written accounts verbs that duplicate a capability the generated authorization menu already carries are resolved, and the decision is recorded per verb.
+- The iam S01 accepted exception states what the registry now enforces, and check_registry_exceptions.py still passes.
+
+* Plan
+
+Four pieces of work, in the order the standard asks for them: remove what
+generation supersedes, fix what is broken, and correct the record.
+
+** 1. Remove the fourteen hand-written trading instrument units
+
+They live in =projects/ores.shell/application/src/app/commands/trading/= and
+they are the shell surface of =ores.trading= entities. Measured against that
+component's models:
+
+| Unit | Model | Shell facet |
+|------+-------+-------------|
+| balance_guaranteed_swap_instrument, bond_instrument, callable_swap_instrument, cap_floor_instrument, fra_instrument, inflation_swap_instrument, knock_out_swap_instrument, rpa_instrument, swaption_instrument, trade, vanilla_swap_instrument | present | off |
+| commodity_instrument, composite_instrument, credit_instrument, scripted_instrument | absent | n/a |
+
+Their verbs are =get= (a paged list, not the canonical =get <key>=), =add=,
+=delete= and =history=, which is a subset of what generation produces and with a
+non-canonical spelling. =ore_commands.cpp= is not in this set: it is the ORE
+document round trip, it models no entity, and nothing supersedes it.
+
+Eleven of them need =:ores.cpp.shell-command.enabled: true= on their model and a
+regeneration; four need a model first. Both are =ores.trading= work, and the
+regeneration cannot be narrowed to the shell facet, so it carries that
+component's drift. Remove the units only where the generated replacement exists,
+and record each removal with the unit that replaces it.
+
+** 2. Fix the three defects, at their source
+
+=accounts sessions= aborts against the live fleet:
+
+#+begin_src text
+✗ Command failed: accounts sessions (from_iso8601_utc: missing UTC designator
+  (Z, +00:00, or +00) in: 2026-09-27 12:15:14)
+#+end_src
+
+The session listing formats a timestamp the service returns in a shape the
+parser refuses. Fix the parse or the producer, whichever is wrong, and prove the
+verb answers against the live fleet.
+
+=bootstrap_smoke.ores= is not idempotent: it creates the tenants =acme= and
+=example=, so a second run collides. The recipe is tangled from
+=doc/recipes/shell/provisioning/bootstrap_smoke.org=, so the fix is in the org
+source.
+
+A capability duplication, not a name collision. The generated =authorization=
+menu already carries =assign-role=, =revoke-role=, =get-account-roles=,
+=get-account-permissions= and =suggest-role-commands=, so the hand-written
+=accounts= verbs of those names do the same job at a different address. Resolve
+each one: retire the hand-written verb and point callers at the generated one,
+or keep it and record why the addresses both earn their place.
+
+** 3. Correct the iam record
+
+=component_registry.py= carries an accepted exception on item S01 for =iam=
+whose reason reads "registered after the generated aggregator, so some
+overlapping verbs are shadowed". #2272 made that impossible: a second
+registration throws, and the hand-written unit extends the generated menu. The
+reason is rewritten to describe what the registry now enforces and what remains
+open. This is a documentation change; no behaviour moves.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Hand-written units under =application/.../trading/= that build a menu | 15: eleven whose model had the shell facet off, four whose entity has no model, and =ore=, which nothing supersedes | python scan of the directory against =projects/ores.trading/modeling= | 4c44d149c7 |
+| Units generated by the change | 11, as 33 files: header, implementation and test per unit | =compass codegen regenerate --component trading-cpp --address ores.cpp= | 4c44d149c7 |
+| =ores.trading= drift that is not this work's | 2 files, =trade_service.cpp= and =trade_eventing_integration_tests.cpp=, both reverted | =check_component_drift.py --component trading-cpp --dry-run= | 4c44d149c7 |
+| Recipe and script callers of the eleven retired menus | 0 | grep over =projects/ores.shell/scripts= and =doc/recipes= | 4c44d149c7 |
+| Menu gate after the change | 429 files, 210 root names, 0 collisions, 0 prompt defects | =check_shell_menu_collisions.py= | 4c44d149c7 |
+| =ores.shell.trading= suite after the change | 1,584 assertions over 561 cases, up 187 cases | =test_ores.shell.trading.tests= | 4c44d149c7 |
+| =ores.platform= suite after the inverse was added | 259 assertions over 123 cases | =test_ores.platform.tests= | aeeb9accd4 |
+| Hand-written iam verbs remaining | 15 across three units, plus the root =login= and =logout= aliases | scan of the three units | 349794fa4d |
+| =ores.shell.iam= suite after the retirement | 629 assertions over 245 cases | =test_ores.shell.iam.tests= | 349794fa4d |
+| Codegen suite | 922 cases | =pytest projects/ores.codegen/tests= | 0a0f4d2114 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2281][#2281]] | [shell] Retire the shell remnants the clean-standard pass left |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All three pieces are done, and the count in the first one was wrong when the
+story was scaffolded.
+
+** The trading units: fifteen, not fourteen, and eleven of them retired
+
+The scaffold said fourteen. The tree holds fifteen units that build a menu, and
+the classification is what matters rather than the total: eleven had a model
+whose shell facet was off, four have no model at all, and =ore_commands= is not
+superseded by anything because it is the ORE document round trip rather than an
+entity surface.
+
+The eleven are retired. Their model gains the shell facet, the generated unit
+appears, and the hand-written unit is deleted rather than kept beside it, which
+it could not be in any case: the generated header sits on the same include path
+as the hand-written one. The surface moves with the convention, which is the
+point of the item: the paged read is =list= rather than =get=, =get= is a key
+read, and =history= is =versions= and =version=. Measured before the change, no
+recipe and no script called any of the eleven menus, so nothing that answered
+stops answering.
+
+The four with no model are not retired, because nothing supersedes them yet:
+=commodity_instrument=, =composite_instrument=, =credit_instrument= and
+=scripted_instrument= need a model written before generation can replace
+anything, and that is =ores.trading= work.
+
+** The three defects
+
+=accounts sessions= is fixed at its source. The platform wrote the database
+timestamp form and provided no reader for it, so the shell reached for the ISO
+reader, which requires a UTC designator the stored form does not carry, and the
+throw aborted the whole listing. =from_db_string= is the missing inverse, and
+both readers now share one parser so their separator handling cannot drift
+apart. Verified on the failing path: after a logout and a fresh login, the closed
+sessions render their End and duration, including the timestamp the original
+error named.
+
+=bootstrap_smoke.ores= cannot be made idempotent from inside a recipe, and this is
+recorded rather than worked around. Three of its steps refuse a system that
+already holds what they create, and a shell recipe has no conditional and no way
+to tolerate a command's failure. The page now states the precondition, gives the
+destructive reset as the way to run it again, and names the gap underneath:
+=--continue-on-error= is a flag the argument parser knows and the script runner
+never reads.
+
+The capability duplication is resolved per verb. Four hand-written account-role
+verbs were exact duplicates of four on the generated authorization menu, same
+arguments and same effect, and are retired with their helpers. The service
+generated the suggested command strings naming the verb that was retired, so
+=ores_iam_generate_role_commands_fn= now names =authorization assign-role=, applied
+to the live database and read back. Four recipes follow. =permissions suggest=
+stays, with the reason recorded: its identifier is a hostname or a tenant id in
+one argument where the generated =suggest-role-commands= takes three separate
+ones, and the provisioning recipes call it in that form.
+
+** The iam exception
+
+The reason is rewritten to describe what the registry enforces and carries the
+measured surface rather than a count. The overlapping-registration half no longer
+describes anything; the open half is unchanged and is the half that matters.

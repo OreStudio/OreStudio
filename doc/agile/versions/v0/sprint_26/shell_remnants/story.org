@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9
+:END:
+#+title: Story: Clean up the ores.shell remnants
+#+description: The ores.shell clean-standard pass closed the component and recorded what it did not close. This story closes those four: the fourteen hand-written trading instrument units that generation supersedes, the three defects the pass found and only recorded in commit messages, and the iam S01 accepted exception whose reason the menu-ownership change made untrue.
+#+type: story
+#+level: s2
+#+filetags: :shell:cleanup:defect:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The shell holds no hand-written unit that generation supersedes, the three defects the clean-standard pass found are fixed rather than remembered, and every accepted exception that the menu-ownership change invalidated reads the way the code now behaves.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- The fourteen hand-written trading instrument units are gone, and every verb they answered is answered by a generated unit, or its removal is recorded with its reason.
+- accounts sessions answers against the live fleet, with the parse defect fixed at its source.
+- bootstrap_smoke.ores runs twice in a row without colliding on the tenants it creates.
+- The hand-written accounts verbs that duplicate a capability the generated authorization menu already carries are resolved, and the decision is recorded per verb.
+- The iam S01 accepted exception states what the registry now enforces, and check_registry_exceptions.py still passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2D2132C5-FEA1-4DD7-B936-1806964C23DF][Scaffold story: Clean up the ores.shell remnants]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:664F4EF8-4F93-4938-9D67-88729CACE86B][Close the ores.shell remnants]] | DONE | 2026-09-27 | 2026-09-27 | Initial task for: Clean up the ores.shell remnants |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+Merged as PR #2281, with all five of its checks green. The four pieces of work
+the ores.shell clean-standard pass recorded rather than closed are closed: eleven
+hand-written trading instrument units retired behind generated ones, the session
+listing's parse defect fixed at its source, the bootstrap smoke recipe's
+precondition stated, the account-role duplication resolved per verb with the
+service's own generator repointed, and the iam S01 exception reason rewritten to
+describe what the registry enforces.
+
+Two of the four are handled by recording rather than by a fix, and both say so
+where the next reader will look: four trading units need a model written before
+generation can supersede them, and a shell recipe cannot be idempotent while the
+language has no conditional and no per-command tolerance.

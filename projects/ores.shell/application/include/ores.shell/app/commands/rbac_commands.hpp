@@ -67,66 +67,6 @@ public:
     // Permissions Commands
     // =========================================================================
 
-    // =========================================================================
-    // Account-Role Assignment Commands
-    // =========================================================================
-
-    /**
-     * @brief Process an assign role request.
-     *
-     * Assigns a role to an account. Requires roles:assign permission.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Account ID UUID as a string.
-     * @param role_id Role ID UUID as a string.
-     */
-    static void process_assign_role(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    std::string account_id,
-                                    std::string role_id);
-
-    /**
-     * @brief Process a revoke role request.
-     *
-     * Revokes a role from an account. Requires roles:revoke permission.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Account ID UUID as a string.
-     * @param role_id Role ID UUID as a string.
-     */
-    static void process_revoke_role(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    std::string account_id,
-                                    std::string role_id);
-
-    /**
-     * @brief Process a get account roles request.
-     *
-     * Retrieves all roles assigned to a specific account.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Account ID UUID as a string.
-     */
-    static void process_get_account_roles(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          std::string account_id);
-
-    /**
-     * @brief Process a get account permissions request.
-     *
-     * Retrieves all effective permissions for a specific account.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Account ID UUID as a string.
-     */
-    static void process_get_account_permissions(std::ostream& out,
-                                                ores::nats::service::nats_client& session,
-                                                std::string account_id);
-
     /**
      * @brief Process a suggest role commands request.
      *

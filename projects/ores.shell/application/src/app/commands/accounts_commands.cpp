@@ -147,37 +147,10 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
             [&session](std::ostream& out) { process_logout(std::ref(out), std::ref(session)); },
             "Logout the current user");
 
-        accounts_menu.Insert(
-            "roles",
-            [&session](std::ostream& out, std::string account_id) {
-                rbac_commands::process_get_account_roles(
-                    std::ref(out), std::ref(session), std::move(account_id));
-            },
-            "List roles assigned to an account (account_id)");
-
-        accounts_menu.Insert(
-            "assign-role",
-            [&session](std::ostream& out, std::string account_id, std::string role_id) {
-                rbac_commands::process_assign_role(
-                    std::ref(out), std::ref(session), std::move(account_id), std::move(role_id));
-            },
-            "Assign a role to an account (account_id role_id | principal role_name)");
-
-        accounts_menu.Insert(
-            "revoke-role",
-            [&session](std::ostream& out, std::string account_id, std::string role_id) {
-                rbac_commands::process_revoke_role(
-                    std::ref(out), std::ref(session), std::move(account_id), std::move(role_id));
-            },
-            "Revoke a role from an account (account_id role_id | principal role_name)");
-
-        accounts_menu.Insert(
-            "permissions",
-            [&session](std::ostream& out, std::string account_id) {
-                rbac_commands::process_get_account_permissions(
-                    std::ref(out), std::ref(session), std::move(account_id));
-            },
-            "List effective permissions for an account (account_id)");
+        // The four account-role verbs this menu used to carry are retired:
+        // the generated authorization menu answers all four as
+        // get-account-roles, assign-role, revoke-role and
+        // get-account-permissions.
 
         // Session commands
         accounts_menu.Insert(
@@ -494,7 +467,10 @@ void accounts_commands::process_list_sessions(std::ostream& out,
     for (const auto& s : sessions) {
         out << "  Start: " << format_time(s.start_time);
         if (!s.end_time.empty()) {
-            const auto end = ores::platform::time::datetime::from_iso8601_utc(s.end_time);
+            // end_time is the column's text, which carries no UTC designator: the
+            // service writes it with to_db_string. from_iso8601_utc refuses that
+            // form, and the throw aborted the whole listing.
+            const auto end = ores::platform::time::datetime::from_db_string(s.end_time);
             out << " - End: " << format_time(end);
             const auto dur = std::chrono::duration_cast<std::chrono::seconds>(end - s.start_time);
             out << " (" << format_duration(dur) << ")";

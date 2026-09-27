@@ -20,6 +20,10 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "balance_guaranteed_swap_instrument_commands_tests.cpp"
+    "bond_instrument_commands_tests.cpp"
+    "callable_swap_instrument_commands_tests.cpp"
+    "cap_floor_instrument_commands_tests.cpp"
     "equity_accumulator_instrument_commands_tests.cpp"
     "equity_asian_option_instrument_commands_tests.cpp"
     "equity_barrier_option_instrument_commands_tests.cpp"
@@ -29,6 +33,7 @@ set(files
     "equity_position_instrument_commands_tests.cpp"
     "equity_swap_instrument_commands_tests.cpp"
     "equity_variance_swap_instrument_commands_tests.cpp"
+    "fra_instrument_commands_tests.cpp"
     "fx_accumulator_instrument_commands_tests.cpp"
     "fx_asian_forward_instrument_commands_tests.cpp"
     "fx_barrier_option_instrument_commands_tests.cpp"
@@ -36,11 +41,17 @@ set(files
     "fx_forward_instrument_commands_tests.cpp"
     "fx_vanilla_option_instrument_commands_tests.cpp"
     "fx_variance_swap_instrument_commands_tests.cpp"
+    "inflation_swap_instrument_commands_tests.cpp"
+    "knock_out_swap_instrument_commands_tests.cpp"
     "lifecycle_event_commands_tests.cpp"
     "main.cpp"
     "party_role_type_commands_tests.cpp"
+    "rpa_instrument_commands_tests.cpp"
+    "swaption_instrument_commands_tests.cpp"
+    "trade_commands_tests.cpp"
     "trade_id_type_commands_tests.cpp"
     "trade_identifier_commands_tests.cpp"
     "trade_party_role_commands_tests.cpp"
     "trade_type_commands_tests.cpp"
+    "vanilla_swap_instrument_commands_tests.cpp"
 )

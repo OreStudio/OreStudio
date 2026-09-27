@@ -41,21 +41,33 @@ std::string datetime::to_iso8601_utc(const std::chrono::system_clock::time_point
     return oss.str();
 }
 
-std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::string& str) {
+namespace {
 
+/**
+ * Parses a UTC timestamp carrying either separator.
+ *
+ * The designator is the one thing the two forms differ on: the wire form always
+ * states it, and a timestamp read back out of a text column never does, because
+ * to_db_string writes the form PostgreSQL returns and that form has none. A
+ * caller that must not accept an ambiguous local time requires it; a caller
+ * reading a column cannot.
+ */
+std::chrono::system_clock::time_point parse_utc_timestamp(const std::string& str,
+                                                          const bool designator_required,
+                                                          const char* const who) {
     if (str.empty())
-        throw std::invalid_argument("from_iso8601_utc: empty string");
+        throw std::invalid_argument(std::string(who) + ": empty string");
 
-    std::string clean;
-    if (str.back() == 'Z') {
-        clean = str.substr(0, str.size() - 1);
-    } else if (str.size() >= 6 && str.substr(str.size() - 6) == "+00:00") {
-        clean = str.substr(0, str.size() - 6);
-    } else if (str.size() >= 3 && str.substr(str.size() - 3) == "+00") {
-        clean = str.substr(0, str.size() - 3);
-    } else {
-        throw std::invalid_argument(
-            "from_iso8601_utc: missing UTC designator (Z, +00:00, or +00) in: " + str);
+    std::string clean = str;
+    if (clean.back() == 'Z') {
+        clean = clean.substr(0, clean.size() - 1);
+    } else if (clean.size() >= 6 && clean.substr(clean.size() - 6) == "+00:00") {
+        clean = clean.substr(0, clean.size() - 6);
+    } else if (clean.size() >= 3 && clean.substr(clean.size() - 3) == "+00") {
+        clean = clean.substr(0, clean.size() - 3);
+    } else if (designator_required) {
+        throw std::invalid_argument(std::string(who) +
+                                    ": missing UTC designator (Z, +00:00, or +00) in: " + str);
     }
 
     // PostgreSQL may insert a trailing space before the offset.
@@ -71,9 +83,19 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::stri
     ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
 
     if (ss.fail())
-        throw std::invalid_argument("from_iso8601_utc: failed to parse: " + str);
+        throw std::invalid_argument(std::string(who) + ": failed to parse: " + str);
 
     return time_utils::to_time_point_utc(tm);
+}
+
+}
+
+std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::string& str) {
+    return parse_utc_timestamp(str, true, "from_iso8601_utc");
+}
+
+std::chrono::system_clock::time_point datetime::from_db_string(const std::string& str) {
+    return parse_utc_timestamp(str, false, "from_db_string");
 }
 
 std::string datetime::to_db_string(const std::chrono::system_clock::time_point& tp) {

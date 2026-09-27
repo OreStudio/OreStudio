@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 104DDBF1-12E8-435F-90F0-A701AAD9078F
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.fra_instrument
 #+description: Codegen entity model for the trading =fra_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

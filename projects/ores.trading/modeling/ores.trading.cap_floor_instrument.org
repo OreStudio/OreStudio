@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2446DB5D-CDEF-46C8-A8F8-0829CBB733E2
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.cap_floor_instrument
 #+description: Codegen entity model for the trading =cap_floor_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

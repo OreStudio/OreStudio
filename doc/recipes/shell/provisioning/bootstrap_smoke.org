@@ -25,8 +25,30 @@ Create the initial =super_admin=, two tenants (=acme= and =example=),
 one account in each, and print the role-grant commands each account
 needs. An error-free run leaves a system two admins can log into.
 
-Expectations: services up, fresh bootstrap-mode database. =connect=
-takes the endpoint from =$ORES_NATS_URL=.
+Expectations: services up, and a database that has not been bootstrapped
+yet. =connect= takes the endpoint from =$ORES_NATS_URL=.
+
+** Running it a second time
+
+The recipe is not repeatable, and it cannot be made so from inside a
+recipe. Three of its steps refuse a system that already holds what they
+create: =bootstrap= refuses a second initial administrator, and each
+=tenants add= and =accounts create= refuses a code or a username it
+already holds. A shell recipe has no conditional and no way to tolerate
+one command's failure, so no recipe can ask whether a row is already
+there before creating it or carry on past the refusal.
+
+To run it again, reset the system first, which is destructive and
+returns the database to the state this recipe expects:
+
+#+begin_src ores-shell :exports none
+reset reset-system
+#+end_src
+
+A recipe that needs a conditional is a gap in the script language rather
+than in this document; the tolerance a caller might reach for,
+=--continue-on-error=, is a flag the argument parser knows and the
+script runner never reads.
 
 #+name: bootstrap-smoke
 #+begin_src ores-shell :exports none

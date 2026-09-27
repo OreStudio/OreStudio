@@ -105,7 +105,7 @@ begin
 
     -- Generate commands for each role with description as comment
     return query
-    select format('accounts assign-role %s %s  # %s', v_account_id, r.id, r.name)
+    select format('authorization assign-role %s %s  # %s', v_account_id, r.id, r.name)
     from ores_iam_roles_tbl r
     where r.valid_to = ores_utility_infinity_timestamp_fn()
     order by r.name;

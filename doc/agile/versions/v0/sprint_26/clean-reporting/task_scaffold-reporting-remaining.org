@@ -8,7 +8,7 @@
 #+filetags: :clean-reporting:sprint_26:v0:
 #+owner: marco
 #+branch: chore/scaffold-reporting-remaining
-#+pr:
+#+pr: 2263
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2263][#2263]] | [reporting] Scaffold the remaining clean-up as seven tasks |
 
 * Review
 

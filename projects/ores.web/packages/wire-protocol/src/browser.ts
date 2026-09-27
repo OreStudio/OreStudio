@@ -53,13 +53,21 @@ export type { Account, AccountPage, AccountType, ActiveParty, PartySummary } fro
 
 export {
     apiErrorSchema,
+    bootstrapStatusSchema,
     loginResultSchema,
     loginSuccessSchema,
     partyChoiceSchema,
     sessionViewSchema,
     sseEnvelopeSchema,
 } from './contracts.js';
-export type { ApiError, LoginResult, LoginSuccess, PartyChoice, SessionView } from './contracts.js';
+export type {
+    ApiError,
+    BootstrapStatus,
+    LoginResult,
+    LoginSuccess,
+    PartyChoice,
+    SessionView,
+} from './contracts.js';
 
 // Subjects, so a browser-side module can name one without importing the
 // transport that would know how to reach it.

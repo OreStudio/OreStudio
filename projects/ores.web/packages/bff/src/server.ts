@@ -32,6 +32,7 @@ import {
     NatsTransport,
     OresClient,
     SUBJECTS,
+    bootstrapStatusSchema,
     changeReasonPageSchema,
     getImagesRequestSchema,
     listImagesRequestSchema,
@@ -236,6 +237,28 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     void server.register(cookie);
 
     server.get('/api/health', async () => ({ status: 'ok' }));
+
+    /**
+     * Whether the deployment still needs its first administrator.
+     *
+     * Unauthenticated on purpose: the interface has to decide what to render
+     * before it can offer a sign-in, and a deployment in bootstrap mode has
+     * nobody to sign in as. The sign-in route refuses in the same situation, so
+     * this is what lets the interface not offer the form at all rather than
+     * answer a credential with a refusal.
+     *
+     * One connection per request, closed in both paths. It carries no session,
+     * so there is nothing to keep alive.
+     */
+    server.get('/api/bootstrap', async () => {
+        const { client, connect } = createClient();
+        try {
+            await connect();
+            return bootstrapStatusSchema.parse(await client.bootstrapStatus());
+        } finally {
+            await client.close().catch(() => undefined);
+        }
+    });
 
     /**
      * What the interface needs to render itself.

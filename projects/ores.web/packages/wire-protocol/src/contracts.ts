@@ -81,6 +81,20 @@ export const loginResultSchema = z.discriminatedUnion('outcome', [
 export type LoginResult = z.infer<typeof loginResultSchema>;
 
 /**
+ * Whether the deployment is still waiting for its first administrator.
+ *
+ * The interface asks this before it offers a sign-in, because a deployment in
+ * bootstrap mode has no accounts to sign in with and a rejected credential
+ * would send somebody hunting for a password that cannot exist. The message is
+ * the server's; the interface may state the situation in its own words.
+ */
+export const bootstrapStatusSchema = z.object({
+    isInBootstrapMode: z.boolean(),
+    message: z.string(),
+});
+export type BootstrapStatus = z.infer<typeof bootstrapStatusSchema>;
+
+/**
  * Where to connect, and who to connect as.
  *
  * The endpoint comes from the connections store rather than from this server's

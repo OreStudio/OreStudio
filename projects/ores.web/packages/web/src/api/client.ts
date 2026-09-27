@@ -20,8 +20,10 @@
  */
 
 import {
+    bootstrapStatusSchema,
     loginResultSchema,
     sessionViewSchema,
+    type BootstrapStatus,
     type LoginResult,
     type SessionView,
 } from '@ores/wire-protocol/browser';
@@ -43,6 +45,17 @@ export interface Credentials {
 }
 
 export const api = {
+    /**
+     * Whether the deployment still needs its first administrator.
+     *
+     * Asked before a session exists, because it decides what the interface can
+     * offer: while the flag is set there are no accounts, so a sign-in form
+     * would only be a door with nothing behind it.
+     */
+    async bootstrapStatus(): Promise<BootstrapStatus> {
+        return bootstrapStatusSchema.parse(await request('/api/bootstrap', { method: 'GET' }));
+    },
+
     async login(credentials: Credentials): Promise<LoginResult> {
         const payload = await request('/api/session', {
             method: 'POST',

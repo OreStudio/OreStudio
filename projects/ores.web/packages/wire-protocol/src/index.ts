@@ -156,6 +156,7 @@ export type { AuthenticatedCaller } from './account-operations.js';
 // these definitions, so the network boundary is checked at runtime.
 export {
     apiErrorSchema,
+    bootstrapStatusSchema,
     loginRequestSchema as httpLoginRequestSchema,
     loginResultSchema,
     loginSuccessSchema,
@@ -164,4 +165,11 @@ export {
     sessionViewSchema,
     sseEnvelopeSchema,
 } from './contracts.js';
-export type { ApiError, LoginResult, LoginSuccess, PartyChoice, SessionView } from './contracts.js';
+export type {
+    ApiError,
+    BootstrapStatus,
+    LoginResult,
+    LoginSuccess,
+    PartyChoice,
+    SessionView,
+} from './contracts.js';

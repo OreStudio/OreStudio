@@ -266,6 +266,12 @@ const pt: SourceCatalogue = {
         entities: 'entidades',
         planned: 'planeadas',
         whatIs: 'O que existe aqui',
+        title: 'Sessão iniciada',
+        next: 'Os percursos são os ecrãs que enchem esta estrutura. Chegam um grupo de cada vez.',
+        username: 'Conta',
+        email: 'Email',
+        tenant: 'Inquilino',
+        party: 'Parte',
     },
 
     component: {
@@ -431,6 +437,23 @@ const pt: SourceCatalogue = {
         search: 'Pesquisar imagens',
         none: 'Sem imagem',
         noneAvailable: 'Não existem imagens disponíveis neste inquilino.',
+    },
+
+    shell: {
+        session: '{username} · {tenant}',
+    },
+
+    setup: {
+        title: 'Configurar esta instalação',
+        bootstrapMode:
+            'Esta instalação ainda não tem administrador. Está em modo de arranque, por isso não há nada para onde iniciar sessão.',
+        next: 'Criar o primeiro administrador é o que inicia o percurso de configuração. Enquanto esse percurso não existir, esta página é onde o navegador para.',
+    },
+
+    gate: {
+        unreachable:
+            'O servidor não respondeu, por isso a interface não sabe se esta instalação ainda precisa de ser configurada. {reason}',
+        retry: 'Tentar de novo',
     },
 
     journey: {

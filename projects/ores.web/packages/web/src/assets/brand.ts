@@ -22,11 +22,15 @@
 /**
  * The brand artwork.
  *
- * The screens that use it are the shell header and the first run journey's
- * welcome step, so nothing imports this module yet.
+ * The two images the main site uses. A screen reaches them by importing this
+ * module rather than by naming a file path, so the artwork moves in one place.
  */
 
 import splash from './ore-studio-splash.png';
+import mark from './ore-studio-icon.png';
+
+/** The header's mark, on every shell. */
+export const headerMark: string = mark;
 
 /**
  * The landing page's hero image.

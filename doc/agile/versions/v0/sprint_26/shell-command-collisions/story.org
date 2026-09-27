@@ -21,11 +21,11 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Implemented and open for review as PR #2272. The root claims one name per menu, the four collision names are one menu each, and the gate holds the invariant the runtime check reads. |
+| Now           | Nothing. |
 | Waiting on    | Review of PR #2272.                    |
-| Next          | Take the PR through its review round, then close the story. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:560DC5AA-C067-4ECA-B12B-1947E89D0319][Scaffold story: Stop ores.shell menus from silently shadowing each other]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:FBFF4403-2636-4D04-9BFA-7146B7D39B60][Implement Stop ores.shell menus from silently shadowing each other]] | STARTED | 2026-09-27 | | Initial task for: Stop ores.shell menus from silently shadowing each other |
+| [[id:FBFF4403-2636-4D04-9BFA-7146B7D39B60][Implement Stop ores.shell menus from silently shadowing each other]] | DONE | 2026-09-27 | 2026-09-27 | Initial task for: Stop ores.shell menus from silently shadowing each other |
 
 * Decisions
 
@@ -71,4 +71,26 @@ that passes a separate prompt, which is what holds the two together.
 
 * Out of scope
 
--
+- The twenty generated units in refdata and synthetic that carry their own
+  components' pending model drift. They do not claim their names yet, and the
+  gate covers them until their next regeneration brings the seam with it.
+
+
+* Result
+
+Merged as PR #2272, all five checks green. One owner per menu name is enforced
+at startup by shell_root_menu and held earlier by check_shell_menu_collisions.py,
+and a second unit contributes verbs to a menu it does not own rather than
+registering a second one. The reported symptom is gone: the help inside accounts
+listed five verbs and hid the seventeen the hand-written unit answered, and it
+now lists all twenty-two.
+
+The census the story carried was wrong in two places and was corrected before any
+edit: four menus were registered twice rather than five, because the dq and
+reporting collision went with the generator fix, and seven verbs were dead rather
+than eight, because permissions get was counted and never existed.
+
+Two further defects were forced by the guard and fixed: page-size was registered
+twice in one file and answered by falling through on arity, and the provisioning
+smoke recipe called the generated tenants add with the hand-written
+five-argument form and an invalid tenant type.

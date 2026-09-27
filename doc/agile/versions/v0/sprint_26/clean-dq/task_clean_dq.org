@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
-#+branch: feature/dq-clean-batch-4
-#+pr: 2303
+#+branch: feature/dq-clean-batch-5
+#+pr: 2304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -30,9 +30,9 @@ This is pass 2. Pass 1, [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the han
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Three defect batches have landed, #2286, #2291 and #2296. Of the 49 items, V07 is fixed and proven, V08's survey is recorded, M09 is fixed for this component, and B06 gained a measured second finding. What is left is H01, V03 and V04, and M08 which has its own task. |
+| Now          | Three defect batches have landed, #2286, #2291 and #2296. Of the 49 items, H01 now passes with both diagram passes run and the audit record written, V07 is fixed and proven, V08's survey is recorded, M09 is fixed for this component, and B06 gained a measured second finding. What is left is V03 and V04, which need a fleet, M08 which has its own task, and V08's coverage list which is its own work. |
 | Waiting on   | Nothing for the fixed items. V03 and V04 need a running fleet, which this sandbox cannot start: =systemctl --user= cannot reach the user manager, so =compass services start= fails and bearings reports 24 units missing. |
-| Next         | Run V03 and V04 where the fleet runs, then take H01, the diagram's manual pass and its audit record. Pass 1's artefact tail is separate and still open. |
+| Next         | Run V03 and V04 where the fleet runs. Then the two things this pass deliberately left: the generator gate that would keep every diagram current, and pass 1's seven unmodelled artefact tables. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -95,7 +95,7 @@ record each item's result in the table below.
 | W04 | Not assessed. | — |
 | S01 | Fix. =badge_severity= and =subject_area= bound no profile at all, which withheld their units, tests and recipes; both bind =simple-lookup= now. =publication= is bound to =readonly-timeseries=, which enables no shell facet, but its surface is a full =list=/=get=/=get_many=/=put=/=put_many=/=delete=/=delete_many= and so it needs one; its model states that single override, as =ores.iam.session= does. All three have generated units, generated tests and recipes. | =projects/ores.shell/dq/=; =dq_commands.cpp=; =check_shell_menu_collisions.py= |
 | S02 | Fix at the root cause. Ten command groups had a unit but no recipe, and the reason no run had ever produced one is a codegen gate: the check that drops protocol-dependent facets asked whether the *run's* address included =ores.cpp.protocol= rather than whether the *model* enables it, and a recipe lives in the =ores.doc= space, so every doc-only run emptied itself. The gate now asks the model. The ten recipes are regenerated with their library scripts and the inventory, and the tree-wide run the fix enables also refreshed two =ores.reporting= recipes whose optional-column sentinel had drifted to =-= unseen, so the gate is green across the registry rather than only for dq. | =projects/ores.codegen/src/codegen/generate.py=; =doc/recipes/shell/=; =check_component_drift.py --all --dry-run= — "0 file(s)" |
-| H01 | Open, with the automated half proven and the manual pass scoped. The generator is =build/scripts/generate_component_puml.py=, tracked but run by no gate: it reads a component's headers and rewrites everything above the manual sentinel. Running it for the three dq parts changes all three, which shows the committed diagrams are far behind the code: api 208 boxes to 641 and 1042 lines to 3118, core 88 to 140, service 4 to 7. It also removes the retired protocol names, so the api diagram stops drawing =save_catalog_request= and its siblings. Nothing committed it because nothing runs it and =ores.plantuml= resolves no units, so the drift check never looks. The manual pass is the remaining work and needs a decision first: the regenerated api diagram is 641 boxes, 610 of them messaging structs, which is a skeleton rather than a diagram, so scoping it is the owner's call before the two passes can be finished. Rendered and read at both sizes. One precedent bears on how strictly to read this: =ores.iam= passed the standard with no =.puml=, no image and no =Diagram= section in its overview, so in practice the item has been applied leniently and dq already carries more than that. The gap here is the stale automated half, the empty manual section and the missing audit record. | =build/scripts/generate_component_puml.py --project ores.dq.api --dry-run= (its output is truncated; run without =--dry-run= to see the whole change); the rendered =ores.dq.api.png= and =ores.dq.service.png= read; =doc/agile/product_backlog/inbox/the_component_class_diagram_generator_is_tracked_b.org= |
+| H01 | Pass. Both passes were run for the first time and the audit record is written in its own section below. The automated pass is =build/scripts/generate_component_puml.py=, which had never been run against dq: it takes api from 208 boxes to 641, core 88 to 140 and service 4 to 7, and stops the api diagram drawing =save_catalog_request= and the other names the protocol migration retired. The manual pass was empty in all three and now carries the relationships the automated pass cannot see: 183 protocol-to-domain associations in api, 56 service-to-repository in core, 2 in service, using =*--= for a data member and =..>= for a signature-only type. All three render clean and the images were read at full size. Recorded as a finding rather than fixed: nothing runs the generator, so running it tree-wide changes 70 of 95 component diagrams and every earlier clean pass accepted a stale or absent one. | =build/scripts/generate_component_puml.py=; =projects/ores.dq/{api,core,service}/modeling/*.puml=; the rendered images read; =* Component Architecture Audit record= below; the generator capture |
 | H02 | Partial. The five constants that name a retired taxonomy are deleted and no commented-out code remains anywhere in the component (a sweep of all six source languages finds none). The dead-code census as a whole is pass 1's. | =change_reason_codes.hpp=; =change_reason_constants.hpp=; the sweep in H03 |
 | H03 | Fix. The component's only end-of-line comment (=publish_service.cpp=, inside a =boost::adjacency_list= template argument list) moves above the code, and the seven comments that narrated the migration history are restated as statements about the code as it is. A re-sweep finds zero remaining. | =projects/ores.dq/core/src/service/publish_service.cpp=; =projects/ores.dq/core/src/messaging/registrar.cpp=; =projects/ores.dq/service/tests/config_parser_tests.cpp= |
 | H04 | Not assessed. | — |
@@ -108,6 +108,89 @@ record each item's result in the table below.
 | V06 | Decision, for the review. dq is listed in =COMPONENTS_UNDER_TEST= from #2286, and this pass found items that are open rather than passed (H01, V03 and V04, plus M08 which has its own task). The entry is kept, because withdrawing it switches every gate off for the component, and each open item is recorded above rather than hidden. The review decides: accept them as exceptions, or withdraw the entry until they close. | =component_registry.py= |
 | V07 | Fix, and proven the way the item asks. A census of all 551 dq test cases found 71 that asserted only a non-throw, a container length, a truthiness or one run against another, in four uniform families: =write_single_X= and =write_multiple_X= (only =CHECK_NOTHROW=), =read_latest_X= (only emptiness and length), =read_all_X_versions= (only a length), =read_nonexistent_X= (=size() == 0=, which also passes when the lookup ignores the key), plus the generator and parser cases. All 71 now assert a value the test itself set: the write cases read their row back by its natural key and compare two fields, the collection cases assert each written row is present by key with a matching field, the version cases assert the written descriptions are present, the nonexistent cases write a real row first so a key-ignoring lookup fails, and the generator cases assert the two literals their =*_produces_valid_instance= sibling pins, for every instance. Re-run census: 0 of 551. Proven by stubbing: with =catalog_repository::write= made a no-op on both overloads, all seven catalog repository cases fail (=write_single=, =write_multiple=, =read_latest=, =read_latest_by_name=, =read_all_versions=, =read_nonexistent=, =roundtrip=); before the fix the two write cases passed under that stub. | =projects/ores.codegen/scripts/survey_vacuous_tests.py --component dq=; =compass test run -R "ores.dq"= — three suites, all pass; the stub run recorded on this task |
 | V08 | Findings recorded, which is what the item asks for. Static include reachability over 331 source files, seeded from the 79 test sources and following each reachable header's implementation: 154 touched, 177 not. Untouched by directory: =messaging= 68 (every generated registrar and history-provider registrar, plus =registrar.cpp=, =publish_from_dq_handler.cpp= and the service's 20 event registrars), =domain= 42 (the =*_table_io.cpp= family above all), =repository= 24, =presentation= 19 (the history field mappers), =service= 13, =generators= 8, =app= 2 and =main.cpp=. The method is static reachability, not branch coverage, so a path that only runs against a live NATS server is missed and "touched" does not mean exercised. This list is the coverage work item. | =projects/ores.codegen/scripts/survey_test_reachability.py --component dq --list= |
+
+* Component Architecture Audit record
+
+Run on 2026-09-27 against the tree at =feature/dq-clean-batch-5=, for H01.
+The audit checks a component's shape, folders, naming, tests, documentation
+and diagrams; the items that own the middle four are recorded above, and
+this section is the record the item asks for.
+
+** Shape and folders
+
+=ores.dq= is a *composite* of three parts, each with =include/=, =src/= and
+=tests/=, and each with its own =component_overview.org= and diagram. The
+root carries the component model and the group index. No stray artefact was
+found and no folder needed moving.
+
+** Naming, comments, documentation, tests
+
+- Comments: H03, fixed. The component's one end-of-line comment and its
+  seven narration comments were corrected, and a sweep of all six source
+  languages finds no commented-out code.
+- Documentation: H05, fixed. =soci= became =sqlgen=, and the root index is
+  recorded as a group-level exemption.
+- Tests: V07 fixed and V08 surveyed. 0 of 551 cases are vacuous; 154 of 331
+  source files are reached by a test, and the untouched list is the coverage
+  work item recorded on this task.
+
+** Diagrams
+
+=ores.dq.api=, =ores.dq.core= and =ores.dq.service= each carry a =.puml=
+with its rendered =.png= beside it. Both passes were run for the first time
+in this pass:
+
+- *Automated.* =build/scripts/generate_component_puml.py= rewrites
+  everything above the manual sentinel from the component's headers. It had
+  never been run against dq, so the committed diagrams were far behind:
+  api 208 boxes to 641, core 88 to 140, service 4 to 7. It also stops the api
+  diagram drawing =save_catalog_request= and the other names the protocol
+  migration retired.
+- *Manual.* Every manual section was empty. Each now carries the
+  relationships the automated pass cannot see: 183 protocol-to-domain
+  associations in api, 56 service-to-repository associations in core, and 2
+  in service, using =*--= for a data member and =..>= for a type that
+  appears only in a signature, per the class-diagram conventions. Types from
+  other components are left out.
+- *Rendered and read.* All three render clean with PlantUML and the images
+  were read at full size, not merely regenerated.
+
+*Finding, recorded not fixed.* Nothing runs the generator, so a diagram
+cannot stay current: running it across the tree changes 70 of 95 component
+diagrams, and every component that passed the clean standard did so with a
+stale or absent one. The gate is the fix, and it needs the tree regenerated
+first. Filed as a capture.
+
+** Complexity
+
+=lizard= over =projects/ores.dq/*/include= and =projects/ores.dq/*/src=.
+Generated sources are 702 of the component's 786 C++ files, so these are a
+template signal rather than a component signal, as the audit says.
+
+| Part | NLOC | Functions | Avg CCN |
+|------+------+-----------+---------|
+| api | 8061 | 214 | 1.4 |
+| core | 30394 | 1580 | 2.5 |
+| service | 1016 | 37 | 1.2 |
+| *total* | 39471 | 1831 | 2.4 |
+
+=ores.shell.dq=, the shell adapter, is 14508 NLOC over 325 functions at an
+average CCN of 6.7, which is the highest in the component's surface.
+
+Top file by average CCN: =core/src/service/publish_service.cpp=, 7.4 average
+over 9 functions and 2987 NLOC. Two functions cross lizard's warning
+threshold and are recorded as findings rather than touched here:
+=publish_service::resolve_publication_order= (CCN 18) and
+=report_definition_template_handler::list= (CCN 17). Both are hand-written.
+
+** Triage
+
+- *Pass.* Shape, folders, naming, comments, documentation, tests, diagrams.
+- *Trivial, fixed here.* The stale diagrams and their empty manual sections,
+  the =soci= dependency line, the retired-topic constants.
+- *Finding, record only.* The two complexity hotspots above; the
+  generator having no gate; the seven unmodelled artefact tables, which
+  belong to pass 1.
 
 * Measurements
 
@@ -154,6 +237,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2304][#2304]] | [dq] Pass H01: run both diagram passes and write the architecture audit |
 | [[https://github.com/OreStudio/OreStudio/pull/2303][#2303]] | [agile] Correct the dq H01 finding: the diagram generator exists |
 | [[https://github.com/OreStudio/OreStudio/pull/2302][#2302]] | [dq] Remove the model properties that name the retired message types |
 | [[https://github.com/OreStudio/OreStudio/pull/2300][#2300]] | [codegen] Add the vacuous-test and reachability survey tools |
@@ -171,6 +255,10 @@ via its "Verifies task" field.
 * Result
 
 The task is *not* complete, and this section says so rather than closing it. Three batches have landed, #2286, #2291 and #2296, and the item table above records each item's result with the command or file that proves it.
+
+*Landed on =feature/dq-clean-batch-5=*:
+
+- *H01 passes.* Both diagram passes were run for the first time. The automated pass had never been run against dq, so the committed diagrams were far behind; the manual sections were empty and now carry 241 relationships the automated pass cannot see. All three diagrams render clean and were read at full size. The audit record, including the lizard complexity measure, is in its own section above.
 
 *Landed in the batch on =feature/dq-clean-batch-4=*:
 

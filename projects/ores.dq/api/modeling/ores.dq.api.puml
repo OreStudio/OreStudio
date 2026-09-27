@@ -25,17 +25,31 @@ namespace ores #F2F2F2 {
     namespace dq #F2F2F2 {
         namespace domain #F2F2F2 {
             class artefact_type <<struct>> {
-                +tenant_id : string
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : optional<string>
                 +artefact_table : optional<string>
                 +target_table : optional<string>
-                +populate_function : optional<string>
+                +target_subject : optional<string>
                 +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class audit_record <<struct>> {
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
             }
             class badge_definition <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
@@ -50,8 +64,21 @@ namespace ores #F2F2F2 {
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
+            class badge_mapping <<struct>> {
+                +version : int
+                +tenant_id : string
+                +code_domain_code : string
+                +entity_code : string
+                +badge_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
             class badge_severity <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
@@ -64,18 +91,19 @@ namespace ores #F2F2F2 {
             }
             class catalog <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +name : string
                 +description : string
                 +owner : optional<string>
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class change_reason <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +description : string
                 +category_code : string
@@ -85,22 +113,25 @@ namespace ores #F2F2F2 {
                 +requires_commentary : bool
                 +display_order : int
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class change_reason_category <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class code_domain <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
@@ -113,42 +144,46 @@ namespace ores #F2F2F2 {
             }
             class coding_scheme <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +authority_type : string
                 +subject_area_name : string
                 +domain_name : string
-                +uri : optional<string>
+                +uri : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class coding_scheme_authority_type <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class data_domain <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +name : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class dataset <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +code : string
                 +catalog_name : optional<string>
@@ -168,23 +203,24 @@ namespace ores #F2F2F2 {
                 +as_of_date : chrono::system_clock::time_point
                 +ingestion_timestamp : chrono::system_clock::time_point
                 +license_info : optional<string>
-                +artefact_type : optional<string>
+                +artefact_type : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class dataset_bundle <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +code : string
                 +name : string
                 +description : string
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class dataset_bundle_member <<struct>> {
@@ -195,9 +231,9 @@ namespace ores #F2F2F2 {
                 +display_order : int
                 +optional : bool
                 +modified_by : string
+                +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
-                +performed_by : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class dataset_dependency <<struct>> {
@@ -211,11 +247,12 @@ namespace ores #F2F2F2 {
             }
             class fsm_state <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +machine_id : boost::uuids::uuid
                 +name : string
-                +is_initial : bool
-                +is_terminal : bool
+                +is_initial : int
+                +is_terminal : int
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -224,64 +261,111 @@ namespace ores #F2F2F2 {
             }
             class fsm_transition <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +machine_id : boost::uuids::uuid
                 +from_state_id : optional<boost::uuids::uuid>
                 +to_state_id : boost::uuids::uuid
                 +name : string
-                +guard_function : string
+                +guard_function : optional<string>
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
+            class lei_entity <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +lei : string
+                +entity_legal_name : string
+                +entity_entity_category : string
+                +entity_entity_sub_category : optional<string>
+                +entity_entity_status : string
+                +entity_legal_form_entity_legal_form_code : optional<string>
+                +entity_legal_form_other_legal_form : optional<string>
+                +entity_legal_jurisdiction : optional<string>
+                +entity_legal_address_first_address_line : optional<string>
+                +entity_legal_address_city : optional<string>
+                +entity_legal_address_region : optional<string>
+                +entity_legal_address_country : string
+                +entity_legal_address_postal_code : optional<string>
+                +entity_headquarters_address_first_address_line : optional<string>
+                +entity_headquarters_address_city : optional<string>
+                +entity_headquarters_address_region : optional<string>
+                +entity_headquarters_address_country : optional<string>
+                +entity_headquarters_address_postal_code : optional<string>
+                +entity_entity_creation_date : optional<chrono::system_clock::time_point>
+                +registration_initial_registration_date : optional<chrono::system_clock::time_point>
+                +registration_last_update_date : optional<chrono::system_clock::time_point>
+                +registration_next_renewal_date : optional<chrono::system_clock::time_point>
+                +registration_registration_status : optional<string>
+                +entity_transliterated_name_1 : optional<string>
+                +entity_transliterated_name_1_type : optional<string>
+            }
+            class lei_relationship <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +relationship_start_node_node_id : string
+                +relationship_start_node_node_id_type : string
+                +relationship_end_node_node_id : string
+                +relationship_end_node_node_id_type : string
+                +relationship_relationship_type : string
+                +relationship_relationship_status : string
+                +relationship_period_1_start_date : optional<chrono::system_clock::time_point>
+                +relationship_period_1_end_date : optional<chrono::system_clock::time_point>
+                +registration_initial_registration_date : optional<chrono::system_clock::time_point>
+                +registration_last_update_date : optional<chrono::system_clock::time_point>
+                +registration_registration_status : optional<string>
+                +registration_validation_sources : optional<string>
+            }
             class methodology <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +name : string
                 +description : string
-                +logic_reference : optional<string>
-                +implementation_details : optional<string>
+                +logic_reference : string
+                +implementation_details : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class nature_dimension <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class origin_dimension <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
             class publication <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
-                +tenant_id : string
                 +dataset_id : boost::uuids::uuid
                 +dataset_code : string
-                +mode : publication_mode
+                +mode : string
                 +target_table : string
-                +records_inserted : uint64_t
-                +records_updated : uint64_t
-                +records_skipped : uint64_t
-                +records_deleted : uint64_t
+                +records_inserted : int64_t
+                +records_updated : int64_t
+                +records_skipped : int64_t
+                +records_deleted : int64_t
                 +published_by : string
                 +published_at : chrono::system_clock::time_point
             }
@@ -302,676 +386,1862 @@ namespace ores #F2F2F2 {
                 +success : bool
                 +error_message : string
             }
+            class report_definition <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +name : string
+                +description : optional<string>
+                +report_type : string
+                +schedule_expression : string
+                +concurrency_policy : string
+                +display_order : int
+            }
             class subject_area <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +name : string
                 +domain_name : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
+            }
+            class synthetic_fx_spot_config <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +name : string
+                +description : optional<string>
+                +enabled : bool
+                +auto_start : bool
+                +base_currency_code : string
+                +quote_currency_code : string
+                +gmm_initial_price : double
+                +ticks_per_hour : int
+                +process_type : string
+                +price_source : string
+                +vintage_source : optional<string>
+                +vintage_date : optional<string>
             }
             class treatment_dimension <<struct>> {
                 +version : int
-                +tenant_id : string
+                +tenant_id : utility::uuid::tenant_id
                 +code : string
                 +name : string
                 +description : string
                 +modified_by : string
-                +change_commentary : string
                 +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
         }
-        namespace eventing #F2F2F2 {
-        }
         namespace messaging #F2F2F2 {
-            class get_badge_definitions_request <<struct>> {
-            }
-            class get_badge_definitions_response <<struct>> {
-                +definitions : vector<domain::badge_definition>
-            }
-            class save_badge_definition_request <<struct>> {
-                +definition : domain::badge_definition
-            }
-            class save_badge_definition_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_badge_definition_result <<struct>> {
+            class artefact_type_key <<struct>> {
                 +code : string
-                +success : bool
-                +message : string
+            }
+            class artefact_type_write <<struct>> {
+                +code : string
+                +name : string
+                +description : optional<string>
+                +artefact_table : optional<string>
+                +target_table : optional<string>
+                +target_subject : optional<string>
+                +display_order : int
+            }
+            class artefact_type_change <<struct>> {
+                +write : artefact_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class artefact_type_removal <<struct>> {
+                +key : artefact_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class artefact_type_lookup <<struct>> {
+                +key : artefact_type_key
+                +artefact_type : optional<ores::dq::domain::artefact_type>
+            }
+            class artefact_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : artefact_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class artefact_type_version_key <<struct>> {
+                +artefact_type : artefact_type_key
+                +version : uint32_t
+            }
+            class artefact_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_artefact_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_artefact_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +types : vector<ores::dq::domain::artefact_type>
+                +total : uint64_t
+            }
+            class get_artefact_type_request <<struct>> {
+                +key : artefact_type_key
+            }
+            class get_artefact_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +artefact_type : optional<ores::dq::domain::artefact_type>
+            }
+            class get_many_artefact_types_request <<struct>> {
+                +keys : vector<artefact_type_key>
+            }
+            class get_many_artefact_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<artefact_type_lookup>
+            }
+            class put_artefact_type_request <<struct>> {
+                +change : artefact_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_artefact_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +artefact_type : ores::dq::domain::artefact_type
+            }
+            class put_many_artefact_types_request <<struct>> {
+                +changes : vector<artefact_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_artefact_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +types : vector<ores::dq::domain::artefact_type>
+            }
+            class delete_artefact_type_request <<struct>> {
+                +removal : artefact_type_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_artefact_type_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_artefact_types_request <<struct>> {
+                +removals : vector<artefact_type_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_artefact_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_artefact_type_versions_request <<struct>> {
+                +key : artefact_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<artefact_type_versions_filter>
+            }
+            class list_artefact_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::artefact_type>
+                +total : uint64_t
+            }
+            class get_artefact_type_version_request <<struct>> {
+                +key : artefact_type_version_key
+            }
+            class get_artefact_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::artefact_type
+            }
+            class badge_definition_key <<struct>> {
+                +code : string
+            }
+            class badge_definition_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +background_colour : string
+                +text_colour : string
+                +severity_code : string
+                +css_class : string
+                +display_order : int
+            }
+            class badge_definition_change <<struct>> {
+                +write : badge_definition_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class badge_definition_removal <<struct>> {
+                +key : badge_definition_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class badge_definition_lookup <<struct>> {
+                +key : badge_definition_key
+                +badge_definition : optional<ores::dq::domain::badge_definition>
+            }
+            class badge_definition_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : badge_definition_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class badge_definition_version_key <<struct>> {
+                +badge_definition : badge_definition_key
+                +version : uint32_t
+            }
+            class badge_definition_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_badge_definitions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_badge_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +definitions : vector<ores::dq::domain::badge_definition>
+                +total : uint64_t
+            }
+            class get_badge_definition_request <<struct>> {
+                +key : badge_definition_key
+            }
+            class get_badge_definition_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_definition : optional<ores::dq::domain::badge_definition>
+            }
+            class get_many_badge_definitions_request <<struct>> {
+                +keys : vector<badge_definition_key>
+            }
+            class get_many_badge_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<badge_definition_lookup>
+            }
+            class put_badge_definition_request <<struct>> {
+                +change : badge_definition_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_badge_definition_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_definition : ores::dq::domain::badge_definition
+            }
+            class put_many_badge_definitions_request <<struct>> {
+                +changes : vector<badge_definition_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_badge_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +definitions : vector<ores::dq::domain::badge_definition>
             }
             class delete_badge_definition_request <<struct>> {
-                +codes : vector<string>
+                +removal : badge_definition_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_badge_definition_response <<struct>> {
-                +results : vector<delete_badge_definition_result>
+                +result : ores::utility::domain::result
             }
-            class get_badge_definition_history_request <<struct>> {
-                +code : string
+            class delete_many_badge_definitions_request <<struct>> {
+                +removals : vector<badge_definition_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_badge_definition_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +versions : vector<domain::badge_definition>
+            class delete_many_badge_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
             }
-            class badge_mapping <<struct>> {
+            class list_badge_definition_versions_request <<struct>> {
+                +key : badge_definition_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<badge_definition_versions_filter>
+            }
+            class list_badge_definition_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::badge_definition>
+                +total : uint64_t
+            }
+            class get_badge_definition_version_request <<struct>> {
+                +key : badge_definition_version_key
+            }
+            class get_badge_definition_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::badge_definition
+            }
+            class badge_mapping_key <<struct>> {
+                +code_domain_code : string
+                +entity_code : string
+            }
+            class badge_mapping_write <<struct>> {
                 +code_domain_code : string
                 +entity_code : string
                 +badge_code : string
             }
-            class get_badge_severities_request <<struct>> {
-                +offset : int
-                +limit : int
+            class badge_mapping_change <<struct>> {
+                +write : badge_mapping_write
+                +precondition : ores::utility::domain::precondition
             }
-            class get_badge_severities_response <<struct>> {
-                +badge_severities : vector<ores::dq::domain::badge_severity>
-                +total_available_count : int
+            class badge_mapping_removal <<struct>> {
+                +key : badge_mapping_key
+                +precondition : ores::utility::domain::precondition
             }
-            class save_badge_severity_request <<struct>> {
-                +data : ores::dq::domain::badge_severity
+            class badge_mapping_lookup <<struct>> {
+                +key : badge_mapping_key
+                +badge_mapping : optional<ores::dq::domain::badge_mapping>
             }
-            class save_badge_severity_response <<struct>> {
-                +success : bool
-                +message : string
+            class badge_mappings_filter <<struct>> {
+                +code_domain_code : optional<string>
+            }
+            class list_badge_mappings_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<badge_mappings_filter>
+            }
+            class list_badge_mappings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_mappings : vector<ores::dq::domain::badge_mapping>
+                +total : uint64_t
+            }
+            class get_badge_mapping_request <<struct>> {
+                +key : badge_mapping_key
+            }
+            class get_badge_mapping_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_mapping : optional<ores::dq::domain::badge_mapping>
+            }
+            class get_many_badge_mappings_request <<struct>> {
+                +keys : vector<badge_mapping_key>
+            }
+            class get_many_badge_mappings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<badge_mapping_lookup>
+            }
+            class put_badge_mapping_request <<struct>> {
+                +change : badge_mapping_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_badge_mapping_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_mapping : ores::dq::domain::badge_mapping
+            }
+            class put_many_badge_mappings_request <<struct>> {
+                +changes : vector<badge_mapping_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_badge_mappings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_mappings : vector<ores::dq::domain::badge_mapping>
+            }
+            class delete_badge_mapping_request <<struct>> {
+                +removal : badge_mapping_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_badge_mapping_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_badge_mappings_request <<struct>> {
+                +removals : vector<badge_mapping_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_badge_mappings_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_code_domain_code_badge_mappings_request <<struct>> {
+                +code_domain_code : string
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<badge_mappings_filter>
+            }
+            class list_by_code_domain_code_badge_mappings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_mappings : vector<ores::dq::domain::badge_mapping>
+                +total : uint64_t
+            }
+            class badge_severity_key <<struct>> {
+                +code : string
+            }
+            class badge_severity_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class badge_severity_change <<struct>> {
+                +write : badge_severity_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class badge_severity_removal <<struct>> {
+                +key : badge_severity_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class badge_severity_lookup <<struct>> {
+                +key : badge_severity_key
+                +badge_severity : optional<ores::dq::domain::badge_severity>
+            }
+            class badge_severity_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : badge_severity_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class badge_severity_version_key <<struct>> {
+                +badge_severity : badge_severity_key
+                +version : uint32_t
+            }
+            class badge_severity_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_badge_severities_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_badge_severities_response <<struct>> {
+                +result : ores::utility::domain::result
+                +severities : vector<ores::dq::domain::badge_severity>
+                +total : uint64_t
+            }
+            class get_badge_severity_request <<struct>> {
+                +key : badge_severity_key
+            }
+            class get_badge_severity_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_severity : optional<ores::dq::domain::badge_severity>
+            }
+            class get_many_badge_severities_request <<struct>> {
+                +keys : vector<badge_severity_key>
+            }
+            class get_many_badge_severities_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<badge_severity_lookup>
+            }
+            class put_badge_severity_request <<struct>> {
+                +change : badge_severity_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_badge_severity_response <<struct>> {
+                +result : ores::utility::domain::result
+                +badge_severity : ores::dq::domain::badge_severity
+            }
+            class put_many_badge_severities_request <<struct>> {
+                +changes : vector<badge_severity_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_badge_severities_response <<struct>> {
+                +result : ores::utility::domain::result
+                +severities : vector<ores::dq::domain::badge_severity>
             }
             class delete_badge_severity_request <<struct>> {
-                +codes : vector<string>
+                +removal : badge_severity_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_badge_severity_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_badge_severity_history_request <<struct>> {
-                +code : string
-            }
-            class get_badge_severity_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::badge_severity>
-            }
-            class get_code_domains_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_code_domains_response <<struct>> {
-                +code_domains : vector<ores::dq::domain::code_domain>
-                +total_available_count : int
-            }
-            class save_code_domain_request <<struct>> {
-                +data : ores::dq::domain::code_domain
-            }
-            class save_code_domain_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_code_domain_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_code_domain_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_code_domain_history_request <<struct>> {
-                +code : string
-            }
-            class get_code_domain_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::code_domain>
-            }
-            class get_badge_definitions_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_badge_definitions_response <<struct>> {
-                +definitions : vector<ores::dq::domain::badge_definition>
-                +total_available_count : int
-            }
-            class save_badge_definition_request <<struct>> {
-                +data : ores::dq::domain::badge_definition
-            }
-            class save_badge_definition_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_badge_definition_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_badge_definition_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_badge_definition_history_request <<struct>> {
-                +code : string
-            }
-            class get_badge_definition_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::badge_definition>
-            }
-            class get_badge_mappings_request <<struct>> {
-            }
-            class get_badge_mappings_response <<struct>> {
-                +mappings : vector<badge_mapping>
-            }
-            class get_badge_severities_request <<struct>> {
-            }
-            class get_badge_severities_response <<struct>> {
-                +severities : vector<domain::badge_severity>
-            }
-            class save_badge_severity_request <<struct>> {
-                +severity : domain::badge_severity
-            }
-            class save_badge_severity_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_badge_severity_result <<struct>> {
-                +code : string
-                +success : bool
-                +message : string
-            }
-            class delete_badge_severity_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_badge_severity_response <<struct>> {
-                +results : vector<delete_badge_severity_result>
-            }
-            class get_badge_severity_history_request <<struct>> {
-                +code : string
-            }
-            class get_badge_severity_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +versions : vector<domain::badge_severity>
-            }
-            class get_change_reason_categories_request <<struct>> {
-            }
-            class get_change_reason_categories_response <<struct>> {
-                +categories : vector<ores::dq::domain::change_reason_category>
-            }
-            class save_change_reason_category_request <<struct>> {
-                +data : ores::dq::domain::change_reason_category
-            }
-            class save_change_reason_category_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_change_reason_category_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_change_reason_category_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_change_reason_category_history_request <<struct>> {
-                +code : string
-            }
-            class get_change_reason_category_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +versions : vector<ores::dq::domain::change_reason_category>
-            }
-            class get_change_reasons_request <<struct>> {
-            }
-            class get_change_reasons_response <<struct>> {
-                +reasons : vector<ores::dq::domain::change_reason>
-            }
-            class save_change_reason_request <<struct>> {
-                +data : ores::dq::domain::change_reason
-            }
-            class save_change_reason_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_change_reason_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_change_reason_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_change_reason_history_request <<struct>> {
-                +code : string
-            }
-            class get_change_reason_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +versions : vector<ores::dq::domain::change_reason>
-            }
-            class get_code_domains_request <<struct>> {
-            }
-            class get_code_domains_response <<struct>> {
-                +domains : vector<domain::code_domain>
-            }
-            class save_code_domain_request <<struct>> {
-                +domain : domain::code_domain
-            }
-            class save_code_domain_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_code_domain_result <<struct>> {
-                +code : string
-                +success : bool
-                +message : string
-            }
-            class delete_code_domain_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_code_domain_response <<struct>> {
-                +results : vector<delete_code_domain_result>
-            }
-            class get_code_domain_history_request <<struct>> {
-                +code : string
-            }
-            class get_code_domain_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +versions : vector<domain::code_domain>
-            }
-            class get_coding_scheme_authority_types_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_coding_scheme_authority_types_response <<struct>> {
-                +total_available_count : int
-            }
-            class save_coding_scheme_authority_type_request <<struct>> {
-                +data : ores::dq::domain::coding_scheme_authority_type
-            }
-            class save_coding_scheme_authority_type_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_coding_scheme_authority_type_request <<struct>> {
-                +types : vector<string>
-            }
-            class delete_coding_scheme_authority_type_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_coding_scheme_authority_type_history_request <<struct>> {
-                +type : string
-            }
-            class get_coding_scheme_authority_type_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::coding_scheme_authority_type>
-            }
-            class get_coding_schemes_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_coding_schemes_response <<struct>> {
-                +coding_schemes : vector<ores::dq::domain::coding_scheme>
-                +total_available_count : int
-            }
-            class save_coding_scheme_request <<struct>> {
-                +data : ores::dq::domain::coding_scheme
-            }
-            class save_coding_scheme_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_coding_scheme_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_coding_scheme_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_coding_scheme_history_request <<struct>> {
-                +code : string
-            }
-            class get_coding_scheme_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::coding_scheme>
-            }
-            class get_catalogs_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_catalogs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_badge_severities_request <<struct>> {
+                +removals : vector<badge_severity_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_badge_severities_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_badge_severity_versions_request <<struct>> {
+                +key : badge_severity_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<badge_severity_versions_filter>
+            }
+            class list_badge_severity_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::badge_severity>
+                +total : uint64_t
+            }
+            class get_badge_severity_version_request <<struct>> {
+                +key : badge_severity_version_key
+            }
+            class get_badge_severity_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::badge_severity
+            }
+            class catalog_key <<struct>> {
+                +name : string
+            }
+            class catalog_write <<struct>> {
+                +name : string
+                +description : string
+                +owner : optional<string>
+            }
+            class catalog_change <<struct>> {
+                +write : catalog_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class catalog_removal <<struct>> {
+                +key : catalog_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class catalog_lookup <<struct>> {
+                +key : catalog_key
+                +catalog : optional<ores::dq::domain::catalog>
+            }
+            class catalog_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : catalog_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class catalog_version_key <<struct>> {
+                +catalog : catalog_key
+                +version : uint32_t
+            }
+            class catalog_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_catalogs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_catalogs_response <<struct>> {
+                +result : ores::utility::domain::result
                 +catalogs : vector<ores::dq::domain::catalog>
-                +total_available_count : int
+                +total : uint64_t
             }
-            class save_catalog_request <<struct>> {
-                +data : ores::dq::domain::catalog
+            class get_catalog_request <<struct>> {
+                +key : catalog_key
             }
-            class save_catalog_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_catalog_response <<struct>> {
+                +result : ores::utility::domain::result
+                +catalog : optional<ores::dq::domain::catalog>
+            }
+            class get_many_catalogs_request <<struct>> {
+                +keys : vector<catalog_key>
+            }
+            class get_many_catalogs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<catalog_lookup>
+            }
+            class put_catalog_request <<struct>> {
+                +change : catalog_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_catalog_response <<struct>> {
+                +result : ores::utility::domain::result
+                +catalog : ores::dq::domain::catalog
+            }
+            class put_many_catalogs_request <<struct>> {
+                +changes : vector<catalog_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_catalogs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +catalogs : vector<ores::dq::domain::catalog>
             }
             class delete_catalog_request <<struct>> {
-                +codes : vector<string>
+                +removal : catalog_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_catalog_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_catalog_history_request <<struct>> {
+            class delete_many_catalogs_request <<struct>> {
+                +removals : vector<catalog_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_catalogs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_catalog_versions_request <<struct>> {
+                +key : catalog_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<catalog_versions_filter>
+            }
+            class list_catalog_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::catalog>
+                +total : uint64_t
+            }
+            class get_catalog_version_request <<struct>> {
+                +key : catalog_version_key
+            }
+            class get_catalog_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::catalog
+            }
+            class change_reason_category_key <<struct>> {
                 +code : string
             }
-            class get_catalog_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::catalog>
+            class change_reason_category_write <<struct>> {
+                +code : string
+                +description : string
             }
-            class get_data_domains_request <<struct>> {
-                +offset : int
-                +limit : int
+            class change_reason_category_change <<struct>> {
+                +write : change_reason_category_write
+                +precondition : ores::utility::domain::precondition
             }
-            class get_data_domains_response <<struct>> {
+            class change_reason_category_removal <<struct>> {
+                +key : change_reason_category_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class change_reason_category_lookup <<struct>> {
+                +key : change_reason_category_key
+                +change_reason_category : optional<ores::dq::domain::change_reason_category>
+            }
+            class change_reason_category_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : change_reason_category_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class change_reason_category_version_key <<struct>> {
+                +change_reason_category : change_reason_category_key
+                +version : uint32_t
+            }
+            class change_reason_category_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_change_reason_categories_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_change_reason_categories_response <<struct>> {
+                +result : ores::utility::domain::result
+                +categories : vector<ores::dq::domain::change_reason_category>
+                +total : uint64_t
+            }
+            class get_change_reason_category_request <<struct>> {
+                +key : change_reason_category_key
+            }
+            class get_change_reason_category_response <<struct>> {
+                +result : ores::utility::domain::result
+                +change_reason_category : optional<ores::dq::domain::change_reason_category>
+            }
+            class get_many_change_reason_categories_request <<struct>> {
+                +keys : vector<change_reason_category_key>
+            }
+            class get_many_change_reason_categories_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<change_reason_category_lookup>
+            }
+            class put_change_reason_category_request <<struct>> {
+                +change : change_reason_category_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_change_reason_category_response <<struct>> {
+                +result : ores::utility::domain::result
+                +change_reason_category : ores::dq::domain::change_reason_category
+            }
+            class put_many_change_reason_categories_request <<struct>> {
+                +changes : vector<change_reason_category_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_change_reason_categories_response <<struct>> {
+                +result : ores::utility::domain::result
+                +categories : vector<ores::dq::domain::change_reason_category>
+            }
+            class delete_change_reason_category_request <<struct>> {
+                +removal : change_reason_category_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_change_reason_category_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_change_reason_categories_request <<struct>> {
+                +removals : vector<change_reason_category_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_change_reason_categories_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_change_reason_category_versions_request <<struct>> {
+                +key : change_reason_category_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<change_reason_category_versions_filter>
+            }
+            class list_change_reason_category_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::change_reason_category>
+                +total : uint64_t
+            }
+            class get_change_reason_category_version_request <<struct>> {
+                +key : change_reason_category_version_key
+            }
+            class get_change_reason_category_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::change_reason_category
+            }
+            class change_reason_key <<struct>> {
+                +code : string
+            }
+            class change_reason_write <<struct>> {
+                +code : string
+                +description : string
+                +category_code : string
+                +applies_to_new : bool
+                +applies_to_amend : bool
+                +applies_to_delete : bool
+                +requires_commentary : bool
+                +display_order : int
+            }
+            class change_reason_change <<struct>> {
+                +write : change_reason_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class change_reason_removal <<struct>> {
+                +key : change_reason_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class change_reason_lookup <<struct>> {
+                +key : change_reason_key
+                +change_reason : optional<ores::dq::domain::change_reason>
+            }
+            class change_reason_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : change_reason_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class change_reason_version_key <<struct>> {
+                +change_reason : change_reason_key
+                +version : uint32_t
+            }
+            class change_reason_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_change_reasons_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_change_reasons_response <<struct>> {
+                +result : ores::utility::domain::result
+                +reasons : vector<ores::dq::domain::change_reason>
+                +total : uint64_t
+            }
+            class get_change_reason_request <<struct>> {
+                +key : change_reason_key
+            }
+            class get_change_reason_response <<struct>> {
+                +result : ores::utility::domain::result
+                +change_reason : optional<ores::dq::domain::change_reason>
+            }
+            class get_many_change_reasons_request <<struct>> {
+                +keys : vector<change_reason_key>
+            }
+            class get_many_change_reasons_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<change_reason_lookup>
+            }
+            class put_change_reason_request <<struct>> {
+                +change : change_reason_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_change_reason_response <<struct>> {
+                +result : ores::utility::domain::result
+                +change_reason : ores::dq::domain::change_reason
+            }
+            class put_many_change_reasons_request <<struct>> {
+                +changes : vector<change_reason_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_change_reasons_response <<struct>> {
+                +result : ores::utility::domain::result
+                +reasons : vector<ores::dq::domain::change_reason>
+            }
+            class delete_change_reason_request <<struct>> {
+                +removal : change_reason_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_change_reason_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_change_reasons_request <<struct>> {
+                +removals : vector<change_reason_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_change_reasons_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_change_reason_versions_request <<struct>> {
+                +key : change_reason_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<change_reason_versions_filter>
+            }
+            class list_change_reason_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::change_reason>
+                +total : uint64_t
+            }
+            class get_change_reason_version_request <<struct>> {
+                +key : change_reason_version_key
+            }
+            class get_change_reason_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::change_reason
+            }
+            class code_domain_key <<struct>> {
+                +code : string
+            }
+            class code_domain_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class code_domain_change <<struct>> {
+                +write : code_domain_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class code_domain_removal <<struct>> {
+                +key : code_domain_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class code_domain_lookup <<struct>> {
+                +key : code_domain_key
+                +code_domain : optional<ores::dq::domain::code_domain>
+            }
+            class code_domain_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : code_domain_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class code_domain_version_key <<struct>> {
+                +code_domain : code_domain_key
+                +version : uint32_t
+            }
+            class code_domain_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_code_domains_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_code_domains_response <<struct>> {
+                +result : ores::utility::domain::result
+                +domains : vector<ores::dq::domain::code_domain>
+                +total : uint64_t
+            }
+            class get_code_domain_request <<struct>> {
+                +key : code_domain_key
+            }
+            class get_code_domain_response <<struct>> {
+                +result : ores::utility::domain::result
+                +code_domain : optional<ores::dq::domain::code_domain>
+            }
+            class get_many_code_domains_request <<struct>> {
+                +keys : vector<code_domain_key>
+            }
+            class get_many_code_domains_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<code_domain_lookup>
+            }
+            class put_code_domain_request <<struct>> {
+                +change : code_domain_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_code_domain_response <<struct>> {
+                +result : ores::utility::domain::result
+                +code_domain : ores::dq::domain::code_domain
+            }
+            class put_many_code_domains_request <<struct>> {
+                +changes : vector<code_domain_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_code_domains_response <<struct>> {
+                +result : ores::utility::domain::result
+                +domains : vector<ores::dq::domain::code_domain>
+            }
+            class delete_code_domain_request <<struct>> {
+                +removal : code_domain_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_code_domain_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_code_domains_request <<struct>> {
+                +removals : vector<code_domain_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_code_domains_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_code_domain_versions_request <<struct>> {
+                +key : code_domain_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<code_domain_versions_filter>
+            }
+            class list_code_domain_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::code_domain>
+                +total : uint64_t
+            }
+            class get_code_domain_version_request <<struct>> {
+                +key : code_domain_version_key
+            }
+            class get_code_domain_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::code_domain
+            }
+            class coding_scheme_authority_type_key <<struct>> {
+                +code : string
+            }
+            class coding_scheme_authority_type_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+            }
+            class coding_scheme_authority_type_change <<struct>> {
+                +write : coding_scheme_authority_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class coding_scheme_authority_type_removal <<struct>> {
+                +key : coding_scheme_authority_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class coding_scheme_authority_type_lookup <<struct>> {
+                +key : coding_scheme_authority_type_key
+                +coding_scheme_authority_type : optional<ores::dq::domain::coding_scheme_authority_type>
+            }
+            class coding_scheme_authority_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : coding_scheme_authority_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class coding_scheme_authority_type_version_key <<struct>> {
+                +coding_scheme_authority_type : coding_scheme_authority_type_key
+                +version : uint32_t
+            }
+            class coding_scheme_authority_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_coding_scheme_authority_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_coding_scheme_authority_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +authority_types : vector<ores::dq::domain::coding_scheme_authority_type>
+                +total : uint64_t
+            }
+            class get_coding_scheme_authority_type_request <<struct>> {
+                +key : coding_scheme_authority_type_key
+            }
+            class get_coding_scheme_authority_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +coding_scheme_authority_type : optional<ores::dq::domain::coding_scheme_authority_type>
+            }
+            class get_many_coding_scheme_authority_types_request <<struct>> {
+                +keys : vector<coding_scheme_authority_type_key>
+            }
+            class get_many_coding_scheme_authority_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<coding_scheme_authority_type_lookup>
+            }
+            class put_coding_scheme_authority_type_request <<struct>> {
+                +change : coding_scheme_authority_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_coding_scheme_authority_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +coding_scheme_authority_type : ores::dq::domain::coding_scheme_authority_type
+            }
+            class put_many_coding_scheme_authority_types_request <<struct>> {
+                +changes : vector<coding_scheme_authority_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_coding_scheme_authority_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +authority_types : vector<ores::dq::domain::coding_scheme_authority_type>
+            }
+            class delete_coding_scheme_authority_type_request <<struct>> {
+                +removal : coding_scheme_authority_type_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_coding_scheme_authority_type_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_coding_scheme_authority_types_request <<struct>> {
+                +removals : vector<coding_scheme_authority_type_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_coding_scheme_authority_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_coding_scheme_authority_type_versions_request <<struct>> {
+                +key : coding_scheme_authority_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<coding_scheme_authority_type_versions_filter>
+            }
+            class list_coding_scheme_authority_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::coding_scheme_authority_type>
+                +total : uint64_t
+            }
+            class get_coding_scheme_authority_type_version_request <<struct>> {
+                +key : coding_scheme_authority_type_version_key
+            }
+            class get_coding_scheme_authority_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::coding_scheme_authority_type
+            }
+            class coding_scheme_key <<struct>> {
+                +code : string
+            }
+            class coding_scheme_write <<struct>> {
+                +code : string
+                +name : string
+                +authority_type : string
+                +subject_area_name : string
+                +domain_name : string
+                +uri : string
+                +description : string
+            }
+            class coding_scheme_change <<struct>> {
+                +write : coding_scheme_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class coding_scheme_removal <<struct>> {
+                +key : coding_scheme_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class coding_scheme_lookup <<struct>> {
+                +key : coding_scheme_key
+                +coding_scheme : optional<ores::dq::domain::coding_scheme>
+            }
+            class coding_scheme_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : coding_scheme_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class coding_scheme_version_key <<struct>> {
+                +coding_scheme : coding_scheme_key
+                +version : uint32_t
+            }
+            class coding_scheme_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_coding_schemes_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_coding_schemes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +schemes : vector<ores::dq::domain::coding_scheme>
+                +total : uint64_t
+            }
+            class get_coding_scheme_request <<struct>> {
+                +key : coding_scheme_key
+            }
+            class get_coding_scheme_response <<struct>> {
+                +result : ores::utility::domain::result
+                +coding_scheme : optional<ores::dq::domain::coding_scheme>
+            }
+            class get_many_coding_schemes_request <<struct>> {
+                +keys : vector<coding_scheme_key>
+            }
+            class get_many_coding_schemes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<coding_scheme_lookup>
+            }
+            class put_coding_scheme_request <<struct>> {
+                +change : coding_scheme_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_coding_scheme_response <<struct>> {
+                +result : ores::utility::domain::result
+                +coding_scheme : ores::dq::domain::coding_scheme
+            }
+            class put_many_coding_schemes_request <<struct>> {
+                +changes : vector<coding_scheme_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_coding_schemes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +schemes : vector<ores::dq::domain::coding_scheme>
+            }
+            class delete_coding_scheme_request <<struct>> {
+                +removal : coding_scheme_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_coding_scheme_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_coding_schemes_request <<struct>> {
+                +removals : vector<coding_scheme_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_coding_schemes_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_coding_scheme_versions_request <<struct>> {
+                +key : coding_scheme_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<coding_scheme_versions_filter>
+            }
+            class list_coding_scheme_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::coding_scheme>
+                +total : uint64_t
+            }
+            class get_coding_scheme_version_request <<struct>> {
+                +key : coding_scheme_version_key
+            }
+            class get_coding_scheme_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::coding_scheme
+            }
+            class data_domain_key <<struct>> {
+                +name : string
+            }
+            class data_domain_write <<struct>> {
+                +name : string
+                +description : string
+            }
+            class data_domain_change <<struct>> {
+                +write : data_domain_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class data_domain_removal <<struct>> {
+                +key : data_domain_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class data_domain_lookup <<struct>> {
+                +key : data_domain_key
+                +data_domain : optional<ores::dq::domain::data_domain>
+            }
+            class data_domain_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : data_domain_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class data_domain_version_key <<struct>> {
+                +data_domain : data_domain_key
+                +version : uint32_t
+            }
+            class data_domain_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_data_domains_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_data_domains_response <<struct>> {
+                +result : ores::utility::domain::result
                 +domains : vector<ores::dq::domain::data_domain>
-                +total_available_count : int
+                +total : uint64_t
             }
-            class save_data_domain_request <<struct>> {
-                +data : ores::dq::domain::data_domain
+            class get_data_domain_request <<struct>> {
+                +key : data_domain_key
             }
-            class save_data_domain_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_data_domain_response <<struct>> {
+                +result : ores::utility::domain::result
+                +data_domain : optional<ores::dq::domain::data_domain>
+            }
+            class get_many_data_domains_request <<struct>> {
+                +keys : vector<data_domain_key>
+            }
+            class get_many_data_domains_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<data_domain_lookup>
+            }
+            class put_data_domain_request <<struct>> {
+                +change : data_domain_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_data_domain_response <<struct>> {
+                +result : ores::utility::domain::result
+                +data_domain : ores::dq::domain::data_domain
+            }
+            class put_many_data_domains_request <<struct>> {
+                +changes : vector<data_domain_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_data_domains_response <<struct>> {
+                +result : ores::utility::domain::result
+                +domains : vector<ores::dq::domain::data_domain>
             }
             class delete_data_domain_request <<struct>> {
-                +names : vector<string>
+                +removal : data_domain_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_data_domain_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_data_domain_history_request <<struct>> {
-                +name : string
+            class delete_many_data_domains_request <<struct>> {
+                +removals : vector<data_domain_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_data_domain_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::data_domain>
+            class delete_many_data_domains_response <<struct>> {
+                +result : ores::utility::domain::result
             }
-            class get_methodologies_request <<struct>> {
-                +offset : int
-                +limit : int
+            class list_data_domain_versions_request <<struct>> {
+                +key : data_domain_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<data_domain_versions_filter>
             }
-            class get_methodologies_response <<struct>> {
-                +methodologies : vector<ores::dq::domain::methodology>
-                +total_available_count : int
+            class list_data_domain_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::data_domain>
+                +total : uint64_t
             }
-            class save_methodology_request <<struct>> {
-                +data : ores::dq::domain::methodology
+            class get_data_domain_version_request <<struct>> {
+                +key : data_domain_version_key
             }
-            class save_methodology_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_data_domain_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::data_domain
             }
-            class delete_methodology_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_methodology_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_methodology_history_request <<struct>> {
-                +code : string
-            }
-            class get_methodology_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::methodology>
-            }
-            class subject_area_key <<struct>> {
-                +name : string
-                +domain_name : string
-            }
-            class get_subject_areas_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_subject_areas_response <<struct>> {
-                +subject_areas : vector<ores::dq::domain::subject_area>
-                +total_available_count : int
-            }
-            class save_subject_area_request <<struct>> {
-                +data : ores::dq::domain::subject_area
-            }
-            class save_subject_area_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_subject_area_request <<struct>> {
-                +keys : vector<subject_area_key>
-            }
-            class delete_subject_area_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_subject_area_history_request <<struct>> {
-                +key : subject_area_key
-            }
-            class get_subject_area_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::subject_area>
-            }
-            class get_nature_dimensions_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_nature_dimensions_response <<struct>> {
-                +nature_dimensions : vector<ores::dq::domain::nature_dimension>
-                +total_available_count : int
-            }
-            class save_nature_dimension_request <<struct>> {
-                +data : ores::dq::domain::nature_dimension
-            }
-            class save_nature_dimension_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_nature_dimension_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_nature_dimension_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_nature_dimension_history_request <<struct>> {
-                +code : string
-            }
-            class get_nature_dimension_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::nature_dimension>
-            }
-            class get_origin_dimensions_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_origin_dimensions_response <<struct>> {
-                +origin_dimensions : vector<ores::dq::domain::origin_dimension>
-                +total_available_count : int
-            }
-            class save_origin_dimension_request <<struct>> {
-                +data : ores::dq::domain::origin_dimension
-            }
-            class save_origin_dimension_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_origin_dimension_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_origin_dimension_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_origin_dimension_history_request <<struct>> {
-                +code : string
-            }
-            class get_origin_dimension_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::origin_dimension>
-            }
-            class get_treatment_dimensions_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_treatment_dimensions_response <<struct>> {
-                +treatment_dimensions : vector<ores::dq::domain::treatment_dimension>
-                +total_available_count : int
-            }
-            class save_treatment_dimension_request <<struct>> {
-                +data : ores::dq::domain::treatment_dimension
-            }
-            class save_treatment_dimension_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_treatment_dimension_request <<struct>> {
-                +codes : vector<string>
-            }
-            class delete_treatment_dimension_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_treatment_dimension_history_request <<struct>> {
-                +code : string
-            }
-            class get_treatment_dimension_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::treatment_dimension>
-            }
-            class get_dataset_bundle_members_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_dataset_bundle_members_response <<struct>> {
-                +members : vector<ores::dq::domain::dataset_bundle_member>
-                +total_available_count : int
-            }
-            class get_dataset_bundle_members_by_bundle_request <<struct>> {
+            class dataset_bundle_member_key <<struct>> {
                 +bundle_code : string
-            }
-            class get_dataset_bundle_members_by_bundle_response <<struct>> {
-                +success : bool
-                +message : string
-                +members : vector<ores::dq::domain::dataset_bundle_member>
-            }
-            class get_dataset_bundles_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_dataset_bundles_response <<struct>> {
-                +bundles : vector<ores::dq::domain::dataset_bundle>
-                +total_available_count : int
-            }
-            class save_dataset_bundle_request <<struct>> {
-                +bundles : vector<ores::dq::domain::dataset_bundle>
-            }
-            class save_dataset_bundle_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class delete_dataset_bundle_request <<struct>> {
-                +ids : vector<string>
-            }
-            class delete_dataset_bundle_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_dataset_bundle_history_request <<struct>> {
-                +id : string
-            }
-            class get_dataset_bundle_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::dataset_bundle>
-            }
-            class get_dataset_dependencies_request <<struct>> {
-                +offset : int
-                +limit : int
-            }
-            class get_dataset_dependencies_response <<struct>> {
-                +dependencies : vector<ores::dq::domain::dataset_dependency>
-                +total_available_count : int
-            }
-            class get_dataset_dependencies_by_dataset_request <<struct>> {
                 +dataset_code : string
             }
-            class get_dataset_dependencies_by_dataset_response <<struct>> {
-                +success : bool
-                +message : string
-                +dependencies : vector<ores::dq::domain::dataset_dependency>
+            class dataset_bundle_member_write <<struct>> {
+                +bundle_code : string
+                +dataset_code : string
+                +display_order : int
+                +optional : bool
             }
-            class resolve_dependencies_request <<struct>> {
-                +dataset_ids : vector<string>
+            class dataset_bundle_member_change <<struct>> {
+                +write : dataset_bundle_member_write
+                +precondition : ores::utility::domain::precondition
             }
-            class resolve_dependencies_response <<struct>> {
-                +success : bool
-                +message : string
+            class dataset_bundle_member_removal <<struct>> {
+                +key : dataset_bundle_member_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class dataset_bundle_member_lookup <<struct>> {
+                +key : dataset_bundle_member_key
+                +dataset_bundle_member : optional<ores::dq::domain::dataset_bundle_member>
+            }
+            class dataset_bundle_members_filter <<struct>> {
+                +bundle_code : optional<string>
+            }
+            class list_dataset_bundle_members_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<dataset_bundle_members_filter>
+            }
+            class list_dataset_bundle_members_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle_members : vector<ores::dq::domain::dataset_bundle_member>
+                +total : uint64_t
+            }
+            class get_dataset_bundle_member_request <<struct>> {
+                +key : dataset_bundle_member_key
+            }
+            class get_dataset_bundle_member_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle_member : optional<ores::dq::domain::dataset_bundle_member>
+            }
+            class get_many_dataset_bundle_members_request <<struct>> {
+                +keys : vector<dataset_bundle_member_key>
+            }
+            class get_many_dataset_bundle_members_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<dataset_bundle_member_lookup>
+            }
+            class put_dataset_bundle_member_request <<struct>> {
+                +change : dataset_bundle_member_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_dataset_bundle_member_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle_member : ores::dq::domain::dataset_bundle_member
+            }
+            class put_many_dataset_bundle_members_request <<struct>> {
+                +changes : vector<dataset_bundle_member_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_dataset_bundle_members_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle_members : vector<ores::dq::domain::dataset_bundle_member>
+            }
+            class delete_dataset_bundle_member_request <<struct>> {
+                +removal : dataset_bundle_member_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_dataset_bundle_member_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_dataset_bundle_members_request <<struct>> {
+                +removals : vector<dataset_bundle_member_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_dataset_bundle_members_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_bundle_code_dataset_bundle_members_request <<struct>> {
+                +bundle_code : string
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<dataset_bundle_members_filter>
+            }
+            class list_by_bundle_code_dataset_bundle_members_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle_members : vector<ores::dq::domain::dataset_bundle_member>
+                +total : uint64_t
+            }
+            class dataset_bundle_key <<struct>> {
+                +code : string
+            }
+            class dataset_bundle_write <<struct>> {
+                +id : boost::uuids::uuid
+                +code : string
+                +name : string
+                +description : string
+            }
+            class dataset_bundle_change <<struct>> {
+                +write : dataset_bundle_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class dataset_bundle_removal <<struct>> {
+                +key : dataset_bundle_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class dataset_bundle_lookup <<struct>> {
+                +key : dataset_bundle_key
+                +dataset_bundle : optional<ores::dq::domain::dataset_bundle>
+            }
+            class dataset_bundle_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : dataset_bundle_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class dataset_bundle_version_key <<struct>> {
+                +dataset_bundle : dataset_bundle_key
+                +version : uint32_t
+            }
+            class dataset_bundle_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_dataset_bundles_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_dataset_bundles_response <<struct>> {
+                +result : ores::utility::domain::result
+                +bundles : vector<ores::dq::domain::dataset_bundle>
+                +total : uint64_t
+            }
+            class get_dataset_bundle_request <<struct>> {
+                +key : dataset_bundle_key
+            }
+            class get_dataset_bundle_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle : optional<ores::dq::domain::dataset_bundle>
+            }
+            class get_many_dataset_bundles_request <<struct>> {
+                +keys : vector<dataset_bundle_key>
+            }
+            class get_many_dataset_bundles_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<dataset_bundle_lookup>
+            }
+            class put_dataset_bundle_request <<struct>> {
+                +change : dataset_bundle_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_dataset_bundle_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset_bundle : ores::dq::domain::dataset_bundle
+            }
+            class put_many_dataset_bundles_request <<struct>> {
+                +changes : vector<dataset_bundle_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_dataset_bundles_response <<struct>> {
+                +result : ores::utility::domain::result
+                +bundles : vector<ores::dq::domain::dataset_bundle>
+            }
+            class delete_dataset_bundle_request <<struct>> {
+                +removal : dataset_bundle_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_dataset_bundle_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_dataset_bundles_request <<struct>> {
+                +removals : vector<dataset_bundle_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_dataset_bundles_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_dataset_bundle_versions_request <<struct>> {
+                +key : dataset_bundle_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<dataset_bundle_versions_filter>
+            }
+            class list_dataset_bundle_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::dataset_bundle>
+                +total : uint64_t
+            }
+            class get_dataset_bundle_version_request <<struct>> {
+                +key : dataset_bundle_version_key
+            }
+            class get_dataset_bundle_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::dataset_bundle
+            }
+            class dataset_key <<struct>> {
+                +code : string
+            }
+            class dataset_write <<struct>> {
+                +id : boost::uuids::uuid
+                +code : string
+                +catalog_name : optional<string>
+                +subject_area_name : string
+                +domain_name : string
+                +coding_scheme_code : optional<string>
+                +origin_code : string
+                +nature_code : string
+                +treatment_code : string
+                +methodology_id : optional<boost::uuids::uuid>
+                +name : string
+                +description : string
+                +source_system_id : string
+                +business_context : string
+                +upstream_derivation_id : optional<boost::uuids::uuid>
+                +lineage_depth : int
+                +as_of_date : chrono::system_clock::time_point
+                +ingestion_timestamp : chrono::system_clock::time_point
+                +license_info : optional<string>
+                +artefact_type : string
+            }
+            class dataset_change <<struct>> {
+                +write : dataset_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class dataset_removal <<struct>> {
+                +key : dataset_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class dataset_lookup <<struct>> {
+                +key : dataset_key
+                +dataset : optional<ores::dq::domain::dataset>
+            }
+            class dataset_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : dataset_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class dataset_version_key <<struct>> {
+                +dataset : dataset_key
+                +version : uint32_t
+            }
+            class dataset_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_datasets_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_datasets_response <<struct>> {
+                +result : ores::utility::domain::result
                 +datasets : vector<ores::dq::domain::dataset>
-                +requested_ids : vector<string>
+                +total : uint64_t
             }
-            class get_datasets_request <<struct>> {
-                +offset : int
-                +limit : int
+            class get_dataset_request <<struct>> {
+                +key : dataset_key
             }
-            class get_datasets_response <<struct>> {
+            class get_dataset_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset : optional<ores::dq::domain::dataset>
+            }
+            class get_many_datasets_request <<struct>> {
+                +keys : vector<dataset_key>
+            }
+            class get_many_datasets_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<dataset_lookup>
+            }
+            class put_dataset_request <<struct>> {
+                +change : dataset_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_dataset_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dataset : ores::dq::domain::dataset
+            }
+            class put_many_datasets_request <<struct>> {
+                +changes : vector<dataset_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_datasets_response <<struct>> {
+                +result : ores::utility::domain::result
                 +datasets : vector<ores::dq::domain::dataset>
-                +total_available_count : int
-            }
-            class save_dataset_request <<struct>> {
-                +datasets : vector<ores::dq::domain::dataset>
-            }
-            class save_dataset_response <<struct>> {
-                +success : bool
-                +message : string
             }
             class delete_dataset_request <<struct>> {
-                +ids : vector<string>
+                +removal : dataset_removal
+                +intent : ores::utility::domain::change_intent
             }
             class delete_dataset_response <<struct>> {
-                +success : bool
-                +message : string
+                +result : ores::utility::domain::result
             }
-            class get_dataset_history_request <<struct>> {
-                +id : string
+            class delete_many_datasets_request <<struct>> {
+                +removals : vector<dataset_removal>
+                +intent : ores::utility::domain::change_intent
             }
-            class get_dataset_history_response <<struct>> {
-                +success : bool
-                +message : string
-                +history : vector<ores::dq::domain::dataset>
+            class delete_many_datasets_response <<struct>> {
+                +result : ores::utility::domain::result
             }
-            class publish_datasets_request <<struct>> {
-                +dataset_ids : vector<string>
-                +published_by : string
-                +resolve_dependencies : bool
+            class list_dataset_versions_request <<struct>> {
+                +key : dataset_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<dataset_versions_filter>
             }
-            class publish_datasets_response <<struct>> {
-                +success : bool
-                +message : string
-                +results : vector<ores::dq::domain::publication_result>
+            class list_dataset_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::dataset>
+                +total : uint64_t
             }
-            class get_fsm_states_request <<struct>> {
-                +machine_name : string
+            class get_dataset_version_request <<struct>> {
+                +key : dataset_version_key
             }
-            class get_fsm_states_response <<struct>> {
-                +message : string
+            class get_dataset_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::dataset
+            }
+            class fsm_state_key <<struct>> {
+                +name : string
+            }
+            class fsm_state_write <<struct>> {
+                +id : boost::uuids::uuid
+                +machine_id : boost::uuids::uuid
+                +name : string
+                +is_initial : int
+                +is_terminal : int
+            }
+            class fsm_state_change <<struct>> {
+                +write : fsm_state_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class fsm_state_removal <<struct>> {
+                +key : fsm_state_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class fsm_state_lookup <<struct>> {
+                +key : fsm_state_key
+                +fsm_state : optional<ores::dq::domain::fsm_state>
+            }
+            class fsm_state_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : fsm_state_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class fsm_state_version_key <<struct>> {
+                +fsm_state : fsm_state_key
+                +version : uint32_t
+            }
+            class fsm_state_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_fsm_states_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_fsm_states_response <<struct>> {
+                +result : ores::utility::domain::result
+                +states : vector<ores::dq::domain::fsm_state>
+                +total : uint64_t
+            }
+            class get_fsm_state_request <<struct>> {
+                +key : fsm_state_key
+            }
+            class get_fsm_state_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fsm_state : optional<ores::dq::domain::fsm_state>
+            }
+            class get_many_fsm_states_request <<struct>> {
+                +keys : vector<fsm_state_key>
+            }
+            class get_many_fsm_states_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<fsm_state_lookup>
+            }
+            class put_fsm_state_request <<struct>> {
+                +change : fsm_state_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_fsm_state_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fsm_state : ores::dq::domain::fsm_state
+            }
+            class put_many_fsm_states_request <<struct>> {
+                +changes : vector<fsm_state_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_fsm_states_response <<struct>> {
+                +result : ores::utility::domain::result
                 +states : vector<ores::dq::domain::fsm_state>
             }
-            class get_fsm_transitions_request <<struct>> {
-                +machine_name : string
+            class delete_fsm_state_request <<struct>> {
+                +removal : fsm_state_removal
+                +intent : ores::utility::domain::change_intent
             }
-            class get_fsm_transitions_response <<struct>> {
-                +message : string
+            class delete_fsm_state_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_fsm_states_request <<struct>> {
+                +removals : vector<fsm_state_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_fsm_states_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_fsm_state_versions_request <<struct>> {
+                +key : fsm_state_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<fsm_state_versions_filter>
+            }
+            class list_fsm_state_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::fsm_state>
+                +total : uint64_t
+            }
+            class get_fsm_state_version_request <<struct>> {
+                +key : fsm_state_version_key
+            }
+            class get_fsm_state_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::fsm_state
+            }
+            class fsm_transition_key <<struct>> {
+                +name : string
+            }
+            class fsm_transition_write <<struct>> {
+                +id : boost::uuids::uuid
+                +machine_id : boost::uuids::uuid
+                +from_state_id : optional<boost::uuids::uuid>
+                +to_state_id : boost::uuids::uuid
+                +name : string
+                +guard_function : optional<string>
+            }
+            class fsm_transition_change <<struct>> {
+                +write : fsm_transition_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class fsm_transition_removal <<struct>> {
+                +key : fsm_transition_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class fsm_transition_lookup <<struct>> {
+                +key : fsm_transition_key
+                +fsm_transition : optional<ores::dq::domain::fsm_transition>
+            }
+            class fsm_transition_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : fsm_transition_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class fsm_transition_version_key <<struct>> {
+                +fsm_transition : fsm_transition_key
+                +version : uint32_t
+            }
+            class fsm_transition_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_fsm_transitions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_fsm_transitions_response <<struct>> {
+                +result : ores::utility::domain::result
                 +transitions : vector<ores::dq::domain::fsm_transition>
+                +total : uint64_t
+            }
+            class get_fsm_transition_request <<struct>> {
+                +key : fsm_transition_key
+            }
+            class get_fsm_transition_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fsm_transition : optional<ores::dq::domain::fsm_transition>
+            }
+            class get_many_fsm_transitions_request <<struct>> {
+                +keys : vector<fsm_transition_key>
+            }
+            class get_many_fsm_transitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<fsm_transition_lookup>
+            }
+            class put_fsm_transition_request <<struct>> {
+                +change : fsm_transition_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_fsm_transition_response <<struct>> {
+                +result : ores::utility::domain::result
+                +fsm_transition : ores::dq::domain::fsm_transition
+            }
+            class put_many_fsm_transitions_request <<struct>> {
+                +changes : vector<fsm_transition_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_fsm_transitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +transitions : vector<ores::dq::domain::fsm_transition>
+            }
+            class delete_fsm_transition_request <<struct>> {
+                +removal : fsm_transition_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_fsm_transition_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_fsm_transitions_request <<struct>> {
+                +removals : vector<fsm_transition_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_fsm_transitions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_fsm_transition_versions_request <<struct>> {
+                +key : fsm_transition_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<fsm_transition_versions_filter>
+            }
+            class list_fsm_transition_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::fsm_transition>
+                +total : uint64_t
+            }
+            class get_fsm_transition_version_request <<struct>> {
+                +key : fsm_transition_version_key
+            }
+            class get_fsm_transition_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::fsm_transition
+            }
+            class lei_entity_key <<struct>> {
+                +lei : string
+            }
+            class lei_entity_lookup <<struct>> {
+                +key : lei_entity_key
+                +lei_entity : optional<ores::dq::domain::lei_entity>
+            }
+            class lei_entity_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : lei_entity_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_lei_entities_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_lei_entities_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entities : vector<ores::dq::domain::lei_entity>
+                +total : uint64_t
+            }
+            class get_lei_entity_request <<struct>> {
+                +key : lei_entity_key
+            }
+            class get_lei_entity_response <<struct>> {
+                +result : ores::utility::domain::result
+                +lei_entity : optional<ores::dq::domain::lei_entity>
+            }
+            class get_many_lei_entities_request <<struct>> {
+                +keys : vector<lei_entity_key>
+            }
+            class get_many_lei_entities_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<lei_entity_lookup>
             }
             class lei_entity_summary <<struct>> {
                 +lei : string
@@ -989,15 +2259,509 @@ namespace ores #F2F2F2 {
                 +error_message : string
                 +entities : vector<lei_entity_summary>
             }
-            class get_publications_request <<struct>> {
-                +dataset_id : string
-                +offset : int
-                +limit : int
+            class lei_relationship_key <<struct>> {
+                +relationship_start_node_node_id : string
             }
-            class get_publications_response <<struct>> {
+            class lei_relationship_lookup <<struct>> {
+                +key : lei_relationship_key
+                +lei_relationship : optional<ores::dq::domain::lei_relationship>
+            }
+            class lei_relationship_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : lei_relationship_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_lei_relationships_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_lei_relationships_response <<struct>> {
+                +result : ores::utility::domain::result
+                +relationships : vector<ores::dq::domain::lei_relationship>
+                +total : uint64_t
+            }
+            class get_lei_relationship_request <<struct>> {
+                +key : lei_relationship_key
+            }
+            class get_lei_relationship_response <<struct>> {
+                +result : ores::utility::domain::result
+                +lei_relationship : optional<ores::dq::domain::lei_relationship>
+            }
+            class get_many_lei_relationships_request <<struct>> {
+                +keys : vector<lei_relationship_key>
+            }
+            class get_many_lei_relationships_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<lei_relationship_lookup>
+            }
+            class methodology_key <<struct>> {
+                +name : string
+            }
+            class methodology_write <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +logic_reference : string
+                +implementation_details : string
+            }
+            class methodology_change <<struct>> {
+                +write : methodology_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class methodology_removal <<struct>> {
+                +key : methodology_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class methodology_lookup <<struct>> {
+                +key : methodology_key
+                +methodology : optional<ores::dq::domain::methodology>
+            }
+            class methodology_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : methodology_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class methodology_version_key <<struct>> {
+                +methodology : methodology_key
+                +version : uint32_t
+            }
+            class methodology_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_methodologies_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_methodologies_response <<struct>> {
+                +result : ores::utility::domain::result
+                +methodologies : vector<ores::dq::domain::methodology>
+                +total : uint64_t
+            }
+            class get_methodology_request <<struct>> {
+                +key : methodology_key
+            }
+            class get_methodology_response <<struct>> {
+                +result : ores::utility::domain::result
+                +methodology : optional<ores::dq::domain::methodology>
+            }
+            class get_many_methodologies_request <<struct>> {
+                +keys : vector<methodology_key>
+            }
+            class get_many_methodologies_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<methodology_lookup>
+            }
+            class put_methodology_request <<struct>> {
+                +change : methodology_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_methodology_response <<struct>> {
+                +result : ores::utility::domain::result
+                +methodology : ores::dq::domain::methodology
+            }
+            class put_many_methodologies_request <<struct>> {
+                +changes : vector<methodology_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_methodologies_response <<struct>> {
+                +result : ores::utility::domain::result
+                +methodologies : vector<ores::dq::domain::methodology>
+            }
+            class delete_methodology_request <<struct>> {
+                +removal : methodology_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_methodology_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_methodologies_request <<struct>> {
+                +removals : vector<methodology_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_methodologies_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_methodology_versions_request <<struct>> {
+                +key : methodology_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<methodology_versions_filter>
+            }
+            class list_methodology_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::methodology>
+                +total : uint64_t
+            }
+            class get_methodology_version_request <<struct>> {
+                +key : methodology_version_key
+            }
+            class get_methodology_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::methodology
+            }
+            class nature_dimension_key <<struct>> {
+                +code : string
+            }
+            class nature_dimension_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+            }
+            class nature_dimension_change <<struct>> {
+                +write : nature_dimension_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class nature_dimension_removal <<struct>> {
+                +key : nature_dimension_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class nature_dimension_lookup <<struct>> {
+                +key : nature_dimension_key
+                +nature_dimension : optional<ores::dq::domain::nature_dimension>
+            }
+            class nature_dimension_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : nature_dimension_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class nature_dimension_version_key <<struct>> {
+                +nature_dimension : nature_dimension_key
+                +version : uint32_t
+            }
+            class nature_dimension_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_nature_dimensions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_nature_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dimensions : vector<ores::dq::domain::nature_dimension>
+                +total : uint64_t
+            }
+            class get_nature_dimension_request <<struct>> {
+                +key : nature_dimension_key
+            }
+            class get_nature_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+                +nature_dimension : optional<ores::dq::domain::nature_dimension>
+            }
+            class get_many_nature_dimensions_request <<struct>> {
+                +keys : vector<nature_dimension_key>
+            }
+            class get_many_nature_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<nature_dimension_lookup>
+            }
+            class put_nature_dimension_request <<struct>> {
+                +change : nature_dimension_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_nature_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+                +nature_dimension : ores::dq::domain::nature_dimension
+            }
+            class put_many_nature_dimensions_request <<struct>> {
+                +changes : vector<nature_dimension_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_nature_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dimensions : vector<ores::dq::domain::nature_dimension>
+            }
+            class delete_nature_dimension_request <<struct>> {
+                +removal : nature_dimension_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_nature_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_nature_dimensions_request <<struct>> {
+                +removals : vector<nature_dimension_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_nature_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_nature_dimension_versions_request <<struct>> {
+                +key : nature_dimension_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<nature_dimension_versions_filter>
+            }
+            class list_nature_dimension_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::nature_dimension>
+                +total : uint64_t
+            }
+            class get_nature_dimension_version_request <<struct>> {
+                +key : nature_dimension_version_key
+            }
+            class get_nature_dimension_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::nature_dimension
+            }
+            class origin_dimension_key <<struct>> {
+                +code : string
+            }
+            class origin_dimension_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+            }
+            class origin_dimension_change <<struct>> {
+                +write : origin_dimension_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class origin_dimension_removal <<struct>> {
+                +key : origin_dimension_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class origin_dimension_lookup <<struct>> {
+                +key : origin_dimension_key
+                +origin_dimension : optional<ores::dq::domain::origin_dimension>
+            }
+            class origin_dimension_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : origin_dimension_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class origin_dimension_version_key <<struct>> {
+                +origin_dimension : origin_dimension_key
+                +version : uint32_t
+            }
+            class origin_dimension_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_origin_dimensions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_origin_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dimensions : vector<ores::dq::domain::origin_dimension>
+                +total : uint64_t
+            }
+            class get_origin_dimension_request <<struct>> {
+                +key : origin_dimension_key
+            }
+            class get_origin_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+                +origin_dimension : optional<ores::dq::domain::origin_dimension>
+            }
+            class get_many_origin_dimensions_request <<struct>> {
+                +keys : vector<origin_dimension_key>
+            }
+            class get_many_origin_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<origin_dimension_lookup>
+            }
+            class put_origin_dimension_request <<struct>> {
+                +change : origin_dimension_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_origin_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+                +origin_dimension : ores::dq::domain::origin_dimension
+            }
+            class put_many_origin_dimensions_request <<struct>> {
+                +changes : vector<origin_dimension_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_origin_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dimensions : vector<ores::dq::domain::origin_dimension>
+            }
+            class delete_origin_dimension_request <<struct>> {
+                +removal : origin_dimension_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_origin_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_origin_dimensions_request <<struct>> {
+                +removals : vector<origin_dimension_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_origin_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_origin_dimension_versions_request <<struct>> {
+                +key : origin_dimension_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<origin_dimension_versions_filter>
+            }
+            class list_origin_dimension_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::origin_dimension>
+                +total : uint64_t
+            }
+            class get_origin_dimension_version_request <<struct>> {
+                +key : origin_dimension_version_key
+            }
+            class get_origin_dimension_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::origin_dimension
+            }
+            class party_bundle_publish_step <<struct>> {
+                +bundle_code : string
+                +label : string
+            }
+            class publication_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class publication_write <<struct>> {
+                +id : boost::uuids::uuid
+                +dataset_id : boost::uuids::uuid
+                +dataset_code : string
+                +mode : string
+                +target_table : string
+                +records_inserted : int64_t
+                +records_updated : int64_t
+                +records_skipped : int64_t
+                +records_deleted : int64_t
+                +published_by : string
+                +published_at : chrono::system_clock::time_point
+            }
+            class publication_change <<struct>> {
+                +write : publication_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class publication_removal <<struct>> {
+                +key : publication_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class publication_lookup <<struct>> {
+                +key : publication_key
+                +publication : optional<ores::dq::domain::publication>
+            }
+            class publication_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : publication_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_publications_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_publications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +publications : vector<ores::dq::domain::publication>
+                +total : uint64_t
+            }
+            class get_publication_request <<struct>> {
+                +key : publication_key
+            }
+            class get_publication_response <<struct>> {
+                +result : ores::utility::domain::result
+                +publication : optional<ores::dq::domain::publication>
+            }
+            class get_many_publications_request <<struct>> {
+                +keys : vector<publication_key>
+            }
+            class get_many_publications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<publication_lookup>
+            }
+            class put_publication_request <<struct>> {
+                +change : publication_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_publication_response <<struct>> {
+                +result : ores::utility::domain::result
+                +publication : ores::dq::domain::publication
+            }
+            class put_many_publications_request <<struct>> {
+                +changes : vector<publication_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_publications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +publications : vector<ores::dq::domain::publication>
+            }
+            class delete_publication_request <<struct>> {
+                +removal : publication_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_publication_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_publications_request <<struct>> {
+                +removals : vector<publication_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_publications_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class publish_bundle_request <<struct>> {
+                +bundle_code : string
+                +mode : string
+                +published_by : string
+                +atomic : bool
+                +params_json : string
+            }
+            class publish_bundle_response <<struct>> {
+                +success : bool
+                +error_message : string
+                +instance_id : string
+                +datasets_dispatched : int
+            }
+            class publish_datasets_request <<struct>> {
+                +dataset_ids : vector<string>
+                +mode : string
+                +published_by : string
+                +resolve_dependencies : bool
+            }
+            class publish_datasets_response <<struct>> {
                 +success : bool
                 +message : string
-                +publications : vector<ores::dq::domain::publication>
+                +instance_id : string
+                +datasets_dispatched : int
+            }
+            class publish_from_dq_command <<struct>> {
+                +dataset_id : string
+                +tenant_id : string
+                +mode : string
+                +params_json : string
+            }
+            class publish_from_dq_result <<struct>> {
+                +success : bool
+                +error_message : string
+                +records_inserted : uint64_t
+                +records_updated : uint64_t
+                +records_skipped : uint64_t
+                +records_deleted : uint64_t
             }
             class lei_parties_params <<struct>> {
                 +root_lei : string
@@ -1006,35 +2770,539 @@ namespace ores #F2F2F2 {
                 +opted_in_datasets : vector<string>
                 +lei_parties : optional<lei_parties_params>
                 +party_id : optional<string>
+                +tiers : optional<string>
+                +jurisdiction : optional<string>
             }
-            class bundle_dataset_result <<struct>> {
-                +dataset_code : string
-                +success : bool
-                +error_message : string
-                +records_inserted : int
-                +records_updated : int
-                +records_skipped : int
-                +records_deleted : int
+            class dataset_publish_params <<struct>> {
+                +party_id : optional<string>
             }
-            class publish_bundle_request <<struct>> {
+            class report_definition_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class report_definition_lookup <<struct>> {
+                +key : report_definition_key
+                +report_definition : optional<ores::dq::domain::report_definition>
+            }
+            class report_definition_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : report_definition_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_report_definitions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_report_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +definitions : vector<ores::dq::domain::report_definition>
+                +total : uint64_t
+            }
+            class get_report_definition_request <<struct>> {
+                +key : report_definition_key
+            }
+            class get_report_definition_response <<struct>> {
+                +result : ores::utility::domain::result
+                +report_definition : optional<ores::dq::domain::report_definition>
+            }
+            class get_many_report_definitions_request <<struct>> {
+                +keys : vector<report_definition_key>
+            }
+            class get_many_report_definitions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<report_definition_lookup>
+            }
+            class dq_report_definition_template <<struct>> {
+                +name : string
+                +description : string
+                +report_type : string
+                +schedule_expression : string
+                +concurrency_policy : string
+                +display_order : int
+            }
+            class list_dq_report_definition_templates_request <<struct>> {
                 +bundle_code : string
-                +published_by : string
-                +atomic : bool
+            }
+            class list_dq_report_definition_templates_response <<struct>> {
+                +success : bool
+                +message : string
+                +templates : vector<dq_report_definition_template>
+            }
+            class subject_area_key <<struct>> {
+                +name : string
+                +domain_name : string
+            }
+            class subject_area_write <<struct>> {
+                +name : string
+                +domain_name : string
+                +description : string
+            }
+            class subject_area_change <<struct>> {
+                +write : subject_area_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class subject_area_removal <<struct>> {
+                +key : subject_area_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class subject_area_lookup <<struct>> {
+                +key : subject_area_key
+                +subject_area : optional<ores::dq::domain::subject_area>
+            }
+            class subject_area_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : subject_area_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class subject_area_version_key <<struct>> {
+                +subject_area : subject_area_key
+                +version : uint32_t
+            }
+            class subject_area_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_subject_areas_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_subject_areas_response <<struct>> {
+                +result : ores::utility::domain::result
+                +areas : vector<ores::dq::domain::subject_area>
+                +total : uint64_t
+            }
+            class get_subject_area_request <<struct>> {
+                +key : subject_area_key
+            }
+            class get_subject_area_response <<struct>> {
+                +result : ores::utility::domain::result
+                +subject_area : optional<ores::dq::domain::subject_area>
+            }
+            class get_many_subject_areas_request <<struct>> {
+                +keys : vector<subject_area_key>
+            }
+            class get_many_subject_areas_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<subject_area_lookup>
+            }
+            class put_subject_area_request <<struct>> {
+                +change : subject_area_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_subject_area_response <<struct>> {
+                +result : ores::utility::domain::result
+                +subject_area : ores::dq::domain::subject_area
+            }
+            class put_many_subject_areas_request <<struct>> {
+                +changes : vector<subject_area_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_subject_areas_response <<struct>> {
+                +result : ores::utility::domain::result
+                +areas : vector<ores::dq::domain::subject_area>
+            }
+            class delete_subject_area_request <<struct>> {
+                +removal : subject_area_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_subject_area_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_subject_areas_request <<struct>> {
+                +removals : vector<subject_area_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_subject_areas_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_subject_area_versions_request <<struct>> {
+                +key : subject_area_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<subject_area_versions_filter>
+            }
+            class list_subject_area_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::subject_area>
+                +total : uint64_t
+            }
+            class get_subject_area_version_request <<struct>> {
+                +key : subject_area_version_key
+            }
+            class get_subject_area_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::subject_area
+            }
+            class synthetic_fx_spot_config_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class synthetic_fx_spot_config_lookup <<struct>> {
+                +key : synthetic_fx_spot_config_key
+                +synthetic_fx_spot_config : optional<ores::dq::domain::synthetic_fx_spot_config>
+            }
+            class synthetic_fx_spot_config_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : synthetic_fx_spot_config_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_synthetic_fx_spot_configs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_synthetic_fx_spot_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +configs : vector<ores::dq::domain::synthetic_fx_spot_config>
+                +total : uint64_t
+            }
+            class get_synthetic_fx_spot_config_request <<struct>> {
+                +key : synthetic_fx_spot_config_key
+            }
+            class get_synthetic_fx_spot_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +synthetic_fx_spot_config : optional<ores::dq::domain::synthetic_fx_spot_config>
+            }
+            class get_many_synthetic_fx_spot_configs_request <<struct>> {
+                +keys : vector<synthetic_fx_spot_config_key>
+            }
+            class get_many_synthetic_fx_spot_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<synthetic_fx_spot_config_lookup>
+            }
+            class treatment_dimension_key <<struct>> {
+                +code : string
+            }
+            class treatment_dimension_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+            }
+            class treatment_dimension_change <<struct>> {
+                +write : treatment_dimension_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class treatment_dimension_removal <<struct>> {
+                +key : treatment_dimension_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class treatment_dimension_lookup <<struct>> {
+                +key : treatment_dimension_key
+                +treatment_dimension : optional<ores::dq::domain::treatment_dimension>
+            }
+            class treatment_dimension_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : treatment_dimension_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class treatment_dimension_version_key <<struct>> {
+                +treatment_dimension : treatment_dimension_key
+                +version : uint32_t
+            }
+            class treatment_dimension_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_treatment_dimensions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_treatment_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dimensions : vector<ores::dq::domain::treatment_dimension>
+                +total : uint64_t
+            }
+            class get_treatment_dimension_request <<struct>> {
+                +key : treatment_dimension_key
+            }
+            class get_treatment_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+                +treatment_dimension : optional<ores::dq::domain::treatment_dimension>
+            }
+            class get_many_treatment_dimensions_request <<struct>> {
+                +keys : vector<treatment_dimension_key>
+            }
+            class get_many_treatment_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<treatment_dimension_lookup>
+            }
+            class put_treatment_dimension_request <<struct>> {
+                +change : treatment_dimension_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_treatment_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+                +treatment_dimension : ores::dq::domain::treatment_dimension
+            }
+            class put_many_treatment_dimensions_request <<struct>> {
+                +changes : vector<treatment_dimension_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_treatment_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +dimensions : vector<ores::dq::domain::treatment_dimension>
+            }
+            class delete_treatment_dimension_request <<struct>> {
+                +removal : treatment_dimension_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_treatment_dimension_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_treatment_dimensions_request <<struct>> {
+                +removals : vector<treatment_dimension_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_treatment_dimensions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_treatment_dimension_versions_request <<struct>> {
+                +key : treatment_dimension_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<treatment_dimension_versions_filter>
+            }
+            class list_treatment_dimension_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::dq::domain::treatment_dimension>
+                +total : uint64_t
+            }
+            class get_treatment_dimension_version_request <<struct>> {
+                +key : treatment_dimension_version_key
+            }
+            class get_treatment_dimension_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : ores::dq::domain::treatment_dimension
+            }
+        }
+        namespace workflow #F2F2F2 {
+            class bundle_publish_workflow_dataset <<struct>> {
+                +dataset_id : string
+                +dataset_code : string
+                +target_subject : string
+                +mode : string
                 +params_json : string
             }
-            class publish_bundle_response <<struct>> {
-                +success : bool
-                +error_message : string
-                +datasets_succeeded : int
-                +total_records_inserted : int
-                +total_records_updated : int
-                +dataset_results : vector<bundle_dataset_result>
+            class bundle_publish_workflow_request <<struct>> {
+                +bundle_code : string
+                +tenant_id : string
+                +published_by : string
+                +datasets : vector<bundle_publish_workflow_dataset>
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+ores::dq::domain::dataset *-- ores::dq::domain::artefact_type
+ores::dq::messaging::artefact_type_lookup *-- ores::dq::domain::artefact_type
+ores::dq::messaging::artefact_type_version_key *-- ores::dq::domain::artefact_type
+ores::dq::messaging::badge_definition_lookup *-- ores::dq::domain::badge_definition
+ores::dq::messaging::badge_definition_version_key *-- ores::dq::domain::badge_definition
+ores::dq::messaging::badge_mapping_lookup *-- ores::dq::domain::badge_mapping
+ores::dq::messaging::badge_severity_lookup *-- ores::dq::domain::badge_severity
+ores::dq::messaging::badge_severity_version_key *-- ores::dq::domain::badge_severity
+ores::dq::messaging::catalog_lookup *-- ores::dq::domain::catalog
+ores::dq::messaging::catalog_version_key *-- ores::dq::domain::catalog
+ores::dq::messaging::change_reason_category_lookup *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::change_reason_category_version_key *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::change_reason_lookup *-- ores::dq::domain::change_reason
+ores::dq::messaging::change_reason_version_key *-- ores::dq::domain::change_reason
+ores::dq::messaging::code_domain_lookup *-- ores::dq::domain::code_domain
+ores::dq::messaging::code_domain_version_key *-- ores::dq::domain::code_domain
+ores::dq::messaging::coding_scheme_authority_type_lookup *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::coding_scheme_authority_type_version_key *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::coding_scheme_lookup *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::coding_scheme_version_key *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::data_domain_lookup *-- ores::dq::domain::data_domain
+ores::dq::messaging::data_domain_version_key *-- ores::dq::domain::data_domain
+ores::dq::messaging::dataset_bundle_lookup *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::dataset_bundle_member_lookup *-- ores::dq::domain::dataset_bundle_member
+ores::dq::messaging::dataset_bundle_version_key *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::dataset_lookup *-- ores::dq::domain::dataset
+ores::dq::messaging::dataset_version_key *-- ores::dq::domain::dataset
+ores::dq::messaging::dataset_write *-- ores::dq::domain::artefact_type
+ores::dq::messaging::fsm_state_lookup *-- ores::dq::domain::fsm_state
+ores::dq::messaging::fsm_state_version_key *-- ores::dq::domain::fsm_state
+ores::dq::messaging::fsm_transition_lookup *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::fsm_transition_version_key *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::get_artefact_type_response *-- ores::dq::domain::artefact_type
+ores::dq::messaging::get_artefact_type_version_response *-- ores::dq::domain::artefact_type
+ores::dq::messaging::get_badge_definition_response *-- ores::dq::domain::badge_definition
+ores::dq::messaging::get_badge_definition_version_response *-- ores::dq::domain::badge_definition
+ores::dq::messaging::get_badge_mapping_response *-- ores::dq::domain::badge_mapping
+ores::dq::messaging::get_badge_severity_response *-- ores::dq::domain::badge_severity
+ores::dq::messaging::get_badge_severity_version_response *-- ores::dq::domain::badge_severity
+ores::dq::messaging::get_catalog_response *-- ores::dq::domain::catalog
+ores::dq::messaging::get_catalog_version_response *-- ores::dq::domain::catalog
+ores::dq::messaging::get_change_reason_category_response *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::get_change_reason_category_version_response *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::get_change_reason_response *-- ores::dq::domain::change_reason
+ores::dq::messaging::get_change_reason_version_response *-- ores::dq::domain::change_reason
+ores::dq::messaging::get_code_domain_response *-- ores::dq::domain::code_domain
+ores::dq::messaging::get_code_domain_version_response *-- ores::dq::domain::code_domain
+ores::dq::messaging::get_coding_scheme_authority_type_response *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::get_coding_scheme_authority_type_version_response *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::get_coding_scheme_response *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::get_coding_scheme_version_response *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::get_data_domain_response *-- ores::dq::domain::data_domain
+ores::dq::messaging::get_data_domain_version_response *-- ores::dq::domain::data_domain
+ores::dq::messaging::get_dataset_bundle_member_response *-- ores::dq::domain::dataset_bundle_member
+ores::dq::messaging::get_dataset_bundle_response *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::get_dataset_bundle_version_response *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::get_dataset_response *-- ores::dq::domain::dataset
+ores::dq::messaging::get_dataset_version_response *-- ores::dq::domain::dataset
+ores::dq::messaging::get_fsm_state_response *-- ores::dq::domain::fsm_state
+ores::dq::messaging::get_fsm_state_version_response *-- ores::dq::domain::fsm_state
+ores::dq::messaging::get_fsm_transition_response *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::get_fsm_transition_version_response *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::get_lei_entity_response *-- ores::dq::domain::lei_entity
+ores::dq::messaging::get_lei_relationship_response *-- ores::dq::domain::lei_relationship
+ores::dq::messaging::get_methodology_response *-- ores::dq::domain::methodology
+ores::dq::messaging::get_methodology_version_response *-- ores::dq::domain::methodology
+ores::dq::messaging::get_nature_dimension_response *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::get_nature_dimension_version_response *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::get_origin_dimension_response *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::get_origin_dimension_version_response *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::get_publication_response *-- ores::dq::domain::publication
+ores::dq::messaging::get_report_definition_response *-- ores::dq::domain::report_definition
+ores::dq::messaging::get_subject_area_response *-- ores::dq::domain::subject_area
+ores::dq::messaging::get_subject_area_version_response *-- ores::dq::domain::subject_area
+ores::dq::messaging::get_synthetic_fx_spot_config_response *-- ores::dq::domain::synthetic_fx_spot_config
+ores::dq::messaging::get_treatment_dimension_response *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::get_treatment_dimension_version_response *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::lei_entity_lookup *-- ores::dq::domain::lei_entity
+ores::dq::messaging::lei_relationship_lookup *-- ores::dq::domain::lei_relationship
+ores::dq::messaging::list_artefact_type_versions_response *-- ores::dq::domain::artefact_type
+ores::dq::messaging::list_artefact_types_response *-- ores::dq::domain::artefact_type
+ores::dq::messaging::list_badge_definition_versions_response *-- ores::dq::domain::badge_definition
+ores::dq::messaging::list_badge_definitions_response *-- ores::dq::domain::badge_definition
+ores::dq::messaging::list_badge_mappings_response *-- ores::dq::domain::badge_mapping
+ores::dq::messaging::list_badge_severities_response *-- ores::dq::domain::badge_severity
+ores::dq::messaging::list_badge_severity_versions_response *-- ores::dq::domain::badge_severity
+ores::dq::messaging::list_by_bundle_code_dataset_bundle_members_response *-- ores::dq::domain::dataset_bundle_member
+ores::dq::messaging::list_by_code_domain_code_badge_mappings_response *-- ores::dq::domain::badge_mapping
+ores::dq::messaging::list_catalog_versions_response *-- ores::dq::domain::catalog
+ores::dq::messaging::list_catalogs_response *-- ores::dq::domain::catalog
+ores::dq::messaging::list_change_reason_categories_response *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::list_change_reason_category_versions_response *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::list_change_reason_versions_response *-- ores::dq::domain::change_reason
+ores::dq::messaging::list_change_reasons_response *-- ores::dq::domain::change_reason
+ores::dq::messaging::list_code_domain_versions_response *-- ores::dq::domain::code_domain
+ores::dq::messaging::list_code_domains_response *-- ores::dq::domain::code_domain
+ores::dq::messaging::list_coding_scheme_authority_type_versions_response *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::list_coding_scheme_authority_types_response *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::list_coding_scheme_versions_response *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::list_coding_schemes_response *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::list_data_domain_versions_response *-- ores::dq::domain::data_domain
+ores::dq::messaging::list_data_domains_response *-- ores::dq::domain::data_domain
+ores::dq::messaging::list_dataset_bundle_members_response *-- ores::dq::domain::dataset_bundle_member
+ores::dq::messaging::list_dataset_bundle_versions_response *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::list_dataset_bundles_response *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::list_dataset_versions_response *-- ores::dq::domain::dataset
+ores::dq::messaging::list_datasets_response *-- ores::dq::domain::dataset
+ores::dq::messaging::list_fsm_state_versions_response *-- ores::dq::domain::fsm_state
+ores::dq::messaging::list_fsm_states_response *-- ores::dq::domain::fsm_state
+ores::dq::messaging::list_fsm_transition_versions_response *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::list_fsm_transitions_response *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::list_lei_entities_response *-- ores::dq::domain::lei_entity
+ores::dq::messaging::list_lei_relationships_response *-- ores::dq::domain::lei_relationship
+ores::dq::messaging::list_methodologies_response *-- ores::dq::domain::methodology
+ores::dq::messaging::list_methodology_versions_response *-- ores::dq::domain::methodology
+ores::dq::messaging::list_nature_dimension_versions_response *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::list_nature_dimensions_response *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::list_origin_dimension_versions_response *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::list_origin_dimensions_response *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::list_publications_response *-- ores::dq::domain::publication
+ores::dq::messaging::list_report_definitions_response *-- ores::dq::domain::report_definition
+ores::dq::messaging::list_subject_area_versions_response *-- ores::dq::domain::subject_area
+ores::dq::messaging::list_subject_areas_response *-- ores::dq::domain::subject_area
+ores::dq::messaging::list_synthetic_fx_spot_configs_response *-- ores::dq::domain::synthetic_fx_spot_config
+ores::dq::messaging::list_treatment_dimension_versions_response *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::list_treatment_dimensions_response *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::methodology_lookup *-- ores::dq::domain::methodology
+ores::dq::messaging::methodology_version_key *-- ores::dq::domain::methodology
+ores::dq::messaging::nature_dimension_lookup *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::nature_dimension_version_key *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::origin_dimension_lookup *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::origin_dimension_version_key *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::publication_lookup *-- ores::dq::domain::publication
+ores::dq::messaging::put_artefact_type_response *-- ores::dq::domain::artefact_type
+ores::dq::messaging::put_badge_definition_response *-- ores::dq::domain::badge_definition
+ores::dq::messaging::put_badge_mapping_response *-- ores::dq::domain::badge_mapping
+ores::dq::messaging::put_badge_severity_response *-- ores::dq::domain::badge_severity
+ores::dq::messaging::put_catalog_response *-- ores::dq::domain::catalog
+ores::dq::messaging::put_change_reason_category_response *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::put_change_reason_response *-- ores::dq::domain::change_reason
+ores::dq::messaging::put_code_domain_response *-- ores::dq::domain::code_domain
+ores::dq::messaging::put_coding_scheme_authority_type_response *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::put_coding_scheme_response *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::put_data_domain_response *-- ores::dq::domain::data_domain
+ores::dq::messaging::put_dataset_bundle_member_response *-- ores::dq::domain::dataset_bundle_member
+ores::dq::messaging::put_dataset_bundle_response *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::put_dataset_response *-- ores::dq::domain::dataset
+ores::dq::messaging::put_fsm_state_response *-- ores::dq::domain::fsm_state
+ores::dq::messaging::put_fsm_transition_response *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::put_many_artefact_types_response *-- ores::dq::domain::artefact_type
+ores::dq::messaging::put_many_badge_definitions_response *-- ores::dq::domain::badge_definition
+ores::dq::messaging::put_many_badge_mappings_response *-- ores::dq::domain::badge_mapping
+ores::dq::messaging::put_many_badge_severities_response *-- ores::dq::domain::badge_severity
+ores::dq::messaging::put_many_catalogs_response *-- ores::dq::domain::catalog
+ores::dq::messaging::put_many_change_reason_categories_response *-- ores::dq::domain::change_reason_category
+ores::dq::messaging::put_many_change_reasons_response *-- ores::dq::domain::change_reason
+ores::dq::messaging::put_many_code_domains_response *-- ores::dq::domain::code_domain
+ores::dq::messaging::put_many_coding_scheme_authority_types_response *-- ores::dq::domain::coding_scheme_authority_type
+ores::dq::messaging::put_many_coding_schemes_response *-- ores::dq::domain::coding_scheme
+ores::dq::messaging::put_many_data_domains_response *-- ores::dq::domain::data_domain
+ores::dq::messaging::put_many_dataset_bundle_members_response *-- ores::dq::domain::dataset_bundle_member
+ores::dq::messaging::put_many_dataset_bundles_response *-- ores::dq::domain::dataset_bundle
+ores::dq::messaging::put_many_datasets_response *-- ores::dq::domain::dataset
+ores::dq::messaging::put_many_fsm_states_response *-- ores::dq::domain::fsm_state
+ores::dq::messaging::put_many_fsm_transitions_response *-- ores::dq::domain::fsm_transition
+ores::dq::messaging::put_many_methodologies_response *-- ores::dq::domain::methodology
+ores::dq::messaging::put_many_nature_dimensions_response *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::put_many_origin_dimensions_response *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::put_many_publications_response *-- ores::dq::domain::publication
+ores::dq::messaging::put_many_subject_areas_response *-- ores::dq::domain::subject_area
+ores::dq::messaging::put_many_treatment_dimensions_response *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::put_methodology_response *-- ores::dq::domain::methodology
+ores::dq::messaging::put_nature_dimension_response *-- ores::dq::domain::nature_dimension
+ores::dq::messaging::put_origin_dimension_response *-- ores::dq::domain::origin_dimension
+ores::dq::messaging::put_publication_response *-- ores::dq::domain::publication
+ores::dq::messaging::put_subject_area_response *-- ores::dq::domain::subject_area
+ores::dq::messaging::put_treatment_dimension_response *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::report_definition_lookup *-- ores::dq::domain::report_definition
+ores::dq::messaging::subject_area_lookup *-- ores::dq::domain::subject_area
+ores::dq::messaging::subject_area_version_key *-- ores::dq::domain::subject_area
+ores::dq::messaging::synthetic_fx_spot_config_lookup *-- ores::dq::domain::synthetic_fx_spot_config
+ores::dq::messaging::treatment_dimension_lookup *-- ores::dq::domain::treatment_dimension
+ores::dq::messaging::treatment_dimension_version_key *-- ores::dq::domain::treatment_dimension
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.dq.api.puml"

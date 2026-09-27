@@ -26,11 +26,11 @@ The tenant journey's first step is choosing a starting point, and the starting p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Three models written and regenerated; the composition points and the shell aggregator wired; the two profiles, nine steps and two parameters seeded by SQL; the reads subscribed on the live broker. Working the gates. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the remaining gates, build, and commit. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

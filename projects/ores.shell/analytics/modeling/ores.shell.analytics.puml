@@ -26,12 +26,60 @@ namespace ores #F2F2F2 {
         namespace app #F2F2F2 {
             namespace commands #F2F2F2 {
                 class pricing_engine_type_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class pricing_model_config_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class pricing_model_product_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class pricing_model_product_parameter_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
             }
         }

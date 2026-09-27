@@ -25,69 +25,314 @@ namespace ores #F2F2F2 {
     namespace shell #F2F2F2 {
         namespace app #F2F2F2 {
             class application {
-                +login_config : optional<config::login_options>
                 -connection_config_ : optional<nats::config::nats_options>
                 -login_config_ : optional<config::login_options>
+                -script_path_ : optional<string>
+                -lg() : auto&
+                +application(optional<nats::config::nats_options> connection_config, optional<config::login_options> login_config, optional<string> script_path)
+                +run() : void
             }
             class host {
+                -lg() : auto&
+                +execute(const vector<string>& args, ostream& std_output, ostream& error_output) : int
             }
             class repl {
                 -session_ : ores::nats::service::nats_client&
+                -connection_template_ : nats::config::nats_options
                 -pagination_ : pagination_context
+                -active_session_ : ::cli::CliSession*
+                -lg() : auto&
+                +run() : void
+                +run(istream& in, ostream& out) : void
+                -setup_menus() : unique_ptr<::cli::Cli>
+                -display_welcome(ostream& out) : void
+                -cleanup() : void
             }
-            class script_runner {
+            class script_result <<struct>> {
+                +executed : int
+                +aborted : bool
+                +aborted_line : int
+                +aborted_command : string
             }
             namespace commands #F2F2F2 {
-                class account_parties_commands {
-                }
                 class accounts_commands {
-                    +account_id : string
-                    +days : int
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_create_account(ostream& out, ores::nats::service::nats_client& session, string principal, string password, string totp_secret, string email) : void
+                    +process_list_accounts(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_login(ostream& out, ores::nats::service::nats_client& session, string principal, string password) : void
+                    +process_lock_account(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
+                    +process_unlock_account(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
+                    +process_list_login_info(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_logout(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_list_sessions(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
+                    +process_active_sessions(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_get_account_history(ostream& out, ores::nats::service::nats_client& session, string username) : void
+                    +process_account_info(ostream& out, ores::nats::service::nats_client& session, string username) : void
+                    +process_set_default_party(ostream& out, ores::nats::service::nats_client& session, string party_ref) : void
+                }
+                class analytics_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                }
+                class assets_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                 }
                 class bundles_commands {
-                }
-                class change_reason_categories_commands {
-                }
-                class change_reasons_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_publish(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class compute_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_publish_package(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_dispatch_batch(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_grid_stats(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_download_input(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_download_output(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class connection_commands {
+                    -lg() : auto&
+                    +process_connect(ostream& out, ores::nats::service::nats_client& session, const ores::nats::config::nats_options& connection_template, const vector<string>& args) : void
+                    +process_disconnect(ostream& out, ores::nats::service::nats_client& session) : void
                 }
-                class countries_commands {
+                class dq_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                 }
-                class crm_commands {
+                class history_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
-                class currencies_commands {
+                class iam_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
                 }
                 class lei_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_countries(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_entities(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class marketdata_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_import(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class navigation_commands {
-                    +size : uint32_t
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, pagination_context& pagination) : void
+                    +process_next(ostream& out, pagination_context& pagination) : void
+                    +process_prev(ostream& out, pagination_context& pagination) : void
+                    +process_first(ostream& out, pagination_context& pagination) : void
+                    +process_last(ostream& out, pagination_context& pagination) : void
+                    +process_page_size(ostream& out, pagination_context& pagination, uint32_t size) : void
                 }
                 class orgmode_commands {
-                }
-                class parties_commands {
+                    +register_commands(cli::Menu& root_menu) : void
+                    +process_doc_show(ostream& out, const string& path) : void
                 }
                 class provision_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_system(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_tenant(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_party(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class rbac_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_assign_role(ostream& out, ores::nats::service::nats_client& session, string account_id, string role_id) : void
+                    +process_revoke_role(ostream& out, ores::nats::service::nats_client& session, string account_id, string role_id) : void
+                    +process_get_account_roles(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
+                    +process_get_account_permissions(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
+                    +process_suggest_role_commands(ostream& out, ores::nats::service::nats_client& session, string username, string identifier) : void
+                }
+                class refdata_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                 }
                 class reports_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_templates(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class scheduler_commands {
+                    +register_commands(cli::Menu& root, ores::nats::service::nats_client& session) : void
+                    +process_jobs(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_schedule(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_remove(ostream& out, ores::nats::service::nats_client& session, const string& job_name) : void
+                    +process_instances(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_status(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_watch(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class script_commands {
+                    +register_commands(cli::Menu& root, cli::CliSession*& active_session) : void
+                }
+                class storage_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                 }
                 class subscription_commands {
+                    +register_commands(cli::Menu& root, ores::nats::service::nats_client& session) : void
+                    +process_channels(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_listen(ostream& out, ores::nats::service::nats_client& session, string event_type) : void
+                    +process_unlisten(ostream& out, ores::nats::service::nats_client& session, string event_type) : void
+                    +process_subscriptions(ostream& out, ores::nats::service::nats_client& session) : void
+                    +process_notifications(ostream& out, ores::nats::service::nats_client& session) : void
+                    +display_pending_notifications(ostream& out, ores::nats::service::nats_client& session) : size_t
+                }
+                class synthetic_entity_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                 }
                 class synthetic_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_generate(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +generate_flag_specs() : vector<flag_spec>
+                    +build_generate_request(ostream& out, const parsed_args& parsed) : optional<ores::synthetic::messaging::generate_organisation_request>
+                    +generate(ostream& out, ores::nats::service::nats_client& session, const ores::synthetic::messaging::generate_organisation_request& req) : bool
+                    +process_list_folders(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +list_folders(ostream& out, ores::nats::service::nats_client& session, const string& collection_id, const string& folder_name) : bool
+                    +process_list_configs(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +list_configs(ostream& out, ores::nats::service::nats_client& session, optional<ores::synthetic::domain::scope> scope_filter) : bool
+                    +process_list_feeds(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +list_feeds(ostream& out, ores::nats::service::nats_client& session) : bool
+                    +process_start(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_stop(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_validate_vintage(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +start_folder(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
+                    +start_feed(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
+                    +stop_folder(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
+                    +stop_feed(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
+                    +validate_vintage(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
                 }
                 class tenants_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_tenant_history(ostream& out, ores::nats::service::nats_client& session, string tenant_id) : void
+                    +process_complete_provisioning(ostream& out, ores::nats::service::nats_client& session) : void
                 }
-                class variability_commands {
+                class balance_guaranteed_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_balance_guaranteed_swap_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_balance_guaranteed_swap_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_balance_guaranteed_swap_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
                 }
-                class workflow_commands {
+                class bond_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_bond_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_bond_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_bond_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class callable_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_callable_swap_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_callable_swap_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_callable_swap_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class cap_floor_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_cap_floor_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_cap_floor_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_cap_floor_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class commodity_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_commodity_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_commodity_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_commodity_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class composite_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_composite_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_add_composite_instrument(ostream& out, ores::nats::service::nats_client& session, string trade_type_code, string description, string change_reason_code, string change_commentary) : void
+                    +process_delete_composite_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_composite_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class credit_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_credit_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_credit_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_credit_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class fra_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_fra_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_fra_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_fra_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class inflation_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_inflation_swap_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_inflation_swap_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_inflation_swap_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class knock_out_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_knock_out_swap_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_knock_out_swap_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_knock_out_swap_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class ore_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_upload(ostream& out, ores::nats::service::nats_client& session, const string& src_dir, const string& request_id) : void
+                    +process_export(ostream& out, ores::nats::service::nats_client& session, const string& output_file, const string& node_id, uint32_t limit) : void
+                }
+                class rpa_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_rpa_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_rpa_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_rpa_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class scripted_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_scripted_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_scripted_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_scripted_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class swaption_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_swaption_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_swaption_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_swaption_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                }
+                class trade_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_trades(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_trade(ostream& out, ores::nats::service::nats_client& session, string id) : void
+                    +process_get_trade_history(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class trading_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                }
+                class vanilla_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_get_vanilla_swap_instruments(ostream& out, ores::nats::service::nats_client& session, pagination_context& pagination) : void
+                    +process_delete_vanilla_swap_instrument(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
+                    +process_get_vanilla_swap_instrument_history(ostream& out, ores::nats::service::nats_client& session, string instrument_id) : void
                 }
             }
         }
@@ -101,11 +346,14 @@ namespace ores #F2F2F2 {
                 +connection : optional<nats::config::nats_options>
                 +login : optional<login_options>
                 +telemetry : optional<telemetry::exporting::telemetry_options>
+                +script_path : optional<string>
             }
             class parser {
+                +parse(const vector<string>& arguments, ostream& info, ostream& error) : optional<options>
             }
             class parser_exception {
                 -message_ : const string
+                +what() : const char*
             }
         }
     }

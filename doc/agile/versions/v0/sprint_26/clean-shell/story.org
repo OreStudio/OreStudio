@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ ores.shell meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-23                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.shell meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8D3177C6-5B8F-4C93-B464-26983EBCC3BD][Bring ores.shell to the clean standard]] | BACKLOG | | | Work ores.shell through the Component Clean Standard in order and record each item. |
+| [[id:8D3177C6-5B8F-4C93-B464-26983EBCC3BD][Bring ores.shell to the clean standard]] | DONE | 2026-09-27 | 2026-09-27 | Work ores.shell through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -51,3 +51,27 @@ ores.shell meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 * Out of scope
 
 -
+
+* Result
+
+Merged as PR #2275, with every applicable item of the Component Clean Standard
+worked and recorded on the task. ores.shell joins COMPONENTS_UNDER_TEST and the
+drift check passes with it listed; the whole tree builds, the codegen suite
+passes and all fourteen of the component's suites pass with the fleet up.
+
+The component is unusual in the programme in a way that shaped the whole pass. It
+is a component of kind All with no model of its own beyond the component model,
+and it is the render target of twelve other components' shell-command facets. So
+most of the Entity and Protocol sections do not apply, and the largest
+hand-written block in its tree is the shell surface of ores.trading entities,
+which belongs to that component's own S01.
+
+The pass found more than it confirmed, which is what the standard predicts: two
+stale CMake lists, twelve stale part diagrams, six part overviews with no Diagram
+section, four parts with no rendered image, a namespace brief describing a shell
+that no longer exists, four tests asserting only a non-throw, and one red case
+asserting a timestamp form the platform does not write.
+
+The task records what it did not close: the trading dependency, the two generator
+parser gaps, the CMake list check that no gate runs, and the V08 coverage list of
+52 source files with no name-matched test.

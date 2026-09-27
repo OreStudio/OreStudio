@@ -13,6 +13,12 @@
 #+full_name: ores.shell.assets
 #+brief: Shell assets command units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.assets component diagram
+#+caption: ores.shell.assets
+[[file:ores.shell.assets.png][file:ores.shell.assets.png]]
+
 * Summary
 
 =ores.shell.assets= is the adapter part that projects the assets domain onto

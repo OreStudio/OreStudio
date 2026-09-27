@@ -25,14 +25,313 @@ namespace ores #F2F2F2 {
     namespace shell #F2F2F2 {
         namespace app #F2F2F2 {
             namespace commands #F2F2F2 {
-                namespace trading #F2F2F2 {
-                    class fx_forward_instrument_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                        {static} +process_get_fx_forward_instruments(out : ostream&, session : nats_client&, pagination : pagination_context&)
-                        {static} +process_add_fx_forward_instrument(out : ostream&, session : nats_client&, args : vector<string>)
-                        {static} +process_delete_fx_forward_instrument(out : ostream&, session : nats_client&, instrument_id : string)
-                        {static} +process_get_fx_forward_instrument_history(out : ostream&, session : nats_client&, instrument_id : string)
-                    }
+                class equity_accumulator_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_asian_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_barrier_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_digital_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_forward_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_position_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class equity_variance_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_accumulator_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_asian_forward_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_barrier_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_digital_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_forward_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_vanilla_option_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class fx_variance_swap_instrument_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class lifecycle_event_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class party_role_type_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class trade_id_type_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class trade_identifier_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class trade_party_role_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class trade_type_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
             }
         }

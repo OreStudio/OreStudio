@@ -15,6 +15,12 @@
 ' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 ' Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
+' This diagram is hand-authored. generate_component_puml.py reads
+' projects/<name>/include/<name>/**, and ores.shell keeps its headers under one
+' directory per part, so the generator reports "No include/ directory found for
+' ores.shell" and changes nothing. The section above the sentinel is written to
+' the shape the generator would produce, so the two can be reconciled once the
+' generator learns to read a composite.
 @startuml
 
 title ores.shell Component
@@ -38,6 +44,11 @@ package "ores.shell.api" #F2F2F2 {
     }
     class history_diff_renderer {
     }
+    class shell_root_menu {
+        -names_ : set<string>
+        -menus_ : map<string, cli::Menu*>
+        -extensions_ : map<string, vector<function<void(cli::Menu&)>>>
+    }
 }
 
 package "ores.shell.application" #F2F2F2 {
@@ -50,7 +61,9 @@ package "ores.shell.application" #F2F2F2 {
     }
     class repl {
         -session_ : ores::nats::service::nats_client&
+        -connection_template_ : nats::config::nats_options
         -pagination_ : pagination_context
+        -active_session_ : cli::CliSession*
     }
     class script_runner {
     }
@@ -59,6 +72,55 @@ package "ores.shell.application" #F2F2F2 {
 ores.shell.application ..> ores.shell.api : depends on
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' cli::Menu lives in the third-party cli library, so the automated pass cannot
+' see the base class. shell_root_menu is the only class here that inherits.
+class "cli::Menu" as CliMenu <<third-party>>
+CliMenu <|-- shell_root_menu
+
+' The automated pass reads data members and little else, so the classes above
+' arrive with fields and no API. The public surface is filled in here.
+class shell_root_menu {
+    +shell_root_menu()
+    +claim(menu : cli::Menu&)
+    +claim(name : string)
+    +add_extension(name : string, extend : function<void(cli::Menu&)>)
+    +apply_extensions()
+    -take(name : string)
+}
+
+class pagination_context {
+    +page_size() : uint32_t
+    +set_page_size(size : uint32_t)
+    +state_for(entity_name : string) : entity_page_state&
+    +last_entity() : string
+    +set_last_entity(name : string)
+    +register_list_callback(entity_name : string, callback : list_callback)
+    +get_list_callback(entity_name : string) : list_callback*
+}
+
+class repl {
+    +repl(session : nats_client&, connection_template : nats_options)
+    +run()
+    +run(in : istream&, out : ostream&)
+    -setup_menus() : unique_ptr<cli::Cli>
+    -display_welcome(out : ostream&)
+    -cleanup()
+}
+
+' Free functions are not classes, so the automated pass draws none of them and a
+' class-only reading of this component misses the seam every shell unit uses.
+note bottom of shell_root_menu
+    Free functions in ores::shell::app, all declared beside this class:
+    insert_menu(root, menu)     claims the name and inserts the menu
+    claim_name(root, name)      claims a name for a verb inserted at the root
+    extend_menu(root, name, f)  adds verbs to a menu another unit owns
+end note
+
+' repl owns the pagination state and hands it to the units that register.
+repl *-- pagination_context
+' The application builds the root and registers every unit into it.
+repl ..> shell_root_menu : builds and registers into
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.puml"

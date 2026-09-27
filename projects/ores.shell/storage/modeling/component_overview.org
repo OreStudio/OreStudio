@@ -13,6 +13,12 @@
 #+full_name: ores.shell.storage
 #+brief: Shell raw storage command units
 
+* Diagram
+
+#+attr_html: :width 100% :alt ores.shell.storage component diagram
+#+caption: ores.shell.storage
+[[file:ores.shell.storage.png][file:ores.shell.storage.png]]
+
 * Summary
 
 =ores.shell.storage= is the adapter part that projects object storage onto the

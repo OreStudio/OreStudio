@@ -25,64 +25,204 @@ namespace ores #F2F2F2 {
     namespace shell #F2F2F2 {
         namespace app #F2F2F2 {
             namespace commands #F2F2F2 {
-                namespace iam #F2F2F2 {
-                    class account_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class account_contact_information_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class account_operations_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class account_party_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class account_type_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class authorization_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class bootstrap_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class login_info_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class permission_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class reset_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class role_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class session_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class session_operations_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class session_samples_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class signup_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class tenant_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class tenant_provisioning_operations_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class tenant_status_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
-                    class tenant_type_commands {
-                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&, pagination : pagination_context&)
-                    }
+                class account_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class account_contact_information_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_by_account_id(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class account_operations_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_save_account(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_update_account(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_account(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_lock_account(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_unlock_account(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_reset_password(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_update_my_email(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set_my_default_party(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_select_party(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_switch_party(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_change_password(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class account_party_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_by_account_id(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class account_type_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class authorization_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_assign_role(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_assign_role_by_name(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_revoke_role(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_revoke_role_by_name(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_account_roles(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_account_permissions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_role_permissions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_suggest_role_commands(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class bootstrap_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_bootstrap_status(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_create_initial_admin(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_provision_tenant(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class login_info_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class permission_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class reset_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_reset_tenant(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_reset_system(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class role_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class session_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class session_operations_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_get_active_sessions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class session_samples_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_get_session_samples(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class signup_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_signup(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class tenant_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class tenant_provisioning_operations_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_complete_tenant_provisioning(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_provision_acme_tenant(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class tenant_status_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class tenant_type_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_list(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_get_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_add(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_set(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_delete_many(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
             }
         }

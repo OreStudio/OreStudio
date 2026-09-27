@@ -8,7 +8,7 @@
 #+filetags: :clean-http:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-http
-#+pr:
+#+pr: 2235
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -146,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2235][#2235]] | [http] Bring ores.http to the component clean standard |
 
 * Review
 

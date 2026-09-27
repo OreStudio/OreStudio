@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 292BFD27-F75A-4AE5-9751-DC0CB0865587
+:END:
+#+title: Task: Make a measured number name its command and its commit
+#+description: A clean-up record is a claim about a tree, and its numbers are the part a reviewer checks least and a verifier re-runs first. When trunk moves under a branch a count, a gate's component count and a suite's size all change with no code changing, and the record goes quietly wrong: the ores.service record was failed twice by verifiers for exactly this. The task template has nowhere to put a measured number and the standard's Evidence column says 'kept on the task', which is not the same claim as naming the command and the commit.
+#+type: task
+#+level: s1
+#+filetags: :harden-clean-standard-gates:sprint_26:v0:
+#+owner: marco
+#+branch: feature/record-measurements
+#+pr: 2274
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give a measured number somewhere to live, so that it names the command that
+produced it and the commit it was measured at.
+
+A clean-up record is a claim about a tree. Its numbers are the part a reviewer
+checks least and an independent verifier re-runs first, and they are the part
+that goes wrong on its own: this pass runs for weeks, trunk moves under every
+branch, and a consumer count, a gate's component count and a suite's size all
+change with no code changing. The task template had nowhere to put a number, and
+the standard's evidence column said "kept on the task", which is not the same
+claim as naming the command and the head.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The task template carries a Measurements section whose rows name a value, the
+  command that produced it, and the commit it was measured at.
+- The tangled =doc_task.org.mustache= matches its org source, so the
+  template-drift gate stays green.
+- The clean standard requires the command and the commit, in the Verification
+  section's preamble and in the evidence cell that previously said "kept on the
+  task".
+- The optional =compass task verify= verb is assessed and a verdict recorded,
+  rather than left open.
+
+* Plan
+
+*The small half is the half that matters.* The capture asked for two things and
+called the second optional. Naming the commit turns a stale number from a
+discovery into a visible statement: a reader sees "measured at 1a2b3c4" and knows
+whether the base has moved since. So the template gained a =* Measurements=
+section between Plan and Notes, with a =| What | Value | Command | Commit |= row
+shape, and the standard now says in its Verification preamble that a count on its
+own is not evidence, and points B01's evidence cell at that table.
+
+*Why the template and not each record.* A record's shape comes from
+=library/templates/ores.doc.agile.task.org=, tangled to =doc_task.org.mustache=.
+Changing it there means every task scaffolded from now on carries the section, and
+the template-drift gate proves the two stay in step.
+
+*The verb, assessed and not built.* A =compass task verify <task>= would re-run
+the commands a record declares and report any that no longer produce the number
+beside them. The measurements table is what would make that possible, and compass
+already runs subprocesses as argv rather than through a shell, so the mechanism is
+cheap. The hazard is what the record declares: the same clean-up records
+legitimately carry =check_component_drift.py --component <c> --dry-run=, and the
+non-dry-run form of that command regenerates a component in place. That is not
+hypothetical: it is the recorded incident that rewrote 67 tracked files under
+=ores.trading= and materialised 44 untracked ones. A verb that re-runs whatever a
+document declares would eventually re-run a destructive command, and it would do
+so in the one place where consent is implicit, because a verb that asks whether to
+run a command is a verb nobody uses.
+
+So the verdict is no, for now, on the safety argument rather than on the value.
+The value is real but narrow: the figures that go stale are a handful of gate
+counts and suite sizes, and a verifier re-running them by hand is what has caught
+every one so far. The route that would earn its place is a whitelist the gate
+scripts publish themselves, so that a command is runnable only if it declares
+itself read-only, and that is a larger piece of work than this capture asked for.
+It is recorded in the story's Decisions and not filed as a task of its own.
+
+* Notes
+
+*Measured at this head.*
+
+- The template source and the tangled mustache moved together: 14 lines added to
+  each, and nothing else in =library/templates/= changed, so the re-tangle is
+  the whole diff.
+- The Measurements section is scaffolded into new tasks from
+  =doc_task.org.mustache=; existing records keep the shape they were created with,
+  which is why this changes the template rather than the records already written.
+  Sprint 26 holds 148 task records, counted with
+  =git ls-tree -r --name-only HEAD doc/agile/versions/v0/sprint_26/ | grep -cE '/task[^/]*\.org$'=,
+  and 147 at the branch point, which simply predates this task's record. An earlier
+  draft
+  of this very task said 128, from an =ls= glob that misses a level; the verification
+  caught it, which is the failure this change exists to prevent.
+- 6 of the 147 task records in sprint 26 at the branch point reference an =evidence/= file, and 94
+  such files exist beside 5 component tasks, so the practice predates this change
+  and is a minority one. The section gives it a shape rather than inventing it;
+  the preamble now says where the number goes and the evidence file names the raw
+  output.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2274][#2274]] | [agile] Give a measured number a place to name its command and commit |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A measured number now has somewhere to live and a rule that says what it must
+carry. The task template gained a =* Measurements= section between Plan and Notes
+with a =| What | Value | Command | Commit |= row shape, and the tangled
+=doc_task.org.mustache= moved with it, so the template-drift gate stays green and
+every task scaffolded from now on carries the section. The clean standard's
+Verification preamble now says that a count on its own is not evidence and where
+the number belongs, and B01's evidence cell no longer says "kept on the task".
+
+The capture's optional half is assessed and not built. A =compass task verify=
+that re-runs a record's declared commands would be cheap to write, but the
+records it would read legitimately carry =check_component_drift.py --dry-run=,
+whose non-dry-run form regenerates a component in place and once rewrote 67
+tracked files under =ores.trading=. A verb that runs whatever a document declares
+would eventually run a destructive command where nobody expects to be asked, so
+the verdict is no for now, on safety rather than value. The route that would earn
+its place is a whitelist the gate scripts publish themselves. The decision is in
+the story's Decisions.
+
+Two things this change had to carry that were not obvious. =compass-doc-add='s
+type table is generated from the task template's section list, so adding the
+section made it stale and the doc-lint job failed until it was regenerated.
+And the record itself first published "128 task records" where the tree holds
+148, from an =ls= glob one level deep; independent verification failed the change
+on its own subject, which is the failure it exists to prevent. Both are fixed and
+the second is recorded rather than quietly corrected.
+
+=compass lint= clean, =validate_docs.sh= 40 of 40, the skill type table check
+clean, codegen suite 906 passed.

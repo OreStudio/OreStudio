@@ -66,7 +66,8 @@ Three classes, one task each:
 |------+-------+-------+-----+-------------|
 | [[id:B9D75AAE-DDDD-41C7-BB40-97FB3CEC7D80][A test file whose cases are compiled away reports green]] | DONE | 2026-09-27 | 2026-09-27 | A TEST_CASE that never reaches the compiler is invisible: the file builds, ctest passes, and only the case count betrays it. The ores.service readiness tests sat inside a BOOST_ASIO_HAS_LOCAL_SOCKETS guard placed above every boost::asio include, so the macro was undefined when the guard was read and the file compiled to nothing. ctest reported 39 cases where the sources held 42. Nothing compares the two. |
 | [[id:EE473AFD-DFAB-4F72-97B0-F74D56BE9BA8][Sweep every catalogue component for drift the registry cannot see]] | DONE | 2026-09-27 | 2026-09-27 | The drift gate's coverage is the registry, which lists ten components; the catalogue holds twenty-four. Output that an archetype routes into another component's tree, and any generated file under a component the registry does not list, has no gate. Add a dry-run sweep over every catalogue component that fails only on files the branch touched, so a cross-component rename cannot pass review unseen. |
-| [[id:922962C6-FC22-42D9-9DAD-3F9280F7DD88][Mark generated recipes, and give them a gate]] | STARTED | 2026-09-27 | | The recipe templates carry a codegen marker as a Mustache comment, which Mustache strips, so no generated recipe reaches the tree with one: 247 files sit at the generated recipe path shape and 172 carry the tangle block a generated recipe exports, none carries a marker, against 6,478 tracked C++ files that do. The sweep renders per technical space, so it never produces a recipe and cannot cover them either. Emit the marker at the render seam and render the whole ores address. |
+| [[id:922962C6-FC22-42D9-9DAD-3F9280F7DD88][Mark generated recipes, and give them a gate]] | DONE | 2026-09-27 | 2026-09-27 | The recipe templates carry a codegen marker as a Mustache comment, which Mustache strips, so no generated recipe reaches the tree with one: 247 files sit at the generated recipe path shape and 172 carry the tangle block a generated recipe exports, none carries a marker, against 6,478 tracked C++ files that do. The sweep renders per technical space, so it never produces a recipe and cannot cover them either. Emit the marker at the render seam and render the whole ores address. |
+| [[id:292BFD27-F75A-4AE5-9751-DC0CB0865587][Make a measured number name its command and its commit]] | DONE | 2026-09-27 | 2026-09-27 | A clean-up record is a claim about a tree, and its numbers are the part a reviewer checks least and a verifier re-runs first. When trunk moves under a branch a count, a gate's component count and a suite's size all change with no code changing, and the record goes quietly wrong: the ores.service record was failed twice by verifiers for exactly this. The task template has nowhere to put a measured number and the standard's Evidence column says 'kept on the task', which is not the same claim as naming the command and the commit. |
 
 * Decisions
 
@@ -87,6 +88,16 @@ Three classes, one task each:
   every C++ file under a =tests/= directory, and fails on a file whose
   conditionals do not balance, because a guard left open deletes a case in
   whichever file includes it.
+- *A recorded number names its command and its head, and the verb that would
+  re-run them is not built.* A clean-up record's counts go stale on their own
+  when trunk moves, so the task template carries a Measurements table with a
+  command and a commit per row and the standard says a count alone is not
+  evidence. The capture also proposed a =compass task verify= that re-runs a
+  record's declared commands. It is not built: records legitimately carry
+  =check_component_drift.py --dry-run=, whose non-dry-run form regenerates a
+  component in place, and a verb that runs whatever a document declares would
+  eventually run a destructive one where nobody expects to be asked. The route
+  that would earn its place is a whitelist the gate scripts publish themselves.
 - *Where the rule cannot read a file, it fails instead of guessing.* A compiler
   takes a raw string literal's extent from the spliced text and its content from
   the source, while the gate removes every splice. A splice at a literal's

@@ -292,4 +292,37 @@ void fsm_state_repository::remove(context ctx, const std::vector<std::string>& i
 }
 
 
+std::vector<domain::fsm_state>
+fsm_state_repository::read_latest_by_machine_name(context ctx, const std::string& machine_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
+    // instant make_timestamp parses for the generated reads below, so the two
+    // agree on which row is current.
+    const auto machine_ids =
+        execute_parameterized_string_query(ctx,
+                                           "select id::text from ores_dq_fsm_machines_tbl "
+                                           "where name = $1 and valid_to = $2",
+                                           {machine_name, std::string(MAX_TIMESTAMP)},
+                                           lg(),
+                                           "Reading fsm machine id by name");
+
+    if (machine_ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
+        return {};
+    }
+
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("machine_id"_c == machine_ids.front() && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
+
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading latest fsm states by machine name.");
+}
+
 }

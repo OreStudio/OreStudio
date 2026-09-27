@@ -150,6 +150,64 @@ Whether this is a terminal state.
 
 ** Custom repository methods
 
+A state's name is unique within its machine, and the machines share most of
+their names with each other, so a caller that knows only the machine's name
+cannot address its states through any read the generated surface offers.
+=fsm_machine= has no C++ layer to join through, so the read below resolves
+the machine's id and then reads its states.
+
+*** Repository declarations
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads the latest states of the machine with the given name.
+     *
+     * Throws nothing and returns empty when no machine carries the name, so
+     * a caller can tell an unknown machine from one with no states.
+     */
+    std::vector<domain::fsm_state> read_latest_by_machine_name(context ctx,
+                                                               const std::string& machine_name);
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::fsm_state>
+fsm_state_repository::read_latest_by_machine_name(context ctx,
+                                                  const std::string& machine_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
+    // instant make_timestamp parses for the generated reads below, so the two
+    // agree on which row is current.
+    const auto machine_ids = execute_parameterized_string_query(
+        ctx,
+        "select id::text from ores_dq_fsm_machines_tbl "
+        "where name = $1 and valid_to = $2",
+        {machine_name, std::string(MAX_TIMESTAMP)},
+        lg(),
+        "Reading fsm machine id by name");
+
+    if (machine_ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
+        return {};
+    }
+
+    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+                       where("machine_id"_c == machine_ids.front() &&
+                             "valid_to"_c == max.value()) |
+                       order_by("name"_c);
+
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
+        ctx,
+        query,
+        [](const auto& entities) { return fsm_state_mapper::map(entities); },
+        lg(),
+        "Reading latest fsm states by machine name.");
+}
+#+end_src
+
 ** Presentation
 :PROPERTIES:
 :domain_include:         ores.dq.api/domain/fsm_state.hpp

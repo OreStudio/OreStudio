@@ -45,6 +45,7 @@ set(files
     "repository_dataset_bundle_member_repository_tests.cpp"
     "repository_dataset_bundle_repository_tests.cpp"
     "repository_dataset_repository_tests.cpp"
+    "repository_fsm_state_repository_tests.cpp"
     "repository_methodology_repository_tests.cpp"
     "repository_nature_dimension_repository_tests.cpp"
     "repository_origin_dimension_repository_tests.cpp"

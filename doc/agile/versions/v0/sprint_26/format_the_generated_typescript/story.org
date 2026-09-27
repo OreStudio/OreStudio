@@ -41,7 +41,7 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:06C72448-F226-4D00-9C29-A1A09A38FFCB][Scaffold story: Format the generated TypeScript with prettier]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:06C72448-F226-4D00-9C29-A1A09A38FFCB][Scaffold story: Format the generated TypeScript with prettier]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:E2916B0D-F652-4F9D-B664-A828F10916D6][Format the generated TypeScript with prettier]] | BACKLOG | | | Commit the prettier style, run prettier from the TypeScript render the way the C++ render runs clang-format, format the tree once, and gate the check in CI. |
 
 * Decisions

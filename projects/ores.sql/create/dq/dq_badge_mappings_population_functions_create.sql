@@ -1,4 +1,5 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ */
 
 -- =============================================================================
 -- Population Function

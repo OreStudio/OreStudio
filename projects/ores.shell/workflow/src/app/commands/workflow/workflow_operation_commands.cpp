@@ -39,7 +39,6 @@
 #include <ranges>
 #include <sstream>
 #include <thread>
-#include <unordered_map>
 #include <vector>
 
 namespace ores::shell::app::commands {

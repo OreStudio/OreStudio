@@ -75,3 +75,14 @@ TEST_CASE("forwarding_headers_are_empty_when_there_is_no_caller", "[nats][header
     // fallback for "no caller" is deliberately not any token.
     CHECK(ores::nats::service::forwarded_caller_headers(ores::nats::message{}).empty());
 }
+
+TEST_CASE("forwarding_headers_carry_a_token_the_caller_holds", "[nats][headers]") {
+    // A client originating a request has no inbound message to read.
+    const auto hdrs = ores::nats::service::forwarded_caller_headers("caller");
+    REQUIRE(hdrs.size() == 1);
+    CHECK(hdrs.at(std::string(ores::nats::headers::delegated_authorization)) == bearer("caller"));
+}
+
+TEST_CASE("forwarding_headers_are_empty_for_an_empty_token", "[nats][headers]") {
+    CHECK(ores::nats::service::forwarded_caller_headers("").empty());
+}

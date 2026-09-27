@@ -232,10 +232,14 @@ std::string extract_actor_bearer(const ores::nats::message& msg) {
 
 std::unordered_map<std::string, std::string>
 forwarded_caller_headers(const ores::nats::message& msg) {
+    return forwarded_caller_headers(extract_actor_bearer(msg));
+}
+
+std::unordered_map<std::string, std::string> forwarded_caller_headers(std::string_view token) {
     std::unordered_map<std::string, std::string> hdrs;
-    if (const auto bearer = extract_actor_bearer(msg); !bearer.empty())
+    if (!token.empty())
         hdrs[std::string(headers::delegated_authorization)] =
-            std::string(headers::bearer_prefix) + bearer;
+            std::string(headers::bearer_prefix) + std::string(token);
     return hdrs;
 }
 

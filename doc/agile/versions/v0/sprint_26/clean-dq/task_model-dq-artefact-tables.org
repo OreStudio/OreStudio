@@ -545,9 +545,9 @@ Run on 2026-09-26. A =dataset= model was written and its table verified. It repr
 
 Run on 2026-09-26. Parts five, six and seven reported that the remaining entities need model vocabulary the component does not have. **Most of that was wrong.** The vocabulary exists. I did not find it because I searched the models instead of the templates.
 
-**A natural key is one group per model, and its members are flagged.** =subject_area= is the worked example: =name= and =domain_name= both carry =:primary_key: true=, which is how the model states a true compound physical key. =dataset_bundle= flags =code= and =name= each =:natural_key: true= and gets **one** index on both together, =dataset_bundles_code_name_uniq_idx= — not two. So a composite natural key is expressed by flagging every member, and the loader collects them into a single group ([[file:projects/ores.codegen/src/codegen/org_loader.py::943][=org_loader.py:943=]]).
+**A natural key is one group per model, and its members are flagged.** =subject_area= is the worked example: =name= and =domain_name= both carry =:primary_key: true=, which is how the model states a true compound physical key. =dataset_bundle= flags =code= and =name= each =:natural_key: true= and gets **one** index on both together, =dataset_bundles_code_name_uniq_idx= — not two. So a composite natural key is expressed by flagging every member, and the loader collects them into a single group ([[proj:projects/ores.codegen/src/codegen/org_loader.py][=org_loader.py:943=]]).
 
-**Extra indexes are declared in a table.** Under =* SQL=, an =** Indexes= table with the columns =name | columns | unique | current_only | where_extra=, read at [[file:projects/ores.codegen/src/codegen/org_loader.py::1452][=org_loader.py:1452=]] and rendered by =sql_schema_domain_entity_create.mustache= as ={prefix}_{name}_idx=. =ores.compute.grid_sample= is the worked example.
+**Extra indexes are declared in a table.** Under =* SQL=, an =** Indexes= table with the columns =name | columns | unique | current_only | where_extra=, read at [[proj:projects/ores.codegen/src/codegen/org_loader.py][=org_loader.py:1452=]] and rendered by =sql_schema_domain_entity_create.mustache= as ={prefix}_{name}_idx=. =ores.compute.grid_sample= is the worked example.
 
 **What that means for the two entities this blocked.**
 

@@ -144,7 +144,7 @@ The matrix this cell belongs to.
 
 ** Table display
 
-| Column      | Header      |
+| column      | header      |
 |-------------+-------------|
 | from_state  | From State  |
 | to_state    | To State    |

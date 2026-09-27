@@ -142,7 +142,7 @@ name is a reference and not text repeated on every matrix.
 
 ** Table display
 
-| Column      | Header      |
+| column      | header      |
 |-------------+-------------|
 | position    | Position    |
 | label       | Label       |

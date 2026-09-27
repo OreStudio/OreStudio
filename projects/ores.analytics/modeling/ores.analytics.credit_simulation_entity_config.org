@@ -156,7 +156,7 @@ The factor loadings ORE writes as one text value for this entity.
 
 ** Table display
 
-| Column      | Header      |
+| column      | header      |
 |-------------+-------------|
 | name        | Name        |
 | initial_state | Initial State |

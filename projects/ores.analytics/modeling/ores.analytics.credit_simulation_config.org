@@ -180,7 +180,7 @@ How loan exposure is computed.
 
 ** Table display
 
-| Column      | Header      |
+| column      | header      |
 |-------------+-------------|
 | name        | Name        |
 | seed        | Seed        |

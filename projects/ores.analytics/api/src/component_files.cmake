@@ -36,6 +36,22 @@ set(files
     "generators/pricing_model_config_generator.cpp"
     "generators/pricing_model_product_generator.cpp"
     "generators/pricing_model_product_parameter_generator.cpp"
+    "domain/credit_simulation_config_json_io.cpp"
+    "domain/credit_simulation_config_table.cpp"
+    "domain/credit_simulation_config_table_io.cpp"
+    "generators/credit_simulation_config_generator.cpp"
+    "domain/credit_simulation_entity_config_json_io.cpp"
+    "domain/credit_simulation_entity_config_table.cpp"
+    "domain/credit_simulation_entity_config_table_io.cpp"
+    "generators/credit_simulation_entity_config_generator.cpp"
+    "domain/credit_simulation_matrix_config_json_io.cpp"
+    "domain/credit_simulation_matrix_config_table.cpp"
+    "domain/credit_simulation_matrix_config_table_io.cpp"
+    "generators/credit_simulation_matrix_config_generator.cpp"
+    "domain/credit_simulation_matrix_row_config_json_io.cpp"
+    "domain/credit_simulation_matrix_row_config_table.cpp"
+    "domain/credit_simulation_matrix_row_config_table_io.cpp"
+    "generators/credit_simulation_matrix_row_config_generator.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.

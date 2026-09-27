@@ -33,10 +33,10 @@ std::string convert_to_table(const std::vector<credit_simulation_matrix_config>&
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "" << "" << "" << fort::endr;
+    table << fort::header << "Name" << "Version" << "Modified By" << fort::endr;
 
     for ([[maybe_unused]] const auto& mtx : v) {
-        table << mtx.<< mtx.<< mtx.<< fort::endr;
+        table << mtx.name << mtx.version << mtx.modified_by << fort::endr;
     }
     return table.to_string();
 }

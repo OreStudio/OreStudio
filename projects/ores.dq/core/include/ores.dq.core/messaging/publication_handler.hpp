@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.dq.core/service/publication_service.hpp"

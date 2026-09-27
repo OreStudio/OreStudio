@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,77 +19,67 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_MESSAGING_PUBLISH_BUNDLE_PROTOCOL_HPP
-#define ORES_DQ_API_MESSAGING_PUBLISH_BUNDLE_PROTOCOL_HPP
-
-#include "ores.dq.api/domain/publication_mode.hpp"
-#include <optional>
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::dq::messaging {
+import type { PublicationMode } from '../domain/publication_mode.js';
 
 /**
  * @brief Asks for a bundle to be published.
  */
-struct publish_bundle_request {
-    using response_type = struct publish_bundle_response;
-    static constexpr std::string_view nats_subject = "dq.v1.bundles.publish";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface PublishBundleRequest {
     /**
      * @brief The bundle to publish.
      */
-    std::string bundle_code;
+    bundle_code: string;
     /**
      * @brief How records are written to the target tables.
      */
-    ores::dq::domain::publication_mode mode = ores::dq::domain::publication_mode::upsert;
+    mode: PublicationMode;
     /**
      * @brief Who asked for the publication.
      */
-    std::string published_by;
+    published_by: string;
     /**
      * @brief Whether the whole bundle must succeed or none of it.
      */
-    bool atomic = false;
+    atomic: boolean;
     /**
      * @brief Per-dataset parameters, as JSON.
      */
-    std::string params_json;
-};
+    params_json: string;
+}
 
 /**
  * @brief Reports what the publication dispatched.
  */
-struct publish_bundle_response {
+export interface PublishBundleResponse {
     /**
      * @brief Whether the publication was accepted.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why it was refused, when it was.
      */
-    std::string error_message;
+    error_message: string;
     /**
      * @brief The workflow instance the publication started.
      */
-    std::string instance_id;
+    instance_id: string;
     /**
      * @brief How many datasets were dispatched.
      */
-    int datasets_dispatched = 0;
-};
-
+    datasets_dispatched: number;
 }
 
-#endif
+export const subjects = {
+    publish_bundle_request: "dq.v1.bundles.publish",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    publish_bundle_request: true,
+} as const;

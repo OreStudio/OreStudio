@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 1166DC86-77A8-4E93-A3D9-E35E40550A01
+:END:
+#+title: ores.dq.publish_bundle
+#+description: Codegen operation model for the dq bundle publish verb, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: publish_bundle
+#+namespace: ores::dq::messaging
+#+brief: Publishes a dataset bundle to its target tables.
+#+filetags: :model:operation:dq:
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+The bundle publish verb: one request that asks for a bundle to be published and
+one reply that reports what was dispatched.
+
+It is an operation rather than an entity verb -- it names no row a caller
+addresses by key, and it returns a dispatch count rather than a record -- so it
+is declared here instead of being derived from an entity. The handler that
+serves it stays hand-written beside this model, because it drives the
+bundle-publish workflow and reads the publishable datasets.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** publish_bundle_request
+:PROPERTIES:
+:subject:  dq.v1.bundles.publish
+:response: publish_bundle_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for a bundle to be published.
+ */
+#+end_src
+
+*** bundle_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The bundle to publish.
+ */
+#+end_src
+
+*** mode
+:PROPERTIES:
+:cpp_type: ores::dq::domain::publication_mode
+:default:  ores::dq::domain::publication_mode::upsert
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How records are written to the target tables.
+ */
+#+end_src
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Who asked for the publication.
+ */
+#+end_src
+
+*** atomic
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the whole bundle must succeed or none of it.
+ */
+#+end_src
+
+*** params_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Per-dataset parameters, as JSON.
+ */
+#+end_src
+
+** publish_bundle_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports what the publication dispatched.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the publication was accepted.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was refused, when it was.
+ */
+#+end_src
+
+*** instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow instance the publication started.
+ */
+#+end_src
+
+*** datasets_dispatched
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many datasets were dispatched.
+ */
+#+end_src
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

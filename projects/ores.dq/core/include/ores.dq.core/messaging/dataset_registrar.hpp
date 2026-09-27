@@ -19,28 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.dq.api/domain/dataset_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_DQ_CORE_MESSAGING_DATASET_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_DATASET_REGISTRAR_HPP
 
-namespace ores::dq::domain {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
+namespace ores::dq::messaging {
 
-std::string convert_to_table(const std::vector<dataset>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+std::vector<ores::nats::service::subscription>
+register_dataset_handlers(ores::nats::service::client& nats,
+                          ores::database::context ctx,
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-    table << fort::header << "Code" << "Name" << "Subject Area" << "Domain" << "Artefact Type"
-          << "Modified By" << "Version" << fort::endr;
+} // namespace ores::dq::messaging
 
-    for ([[maybe_unused]] const auto& d : v) {
-        table << d.code << d.name << d.subject_area_name << d.domain_name << d.artefact_type
-              << d.modified_by << d.version << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+#endif

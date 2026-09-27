@@ -86,7 +86,7 @@
 
 -- Datasets
 \ir ./dq_datasets_notify_trigger_drop.sql
-\ir ./dq_dataset_drop.sql
+\ir ./dq_datasets_drop.sql
 
 -- Artefact Types (after datasets due to FK)
 \ir ./dq_artefact_types_notify_trigger_drop.sql

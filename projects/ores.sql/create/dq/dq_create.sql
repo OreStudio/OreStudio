@@ -78,7 +78,7 @@
 \ir ./dq_artefact_types_notify_trigger_create.sql
 
 -- Datasets
-\ir ./dq_dataset_create.sql
+\ir ./dq_datasets_create.sql
 \ir ./dq_datasets_notify_trigger_create.sql
 
 -- Core artefact tables

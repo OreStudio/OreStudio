@@ -19,28 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table.cpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.dq.api/domain/dataset_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_DQ_CORE_PRESENTATION_DATASET_HISTORY_FIELD_MAPPER_HPP
+#define ORES_DQ_CORE_PRESENTATION_DATASET_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::dq::domain {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.core/export.hpp"
+#include <vector>
 
+namespace ores::dq::presentation {
 
-std::string convert_to_table(const std::vector<dataset>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Code" << "Name" << "Subject Area" << "Domain" << "Artefact Type"
-          << "Modified By" << "Version" << fort::endr;
-
-    for ([[maybe_unused]] const auto& d : v) {
-        table << d.code << d.name << d.subject_area_name << d.domain_name << d.artefact_type
-              << d.modified_by << d.version << fort::endr;
-    }
-    return table.to_string();
-}
+/**
+ * @brief Renders a dataset to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_dataset_fields(const domain::dataset& v);
 
 }
+
+#endif

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,33 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/dataset_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
+#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <format>
+#include <sstream>
 
 namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
-
-namespace {
-
-std::optional<boost::uuids::uuid> string_to_optional_uuid(const std::optional<std::string>& s) {
-    if (!s.has_value())
-        return std::nullopt;
-    return boost::lexical_cast<boost::uuids::uuid>(*s);
-}
-
-std::optional<std::string> optional_uuid_to_string(const std::optional<boost::uuids::uuid>& u) {
-    if (!u.has_value())
-        return std::nullopt;
-    return boost::uuids::to_string(*u);
-}
-
-}
 
 domain::dataset dataset_mapper::map(const dataset_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -52,7 +44,9 @@ domain::dataset dataset_mapper::map(const dataset_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.code = v.code;
+
     r.catalog_name = v.catalog_name;
     r.subject_area_name = v.subject_area_name;
     r.domain_name = v.domain_name;
@@ -60,19 +54,26 @@ domain::dataset dataset_mapper::map(const dataset_entity& v) {
     r.origin_code = v.origin_code;
     r.nature_code = v.nature_code;
     r.treatment_code = v.treatment_code;
-    r.methodology_id = string_to_optional_uuid(v.methodology_id);
+    r.methodology_id =
+        v.methodology_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.methodology_id)) :
+            std::nullopt;
     r.name = v.name;
     r.description = v.description;
     r.source_system_id = v.source_system_id;
     r.business_context = v.business_context;
-    r.upstream_derivation_id = string_to_optional_uuid(v.upstream_derivation_id);
+    r.upstream_derivation_id =
+        v.upstream_derivation_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.upstream_derivation_id)) :
+            std::nullopt;
     r.lineage_depth = v.lineage_depth;
-    r.as_of_date = timestamp_to_timepoint(v.as_of_date);
-    r.ingestion_timestamp = timestamp_to_timepoint(v.ingestion_timestamp);
+    r.as_of_date = timestamp_to_timepoint(std::string_view{v.as_of_date});
+    r.ingestion_timestamp = timestamp_to_timepoint(std::string_view{v.ingestion_timestamp});
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -87,7 +88,9 @@ dataset_entity dataset_mapper::map(const domain::dataset& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.code = v.code;
+
     r.catalog_name = v.catalog_name;
     r.subject_area_name = v.subject_area_name;
     r.domain_name = v.domain_name;
@@ -95,19 +98,25 @@ dataset_entity dataset_mapper::map(const domain::dataset& v) {
     r.origin_code = v.origin_code;
     r.nature_code = v.nature_code;
     r.treatment_code = v.treatment_code;
-    r.methodology_id = optional_uuid_to_string(v.methodology_id);
+    r.methodology_id = v.methodology_id.has_value() ?
+                           std::optional(boost::uuids::to_string(*v.methodology_id)) :
+                           std::nullopt;
     r.name = v.name;
     r.description = v.description;
     r.source_system_id = v.source_system_id;
     r.business_context = v.business_context;
-    r.upstream_derivation_id = optional_uuid_to_string(v.upstream_derivation_id);
+    r.upstream_derivation_id =
+        v.upstream_derivation_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.upstream_derivation_id)) :
+            std::nullopt;
     r.lineage_depth = v.lineage_depth;
-    r.as_of_date = datetime::to_db_string(v.as_of_date);
-    r.ingestion_timestamp = datetime::to_db_string(v.ingestion_timestamp);
+    r.as_of_date = ores::platform::time::datetime::to_iso8601_utc(v.as_of_date);
+    r.ingestion_timestamp = ores::platform::time::datetime::to_iso8601_utc(v.ingestion_timestamp);
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

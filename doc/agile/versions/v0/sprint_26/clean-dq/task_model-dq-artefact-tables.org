@@ -106,6 +106,59 @@ One hand-written fix was needed on the way: dq's core tests target did not link 
 
 **Figures.** Codegen suite 686 passing; validator 0 warnings; dq's =component_files= lists up to date; =ores.dq.core.tests= builds and links.
 
+* Step 8 part nineteen: the dataset entity is modelled and its hand-written layer is gone
+
+Run on 2026-09-27. =dataset= is the first of the two entities part eighteen
+unblocked, and the hand-written layer it needed is gone: =dataset_handler.hpp=,
+=dataset_protocol.hpp=, =dataset_service.{hpp,cpp}=, =dataset_repository.{hpp,cpp}=,
+=dataset_mapper.{hpp,cpp}= and =dataset_entity.{hpp,cpp}= are all generated now.
+**Six of the twelve hand-written protocol headers are gone.**
+
+**What was blocking it was four facet opt-outs, not the model.** The model was
+already written and its table verified in part nine, but it carried
+=:ores.cpp.protocol.enabled: false=, =:ores.cpp.nats-handler.enabled: false=,
+=:ores.cpp.nats-sub-registrar.enabled: false= and =:ores.cpp.service.enabled:
+false= -- the workaround part nine recorded when the entity could not migrate.
+Removing them is the whole of what the model needed; it then rendered 37 files.
+
+**What the generator now writes.** The protocol, handler, service, registrar,
+eventing header, event registrar, history provider registrar, history field
+mapper, the shell command unit with its test, the TS domain and protocol twins,
+and the table, drop and notify trigger. The registrar composes
+=register_dataset_handlers= and =register_dataset_history_provider=; the service
+registers =register_dataset_event_mapping=. =dq_commands= lists the new shell
+unit.
+
+**Three things had to change by hand, and two are the same lesson.**
+
+- =publication_service= held a stateful =dataset_repository= and called
+  =read_latest(id)=. The generated repository is stateless and reads the primary
+  key as a string, so the member lost its constructor argument and the four call
+  sites pass =ctx_= and =boost::uuids::to_string(id)=.
+- **The hand-written domain disagreed with its own table.** =artefact_type= is
+  =text not null= in both the old and the generated DDL, but the hand-written
+  C++ made it =std::optional<std::string>=, and =publication_service= dutifully
+  checked =has_value()= on a column that cannot be null. The generated domain is
+  =std::string=, so thirteen call sites dropped their optional handling. The
+  generator was right and the hand-written type was wrong.
+- =repository_dataset_repository_tests.cpp= moved to the generated API, and now
+  makes each generated dataset's code and name unique: the table enforces two
+  natural keys, and the generator draws both from a small word list, so two
+  members of one batch can collide before the behaviour under test is reached.
+
+**The singular/plural split in the SQL is closed.** =dq_dataset_create.sql= and
+=dq_dataset_drop.sql= are deleted, and =dq_create.sql= and =dq_drop.sql= include
+the generated plural files. That is the shadowed pair part fourteen recorded.
+
+**Evidence.** =ores.dq.core.lib=, =ores.dq.api.tests=, =ores.dq.core.tests=,
+=ores.dq.service.lib=, =ores.dq.service.exe=, =ores.dq.service.tests=,
+=ores.shell.dq.tests= and =ores.shell.exe= build and link, as does
+=ores.synthetic.core.lib=, which consumes the dq dataset domain.
+=validate_schemas.sh= passes with 0 warnings on 1532 files; twin coverage,
+handler permissions, registry exceptions and populate references pass; the four
+=dq= and shell =component_files.cmake= lists are up to date; =validate_docs.sh=
+and =compass lint= pass.
+
 * Step 8 part eighteen: the publish verbs get a handler of their own
 
 Run on 2026-09-26. The separation part seventeen named is done.

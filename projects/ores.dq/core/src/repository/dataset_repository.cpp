@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,13 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.core/repository/dataset_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_entity.hpp"
 #include "ores.dq.core/repository/dataset_mapper.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
@@ -37,124 +42,216 @@ std::string dataset_repository::sql() {
     return generate_create_table_sql<dataset_entity>(lg());
 }
 
-dataset_repository::dataset_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void dataset_repository::write(const domain::dataset& dataset) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset to database: " << dataset.id;
-    execute_write_query(ctx_, dataset_mapper::map(dataset), lg(), "writing dataset to database");
+ores::utility::domain::precondition dataset_repository::replace_claim(context ctx,
+                                                                      const domain::dataset& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
 }
 
-void dataset_repository::write(const std::vector<domain::dataset>& datasets) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing datasets to database. Count: " << datasets.size();
-    execute_write_query(ctx_, dataset_mapper::map(datasets), lg(), "writing datasets to database");
+domain::dataset dataset_repository::apply_claim(context ctx,
+                                                const domain::dataset& v,
+                                                const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
+    return t;
 }
 
-std::vector<domain::dataset> dataset_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+void dataset_repository::write(context ctx, const domain::dataset& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void dataset_repository::write(context ctx, const std::vector<domain::dataset>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void dataset_repository::write(context ctx,
+                               const domain::dataset& v,
+                               const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing dataset. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, dataset_mapper::map(t), lg(), "Writing dataset to database.");
+}
+
+void dataset_repository::write(context ctx,
+                               const std::vector<domain::dataset>& v,
+                               const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing datasets. Count: " << v.size();
+    std::vector<domain::dataset> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx, dataset_mapper::map(batch), lg(), "Writing datasets to database.");
+}
+
+std::vector<domain::dataset> dataset_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
         lg(),
         "Reading latest datasets");
 }
 
-std::vector<domain::dataset> dataset_repository::read_latest(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset. Id: " << id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto id_str = boost::uuids::to_string(id);
+std::vector<domain::dataset> dataset_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
         lg(),
         "Reading latest dataset by id.");
 }
 
-std::vector<domain::dataset> dataset_repository::read_latest(std::uint32_t offset,
-                                                             std::uint32_t limit) {
+std::vector<domain::dataset> dataset_repository::read_latest_by_code(context ctx,
+                                                                     const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset by code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<dataset_entity>> |
+                       where("code"_c == code && "valid_to"_c == max.value());
+
+    return execute_read_query<dataset_entity, domain::dataset>(
+        ctx,
+        query,
+        [](const auto& entities) { return dataset_mapper::map(entities); },
+        lg(),
+        "Reading latest dataset by code.");
+}
+
+std::vector<domain::dataset> dataset_repository::read_any_by_code(context ctx,
+                                                                  const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any dataset by code: " << code;
+    const auto query = sqlgen::read<std::vector<dataset_entity>> | where("code"_c == code) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+
+    return execute_read_query<dataset_entity, domain::dataset>(
+        ctx,
+        query,
+        [](const auto& entities) { return dataset_mapper::map(entities); },
+        lg(),
+        "Reading any dataset by code.");
+}
+
+
+std::vector<domain::dataset> dataset_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all dataset versions. " << "id: " << id;
+    const auto query = sqlgen::read<std::vector<dataset_entity>> | where("id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<dataset_entity, domain::dataset>(
+        ctx,
+        query,
+        [](const auto& entities) { return dataset_mapper::map(entities); },
+        lg(),
+        "Reading all dataset versions by id.");
+}
+
+std::optional<domain::dataset>
+dataset_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading dataset at version. " << "id: " << id
+                               << " version: " << version;
+    const auto query = sqlgen::read<std::vector<dataset_entity>> |
+                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities = execute_read_query<dataset_entity, domain::dataset>(
+        ctx,
+        query,
+        [](const auto& entities) { return dataset_mapper::map(entities); },
+        lg(),
+        "Reading dataset at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+dataset_repository::remove_status dataset_repository::remove(context ctx,
+                                                             const std::string& id,
+                                                             std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing dataset. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<dataset_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing dataset from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void dataset_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
+}
+
+std::vector<domain::dataset>
+dataset_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: " << offset
                                << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c) |
+                       where("valid_to"_c == max.value()) | order_by("id"_c) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
         lg(),
         "Reading latest datasets with pagination.");
 }
 
-std::vector<domain::dataset>
-dataset_repository::read_latest_by_catalog(const std::string& catalog_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by catalog: " << catalog_name;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("catalog_name"_c == catalog_name && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
-
-    return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
-        query,
-        [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(),
-        "Reading latest datasets by catalog.");
-}
-
-std::vector<domain::dataset>
-dataset_repository::read_latest_by_subject_area(const std::string& subject_area_name,
-                                                const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by subject_area: " << subject_area_name
-                               << "/" << domain_name;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("subject_area_name"_c == subject_area_name &&
-                             "domain_name"_c == domain_name && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
-
-    return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
-        query,
-        [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(),
-        "Reading latest datasets by subject_area.");
-}
-
-std::vector<domain::dataset>
-dataset_repository::read_latest_by_origin(const std::string& origin_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by origin: " << origin_code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("origin_code"_c == origin_code && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
-
-    return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
-        query,
-        [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(),
-        "Reading latest datasets by origin.");
-}
-
-std::uint32_t dataset_repository::get_total_count() {
+std::uint32_t dataset_repository::get_total_dataset_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -163,7 +260,7 @@ std::uint32_t dataset_repository::get_total_count() {
     const auto query = sqlgen::select_from<dataset_entity>(sqlgen::count().as<"count">()) |
                        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
@@ -171,28 +268,29 @@ std::uint32_t dataset_repository::get_total_count() {
     return count;
 }
 
-std::vector<domain::dataset> dataset_repository::read_all(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all dataset versions. Id: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<dataset_entity>> | where("id"_c == id_str) |
-                       order_by("version"_c.desc());
-
-    return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_,
+std::vector<domain::dataset> dataset_repository::read_latest(context ctx,
+                                                             const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<dataset_entity>> |
+                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<dataset_entity, domain::dataset>(
+        ctx,
         query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
         lg(),
-        "Reading all dataset versions by id.");
+        "Reading latest datasets by ids.");
+    return result;
 }
 
-void dataset_repository::remove(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing dataset from database: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<dataset_entity> | where("id"_c == id_str);
-
-    execute_delete_query(ctx_, query, lg(), "removing dataset from database");
+void dataset_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<dataset_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing datasets.");
 }
+
 
 }

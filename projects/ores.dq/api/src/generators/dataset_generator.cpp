@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,47 +17,51 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.dq.api/generators/dataset_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <array>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::dataset generate_synthetic_dataset(utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 2> origins = {"Primary", "Derived"};
-    static constexpr std::array<const char*, 3> natures = {"Actual", "Synthetic", "Mock"};
-    static constexpr std::array<const char*, 3> treatments = {"Raw", "Masked", "Anonymized"};
     [[maybe_unused]] static std::atomic<int> counter{0};
-    const auto idx = counter++;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::dataset r;
-    r.version = 1;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun()) + "_" +
-             std::to_string(idx + 1);
-    r.catalog_name = std::nullopt;
-    r.subject_area_name = std::string("General");
-    r.domain_name = std::string("Reference Data");
-    r.coding_scheme_code = std::nullopt;
-    r.origin_code = std::string(origins[idx % origins.size()]);
-    r.nature_code = std::string(natures[idx % natures.size()]);
-    r.treatment_code = std::string(treatments[idx % treatments.size()]);
-    r.methodology_id = std::nullopt;
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " " +
-             std::to_string(idx + 1);
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun()) + "-" +
+             std::to_string(idx);
+    r.subject_area_name = std::string(faker::word::noun()) + " Area";
+    r.domain_name = std::string(faker::word::noun()) + " Domain";
+    r.origin_code = std::string(faker::word::noun()) + "_origin";
+    r.nature_code = std::string(faker::word::noun()) + "_nature";
+    r.treatment_code = std::string(faker::word::noun()) + "_treatment";
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.source_system_id = std::string(faker::word::noun()) + "_system";
     r.business_context = std::string(faker::lorem::sentence());
-    r.lineage_depth = 0;
-    r.ingestion_timestamp = ctx.past_timepoint();
-    r.as_of_date = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
-    r.artefact_type = std::string("none");
+    r.lineage_depth = faker::number::integer(0, 5);
+    r.artefact_type = std::string(faker::word::noun()) + "_type";
     r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

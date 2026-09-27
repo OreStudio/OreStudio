@@ -1,0 +1,379 @@
+:PROPERTIES:
+:ID: EEE65CDD-8CBB-48F8-B255-B7EE4997313C
+:END:
+#+title: ores.dq.dataset
+#+description: Codegen entity model for the dq =dataset= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Central dataset registry with full lineage.
+#+entity_singular: dataset
+#+entity_plural: datasets
+#+entity_title: Dataset
+#+created: 2026-09-26
+#+updated: 2026-09-26
+
+Central dataset registry with full lineage. Tracks provenance through
+=upstream_derivation_id=, and =lineage_depth= is calculated from the hierarchy.
+
+A dataset is identified two ways: by its =code=, and by its name within a
+subject area and domain. The table enforces both, so the model states =code= as
+the natural key and declares the three-column key as an extra unique index.
+
+The columns that point at other entities -- =coding_scheme_code=, =origin_code=,
+=nature_code=, =treatment_code=, =methodology_id= and =upstream_derivation_id= --
+are plain columns rather than declared references, because the table carries no
+constraint and adding one would refuse rows the platform accepts today.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   uuid-surrogate-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this dataset.
+
+** code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+Unique code for stable referencing.
+
+Examples: "iso.currencies", "fpml.codelists".
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
+#+end_src
+
+** catalog_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional catalog this dataset belongs to.
+
+** subject_area_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Subject area the dataset belongs to; half of the three-column key.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Area"
+#+end_src
+
+** domain_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Domain the subject area sits in; the other half.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Domain"
+#+end_src
+
+** coding_scheme_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional coding scheme the dataset's codes come from.
+
+** origin_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Origin dimension this dataset's values came from.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_origin"
+#+end_src
+
+** nature_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Nature dimension of this dataset's values.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_nature"
+#+end_src
+
+** treatment_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Treatment dimension of this dataset's values.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_treatment"
+#+end_src
+
+** methodology_id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional methodology that produces the dataset.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for the dataset.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the dataset's contents.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** source_system_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The system the dataset was sourced from.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_system"
+#+end_src
+
+** business_context
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why the business holds this dataset.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** upstream_derivation_id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional dataset this one derives from.
+
+** lineage_depth
+:PROPERTIES:
+:type:      integer
+:cpp_type:  int
+:nullable: false
+:END:
+
+Depth of this dataset in the derivation hierarchy.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 5)
+#+end_src
+
+** as_of_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+The date the dataset's contents are stated as of.
+
+** ingestion_timestamp
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When the dataset was ingested.
+
+** license_info
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional licensing terms for the dataset.
+
+** artefact_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The artefact type this dataset is published as.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_type"
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_datasets_tbl
+:END:
+
+** Indexes
+
+| name      | columns                                         | unique | current_only | where_extra |
+|-----------+-------------------------------------------------+--------+--------------+-------------|
+| name_uniq | tenant_id, name, subject_area_name, domain_name | true   | true         |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: dataset
+:entity_plural_short:   datasets
+:entity_singular_words: dataset
+:entity_plural_words:   datasets
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: d
+:END:
+
+** Table display
+
+| column             | header          |
+|--------------------+-----------------|
+| code               | Code            |
+| name               | Name            |
+| subject_area_name  | Subject Area    |
+| domain_name        | Domain          |
+| artefact_type      | Artefact Type   |
+| modified_by        | Modified By     |
+| version            | Version         |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/dataset.hpp
+:domain_class:           dq::domain::dataset
+:protocol_include:       ores.dq.api/messaging/dataset_protocol.hpp
+:collection_name:        datasets
+:key_field:              code
+:has_uuid_primary_key:   true
+:get_request_class:      dq::messaging::list_datasets_request
+:get_response_class:     dq::messaging::list_datasets_response
+:get_message_type:       list_datasets_request
+:save_request_class:     dq::messaging::put_dataset_request
+:save_response_class:    dq::messaging::put_dataset_response
+:save_message_type:      put_dataset_request
+:delete_request_class:   dq::messaging::delete_dataset_request
+:delete_response_class:  dq::messaging::delete_dataset_response
+:delete_message_type:    delete_dataset_request
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field           | label          | widget                | type      | is_key | is_required | placeholder              |
+|-----------------+----------------+-----------------------+-----------+--------+-------------+--------------------------|
+| code            | Code           | codeEdit              | line_edit | true   | true        | Enter dataset code       |
+| name            | Name           | nameEdit              | line_edit |        | true        | Enter dataset name       |
+| subject_area_name | Subject Area | subjectAreaNameEdit   | line_edit |        | true        | Enter the subject area   |
+| domain_name     | Domain         | domainNameEdit        | line_edit |        | true        | Enter the domain         |
+| description     | Description    | descriptionEdit       | text_edit |        |             | Enter a description      |
+
+*** Columns
+
+| enum_name        | field            | header        | type      | width |
+|------------------+------------------+---------------+-----------+-------|
+| Code             | code             | Code          | string    | 200   |
+| Name             | name             | Name          | string    | 200   |
+| SubjectAreaName  | subject_area_name| Subject Area  | string    | 200   |
+| DomainName       | domain_name      | Domain        | string    | 200   |
+| ArtefactType     | artefact_type    | Artefact Type | string    | 150   |
+| LineageDepth     | lineage_depth    | Lineage Depth | int       | 80    |
+| ModifiedBy       | modified_by      | Modified By   | string    | 120   |
+| RecordedAt       | recorded_at      | Recorded At   | timestamp | 150   |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

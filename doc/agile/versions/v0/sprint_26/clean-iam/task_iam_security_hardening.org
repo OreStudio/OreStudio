@@ -130,7 +130,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The tenant-status check read the caller context's tenant, and a login with no resolvable hostname stays on the system tenant, so a suspended tenant's login might not be refused. | projects/ores.iam/core/src/service/account_operations_service.cpp | Fixed | The check reads =account.tenant_id= now. The bypass did not reproduce: the account row level security policy confines the read to the caller's tenant, so a system-context login reaches no account at all. Both the refusal and that confinement are asserted by the new case in =service_account_service_tests.cpp=. |
 
 * Result
 
@@ -160,7 +160,11 @@ suites pass against the database recreated from this branch:
 =ores.shell.iam.tests=, =ores.http.iam.tests= and =ores.synthetic.core.tests=.
 The new pgTAP test =iam_tenant_delete_test.sql= reports 3 of 3: the generic
 delete, the generic update and the hard delete all refuse the system tenant.
-Against the running fleet, a shell run shows =change-password= answering
+=ores.iam.core.tests= gained a suspended-tenant sign-in case: with the
+account's own tenant suspended, the login is refused with =Tenant is not
+active=, and the same credentials under the system context reach no account at
+all, because the account row level security policy confines the read. Against
+the running fleet, a shell run shows =change-password= answering
 =Current password is incorrect=, then succeeding with the right password and
 refusing a new one that matches the old, and =accounts list= answering with no
 =password_hash=, =password_salt= or =totp_secret= member.

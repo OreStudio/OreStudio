@@ -233,9 +233,12 @@ domain::account account_operations_service::login(const std::string& username,
 
     // A suspended or terminated tenant admits nobody. The check runs before
     // the password is compared, so the person learns the tenant is closed
-    // rather than reading a wrong-password message.
+    // rather than reading a wrong-password message. It reads the status of the
+    // account's own tenant, not the caller context's: the account read matches
+    // a username across tenants, and a login with no resolvable hostname stays
+    // on the handler's system-tenant context, which is always active.
     const auto tenants =
-        repository::read_active_tenant_by_id(ctx_, ctx_.tenant_id().to_uuid());
+        repository::read_active_tenant_by_id(ctx_, account.tenant_id.to_uuid());
     if (tenants.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Login failed: tenant not found for username: " << username;
         throw std::runtime_error("Invalid username or password");

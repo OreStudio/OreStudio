@@ -17,10 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.api/generators/tenant_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/login_info_repository.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/faker/internet.hpp"
@@ -520,4 +527,96 @@ TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
     reloaded = sut.find_account_by_id(a.id);
     REQUIRE(reloaded.has_value());
     CHECK(!reloaded->default_party_id.has_value());
+}
+
+TEST_CASE("login_refused_when_the_accounts_tenant_is_suspended", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+
+    // A tenant of this test's own, so the shared system tenant is never
+    // suspended. Tenant rows live under the system tenant, so the writes need
+    // the system tenant's context.
+    repository::tenant_repository tenants;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    auto tenant = generate_synthetic_tenant(gen_ctx);
+    tenants.write(sys_ctx, tenant);
+
+    // The account is written through the repository rather than through
+    // create_account, which leaves tenant_id at its system default. The row
+    // must belong to the tenant whose suspension is under test.
+    const auto tid = ores::utility::uuid::tenant_id::from_uuid(tenant.id);
+    REQUIRE(tid.has_value());
+    auto tenant_ctx = h.context().with_tenant(*tid, h.db_user());
+
+    const std::string password = faker::internet::password();
+    domain::account probe;
+    probe.version = 0;
+    probe.id = boost::uuids::random_generator()();
+    probe.tenant_id = *tid;
+    probe.username = "suspended.login.probe";
+    probe.account_type = "user";
+    probe.password_hash = ores::security::crypto::password_hasher::hash(password);
+    probe.password_salt = "";
+    probe.totp_secret = "";
+    probe.email = "probe@example.com";
+    probe.modified_by = h.db_user();
+    probe.change_reason_code =
+        std::string{ores::dq::domain::change_reason_constants::codes::new_record};
+    probe.change_commentary = "suspended tenant login probe";
+
+    repository::account_repository accounts;
+    accounts.write(tenant_ctx, std::vector<domain::account>{probe});
+
+    domain::login_info li{.account_id = probe.id,
+                          .last_ip = {},
+                          .last_attempt_ip = {},
+                          .failed_logins = 0,
+                          .locked = false,
+                          .last_login = {},
+                          .online = false};
+    repository::login_info_repository logins;
+    logins.write(tenant_ctx, std::vector<domain::login_info>{li});
+
+    // Suspend the tenant and prove that its own account can no longer sign in.
+    auto suspended = tenant;
+    suspended.status = "suspended";
+    tenants.write(sys_ctx, suspended);
+
+    service::account_operations_service tenant_sut(tenant_ctx);
+    bool refused = false;
+    std::string message;
+    try {
+        auto ip = internet::ipv4();
+        tenant_sut.login(probe.username, password, ip);
+    } catch (const std::runtime_error& ex) {
+        refused = true;
+        message = ex.what();
+    }
+    CHECK(refused);
+    CHECK(message == "Tenant is not active");
+
+    // The same credentials under the system context, which is where a principal
+    // with no resolvable hostname stays, reach no account at all: the account
+    // row level security policy confines the read to the caller's tenant, so
+    // that path cannot reach another tenant's account to begin with.
+    service::account_operations_service sys_sut(h.context());
+    bool system_refused = false;
+    try {
+        auto ip = internet::ipv4();
+        sys_sut.login(probe.username, password, ip);
+    } catch (const std::runtime_error&) {
+        system_refused = true;
+    }
+    CHECK(system_refused);
+
+    // Leave the row active. It belongs to this test alone, but the suite shares
+    // one database and a later test reading it should find it usable.
+    auto current = tenants.read_latest(sys_ctx, boost::uuids::to_string(tenant.id));
+    if (!current.empty()) {
+        auto active = current.front();
+        active.status = "active";
+        tenants.write(sys_ctx, active);
+    }
 }

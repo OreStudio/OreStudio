@@ -83,10 +83,17 @@ std::vector<T> dedupe_by_date_and_key(std::vector<T> items,
 /**
  * @brief Tokenizes a data line into exactly three fields.
  *
- * Auto-detects the delimiter: if the line contains two or more commas the
- * fields are split on commas (some ORE example files use CSV format);
- * otherwise fields are split on whitespace.  The value field consumes the
- * remainder of the line after the first two tokens.
+ * Commas and whitespace are treated alike: the line's commas are normalised to
+ * spaces and the fields are then split on whitespace. ORE's example files are
+ * inconsistent -- some are comma-delimited throughout, some put a comma only
+ * after the date and a space before the value, and some use whitespace alone --
+ * so the separator is normalised rather than detected. Detecting it meant
+ * taking the comma path only when a line held two commas or more, and a line
+ * with exactly one then fell through to the whitespace path and aborted its
+ * whole file.
+ *
+ * The value field consumes the remainder of the line after the first two
+ * tokens, so a value that carries a space survives.
  *
  * @return {date_str, key_str, value_str} or throws on fewer than 3 tokens.
  */

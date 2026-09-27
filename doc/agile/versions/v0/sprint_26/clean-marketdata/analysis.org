@@ -1120,8 +1120,6 @@ Then, in order:
   parts, so the two agree; and the forward requires both =curve_id= and
   =tenor=, so the four-part form the inverse used to reject cannot be
   emitted. The bug is gone rather than merely unreachable from the corpus.
-- The CSV tokeniser needing two commas, and the two missing date formats.
-  PR 2 fixed both.
 - CPR's shape mismatch, which was a recorded exemption. PR 2 moved CPR to
   the security class, where it asserts the ISIN-keyed shape it writes.
 

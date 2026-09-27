@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "corpus_files.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
@@ -24,11 +25,13 @@
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cstddef>
 #include <filesystem>
 #include <functional>
@@ -60,20 +63,6 @@ struct corpus_line {
     std::string value;
 };
 
-/// The same file-selection rules the coverage test uses.
-bool is_market_payload(const std::string& path) {
-    const auto name = std::filesystem::path(path).filename().string();
-    if (name.find("fixing") != std::string::npos)
-        return false;
-    if (name.find("market") == std::string::npos)
-        return false;
-    if (!name.ends_with(".txt") && !name.ends_with(".csv"))
-        return false;
-    if (path.find("ExpectedOutput") != std::string::npos)
-        return false;
-    return name.rfind("MD_", 0) != 0;
-}
-
 /// Every payload line, skipping comments and blanks.
 ///
 /// ORE text separates with whitespace and CSV with commas, and a line may put
@@ -94,8 +83,10 @@ std::vector<corpus_line> lines_of(const std::string& content) {
         std::string value;
         if (!(fields >> parsed.date >> key >> value))
             continue;
-        parsed.date.erase(std::remove(parsed.date.begin(), parsed.date.end(), '-'),
-                          parsed.date.end());
+        // The date is kept exactly as the file spells it: production parses it
+        // rather than normalising the text, and ORE's corpus uses five
+        // spellings, two of which are only distinguishable from a digit
+        // rearrangement by their separators.
         parsed.key = key;
         parsed.value = value;
         out.push_back(std::move(parsed));
@@ -103,23 +94,13 @@ std::vector<corpus_line> lines_of(const std::string& content) {
     return out;
 }
 
-std::vector<std::filesystem::path> market_payloads() {
-    std::vector<std::filesystem::path> found;
-    const auto root = ores::testing::project_root::resolve("external/ore/examples");
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
-        if (entry.is_regular_file() && is_market_payload(entry.path().string()))
-            found.push_back(entry.path());
-    }
-    std::sort(found.begin(), found.end());
-    return found;
-}
-
 /// The smallest payloads, until @p budget lines have been taken.
 ///
 /// Bounded rather than capped at a file count, so the default case costs a
 /// predictable number of database writes however the corpus grows.
 std::vector<std::filesystem::path> sample_payloads(std::size_t budget) {
-    const auto all = market_payloads();
+    const auto all = ores::marketdata::test::market_payloads(
+        ores::testing::project_root::resolve("external/ore/examples"));
     std::vector<std::pair<std::size_t, std::filesystem::path>> sized;
     for (const auto& p : all) {
         const auto content = ores::platform::filesystem::file::read_content(p);
@@ -200,9 +181,14 @@ std::size_t import_and_verify(const std::filesystem::path& path,
     // count is the distinct-key count and the values are the ones the last
     // occurrence carried -- comparing against every line would report the
     // de-duplication as data loss.
-    std::map<std::pair<std::string, std::string>, corpus_line> distinct;
+    // Keyed by the parsed date, not by its spelling: production's
+    // dedupe_by_date_and_key groups by calendar date, so a file that spelled
+    // one key's date two ways would be de-duplicated there and counted twice
+    // here. Using the same parser also means this test exercises it on every
+    // date the corpus carries.
+    std::map<std::pair<std::chrono::year_month_day, std::string>, corpus_line> distinct;
     for (const auto& l : expected)
-        distinct[{l.date, l.key}] = l;
+        distinct[{ores::platform::time::time_utils::parse_date(l.date), l.key}] = l;
 
     messaging::import_market_data_request req;
     req.market_data_content = content;
@@ -275,7 +261,8 @@ TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[.][corpus-ful
     ores::nats::service::nats_client auth_nats;
     import_service svc(tenant.ctx, auth_nats);
 
-    const auto all = market_payloads();
+    const auto all = ores::marketdata::test::market_payloads(
+        ores::testing::project_root::resolve("external/ore/examples"));
     REQUIRE_FALSE(all.empty());
 
     std::size_t total = 0;

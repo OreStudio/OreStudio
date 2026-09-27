@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "corpus_files.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -57,6 +58,7 @@ namespace {
 const std::string tags("[marketdata][oresmd][corpus]");
 
 using ores::marketdata::core::oresmd_projections;
+using ores::marketdata::test::is_market_payload;
 
 /// Per series type: the corpus keys seen, and how many oresmd could name.
 struct type_coverage {
@@ -75,22 +77,6 @@ struct type_coverage {
 /// A corpus file that carries market data. The corpus names its own files, and
 /// the name is the only thing that says which reader a file feeds: the fixings
 /// reader and this one take different formats.
-bool is_market_payload(const std::string& path) {
-    const auto name = std::filesystem::path(path).filename().string();
-    if (name.find("fixing") != std::string::npos)
-        return false;
-    if (name.find("market") == std::string::npos)
-        return false;
-    if (!name.ends_with(".txt") && !name.ends_with(".csv"))
-        return false;
-    // ORE's own output files carry "market" in their names too --
-    // todaysmarketcalibration.csv is a calibration dump -- and reading one as
-    // market data invents a pseudo-type per curve name it happens to list.
-    if (path.find("ExpectedOutput") != std::string::npos)
-        return false;
-    // The dated MD_*.csv dumps are the same thing under another name.
-    return name.rfind("MD_", 0) != 0;
-}
 
 /// The key on a corpus line, or nullopt for a comment, a blank, or a line in
 /// neither of the corpus's two formats. ORE text separates with whitespace,

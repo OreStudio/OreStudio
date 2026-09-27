@@ -44,7 +44,6 @@ generate_synthetic_configuration(utility::generation::generation_context& ctx) {
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun());
     r.configuration_type_code = std::string(faker::word::noun());
@@ -58,7 +57,7 @@ generate_synthetic_configuration(utility::generation::generation_context& ctx) {
 }
 
 std::vector<domain::configuration>
-generate_synthetic_(std::size_t n, utility::generation::generation_context& ctx) {
+generate_synthetic_configurations(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::configuration> r;
     r.reserve(n);
     while (r.size() < n)

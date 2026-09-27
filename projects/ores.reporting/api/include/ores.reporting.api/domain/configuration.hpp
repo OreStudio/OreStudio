@@ -34,12 +34,6 @@ namespace ores::reporting::domain {
 /**
  * @brief A named, reusable configuration a report can bind.
  *
- * +#+filetags: :model:entity:reporting:
- * +#+entity_plural: configurations
- * +#+entity_title: Configuration
- * +#+created: 2026-09-27
- * +#+updated: 2026-09-27
- *
  * The name is ours; the detail lives with the component named by
  * owning_component. A report binds a configuration through
  * report_configuration, so several reports share one configuration without
@@ -56,13 +50,6 @@ struct configuration final {
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief Surrogate key for the configuration.

@@ -44,7 +44,6 @@ generate_synthetic_configuration_parameter(utility::generation::generation_conte
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.configuration_id = ctx.generate_uuid();
     r.parameter_definition_id = ctx.generate_uuid();

@@ -187,16 +187,17 @@ export interface GetConfigurationVersionResponse {
 }
 
 export const subjects = {
-    list_configurations_request: "reporting.v1.configurations.list",
-    get_configuration_request: "reporting.v1.configurations.get",
-    get_many_configurations_request: "reporting.v1.configurations.get_many",
-    put_configuration_request: "reporting.v1.configurations.put",
-    put_many_configurations_request: "reporting.v1.configurations.put_many",
-    delete_configuration_request: "reporting.v1.configurations.delete",
-    delete_many_configurations_request: "reporting.v1.configurations.delete_many",
-    list_by_configuration_type_code_configurations_request: "reporting.v1.configurations.list_by_configuration_type_code",
-    list_configuration_versions_request: "reporting.v1.configurations_versions.list",
-    get_configuration_version_request: "reporting.v1.configurations_versions.get",
+    list_configurations_request: 'reporting.v1.configurations.list',
+    get_configuration_request: 'reporting.v1.configurations.get',
+    get_many_configurations_request: 'reporting.v1.configurations.get_many',
+    put_configuration_request: 'reporting.v1.configurations.put',
+    put_many_configurations_request: 'reporting.v1.configurations.put_many',
+    delete_configuration_request: 'reporting.v1.configurations.delete',
+    delete_many_configurations_request: 'reporting.v1.configurations.delete_many',
+    list_by_configuration_type_code_configurations_request:
+        'reporting.v1.configurations.list_by_configuration_type_code',
+    list_configuration_versions_request: 'reporting.v1.configurations_versions.list',
+    get_configuration_version_request: 'reporting.v1.configurations_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -222,7 +223,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.configurations_events.created",
-    updated: "reporting.v1.configurations_events.updated",
-    deleted: "reporting.v1.configurations_events.deleted",
+    created: 'reporting.v1.configurations_events.created',
+    updated: 'reporting.v1.configurations_events.updated',
+    deleted: 'reporting.v1.configurations_events.deleted',
 } as const;

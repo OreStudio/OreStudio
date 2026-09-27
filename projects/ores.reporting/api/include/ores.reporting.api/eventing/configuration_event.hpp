@@ -39,7 +39,7 @@
 namespace ores::eventing::domain {
 
 /**
- * @brief Event traits for 's changes.
+ * @brief Event traits for configuration's changes.
  *
  * The events collection is addressed by three subjects, one per action, so the
  * traits state the prefix and the action completes it. The conversion is this

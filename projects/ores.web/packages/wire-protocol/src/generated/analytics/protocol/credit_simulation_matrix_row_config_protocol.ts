@@ -194,16 +194,26 @@ export interface GetCreditSimulationMatrixRowConfigVersionResponse {
 }
 
 export const subjects = {
-    list_credit_simulation_matrix_row_configs_request: "analytics.v1.credit_simulation_matrix_row_configs.list",
-    get_credit_simulation_matrix_row_config_request: "analytics.v1.credit_simulation_matrix_row_configs.get",
-    get_many_credit_simulation_matrix_row_configs_request: "analytics.v1.credit_simulation_matrix_row_configs.get_many",
-    put_credit_simulation_matrix_row_config_request: "analytics.v1.credit_simulation_matrix_row_configs.put",
-    put_many_credit_simulation_matrix_row_configs_request: "analytics.v1.credit_simulation_matrix_row_configs.put_many",
-    delete_credit_simulation_matrix_row_config_request: "analytics.v1.credit_simulation_matrix_row_configs.delete",
-    delete_many_credit_simulation_matrix_row_configs_request: "analytics.v1.credit_simulation_matrix_row_configs.delete_many",
-    list_by_transition_matrix_id_credit_simulation_matrix_row_configs_request: "analytics.v1.credit_simulation_matrix_row_configs.list_by_transition_matrix_id",
-    list_credit_simulation_matrix_row_config_versions_request: "analytics.v1.credit_simulation_matrix_row_configs_versions.list",
-    get_credit_simulation_matrix_row_config_version_request: "analytics.v1.credit_simulation_matrix_row_configs_versions.get",
+    list_credit_simulation_matrix_row_configs_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.list',
+    get_credit_simulation_matrix_row_config_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.get',
+    get_many_credit_simulation_matrix_row_configs_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.get_many',
+    put_credit_simulation_matrix_row_config_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.put',
+    put_many_credit_simulation_matrix_row_configs_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.put_many',
+    delete_credit_simulation_matrix_row_config_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.delete',
+    delete_many_credit_simulation_matrix_row_configs_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.delete_many',
+    list_by_transition_matrix_id_credit_simulation_matrix_row_configs_request:
+        'analytics.v1.credit_simulation_matrix_row_configs.list_by_transition_matrix_id',
+    list_credit_simulation_matrix_row_config_versions_request:
+        'analytics.v1.credit_simulation_matrix_row_configs_versions.list',
+    get_credit_simulation_matrix_row_config_version_request:
+        'analytics.v1.credit_simulation_matrix_row_configs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -229,7 +239,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "analytics.v1.credit_simulation_matrix_row_configs_events.created",
-    updated: "analytics.v1.credit_simulation_matrix_row_configs_events.updated",
-    deleted: "analytics.v1.credit_simulation_matrix_row_configs_events.deleted",
+    created: 'analytics.v1.credit_simulation_matrix_row_configs_events.created',
+    updated: 'analytics.v1.credit_simulation_matrix_row_configs_events.updated',
+    deleted: 'analytics.v1.credit_simulation_matrix_row_configs_events.deleted',
 } as const;

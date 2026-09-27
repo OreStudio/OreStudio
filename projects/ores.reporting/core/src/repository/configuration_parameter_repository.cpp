@@ -124,24 +124,9 @@ std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
-            ctx,
-            query,
-            [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
-            lg(),
-            "Reading latest configuration parameters (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<configuration_parameter_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -156,10 +141,8 @@ configuration_parameter_repository::read_latest(context ctx, const std::string& 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameter. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -174,10 +157,9 @@ configuration_parameter_repository::read_latest_by_value(context ctx, const std:
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameter by value: " << value;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "value"_c == value && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<configuration_parameter_entity>> |
+        where("tenant_id"_c == tid && "value"_c == value && "valid_to"_c == max.value());
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -191,11 +173,9 @@ std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_any_by_value(context ctx, const std::string& value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any configuration parameter by value: " << value;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<configuration_parameter_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "value"_c == value) |
-        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
+                       where("tenant_id"_c == tid && "value"_c == value) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -210,9 +190,8 @@ std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all configuration parameter versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
@@ -228,10 +207,8 @@ std::optional<domain::configuration_parameter> configuration_parameter_repositor
     BOOST_LOG_SEV(lg(), debug) << "Reading configuration parameter at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -254,12 +231,10 @@ configuration_parameter_repository::read_latest_by_configuration_id(
                                << configuration_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<configuration_parameter_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "configuration_id"_c == configuration_id && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
+                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -282,11 +257,10 @@ configuration_parameter_repository::get_total_parameter_value_count_by_configura
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<configuration_parameter_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "configuration_id"_c == configuration_id && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+              "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -310,12 +284,11 @@ configuration_parameter_repository::read_latest_by_parameter_definition_id(
         << parameter_definition_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "parameter_definition_id"_c == parameter_definition_id &&
-                             "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query =
+        sqlgen::read<std::vector<configuration_parameter_entity>> |
+        where("tenant_id"_c == tid && "parameter_definition_id"_c == parameter_definition_id &&
+              "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -338,11 +311,9 @@ configuration_parameter_repository::get_total_parameter_value_count_by_parameter
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<configuration_parameter_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "parameter_definition_id"_c == parameter_definition_id &&
+        where("tenant_id"_c == tid && "parameter_definition_id"_c == parameter_definition_id &&
               "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
@@ -372,10 +343,9 @@ configuration_parameter_repository::remove_status configuration_parameter_reposi
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<configuration_parameter_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing configuration parameter from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -396,11 +366,9 @@ std::vector<domain::configuration_parameter> configuration_parameter_repository:
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<configuration_parameter_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
         ctx,
@@ -419,11 +387,9 @@ std::uint32_t configuration_parameter_repository::get_total_parameter_value_coun
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<configuration_parameter_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -439,10 +405,8 @@ configuration_parameter_repository::read_latest(context ctx, const std::vector<s
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result =
         execute_read_query<configuration_parameter_entity, domain::configuration_parameter>(
             ctx,
@@ -456,10 +420,8 @@ configuration_parameter_repository::read_latest(context ctx, const std::vector<s
 void configuration_parameter_repository::remove(context ctx, const std::vector<std::string>& ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<configuration_parameter_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing configuration parameters.");
 }
 

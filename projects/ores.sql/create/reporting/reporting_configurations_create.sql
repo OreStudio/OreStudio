@@ -22,13 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
- *
- * +#+filetags: :model:entity:reporting:
- * +#+entity_plural: configurations
- * +#+entity_title: Configuration
- * +#+created: 2026-09-27
- * +#+updated: 2026-09-27
+ * Configuration Table
  *
  * The name is ours; the detail lives with the component named by
  * owning_component. A report binds a configuration through
@@ -44,7 +38,6 @@ create table if not exists "ores_reporting_configurations_tbl" (
     "name" text not null,
     "configuration_type_code" text not null,
     "owning_component" text not null,
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -62,20 +55,16 @@ create table if not exists "ores_reporting_configurations_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists unknown_version_uniq_idx
+create unique index if not exists configurations_version_uniq_idx
 on "ores_reporting_configurations_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists unknown_id_uniq_idx
+create unique index if not exists configurations_id_uniq_idx
 on "ores_reporting_configurations_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists unknown_tenant_idx
+create index if not exists configurations_tenant_idx
 on "ores_reporting_configurations_tbl" (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists unknown_workspace_idx
-on "ores_reporting_configurations_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_reporting_configurations_insert_fn()
@@ -85,9 +74,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Validate configuration_type_code (soft FK to ores_reporting_configuration_types_tbl)
     if not exists (

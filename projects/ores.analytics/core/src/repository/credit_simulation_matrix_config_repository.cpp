@@ -124,27 +124,9 @@ std::vector<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<credit_simulation_matrix_config_entity,
-                                  domain::credit_simulation_matrix_config>(
-            ctx,
-            query,
-            [](const auto& entities) {
-                return credit_simulation_matrix_config_mapper::map(entities);
-            },
-            lg(),
-            "Reading latest transition matrices (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<credit_simulation_matrix_config_entity,
                               domain::credit_simulation_matrix_config>(
@@ -160,10 +142,8 @@ credit_simulation_matrix_config_repository::read_latest(context ctx, const std::
     BOOST_LOG_SEV(lg(), debug) << "Reading latest transition matrix. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<credit_simulation_matrix_config_entity,
                               domain::credit_simulation_matrix_config>(
@@ -180,10 +160,9 @@ credit_simulation_matrix_config_repository::read_latest_by_name(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest transition matrix by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "name"_c == name &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
+        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<credit_simulation_matrix_config_entity,
                               domain::credit_simulation_matrix_config>(
@@ -198,9 +177,8 @@ std::vector<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_repository::read_any_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any transition matrix by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "name"_c == name) |
+                       where("tenant_id"_c == tid && "name"_c == name) |
                        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<credit_simulation_matrix_config_entity,
@@ -217,9 +195,8 @@ std::vector<domain::credit_simulation_matrix_config>
 credit_simulation_matrix_config_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all transition matrix versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<credit_simulation_matrix_config_entity,
@@ -238,10 +215,8 @@ credit_simulation_matrix_config_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading transition matrix at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<credit_simulation_matrix_config_entity,
@@ -275,10 +250,9 @@ credit_simulation_matrix_config_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<credit_simulation_matrix_config_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing transition matrix from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -301,11 +275,9 @@ credit_simulation_matrix_config_repository::read_latest(context ctx,
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<credit_simulation_matrix_config_entity,
                               domain::credit_simulation_matrix_config>(
@@ -325,11 +297,9 @@ std::uint32_t credit_simulation_matrix_config_repository::get_total_matrix_count
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<credit_simulation_matrix_config_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -346,10 +316,8 @@ credit_simulation_matrix_config_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<credit_simulation_matrix_config_entity,
                                      domain::credit_simulation_matrix_config>(
         ctx,
@@ -364,10 +332,8 @@ void credit_simulation_matrix_config_repository::remove(context ctx,
                                                         const std::vector<std::string>& ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<credit_simulation_matrix_config_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing transition matrices.");
 }
 

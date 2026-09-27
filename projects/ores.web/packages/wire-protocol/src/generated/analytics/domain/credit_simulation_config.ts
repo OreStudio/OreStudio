@@ -33,7 +33,6 @@
 export interface CreditSimulationConfig {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     name: string;
     configuration_id: string;

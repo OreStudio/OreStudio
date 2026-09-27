@@ -72,19 +72,19 @@ TEST_CASE("configuration_commands_registers_every_derived_verb", tags) {
 
     // The menu's completion list is the only public view of its children, so
     // a verb that is missing from it was never registered.
-    const auto completions = root_menu.GetCompletions(" ");
+    const auto completions = root_menu.GetCompletions("configurations ");
     for (const auto& verb : {
-             std::string{" list"},
-             std::string{" get"},
-             std::string{" get-many"},
-             std::string{" add"},
-             std::string{" set"},
-             std::string{" put-many"},
-             std::string{" delete"},
-             std::string{" delete-many"},
-             std::string{" by-configuration-type-code"},
-             std::string{" versions"},
-             std::string{" version"},
+             std::string{"configurations list"},
+             std::string{"configurations get"},
+             std::string{"configurations get-many"},
+             std::string{"configurations add"},
+             std::string{"configurations set"},
+             std::string{"configurations put-many"},
+             std::string{"configurations delete"},
+             std::string{"configurations delete-many"},
+             std::string{"configurations by-configuration-type-code"},
+             std::string{"configurations versions"},
+             std::string{"configurations version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

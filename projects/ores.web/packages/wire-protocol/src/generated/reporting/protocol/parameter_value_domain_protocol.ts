@@ -166,15 +166,16 @@ export interface GetParameterValueDomainVersionResponse {
 }
 
 export const subjects = {
-    list_parameter_value_domains_request: "reporting.v1.parameter_value_domains.list",
-    get_parameter_value_domain_request: "reporting.v1.parameter_value_domains.get",
-    get_many_parameter_value_domains_request: "reporting.v1.parameter_value_domains.get_many",
-    put_parameter_value_domain_request: "reporting.v1.parameter_value_domains.put",
-    put_many_parameter_value_domains_request: "reporting.v1.parameter_value_domains.put_many",
-    delete_parameter_value_domain_request: "reporting.v1.parameter_value_domains.delete",
-    delete_many_parameter_value_domains_request: "reporting.v1.parameter_value_domains.delete_many",
-    list_parameter_value_domain_versions_request: "reporting.v1.parameter_value_domains_versions.list",
-    get_parameter_value_domain_version_request: "reporting.v1.parameter_value_domains_versions.get",
+    list_parameter_value_domains_request: 'reporting.v1.parameter_value_domains.list',
+    get_parameter_value_domain_request: 'reporting.v1.parameter_value_domains.get',
+    get_many_parameter_value_domains_request: 'reporting.v1.parameter_value_domains.get_many',
+    put_parameter_value_domain_request: 'reporting.v1.parameter_value_domains.put',
+    put_many_parameter_value_domains_request: 'reporting.v1.parameter_value_domains.put_many',
+    delete_parameter_value_domain_request: 'reporting.v1.parameter_value_domains.delete',
+    delete_many_parameter_value_domains_request: 'reporting.v1.parameter_value_domains.delete_many',
+    list_parameter_value_domain_versions_request:
+        'reporting.v1.parameter_value_domains_versions.list',
+    get_parameter_value_domain_version_request: 'reporting.v1.parameter_value_domains_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -199,7 +200,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.parameter_value_domains_events.created",
-    updated: "reporting.v1.parameter_value_domains_events.updated",
-    deleted: "reporting.v1.parameter_value_domains_events.deleted",
+    created: 'reporting.v1.parameter_value_domains_events.created',
+    updated: 'reporting.v1.parameter_value_domains_events.updated',
+    deleted: 'reporting.v1.parameter_value_domains_events.deleted',
 } as const;

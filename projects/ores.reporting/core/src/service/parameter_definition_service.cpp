@@ -493,7 +493,7 @@ parameter_definition_service::get_parameters(const std::vector<std::string>& ids
 
 void parameter_definition_service::save_parameter(const domain::parameter_definition& v) {
     if (v.id.is_nil())
-        throw std::invalid_argument(" id cannot be empty.");
+        throw std::invalid_argument("Parameter Definition id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving parameter definition. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
@@ -505,7 +505,7 @@ void parameter_definition_service::save_parameters(
     const std::vector<domain::parameter_definition>& parameters) {
     for (const auto& e : parameters) {
         if (e.id.is_nil())
-            throw std::invalid_argument(" id cannot be empty.");
+            throw std::invalid_argument("Parameter Definition id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parameters.size() << " parameter definitions";
     auto ts = parameters;

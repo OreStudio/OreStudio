@@ -190,16 +190,17 @@ export interface GetParameterDefinitionVersionResponse {
 }
 
 export const subjects = {
-    list_parameter_definitions_request: "reporting.v1.parameter_definitions.list",
-    get_parameter_definition_request: "reporting.v1.parameter_definitions.get",
-    get_many_parameter_definitions_request: "reporting.v1.parameter_definitions.get_many",
-    put_parameter_definition_request: "reporting.v1.parameter_definitions.put",
-    put_many_parameter_definitions_request: "reporting.v1.parameter_definitions.put_many",
-    delete_parameter_definition_request: "reporting.v1.parameter_definitions.delete",
-    delete_many_parameter_definitions_request: "reporting.v1.parameter_definitions.delete_many",
-    list_by_parameter_value_domain_code_parameter_definitions_request: "reporting.v1.parameter_definitions.list_by_parameter_value_domain_code",
-    list_parameter_definition_versions_request: "reporting.v1.parameter_definitions_versions.list",
-    get_parameter_definition_version_request: "reporting.v1.parameter_definitions_versions.get",
+    list_parameter_definitions_request: 'reporting.v1.parameter_definitions.list',
+    get_parameter_definition_request: 'reporting.v1.parameter_definitions.get',
+    get_many_parameter_definitions_request: 'reporting.v1.parameter_definitions.get_many',
+    put_parameter_definition_request: 'reporting.v1.parameter_definitions.put',
+    put_many_parameter_definitions_request: 'reporting.v1.parameter_definitions.put_many',
+    delete_parameter_definition_request: 'reporting.v1.parameter_definitions.delete',
+    delete_many_parameter_definitions_request: 'reporting.v1.parameter_definitions.delete_many',
+    list_by_parameter_value_domain_code_parameter_definitions_request:
+        'reporting.v1.parameter_definitions.list_by_parameter_value_domain_code',
+    list_parameter_definition_versions_request: 'reporting.v1.parameter_definitions_versions.list',
+    get_parameter_definition_version_request: 'reporting.v1.parameter_definitions_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -225,7 +226,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.parameter_definitions_events.created",
-    updated: "reporting.v1.parameter_definitions_events.updated",
-    deleted: "reporting.v1.parameter_definitions_events.deleted",
+    created: 'reporting.v1.parameter_definitions_events.created',
+    updated: 'reporting.v1.parameter_definitions_events.updated',
+    deleted: 'reporting.v1.parameter_definitions_events.deleted',
 } as const;

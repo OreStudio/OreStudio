@@ -207,7 +207,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "reporting:::write")) {
+        if (!has_permission(req_ctx, "reporting::configurations:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -253,7 +253,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "reporting:::write")) {
+        if (!has_permission(req_ctx, "reporting::configurations:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -299,7 +299,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "reporting:::delete")) {
+        if (!has_permission(req_ctx, "reporting::configurations:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -345,7 +345,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "reporting:::delete")) {
+        if (!has_permission(req_ctx, "reporting::configurations:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

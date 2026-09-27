@@ -9,9 +9,9 @@
 #+brief: A parameter an ORE document accepts, and what its value is.
 #+entity_singular: parameter_definition
 #+entity_plural: parameter_definitions
-+#+entity_title: Parameter Definition
+#+entity_title: Parameter Definition
 #+created: 2026-09-27
-+#+updated: 2026-09-27
+#+updated: 2026-09-27
 
 The vocabulary of the run document. ORE writes parameters as a name and a
 value inside a block; =scope= names the block (Setup, Markets, an analytic)
@@ -28,7 +28,6 @@ exactly one analytic kind, which is why the name alone is not the key.
 :product:   ores
 :component: reporting
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   uuid-identified-lookup
 :tablename: ores_reporting_parameter_definitions_tbl
 :END:

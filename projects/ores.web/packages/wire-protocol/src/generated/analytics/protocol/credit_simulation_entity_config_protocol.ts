@@ -205,17 +205,28 @@ export interface GetCreditSimulationEntityConfigVersionResponse {
 }
 
 export const subjects = {
-    list_credit_simulation_entity_configs_request: "analytics.v1.credit_simulation_entity_configs.list",
-    get_credit_simulation_entity_config_request: "analytics.v1.credit_simulation_entity_configs.get",
-    get_many_credit_simulation_entity_configs_request: "analytics.v1.credit_simulation_entity_configs.get_many",
-    put_credit_simulation_entity_config_request: "analytics.v1.credit_simulation_entity_configs.put",
-    put_many_credit_simulation_entity_configs_request: "analytics.v1.credit_simulation_entity_configs.put_many",
-    delete_credit_simulation_entity_config_request: "analytics.v1.credit_simulation_entity_configs.delete",
-    delete_many_credit_simulation_entity_configs_request: "analytics.v1.credit_simulation_entity_configs.delete_many",
-    list_by_credit_simulation_config_id_credit_simulation_entity_configs_request: "analytics.v1.credit_simulation_entity_configs.list_by_credit_simulation_config_id",
-    list_by_transition_matrix_id_credit_simulation_entity_configs_request: "analytics.v1.credit_simulation_entity_configs.list_by_transition_matrix_id",
-    list_credit_simulation_entity_config_versions_request: "analytics.v1.credit_simulation_entity_configs_versions.list",
-    get_credit_simulation_entity_config_version_request: "analytics.v1.credit_simulation_entity_configs_versions.get",
+    list_credit_simulation_entity_configs_request:
+        'analytics.v1.credit_simulation_entity_configs.list',
+    get_credit_simulation_entity_config_request:
+        'analytics.v1.credit_simulation_entity_configs.get',
+    get_many_credit_simulation_entity_configs_request:
+        'analytics.v1.credit_simulation_entity_configs.get_many',
+    put_credit_simulation_entity_config_request:
+        'analytics.v1.credit_simulation_entity_configs.put',
+    put_many_credit_simulation_entity_configs_request:
+        'analytics.v1.credit_simulation_entity_configs.put_many',
+    delete_credit_simulation_entity_config_request:
+        'analytics.v1.credit_simulation_entity_configs.delete',
+    delete_many_credit_simulation_entity_configs_request:
+        'analytics.v1.credit_simulation_entity_configs.delete_many',
+    list_by_credit_simulation_config_id_credit_simulation_entity_configs_request:
+        'analytics.v1.credit_simulation_entity_configs.list_by_credit_simulation_config_id',
+    list_by_transition_matrix_id_credit_simulation_entity_configs_request:
+        'analytics.v1.credit_simulation_entity_configs.list_by_transition_matrix_id',
+    list_credit_simulation_entity_config_versions_request:
+        'analytics.v1.credit_simulation_entity_configs_versions.list',
+    get_credit_simulation_entity_config_version_request:
+        'analytics.v1.credit_simulation_entity_configs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -242,7 +253,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "analytics.v1.credit_simulation_entity_configs_events.created",
-    updated: "analytics.v1.credit_simulation_entity_configs_events.updated",
-    deleted: "analytics.v1.credit_simulation_entity_configs_events.deleted",
+    created: 'analytics.v1.credit_simulation_entity_configs_events.created',
+    updated: 'analytics.v1.credit_simulation_entity_configs_events.updated',
+    deleted: 'analytics.v1.credit_simulation_entity_configs_events.deleted',
 } as const;

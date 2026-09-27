@@ -33,7 +33,7 @@
 namespace ores::reporting::domain {
 
 /**
- * @brief Converts  to the table format.
+ * @brief Converts configurations to the table format.
  */
 ORES_REPORTING_API_EXPORT std::string convert_to_table(const std::vector<configuration>& v);
 

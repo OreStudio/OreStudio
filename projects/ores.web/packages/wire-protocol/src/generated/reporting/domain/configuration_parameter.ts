@@ -33,7 +33,6 @@
 export interface ConfigurationParameter {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     configuration_id: string;
     parameter_definition_id: string;

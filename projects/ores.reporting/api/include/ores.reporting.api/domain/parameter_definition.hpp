@@ -34,9 +34,6 @@ namespace ores::reporting::domain {
 /**
  * @brief A parameter an ORE document accepts, and what its value is.
  *
- * +#+entity_title: Parameter Definition
- * +#+updated: 2026-09-27
- *
  * The vocabulary of the run document. ORE writes parameters as a name and a
  * value inside a block; scope names the block (Setup, Markets, an analytic)
  * and subtype narrows it, so a pair of them plus name says which parameter
@@ -56,13 +53,6 @@ struct parameter_definition final {
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief Surrogate key for the definition.

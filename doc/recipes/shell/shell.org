@@ -133,10 +133,20 @@ tangled into the runnable script library
 
 * Change Reasons
 
+- [[id:66C9469C-9049-4410-89B3-B1D453405E38][Add]]
+- [[id:8A23C49D-61FB-4A0E-8829-ABCD0463DEC8][Delete]]
+- [[id:FB4F43FF-90FF-4E67-8BD0-C6DB47DD6E69][Get]]
+- [[id:3A94A1CC-9134-494C-A036-A1DDBF3E0D5F][Help]]
+- [[id:C82409F0-2DED-4134-B5E2-98E51AD9CFCF][History]]
 - [[id:D4465BCE-68AE-5C66-B36C-642843F1843E][How do I run the change_reasons commands from the shell?]]
 
 * Change Reason Categories
 
+- [[id:DC91A742-8C16-45DC-9689-7CD122B9E48A][Add]]
+- [[id:4E3F1039-7FDA-4263-81D5-296E935AACCE][Delete]]
+- [[id:D6C9B1A7-E6AB-4847-9DB8-65DDAEE9C5C2][Get]]
+- [[id:7459C714-AD65-4BE9-84C8-249A4D56231E][Help]]
+- [[id:4E1B0644-98DE-480C-A63B-92E0A5153957][History]]
 - [[id:EA683935-8199-50E5-A58B-B2E05B1C6266][How do I run the change_reason_categories commands from the shell?]]
 
 * Account Contact Informations
@@ -808,14 +818,46 @@ tangled into the runnable script library
 
 - [[id:924F7A20-A61E-52A4-B2CE-951A084C6216][How do I run the publications commands from the shell?]]
 
-* Seed Profile Parameters
+* Configuration
 
-- [[id:B582B99D-4CE8-5731-83E5-F8A3DA18BF95][How do I run the seed_profile_parameters commands from the shell?]]
+- [[id:B062B733-7682-5A34-B6FF-F390B7360353][How do I run the configuration commands from the shell?]]
 
-* Seed Profile Steps
+* Configuration Parameters
 
-- [[id:00679BCA-C8E8-51EC-9835-B0C4C5A5612B][How do I run the seed_profile_steps commands from the shell?]]
+- [[id:D5FBEC41-D629-54D7-AB2F-241678E42248][How do I run the configuration_parameters commands from the shell?]]
 
-* Seed Profiles
+* Configuration Types
 
-- [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I run the seed_profiles commands from the shell?]]
+- [[id:3DBFE6C1-87FF-5133-BFFB-8897F47B458B][How do I run the configuration_types commands from the shell?]]
+
+* Configurations
+
+- [[id:AA04C9E7-94C8-5B7E-BFBA-C62AC4B9CD4D][How do I run the configurations commands from the shell?]]
+
+* Credit Simulation Configs
+
+- [[id:4B0153E7-C2DE-51D3-9C40-475DA178675D][How do I run the credit_simulation_configs commands from the shell?]]
+
+* Credit Simulation Entity Configs
+
+- [[id:25E2C1E5-B77A-50FF-9F7D-77317CD95342][How do I run the credit_simulation_entity_configs commands from the shell?]]
+
+* Credit Simulation Matrix Configs
+
+- [[id:B4730FC2-0169-511D-8CE2-AD4C31A7D726][How do I run the credit_simulation_matrix_configs commands from the shell?]]
+
+* Credit Simulation Matrix Row Configs
+
+- [[id:C10B8762-D5B0-575D-8CFB-17312188CEDA][How do I run the credit_simulation_matrix_row_configs commands from the shell?]]
+
+* Parameter Definitions
+
+- [[id:2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA][How do I run the parameter_definitions commands from the shell?]]
+
+* Parameter Value Domains
+
+- [[id:A689D2D5-2E12-5661-B83B-4DBDC1561F0A][How do I run the parameter_value_domains commands from the shell?]]
+
+* Report Configurations
+
+- [[id:107EC378-86EB-52A7-90ED-62512A7BD785][How do I run the report_configurations commands from the shell?]]

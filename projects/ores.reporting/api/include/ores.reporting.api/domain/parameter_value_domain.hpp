@@ -40,9 +40,11 @@ namespace ores::reporting::domain {
  * names the entity it points at, so the mapper knows what to write into the
  * document and a reader knows what the value means.
  *
- * The entity is not called value_domain because that name is a knob in the
- * codegen meta-model; an entity using it resolves to a placeholder and the
- * generator writes files called unknown instead of failing.
+ * A malformed org header makes this loader fail in a misleading way: a line
+ * that does not start at column zero, or a stray character before a #+ keyword,
+ * leaves the entity type unresolved and the generator writes files called
+ * unknown_* rather than reporting the bad line. Check the header first when a
+ * model generates unknown.
  */
 struct parameter_value_domain final {
     /**

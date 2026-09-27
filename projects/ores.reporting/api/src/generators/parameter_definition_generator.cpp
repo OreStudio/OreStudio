@@ -44,7 +44,6 @@ generate_synthetic_parameter_definition(utility::generation::generation_context&
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.scope = std::string(faker::word::noun());
     r.subtype = std::string(faker::word::noun());

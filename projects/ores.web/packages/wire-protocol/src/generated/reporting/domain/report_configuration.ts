@@ -33,7 +33,6 @@
 export interface ReportConfiguration {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     report_definition_id: string;
     configuration_type_code: string;

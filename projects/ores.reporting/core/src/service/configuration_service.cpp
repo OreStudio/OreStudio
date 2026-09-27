@@ -481,7 +481,7 @@ configuration_service::get_configurations(const std::vector<std::string>& ids) {
 
 void configuration_service::save_configuration(const domain::configuration& v) {
     if (v.id.is_nil())
-        throw std::invalid_argument(" id cannot be empty.");
+        throw std::invalid_argument("Configuration id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving configuration. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
@@ -493,7 +493,7 @@ void configuration_service::save_configurations(
     const std::vector<domain::configuration>& configurations) {
     for (const auto& e : configurations) {
         if (e.id.is_nil())
-            throw std::invalid_argument(" id cannot be empty.");
+            throw std::invalid_argument("Configuration id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << configurations.size() << " configurations";
     auto ts = configurations;

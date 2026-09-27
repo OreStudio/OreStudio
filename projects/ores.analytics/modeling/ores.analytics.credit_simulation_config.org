@@ -23,7 +23,6 @@ so they are their own table and an entity points at one.
 :product:   ores
 :component: analytics
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   uuid-identified-lookup
 :tablename: ores_analytics_credit_simulation_configs_tbl
 :END:
@@ -228,7 +227,6 @@ How loan exposure is computed.
 :delete_response_class:   analytics::messaging::delete_credit_simulation_config_response
 :delete_message_type:     delete_credit_simulation_config_request
 :has_uuid_primary_key:    true
-:has_change_reason_cache: false
 :has_explorer_api:        true
 :has_export_macro:        true
 :settings_group:          Credit Simulation ConfigListWindow

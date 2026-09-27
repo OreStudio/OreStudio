@@ -40,7 +40,6 @@ configuration_parameter_mapper::map(const configuration_parameter_entity& v) {
     domain::configuration_parameter r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.configuration_id = boost::lexical_cast<boost::uuids::uuid>(v.configuration_id);
     r.parameter_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.parameter_definition_id);
@@ -63,7 +62,6 @@ configuration_parameter_mapper::map(const domain::configuration_parameter& v) {
     configuration_parameter_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.configuration_id = boost::uuids::to_string(v.configuration_id);
     r.parameter_definition_id = boost::uuids::to_string(v.parameter_definition_id);

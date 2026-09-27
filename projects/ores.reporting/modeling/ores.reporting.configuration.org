@@ -5,13 +5,13 @@
 #+description: Codegen entity model for the reporting =configuration= table. A named, reusable configuration a report binds.
 #+type: ores.codegen.entity
 #+component: reporting
-+#+filetags: :model:entity:reporting:
+#+filetags: :model:entity:reporting:
 #+brief: A named, reusable configuration a report can bind.
 #+entity_singular: configuration
-+#+entity_plural: configurations
-+#+entity_title: Configuration
-+#+created: 2026-09-27
-+#+updated: 2026-09-27
+#+entity_plural: configurations
+#+entity_title: Configuration
+#+created: 2026-09-27
+#+updated: 2026-09-27
 
 The name is ours; the detail lives with the component named by
 =owning_component=. A report binds a configuration through
@@ -25,7 +25,6 @@ copying it, and the kind of configuration it is comes from
 :product:   ores
 :component: reporting
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   uuid-identified-lookup
 :tablename: ores_reporting_configurations_tbl
 :END:

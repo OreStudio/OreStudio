@@ -40,7 +40,6 @@ report_configuration_mapper::map(const report_configuration_entity& v) {
     domain::report_configuration r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
     r.configuration_type_code = v.configuration_type_code;
@@ -62,7 +61,6 @@ report_configuration_mapper::map(const domain::report_configuration& v) {
     report_configuration_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
     r.configuration_type_code = v.configuration_type_code;

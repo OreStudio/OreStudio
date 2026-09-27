@@ -28,7 +28,6 @@ the shape of the row.
 :product:   ores
 :component: reporting
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   uuid-identified-lookup
 :tablename: ores_reporting_configuration_parameters_tbl
 :END:

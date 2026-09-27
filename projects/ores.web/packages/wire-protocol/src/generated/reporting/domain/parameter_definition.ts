@@ -33,7 +33,6 @@
 export interface ParameterDefinition {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     scope: string;
     subtype: string;

@@ -122,24 +122,9 @@ std::vector<domain::report_configuration>
 report_configuration_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<report_configuration_entity, domain::report_configuration>(
-            ctx,
-            query,
-            [](const auto& entities) { return report_configuration_mapper::map(entities); },
-            lg(),
-            "Reading latest report configurations (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<report_configuration_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -154,10 +139,8 @@ report_configuration_repository::read_latest(context ctx, const std::string& id)
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report configuration. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -174,11 +157,10 @@ report_configuration_repository::read_latest_by_configuration_type_code(
                                << configuration_type_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<report_configuration_entity>> |
+        where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code &&
+              "valid_to"_c == max.value());
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -194,11 +176,10 @@ report_configuration_repository::read_any_by_configuration_type_code(
     BOOST_LOG_SEV(lg(), debug) << "Reading any report configuration by configuration_type_code: "
                                << configuration_type_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "configuration_type_code"_c == configuration_type_code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query =
+        sqlgen::read<std::vector<report_configuration_entity>> |
+        where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code) |
+        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -213,9 +194,8 @@ std::vector<domain::report_configuration>
 report_configuration_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report configuration versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
@@ -231,10 +211,8 @@ std::optional<domain::report_configuration> report_configuration_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading report configuration at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -261,11 +239,10 @@ report_configuration_repository::read_latest_by_report_definition_id(
                                << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<report_configuration_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "report_definition_id"_c == report_definition_id && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "report_definition_id"_c == report_definition_id &&
+              "valid_to"_c == max.value()) |
         order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
@@ -289,11 +266,10 @@ report_configuration_repository::get_total_report_configuration_count_by_report_
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<report_configuration_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "report_definition_id"_c == report_definition_id && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "report_definition_id"_c == report_definition_id &&
+              "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -317,12 +293,11 @@ report_configuration_repository::read_latest_by_configuration_type_code(
                                << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query =
+        sqlgen::read<std::vector<report_configuration_entity>> |
+        where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code &&
+              "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -345,11 +320,9 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<report_configuration_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "configuration_type_code"_c == configuration_type_code &&
+        where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code &&
               "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
@@ -370,12 +343,10 @@ report_configuration_repository::read_latest_by_configuration_id(
                                << configuration_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<report_configuration_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "configuration_id"_c == configuration_id && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
+                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -398,11 +369,10 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<report_configuration_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "configuration_id"_c == configuration_id && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+              "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -431,10 +401,9 @@ report_configuration_repository::remove_status report_configuration_repository::
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<report_configuration_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing report configuration from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -455,11 +424,9 @@ std::vector<domain::report_configuration> report_configuration_repository::read_
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<report_configuration_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
@@ -478,11 +445,9 @@ std::uint32_t report_configuration_repository::get_total_report_configuration_co
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<report_configuration_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -498,10 +463,8 @@ report_configuration_repository::read_latest(context ctx, const std::vector<std:
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_configuration_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
         query,
@@ -514,10 +477,8 @@ report_configuration_repository::read_latest(context ctx, const std::vector<std:
 void report_configuration_repository::remove(context ctx, const std::vector<std::string>& ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<report_configuration_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing report configurations.");
 }
 

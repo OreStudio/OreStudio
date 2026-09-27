@@ -127,7 +127,7 @@ TEST_CASE("write_configuration_publishes_an_event", tags) {
     configuration_type_code_repo.write(party_ctx, configuration_type_code_parent);
     v.configuration_type_code = configuration_type_code_parent.code;
     const auto id_str = boost::uuids::to_string(v.id);
-    BOOST_LOG_SEV(lg, debug) << ": " << v;
+    BOOST_LOG_SEV(lg, debug) << "Configuration: " << v;
 
     configuration_repository repo;
     repo.write(party_ctx, v);

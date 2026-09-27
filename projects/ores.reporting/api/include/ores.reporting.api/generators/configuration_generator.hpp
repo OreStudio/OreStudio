@@ -39,10 +39,10 @@ ORES_REPORTING_API_EXPORT domain::configuration
 generate_synthetic_configuration(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic .
+ * @brief Generates N synthetic configurations.
  */
 ORES_REPORTING_API_EXPORT std::vector<domain::configuration>
-generate_synthetic_(std::size_t n, utility::generation::generation_context& ctx);
+generate_synthetic_configurations(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

@@ -127,7 +127,7 @@ TEST_CASE("write_parameter_definition_publishes_an_event", tags) {
     parameter_value_domain_code_repo.write(party_ctx, parameter_value_domain_code_parent);
     v.parameter_value_domain_code = parameter_value_domain_code_parent.code;
     const auto id_str = boost::uuids::to_string(v.id);
-    BOOST_LOG_SEV(lg, debug) << ": " << v;
+    BOOST_LOG_SEV(lg, debug) << "Parameter Definition: " << v;
 
     parameter_definition_repository repo;
     repo.write(party_ctx, v);

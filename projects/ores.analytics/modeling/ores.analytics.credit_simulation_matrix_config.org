@@ -25,7 +25,6 @@ carries the name an entity refers to and nothing that can be derived.
 :product:   ores
 :component: analytics
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   uuid-identified-lookup
 :tablename: ores_analytics_credit_simulation_matrices_tbl
 :END:
@@ -147,7 +146,6 @@ shipped example.
 :delete_response_class:   analytics::messaging::delete_credit_simulation_matrix_config_response
 :delete_message_type:     delete_credit_simulation_matrix_config_request
 :has_uuid_primary_key:    true
-:has_change_reason_cache: false
 :has_explorer_api:        true
 :has_export_macro:        true
 :settings_group:          Credit Simulation Matrix ConfigListWindow

@@ -11,7 +11,7 @@
 #+entity_plural: report_configurations
 #+entity_title: Report Configuration
 #+created: 2026-09-27
-+#+updated: 2026-09-27
+#+updated: 2026-09-27
 
 This is how a report definition reaches its configuration: one row per
 configuration it binds, where the configuration type is the slot and the
@@ -25,7 +25,6 @@ slot is not a column on the report definition.
 :product:   ores
 :component: reporting
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   uuid-identified-lookup
 :tablename: ores_reporting_report_configurations_tbl
 :END:

@@ -36,7 +36,7 @@ namespace ores::reporting::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a  in the database.
+ * @brief Represents a parameter definition in the database.
  */
 struct parameter_definition_entity {
     constexpr static const char* schema = "public";
@@ -44,7 +44,6 @@ struct parameter_definition_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
     std::string scope;
     std::string subtype;

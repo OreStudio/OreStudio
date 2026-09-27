@@ -44,7 +44,6 @@ struct report_configuration_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
     std::string report_definition_id;
     std::string configuration_type_code;

@@ -219,18 +219,21 @@ export interface GetReportConfigurationVersionResponse {
 }
 
 export const subjects = {
-    list_report_configurations_request: "reporting.v1.report_configurations.list",
-    get_report_configuration_request: "reporting.v1.report_configurations.get",
-    get_many_report_configurations_request: "reporting.v1.report_configurations.get_many",
-    put_report_configuration_request: "reporting.v1.report_configurations.put",
-    put_many_report_configurations_request: "reporting.v1.report_configurations.put_many",
-    delete_report_configuration_request: "reporting.v1.report_configurations.delete",
-    delete_many_report_configurations_request: "reporting.v1.report_configurations.delete_many",
-    list_by_report_definition_id_report_configurations_request: "reporting.v1.report_configurations.list_by_report_definition_id",
-    list_by_configuration_type_code_report_configurations_request: "reporting.v1.report_configurations.list_by_configuration_type_code",
-    list_by_configuration_id_report_configurations_request: "reporting.v1.report_configurations.list_by_configuration_id",
-    list_report_configuration_versions_request: "reporting.v1.report_configurations_versions.list",
-    get_report_configuration_version_request: "reporting.v1.report_configurations_versions.get",
+    list_report_configurations_request: 'reporting.v1.report_configurations.list',
+    get_report_configuration_request: 'reporting.v1.report_configurations.get',
+    get_many_report_configurations_request: 'reporting.v1.report_configurations.get_many',
+    put_report_configuration_request: 'reporting.v1.report_configurations.put',
+    put_many_report_configurations_request: 'reporting.v1.report_configurations.put_many',
+    delete_report_configuration_request: 'reporting.v1.report_configurations.delete',
+    delete_many_report_configurations_request: 'reporting.v1.report_configurations.delete_many',
+    list_by_report_definition_id_report_configurations_request:
+        'reporting.v1.report_configurations.list_by_report_definition_id',
+    list_by_configuration_type_code_report_configurations_request:
+        'reporting.v1.report_configurations.list_by_configuration_type_code',
+    list_by_configuration_id_report_configurations_request:
+        'reporting.v1.report_configurations.list_by_configuration_id',
+    list_report_configuration_versions_request: 'reporting.v1.report_configurations_versions.list',
+    get_report_configuration_version_request: 'reporting.v1.report_configurations_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -258,7 +261,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "reporting.v1.report_configurations_events.created",
-    updated: "reporting.v1.report_configurations_events.updated",
-    deleted: "reporting.v1.report_configurations_events.deleted",
+    created: 'reporting.v1.report_configurations_events.created',
+    updated: 'reporting.v1.report_configurations_events.updated',
+    deleted: 'reporting.v1.report_configurations_events.deleted',
 } as const;

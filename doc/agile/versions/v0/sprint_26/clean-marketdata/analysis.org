@@ -351,18 +351,21 @@ commodity one, 426 by the basis swap's named form, 205 by the security class,
 171 by the shape-profile one and 128 by the rating one. The shape record is down
 to CPR alone, and 99.99% of the corpus is named.
 
-What is left is 48 keys, and nothing in it is a shape defect:
+What is left is 46 keys, and nothing in it is a shape defect:
 
 - =IR_SWAP= (42) and =MM= (4) are F-TIIE. The family list holds =tiie= and not
   =ftiie=, and F-TIIE is a second Mexican benchmark rather than a spelling, so
   closing it means widening a CHECK constraint on an ores table. That is a domain
   decision, not a key grammar, and it has its own capture.
-- =CPR= (2) is a security-keyed key on a type modelled under commodity. It is the
-  last shape-mismatch entry, it has a recorded test-coverage exemption, and the
-  security class added here is where it belongs.
 
-Every ORE series type is now either represented or recorded with its reason, and
-the gate fails if a gap goes unrecorded.
+=CPR= was the last entry in the shape record beside it, and PR 2 closed it by
+moving the type to the =security= class, where its ISIN-keyed shape belongs. The
+shape-mismatch record and the test-coverage exemption list are both empty now --
+the second and third exception lists this work has emptied rather than shortened.
+
+Every ORE series type is now either represented or recorded with its reason, the
+corpus names every key of every type but F-TIIE, and the gate fails if a gap goes
+unrecorded.
 
 ** The security class exposed two generator defects
 

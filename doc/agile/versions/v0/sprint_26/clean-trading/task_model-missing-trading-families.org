@@ -559,6 +559,11 @@ onto =dbfb31d45d=, the merge of main's PR #2240.
 | Drift     | =check_component_drift.py --component trading-cpp --dry-run= reports no drift; main's lookup-template fix reflowed one log statement in =trade_service.cpp=, which is regenerated |
 | Transport | =ORES_USE_BUSCTL=1= is in =.env= and =busctl --user list= answers |
 
+After the seven ports the full suite is unchanged: 86 tests, 81 pass,
+the same five fail, none of them trading's. Each port was checked on its
+own commit and again here, with the component and all-component drift
+dry runs empty and the codegen suite at 790 cases.
+
 The five failures belong to other components:
 
 - =ores.dq.api.tests=: the coding-scheme table drops its description and

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 03B11C75-ED92-4819-9EF3-EF2507F6D21B
+:END:
+#+title: Task: Design the two-mode report pipeline
+#+description: Task for: Run a full report: scheduling, reporting and compute in two modes
+#+type: task
+#+level: s1
+#+filetags: :full-report-pipeline:sprint_26:v0:
+#+owner: marco
+#+branch: feature/design-two-mode-pipeline
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+State the target architecture for one report run across scheduling, reporting and compute, in two modes selected by one knob, with the stage list, the storage-URI seam, the NATS contract and the interaction diagrams. The design lands as a knowledge page, because it outlives the story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute in two modes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The document names every stage, its owner and what it consumes and produces.
+- Both modes are drawn end to end as PlantUML interaction diagrams showing the NATS subjects, and the rendered images are read.
+- The document links the existing reporting, compute, scheduling, workflow and storage documents by org-roam id.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered as [[id:259EA767-EDF7-45EF-BE4D-B1A8FA96F7BD][Report execution
+modes]]. It states the stage list with an owner for each, the storage-URI seam
+that makes the two modes interchangeable, the rule that step results are
+addressed by role rather than index, the full NATS contract hop by hop, and
+two PlantUML interaction diagrams whose rendered images were read.
+
+The design's most useful output is not the diagram but the distance it
+measured, because that is what changes the plan:
+
+- The common tail already exists and works when the shell drives it, and does
+  not exist for the workflow, for three reasons recorded in the design and
+  owned by the ACME smoke-test story.
+- The ORE conversion is much less complete than "we have an XML layer"
+  suggests. The bindings cover the whole ORE vocabulary, but the ORE Studio to
+  binding mappers cover four document kinds — portfolio, currency config,
+  calendar adjustments and conventions — and none of the four configuration
+  documents the engine needs.
+- =prepare_ore_package= ships =trades.msgpack= and =market_data.msgpack=,
+  where the wrapper's contract is =Input/ore.xml= plus six named files, so the
+  step's name and the workflow's own description run ahead of its code.
+- Nothing reads the engine's output at all, and gathering is a blanket tenant
+  dump rather than a resolution of what the selected trades need.
+
+Three questions are left open on purpose rather than settled by assertion:
+where the export's inputs live between stages, whether the demo input binding
+is a stage or an absence, and what a run should do when no grid is present.

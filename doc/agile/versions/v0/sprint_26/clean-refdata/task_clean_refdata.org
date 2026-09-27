@@ -26,11 +26,11 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | Complete. Every checklist item that applies passes with its evidence recorded, except V04, which carries the registry's accepted-exception record: the =ores.doc.shell-recipe= archetype renders nothing, so 93 of 732 generated shell commands abort and the family cannot be refreshed. =ores.refdata= is listed in =COMPONENTS_UNDER_TEST= and =check_component_drift.py --all= reports no drift. |
-| Waiting on   | Nothing. The recipe family is captured as =shell-recipes-no-longer-run=. |
-| Next         | Nothing in this task. The capture is the follow-on work. |
+| Now          | Complete, with no accepted exception left. Every applicable item passes, V04 included: the shell sweep runs all 732 generated refdata commands with 0 aborts, and =ores.refdata= is listed in =COMPONENTS_UNDER_TEST= with =check_component_drift.py --all= reporting no drift. |
+| Waiting on   | Nothing. |
+| Next         | Nothing in this task. The response-shape and recipe fixes reach the components under test; the components outside that set pick them up when they are regenerated, which is captured in =shell-recipes-no-longer-run=. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -169,10 +169,14 @@ record each item's result in the table below.
 | V03 | Seventh and last blocker cleared. Another worktree's fix =afe8c87282= ("Ask before inserting into a version-gated table") gives each of the twelve seed helpers an existence check before the insert, which is the pattern the seed file's own header documents; without it a before-insert trigger refuses the second seed of a key before =on conflict do nothing= resolves. Cherry-picked as =69c91154a8=, authorship preserved. | =git show afe8c87282=; =git log -1 69c91154a8=. |
 | V03 | PASS — =compass db recreate -y -k= runs to the end (exit 0) and the store answers: schema 0.0.25, rebuilt from =69c91154a8-d=, =drift: current=. The recreate logs the known benign noise (asset images not yet populated, =tap_funky= grant warnings). | =compass db status=; recreate output. |
 | V02 | PASS — all four refdata test targets pass on the database recreated from nothing: =ores.refdata.api.tests=, =ores.refdata.client.tests=, =ores.refdata.core.tests= (244.8 s) and =ores.refdata.service.tests=. 4 of 4, 0 failed. The earlier 62/11 split was the partial store, not the component. | =compass test run -- -R 'ores\.refdata'=; ctest summary. |
-| V04 | FAIL — 93 of the 732 generated refdata shell commands abort. The sweep provisions the tenant, logs in, and loads each command's own exported script through =compass shell -l=, one process per command, so a failure names the command. | Recipe run log in =build/audit/refdata-clean/V04-recipe-run.txt=; per-command verdicts in =V04-sweep-console.txt=. |
-| V04 | Two causes, both in the =ores.doc.shell-recipe= family and neither in refdata. One: the script omits the session-party positional the generated command reads first, so =add=, =set= and =put-many= fail their own arity check by one -- 20 commands, "Expected 14 arguments, got 13" and its siblings. Two: the script sends =__none__= where the shell wants its absent token =-=, so every optional uuid, date and numeric field is refused -- "Invalid value for image_id: __none__" and 70 more. | The console log's abort reasons, grouped. |
-| V04 | The family cannot be refreshed: the archetype is still registered (template =shell_recipe.org.mustache=, output =doc/recipes/shell/{shell_menu}/{entity}.org=) but renders nothing. An explicit =--address ores.doc.shell-recipe -v= run writes no file and reports no warning, so =doc/recipes/shell/= is frozen at whatever the last working generator produced and no gate can see it rot. This reaches all 144 entity menus tree-wide, so it is not refdata's to fix here. | =check_component_drift.py --component refdata --address ores.doc.shell-recipe -v=; filed as capture =shell-recipes-no-longer-run=. |
-| V04 | Accepted exception, recorded in =component_registry.py= as =refdata / V04=, accepted by marco on 2026-09-26. The project's own V04 runner, =check_shell_recipes.py=, reads the same family from the tangled library and applies the same rule (an aborted script is not an answer); it could not get past its own login preamble with this fleet's credentials, so the sweep above is the evidence for the count. | =check_registry_exceptions.py= exit 0; =V04-canonical.txt=. |
+| V04 | FAIL on the first sweep, and the first account of it was wrong. The sweep provisions the tenant, logs in, and loads each command's own exported script through =compass shell -l=, one process per command, so a failure names the command. It found 93 aborts out of 732, in four mechanisms under two owners rather than the two causes first recorded. | Recipe run log in =build/audit/refdata-clean/V04-recipe-run.txt=; verdicts in =V04-sweep-console.txt=; grouped by =v04_summarize.py=. |
+| V04 | Owner one, the frozen recipe family: 71 aborts. 24 are arity -- 8 entities times =add=, =set= and =put-many= send one positional fewer than the generated command reads, because the frozen script predates the session-party positional. 47 are sentinels -- the script sends =__none__= where the shell wants its absent token =-=, so every optional uuid, date and numeric field is refused. Both vanish when the family is regenerated; the intended line for =books add= was verified to reach the server and answer. | =v04_summarize.py= output; the reproduction in =probe-add-current.ores=. |
+| V04 | The family could not be refreshed, and the reason was not the archetype: the protocol-dependency gate asked whether =ores.cpp.protocol= is in the *address-narrowed* facet set rather than in the model's supported set. Any run scoped to a space that does not contain it -- every per-space run, and the drift check regenerates per space -- therefore dropped =ores.doc.shell-recipe= as well, so the recipes were regenerated by nothing and compared by nothing. | =git diff= of =generate.py=; the three assertions in =test_protocol_dependency_scope.py=. |
+| V04 | Owner two, refdata's own code: 22 aborts. 20 are =Wrong command= -- =ir_curve_bootstrap_config= and =ir_curve_bootstrap_pillar= register a menu each but neither is composed in =refdata_commands.cpp=, which listed 72 of the component's 74 command headers. 2 are a response the client refuses: the single-version read carried its row by value, so a missing row serialized a zero date as =0000-00-00= before the caller could read the outcome. | =grep= of the composition point; =probe-version.ores=. |
+| V04 | Two more defects were found in the 639 commands that "answered", because a refusal is an answer: =delete-many= with no matching key raised =syntax error at or near \")\"= from an empty =IN ()=, 11 commands, because the generated service skips the keys that match nothing and then calls the batch removal with an empty list; and 24 =add= commands reach the database with =__none__= in a required string foreign key and are refused there. The second is inherent to a sentinel script and is not a defect. | Reproduction in =probe-delete-many.ores=; the service's resolve-then-remove path. |
+| V04 | PASS after the fixes: 732 commands, 0 aborts. Verified per defect as well -- =books delete-many no_such_book_name= now answers ={\"outcome\":\"ok\"}= and =calendar_events version <id> --version 1= answers ={\"outcome\":\"missing\",\"code\":\"not_found\"}=. | =V04-sweep-after.txt=; =v04_summarize.py= reports 0. |
+| V04 | The registry exception this component carried for V04 is removed: the item passes, so =ores.refdata= is listed with no accepted exceptions. The capture =shell-recipes-no-longer-run= is re-filed in the =next= bucket, narrowed to the part that is not done: the fixes reach the components in =COMPONENTS_UNDER_TEST=, and the components outside that set still carry the old response shapes and un-regenerated recipes. | =component_registry.py=; =check_registry_exceptions.py= exit 0; =doc/agile/product_backlog/next/shell-recipes-no-longer-run.org=. |
+| V04 | Four codegen defects, one refdata wiring omission, and one naming fix, each with its own commit: the response shape (=575c8ce761=), the empty batch removal (=f518304e4f=), the ancestor seed name (=0dc30f64b9=), the recipe gate and regeneration (=502e0fc7f0=), the two command modules (=729c45539a=), and the registry entry (=85364352f9=). Four regression tests were added, and each was verified to fail with its fix reversed. | =test_version_response_optional.py=, =test_batch_remove_empty_guard.py=, =test_protocol_dependency_scope.py=, =test_junction_service_fields.py=. |
 | V05 | PASS — every codegen gate is green with refdata in the registry: tree-wide component drift (=No drift=), model drift, protocol twin coverage (117 headers across 8 components now that refdata is in the set), handler permissions, populate references, recipe inventory, the registry-exception check, and all five CMake source lists under =ores.refdata.{api,client,core,service}= and =ores.shell.refdata=. | =build/audit/refdata-clean/V05-*.txt= and =V06-drift-all-2.txt=, each exit 0. |
 | V06 | PASS — =ores.refdata= is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= regenerates every listed component and reports "No drift: regenerated output matches the checked-in tree". Reaching that needed the consumers this branch's own template changes touch regenerated in the same commit; the gate is what found them. | =component_registry.py= line 158; =V06-drift-all-2.txt= exit 0. |
 | P01 | PASS — 55 entities declare a protocol header. 54 carry the canonical list, get, put, delete and the versions pair. =calendar_date= carries the read set only, which is the model's own declaration: it has =:client_read_only: true= because its rows are materialised from a calendar template rather than written by a client. 503 distinct subjects, 0 duplicated. | =build/audit/refdata-clean/p01_protocol_census.py=; =P01-census.txt=. |
@@ -227,9 +231,9 @@ via its "Verifies task" field.
 * Result
 
 ores.refdata passes the Component Clean Standard for a composite of kind
-*Entity*. Every item that applies passes with its evidence in the table above;
-the one exception is recorded in the registry with its reason. The outcomes a
-reviewer should read first:
+*Entity*. Every item that applies passes with its evidence in the table above,
+and the component is listed with no accepted exceptions. The outcomes a reviewer
+should read first:
 
 - *Regenerated and drift-free.* The 516-file drift B01 opened with is closed,
   and =check_component_drift.py --all= reports no drift with =ores.refdata= in
@@ -246,11 +250,15 @@ reviewer should read first:
   55 cases in three families; V07 also names a non-throw, and 57 write cases
   asserted only =CHECK_NOTHROW=. 111 cases in 27 files now assert content, and
   the four refdata suites pass on a store built from nothing.
-- *One recorded exception.* V04: 93 of 732 generated shell commands abort
-  because the =ores.doc.shell-recipe= archetype renders nothing, so the
-  checked-in recipe family has frozen. That is tree-wide, filed as
-  =shell-recipes-no-longer-run=, and accepted for this component on
-  2026-09-26.
+- *V04 closed, and the sweep is what found the rest.* The first sweep of the 732
+  generated shell commands found 93 aborts in four mechanisms. Two were the
+  frozen recipe family, which a mis-scoped codegen gate had stopped regenerating
+  and stopped checking; one was refdata's own composition point, which listed 72
+  of its 74 command modules; one was a response shape that serialized a zero
+  date when the row was absent. Two more defects were found among the commands
+  that answered: a batch removal of nothing rendered an empty =IN ()=. All are
+  fixed at source with a regression test, and the sweep now reports 732
+  commands, 0 aborts.
 
 The environment was the other story: seven consecutive cross-component
 blockers stood between the branch and a database that recreates, and each was

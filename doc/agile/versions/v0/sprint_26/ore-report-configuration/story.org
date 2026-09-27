@@ -102,6 +102,18 @@ A report definition's configuration is a set of strongly typed entities rather t
   and =:list_by:=, which generates validation and indexes; it does not use the
   =:references:= property that one compute model uses. See
   =evidence/reporting_model_recon.md=.
+- A round trip covers a document /kind/, so the corpus is the set of files whose
+  root element is that kind, found by glob. Counting files named exactly
+  =<kind>.xml= undercounts: the run document is 416 files, not 82, and credit
+  simulation is 14, not 2, because the corpus holds variants such as
+  =ore_histvar.xml= and =simm_calibration.xml=. See
+  =evidence/round_trip_corpus.md=.
+- Three documents cannot be round tripped as they stand. =simmcalibration.xsd=
+  and =baselTrafficLightconfig.xsd= declare global elements that appear zero
+  times in the generated =domain.hpp=, so no binding exists for them;
+  =historicalreturnconfig.xsd= declares no global element at all and is a section
+  of the documents that reference it, not a file type. The two with a root
+  element generate their binding first.
 
 * Out of scope
 

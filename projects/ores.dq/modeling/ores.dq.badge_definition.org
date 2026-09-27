@@ -204,21 +204,10 @@ faker::number::integer(1, 100)
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/badge_definition.hpp
 :domain_class:           dq::domain::badge_definition
-:protocol_include:       ores.dq.api/messaging/badge_definition_protocol.hpp
 :collection_name:        definitions
 :key_field:              code
 :has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::get_badge_definitions_request
-:get_response_class:     dq::messaging::get_badge_definitions_response
-:get_message_type:       get_badge_definitions_request
-:save_request_class:     dq::messaging::save_badge_definition_request
-:save_response_class:    dq::messaging::save_badge_definition_response
-:save_message_type:      save_badge_definition_request
-:delete_request_class:   dq::messaging::delete_badge_definition_request
-:delete_response_class:  dq::messaging::delete_badge_definition_response
-:delete_message_type:    delete_badge_definition_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

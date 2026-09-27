@@ -215,15 +215,10 @@ When the publication was recorded. This is the column the log is read by.
 
 ** Presentation
 :PROPERTIES:
-:domain_include:    ores.dq.api/domain/publication.hpp
 :domain_class:      dq::domain::publication
-:protocol_include:  ores.dq.api/messaging/publication_protocol.hpp
 :collection_name:   publications
 :key_field:         id
 :has_uuid_primary_key: true
-:get_request_class:    dq::messaging::list_publications_request
-:get_response_class:   dq::messaging::list_publications_response
-:get_message_type:     list_publications_request
 :has_pagination:       true
 :END:
 

@@ -137,21 +137,10 @@ faker::number::integer(1, 100)
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/code_domain.hpp
 :domain_class:           dq::domain::code_domain
-:protocol_include:       ores.dq.api/messaging/code_domain_protocol.hpp
 :collection_name:        domains
 :key_field:              code
 :has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::get_code_domains_request
-:get_response_class:     dq::messaging::get_code_domains_response
-:get_message_type:       get_code_domains_request
-:save_request_class:     dq::messaging::save_code_domain_request
-:save_response_class:    dq::messaging::save_code_domain_response
-:save_message_type:      save_code_domain_request
-:delete_request_class:   dq::messaging::delete_code_domain_request
-:delete_response_class:  dq::messaging::delete_code_domain_response
-:delete_message_type:    delete_code_domain_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

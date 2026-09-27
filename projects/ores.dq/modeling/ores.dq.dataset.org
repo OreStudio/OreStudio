@@ -332,21 +332,10 @@ std::string(faker::word::noun()) + "_type"
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/dataset.hpp
 :domain_class:           dq::domain::dataset
-:protocol_include:       ores.dq.api/messaging/dataset_protocol.hpp
 :collection_name:        datasets
 :key_field:              code
 :has_uuid_primary_key:   true
-:get_request_class:      dq::messaging::list_datasets_request
-:get_response_class:     dq::messaging::list_datasets_response
-:get_message_type:       list_datasets_request
-:save_request_class:     dq::messaging::put_dataset_request
-:save_response_class:    dq::messaging::put_dataset_response
-:save_message_type:      put_dataset_request
-:delete_request_class:   dq::messaging::delete_dataset_request
-:delete_response_class:  dq::messaging::delete_dataset_response
-:delete_message_type:    delete_dataset_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

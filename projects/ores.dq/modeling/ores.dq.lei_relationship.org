@@ -238,14 +238,9 @@ std::string(faker::word::noun())
 
 ** Presentation
 :PROPERTIES:
-:domain_include:              ores.dq.api/domain/lei_relationship.hpp
 :domain_class:                dq::domain::lei_relationship
-:protocol_include:            ores.dq.api/messaging/lei_relationship_protocol.hpp
 :collection_name:             relationships
 :key_field:                   relationship_start_node_node_id
-:get_request_class:           dq::messaging::get_lei_relationships_request
-:get_response_class:          dq::messaging::get_lei_relationships_response
-:get_message_type:            get_lei_relationships_request
 :has_pagination:              true
 :has_readonly_paginated_list: true
 :END:

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 5B30B2D9-1018-4AE2-8FDF-47D2EC9C96BB
+:END:
+#+title: Seventy-five entity models in seven components still carry a…
+#+description: Seventy-five entity models in seven components still carry a Presentation drawer property that nothing reads.
+
+Eleven scalar keys in an entity model ** Presentation drawer are dead: domain_include, protocol_include, get_request_class, get_response_class, get_message_type, save_request_class, save_response_class, save_message_type, delete_request_class, delete_response_class and delete_message_type. Nothing consumes them. No mustache template renders a request_class variable; the loader feature map in org_loader.py has no entry for any of them; and the only other mentions are entity_meta_model_cpp_qt.org, a knowledge page, and ores.doc.modeling.entity_org, an archetype resolve_targets never renders. Seven of the eleven name message types the protocol migration retired, so they are also the M09 legacy fragment: :save_request_class: dq::messaging::save_catalog_request where the protocol now declares put_catalog_request, and :get_request_class: dq::messaging::get_catalogs_request where it now declares list_catalogs_request.
+
+ores.dq removed its 213 occurrences from 21 models, and regeneration left every generated file byte-identical, which is how we know they were dead rather than merely unnoticed.
+
+What remains is 321 lines across 75 models in ores.refdata (55 models, 110 lines), ores.synthetic (7, 77), ores.trading (5, 55), ores.reporting (4, 44), ores.assets (2, 22), ores.marketdata (1, 2) and ores.workspace (1, 11). Note that ores.refdata has passed the clean standard and still carries them, so its M09 read them as acceptable; the removal is a strict improvement rather than a defect fix.
+
+Two shared artefacts keep the knob alive and should change with the sweep: doc_entity_org.org.mustache still emits all eleven for a new model, and entity_meta_model_cpp_qt.org still documents them as model format, so a freshly scaffolded model would reintroduce them. The cmake-regenerated class diagrams also draw the retired names, which is recorded separately.
+
+The deletion is mechanical and proven by byte-identical regeneration; it wants one sweep across the seven components, the skeleton template and the meta-model page, rather than seven component passes.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

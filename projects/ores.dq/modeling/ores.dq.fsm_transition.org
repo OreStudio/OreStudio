@@ -154,21 +154,10 @@ Optional guard the transition is taken behind.
 
 ** Presentation
 :PROPERTIES:
-:domain_include:         ores.dq.api/domain/fsm_transition.hpp
 :domain_class:           dq::domain::fsm_transition
-:protocol_include:       ores.dq.api/messaging/fsm_transition_protocol.hpp
 :collection_name:        transitions
 :key_field:              name
 :has_uuid_primary_key:   true
-:get_request_class:      dq::messaging::list_fsm_transitions_request
-:get_response_class:     dq::messaging::list_fsm_transitions_response
-:get_message_type:       list_fsm_transitions_request
-:save_request_class:     dq::messaging::put_fsm_transition_request
-:save_response_class:    dq::messaging::put_fsm_transition_response
-:save_message_type:      put_fsm_transition_request
-:delete_request_class:   dq::messaging::delete_fsm_transition_request
-:delete_response_class:  dq::messaging::delete_fsm_transition_response
-:delete_message_type:    delete_fsm_transition_request
 :has_change_reason_cache: true
 :has_pagination:         true
 :END:

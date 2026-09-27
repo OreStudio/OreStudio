@@ -46,9 +46,9 @@ Three classes, one task each:
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The gate for a test case that never reaches the compiler. |
+| Now           | Nothing in flight. The gate for a test case that never reaches the compiler is merged (PR #2249) and its task is DONE. |
 | Waiting on    | Nothing.                               |
-| Next          | The sweep over generated output outside the registry. |
+| Next          | The sweep over generated output outside the registry, which is the first class below. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance

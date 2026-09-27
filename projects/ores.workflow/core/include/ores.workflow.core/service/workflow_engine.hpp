@@ -84,7 +84,12 @@ public:
      * @brief Constructs the engine.
      *
      * @param nats            Raw NATS client used for fire-and-forget publishes.
-     * @param ctx             Service-account database context (no tenant filter).
+     * @param ctx             Service-account database context. It reads and
+     *                        writes runs of every tenant, so it must be the
+     *                        system tenant: the workflow tables' row-level
+     *                        security policy is what admits the engine to
+     *                        another tenant's rows, and a context scoped to one
+     *                        tenant would confine the engine to that tenant.
      * @param registry        Registry of all known workflow definitions.
      * @param instance_states Pre-loaded FSM state map for workflow_instance.
      * @param step_states     Pre-loaded FSM state map for workflow_step.
@@ -119,10 +124,10 @@ public:
     /**
      * @brief Recovers all in-progress workflows on service startup.
      *
-     * Queries for workflow_instance rows with state=in_progress, loads the
-     * current step for each, and re-dispatches the step command using the
-     * same step_id (idempotency key). Domain services deduplicate via the
-     * step_id and re-publish their completion events.
+     * Queries for workflow_instance rows with state=in_progress in every
+     * tenant, loads the current step for each, and re-dispatches the step
+     * command using the same step_id (idempotency key). Domain services
+     * deduplicate via the step_id and re-publish their completion events.
      */
     void recover_in_progress();
 
@@ -152,17 +157,6 @@ private:
                         const std::string& response_json,
                         const std::string& error,
                         const std::string& step_log_json = {});
-
-    /**
-     * @brief Stamps the audit fields the workflow tables require.
-     *
-     * Both tables require modified_by and validate it against the accounts
-     * table, and the engine writes them server-side with no end user behind the
-     * write. It records the service account, which is what it already records
-     * as created_by. Without this the insert is refused and no workflow starts.
-     */
-    void stamp_audit(domain::workflow_instance& instance) const;
-    void stamp_audit(domain::workflow_step& step) const;
 
     /** @brief Stamps a step as having published its command. */
     void stamp_command_published(const boost::uuids::uuid& step_id);

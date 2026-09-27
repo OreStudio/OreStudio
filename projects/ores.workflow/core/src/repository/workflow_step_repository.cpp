@@ -113,10 +113,8 @@ void workflow_step_repository::write(
 
 std::vector<domain::workflow_step> workflow_step_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
@@ -130,9 +128,8 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest(context
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow step. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
@@ -146,9 +143,7 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest(context
 std::vector<domain::workflow_step> workflow_step_repository::read_all(context ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workflow step versions. " << "id: " << id;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
+    const auto query = sqlgen::read<std::vector<workflow_step_entity>> | where("id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<workflow_step_entity, domain::workflow_step>(
@@ -163,10 +158,8 @@ std::optional<domain::workflow_step> workflow_step_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow step at version. " << "id: " << id
                                << " version: " << version;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
 
     const auto entities = execute_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
@@ -185,10 +178,8 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest_by_work
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow steps. workflow_id: " << workflow_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "workflow_id"_c == workflow_id &&
-                             "valid_to"_c == max.value()) |
+                       where("workflow_id"_c == workflow_id && "valid_to"_c == max.value()) |
                        order_by("step_index"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<workflow_step_entity, domain::workflow_step>(
@@ -210,10 +201,8 @@ workflow_step_repository::get_total_step_count_by_workflow_id(context ctx,
         long long count;
     };
 
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<workflow_step_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "workflow_id"_c == workflow_id &&
-                             "valid_to"_c == max.value()) |
+                       where("workflow_id"_c == workflow_id && "valid_to"_c == max.value()) |
                        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -263,10 +252,9 @@ workflow_step_repository::read_latest(context ctx, std::uint32_t offset, std::ui
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow steps with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("id"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
@@ -284,10 +272,8 @@ std::uint32_t workflow_step_repository::get_total_step_count(context ctx) {
         long long count;
     };
 
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<workflow_step_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -302,9 +288,8 @@ workflow_step_repository::read_latest(context ctx, const std::vector<std::string
     if (ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
         query,

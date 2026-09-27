@@ -39,10 +39,12 @@ derivation:
 - A batch removal of an empty key list now answers instead of rendering an empty
   =IN (=, which the server refuses as a syntax error.
 
-The components outside the set are =dq=, =trading=, =reporting=, =marketdata=,
-=storage=, =http=, =scheduler=, =synthetic= and =workspace=. Each needs the
-regeneration its own clean-standard pass will run; this capture exists so that
-the work is not silently assumed done.
+The components outside the set are =dq=, =trading=, =marketdata=, =storage=,
+=scheduler=, =synthetic= and =workspace=. Each needs the regeneration its own
+clean-standard pass will run; this capture exists so that the work is not
+silently assumed done. Four components have joined the set since this capture
+was written: =reporting=, =http-cpp= and =shell= in their own passes, and
+=refdata= in this one.
 
 * References
 
@@ -58,3 +60,7 @@ the work is not silently assumed done.
 * See also
 
 - [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]]
+- [[id:C0C0A800-51E1-4DC9-BF15-7C346AEEEE2F][Generated recipes are stale, and nothing watched them]] — the
+  full-address sweep found the same =__none__= placeholder symptom and asks which
+  side is behind. V04 answers it: the template is right, the recipes want
+  regenerating.

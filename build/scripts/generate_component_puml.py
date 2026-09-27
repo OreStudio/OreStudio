@@ -130,7 +130,10 @@ _METHOD_RE = re.compile(
     r'(?:(?:static|virtual|inline|constexpr|explicit)\s+)*'
     r'(?P<ret>[\w:<>,\*&\s\[\]]*?)\s*'
     r'(?P<name>~?\w+)\s*'
-    r'\((?P<params>[^;{}()]*)\)\s*'
+    # A parameter's type may carry parentheses of its own: a std::function or a
+    # function-pointer parameter states its signature there. Excluding them
+    # dropped the whole declaration, so the method never reached the diagram.
+    r'\((?P<params>(?:[^;{}()]|\([^()]*\))*)\)\s*'
     r'(?:const\s*)?(?:noexcept\s*)?(?:override\s*)?(?:final\s*)?'
     r'(?:=\s*(?P<init>0|default|delete)\s*)?'
     r'(?P<tail>;|\{)'

@@ -63,6 +63,7 @@ namespace ores #F2F2F2 {
                 +shell_root_menu()
                 +claim(cli::Menu& menu) : void
                 +claim(const string& name) : void
+                +add_extension(const string& name, function<void(cli::Menu&)> extend) : void
                 +apply_extensions() : void
                 -take(const string& name) : void
             }
@@ -88,13 +89,6 @@ note bottom of pagination_context
     and it has none:
     render_history_diff(out, session, entity_type, entity_id, version) : bool
 end note
-
-' The automated pass drops one member of shell_root_menu: its parameter is a
-' std::function whose argument list carries a comma, and the header parser stops
-' there. Stated here so the box is not read as the whole API.
-class shell_root_menu {
-    +add_extension(const string& name, std::function<void(cli::Menu&)> extend) : void
-}
 
 ' shell_root_menu is the only class in this part that inherits, and its base is
 ' third-party, so no automated pass can draw the edge.

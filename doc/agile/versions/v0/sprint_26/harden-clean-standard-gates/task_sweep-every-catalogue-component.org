@@ -8,7 +8,7 @@
 #+filetags: :harden-clean-standard-gates:sprint_26:v0:
 #+owner: marco
 #+branch: feature/sweep-catalogue-drift
-#+pr:
+#+pr: 2264
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2264][#2264]] | [codegen] Sweep every catalogue component for drift |
 
 * Review
 

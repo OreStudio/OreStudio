@@ -263,8 +263,8 @@ export class OresClient {
      * subject at all.
      *
      * The profile page is ordered by the key, so the answer is sorted by the
-     * order each profile declares — that column exists to order the cards,
-     * and two deployments' profiles need not be created in that order. Each
+     * order each profile declares: that column exists to order the cards, and
+     * two deployments' profiles need not be created in that order. Each
      * profile's children are already in the order the server read them.
      */
     async seedProfiles(

@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_leg_amount_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_leg_amount_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -44,7 +45,7 @@ domain::bond_leg_amount bond_leg_amount_mapper::map(const bond_leg_amount_entity
     r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
     r.amount_role = v.amount_role.value();
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
-    r.value = v.value;
+    r.value = ores::utility::decimal::decimal::from_string(v.value).value();
     r.start_date = v.start_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -67,7 +68,7 @@ bond_leg_amount_entity bond_leg_amount_mapper::map(const domain::bond_leg_amount
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.value = v.value;
+    r.value = v.value.to_string();
     r.start_date = v.start_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

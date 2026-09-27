@@ -69,6 +69,14 @@ _ENTITY_STRUCT_FLAGS = (
     # without them the guard would refuse a shape the template carries.
     'is_required_date',
     'is_optional_date',
+    # A money column's domain member is ores::utility::decimal::decimal (or
+    # its optional) while the entity member is the exact decimal std::string
+    # the numeric column binds -- sqlgen cannot bind a multiprecision type.
+    # The template pairs these flags with a std::string/std::optional<
+    # std::string> member, so without them the guard would refuse a shape the
+    # template carries.
+    'is_required_decimal',
+    'is_optional_decimal',
     'is_simple',
 )
 
@@ -2581,11 +2589,50 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 )
                 col['is_optional_date'] = col['is_date'] and col.get('nullable', False)
                 col['is_required_date'] = col['is_date'] and not col.get('nullable', False)
+                # A money column: the domain member is the exact decimal of
+                # ores.utility and the database column is numeric, which sqlgen
+                # binds as the text it already is but cannot hold a
+                # boost::multiprecision value. The entity member is therefore
+                # the decimal's canonical std::string and the mapper parses and
+                # renders at the boundary, the same seam a plain date uses. The
+                # projection keys on the resolved domain type, never on
+                # ':type: numeric' alone: rates, volatilities and correlations
+                # are numeric too and stay double, so only a column that names
+                # the decimal on its domain member moves.
+                is_numeric_sql_type = str(col.get('type', '')).strip().lower().startswith('numeric')
+                is_decimal_domain = _domain_cpp_type in (
+                    'ores::utility::decimal::decimal',
+                    'std::optional<ores::utility::decimal::decimal>',
+                )
+                col['is_decimal'] = bool(
+                    id(col) in _plain_column_ids
+                    and is_numeric_sql_type
+                    and is_decimal_domain
+                )
+                col['is_optional_decimal'] = col['is_decimal'] and col.get('nullable', False)
+                col['is_required_decimal'] = col['is_decimal'] and not col.get('nullable', False)
+                # A key column is reached through the entity's own key
+                # projections, none of which carries the decimal: the primary
+                # key is a sqlgen::PrimaryKey<std::string> and the natural-key
+                # block renders the raw cpp_type, so a decimal key would reach
+                # the entity as the domain type and sqlgen would refuse it.
+                # Refuse the shape here, where the reason is known, rather
+                # than emit an entity that cannot compile.
+                if (is_numeric_sql_type and is_decimal_domain
+                        and id(col) not in _plain_column_ids):
+                    raise ValueError(
+                        f"column '{col.get('name')}' is a key and its :cpp_type: is "
+                        f"the decimal type. The decimal projection covers plain "
+                        f"columns only, so a key would be generated as the domain "
+                        f"type and left unmapped. Model the key as the text the "
+                        f"decimal stores, or drop the decimal type from this column."
+                    )
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
                     and not is_uuid_type
                     and not is_timestamp_type
                     and not col['is_date']
+                    and not col['is_decimal']
                 )
                 col['is_already_optional'] = is_already_optional
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
@@ -2643,6 +2690,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_enum_type
                     and not is_already_optional
                     and not col['is_date']
+                    and not col['is_decimal']
                     and col.get('cpp_type') == 'std::string'
                 )
                 # A nullable numeric (or bool) column whose domain member is
@@ -2657,6 +2705,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_timestamp_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_decimal']
                     and col.get('cpp_type') in (
                         'int', 'std::int64_t', 'std::uint64_t', 'double', 'float', 'bool'
                     )
@@ -2669,6 +2718,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_enum_type
                     and not is_already_optional
                     and not col['is_date']
+                    and not col['is_decimal']
                     and not col['is_base64']
                     and not col['is_value_type']
                 )
@@ -2739,6 +2789,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['render_is_optional_date'] = (
                     _render_cpp_type == 'std::optional<std::chrono::year_month_day>'
                 )
+                # A money column's domain member renders through its own
+                # to_string(), which is the exact text the wire and the
+                # database column carry. These flags exist for the history
+                # field mapper, whose fields a std::to_string(decimal) would
+                # not reach.
+                col['render_is_decimal'] = _render_cpp_type == 'ores::utility::decimal::decimal'
+                col['render_is_optional_decimal'] = (
+                    _render_cpp_type == 'std::optional<ores::utility::decimal::decimal>'
+                )
+                # A nullable decimal column whose domain member is the bare
+                # decimal cannot state its absence: NULL and the value zero
+                # would be the same member. Refuse rather than map NULL to
+                # zero, which would turn an absent amount into a real one.
+                if col['is_optional_decimal'] and not col['render_is_optional_decimal']:
+                    raise ValueError(
+                        f"column '{col.get('name')}' is a nullable decimal column "
+                        f"whose :cpp_type: is '{_render_cpp_type}'. A nullable "
+                        f"amount states its absence with an optional, so declare "
+                        f"':cpp_type: std::optional<ores::utility::decimal::decimal>'."
+                    )
                 # Derived from the raw is_enum flag, not the nullable-narrowed
                 # col['is_enum'] above -- render_* flags must match the
                 # domain struct's actual field type (see the module
@@ -2870,6 +2940,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # header, the same way has_inet_columns does for make_address.
             domain_entity['has_plain_date_columns'] = any(
                 c.get('is_date') for c in domain_entity['columns']
+            )
+            # The mapper's own include gate for the decimal conversion: the
+            # mapper template pulls in ores.utility/decimal/decimal.hpp rather
+            # than relying on a transitive include from the domain header.
+            domain_entity['has_decimal_columns'] = any(
+                c.get('is_decimal') for c in domain_entity['columns']
             )
         # Field-group contract: detect identity/audit group annotations and
         # mark each column so templates can emit nested-struct form.

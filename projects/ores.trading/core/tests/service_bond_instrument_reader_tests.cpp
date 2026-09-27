@@ -39,6 +39,7 @@
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -283,7 +284,7 @@ bond_leg_amount make_amount(const stamps& s,
                             int leg_number,
                             const std::string& amount_role,
                             int sequence_number,
-                            double value) {
+                            const char* value) {
     bond_leg_amount r;
     stamp(r, s);
     r.instrument_id = instrument_id;
@@ -291,7 +292,7 @@ bond_leg_amount make_amount(const stamps& s,
     r.leg_number = leg_number;
     r.amount_role = amount_role;
     r.sequence_number = sequence_number;
-    r.value = value;
+    r.value = ores::utility::decimal::decimal::from_string(value).value();
     return r;
 }
 
@@ -475,13 +476,13 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     bond_leg_repository().write(ctx, leg);
 
     bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, 1000.0));
+        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, "1000"));
     // Written in reverse ordinal order, so the order read back is the
     // query's doing rather than the insert order's.
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "rate", 2, 5.0));
+                                       make_amount(s, instrument_id, "bond", 1, "rate", 2, "5"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "rate", 1, 4.0));
+                                       make_amount(s, instrument_id, "bond", 1, "rate", 1, "4"));
 
     bond_leg_rate_repository().write(ctx, make_rate(s, instrument_id, "bond", 1, "fixed"));
 
@@ -572,17 +573,17 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     bond_leg_rate_repository().write(ctx, rate);
 
     bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, 1000000.0));
+        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, "1000000"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "spread", 2, 0.75));
+                                       make_amount(s, instrument_id, "bond", 1, "spread", 2, "0.75"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "spread", 1, 0.5));
+                                       make_amount(s, instrument_id, "bond", 1, "spread", 1, "0.5"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "cap", 1, 6.0));
+                                       make_amount(s, instrument_id, "bond", 1, "cap", 1, "6"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "floor", 1, 1.0));
+                                       make_amount(s, instrument_id, "bond", 1, "floor", 1, "1"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "gearing", 1, 1.5));
+                                       make_amount(s, instrument_id, "bond", 1, "gearing", 1, "1.5"));
 
     auto fixing = make_schedule(s, instrument_id, "bond", 1, "fixing_schedule", 1, "dates");
     fixing.convention = "Following";

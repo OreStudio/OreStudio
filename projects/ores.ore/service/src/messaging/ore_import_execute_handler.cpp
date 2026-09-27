@@ -86,6 +86,7 @@
 #include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -422,7 +423,9 @@ std::string save_leg_amounts(Nats& nats,
         req.change.write.leg_number = leg_number;
         req.change.write.amount_role = amount_role;
         req.change.write.sequence_number = ++sequence_number;
-        req.change.write.value = amount.value;
+        // The ORE XML number is a binary float and the amount is a decimal
+        // from here on, so the value is converted once, at the boundary.
+        req.change.write.value = ores::utility::decimal::decimal::from_double(amount.value).value();
         req.change.write.start_date = amount.start_date;
         auto resp = nats_call(nats, req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)

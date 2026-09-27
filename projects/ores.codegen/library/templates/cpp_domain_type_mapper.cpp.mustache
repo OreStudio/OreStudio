@@ -17,6 +17,9 @@
 #include "ores.platform/time/datetime.hpp"
 #include <chrono>
 {{/has_plain_date_columns}}
+{{#has_decimal_columns}}
+#include "ores.utility/decimal/decimal.hpp"
+{{/has_decimal_columns}}
 {{#has_enum_columns}}
 #include <rfl/enums.hpp>
 {{/has_enum_columns}}
@@ -143,6 +146,14 @@ domain::{{entity_singular}}
 {{/render_is_optional_date}}
 {{/is_required_date}}
 {{/is_date}}
+{{#is_decimal}}
+{{#is_optional_decimal}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(ores::utility::decimal::decimal::from_string(*v.{{name}}).value()) : std::nullopt;
+{{/is_optional_decimal}}
+{{#is_required_decimal}}
+    r.{{{group_prefix}}}{{name}} = ores::utility::decimal::decimal::from_string(v.{{name}}).value();
+{{/is_required_decimal}}
+{{/is_decimal}}
 {{#is_required_inet}}
     r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(v.{{name}});
 {{/is_required_inet}}
@@ -313,6 +324,14 @@ domain::{{entity_singular}}
 {{/render_is_optional_date}}
 {{/is_required_date}}
 {{/is_date}}
+{{#is_decimal}}
+{{#is_optional_decimal}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(v.{{{group_prefix}}}{{name}}->to_string()) : std::nullopt;
+{{/is_optional_decimal}}
+{{#is_required_decimal}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
+{{/is_required_decimal}}
+{{/is_decimal}}
 {{#is_required_inet}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
 {{/is_required_inet}}

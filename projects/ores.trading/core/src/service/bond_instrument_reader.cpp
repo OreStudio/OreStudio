@@ -217,7 +217,10 @@ leg_amounts collect_amounts(const instrument_rows& rows, const domain::bond_leg&
     for (const auto& row : rows.amounts) {
         if (row.leg_role != leg.leg_role || row.leg_number != leg.leg_number)
             continue;
-        domain::bond_float_data amount{row.value, row.start_date};
+        // The stored amount is a decimal and the ORE-shaped value the reader
+        // rebuilds is the float the ORE document holds, so the conversion
+        // happens once, here, at that boundary.
+        domain::bond_float_data amount{row.value.to_double(), row.start_date};
         if (row.amount_role == "notional")
             amounts.notional.push_back(std::move(amount));
         else if (row.amount_role == "rate")

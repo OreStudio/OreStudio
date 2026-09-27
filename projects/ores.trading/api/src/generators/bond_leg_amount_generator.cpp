@@ -49,7 +49,7 @@ generate_synthetic_bond_leg_amount(utility::generation::generation_context& ctx)
     r.leg_number = 0;
     r.amount_role = std::string(faker::word::noun());
     r.sequence_number = 0;
-    r.value = 0.0425;
+    r.value = ores::utility::decimal::decimal::from_string("0.0425").value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

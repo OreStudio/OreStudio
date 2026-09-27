@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_LEG_AMOUNT_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_LEG_AMOUNT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -97,8 +98,18 @@ struct bond_leg_amount final {
 
     /**
      * @brief The amount, as a decimal.
+     *
+     * This is the first money column of decision D11 to adopt the decimal domain type. The database
+     * column is already numeric, so the schema does not change; what changes is the C++ type the
+     * value travels in, so a notional such as 0.1 and a rate such as 1e-10 are stored and read back
+     * exactly rather than through a binary float.
+     *
+     * The column carries all six amount roles, so a rate row moves with it. D11 keeps a rate column
+     * double because a rate is not money; this table states the money and the rate in one column,
+     * which is a modelling question for the normalisation the story's D12 and D13 describe, not one
+     * this unit answers.
      */
-    double value;
+    ores::utility::decimal::decimal value;
 
     /**
      * @brief Date the amount takes effect (ISO 8601 date string), when the document states one.

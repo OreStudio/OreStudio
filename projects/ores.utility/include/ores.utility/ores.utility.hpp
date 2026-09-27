@@ -29,6 +29,7 @@
  * - @b compression: gzip over raw bytes, the tree's one gzip implementation.
  * - @b convert: the Base64 codec.
  * - @b crypto: the SHA-256 digest.
+ * - @b decimal: the exact decimal a monetary amount is carried in.
  * - @b domain: the entity-agnostic hierarchy row and the domain request
  *   outcome enumeration.
  * - @b faker: the internet and datetime extensions to faker-cxx.

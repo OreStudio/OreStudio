@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_RFL_REFLECTORS_HPP
 #define ORES_UTILITY_RFL_REFLECTORS_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/time_point_parser.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -132,6 +133,33 @@ struct Reflector<std::chrono::year_month_day> {
 
     static ReflType from(const std::chrono::year_month_day& v) {
         return v.ok() ? std::format("{:%Y-%m-%d}", v) : std::string{};
+    }
+};
+
+/**
+ * @brief Custom reflector for ores::utility::decimal::decimal.
+ *
+ * A money amount travels as its exact decimal text and never as a
+ * number a JSON reader would round through a binary float, so the wire
+ * type is a std::string holding the decimal's own canonical spelling.
+ * A decimal has no absent sentinel: the empty string is not a decimal,
+ * a nullable column states its absence with std::optional<decimal>,
+ * and the optional reach the wire as null. So an empty string is
+ * refused here rather than read as a default value.
+ */
+template <>
+struct Reflector<ores::utility::decimal::decimal> {
+    using ReflType = std::string;
+
+    static ores::utility::decimal::decimal to(const ReflType& str) {
+        auto result = ores::utility::decimal::decimal::from_string(str);
+        if (!result)
+            throw std::runtime_error("Invalid decimal: " + result.error());
+        return *result;
+    }
+
+    static ReflType from(const ores::utility::decimal::decimal& v) {
+        return v.to_string();
     }
 };
 

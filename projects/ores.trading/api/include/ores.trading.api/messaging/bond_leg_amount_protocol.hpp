@@ -49,7 +49,7 @@ struct bond_leg_amount_write {
     int leg_number;
     std::string amount_role;
     int sequence_number;
-    double value;
+    ores::utility::decimal::decimal value;
     std::optional<std::string> start_date;
 };
 

@@ -116,6 +116,56 @@ ROOTS = {
 }
 
 
+# ORE spells several types as one lowercase word; a name is tidied by splitting
+# the tokens it is made of, not only the camel-case ones.
+COMPOUNDS = {
+    "transitionmatrix": "transition_matrix",
+    "transitionmatrices": "transition_matrices",
+    "parconversion": "par_conversion",
+    "stresstesting": "stress_testing",
+    "sensitivityanalysis": "sensitivity_analysis",
+    "crossassetmodel": "cross_asset_model",
+    "averageois": "average_ois",
+    "tenorbasis": "tenor_basis",
+    "crosscurrency": "cross_currency",
+    "zerospread": "zero_spread",
+    "discountratio": "discount_ratio",
+    "iborfallback": "ibor_fallback",
+    "capfloor": "cap_floor",
+    "bondfuture": "bond_future",
+    "fxspot": "fx_spot",
+    "equityspot": "equity_spot",
+    "yieldcurve": "yield_curve",
+    "discountcurve": "discount_curve",
+    "indexcurve": "index_curve",
+    "creditcurve": "credit_curve",
+    "survivalprobability": "survival_probability",
+    "recoveryrate": "recovery_rate",
+    "basecorrelation": "base_correlation",
+    "securityspread": "security_spread",
+    "dividendyield": "dividend_yield",
+    "commoditycurve": "commodity_curve",
+    "intradaypowercurve": "intraday_power_curve",
+    "commodityvolatility": "commodity_volatility",
+    "correlationcurve": "correlation_curve",
+    "swaptionvolatility": "swaption_volatility",
+    "yieldvolatility": "yield_volatility",
+    "cdsvolatility": "cds_volatility",
+    "riskweights": "risk_weights",
+    "currencylists": "currency_lists",
+    "concentrationthresholds": "concentration_thresholds",
+    "historicalvolatilityratio": "historical_volatility_ratio",
+    "mporcalendar": "mpor_calendar",
+    "mporDays": "mpor_days",
+    "yoy": "year_on_year",
+}
+
+
+def split_compounds(sn: str) -> str:
+    sn = sn.replace("yo_y", "yoy")
+    return "_".join(COMPOUNDS.get(tok, tok) for tok in sn.split("_"))
+
+
 def tidy(doc: str, name: str) -> str:
     """`{type}_{what it models}_config`, in one namespace."""
     if name == ROOTS.get(doc):
@@ -127,8 +177,18 @@ def tidy(doc: str, name: str) -> str:
         if sn.startswith(drop):
             sn = sn[len(drop):]
             break
+    sn = split_compounds(sn)
     sn = re.sub(r"_+", "_", sn).strip("_")
-    return f"{TYPE_PREFIX[doc]}_{sn}_config" if sn else ROOT_NAME[doc]
+    if not sn:
+        return ROOT_NAME[doc]
+    # A name that repeats a token, or repeats the type prefix it has just been
+    # given, is saying the same thing twice.
+    toks = f"{TYPE_PREFIX[doc]}_{sn}_config".split("_")
+    toks = [x for i, x in enumerate(toks) if i == 0 or x != toks[i - 1]]
+    pfx = TYPE_PREFIX[doc].split("_")
+    if toks[:len(pfx)] == pfx and toks[len(pfx):2 * len(pfx)] == pfx:
+        toks = toks[:len(pfx)] + toks[2 * len(pfx):]
+    return "_".join(x for x in toks if x)
 
 
 def tidy_all(structs, edges, notes):

@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 6D345419-B3C5-4B20-BE04-126807CC4641
+:END:
+#+title: Task: Give the setup screen its banner and its copy
+#+description: The setup screen is the first thing an empty installation shows, so it carries the ORE Studio banner, and its copy states the mode and the next action without the conversational filler.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/polish-the-setup-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The setup screen is what a person sees against an empty installation, before they can do anything. It should look like the product and read like an installation screen: the state first, then what the setup process begins with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | The screen carries the banner and the copy states the condition, the consequence and what the setup process begins with. The workspace typechecks, passes the format check, tests green and builds. |
+| Waiting on   | The review round on the change. |
+| Next          | Plan step 4, which is where the administrator form this screen points at arrives. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The setup screen carries the ORE Studio banner, from the artwork the shell already reaches through =brand.ts=.
+- The copy states the condition and the consequence — no administrator account, bootstrap mode, nobody can sign in — and what the setup process begins with, with no conversational filler and no metaphor.
+- The three catalogues carry the words, and the gate tests still pass with the banner asserted.
+- The workspace typechecks, passes the format check, tests green, and builds.
+
+* Plan
+
+One commit, because it is one screen.
+
+** The banner
+
+The splash artwork the landing page uses, at the top of the card, bleeding to
+its edges and separated by a rule. Both images already come through =brand.ts=,
+so the page imports the banner the same way it imports nothing else by path. The
+banner is 964 by 323, so it scales to the card's width at its own ratio rather
+than being cropped into a fixed strip.
+
+** The copy
+
+Three sentences, in the order a person needs them: the condition (no
+administrator account), the consequence (bootstrap mode, nobody can sign in),
+and what the setup process begins with. What went:
+
+- "so there is nothing to sign in to" — the same fact as the consequence, said
+  twice.
+- "this page is where the browser stops" — a metaphor about the software,
+  addressed to somebody who wants to install it.
+- "Until that journey is built" — an apology for the build, on the screen whose
+  whole job is to be the first thing an installation shows.
+
+The replacement does not promise a control that is not there. The screen says
+the process begins with the first administrator account, and it does not say
+"below", because the form arrives with plan step 4 and a sentence pointing at a
+field nobody can see is worse than no sentence.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The workspace suite | 110 cases in 15 files | =npm test= | =70f44d986b= |
+| ... of which new | 1, asserting the banner | =npm test= | =70f44d986b= |
+| The browser bundle | 413.88 kB | =npm run build --workspace @ores/web= | =70f44d986b= |
+
+* Notes
+
+- *The copy names the condition, not the build.* The screen an empty
+  installation shows first should read as the product's own words for the state
+  it is in, so the sentence about the journey being unbuilt is gone. What the
+  screen cannot yet offer is plan step 4's work, and the story's Next says so;
+  the screen does not need to.
+- *The banner is not a new asset.* =heroSplash= was restored by plan step 2 and
+  the shell already imports =brand.ts= for the mark, so this is the same artwork
+  reaching its second screen, at its own ratio.
+- *The sign-in card stays plain.* A banner suits the first screen of an
+  installation; a form with a banner over it is a landing page, and the Entry
+  story owns that screen.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The setup screen carries the ORE Studio banner, and its copy states the
+condition, the consequence and what the setup process begins with.
+
+The banner is the artwork the landing page uses, so the first screen of an empty
+installation looks like the product rather than like a notice. The copy lost the
+metaphor, the repetition and the apology for the build, and it does not point at
+a form that is not there: creating the administrator is plan step 4's work, and
+the story's Next says so rather than the screen.
+
+The gate keeps its tests, with one more asserting the banner, and the unit
+package the browser serves carries both.

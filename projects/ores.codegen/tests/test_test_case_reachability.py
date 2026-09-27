@@ -479,6 +479,55 @@ TEST_CASE("first", tags) {} TEST_CASE("second", tags) {}
     assert captured.err.count("widget_tests.cpp:4:") == 1
 
 
+def test_a_splice_inside_a_raw_string_is_reported_not_guessed(
+        tmp_path, monkeypatch, capsys):
+    # A compiler keeps the backslash-newline inside the raw string and the
+    # literal ends at the last line, so the #if below is string content. The
+    # scan removes the splice, which moves where the literal ends, and can no
+    # longer tell string content from code. It must say so rather than guess.
+    _write(tmp_path, SOURCE, r'''#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+
+const char* sample = R"(xx)\
+" ;
+)";
+''')
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "cannot read a raw string in" in captured.err
+    assert "backslash-newline" in captured.err
+
+
+def test_a_raw_string_without_a_splice_is_string_content(
+        tmp_path, monkeypatch, capsys):
+    # The same directives, inside a raw string, with no splice: the compiler
+    # reads them as string content and so must the scan.
+    _write(tmp_path, SOURCE, r'''#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+
+const char* sample = R"(
+#if 0
+TEST_CASE("not code", tags) {}
+#endif
+)";
+''')
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert "not code" not in captured.err
+    assert "1 declared case(s)" in captured.out
+
+
 def test_the_real_tree_has_cases_and_declares_none_conditionally(capsys):
     """The invariant the gate exists for, checked against the tree itself."""
     assert check.main() == 0

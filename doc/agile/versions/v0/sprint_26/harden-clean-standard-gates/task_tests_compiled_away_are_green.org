@@ -123,7 +123,7 @@ re-measured for each verdict after it.*
 |-------+---------------+--------------------+---------------------|
 | Declared cases | 6242 | 6242 | 6242 |
 | Files scanned | 722 | 807 | 807 |
-| =ores.codegen= suite | 837 passed | 845 passed | 847 passed |
+| =ores.codegen= suite | 837 passed | 845 passed | 849 passed |
 | =ores.service.tests= | 42 cases / 118 assertions | not rebuilt | not rebuilt |
 | =ores.platform.tests= | 119 cases / 253 assertions | not rebuilt | not rebuilt |
 | =validate_docs.sh= | 40 of 40 | 40 of 40 | 40 of 40 |
@@ -167,6 +167,25 @@ as two but listed once with the summary reading "1 of 2"; the summary now reads
 "2 of 2" and the shared line is still listed once. Beyond one level stays out of
 scope and is documented as such: =#define OUTER INNER= where =INNER= is the test
 macro is not followed.
+
+*What the third verdict changed.* The verifier confirmed the alias and the count,
+and retracted its own earlier conclusion about raw strings. It had tested only
+the shape with no later terminator and found it rejected by the compiler; with a
+second =)"= present the input is valid C++ and the divergence between this check
+and a compiler cuts both ways. Where an even number of quote characters separates
+the two terminators the check reads a string as code and reports a case that no
+compiler sees; where the number is odd it reads code as a string and loses a
+guarded case in silence, which is the hazard the gate exists to prevent. The
+docstring had recorded the retracted conclusion as fact, so the artifact claimed a
+safety property it did not have.
+
+The check now finds a raw string whose content holds a splice, in a second pass
+that reads the un-spliced text, and reports the file as one whose raw strings
+cannot be read. The un-spliced pass can only read more as a raw string than a
+compiler does, so it fails safe: the worst it produces is a report about a file
+that is in fact fine. All five parities that the verifier swept, and a
+no-splice control, behave as intended, and no file in the tree writes a splice
+inside a raw string.
 
 *What is not covered.* The rule is static and per file. It does not expand
 macros beyond one level, so a test macro reached through a chain of =#define=s is
@@ -223,7 +242,13 @@ Second verdict, on the head the first verdict's fixes produced:
 |---+-----------------+------+----------+-------|
 | 10 | The object-like alias =#define MY_CASE TEST_CASE= is still not followed, because the alias test wants a test macro followed by an argument list and that form has none. A guarded case behind it passes silently, and the docstring names the form as followed, so the claim is untrue. | =check_test_case_reachability.py= | Fixed | The alias test matches a bare test-macro name, so both the object-like and the function-like form are followed. A chain through two definitions stays out of scope, and the docstring says so. |
 | 11 | Two cases on one logical line are counted as two but listed once, so the summary reads "1 of 2 declared case(s) can be compiled away". Exit code and the named line are right. | =check_test_case_reachability.py= | Fixed | The summary counts every declared case; the line the two share is still listed once, so the output does not repeat itself. |
-| 12 | Real compilers keep a backslash-newline inside a raw string literal where this check removes it, because splicing is not reversed there. The verifier could not exploit it: the only shape that diverges needs a deleted splice to manufacture the =)"= that ends the raw string, and a compiler rejects that input. | =check_test_case_reachability.py= | Documented | A docstring paragraph records the divergence and why it cannot hide a case. |
+| 12 | Real compilers keep a backslash-newline inside a raw string literal where this check removes it. The verifier first reported this as unexploitable and then retracted that: with a second terminator present the file is valid C++, and the divergence misreports in both directions, flagging a string as code when the parity is even and silently losing a real guarded case when it is odd. | =check_test_case_reachability.py= | Fixed | The check no longer guesses. A raw string whose content holds a splice is found by a second pass that reads the un-spliced text, and reported as a file whose raw strings cannot be read, so the case fails loudly instead of being misread. The tree has no such file. |
+
+Third verdict, on the head the second verdict's fixes produced:
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 13 | The docstring paragraph and row 12 asserted that a compiler rejects the diverging input and that the divergence cannot hide a case. Both clauses are false, and the verifier retracted its own earlier conclusion that supplied them. | =check_test_case_reachability.py=, task doc | Fixed | The paragraph now states what the check does about the divergence, and this row records the retraction. |
 
 * Result
 

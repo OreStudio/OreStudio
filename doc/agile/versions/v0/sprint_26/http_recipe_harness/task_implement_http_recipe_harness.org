@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 65D35A34-2A96-4B92-A102-B40A2AC71383
+:END:
+#+title: Task: Build the HTTP recipe facet and its runner
+#+description: Initial task for: Generate literate HTTP recipes that tangle to runnable Hurl
+#+type: task
+#+level: s1
+#+filetags: :http_recipe_harness:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2DCE17E-03DE-4C3B-A9A7-E5F3605A1FE0][Generate literate HTTP recipes that tangle to runnable Hurl]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every HTTP route the models declare has a generated literate recipe, each recipe tangles to a runnable Hurl file, the harness replays a recipe group against the live gateway and reports a verdict for each recipe, and the inventory is gated in CI.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A2DCE17E-03DE-4C3B-A9A7-E5F3605A1FE0][Generate literate HTTP recipes that tangle to runnable Hurl]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- A codegen facet generates one org recipe per model that renders an HTTP route, with a tangle block per endpoint, and the generated output is byte-identical on a second run.
+- Every tangled Hurl file runs against the live gateway unchanged, behind a sign-in preamble the harness supplies.
+- A runner replays a named recipe group and records a verdict per recipe, and a recipe that does not answer fails the run.
+- The recipe inventory is generated from the recipes and checked in CI.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

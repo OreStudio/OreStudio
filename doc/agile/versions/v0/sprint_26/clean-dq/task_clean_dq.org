@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: feature/dq-clean-batch-3
-#+pr: 2296
+#+pr: 2298
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -153,6 +153,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2298][#2298]] | [agile] Point the dq task at the branch that carried its last batch |
 | [[https://github.com/OreStudio/OreStudio/pull/2296][#2296]] | [dq] Assert what the dq tests actually observe |
 | [[https://github.com/OreStudio/OreStudio/pull/2291][#2291]] | [dq] Close the first clean-standard defect batch |
 | [[https://github.com/OreStudio/OreStudio/pull/2286][#2286]] | [dq] Admit ores.dq to the components under test |

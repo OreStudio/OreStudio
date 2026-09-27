@@ -76,6 +76,15 @@ Three classes, one task each:
   no flags, no build and no formatter, and it makes the class impossible instead
   of reporting it. The cost is six cases in three files, and the change makes
   those cases more visible than they were, not less.
+- *A static rule reads the tree the way the compiler does, or it is a rule about
+  the files it happens to open.* The first cut of the gate read only
+  =*_tests.cpp= and treated a backslash-newline as ordinary text. An independent
+  verifier defeated both: =#\= followed by =if 0= hid a case, and a case in an
+  included fragment was never read at all. The gate now resolves the splices of
+  translation phase 2 for the whole file before it looks for anything, reads
+  every C++ file under a =tests/= directory, and fails on a file whose
+  conditionals do not balance, because a guard left open deletes a case in
+  whichever file includes it.
 
 * Out of scope
 

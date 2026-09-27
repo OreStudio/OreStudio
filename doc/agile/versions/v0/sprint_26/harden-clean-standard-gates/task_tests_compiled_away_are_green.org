@@ -116,28 +116,57 @@ platform guards, with =-D_WIN32= and =-U__linux__=, keeps 1 of 1 and 2 of 2 case
 names and selects the skip branch in each. The skip branches themselves execute
 only on Windows and macOS.
 
-*Measured at the head this branch first pushed.*
+*Measured at the reviewed head*, =83c8cbb709=, *for the first verdict, and
+re-measured for the second.*
 
-- The tree declares 6242 cases in 722 test sources, and none is conditional.
-- =ores.codegen= suite: 835 passed.
-- =ores.service.tests=: 42 test cases, 118 assertions, all passed.
-- =ores.platform.tests=: 119 test cases, 253 assertions, all passed.
-- Sibling gates: model drift clean (181 of 328 models bound to a profile);
-  protocol twin coverage 46 headers in 9 components; handler permissions 6
-  components and 182 codes; populate references resolve; registry exceptions 10
-  components and 1 accepted exception; =validate_docs.sh= 40 of 40;
-  =compass lint= clean.
+| Check | First verdict | After the revision |
+|-------+---------------+--------------------|
+| Declared cases | 6242 | 6242 |
+| Files scanned | 722 | 807 |
+| =ores.codegen= suite | 837 passed | 845 passed |
+| =ores.service.tests= | 42 cases / 118 assertions | not rebuilt; no C++ changed |
+| =ores.platform.tests= | 119 cases / 253 assertions | not rebuilt; no C++ changed |
+| =validate_docs.sh= | 40 of 40 | 40 of 40 |
 
-The capture proposed measuring 684 test sources. The tree held 722 when the work
-started, because trunk gained 33 test files while the capture sat in the backlog.
-That is the hazard the third capture in this story records.
+The scanned-file count rises because the revision reads every C++ file under a
+=tests/= directory, not only =*_tests.cpp=. The declared-case count does not
+move, because no helper file in the tree declares a case.
 
-*What is not covered.* The rule is static, so it cannot see a case removed by
-anything other than the preprocessor. Reading the test sources and the case
-declarations is the whole of its knowledge; it does not know whether a declared
-case is in a CMake source list. That gap belongs to
+Sibling gates, green at both heads: model drift clean (181 of 328 models bound
+to a profile); protocol twin coverage 46 headers in 9 components; handler
+permissions 6 components and 182 codes; populate references resolve; registry
+exceptions 10 components and 1 accepted exception; =compass lint= clean.
+
+The capture proposed measuring 684 test sources. The tree held 689 at the commit
+that filed the capture and 722 when the work started, so the capture's own
+number was five stale when it was written and thirty-eight stale when it was
+picked up. That is the hazard the third capture in this story records.
+
+*What the first verdict changed.* The independent verifier returned PASS+NOTES
+and found a real defect in the gate: the scan implemented the phase-2
+backslash-newline splice only for =//= comments, so a directive written as =#\=
+followed by a line starting =if 0= was not read as a directive and a case inside
+it passed silently. The same gap produced a false positive in the other
+direction, reading =#end\= plus =if= as an unclosed conditional and flagging a
+case that is unconditional. The revision resolves splicing for the whole file
+before it looks at anything, which fixes both, and it closes four further
+evasions the verifier measured: a case behind a =#define= alias of a test macro,
+a guard and case in an included =.inc= or =.hpp=, a guard opened in an included
+file and never closed, and a test source whose name or suffix the glob did not
+match. A file whose conditionals do not balance is now a finding, because the
+guard applies to whatever includes it. All ten probes, seven evasions and three
+legitimate shapes, now behave as intended.
+
+*What is not covered.* The rule is static and per file. It does not expand
+macros beyond one level, so a test macro reached through a chain of =#define=s is
+invisible to it. It does not read the flags a translation unit is compiled with,
+so a conditional that is merely wrong for one platform, rather than unreachable
+everywhere, is beyond it. It cannot see a case removed by anything other than the
+preprocessor: whether a declared case is in a CMake source list belongs to
 =regenerate_cmake_component_files.py --check=, which already fails on a component
-whose sources are not listed.
+whose sources are not listed. And the workflow's path filter lists
+=projects/**/tests/**=, so a test source moved outside a =tests/= directory would
+not start the job that runs this check.
 
 * Test Scenarios
 
@@ -158,9 +187,21 @@ via its "Verifies task" field.
 
 * Review
 
+Independent verification of PR #2249 at head =83c8cbb709=, patch-id
+=e06b4690c93fbdc5fe04114dfdabeaaa849ff08a=. Verdict PASS+NOTES. The notes below
+are the verifier's; the section above records what each one changed.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The phase-2 backslash-newline splice is implemented only for =//= comments, so =#\= followed by =if 0= is not read as a directive and a case inside it passes silently. The same gap reads =#end\= plus =if= as an unclosed conditional and flags an unconditional case. Both proven with =clang++ -E -P=. | =check_test_case_reachability.py= | Fixed | The whole file is spliced before anything is scanned, which removes both the false negative and the false positive. |
+| 2 | A case declared through a macro the file defines to a test macro, =#define CASE(n) TEST_CASE(n,"[t]")=, is not counted, so the gate reports one declared case where there are two. | =check_test_case_reachability.py= | Fixed | Names a file's own =#define= binds to a test macro are followed, one level. |
+| 3 | A guard and case in an included =.inc= or =.hpp=, and a guard opened in an included file and never closed, are invisible because the gate reads =*_tests.cpp= only. | =check_test_case_reachability.py= | Fixed | Every C++ file under a =tests/= directory is read, and a file whose conditionals do not balance is a finding, because the guard applies to its includer. |
+| 4 | A test source named =f_test.cpp= or =n_tests.cc= is never scanned; as the only file, the gate exits 1 with "no test sources matched". | =check_test_case_reachability.py= | Fixed | Any C++ file under a =tests/= directory is a test source, whatever its name or suffix. |
+| 5 | =SKIP_PARTS= is matched against every part of the absolute path, so a checkout under a directory named =build= makes the gate see zero sources and fail. | =check_test_case_reachability.py= | Fixed | The skip test is on the path relative to =projects/=, and the walk prunes vendored directories instead of filtering after the fact. |
+| 6 | "=ores.codegen= suite: 835 passed" is correct for the head it names but the final head is 837. | task doc | Fixed | The table above carries both heads. |
+| 7 | "The capture proposed 684 test sources. The tree held 722 ... because trunk gained 33 test files" is internally inconsistent: 722 − 684 is 38. | task doc | Fixed | Measured at the filing commit the tree held 689, so the capture's own number was already five stale. The sentence now names 689. |
+| 8 | =inbox.org= also moves the =15062C8E= "Storage routes" row into alphabetical position. | =inbox.org= | No change | The index is generated by =regenerate_backlog_indexes.py=, which the capture promotion runs. The re-sort is the generator's output, not a hand edit. |
+| 9 | Historical claim that ctest reported 39 cases where the sources held 42. | task doc | No change | The verifier confirmed the arithmetic: the pre-change =ores.service= test sources declare exactly 42 cases, 3 of them conditional. The observation itself needs a platform without local sockets, and is recorded as a measurement that was made, not one reproduced here. |
 
 * Result
 

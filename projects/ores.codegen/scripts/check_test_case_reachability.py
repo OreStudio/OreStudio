@@ -36,6 +36,27 @@ reports as skipped:
 A test source that declares a case this way has a stable case count, and a
 reader sees the skip instead of an absence.
 
+== What the check reads
+
+A case can be declared in a test source or in a fragment one includes, so the
+check reads both: every file named ``*_tests.*``, and every C++ source or
+fragment under a ``tests/`` directory. It resolves the backslash-newline splices
+of translation phase 2 before it looks for anything, so a directive broken
+across lines is a directive, and a case declared through a macro the file itself
+defines to a test macro is a case. It also fails on a file whose conditionals do
+not balance, because a guard left open leaks into whatever includes that file,
+and the case it deletes is in the includer, where nothing looks conditional.
+
+== What the check does not cover
+
+The rule is static and per file. It does not expand macros beyond one level, so
+a test macro reached through a chain of definitions is invisible to it. It does
+not read the flags a translation unit is compiled with, so a conditional that is
+merely wrong for one platform, rather than unreachable everywhere, is beyond it.
+And it cannot see a case deleted by anything other than the preprocessor;
+whether a declared case is in a target's source list belongs to
+``regenerate_cmake_component_files.py --check``.
+
 This check reads the tree and writes nothing.
 
 Usage:
@@ -43,6 +64,7 @@ Usage:
 """
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -50,11 +72,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PROJECTS_DIR = REPO_ROOT / "projects"
 
-# Where test sources live. Every declaration in the tree is in a file with this
-# name, so the gate does not need to guess which .cpp files are tests.
-TEST_SOURCE_GLOB = "*/**/*_tests.cpp"
+# A test source, and a fragment a test source may include.
+TEST_SOURCE_SUFFIXES = frozenset(
+    {".cpp", ".cc", ".cxx", ".c++", ".hpp", ".h", ".hxx", ".ipp", ".inc"}
+)
 
-# Path components that hold vendored or generated trees, never our test sources.
+# The directory whose contents are test code, whatever the file is called.
+TEST_DIR = "tests"
+
+# Directories that hold vendored or generated trees, never our sources. Pruned
+# during the walk, so they are never descended into.
 SKIP_PARTS = frozenset({"node_modules", "venv", ".venv", "build", "external"})
 
 # The Catch2 macros that declare a case. Longest first, because ``TEST_CASE``
@@ -74,23 +101,82 @@ TEST_MACROS = (
     "SCENARIO",
 )
 
-_TEST_MACRO_RE = re.compile(
-    r"\b(?:" + "|".join(TEST_MACROS) + r")(?![A-Za-z0-9_])\s*\("
-)
-
 # A conditional directive that opens a region, and the one that closes it.
 _OPENS = ("if", "ifdef", "ifndef")
+
 _DIRECTIVE_RE = re.compile(r"^\s*#\s*([A-Za-z_]+)")
+_DEFINE_RE = re.compile(r"^\s*#\s*define\s+([A-Za-z_][A-Za-z0-9_]*)")
+
+
+def _macro_re(extra_names: frozenset[str] = frozenset()) -> re.Pattern:
+    """A matcher for every test macro plus ``extra_names``, longest first."""
+    names = sorted(set(TEST_MACROS) | set(extra_names), key=len, reverse=True)
+    return re.compile(r"\b(?:" + "|".join(names) + r")(?![A-Za-z0-9_])\s*\(")
+
+
+_TEST_MACRO_RE = _macro_re()
+
+
+def _relative_parts(path: Path) -> tuple[str, ...]:
+    """``path`` relative to PROJECTS_DIR, or its own parts when outside it."""
+    try:
+        return path.relative_to(PROJECTS_DIR).parts
+    except ValueError:
+        return path.parts
 
 
 def _test_sources() -> list[Path]:
-    """Every test source under ``projects/``, sorted by path."""
+    """Every file under ``projects/`` that may declare a case, sorted.
+
+    Vendored trees are pruned rather than filtered, so the walk never descends
+    into them. The skip test is on the path relative to PROJECTS_DIR, so a
+    checkout that happens to live under a directory named ``build`` still sees
+    the tree.
+    """
     sources = []
-    for path in sorted(PROJECTS_DIR.glob(TEST_SOURCE_GLOB)):
-        if any(part in SKIP_PARTS for part in path.parts):
-            continue
-        sources.append(path)
+    for dirpath, dirnames, filenames in os.walk(PROJECTS_DIR):
+        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_PARTS)
+        here = Path(dirpath)
+        in_tests = TEST_DIR in _relative_parts(here)
+        for name in sorted(filenames):
+            path = here / name
+            if path.suffix.lower() not in TEST_SOURCE_SUFFIXES:
+                continue
+            if in_tests or path.stem.endswith("_tests"):
+                sources.append(path)
     return sources
+
+
+def _unsplice(text: str) -> tuple[str, list[int]]:
+    """Apply the backslash-newline splices of translation phase 2.
+
+    Returns the spliced text and, for each character in it, the 1-based line of
+    the original that the character came from. Splicing runs before comments are
+    recognised, which is what makes a directive split across lines a directive,
+    a ``#end\\``/``if`` an ``#endif``, and a ``//`` comment swallow the line it
+    is continued onto.
+    """
+    out: list[str] = []
+    line_of: list[int] = []
+    line = 1
+    i = 0
+    n = len(text)
+    while i < n:
+        c = text[i]
+        if c == "\\" and text.startswith("\r\n", i + 1):
+            i += 3
+            line += 1
+            continue
+        if c == "\\" and text.startswith("\n", i + 1):
+            i += 2
+            line += 1
+            continue
+        out.append(c)
+        line_of.append(line)
+        if c == "\n":
+            line += 1
+        i += 1
+    return "".join(out), line_of
 
 
 def _blank_comments_and_literals(text: str) -> str:
@@ -112,17 +198,12 @@ def _blank_comments_and_literals(text: str) -> str:
 
     while i < n:
         c = text[i]
-        if c == "/" and i + 1 < n and text[i + 1] == "/":
+        if c == "/" and text.startswith("//", i):
             stop = text.find("\n", i)
             stop = n if stop == -1 else stop
-            # A line comment ends at the backslash-newline splice, not at the
-            # newline, so a directive on the next line is still inside it.
-            while stop < n and stop > 0 and text[stop - 1] == "\\":
-                stop = text.find("\n", stop + 1)
-                stop = n if stop == -1 else stop
             blank(i, stop)
             i = stop
-        elif c == "/" and i + 1 < n and text[i + 1] == "*":
+        elif c == "/" and text.startswith("/*", i):
             stop = text.find("*/", i + 2)
             stop = n if stop == -1 else stop + 2
             blank(i, stop)
@@ -166,39 +247,86 @@ def _closes_char_literal(text: str, start: int) -> bool:
     return "\n" not in text[start:end]
 
 
-def scan_source(text: str) -> tuple[int, list[tuple[int, str, int, str]]]:
-    """Count the cases ``text`` declares and locate the conditional ones.
+def _logical_lines(text: str) -> tuple[list[tuple[int, str]], list[str]]:
+    """``(original line number, blanked logical line)``, plus the raw lines.
 
-    Returns the declared case count, then one tuple per conditional case: the
-    case's line number and line text, then the line number and text of the
-    directive that opened the region. The reported text is the original source
-    line, not the blanked one the scan matches against.
+    A logical line is what the compiler sees after splicing: one or more
+    physical lines with their splices removed.
     """
-    stripped_lines = _blank_comments_and_literals(text).splitlines()
-    original_lines = text.splitlines()
+    spliced, line_of = _unsplice(text)
+    blanked = _blank_comments_and_literals(spliced)
+    logical: list[tuple[int, str]] = []
+    start = 0
+    for offset, char in enumerate(blanked):
+        if char == "\n":
+            logical.append((line_of[start], blanked[start:offset]))
+            start = offset + 1
+    if start < len(blanked):
+        logical.append((line_of[start], blanked[start:]))
+    return logical, text.splitlines()
+
+
+def _aliases(logical: list[tuple[int, str]]) -> frozenset[str]:
+    """Names this file's own ``#define`` binds to a test macro.
+
+    One level only: ``#define MY_CASE TEST_CASE`` is followed, a chain through
+    two definitions is not.
+    """
+    names = set()
+    for _, line in logical:
+        define = _DEFINE_RE.match(line)
+        if define and _TEST_MACRO_RE.search(line[define.end():]):
+            names.add(define.group(1))
+    return frozenset(names)
+
+
+def scan_source(text: str) -> tuple[int, list[tuple[int, str, int, str]],
+                                    list[tuple[int, str, str]]]:
+    """Count the cases ``text`` declares, and find the ones that can vanish.
+
+    Returns the declared case count; one tuple per case inside a conditional,
+    as ``(line, line text, line of the opening directive, directive text)``; and
+    one tuple per unbalanced conditional, as ``(line, line text, what is
+    wrong)``. Reported text is the original source line, not the blanked one.
+    """
+    logical, original = _logical_lines(text)
+    macro_re = _macro_re(_aliases(logical))
     open_stack: list[tuple[int, str]] = []
     findings: list[tuple[int, str, int, str]] = []
+    balance: list[tuple[int, str, str]] = []
     declared = 0
 
-    for lineno, line in enumerate(stripped_lines, 1):
+    def at(lineno: int) -> str:
+        if 1 <= lineno <= len(original):
+            return original[lineno - 1].strip()
+        return ""
+
+    for lineno, line in logical:
         directive = _DIRECTIVE_RE.match(line)
         if directive:
             keyword = directive.group(1)
             if keyword in _OPENS:
-                open_stack.append((lineno, original_lines[lineno - 1].strip()))
-            elif keyword == "endif" and open_stack:
-                open_stack.pop()
+                open_stack.append((lineno, at(lineno)))
+            elif keyword == "endif":
+                if open_stack:
+                    open_stack.pop()
+                else:
+                    balance.append((lineno, at(lineno),
+                                    "closes a conditional that nothing opened"))
             # ``elif`` and ``else`` continue the region already open.
             continue
-        matches = _TEST_MACRO_RE.findall(line)
+        matches = macro_re.findall(line)
         if not matches:
             continue
         declared += len(matches)
         if open_stack:
             opened_at, opened_by = open_stack[-1]
-            findings.append((lineno, original_lines[lineno - 1].strip(),
-                             opened_at, opened_by))
-    return declared, findings
+            findings.append((lineno, at(lineno), opened_at, opened_by))
+
+    for lineno, text_at in open_stack:
+        balance.append((lineno, text_at, "opens a conditional that never closes"))
+
+    return declared, findings, balance
 
 
 def _rel(path: Path) -> str:
@@ -212,18 +340,20 @@ def _rel(path: Path) -> str:
 def main() -> int:
     sources = _test_sources()
     if not sources:
-        print(f"no test sources matched {PROJECTS_DIR}/{TEST_SOURCE_GLOB}",
-              file=sys.stderr)
+        print(f"no test sources found under {PROJECTS_DIR}", file=sys.stderr)
         return 1
 
     findings: list[tuple[Path, int, str, int, str]] = []
+    balance: list[tuple[Path, int, str, str]] = []
     declared = 0
     for path in sources:
         text = path.read_text(encoding="utf-8", errors="replace")
-        source_declared, source_findings = scan_source(text)
+        source_declared, source_findings, source_balance = scan_source(text)
         declared += source_declared
         for lineno, line, opened_at, opened_by in source_findings:
             findings.append((path, lineno, line, opened_at, opened_by))
+        for lineno, line, problem in source_balance:
+            balance.append((path, lineno, line, problem))
 
     if not declared:
         print(f"no test case declared in {len(sources)} test source(s); the "
@@ -231,6 +361,7 @@ def main() -> int:
               file=sys.stderr)
         return 1
 
+    failures = 0
     if findings:
         print("Test case(s) inside a conditional compilation block:",
               file=sys.stderr)
@@ -238,16 +369,31 @@ def main() -> int:
             print(f"  {_rel(path)}:{lineno}: {line[:88]}", file=sys.stderr)
             print(f"      inside the block opened at line {opened_at}: "
                   f"{opened_by[:88]}", file=sys.stderr)
-        print(f"\n{len(findings)} of {declared} declared case(s) can be "
-              "compiled away, and a suite that loses them still reports "
-              "green. Declare the case unconditionally and move the condition "
-              "into the body, with SKIP(...) in the branch that cannot run.",
-              file=sys.stderr)
+        failures += 1
+    if balance:
+        print("File(s) whose conditionals do not balance:", file=sys.stderr)
+        for path, lineno, line, problem in balance:
+            print(f"  {_rel(path)}:{lineno}: {line[:88]}", file=sys.stderr)
+            print(f"      {problem}", file=sys.stderr)
+        failures += 1
+
+    if failures:
+        if findings:
+            print(f"\n{len(findings)} of {declared} declared case(s) can be "
+                  "compiled away, and a suite that loses them still reports "
+                  "green. Declare the case unconditionally and move the "
+                  "condition into the body, with SKIP(...) in the branch that "
+                  "cannot run.", file=sys.stderr)
+        if balance:
+            print("\nA guard that a file opens and does not close applies to "
+                  "whatever includes that file, so a case in the includer can "
+                  "be deleted where nothing looks conditional. Close the guard "
+                  "in the file that opens it.", file=sys.stderr)
         return 1
 
     print(f"Test case reachability intact: {declared} declared case(s) in "
           f"{len(sources)} test source(s), none inside a conditional "
-          "compilation block.")
+          "compilation block, and every conditional is balanced.")
     return 0
 
 

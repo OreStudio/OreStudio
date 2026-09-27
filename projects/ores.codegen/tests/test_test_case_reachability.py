@@ -202,7 +202,7 @@ def test_a_tree_with_no_test_sources_fails(tmp_path, monkeypatch, capsys):
 
     assert check.main() == 1
     captured = capsys.readouterr()
-    assert "no test sources matched" in captured.err
+    assert "no test sources found" in captured.err
 
 
 def test_a_test_source_that_declares_no_case_fails(
@@ -275,6 +275,170 @@ TEST_CASE("conditional", tags) {
     captured = capsys.readouterr()
     assert "conditional" in captured.err
     assert "opened at line 3" in captured.err
+
+
+def test_a_directive_split_by_a_backslash_newline_is_a_directive(
+        tmp_path, monkeypatch, capsys):
+    # Translation phase 2 removes the splice, so the compiler reads "#if 0".
+    # The scan has to agree, or the case vanishes from under it.
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#\\
+if 0
+TEST_CASE("never compiled", tags) {
+    CHECK(true);
+}
+#endif
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "never compiled" in captured.err
+
+
+def test_a_directive_split_as_end_if_does_not_close_a_region(
+        tmp_path, monkeypatch, capsys):
+    # "#end\\" + newline + "if" splices to "#endif", so the case below it is
+    # unconditional and the gate must not report it.
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#if defined(HAS_SOCKETS)
+int helper() { return 1; }
+#end\\
+if
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 0
+    captured = capsys.readouterr()
+    assert "always runs" not in captured.err
+
+
+def test_a_case_declared_through_a_local_macro_is_a_case(
+        tmp_path, monkeypatch, capsys):
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#define MY_CASE(name) TEST_CASE(name, tags)
+
+#if defined(HAS_SOCKETS)
+MY_CASE("hidden behind a macro")
+#endif
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "hidden behind a macro" in captured.err
+    assert "1 of 1 declared case(s)" in captured.err
+
+
+def test_a_test_source_with_another_cpp_suffix_is_scanned(
+        tmp_path, monkeypatch, capsys):
+    _write(tmp_path, "projects/widget/tests/widget_tests.cc", """\
+#include <catch2/catch_test_macros.hpp>
+
+#if defined(HAS_SOCKETS)
+TEST_CASE("in a .cc file", tags) {
+    CHECK(true);
+}
+#endif
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "widget_tests.cc" in captured.err
+    assert "in a .cc file" in captured.err
+
+
+def test_a_fragment_under_tests_is_scanned(tmp_path, monkeypatch, capsys):
+    # A case can live in a header the test source includes, so a guard there
+    # hides a case just as well.
+    _write(tmp_path, "projects/widget/tests/helpers.hpp", """\
+#if defined(HAS_SOCKETS)
+TEST_CASE("in a header", tags) {
+    CHECK(true);
+}
+#endif
+""")
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "helpers.hpp" in captured.err
+    assert "in a header" in captured.err
+
+
+def test_a_guard_left_open_is_a_finding(tmp_path, monkeypatch, capsys):
+    # The guard applies to whatever includes this file, so the case it deletes
+    # is in the includer, where nothing looks conditional.
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#if defined(HAS_SOCKETS)
+int helper() { return 1; }
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "do not balance" in captured.err
+    assert "opens a conditional that never closes" in captured.err
+
+
+def test_an_unmatched_endif_is_a_finding(tmp_path, monkeypatch, capsys):
+    _write(tmp_path, SOURCE, """\
+#include <catch2/catch_test_macros.hpp>
+
+#endif
+
+TEST_CASE("always runs", tags) {
+    CHECK(true);
+}
+""")
+    _point_at(monkeypatch, tmp_path)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "closes a conditional that nothing opened" in captured.err
+
+
+def test_a_checkout_under_a_directory_named_build_is_still_scanned(
+        tmp_path, monkeypatch, capsys):
+    # The skip list names the parts below projects/, not the parts of the
+    # absolute path, so where the checkout lives cannot blind the gate.
+    root = tmp_path / "build" / "checkout"
+    _write(root, SOURCE, """\
+#if defined(HAS_SOCKETS)
+TEST_CASE("conditional", tags) {
+    CHECK(true);
+}
+#endif
+""")
+    _point_at(monkeypatch, root)
+
+    assert check.main() == 1
+    captured = capsys.readouterr()
+    assert "conditional" in captured.err
 
 
 def test_the_real_tree_has_cases_and_declares_none_conditionally(capsys):

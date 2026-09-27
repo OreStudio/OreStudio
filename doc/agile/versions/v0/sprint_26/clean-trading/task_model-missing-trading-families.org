@@ -47,12 +47,15 @@ to the reference-data work and are out of scope, per decision D5.
   feature values and the reason. Twenty-six of fifty-seven bind none
   today: the fourteen bond family entities, the seven instrument child
   entities and the five trade envelope and party entities.
-- The artefacts that have no model have one: the eight tables
-  =activity_types=, =fpml_event_types=, =commodity_instruments=,
-  =composite_instruments=, =composite_legs=, =credit_instruments=,
-  =scripted_instruments= and =swap_legs=, and =product_type=, which is a
-  database enum on the trades table rather than a table of its own. Each
+- The artefacts that have no model have one. Eight are tables and this PR
+  authors them: =activity_types=, =fpml_event_types=,
+  =commodity_instruments=, =composite_instruments=, =composite_legs=,
+  =credit_instruments=, =scripted_instruments= and =swap_legs=. Each
   regenerates, and the drift dry run stays empty with it included.
+  The ninth, =product_type=, is not a table: it is a database enum on the
+  trades table, which is defect 10, and the defect table assigns that
+  shape to PR 4. This PR records the decision and PR 4 authors it, so two
+  PRs do not claim the same schema change.
   The task first said seven, counting the six families and
   =product_type=; the PR 3 survey found =activity_types= and
   =fpml_event_types= in the same state, and they are the two remaining
@@ -200,6 +203,29 @@ rather than an entity, which is defect 10.
 Use the established entity org format. The bond family from the sprint
 25 pilot is the worked example. =swap_legs= is decided: D10 on the story
 fixes one model over the shared table, not one per family.
+
+** 2a. The profiles the nine new models bind
+
+The nine are new entities, so M02 applies to them too. The decision per
+group, taken from the table's own columns and the profile's assignment
+table:
+
+- =commodity_instruments=, =composite_instruments=, =credit_instruments=
+  and =scripted_instruments= bind =trading-instrument=. Each is an
+  instrument sub-type with the same scope as the nine already modelled:
+  tenant, workspace and =party_id=, no presentation tier.
+- =composite_legs= and =swap_legs= bind =trading-instrument= as well.
+  They carry the same tenant, workspace and =party_id= scope; a profile
+  fixes variability, never structure, so a leg child over the same scope
+  takes the same bind. D10 fixes their shape as one model each.
+- =activity_types= and =fpml_event_types= bind =simple-lookup=. Both key
+  on a text =code=, are tenant-scoped, carry no workspace, and have a
+  shell surface, which is exactly the profile =country= anchors and what
+  =trade_type=, =party_role_type=, =lifecycle_event= and =trade_id_type=
+  already bind in this component.
+- =product_type= is deferred to the defect 10 analysis. It is not a table
+  today: it is an enumeration on the trades table, so authoring it as an
+  entity is a schema change with a data migration, not a transcription.
 
 ** 3. Classify the unmodelled hand-written domain types
 

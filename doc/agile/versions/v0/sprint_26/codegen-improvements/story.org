@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 768925C2-0BAA-49AA-B772-974296DE7DC3
+:END:
+#+title: Story: Codegen improvements from the clean-up passes
+#+description: The home for the codegen defects the component clean-up passes surface: each is recorded with its evidence, fixed at the source with a regression test, and the fixes land on one long-lived branch that merges once every component is clean.
+#+type: story
+#+level: s2
+#+filetags: :codegen:clean_standard:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The codegen layer has no defect left that the component clean-up passes found.
+Every defect is recorded with the evidence that shows it, and every fix lands
+at its source with a regression test.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Recording the defects the clean-up passes find. |
+| Waiting on    | Nothing.                               |
+| Next          | Fix the first defect the register holds. |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- Every codegen defect the clean-up passes surface is recorded with the command or recipe that shows it, and with the file and line of its cause.
+- Every fix is at the source, in a template, a loader or a script, and never in the generated output.
+- Every fix carries a regression test that fails before the fix and passes after it.
+- The tree is regenerated, and the component drift gate passes with each affected component listed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3CCB8F1A-1995-4D09-93F5-A65A009227B3][Fix the codegen defects found while cleaning the components]] | STARTED | 2026-09-27 | | Record every codegen defect the component clean-up passes surface, with its evidence, and fix each one at its source with a regression test. |
+
+* Decisions
+
+| # | Decision | Why |
+|---+----------+-----|
+| 1 | Every fix lands on one long-lived branch, =feature/codegen-improvements=. | The defects are found by every component's clean-up pass, so they accumulate across the whole programme. Merging them one at a time would regenerate the same components repeatedly, and the regeneration is exactly what makes the next pass's diff noisy. One branch merges once, when the components are clean. |
+| 2 | The task is the register. | A defect that is fixed without being recorded cannot be told from one that was never found, and the record is what the next pass reads. |
+
+* Out of scope
+
+- Merging the branch. It merges when every component is clean, not when a defect is fixed.
+- The defects already captured in the product backlog. They stay where they are until this story pulls one in as work.

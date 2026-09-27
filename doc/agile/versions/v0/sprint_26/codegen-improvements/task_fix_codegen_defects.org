@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 3CCB8F1A-1995-4D09-93F5-A65A009227B3
+:END:
+#+title: Task: Fix the codegen defects found while cleaning the components
+#+description: Record every codegen defect the component clean-up passes surface, with its evidence, and fix each one at its source with a regression test.
+#+type: task
+#+level: s1
+#+filetags: :codegen-improvements:sprint_26:v0:
+#+owner: marco
+#+branch: feature/codegen-improvements
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:768925C2-0BAA-49AA-B772-974296DE7DC3][Codegen improvements from the clean-up passes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every codegen defect the component clean-up passes find is recorded on this task with the evidence that shows it, and fixed at its source with a regression test, on the feature/codegen-improvements branch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:768925C2-0BAA-49AA-B772-974296DE7DC3][Codegen improvements from the clean-up passes]] |
+| Now          | Recording the defects as the clean-up passes find them. |
+| Waiting on   | Nothing.                               |
+| Next         | Fix the first defect the register holds. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Each defect is recorded with the command or recipe that shows it, and with the file and line of its cause.
+- Each fix changes a template, a loader or a script, and not the generated output.
+- Each fix carries a regression test that fails before the fix and passes after it.
+- The affected components are regenerated, and the drift gate passes with each of them listed.
+
+* Plan
+
+Work the defects in the order the clean-up passes find them. Each one is one
+unit: record it in the register below with the evidence that shows it, fix it
+at the source, add the regression test, regenerate the affected components,
+run the drift gate, and commit.
+
+The branch accumulates the fixes and is rebased onto main as needed. Nothing
+merges until every component is clean, so a fix that would change generated
+output across components does not have to land early to be correct.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The defect register. One row per defect, added as the clean-up passes find it,
+with the evidence that shows it. The fix is its own commit on this branch.
+
+| # | Defect | Evidence | Cause | Fix |
+|---+--------+----------+-------+-----|
+|   |        |          |       |     |
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

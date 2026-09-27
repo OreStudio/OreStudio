@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
-#+branch: chore/dq-survey-tools
+#+branch: feature/dq-clean-batch-4
 #+pr: 2300
 #+blocked_on:
 #+blocked_since:
@@ -30,7 +30,7 @@ This is pass 2. Pass 1, [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the han
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Three defect batches have landed, #2286, #2291 and #2296. Of the 49 items, V07 is fixed and proven, V08's survey is recorded, and B06 gained a measured second finding. What is left is H01, V03 and V04, and M08 which has its own task. |
+| Now          | Three defect batches have landed, #2286, #2291 and #2296. Of the 49 items, V07 is fixed and proven, V08's survey is recorded, M09 is fixed for this component, and B06 gained a measured second finding. What is left is H01, V03 and V04, and M08 which has its own task. |
 | Waiting on   | Nothing for the fixed items. V03 and V04 need a running fleet, which this sandbox cannot start: =systemctl --user= cannot reach the user manager, so =compass services start= fails and bearings reports 24 units missing. |
 | Next         | Run V03 and V04 where the fleet runs, then take H01, the diagram's manual pass and its audit record. Pass 1's artefact tail is separate and still open. |
 | Last touched | 2026-09-27                               |
@@ -73,7 +73,7 @@ record each item's result in the table below.
 | M06 | Pass. Every wire type is modelled and twinned. | =check_protocol_twin_coverage.py= — "all 77 generated protocol header(s) in 10 committed component(s) have a TypeScript twin, and no model opts out" |
 | M07 | Pass. Both junctions name their singular and give each key column its real type; the tenant-scoped RLS is generated. | =projects/ores.sql/create/dq/dq_rls_policies_create.sql= |
 | M08 | Open, and deliberately not attempted here. =is_initial= and =is_terminal= in =ores.dq.fsm_state= are =:type: integer= with an =in (0,1)= check. Making them boolean crosses dq, reporting and the web wire protocol, breaks two hand-written predicates in =ores.reporting=, touches five populate scripts, and needs a one-shot migration that has no template. It already has [[id:DA77CBDB-6C6C-4033-8794-53A35C1FD2CB][its own task]] with exactly that acceptance. | =projects/ores.dq/modeling/ores.dq.fsm_state.org= lines 64-102; =task_convert_remaining_integer_flags.org= |
-| M09 | Finding, and it is cross-cutting. 38 entity models across =ores.dq=, =ores.assets=, =ores.reporting=, =ores.synthetic= and =ores.codegen= carry a =* Protocol= block whose values still name the retired message types: =:save_request_class: dq::messaging::save_catalog_request= and its sibling keys, against 9 models that name the current =put_*= form. The property names are historical in the template too, which now renders =put_{{slug}}_request= under the old key, but those 38 sets of values were never refreshed. The same retired names are why the api class diagram draws types that do not exist, so the two findings share a cause. Fixing it is a cross-component sweep, filed as a capture. | =projects/ores.dq/modeling/ores.dq.catalog.org= lines 155-157; the capture above |
+| M09 | Fix for dq, finding for the tree. Eleven properties in the =** Presentation= drawer name retired message types or headers that nothing reads: =:save_request_class: dq::messaging::save_catalog_request= and its =get_*=, =delete_*= and =*_message_type= siblings, plus =:domain_include:= and =:protocol_include:=. Nothing consumes them: no template renders a =request_class= variable, the loader's feature map has no entry for them, and the only other mentions are in a =knowledge= page and an archetype that =resolve_targets= never renders. Removing all 213 of them from 21 dq models leaves every generated file byte-identical, which is the proof they were dead. Tree-wide 75 models in seven other components still carry 321 of these lines, and the skeleton template would hand them to any new model; that is filed as a capture. | =projects/ores.dq/modeling/ores.dq.*.org=; =check_component_drift.py --component dq --dry-run= — "No drift" after the deletion; the capture |
 | M10 | Pass, with the root read as a group index. The three parts (=api=, =core=, =service=) each carry all seven sections, their =.puml= source and a rendered image. The root =component_overview.org= is a composite index and carries =Sub-components= and =Entity modules= instead of =Inputs=/=Outputs=/=Entry points=; =validate_docs.py= exempts a grouped composite's root for exactly this reason and never checks it. | =projects/ores.dq/{,api/,core/,service/}modeling/component_overview.org=; =projects/ores.codegen/validate_docs.py= |
 | P01 | Not assessed. | — |
 | P02 | Fix. Six =dq.v1.*.publish-from-dq= subjects were written down three times: as literals in the registrar, as keys of a map in the handler, and as a table in the handler's own doc comment. The handler now derives the SQL function name from the subject, as the iam, refdata, assets, marketdata and synthetic handlers already do, and checks the result against an allow-list before it reaches the raw SQL it is interpolated into. The registrar's six near-identical lambdas collapse to one loop. | =projects/ores.dq/core/src/messaging/publish_from_dq_handler.cpp=; =registrar.cpp= |
@@ -123,7 +123,8 @@ record each item's result in the table below.
 | dq test cases | 551, of which 0 vacuous (was 71) | =projects/ores.codegen/scripts/survey_vacuous_tests.py --component dq= |
 | dq source files reached by a test | 154 of 331 | =projects/ores.codegen/scripts/survey_test_reachability.py --component dq= |
 | dq =table_io= headers with no consumer | 23 of 26 (tree-wide 183 of 221) | =git ls-files 'projects/*/api/include/*/domain/*_table_io.hpp'= |
-| Entity models naming a retired message type | 38 of 47 (tree-wide) | =grep -rh ':save_request_class:' projects/*/modeling/*.org=
+| dq models with a dead presentation property | 21, 213 lines removed | regeneration byte-identical, so nothing read them |
+| Models carrying them elsewhere | 75 in 7 components, 321 lines | =grep -rn ':save_request_class:' projects/*/modeling/*.org= |
 | dq api class-diagram boxes | 209 drawn, 0 regenerated by any gate | =resolve_targets(address='ores.plantuml')= returns 0 units |
 
 * Open items
@@ -168,6 +169,10 @@ via its "Verifies task" field.
 * Result
 
 The task is *not* complete, and this section says so rather than closing it. Three batches have landed, #2286, #2291 and #2296, and the item table above records each item's result with the command or file that proves it.
+
+*Landed in the batch on =feature/dq-clean-batch-4=*:
+
+- *M09 is fixed for dq.* Eleven scalar properties in the entity models' presentation drawer name retired message types or headers nothing reads. Removing all 213 occurrences from 21 models left every generated file byte-identical, which is the proof they were dead. The same keys in 75 models across seven other components, and the skeleton template that would hand them to a new model, are filed as a capture.
 
 *Landed in #2296*, on =feature/dq-clean-batch-3=:
 

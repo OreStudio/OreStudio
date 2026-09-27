@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_CLIENT_PRESENTATION_CRM_RATE_TABLE_IO_HPP
-#define ORES_MARKETDATA_CLIENT_PRESENTATION_CRM_RATE_TABLE_IO_HPP
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/test_timeout_listener.hpp"
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include <openssl/crypto.h>
 
-#include "ores.marketdata.client/export.hpp"
-#include "ores.marketdata.client/presentation/crm_rate_display_service.hpp"
-#include <iosfwd>
-#include <vector>
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
-namespace ores::marketdata::client::presentation {
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    }
+    BOOST_SCOPE_EXIT_END
 
-/**
- * @brief Dumps the CRM rate rows to a stream in table format.
- */
-ORES_MARKETDATA_CLIENT_EXPORT std::ostream&
-operator<<(std::ostream& s, const std::vector<crm_rate_display_service::row>& v);
-
+    ores::testing::logging_listener::set_test_module_name("ores.shell.marketdata.tests");
+    return Catch::Session().run(argc, argv);
 }
-
-#endif

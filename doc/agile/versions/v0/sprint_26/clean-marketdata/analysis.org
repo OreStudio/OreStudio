@@ -944,9 +944,53 @@ in isolation from a schema change.
 
 *Known prerequisite inside it.* The =recorded_at= member is dropped by the
 current template for =:no_audit_columns:= entities
-(id:table_less_and_no_audit_columns_consequences), so =market_fixing= and
+([[id:7CA3D478-597A-4175-A753-A88FFB463A4E][Bring the no-audit-columns
+entities over with the domain member gone]]), so =market_fixing= and
 =market_observation= and the two hand-written tests that populate it move
 together.
+
+** What PR 3 actually landed, and the two items it moved out
+
+Landed: the regenerate (97 files across four modules plus the web twin), the
+consumer migration, the dead-code deletion, the W01 wiring, M10 and H05. The
+gate is green -- =check_component_drift.py --component marketdata= produces no
+diff -- and so is every suite, on a database rebuilt from the tree.
+
+Two items left the PR, and neither is a deferral of convenience. Both were
+sized first, and both share a shape the rest of PR 3 does not have: they
+change behaviour or grammar rather than bringing a tree up to its models.
+
+- *M06, the operation models.* Six hand-written protocol headers carry 26
+  structs and 85 fields, and five of the six are mechanical to model. The
+  sixth is not: =market_feed_config_protocol.hpp= returns
+  =std::map<std::string, feed_kind_counts>= and =std::map<std::string, int>=,
+  and =org_loader._ts_type= has no map branch, so a model stating them cannot
+  even load -- =_reject_silent_ts_gap= raises. The usual escape is closed:
+  =check_protocol_twin_coverage.py= fails any model carrying
+  =:ores.ts.protocol.enabled: nil=, globally, so the map branch has to exist.
+  That is a generator feature with its own regression test, and the same six
+  headers are consumed by five other components
+  (=ores.synthetic=, =ores.iam=, =ores.shell=, =ores.reporting=, =ores.ore=),
+  so it is a cross-component header swap. Modelling them is also what would
+  generate the six missing TypeScript twins, which is why
+  =COMPONENTS_UNDER_TEST= cannot take marketdata first.
+
+- *P01 and the plural repositories.* PR 3 established that these are two
+  different things, which the checklist had run together. The plural
+  repositories hold =read_as_of=, =read_as_of_buckets=, a series-scoped
+  =read_latest= and a series-scoped =remove=, and their consumers are three
+  services and two test suites inside the component. Moving those methods
+  into the generated singular twins needs no template change -- the paste
+  points already exist and the marketdata models already use them -- but the
+  series-scoped methods have no generated twin and their tests assert
+  series-wide semantics, so it is a rewrite of test semantics rather than a
+  rename. Separately, P01 proper is the canonical =as_of= field on the list
+  request, driven by =:has_as_of_lookup: true=, which is a different read
+  again and belongs with the as-of query patterns already in the backlog.
+
+The order is unchanged: M06 before the registry entry, and both of these
+before the component is clean. What changed is that PR 3 no longer claims
+them, and the checklist says why on the row rather than in a footnote.
 
 ** PR 4 -- Wire the import boundary through oresmd, and add ORE export
 

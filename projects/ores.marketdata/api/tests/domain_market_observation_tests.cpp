@@ -43,7 +43,6 @@ market_observation make_curve_observation(const std::string& point_id = "1Y",
     o.point_id = point_id;
     o.value = value;
     o.source = "BLOOMBERG";
-    o.recorded_at = std::chrono::system_clock::now();
     return o;
 }
 
@@ -79,7 +78,6 @@ TEST_CASE("create_observation_without_point_id", tags) {
     sut.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} /
                                                      std::chrono::month{6} / std::chrono::day{1}};
     sut.value = "1.08450";
-    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Observation without a point: " << sut;
 
     CHECK(sut.point_id.empty());

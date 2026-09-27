@@ -2,14 +2,38 @@
 :ID: 7CA3D478-597A-4175-A753-A88FFB463A4E
 :END:
 #+title: Bring the no-audit-columns entities over with the domain member gone
-#+description: :no_audit_columns: now drops the recorded_at domain member as well as the audit tail, so the marketdata entities that state it and the two hand-written tests that populate it need regenerating together when that component is brought over.
+#+description: :no_audit_columns: now drops the recorded_at domain member as well as the audit tail, so the marketdata entities that state it and the two hand-written tests that populate it need regenerating together when that component is brought over. Resolved: PR 3 did exactly that.
 #+type: capture
 #+level: cross
 #+filetags: :codegen:marketdata:
 #+created: 2026-09-22
-#+updated: 2026-09-22
+#+updated: 2026-09-27
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved
+
+Closed as proposed, in PR 3. =ores.marketdata= was regenerated, and the two
+hand-written tests lost the assignments rather than regaining the member:
+
+- =projects/ores.marketdata/api/tests/domain_market_fixing_tests.cpp= — three
+  assignments deleted.
+- =projects/ores.marketdata/api/tests/domain_market_observation_tests.cpp= —
+  two assignments deleted.
+
+Neither test asserted on the value, so nothing was weakened. The generated
+mapper, generator, history field mapper and domain class all stopped
+projecting =valid_from= into the member, exactly as the capture predicted.
+
+One thing the capture could not settle on its own, and which cost a detour:
+[[id:E4174872-13EA-4ECD-AD46-1E52C176701F][Give a table-less record a way to
+suppress the audit envelope]] argued the opposite — that =recorded_at= is the
+transaction-time window, not an audit member, and that these two entities
+should keep it. Commit =5fc4cbf129= had already decided otherwise ("a lone
+transaction timestamp on a struct that has just lost its actor is
+incoherent"), and that commit names this task as the one that would fix the
+tests. The template comment carries the same reasoning, so the next reader
+finds the decision where the code is, not only in the backlog.
 
 * What
 

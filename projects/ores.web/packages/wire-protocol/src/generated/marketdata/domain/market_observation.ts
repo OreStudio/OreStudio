@@ -39,5 +39,4 @@ export interface MarketObservation {
     point_id: string;
     value: string;
     source: string;
-    recorded_at: string;
 }

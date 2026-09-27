@@ -47,9 +47,9 @@ namespace ores::marketdata::client {
  * The subscription is torn down automatically when this object is destroyed.
  * Move-only — the underlying NATS subscription cannot be shared.
  *
- * @note The handler is invoked on a NATS delivery thread, not the Qt GUI thread.
- *       Callers that update Qt widgets must marshal back via
- *       QMetaObject::invokeMethod or Qt::QueuedConnection.
+ * @note The handler runs on a NATS delivery thread. A caller that owns a
+ *       single-threaded event loop must marshal the tick onto that loop
+ *       before touching anything the loop owns.
  *
  * @pre The @p nats client must be connected and must outlive this object.
  */

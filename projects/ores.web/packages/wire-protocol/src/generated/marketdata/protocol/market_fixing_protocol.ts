@@ -23,50 +23,147 @@
  * To modify, update the template and regenerate.
  */
 import type { MarketFixing } from '../domain/market_fixing.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
 
-export interface GetMarketFixingsRequest {
-    offset: number;
-    limit: number;
-}
-
-export interface GetMarketFixingsResponse {
-    market_fixings: MarketFixing[];
-    total_available_count: number;
-    success: boolean;
-    message: string;
-}
-
-export interface SaveMarketFixingRequest {
-    data: MarketFixing;
-}
-
-export interface SaveMarketFixingResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface DeleteMarketFixingRequest {
-    ids: string[];
-}
-
-export interface DeleteMarketFixingResponse {
-    success: boolean;
-    message: string;
-}
-
-export interface GetMarketFixingHistoryRequest {
+export interface MarketFixingKey {
     id: string;
 }
 
-export interface GetMarketFixingHistoryResponse {
-    history: MarketFixing[];
-    success: boolean;
-    message: string;
+export interface MarketFixingWrite {
+    id: string;
+    party_id: string;
+    series_id: string;
+    fixing_date: string;
+    value: string;
+    source: string;
+}
+
+export interface MarketFixingChange {
+    write: MarketFixingWrite;
+    precondition: Precondition;
+}
+
+export interface MarketFixingRemoval {
+    key: MarketFixingKey;
+    precondition: Precondition;
+}
+
+export interface MarketFixingLookup {
+    key: MarketFixingKey;
+    market_fixing: MarketFixing | null;
+}
+
+export interface MarketFixingEvent {
+    event_id: string;
+    key: MarketFixingKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface ListMarketFixingsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListMarketFixingsResponse {
+    result: Result;
+    market_fixings: MarketFixing[];
+    total: number;
+}
+
+export interface GetMarketFixingRequest {
+    key: MarketFixingKey;
+}
+
+export interface GetMarketFixingResponse {
+    result: Result;
+    market_fixing: MarketFixing | null;
+}
+
+export interface GetManyMarketFixingsRequest {
+    keys: MarketFixingKey[];
+}
+
+export interface GetManyMarketFixingsResponse {
+    result: Result;
+    entries: MarketFixingLookup[];
+}
+
+export interface PutMarketFixingRequest {
+    change: MarketFixingChange;
+    intent: ChangeIntent;
+}
+
+export interface PutMarketFixingResponse {
+    result: Result;
+    market_fixing: MarketFixing;
+}
+
+export interface PutManyMarketFixingsRequest {
+    changes: MarketFixingChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyMarketFixingsResponse {
+    result: Result;
+    market_fixings: MarketFixing[];
+}
+
+export interface DeleteMarketFixingRequest {
+    removal: MarketFixingRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteMarketFixingResponse {
+    result: Result;
+}
+
+export interface DeleteManyMarketFixingsRequest {
+    removals: MarketFixingRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyMarketFixingsResponse {
+    result: Result;
 }
 
 export const subjects = {
-    get_market_fixings_request: "marketdata.v1.market_fixings.list",
-    save_market_fixing_request: "marketdata.v1.market_fixings.save",
+    list_market_fixings_request: "marketdata.v1.market_fixings.list",
+    get_market_fixing_request: "marketdata.v1.market_fixings.get",
+    get_many_market_fixings_request: "marketdata.v1.market_fixings.get_many",
+    put_market_fixing_request: "marketdata.v1.market_fixings.put",
+    put_many_market_fixings_request: "marketdata.v1.market_fixings.put_many",
     delete_market_fixing_request: "marketdata.v1.market_fixings.delete",
-    get_market_fixing_history_request: "marketdata.v1.market_fixings.history",
+    delete_many_market_fixings_request: "marketdata.v1.market_fixings.delete_many",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_market_fixings_request: true,
+    get_market_fixing_request: true,
+    get_many_market_fixings_request: true,
+    put_market_fixing_request: true,
+    put_many_market_fixings_request: true,
+    delete_market_fixing_request: true,
+    delete_many_market_fixings_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: "marketdata.v1.market_fixings_events.created",
+    updated: "marketdata.v1.market_fixings_events.updated",
+    deleted: "marketdata.v1.market_fixings_events.deleted",
 } as const;

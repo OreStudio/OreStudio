@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
+#include "ores.marketdata.api/messaging/series_classification_rule_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
 #include <chrono>
@@ -66,6 +67,39 @@ public:
     explicit series_classification_rule_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_series_classification_rules_response list_series_classification_rules(
+        const messaging::list_series_classification_rules_request& request);
+    messaging::get_series_classification_rule_response get_series_classification_rule(
+        const messaging::get_series_classification_rule_request& request);
+    messaging::get_many_series_classification_rules_response get_many_series_classification_rules(
+        const messaging::get_many_series_classification_rules_request& request);
+    messaging::put_series_classification_rule_response put_series_classification_rule(
+        const messaging::put_series_classification_rule_request& request);
+    messaging::put_many_series_classification_rules_response put_many_series_classification_rules(
+        const messaging::put_many_series_classification_rules_request& request);
+    messaging::delete_series_classification_rule_response delete_series_classification_rule(
+        const messaging::delete_series_classification_rule_request& request);
+    messaging::delete_many_series_classification_rules_response
+    delete_many_series_classification_rules(
+        const messaging::delete_many_series_classification_rules_request& request);
+    messaging::list_series_classification_rule_versions_response
+    list_series_classification_rule_versions(
+        const messaging::list_series_classification_rule_versions_request& request);
+    messaging::get_series_classification_rule_version_response
+    get_series_classification_rule_version(
+        const messaging::get_series_classification_rule_version_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists series classification rules with pagination support.
      *
      * @param offset Number of records to skip.
@@ -102,6 +136,13 @@ public:
                                                                const std::string& metric);
 
     /**
+     * @brief Retrieves a batch of series classification rules by primary key.
+     */
+    std::vector<domain::series_classification_rule>
+    get_rules(const std::vector<std::string>& series_types,
+              const std::vector<std::string>& metrics);
+
+    /**
      * @brief Saves a series classification rule (creates or updates).
      *
      * @param rule The series classification rule to save.
@@ -132,6 +173,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a series classification rule.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::series_classification_rule> get_rule_history(const std::string& series_type,
                                                                      const std::string& metric);
@@ -139,6 +182,24 @@ public:
 private:
     context ctx_;
     repository::series_classification_rule_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::series_classification_rule_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::series_classification_rule& out);
 };
 
 }

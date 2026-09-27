@@ -23,7 +23,7 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
-#include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
+#include "ores.marketdata.api/eventing/feed_binding_event.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
@@ -113,7 +113,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge);
 
     namespace ev = ores::eventing;
-    namespace mdev = ores::marketdata::eventing;
+    namespace mdm = ores::marketdata::messaging;
     namespace rdev = ores::refdata::eventing;
     namespace mdsm = ores::marketdata::service::messaging;
     ev::service::event_bus event_bus;
@@ -138,8 +138,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     // The generated registrar publishes; the ingest loop also has to act, so
     // the channel carries a second subscriber rather than a second mapping.
-    auto feed_binding_refresh_sub = event_bus.subscribe<mdev::feed_binding_changed_event>(
-        [ingest](const mdev::feed_binding_changed_event&) {
+    // Every action refreshes: a bind that is created, retargeted or removed
+    // all change which series the loop is entitled to ingest.
+    auto feed_binding_refresh_sub = event_bus.subscribe<mdm::feed_binding_event>(
+        [ingest](const mdm::feed_binding_event&) {
             BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
             ingest->refresh();
         });

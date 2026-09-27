@@ -26,79 +26,228 @@
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_OBSERVATION_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::marketdata::messaging {
 
-struct get_market_observations_request {
-    using response_type = struct get_market_observations_response;
+struct market_observation_key {
+    boost::uuids::uuid id;
+};
+
+struct market_observation_write {
+    boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
+    boost::uuids::uuid series_id;
+    std::chrono::system_clock::time_point observation_datetime;
+    std::string point_id;
+    std::string value;
+    std::string source;
+};
+
+struct market_observation_change {
+    market_observation_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct market_observation_removal {
+    market_observation_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct market_observation_lookup {
+    market_observation_key key;
+    std::optional<ores::marketdata::domain::market_observation> market_observation;
+};
+
+struct market_observations_filter {
+    std::optional<boost::uuids::uuid> series_id;
+};
+
+struct market_observation_event {
+    boost::uuids::uuid event_id;
+    market_observation_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct list_market_observations_request {
+    using response_type = struct list_market_observations_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<market_observations_filter> filter;
 };
 
-struct get_market_observations_response {
+struct list_market_observations_response {
+    ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_observation> market_observations;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
 
-struct save_market_observation_request {
-    using response_type = struct save_market_observation_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.save";
-    ores::marketdata::domain::market_observation data;
-
-    static save_market_observation_request from(ores::marketdata::domain::market_observation v) {
-        return {.data = std::move(v)};
-    }
+struct get_market_observation_request {
+    using response_type = struct get_market_observation_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    market_observation_key key;
 };
 
-struct save_market_observation_response {
-    bool success = false;
-    std::string message;
+struct get_market_observation_response {
+    ores::utility::domain::result result;
+    std::optional<ores::marketdata::domain::market_observation> market_observation;
+};
+
+struct get_many_market_observations_request {
+    using response_type = struct get_many_market_observations_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<market_observation_key> keys;
+};
+
+struct get_many_market_observations_response {
+    ores::utility::domain::result result;
+    std::vector<market_observation_lookup> entries;
+};
+
+struct put_market_observation_request {
+    using response_type = struct put_market_observation_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    market_observation_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_market_observation_response {
+    ores::utility::domain::result result;
+    ores::marketdata::domain::market_observation market_observation;
+};
+
+struct put_many_market_observations_request {
+    using response_type = struct put_many_market_observations_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<market_observation_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_market_observations_response {
+    ores::utility::domain::result result;
+    std::vector<ores::marketdata::domain::market_observation> market_observations;
 };
 
 struct delete_market_observation_request {
     using response_type = struct delete_market_observation_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.delete";
-    std::vector<std::string> ids;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    market_observation_removal removal;
+    ores::utility::domain::change_intent intent;
 };
 
 struct delete_market_observation_response {
-    bool success = false;
-    std::string message;
+    ores::utility::domain::result result;
 };
 
-struct get_market_observation_history_request {
-    using response_type = struct get_market_observation_history_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.history";
-    std::string id;
+struct delete_many_market_observations_request {
+    using response_type = struct delete_many_market_observations_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.market_observations.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<market_observation_removal> removals;
+    ores::utility::domain::change_intent intent;
 };
 
-struct get_market_observation_history_response {
-    std::vector<ores::marketdata::domain::market_observation> history;
-    bool success = false;
-    std::string message;
+struct delete_many_market_observations_response {
+    ores::utility::domain::result result;
 };
 
-struct get_market_observations_by_series_id_request {
-    using response_type = struct get_market_observations_by_series_id_response;
+struct list_by_series_id_market_observations_request {
+    using response_type = struct list_by_series_id_market_observations_response;
     static constexpr std::string_view nats_subject =
         "marketdata.v1.market_observations.list_by_series_id";
-    std::string series_id;
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid series_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
-    std::uint32_t limit = 1000;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<market_observations_filter> filter;
 };
 
-struct get_market_observations_by_series_id_response {
+struct list_by_series_id_market_observations_response {
+    ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_observation> market_observations;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
+    std::uint64_t total;
 };
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace market_observation_event_subjects {
+inline constexpr std::string_view created = "marketdata.v1.market_observations_events.created";
+inline constexpr std::string_view updated = "marketdata.v1.market_observations_events.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.market_observations_events.deleted";
+}
 
 }
 

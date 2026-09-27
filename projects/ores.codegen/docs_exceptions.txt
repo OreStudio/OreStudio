@@ -23,6 +23,5 @@ MISSING_PUML ores.lisp
 # Draw the diagrams per the PlantUML conventions and remove the entries.
 MISSING_PUML ores.eventing.api
 MISSING_PUML ores.eventing.core
-MISSING_PUML ores.marketdata.client
 MISSING_PUML ores.seeder
 

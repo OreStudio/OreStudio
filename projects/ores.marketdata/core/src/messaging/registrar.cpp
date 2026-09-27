@@ -18,18 +18,39 @@
  *
  */
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
-#include "ores.marketdata.core/messaging/feed_binding_handler.hpp"
+#include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
-#include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
+#include "ores.marketdata.core/messaging/market_fixing_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_observation_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
+#include "ores.marketdata.core/messaging/market_series_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_series_registrar.hpp"
+#include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
 #include "ores.nats/domain/message.hpp"
 #include <functional>
+#include <memory>
+#include <utility>
 
 namespace ores::marketdata::messaging {
+
+namespace {
+// Function-local static: must outlive the history.v1.get subscription (see
+// ores::history::messaging::register_history_handlers's doc), and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
+} // namespace
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
@@ -40,28 +61,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = "ores.marketdata.service";
 
-    // Market series
-    subs.push_back(nats.queue_subscribe(std::string(get_market_series_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_series_handler h(nats, ctx, verifier);
-                                            h.list(std::move(msg));
-                                        }));
+    // Generated per-entity registrars (market series, fixings, observations,
+    // feed bindings, observation lineages, classification rules). Each wires
+    // the canonical CRUD set -- list/get/get-many/put/put-many/delete/
+    // delete-many and the version reads -- to the generated handler.
+    // subscription is move-only, so fold each returned vector in with move
+    // iterators.
+    const auto fold = [&subs](std::vector<ores::nats::service::subscription> s) {
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    };
+    fold(register_market_series_handlers(nats, ctx, verifier));
+    fold(register_market_fixing_handlers(nats, ctx, verifier));
+    fold(register_market_observation_handlers(nats, ctx, verifier));
+    fold(register_feed_binding_handlers(nats, ctx, verifier));
+    fold(register_observation_lineage_handlers(nats, ctx, verifier));
+    fold(register_series_classification_rule_handlers(nats, ctx, verifier));
 
-    subs.push_back(nats.queue_subscribe(std::string(save_market_series_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_series_handler h(nats, ctx, verifier);
-                                            h.save(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(delete_market_series_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_series_handler h(nats, ctx, verifier);
-                                            h.remove(std::move(msg));
-                                        }));
-
+    // Market series export: the one market-series verb with no generated
+    // protocol model, because it is a report-feed read rather than CRUD. It
+    // lives in its own header and is registered here by hand.
     subs.push_back(nats.queue_subscribe(
         std::string(export_market_data_to_storage_request::nats_subject),
         queue,
@@ -69,15 +88,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             market_series_handler h(nats, ctx, verifier);
             h.export_to_storage(std::move(msg), http_base_url);
         }));
-
-    // Market observations (generated sub-registrar, unlike the hand-wired
-    // entities elsewhere in this file — see the marketdata_legacy_table_cleanup
-    // story: migrated while adding the list_by_series_id endpoint).
-    {
-        auto s = register_market_observation_handlers(nats, ctx, verifier);
-        subs.insert(
-            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
-    }
 
     // Curve snapshots (as-of / as-of-buckets, for curve/grid viewers)
     subs.push_back(nats.queue_subscribe(std::string(get_curve_snapshot_request::nats_subject),
@@ -95,57 +105,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                  h.get_snapshot_buckets(std::move(msg));
                              }));
 
-    // Market fixings
-    subs.push_back(nats.queue_subscribe(std::string(get_market_fixings_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_fixing_handler h(nats, ctx, verifier);
-                                            h.list(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_market_fixing_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_fixing_handler h(nats, ctx, verifier);
-                                            h.save(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(delete_market_fixing_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            market_fixing_handler h(nats, ctx, verifier);
-                                            h.remove(std::move(msg));
-                                        }));
-
-    // Feed bindings
-    subs.push_back(nats.queue_subscribe(std::string(get_feed_bindings_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            feed_binding_handler h(nats, ctx, verifier);
-                                            h.list(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_feed_binding_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            feed_binding_handler h(nats, ctx, verifier);
-                                            h.save(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(delete_feed_binding_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            feed_binding_handler h(nats, ctx, verifier);
-                                            h.remove(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(get_feed_binding_history_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            feed_binding_handler h(nats, ctx, verifier);
-                                            h.history(std::move(msg));
-                                        }));
-
     // Import
     subs.push_back(
         nats.queue_subscribe(std::string(import_market_data_request::nats_subject),
@@ -162,6 +121,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe("marketdata.v1.market-data-observations.publish-from-dq",
                                  queue,
                                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Generic history.v1.get subject. The registrar resolves each request
+    // into a scoped context exactly like every other subject
+    // (make_request_context), so a provider sees the same
+    // tenant/party/roles/workspace visibility any other handler in this
+    // file would. The two no_audit_columns entities have no provider: the
+    // facet is withheld for them, because a version type has to carry an
+    // actor as well as the timestamp and they carry neither.
+    // ----------------------------------------------------------------
+    {
+        auto& hist_registry = history_registry();
+        register_market_series_history_provider(hist_registry);
+        register_feed_binding_history_provider(hist_registry);
+        register_observation_lineage_history_provider(hist_registry);
+        register_series_classification_rule_history_provider(hist_registry);
+
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "marketdata", queue, ctx, verifier));
     }
 
     return subs;

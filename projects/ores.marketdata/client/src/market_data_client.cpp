@@ -24,12 +24,23 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::marketdata::client {
 
 namespace {
+
+/**
+ * @brief The page size that stands in for "give me everything".
+ *
+ * Every canonical read is paginated and the callers of this facade have always
+ * read a single, generously sized page. Stating the number once keeps the
+ * behaviour they rely on visible rather than repeated at each call site.
+ */
+constexpr std::uint32_t all_rows = 10000;
 
 /**
  * @brief Issue a typed authenticated request and decode its response.
@@ -79,6 +90,33 @@ send(ores::nats::service::nats_client& nats, const Request& request) {
     }
 }
 
+/**
+ * @brief The failure a response body states, as one line for the caller.
+ *
+ * A canonical response carries its outcome in the body, so a caller that only
+ * checks the transport would read data the service refused to return.
+ */
+std::string describe(const ores::utility::domain::result& result) {
+    if (result.message.empty())
+        return result.code.empty() ? std::string("request failed") : result.code;
+    return result.code.empty() ? result.message : result.code + ": " + result.message;
+}
+
+/**
+ * @brief The series id a caller states as text, or why it is not a UUID.
+ *
+ * The methods keep taking the id as text as their callers do, and the canonical
+ * request carries a UUID, so the conversion is stated once here.
+ */
+std::expected<boost::uuids::uuid, std::string> parse_series_id(const std::string& series_id) {
+    try {
+        boost::uuids::string_generator generate;
+        return generate(series_id);
+    } catch (const std::exception& e) {
+        return std::unexpected("Invalid series id '" + series_id + "': " + e.what());
+    }
+}
+
 } // namespace
 
 market_data_client::market_data_client(ores::nats::service::nats_client& nats)
@@ -86,10 +124,13 @@ market_data_client::market_data_client(ores::nats::service::nats_client& nats)
 
 std::expected<std::vector<domain::market_series>, std::string>
 market_data_client::list_series(const std::string& /*series_type*/) {
-    messaging::get_market_series_request req;
+    messaging::list_market_series_request req;
+    req.limit = all_rows;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
     return std::move(resp->market_series);
 }
 
@@ -97,12 +138,26 @@ std::expected<int, std::string>
 market_data_client::save_series(const std::vector<domain::market_series>& series) {
     int count = 0;
     for (const auto& s : series) {
-        auto req = messaging::save_market_series_request::from(s);
+        messaging::put_market_series_request req;
+        req.change.write.id = s.id;
+        req.change.write.party_id = s.party_id;
+        req.change.write.series_type = s.series_type;
+        req.change.write.metric = s.metric;
+        req.change.write.qualifier = s.qualifier;
+        req.change.write.series_subclass = s.series_subclass;
+        req.change.write.derivation_kind = s.derivation_kind;
+        req.change.write.derivation_config_id = s.derivation_config_id;
+        req.change.write.derivation_config_version = s.derivation_config_version;
+        // A save states no expectation about the row it writes, so the change
+        // lands whether the row is new or already present.
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
+        req.intent.reason_code = s.change_reason_code;
+        req.intent.commentary = s.change_commentary;
         auto resp = send(nats_, req);
         if (!resp)
             return std::unexpected(resp.error());
-        if (!resp->success)
-            return std::unexpected(resp->message.empty() ? "save_series failed" : resp->message);
+        if (resp->result.outcome != ores::utility::domain::outcome::ok)
+            return std::unexpected(describe(resp->result));
         ++count;
     }
     return count;
@@ -113,11 +168,13 @@ market_data_client::find_series(const std::string& series_type,
                                 const std::string& metric,
                                 const std::string& qualifier,
                                 const std::string& party_id) {
-    messaging::get_market_series_request req;
-    req.limit = 10000;
+    messaging::list_market_series_request req;
+    req.limit = all_rows;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
     for (auto& s : resp->market_series) {
         if (s.series_type == series_type && s.metric == metric && s.qualifier == qualifier &&
             (party_id.empty() || boost::uuids::to_string(s.party_id) == party_id))
@@ -128,12 +185,17 @@ market_data_client::find_series(const std::string& series_type,
 
 std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations(const std::string& series_id) {
-    messaging::get_market_observations_by_series_id_request req;
-    req.series_id = series_id;
-    req.limit = 10000;
+    auto id = parse_series_id(series_id);
+    if (!id)
+        return std::unexpected(id.error());
+    messaging::list_by_series_id_market_observations_request req;
+    req.series_id = *id;
+    req.limit = all_rows;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
     return std::move(resp->market_observations);
 }
 
@@ -141,13 +203,18 @@ std::expected<std::vector<domain::market_observation>, std::string>
 market_data_client::list_observations_page(const std::string& series_id,
                                            std::uint32_t offset,
                                            std::uint32_t limit) {
-    messaging::get_market_observations_by_series_id_request req;
-    req.series_id = series_id;
+    auto id = parse_series_id(series_id);
+    if (!id)
+        return std::unexpected(id.error());
+    messaging::list_by_series_id_market_observations_request req;
+    req.series_id = *id;
     req.offset = offset;
     req.limit = limit;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
     return std::move(resp->market_observations);
 }
 
@@ -155,13 +222,22 @@ std::expected<int, std::string>
 market_data_client::save_observations(const std::vector<domain::market_observation>& observations) {
     int count = 0;
     for (const auto& obs : observations) {
-        auto req = messaging::save_market_observation_request::from(obs);
+        messaging::put_market_observation_request req;
+        req.change.write.id = obs.id;
+        req.change.write.party_id = obs.party_id;
+        req.change.write.series_id = obs.series_id;
+        req.change.write.observation_datetime = obs.observation_datetime;
+        req.change.write.point_id = obs.point_id;
+        req.change.write.value = obs.value;
+        req.change.write.source = obs.source;
+        // A save states no expectation about the row it writes, so the change
+        // lands whether the row is new or already present.
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
         auto resp = send(nats_, req);
         if (!resp)
             return std::unexpected(resp.error());
-        if (!resp->success)
-            return std::unexpected(resp->message.empty() ? "save_observations failed" :
-                                                           resp->message);
+        if (resp->result.outcome != ores::utility::domain::outcome::ok)
+            return std::unexpected(describe(resp->result));
         ++count;
     }
     return count;
@@ -169,22 +245,35 @@ market_data_client::save_observations(const std::vector<domain::market_observati
 
 std::expected<std::vector<domain::feed_binding>, std::string>
 market_data_client::list_feed_bindings() {
-    messaging::get_feed_bindings_request req;
-    req.limit = 10000;
+    messaging::list_feed_bindings_request req;
+    req.limit = all_rows;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
     return std::move(resp->feed_bindings);
 }
 
 std::expected<bool, std::string>
 market_data_client::save_feed_binding(const domain::feed_binding& binding) {
-    auto req = messaging::save_feed_binding_request::from(binding);
+    messaging::put_feed_binding_request req;
+    req.change.write.id = binding.id;
+    req.change.write.party_id = binding.party_id;
+    req.change.write.ore_key = binding.ore_key;
+    req.change.write.source_name = binding.source_name;
+    req.change.write.asset_class = binding.asset_class;
+    req.change.write.enabled = binding.enabled;
+    // A save states no expectation about the row it writes, so the change
+    // lands whether the row is new or already present.
+    req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
+    req.intent.reason_code = binding.change_reason_code;
+    req.intent.commentary = binding.change_commentary;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
-    if (!resp->success)
-        return std::unexpected(resp->message.empty() ? "save_feed_binding failed" : resp->message);
+    if (resp->result.outcome != ores::utility::domain::outcome::ok)
+        return std::unexpected(describe(resp->result));
     return true;
 }
 

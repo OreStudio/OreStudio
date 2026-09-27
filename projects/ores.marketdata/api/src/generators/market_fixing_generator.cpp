@@ -48,7 +48,6 @@ generate_synthetic_market_fixing(utility::generation::generation_context& ctx) {
     r.fixing_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.value = std::to_string(faker::number::decimal<double>(0.0, 100.0));
-    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

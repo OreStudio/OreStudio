@@ -56,6 +56,22 @@ namespace ores::marketdata::domain {
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting
  * the binding.
+ *
+ * This model binds to no variability profile, and the omission is
+ * deliberate rather than unfinished. A binding is workspace-scoped
+ * (has_workspace_id  true=), keyed by a surrogate UUID
+ * (has_uuid_primary_key  true=), and carries the standard presentation
+ * tier (has_pagination  true=, has_change_reason_cache  true=,
+ * has_tenant_id  true=). No profile in the catalogue has that
+ * combination: workspace-scoped-lookup fixes
+ * has_uuid_primary_key  false= and uuid-surrogate-lookup fixes
+ * has_workspace_id  false=, so every candidate contradicts one of the
+ * two features that define this entity. Binding to the nearest profile
+ * would move a false promise rather than remove it.
+ *
+ * The gap is a profile the catalogue lacks, not a defect in this model.
+ * ores.reporting.report_definition has the same shape and is recorded
+ * in KNOWN_MODEL_DRIFT for the same reason.
  */
 struct feed_binding final {
     /**
@@ -142,8 +158,26 @@ struct feed_binding final {
 
     /**
      * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const feed_binding&, const feed_binding&) = default;
 };
 
 /**

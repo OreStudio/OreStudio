@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include <chrono>
@@ -64,6 +65,34 @@ public:
      * @param ctx The database context for operations.
      */
     explicit market_observation_service(context ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_market_observations_response
+    list_market_observations(const messaging::list_market_observations_request& request);
+    messaging::get_market_observation_response
+    get_market_observation(const messaging::get_market_observation_request& request);
+    messaging::get_many_market_observations_response
+    get_many_market_observations(const messaging::get_many_market_observations_request& request);
+    messaging::put_market_observation_response
+    put_market_observation(const messaging::put_market_observation_request& request);
+    messaging::put_many_market_observations_response
+    put_many_market_observations(const messaging::put_many_market_observations_request& request);
+    messaging::delete_market_observation_response
+    delete_market_observation(const messaging::delete_market_observation_request& request);
+    messaging::delete_many_market_observations_response delete_many_market_observations(
+        const messaging::delete_many_market_observations_request& request);
+    messaging::list_by_series_id_market_observations_response list_by_series_id_market_observations(
+        const messaging::list_by_series_id_market_observations_request& request);
+    /**@}*/
 
     /**
      * @brief Lists market observations with pagination support.
@@ -106,9 +135,18 @@ public:
     /**
      * @brief Retrieves a single market observation by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The market observation if found, std::nullopt otherwise.
      */
-    std::optional<domain::market_observation> get_market_observation(const std::string& id);
+    std::optional<domain::market_observation> get_market_observation(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of market observations by primary key.
+     */
+    std::vector<domain::market_observation>
+    get_market_observations(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a market observation (creates or updates).
@@ -132,7 +170,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_market_observation(const std::string& id);
+    void delete_market_observation(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes market observations by their primary keys.
@@ -141,12 +179,31 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a market observation.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::market_observation> get_market_observation_history(const std::string& id);
 
 private:
     context ctx_;
     repository::market_observation_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::market_observation_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::market_observation& out);
 };
 
 }

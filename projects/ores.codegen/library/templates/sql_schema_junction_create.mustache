@@ -188,6 +188,9 @@ do instead
 -- =============================================================================
 alter table "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" enable row level security;
 
+drop policy if exists {{junction.name}}_tbl_tenant_isolation_policy
+    on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl";
+
 create policy {{junction.name}}_tbl_tenant_isolation_policy
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
 for all using (

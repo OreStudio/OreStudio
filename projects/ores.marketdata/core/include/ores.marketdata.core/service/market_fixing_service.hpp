@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
+#include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include <chrono>
@@ -65,6 +66,32 @@ public:
     explicit market_fixing_service(context ctx);
 
     /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_market_fixings_response
+    list_market_fixings(const messaging::list_market_fixings_request& request);
+    messaging::get_market_fixing_response
+    get_market_fixing(const messaging::get_market_fixing_request& request);
+    messaging::get_many_market_fixings_response
+    get_many_market_fixings(const messaging::get_many_market_fixings_request& request);
+    messaging::put_market_fixing_response
+    put_market_fixing(const messaging::put_market_fixing_request& request);
+    messaging::put_many_market_fixings_response
+    put_many_market_fixings(const messaging::put_many_market_fixings_request& request);
+    messaging::delete_market_fixing_response
+    delete_market_fixing(const messaging::delete_market_fixing_request& request);
+    messaging::delete_many_market_fixings_response
+    delete_many_market_fixings(const messaging::delete_many_market_fixings_request& request);
+    /**@}*/
+
+    /**
      * @brief Lists market fixings with pagination support.
      *
      * @param offset Number of records to skip.
@@ -85,9 +112,17 @@ public:
     /**
      * @brief Retrieves a single market fixing by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The market fixing if found, std::nullopt otherwise.
      */
-    std::optional<domain::market_fixing> get_market_fixing(const std::string& id);
+    std::optional<domain::market_fixing> get_market_fixing(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a batch of market fixings by primary key.
+     */
+    std::vector<domain::market_fixing> get_market_fixings(const std::vector<std::string>& ids);
 
     /**
      * @brief Saves a market fixing (creates or updates).
@@ -110,7 +145,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_market_fixing(const std::string& id);
+    void delete_market_fixing(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes market fixings by their primary keys.
@@ -119,12 +154,31 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a market fixing.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::market_fixing> get_market_fixing_history(const std::string& id);
 
 private:
     context ctx_;
     repository::market_fixing_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::market_fixing_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::market_fixing& out);
 };
 
 }

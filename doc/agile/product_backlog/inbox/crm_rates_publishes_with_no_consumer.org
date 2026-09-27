@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 92EECF35-B025-4DAF-A591-A0E9C7975937
+:END:
+#+title: The CRM rates service publishes to nobody
+#+description: ores.marketdata still computes and publishes CRM rates on marketdata.v1.crm.rates, but the shell crm command, the client crm_rate_formatter and the whole client CRM stack went with the retired Qt matrix, so nothing subscribes and four recipes plus four .ores scripts document a command that no longer exists.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:shell:dead-code:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide whether the CRM rates surface still has a consumer, and if not, delete
+it rather than let it sit half-removed.
+
+The producer side is alive and wired: =ores.marketdata= still answers
+=marketdata.v1.crm.rates= (=service/.../crm_handler.hpp=), the composed
+handler is subscribed from =service/src/app/application.cpp=, and
+=crm_ingest_bridge= refreshes the CRM engines on every feed-binding and
+crm-topology event. The consumer side is gone. The client's
+=crm_rate_formatter=, =crm_rate_table=, =crm_rate_display_service= and
+=crm_client= were deleted with PR 3, and the shell's =crm rates= command
+(once =projects/ores.shell/src/app/commands/crm_commands.cpp=) is gone too.
+Nothing subscribes to =marketdata.v1.crm.rates=.
+
+What survives is documentation and scripts for the deleted command:
+
+- =doc/recipes/shell/marketdata/crm/crm_rates_{exotics,majors,matrix,scandies}.org=
+- =projects/ores.shell/scripts/library/marketdata/crm_rates_{exotics,majors,matrix,scandies}.ores=
+
+* Why
+
+PR 3 deleted the client CRM stack because no symbol referenced it. The
+recipes and the script library are not C++, so the census that found the
+stack did not look at them, and they still name
+=projects/ores.shell/src/app/commands/crm_commands.cpp= as the command that
+runs them. A recipe for a command nothing registers is worse than a missing
+recipe: it reads as a working feature.
+
+Three honest resolutions, and the choice is a product one:
+
+1. The CRM rates feature is wanted, so restore a shell command (and model it
+   as an =ores.codegen.operation= family, which M06 has to do anyway for the
+   other five hand-written marketdata protocols).
+2. The feature is not wanted, so delete the recipes, the .ores scripts, the
+   =crm_*_protocol.hpp=, =crm_handler.hpp= and =crm_ingest_bridge=, and stop
+   the ingest loop refreshing engines nothing reads.
+3. The feature is wanted but not from the shell, so keep the service and
+   repoint the recipes at the new consumer.
+
+* References
+
+- [[id:F9E8C6BE-9606-48E5-AEE3-431642C0EB28][Task: Bring ores.marketdata to the clean standard]]
+- [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Story: Remove the legacy Qt remnants]]
+
+* See also
+
+- [[file:settings-deploy-reverts-a-generated-test.org][The settings deploy reverts a generated compass test]] — the same shape of
+  finding: a generator or a deletion moved the code and left a stale
+  artefact behind that nothing checks.

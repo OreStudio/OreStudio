@@ -970,12 +970,13 @@ private:
         // this party's rows.
         std::vector<std::string> existing;
         {
-            marketdata::messaging::get_feed_bindings_request req;
+            marketdata::messaging::list_feed_bindings_request req;
             req.limit = 1000;
             auto resp = save_client.request(req);
-            if (!resp.success) {
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list feed_bindings failed: " << resp.message;
+                    << "create_theme_feed_bindings: list feed_bindings failed: "
+                    << resp.result.message;
                 return false;
             }
             for (const auto& b : resp.feed_bindings)
@@ -994,23 +995,24 @@ private:
                     << party_id_str << " already exists; skipping";
                 continue;
             }
-            marketdata::domain::feed_binding binding;
-            binding.id = uuid_gen();
-            binding.ore_key = ore_key;
-            binding.source_name = source_name;
-            binding.asset_class = "fx";
-            binding.enabled = true;
-            binding.party_id = sg(party_id_str);
-            binding.change_reason_code = "system.new_record";
-            binding.change_commentary =
+            marketdata::messaging::put_feed_binding_request req;
+            req.change.write.id = uuid_gen();
+            req.change.write.ore_key = ore_key;
+            req.change.write.source_name = source_name;
+            req.change.write.asset_class = "fx";
+            req.change.write.enabled = true;
+            req.change.write.party_id = sg(party_id_str);
+            req.change.precondition = ores::utility::domain::precondition{
+                ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+            req.intent.reason_code = "system.new_record";
+            req.intent.commentary =
                 "Created by ACME provisioning: consumes the system-party simulated market "
                 "stream";
-            auto resp = save_client.request(
-                marketdata::messaging::save_feed_binding_request::from(std::move(binding)));
-            if (!resp.success) {
+            auto resp = save_client.request(req);
+            if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                     << "create_theme_feed_bindings: save binding " << source_name << " for party "
-                    << party_id_str << " failed: " << resp.message;
+                    << party_id_str << " failed: " << resp.result.message;
                 all_saved = false;
             }
         }

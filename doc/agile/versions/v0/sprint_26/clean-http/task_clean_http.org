@@ -26,11 +26,11 @@ ores.http passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] |
-| Now          | Baseline captured; the inventory survey is in flight. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Finish the inventory (B02 to B06), then work Models. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -155,3 +155,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.http passes the Component Clean Standard, and =http-cpp= is listed in
+=COMPONENTS_UNDER_TEST=.
+
+The component was measured before anything changed: 100 C++ files, 45
+generated and 55 hand-written, one protocol header declaring one subject, and
+four test executables holding 100 cases. It declares no entity, junction or
+operation model of its own, so the Entity items are recorded as not
+applicable with their reasons and no item is skipped in silence.
+
+Four pieces of work followed. The component had no model at all, so it gained
+a group overview over its six parts and codegen regained ownership of its root
+=CMakeLists.txt=. Its one wire type was not modelled, so
+=ores.http.http_info= now generates the protocol header and the TypeScript
+twin, the subject follows the naming every other component uses, and its three
+callers follow the rename. Its code sat in two disjoint outermost namespaces,
+so those are now =ores::http=, documented by
+=include/ores.http.api/ores.http.hpp=. And its two stale CMake source lists
+are regenerated from the model.
+
+Two generator defects were fixed at their source, each with a regression
+test. The clean-standard survey tool built its subject pattern from the
+project directory name, so it reported zero subjects for a component whose
+only subject is =http-server.v1.info.get= — a silent zero in the census whose
+whole purpose is to find undeclared subjects. The diagram capture read data
+members and not methods, so a class whose content is member functions arrived
+as an empty box; it now draws them, and variability-cpp's accepted H01
+exception is retired because its stated reason is no longer true.
+
+Verification:
+
+- =ORES_USE_BUSCTL=0 ./compass.sh build= exits 0 for the whole tree at 100%,
+  including this component's executable, its four test executables and the
+  web component. =ctest -R ores.http= is 4 of 4.
+- =pytest projects/ores.codegen/tests= is 802 passed.
+- The component-drift, model-drift, protocol-twin, handler-permission,
+  populate-reference, route-auth, registry-exception and shell-recipe gates
+  are all green, and =validate_docs.sh= reports 40 of 40.
+- Data members are unchanged by the diagram fix: across all 92 projects and
+  28,510 (class, field) pairs the emitted set is identical before and after.
+
+Recorded rather than fixed, each with its reason: =server/scripts/= is not a
+folder in the signed-off folder catalogue; the three adapter parts root their
+headers at =include/ores.http/= rather than =include/ores.http.<part>/=;
+=core= and =server= expose no test target, and thirteen hand-written sources
+have no same-basename test; and the fail-open that lets a transport with no
+authenticator serve requests is already captured in the backlog as
+=authentication_is_optional_at_runtime_on_both_transports=.

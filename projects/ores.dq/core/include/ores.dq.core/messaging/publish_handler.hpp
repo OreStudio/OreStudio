@@ -31,6 +31,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -128,7 +129,8 @@ public:
                                                             req->mode,
                                                             build_params_json(params),
                                                             correlation_id,
-                                                            ctx);
+                                                            ctx,
+                                                            msg);
 
             publish_datasets_response resp;
             resp.success = true;
@@ -210,7 +212,8 @@ public:
                                                             req->mode,
                                                             params,
                                                             correlation_id,
-                                                            ctx);
+                                                            ctx,
+                                                            msg);
 
             publish_bundle_response resp;
             resp.success = true;
@@ -246,7 +249,8 @@ private:
                            const std::string& mode,
                            const std::string& params_json,
                            const std::string& correlation_id,
-                           const ores::database::context& ctx) {
+                           const ores::database::context& ctx,
+                           const ores::nats::message& msg) {
         const auto tenant_id = boost::uuids::to_string(ctx.tenant_id().to_uuid());
 
         ores::dq::workflow::bundle_publish_workflow_request wf_req;
@@ -274,7 +278,8 @@ private:
         start_msg.instance_id = instance_id;
 
         nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                         ores::nats::default_wire_codec().encode(start_msg));
+                         ores::nats::default_wire_codec().encode(start_msg),
+                         ores::nats::service::forwarded_caller_headers(msg));
         return instance_id;
     }
 

@@ -19,26 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/credit_instrument_table_io.hpp"
-#include "ores.trading.api/domain/credit_instrument_table.hpp"
-#include <ostream>
+#ifndef ORES_TRADING_CORE_PRESENTATION_CREDIT_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_CREDIT_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::trading::domain {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
-namespace {
+namespace ores::trading::presentation {
 
-void print_credit_instrument_table(std::ostream& s, const std::vector<credit_instrument>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
+/**
+ * @brief Renders a credit_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_credit_instrument_fields(const domain::credit_instrument& v);
+
 }
 
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<credit_instrument>& v) {
-    print_credit_instrument_table(s, v);
-    return s;
-}
-
-}
+#endif

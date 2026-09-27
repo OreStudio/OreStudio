@@ -17,24 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/credit_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<credit_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Reference Entity" << "Currency" << "Notional"
-          << "Spread" << "Tenor" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ID" << "Type" << "Reference" << "Ccy" << "Notional" << "Spread"
+          << "Maturity" << "Recorded At" << fort::endr;
 
-    for (const auto& t : v) {
-        table << boost::uuids::to_string(t.identity.instrument_id) << t.identity.trade_type_code
-              << t.terms.reference_entity << t.terms.currency << std::to_string(t.terms.notional)
-              << std::to_string(t.terms.spread) << t.schedule.tenor << t.audit.modified_by
-              << t.identity.version << fort::endr;
+    for ([[maybe_unused]] const auto& ci : v) {
+        table << ci.identity.instrument_id << ci.identity.trade_type_code << ci.reference_entity
+              << ci.currency << ci.notional << ci.spread << ci.maturity_date << ci.audit.recorded_at
+              << fort::endr;
     }
     return table.to_string();
 }

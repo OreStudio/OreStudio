@@ -383,8 +383,8 @@ the proof.
 | fpml_event_type      | simple-lookup       | ores.trading.fpml_event_type.org       | Done: build green, eight suites pass, drift empty |
 | composite_instrument | trading-instrument  | ores.trading.composite_instrument.org  | Done: build green, eight suites pass, drift empty |
 | composite_leg        | trading-instrument  | ores.trading.composite_leg.org, with a new identity field group | Done: build green, eight suites pass, drift empty |
-| credit_instrument    | trading-instrument  | --                                     | Next |
-| scripted_instrument  | trading-instrument  | --                                     | Pending |
+| credit_instrument    | trading-instrument  | ores.trading.credit_instrument.org     | Done: build green, eight suites pass, drift empty |
+| scripted_instrument  | trading-instrument  | --                                     | Next |
 | swap_leg             | trading-instrument  | --                                     | Pending |
 
 The composite port found a generator defect and fixed it at its source:

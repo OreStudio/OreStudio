@@ -76,7 +76,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     commodity_instrument_commands::register_commands(root_menu, session, pagination);
     composite_instrument_commands::register_commands(root_menu, session);
     composite_leg_commands::register_commands(root_menu, session);
-    credit_instrument_commands::register_commands(root_menu, session, pagination);
+    credit_instrument_commands::register_commands(root_menu, session);
     equity_accumulator_instrument_commands::register_commands(root_menu, session);
     equity_asian_option_instrument_commands::register_commands(root_menu, session);
     equity_barrier_option_instrument_commands::register_commands(root_menu, session);

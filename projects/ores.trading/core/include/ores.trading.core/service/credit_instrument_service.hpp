@@ -17,14 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_CREDIT_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_CREDIT_INSTRUMENT_SERVICE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_SERVICE_CREDIT_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_CREDIT_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/messaging/credit_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +41,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing credit instruments.
+ *
+ * Provides a higher-level interface for credit instrument operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT credit_instrument_service {
 private:
@@ -47,29 +58,145 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a credit_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit credit_instrument_service(context ctx);
 
-    std::vector<domain::credit_instrument> list_credit_instruments();
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_credit_instruments_response
+    list_credit_instruments(const messaging::list_credit_instruments_request& request);
+    messaging::get_credit_instrument_response
+    get_credit_instrument(const messaging::get_credit_instrument_request& request);
+    messaging::get_many_credit_instruments_response
+    get_many_credit_instruments(const messaging::get_many_credit_instruments_request& request);
+    messaging::put_credit_instrument_response
+    put_credit_instrument(const messaging::put_credit_instrument_request& request);
+    messaging::put_many_credit_instruments_response
+    put_many_credit_instruments(const messaging::put_many_credit_instruments_request& request);
+    messaging::delete_credit_instrument_response
+    delete_credit_instrument(const messaging::delete_credit_instrument_request& request);
+    messaging::delete_many_credit_instruments_response delete_many_credit_instruments(
+        const messaging::delete_many_credit_instruments_request& request);
+    messaging::list_credit_instrument_versions_response list_credit_instrument_versions(
+        const messaging::list_credit_instrument_versions_request& request);
+    messaging::get_credit_instrument_version_response
+    get_credit_instrument_version(const messaging::get_credit_instrument_version_request& request);
+    /**@}*/
 
+    /**
+     * @brief Lists credit instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of credit instruments for the requested page.
+     */
     std::vector<domain::credit_instrument> list_credit_instruments(std::uint32_t offset,
                                                                    std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active credit instruments.
+     *
+     * @return Total number of active credit instruments.
+     */
     std::uint32_t count_credit_instruments();
 
-    std::optional<domain::credit_instrument> get_credit_instrument(const std::string& id);
 
-    void save_credit_instrument(const domain::credit_instrument& v);
+    /**
+     * @brief Retrieves a single credit instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The credit instrument at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::credit_instrument>
+    get_credit_instrument_at_version(const boost::uuids::uuid& instrument_id,
+                                     std::uint32_t version);
 
-    void remove_credit_instrument(const std::string& id);
+    /**
+     * @brief Retrieves a single credit instrument by its primary key.
+     *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
+     * @return The credit instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::credit_instrument>
+    get_credit_instrument(const boost::uuids::uuid& instrument_id);
 
-    std::vector<domain::credit_instrument> get_credit_instrument_history(const std::string& id);
-
+    /**
+     * @brief Retrieves a batch of credit instruments by primary key.
+     */
     std::vector<domain::credit_instrument>
-    get_credit_instruments(const std::vector<std::string>& ids);
+    get_credit_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Saves a credit instrument (creates or updates).
+     *
+     * @param credit_instrument The credit instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_credit_instrument(const domain::credit_instrument& credit_instrument);
+
+    /**
+     * @brief Saves a batch of credit instruments.
+     *
+     * @param credit_instruments The credit instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_credit_instruments(const std::vector<domain::credit_instrument>& credit_instruments);
+
+    /**
+     * @brief Deletes a credit instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_credit_instrument(const boost::uuids::uuid& instrument_id);
+
+    /**
+     * @brief Deletes credit instruments by their primary keys.
+     */
+    void delete_credit_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a credit instrument.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::credit_instrument>
+    get_credit_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;
     repository::credit_instrument_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::credit_instrument_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::credit_instrument& out);
 };
 
 }

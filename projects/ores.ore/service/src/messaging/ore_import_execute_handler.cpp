@@ -49,6 +49,7 @@
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/commodity_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/credit_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -1698,10 +1699,33 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     instr_error = save_bond_instrument(delegated_nats, r, issue_ids_by_security);
                     return instr_error.empty();
                 } else if constexpr (std::is_same_v<T, credit_instrument>) {
-                    save_credit_instrument_request req;
-                    req.data = r;
+                    put_credit_instrument_request req;
+                    req.change.write.instrument_id = r.identity.instrument_id;
+                    req.change.write.trade_type_code = r.identity.trade_type_code;
+                    req.change.write.trade_id = r.identity.trade_id;
+                    req.change.write.reference_entity = r.reference_entity;
+                    req.change.write.currency = r.currency;
+                    req.change.write.notional = r.notional;
+                    req.change.write.spread = r.spread;
+                    req.change.write.recovery_rate = r.recovery_rate;
+                    req.change.write.tenor = r.tenor;
+                    req.change.write.start_date = r.start_date;
+                    req.change.write.maturity_date = r.maturity_date;
+                    req.change.write.day_count_code = r.day_count_code;
+                    req.change.write.payment_frequency_code = r.payment_frequency_code;
+                    req.change.write.index_name = r.index_name;
+                    req.change.write.index_series = r.index_series;
+                    req.change.write.seniority = r.seniority;
+                    req.change.write.restructuring = r.restructuring;
+                    req.change.write.description = r.description;
+                    req.change.write.option_type = r.option_type;
+                    req.change.write.option_expiry_date = r.option_expiry_date;
+                    req.change.write.option_strike = r.option_strike;
+                    req.change.write.linked_asset_code = r.linked_asset_code;
+                    req.change.write.tranche_attachment = r.tranche_attachment;
+                    req.change.write.tranche_detachment = r.tranche_detachment;
                     auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->success;
+                    return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
                     return std::visit(
                         [&](const auto& instr) -> bool {

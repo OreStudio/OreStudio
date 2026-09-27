@@ -19,26 +19,31 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_table_io.cpp.mustache
+ * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.api/domain/credit_instrument_table_io.hpp"
-#include "ores.trading.api/domain/credit_instrument_table.hpp"
-#include <ostream>
+#ifndef ORES_TRADING_API_GENERATORS_CREDIT_INSTRUMENT_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_CREDIT_INSTRUMENT_GENERATOR_HPP
 
-namespace ores::trading::domain {
+#include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-namespace {
+namespace ores::trading::generators {
 
-void print_credit_instrument_table(std::ostream& s, const std::vector<credit_instrument>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
+/**
+ * @brief Generates a synthetic credit_instrument.
+ */
+ORES_TRADING_API_EXPORT domain::credit_instrument
+generate_synthetic_credit_instrument(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic credit_instruments.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::credit_instrument>
+generate_synthetic_credit_instruments(std::size_t n, utility::generation::generation_context& ctx);
+
 }
 
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<credit_instrument>& v) {
-    print_credit_instrument_table(s, v);
-    return s;
-}
-
-}
+#endif

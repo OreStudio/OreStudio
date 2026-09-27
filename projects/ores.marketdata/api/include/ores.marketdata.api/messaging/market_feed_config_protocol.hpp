@@ -47,8 +47,8 @@ struct feed_kind_counts final {
  * ores.synthetic.folder's hierarchy_fn) and starts every feed row whose
  * folder_id falls anywhere in it, of every asset class, dispatching through
  * the producer factory. One request expresses what used to require
- * client-side enumeration of every pair; works identically from Qt,
- * ores.shell, or a wt workflow step.
+ * client-side enumeration of every pair; works identically from
+ * ores.shell, an HTTP caller, or a workflow step.
  */
 struct start_feeds_under_folder_request {
     using response_type = struct start_feeds_under_folder_response;

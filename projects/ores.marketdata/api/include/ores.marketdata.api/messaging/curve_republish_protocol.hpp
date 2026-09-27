@@ -30,7 +30,7 @@ namespace ores::marketdata::messaging {
 /**
  * @brief Request to bootstrap and republish an ir_curve_bootstrap_config's output as of a given
  * snapshot -- the on-demand trigger for curve_republish_service::republish(), callable
- * identically from the Qt client, shell/CLI, or a scheduler job. No review/approval gate here;
+ * identically from the shell, an HTTP caller, or a scheduler job. No review/approval gate here;
  * that is a separate, later layer on top of this always-auto-publishing mechanism.
  */
 struct republish_curve_request {

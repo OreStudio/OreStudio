@@ -53,7 +53,7 @@ using namespace ores::logging;
 /**
  * @brief NATS request/reply handler for republish_curve_request/compute_curve_request -- the
  * on-demand triggers for curve_republish_service::republish()/compute() respectively, the same
- * entry points the Qt client, shell/CLI, or a scheduler job would all call.
+ * entry points the shell, an HTTP caller, or a scheduler job would all call.
  */
 class curve_republish_handler {
 public:

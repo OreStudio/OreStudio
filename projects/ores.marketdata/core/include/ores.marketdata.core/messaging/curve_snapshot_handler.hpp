@@ -42,10 +42,10 @@ inline auto& curve_snapshot_handler_lg() {
     return instance;
 }
 
-// The Qt client bounds these via QSpinBox ranges, but that's a UI-layer constraint only --
-// any other authenticated NATS caller could otherwise request an oversized generate_series()/
-// LATERAL join and a correspondingly large result allocation. Server-side ceiling, independent
-// of whatever the UI happens to allow.
+// A caller can ask for any bucket count, and an oversized one costs a large
+// generate_series()/LATERAL join and a correspondingly large result
+// allocation. Server-side ceiling, enforced regardless of what any caller
+// happens to allow.
 constexpr std::uint32_t max_bucket_count = 200;
 
 } // namespace

@@ -20,9 +20,6 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
-    "crm_rate_display_service_tests.cpp"
-    "crm_rate_formatter_tests.cpp"
-    "crm_rate_table_tests.cpp"
     "fx_spot_subscription_tests.cpp"
     "main.cpp"
 )

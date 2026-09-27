@@ -62,7 +62,7 @@ key/GIST exclusion constraint support
 the previous plain =Column= + bolt-on unique-index workaround.
 
 #+begin_src cpp :name generator
-std::string("reference_data")
+std::string("Reference Data")
 #+end_src
 
 ** description

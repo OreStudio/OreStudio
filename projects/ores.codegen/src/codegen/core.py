@@ -751,6 +751,25 @@ _SHELL_RECIPE_TEMPLATE = "shell_recipe.org.mustache"
 _HTTP_RECIPE_TEMPLATE = "http_recipe.org.mustache"
 
 
+def _component_include_root(component):
+    """The include root a component's own headers live under.
+
+    An adapter is a module of the composite that owns the namespace, and it
+    shares that composite's include root: ``ores.http.assets`` writes into
+    ``include/ores.http/``. Every other kind owns ``include/<full_name>/``.
+
+    The umbrella header is the output that has to follow, because a module's
+    header belongs with the rest of that module's headers. ``dir`` is the
+    component root on disk relative to ``projects/``, so its first segment is
+    the composite the adapter belongs to.
+    """
+    full_name = component.get('full_name', '')
+    component_dir = component.get('dir', full_name)
+    if component.get('kind') == 'adapter' and '/' in component_dir:
+        return component_dir.split('/')[0]
+    return full_name
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -858,6 +877,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component}', name)
         result = result.replace('{component_full}', full_name)
+        result = result.replace(
+            '{component_include_root}', _component_include_root(component))
 
     elif model_type == 'schema' and 'entity' in model_data:
         # Lookup-entity models (#+type: ores.codegen.lookup_entity) load into

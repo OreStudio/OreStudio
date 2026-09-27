@@ -64,7 +64,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
     CHECK(a.email == e.email);
 
     CHECK(!a.id.is_nil());
-    CHECK(!a.password_hash.empty());
+    CHECK(!a.password_hash.value().empty());
 }
 
 TEST_CASE("create_multiple_accounts", tags) {

@@ -52,6 +52,12 @@ namespace ores::iam::domain {
  * :skip_check: on the account foreign key drops the account existence
  * check, and the * SQL ** Indexes drawer restates the three hand-written
  * indexes so none is lost.
+ *
+ * The row states when and from where each account signed in, how many attempts
+ * failed and whether the account is locked, so it is not open to every
+ * signed-in caller: the model sets :guard_reads: true, and the generated
+ * iam.v1.login_info.list and iam.v1.login_info.get handlers require
+ * iam::login_info:read before they serve anything.
  */
 struct login_info final {
     /**

@@ -25,6 +25,7 @@
 #ifndef ORES_IAM_API_DOMAIN_ACCOUNT_HPP
 #define ORES_IAM_API_DOMAIN_ACCOUNT_HPP
 
+#include "ores.utility/rfl/skip_comparison.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -80,6 +81,14 @@ namespace ores::iam::domain {
  * :read_only: true, so the generated half carries no write verb and the split
  * falls out of the flag rather than out of a suppression.
  *
+ * The row holds the password material, the TOTP seed and the account holder's
+ * own name and mail address, so the generated reads are not open to every
+ * signed-in caller: the model sets :guard_reads: true, and the generated
+ * iam.v1.accounts.list and iam.v1.accounts.get handlers require
+ * iam::accounts:read before they serve anything. The default in this estate
+ * is that a read needs authentication alone, which is why the guard is stated
+ * per entity rather than assumed.
+ *
  * Two behavioural facets are switched off, each with a reason:
  *
  * - The entity's CRUD handler and sub-registrar, because the hand-written
@@ -128,18 +137,29 @@ struct account final {
 
     /**
      * @brief Hashed password for secure authentication.
+     *
+     * The hash stays in the domain struct, because signup, login and change-password read and write
+     * it there, but it never reaches the wire: :no_wire: keeps the member and skips it when the
+     * struct is serialized, so a response, a shell table and a history diff carry no credential.
      */
-    std::string password_hash;
+    rfl::Skip<std::string> password_hash;
 
     /**
      * @brief Salt used in password hashing for additional security.
+     *
+     * The stored hash embeds its own salt, so nothing reads this column and it is written empty. It
+     * stays declared because the table carries it, and it is :no_wire: for the same reason as the
+     * hash.
      */
-    std::string password_salt;
+    rfl::Skip<std::string> password_salt;
 
     /**
      * @brief Time-based One-Time Password secret for two-factor authentication.
+     *
+     * No verification path reads it yet, and it must never reach a caller, so it is :no_wire: for
+     * the same reason as the password hash.
      */
-    std::string totp_secret;
+    rfl::Skip<std::string> totp_secret;
 
     /**
      * @brief Email address associated with the account. It is unique within a tenant, so the

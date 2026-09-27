@@ -19,6 +19,7 @@
  */
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
@@ -230,6 +231,22 @@ domain::account account_operations_service::login(const std::string& username,
 
     const auto& account = accounts[0];
 
+    // A suspended or terminated tenant admits nobody. The check runs before
+    // the password is compared, so the person learns the tenant is closed
+    // rather than reading a wrong-password message.
+    const auto tenants =
+        repository::read_active_tenant_by_id(ctx_, ctx_.tenant_id().to_uuid());
+    if (tenants.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Login failed: tenant not found for username: " << username;
+        throw std::runtime_error("Invalid username or password");
+    }
+    const auto& tenant_status = tenants.front().status;
+    if (tenant_status != "active" && tenant_status != "bootstrapping") {
+        BOOST_LOG_SEV(lg(), warn) << "Login refused for a tenant in status '" << tenant_status
+                                  << "' for username: " << username;
+        throw std::runtime_error("Tenant is not active");
+    }
+
     // Only user accounts can login with password
     if (account.account_type != "user") {
         BOOST_LOG_SEV(lg(), warn) << "Login attempt for non-user account type '"
@@ -251,7 +268,7 @@ domain::account account_operations_service::login(const std::string& username,
         throw std::runtime_error("Account is locked due to too many failed attempts");
     }
 
-    bool password_valid = crypto::password_hasher::verify(password, account.password_hash);
+    bool password_valid = crypto::password_hasher::verify(password, account.password_hash.value());
 
     login_info.last_attempt_ip = ip_address;
 
@@ -473,8 +490,36 @@ bool account_operations_service::set_password_reset_required(const boost::uuids:
     return true;
 }
 
-std::string account_operations_service::change_password(const boost::uuids::uuid& account_id,
-                                                        const std::string& new_password) {
+std::string account_operations_service::change_password(
+    const boost::uuids::uuid& account_id,
+    const std::string& current_password,
+    const std::string& new_password) {
+
+    if (current_password.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Password change refused: no current password supplied for account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Current password is required";
+    }
+
+    auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    if (!crypto::password_hasher::verify(current_password, accounts[0].password_hash.value())) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Password change refused: current password does not match for account: "
+            << boost::uuids::to_string(account_id);
+        return "Current password is incorrect";
+    }
+
+    return reset_password(account_id, new_password);
+}
+
+std::string account_operations_service::reset_password(const boost::uuids::uuid& account_id,
+                                                       const std::string& new_password) {
     BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
                                << boost::uuids::to_string(account_id);
 
@@ -494,7 +539,7 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
 
     // Check that new password is different from current password
     const auto& current_hash = accounts[0].password_hash;
-    if (crypto::password_hasher::verify(new_password, current_hash)) {
+    if (crypto::password_hasher::verify(new_password, current_hash.value())) {
         BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
         return "New password must be different from current password";
     }

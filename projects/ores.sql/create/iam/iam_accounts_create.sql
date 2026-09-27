@@ -66,6 +66,14 @@
  * :read_only: true, so the generated half carries no write verb and the split
  * falls out of the flag rather than out of a suppression.
  *
+ * The row holds the password material, the TOTP seed and the account holder's
+ * own name and mail address, so the generated reads are not open to every
+ * signed-in caller: the model sets :guard_reads: true, and the generated
+ * iam.v1.accounts.list and iam.v1.accounts.get handlers require
+ * iam::accounts:read before they serve anything. The default in this estate
+ * is that a read needs authentication alone, which is why the guard is stated
+ * per entity rather than assumed.
+ *
  * Two behavioural facets are switched off, each with a reason:
  *
  * - The entity's CRUD handler and sub-registrar, because the hand-written

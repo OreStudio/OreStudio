@@ -57,8 +57,8 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     BOOST_LOG_SEV(lg, info) << "Service Account: " << sut;
 
     CHECK(sut.account_type == "service");
-    CHECK(sut.password_hash.empty());
-    CHECK(sut.password_salt.empty());
+    CHECK(sut.password_hash.value().empty());
+    CHECK(sut.password_salt.value().empty());
     CHECK(sut.username == "ores.service.binary");
 }
 
@@ -80,7 +80,7 @@ TEST_CASE("create_algorithm_account", tags) {
     BOOST_LOG_SEV(lg, info) << "Algorithm Account: " << sut;
 
     CHECK(sut.account_type == "algorithm");
-    CHECK(sut.password_hash.empty());
+    CHECK(sut.password_hash.value().empty());
 }
 
 TEST_CASE("create_llm_account", tags) {
@@ -101,7 +101,7 @@ TEST_CASE("create_llm_account", tags) {
     BOOST_LOG_SEV(lg, info) << "LLM Account: " << sut;
 
     CHECK(sut.account_type == "llm");
-    CHECK(sut.password_hash.empty());
+    CHECK(sut.password_hash.value().empty());
 }
 
 TEST_CASE("user_account_requires_password", tags) {
@@ -121,7 +121,7 @@ TEST_CASE("user_account_requires_password", tags) {
     BOOST_LOG_SEV(lg, info) << "User Account: " << sut;
 
     CHECK(sut.account_type == "user");
-    CHECK(!sut.password_hash.empty());
+    CHECK(!sut.password_hash.value().empty());
 }
 
 TEST_CASE("account_type_defaults_to_user", tags) {

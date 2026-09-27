@@ -37,9 +37,6 @@ std::vector<ores::diff::domain::field_value> render_account_fields(const domain:
     fields.push_back({.name = "Username", .value = v.username});
     fields.push_back({.name = "Account Type", .value = v.account_type});
     fields.push_back({.name = "Full Name", .value = v.full_name});
-    fields.push_back({.name = "Password Hash", .value = v.password_hash});
-    fields.push_back({.name = "Password Salt", .value = v.password_salt});
-    fields.push_back({.name = "Totp Secret", .value = v.totp_secret});
     fields.push_back({.name = "Email", .value = v.email});
     fields.push_back({.name = "Default Party ID",
                       .value = v.default_party_id ? boost::uuids::to_string(*v.default_party_id) :

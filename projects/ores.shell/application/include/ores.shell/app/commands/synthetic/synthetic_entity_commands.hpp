@@ -53,8 +53,7 @@ public:
     /**
      * @brief Register every synthetic entity's commands.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 };
 
 } // namespace ores::shell::app::commands

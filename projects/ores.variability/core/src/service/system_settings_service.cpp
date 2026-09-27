@@ -18,7 +18,6 @@
  *
  */
 #include "ores.variability.core/service/system_settings_service.hpp"
-
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.variability.api/domain/system_settings.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -81,20 +80,21 @@ std::vector<domain::system_setting> system_settings_service::get_all() {
         return repo_.read_latest(ctx_);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant " << tenant_id_
-                               << " party " << (party_id_.empty() ? "(system)" : party_id_);
+    BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant " << tenant_id_ << " party "
+                               << (party_id_.empty() ? "(system)" : party_id_);
 
-    const auto rows = party_id_.empty()
-        ? execute_parameterized_multi_column_query(ctx_,
-                                                   tenant_scope_sql,
-                                                   {tenant_id_},
-                                                   lg(),
-                                                   "Reading system settings for one tenant")
-        : execute_parameterized_multi_column_query(ctx_,
-                                                   party_scope_sql,
-                                                   {tenant_id_, party_id_},
-                                                   lg(),
-                                                   "Reading system settings for one party");
+    const auto rows =
+        party_id_.empty() ?
+            execute_parameterized_multi_column_query(ctx_,
+                                                     tenant_scope_sql,
+                                                     {tenant_id_},
+                                                     lg(),
+                                                     "Reading system settings for one tenant") :
+            execute_parameterized_multi_column_query(ctx_,
+                                                     party_scope_sql,
+                                                     {tenant_id_, party_id_},
+                                                     lg(),
+                                                     "Reading system settings for one party");
 
     std::vector<domain::system_setting> settings;
     settings.reserve(rows.size());
@@ -221,11 +221,8 @@ void system_settings_service::set_bootstrap_mode(bool enabled,
                                                  std::string_view modified_by,
                                                  std::string_view change_reason_code,
                                                  std::string_view change_commentary) {
-    set_bool_setting("system.bootstrap_mode",
-                     enabled,
-                     modified_by,
-                     change_reason_code,
-                     change_commentary);
+    set_bool_setting(
+        "system.bootstrap_mode", enabled, modified_by, change_reason_code, change_commentary);
 }
 
 bool system_settings_service::is_user_signups_enabled() const {
@@ -244,22 +241,16 @@ void system_settings_service::set_onboarding_tenant_complete(bool complete,
                                                              std::string_view modified_by,
                                                              std::string_view change_reason_code,
                                                              std::string_view change_commentary) {
-    set_bool_setting("onboarding.tenant",
-                     complete,
-                     modified_by,
-                     change_reason_code,
-                     change_commentary);
+    set_bool_setting(
+        "onboarding.tenant", complete, modified_by, change_reason_code, change_commentary);
 }
 
 void system_settings_service::set_onboarding_party_complete(bool complete,
                                                             std::string_view modified_by,
                                                             std::string_view change_reason_code,
                                                             std::string_view change_commentary) {
-    set_bool_setting("onboarding.party",
-                     complete,
-                     modified_by,
-                     change_reason_code,
-                     change_commentary);
+    set_bool_setting(
+        "onboarding.party", complete, modified_by, change_reason_code, change_commentary);
 }
 
 }

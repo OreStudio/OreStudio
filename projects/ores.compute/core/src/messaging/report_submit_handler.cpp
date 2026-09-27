@@ -102,14 +102,15 @@ void report_submit_handler::submit(ores::nats::message msg) {
         // report configuration does not state which version to run yet, so the
         // tenant's newest is used; a field on the config would make the choice
         // explicit rather than implied.
-        const auto app_version_rows = ores::database::repository::execute_parameterized_string_query(
-            tenant_ctx,
-            "SELECT id::text FROM ores_compute_app_versions_tbl "
-            "WHERE tenant_id = $1::uuid AND valid_to = ores_utility_infinity_timestamp_fn() "
-            "ORDER BY version DESC LIMIT 1",
-            {req.tenant_id},
-            lg(),
-            "Resolving the application version for a report workunit");
+        const auto app_version_rows =
+            ores::database::repository::execute_parameterized_string_query(
+                tenant_ctx,
+                "SELECT id::text FROM ores_compute_app_versions_tbl "
+                "WHERE tenant_id = $1::uuid AND valid_to = ores_utility_infinity_timestamp_fn() "
+                "ORDER BY version DESC LIMIT 1",
+                {req.tenant_id},
+                lg(),
+                "Resolving the application version for a report workunit");
         if (app_version_rows.empty() || app_version_rows.front().empty()) {
             wf->fail("submit_compute: no application version is configured for this tenant");
             return;

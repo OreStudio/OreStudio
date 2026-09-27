@@ -44,12 +44,10 @@
 #include "ores.dq.core/messaging/change_reason_category_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/change_reason_registrar.hpp"
-#include "ores.dq.core/messaging/coding_scheme_authority_type_registrar.hpp"
-#include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
-#include "ores.dq.core/messaging/fsm_state_registrar.hpp"
-#include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/code_domain_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_authority_type_registrar.hpp"
+#include "ores.dq.core/messaging/coding_scheme_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/data_domain_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
@@ -59,6 +57,8 @@
 #include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
+#include "ores.dq.core/messaging/fsm_state_registrar.hpp"
+#include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_history_provider_registrar.hpp"
@@ -66,7 +66,6 @@
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
-#include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/publish_handler.hpp"
@@ -76,6 +75,7 @@
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
+#include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
 #include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
 #include "ores.dq.core/service/subject_area_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
@@ -211,8 +211,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                     std::make_move_iterator(origin_dimension_subs.end()));
     }
     {
-        auto treatment_dimension_subs =
-            register_treatment_dimension_handlers(nats, ctx, verifier);
+        auto treatment_dimension_subs = register_treatment_dimension_handlers(nats, ctx, verifier);
         subs.insert(subs.end(),
                     std::make_move_iterator(treatment_dimension_subs.begin()),
                     std::make_move_iterator(treatment_dimension_subs.end()));

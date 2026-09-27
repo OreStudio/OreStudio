@@ -25,8 +25,8 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
-#include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
@@ -88,8 +88,7 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
             // message. The failure that actually happened is the first one:
             // the first writer wins and the rest are no-ops, rather than the
             // last one overwriting the true reason with an unrelated step's.
-            if (inst->fsm_state_id &&
-                *inst->fsm_state_id == instance_states_.require("failed"))
+            if (inst->fsm_state_id && *inst->fsm_state_id == instance_states_.require("failed"))
                 return;
             inst->fsm_state_id = instance_states_.require("failed");
             inst->completed_at = std::chrono::system_clock::now();

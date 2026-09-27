@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.service/service/host_runner.hpp"
 #include "ores.logging/logging_options.hpp"
+#include "ores.service/service/host_runner.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/this_coro.hpp>
@@ -101,12 +101,8 @@ TEST_CASE("sync host run follows the parse result", tags) {
         output,
         output,
         lg,
-        [](const fake_config&) -> std::optional<int> {
-            return 99;
-        },
-        [&ran](const fake_config&) {
-            ran = true;
-        },
+        [](const fake_config&) -> std::optional<int> { return 99; },
+        [&ran](const fake_config&) { ran = true; },
         opts);
 
     REQUIRE(code == EXIT_SUCCESS);
@@ -128,12 +124,8 @@ TEST_CASE("sync host run follows the parse result", tags) {
         output,
         output,
         lg,
-        [](const fake_config&) -> std::optional<int> {
-            return std::nullopt;
-        },
-        [&accepting_runs](const fake_config&) {
-            ++accepting_runs;
-        },
+        [](const fake_config&) -> std::optional<int> { return std::nullopt; },
+        [&accepting_runs](const fake_config&) { ++accepting_runs; },
         accepting_opts);
 
     REQUIRE(accepting_code == EXIT_SUCCESS);
@@ -151,12 +143,8 @@ TEST_CASE("sync host run returns the early exit code without running the applica
         output,
         output,
         lg,
-        [](const fake_config&) -> std::optional<int> {
-            return 7;
-        },
-        [&ran](const fake_config&) {
-            ran = true;
-        });
+        [](const fake_config&) -> std::optional<int> { return 7; },
+        [&ran](const fake_config&) { ran = true; });
 
     REQUIRE(code == 7);
     REQUIRE_FALSE(ran);
@@ -181,12 +169,8 @@ TEST_CASE("sync host run runs the application once and reports success", tags) {
         output,
         output,
         lg,
-        [](const fake_config&) -> std::optional<int> {
-            return std::nullopt;
-        },
-        [&runs](const fake_config&) {
-            ++runs;
-        },
+        [](const fake_config&) -> std::optional<int> { return std::nullopt; },
+        [&runs](const fake_config&) { ++runs; },
         opts);
 
     REQUIRE(code == EXIT_SUCCESS);
@@ -204,12 +188,8 @@ TEST_CASE("sync host run rethrows what the application threw", tags) {
                           output,
                           output,
                           lg,
-                          [](const fake_config&) -> std::optional<int> {
-                              return std::nullopt;
-                          },
-                          [](const fake_config&) {
-                              throw std::runtime_error("run failed");
-                          }),
+                          [](const fake_config&) -> std::optional<int> { return std::nullopt; },
+                          [](const fake_config&) { throw std::runtime_error("run failed"); }),
                       std::runtime_error);
 }
 

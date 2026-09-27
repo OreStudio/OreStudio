@@ -44,7 +44,7 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     ir_curve_generation_config_commands::register_commands(root_menu, session);
     ir_curve_template_entry_commands::register_commands(root_menu, session);
     ir_curve_generation_config_process_parameter_value_commands::register_commands(root_menu,
-                                                                                    session);
+                                                                                   session);
     market_data_generation_config_commands::register_commands(root_menu, session);
     yield_curve_process_type_commands::register_commands(root_menu, session);
     yield_curve_process_parameter_definition_commands::register_commands(root_menu, session);

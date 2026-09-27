@@ -60,7 +60,8 @@ void set_authorization(Request& req, const std::string& bearer_token) {
 
 }
 
-void http_client::get(const std::string& url, const std::filesystem::path& dest,
+void http_client::get(const std::string& url,
+                      const std::filesystem::path& dest,
                       const std::string& bearer_token) {
     const auto parts = parse_url(url);
 
@@ -104,7 +105,8 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest,
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);
 }
 
-void http_client::put(const std::string& url, const std::filesystem::path& src,
+void http_client::put(const std::string& url,
+                      const std::filesystem::path& src,
                       const std::string& bearer_token) {
     put_returning_body(url, src, bearer_token);
 }

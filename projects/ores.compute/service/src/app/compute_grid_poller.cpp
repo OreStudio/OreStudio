@@ -21,10 +21,10 @@
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include <boost/asio/steady_timer.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::compute::service::app {
 

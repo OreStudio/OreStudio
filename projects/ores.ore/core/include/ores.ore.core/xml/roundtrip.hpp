@@ -72,8 +72,8 @@ struct roundtrip_summary {
  * @param output_dir Directory to mirror the outputs under
  * @return The walk's counts, timings and failures
  */
-ORES_ORE_CORE_EXPORT roundtrip_summary
-roundtrip(const std::filesystem::path& input_dir, const std::filesystem::path& output_dir);
+ORES_ORE_CORE_EXPORT roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
+                                                 const std::filesystem::path& output_dir);
 
 }
 

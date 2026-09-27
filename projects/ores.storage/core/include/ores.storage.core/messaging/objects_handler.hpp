@@ -92,9 +92,9 @@ private:
      * Replies with the failure itself when either step fails, so a caller can
      * simply return when this answers nothing.
      */
-    std::optional<ores::database::context>
-    authorise(const ores::nats::message& msg, std::string_view required_permission,
-              std::string_view operation_name);
+    std::optional<ores::database::context> authorise(const ores::nats::message& msg,
+                                                     std::string_view required_permission,
+                                                     std::string_view operation_name);
 
     ores::nats::service::client& nats_;
     ores::database::context base_ctx_;

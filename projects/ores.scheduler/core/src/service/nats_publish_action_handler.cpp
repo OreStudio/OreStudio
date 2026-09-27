@@ -60,9 +60,8 @@ struct nats_trigger_body {
 
 } // anonymous namespace
 
-nats_publish_action_handler::nats_publish_action_handler(
-    ores::nats::service::client& nats,
-    ores::nats::service::nats_client& svc_nats)
+nats_publish_action_handler::nats_publish_action_handler(ores::nats::service::client& nats,
+                                                         ores::nats::service::nats_client& svc_nats)
     : nats_(nats)
     , svc_nats_(svc_nats) {}
 
@@ -105,8 +104,8 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         // refusal has to reach the job rather than being discarded. The reply
         // carries no subject of its own, so a rejection arrives as an X-Error
         // header.
-        const auto reply = svc_nats_.authenticated_request(
-            subject, ores::nats::default_wire_codec().encode(body));
+        const auto reply =
+            svc_nats_.authenticated_request(subject, ores::nats::default_wire_codec().encode(body));
         const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
         if (err != reply.headers.end()) {
             const auto msg = "Subject " + subject + " refused the trigger: " + err->second;

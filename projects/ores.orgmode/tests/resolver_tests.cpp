@@ -83,8 +83,7 @@ TEST_CASE("resolver throws on a missing database file", "[ores.orgmode][resolver
 
 TEST_CASE("resolver unquotes elisp-literal columns and passes raw ones through",
           "[ores.orgmode][resolver]") {
-    const auto path = std::filesystem::temp_directory_path() /
-                      "ores_orgmode_resolver_unquote.db";
+    const auto path = std::filesystem::temp_directory_path() / "ores_orgmode_resolver_unquote.db";
     if (std::filesystem::exists(path))
         std::filesystem::remove(path);
     sqlite3* db = nullptr;
@@ -109,8 +108,7 @@ TEST_CASE("resolver unquotes elisp-literal columns and passes raw ones through",
     REQUIRE(r.resolve("4")->title == "x");
 }
 
-TEST_CASE("resolver throws when the path is not an openable database",
-          "[ores.orgmode][resolver]") {
+TEST_CASE("resolver throws when the path is not an openable database", "[ores.orgmode][resolver]") {
     // A directory exists, so the constructor's existence check passes, and
     // sqlite3_open_v2 is the call that refuses it.
     const auto path = std::filesystem::temp_directory_path();
@@ -119,8 +117,7 @@ TEST_CASE("resolver throws when the path is not an openable database",
 }
 
 TEST_CASE("resolver throws when the database has no nodes table", "[ores.orgmode][resolver]") {
-    const auto path = std::filesystem::temp_directory_path() /
-                      "ores_orgmode_resolver_notable.db";
+    const auto path = std::filesystem::temp_directory_path() / "ores_orgmode_resolver_notable.db";
     if (std::filesystem::exists(path))
         std::filesystem::remove(path);
     sqlite3* db = nullptr;

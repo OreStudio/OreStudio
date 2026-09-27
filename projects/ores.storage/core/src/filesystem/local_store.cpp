@@ -50,8 +50,8 @@ bool local_store::is_valid_bucket(std::string_view bucket) {
     });
 }
 
-std::optional<std::filesystem::path>
-local_store::resolve(const std::string& bucket, const std::string& key) const {
+std::optional<std::filesystem::path> local_store::resolve(const std::string& bucket,
+                                                          const std::string& key) const {
     if (!is_valid_bucket(bucket))
         return std::nullopt;
 
@@ -114,8 +114,8 @@ bool local_store::exists(const std::string& bucket, const std::string& key) cons
     return size(bucket, key).has_value();
 }
 
-std::optional<std::uintmax_t>
-local_store::size(const std::string& bucket, const std::string& key) const {
+std::optional<std::uintmax_t> local_store::size(const std::string& bucket,
+                                                const std::string& key) const {
     const auto path = resolve(bucket, key);
     if (!path)
         return std::nullopt;
@@ -170,8 +170,9 @@ std::vector<local_store::entry> local_store::list(const std::string& bucket,
         entries.push_back(entry{std::move(key), item.file_size(item_ec)});
     }
 
-    std::sort(entries.begin(), entries.end(),
-              [](const entry& left, const entry& right) { return left.key < right.key; });
+    std::sort(entries.begin(), entries.end(), [](const entry& left, const entry& right) {
+        return left.key < right.key;
+    });
     return entries;
 }
 

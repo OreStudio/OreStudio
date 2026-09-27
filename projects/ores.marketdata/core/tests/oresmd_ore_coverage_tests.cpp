@@ -213,7 +213,10 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
         named += c.named;
         round_tripped += c.round_tripped;
         WARN(std::format("{:<26} {:>7} keys, {:>7} named, {:>7} round-tripped",
-                         type, c.keys, c.named, c.round_tripped));
+                         type,
+                         c.keys,
+                         c.named,
+                         c.round_tripped));
         // On its own line: the log wraps long messages, and a truncated key is
         // worse than none.
         if (!c.mismatch.empty())
@@ -222,7 +225,10 @@ TEST_CASE("no_series_type_oresmd_cannot_name_has_gone_unrecorded", tags) {
             WARN(std::format("  {} first unprojected: {}", type, c.unprojected));
     }
     WARN(std::format("{:<26} {:>7} keys, {:>7} named, {:>7} round-tripped",
-                     "TOTAL", keys, named, round_tripped));
+                     "TOTAL",
+                     keys,
+                     named,
+                     round_tripped));
 
     // The series types the corpus carries that oresmd cannot name at all. Each
     // is recorded with its reason in check_oresmd_ore_coverage.py; this list is
@@ -253,28 +259,84 @@ TEST_CASE("the_families_this_work_brought_in_name_and_round_trip_every_key", tag
     // regresses in one variant of a family fails here. The two lists differ
     // because four types name every key and still lose some on the way back;
     // those are in the round-trip gap list above, not here.
-    const std::set<std::string> expected_fully_named{
-        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CPR", "CAPFLOOR", "CC_BASIS_SWAP",
-        "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_FWD",
-        "COMMODITY_OPTION",
-        "CORRELATION", "DISCOUNT", "EQUITY", "EQUITY_DIVIDEND", "EQUITY_FWD",
-        "EQUITY_OPTION", "FRA",
-        "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM", "MM_FUTURE", "OI_FUTURE",
-        "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE",
-        "SWAPTION",
-        "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
-        "ZC_INFLATIONSWAP", "ZERO"};
+    const std::set<std::string> expected_fully_named{"BASIS_SWAP",
+                                                     "BMA_SWAP",
+                                                     "BOND",
+                                                     "BOND_OPTION",
+                                                     "CPR",
+                                                     "CAPFLOOR",
+                                                     "CC_BASIS_SWAP",
+                                                     "CC_FIX_FLOAT_SWAP",
+                                                     "CDS",
+                                                     "CDS_INDEX",
+                                                     "COMMODITY",
+                                                     "COMMODITY_FWD",
+                                                     "COMMODITY_OPTION",
+                                                     "CORRELATION",
+                                                     "DISCOUNT",
+                                                     "EQUITY",
+                                                     "EQUITY_DIVIDEND",
+                                                     "EQUITY_FWD",
+                                                     "EQUITY_OPTION",
+                                                     "FRA",
+                                                     "FX",
+                                                     "FXFWD",
+                                                     "FX_OPTION",
+                                                     "HAZARD_RATE",
+                                                     "IMM_FRA",
+                                                     "INDEX_CDS_OPTION",
+                                                     "INDEX_CDS_TRANCHE",
+                                                     "IR_SWAP",
+                                                     "MM",
+                                                     "MM_FUTURE",
+                                                     "OI_FUTURE",
+                                                     "RATING",
+                                                     "RECOVERY_RATE",
+                                                     "SEASONALITY",
+                                                     "SHAPE_PROFILE",
+                                                     "SWAPTION",
+                                                     "YY_INFLATIONCAPFLOOR",
+                                                     "YY_INFLATIONSWAP",
+                                                     "ZC_INFLATIONCAPFLOOR",
+                                                     "ZC_INFLATIONSWAP",
+                                                     "ZERO"};
 
-    const std::set<std::string> expected_fully_round_tripped{
-        "BASIS_SWAP", "BMA_SWAP", "BOND", "BOND_OPTION", "CPR", "CAPFLOOR", "CC_BASIS_SWAP",
-        "CC_FIX_FLOAT_SWAP", "CDS", "CDS_INDEX", "COMMODITY", "COMMODITY_OPTION",
-        "DISCOUNT", "EQUITY_DIVIDEND",
-        "FRA", "FX", "FXFWD", "FX_OPTION", "HAZARD_RATE", "IMM_FRA",
-        "INDEX_CDS_OPTION", "INDEX_CDS_TRANCHE", "IR_SWAP", "MM", "MM_FUTURE", "OI_FUTURE",
-        "RATING", "RECOVERY_RATE", "SEASONALITY", "SHAPE_PROFILE", "SWAPTION",
-        "YY_INFLATIONCAPFLOOR", "YY_INFLATIONSWAP", "ZC_INFLATIONCAPFLOOR",
-        "ZC_INFLATIONSWAP", "ZERO"};
+    const std::set<std::string> expected_fully_round_tripped{"BASIS_SWAP",
+                                                             "BMA_SWAP",
+                                                             "BOND",
+                                                             "BOND_OPTION",
+                                                             "CPR",
+                                                             "CAPFLOOR",
+                                                             "CC_BASIS_SWAP",
+                                                             "CC_FIX_FLOAT_SWAP",
+                                                             "CDS",
+                                                             "CDS_INDEX",
+                                                             "COMMODITY",
+                                                             "COMMODITY_OPTION",
+                                                             "DISCOUNT",
+                                                             "EQUITY_DIVIDEND",
+                                                             "FRA",
+                                                             "FX",
+                                                             "FXFWD",
+                                                             "FX_OPTION",
+                                                             "HAZARD_RATE",
+                                                             "IMM_FRA",
+                                                             "INDEX_CDS_OPTION",
+                                                             "INDEX_CDS_TRANCHE",
+                                                             "IR_SWAP",
+                                                             "MM",
+                                                             "MM_FUTURE",
+                                                             "OI_FUTURE",
+                                                             "RATING",
+                                                             "RECOVERY_RATE",
+                                                             "SEASONALITY",
+                                                             "SHAPE_PROFILE",
+                                                             "SWAPTION",
+                                                             "YY_INFLATIONCAPFLOOR",
+                                                             "YY_INFLATIONSWAP",
+                                                             "ZC_INFLATIONCAPFLOOR",
+                                                             "ZC_INFLATIONSWAP",
+                                                             "ZERO"};
 
     REQUIRE(fully_named_types() == expected_fully_named);
     for (const auto& type : expected_fully_round_tripped) {

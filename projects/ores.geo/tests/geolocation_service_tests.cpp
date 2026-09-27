@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/asio/ip/address.hpp>
@@ -53,8 +53,8 @@ TEST_CASE("lookup returns the country code for a seeded range", tags) {
     // Clear first so a leaked row from an interrupted run cannot mask the
     // seeded value.
     const std::string clear_sql =
-        "delete from ores_geo_ip2country_tbl where ip_range = " +
-        std::string(seeded_range) + " and tenant_id = '" + tenant + "'::uuid";
+        "delete from ores_geo_ip2country_tbl where ip_range = " + std::string(seeded_range) +
+        " and tenant_id = '" + tenant + "'::uuid";
     const std::string seed_sql =
         "insert into ores_geo_ip2country_tbl (ip_range, tenant_id, country_code) values (" +
         std::string(seeded_range) + ", '" + tenant + "'::uuid, '" + seeded_country + "')";

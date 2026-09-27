@@ -67,30 +67,30 @@ std::string json_escape(std::string_view text) {
     out.reserve(text.size() + 8);
     for (const char c : text) {
         switch (c) {
-        case '"':
-            out += "\\\"";
-            break;
-        case '\\':
-            out += "\\\\";
-            break;
-        case '\n':
-            out += "\\n";
-            break;
-        case '\r':
-            out += "\\r";
-            break;
-        case '\t':
-            out += "\\t";
-            break;
-        default:
-            if (static_cast<unsigned char>(c) < 0x20) {
-                std::ostringstream hex;
-                hex << "\\u" << std::hex << std::setw(4) << std::setfill('0')
-                    << static_cast<int>(static_cast<unsigned char>(c));
-                out += hex.str();
-            } else {
-                out += c;
-            }
+            case '"':
+                out += "\\\"";
+                break;
+            case '\\':
+                out += "\\\\";
+                break;
+            case '\n':
+                out += "\\n";
+                break;
+            case '\r':
+                out += "\\r";
+                break;
+            case '\t':
+                out += "\\t";
+                break;
+            default:
+                if (static_cast<unsigned char>(c) < 0x20) {
+                    std::ostringstream hex;
+                    hex << "\\u" << std::hex << std::setw(4) << std::setfill('0')
+                        << static_cast<int>(static_cast<unsigned char>(c));
+                    out += hex.str();
+                } else {
+                    out += c;
+                }
         }
     }
     return out;
@@ -149,20 +149,18 @@ void storage_routes::register_routes(
                           .handler([this](const http_request& req) { return handle_delete(req); })
                           .build());
 
-    router->add_route(router->get("/api/v1/storage/{bucket}")
-                          .summary("List storage objects")
-                          .description("List a page of the objects in a bucket, filtered by "
-                                       "key prefix")
-                          .tags({"storage"})
-                          .auth_required()
-                          .query_param("prefix", "string", "", false,
-                                       "Only keys that start with this")
-                          .query_param("offset", "integer", "int32", false,
-                                       "How many matching keys to skip")
-                          .query_param("limit", "integer", "int32", false,
-                                       "How many keys to return")
-                          .handler([this](const http_request& req) { return handle_list(req); })
-                          .build());
+    router->add_route(
+        router->get("/api/v1/storage/{bucket}")
+            .summary("List storage objects")
+            .description("List a page of the objects in a bucket, filtered by "
+                         "key prefix")
+            .tags({"storage"})
+            .auth_required()
+            .query_param("prefix", "string", "", false, "Only keys that start with this")
+            .query_param("offset", "integer", "int32", false, "How many matching keys to skip")
+            .query_param("limit", "integer", "int32", false, "How many keys to return")
+            .handler([this](const http_request& req) { return handle_list(req); })
+            .build());
 
     BOOST_LOG_SEV(lg(), info) << "Storage routes registered: 5 endpoints";
 }

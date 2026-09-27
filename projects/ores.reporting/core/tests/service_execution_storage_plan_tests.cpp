@@ -37,8 +37,7 @@ TEST_CASE("the report bucket is the one the storage server knows", tags) {
 
 TEST_CASE("each gathered set lands under the instance that gathered it", tags) {
     const std::string instance("11111111-2222-3333-4444-555555555555");
-    CHECK(trades_storage_key(instance) ==
-          "11111111-2222-3333-4444-555555555555/trades.msgpack");
+    CHECK(trades_storage_key(instance) == "11111111-2222-3333-4444-555555555555/trades.msgpack");
     CHECK(market_data_storage_key(instance) ==
           "11111111-2222-3333-4444-555555555555/market_data.msgpack");
 }

@@ -94,8 +94,8 @@ public:
     /**
      * @brief The absolute path of a key, or nothing when it is not addressable.
      */
-    [[nodiscard]] std::optional<std::filesystem::path>
-    resolve(const std::string& bucket, const std::string& key) const;
+    [[nodiscard]] std::optional<std::filesystem::path> resolve(const std::string& bucket,
+                                                               const std::string& key) const;
 
     /**
      * @brief Creates or replaces one object, creating the bucket if needed.
@@ -120,8 +120,8 @@ public:
     /**
      * @brief The object's length in bytes, or nothing when it is not there.
      */
-    [[nodiscard]] std::optional<std::uintmax_t>
-    size(const std::string& bucket, const std::string& key) const;
+    [[nodiscard]] std::optional<std::uintmax_t> size(const std::string& bucket,
+                                                     const std::string& key) const;
 
     /**
      * @brief Removes one object.
@@ -137,8 +137,8 @@ public:
      * key as opaque, so a caller asks for what it wants by prefix and never by
      * path.
      */
-    [[nodiscard]] std::vector<entry>
-    list(const std::string& bucket, const std::string& prefix) const;
+    [[nodiscard]] std::vector<entry> list(const std::string& bucket,
+                                          const std::string& prefix) const;
 
 private:
     std::filesystem::path root_;

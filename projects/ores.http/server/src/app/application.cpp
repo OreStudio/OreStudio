@@ -98,14 +98,13 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // The canonical mapping, not the legacy one: the notify trigger publishes
     // the specification's event fields, and the event's own traits convert them.
-    event_source.register_entity_event_mapping<
-        variability::messaging::system_setting_event>("ores_variability_system_settings");
+    event_source.register_entity_event_mapping<variability::messaging::system_setting_event>(
+        "ores_variability_system_settings");
 
     auto flags_sub = event_bus.subscribe<variability::messaging::system_setting_event>(
         [&system_flags](const variability::messaging::system_setting_event& e) {
-            BOOST_LOG_SEV(lg(), info)
-                << "System setting changed: " << e.key.name << " (" << e.action
-                << "), refreshing the settings cache";
+            BOOST_LOG_SEV(lg(), info) << "System setting changed: " << e.key.name << " ("
+                                      << e.action << "), refreshing the settings cache";
             system_flags->refresh();
         });
 

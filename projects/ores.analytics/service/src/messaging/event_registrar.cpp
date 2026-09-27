@@ -18,7 +18,6 @@
  *
  */
 #include "ores.analytics.service/messaging/event_registrar.hpp"
-
 #include "ores.analytics.service/messaging/pricing_engine_type_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_config_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"

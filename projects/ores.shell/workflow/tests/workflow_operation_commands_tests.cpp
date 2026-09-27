@@ -53,9 +53,8 @@ TEST_CASE("workflow_operation_commands_registers_the_wait_verb", tags) {
     // with this verb, so a wait that is no longer registered turns a shipped
     // instruction into an unknown command.
     const auto completions = root_menu.GetCompletions("workflow ");
-    CHECK(std::find(completions.begin(),
-                    completions.end(),
-                    std::string{"workflow wait"}) != completions.end());
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"workflow wait"}) !=
+          completions.end());
 }
 
 TEST_CASE("workflow_operation_commands_start_requires_a_session", tags) {
@@ -98,7 +97,9 @@ TEST_CASE("workflow_operation_commands_start_refuses_an_instance_id_that_is_not_
     // in as.
     command_feedback::reset();
     workflow_operation_commands::process_start(
-        out, session, {"identity_workflow", R"({"steps":[{"name":"one"}]})", "--instance-id", "one"});
+        out,
+        session,
+        {"identity_workflow", R"({"steps":[{"name":"one"}]})", "--instance-id", "one"});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a bad instance id: " << out.str();
     CHECK(out.str().find("must be a UUID") != std::string::npos);

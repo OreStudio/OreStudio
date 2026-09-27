@@ -26,17 +26,17 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.reporting.core/service/scheduling_plan.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
-#include "ores.reporting.core/service/scheduling_plan.hpp"
-#include <map>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <expected>
+#include <map>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
@@ -382,13 +382,14 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             const auto reply = svc_nats_.authenticated_request(
                 ores::scheduler::messaging::list_job_definitions_request::nats_subject,
                 ores::nats::default_wire_codec().encode(list_req));
-            if (auto parsed = ores::nats::default_wire_codec()
-                                  .decode<ores::scheduler::messaging::list_job_definitions_response>(
-                                      reply.data)) {
+            if (auto parsed =
+                    ores::nats::default_wire_codec()
+                        .decode<ores::scheduler::messaging::list_job_definitions_response>(
+                            reply.data)) {
                 for (const auto& existing : parsed->definitions)
                     existing_jobs.emplace(existing.job_name, existing.id);
-                BOOST_LOG_SEV(lg(), debug) << "Scheduler holds " << existing_jobs.size()
-                                           << " job(s) already";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Scheduler holds " << existing_jobs.size() << " job(s) already";
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
@@ -397,9 +398,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
 
         for (const auto& def : unscheduled) {
             if (const auto found = existing_job_for(existing_jobs, def.id)) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "Adopting the scheduler's existing job " << *found
-                    << " for definition " << def.id;
+                BOOST_LOG_SEV(lg(), info) << "Adopting the scheduler's existing job " << *found
+                                          << " for definition " << def.id;
                 pending.push_back({*found, &def});
                 continue;
             }
@@ -427,9 +427,9 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         const auto active_state =
             find_fsm_state_id(ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
         if (!active_state) {
-            BOOST_LOG_SEV(lg(), error) << "The active report definition state is not seeded; "
-                                       << pending.size()
-                                       << " definition(s) cannot be linked to their jobs.";
+            BOOST_LOG_SEV(lg(), error)
+                << "The active report definition state is not seeded; " << pending.size()
+                << " definition(s) cannot be linked to their jobs.";
             total_failed += static_cast<int>(pending.size());
             continue;
         }

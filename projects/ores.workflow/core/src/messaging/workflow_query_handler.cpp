@@ -92,7 +92,7 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         reply(nats_,
               msg,
               list_workflow_instance_summaries_response{.success = false,
-                                               .message = "Invalid request payload."});
+                                                        .message = "Invalid request payload."});
         return;
     }
 
@@ -182,8 +182,7 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
     }
 
     // Load the instance (service-account context — no tenant filter).
-    const auto instances =
-        instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    const auto instances = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
     if (instances.empty()) {
         reply(nats_,
               msg,
@@ -204,8 +203,8 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
 
     // Load the steps, ordered by step_index ascending by the repository. A
     // workflow's step count is bounded by its definition, so one page covers it.
-    const auto raw_steps = step_repo_.read_latest_by_workflow_id(
-        ctx_, boost::uuids::to_string(instance_id), 0, 1000);
+    const auto raw_steps =
+        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance_id), 0, 1000);
 
     get_workflow_steps_response resp;
     resp.success = true;

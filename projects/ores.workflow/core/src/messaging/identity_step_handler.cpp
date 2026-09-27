@@ -57,8 +57,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
     // The engine publishes a step command as JSON whatever the process-wide wire
     // format is, so it is read as JSON here rather than through the codec, as
     // every other step handler reads it.
-    const std::string_view payload(reinterpret_cast<const char*>(msg.data.data()),
-                                   msg.data.size());
+    const std::string_view payload(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     const auto parsed = rfl::json::read<identity_ns::identity_step_request>(payload);
     if (!parsed) {
         ctx->fail("Failed to parse the identity step command: " +
@@ -119,15 +118,15 @@ std::vector<ores::nats::service::subscription>
 register_identity_step_handlers(ores::nats::service::client& nats, std::string_view queue_group) {
     std::vector<ores::nats::service::subscription> subs;
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(identity_ns::identity_step_command_subject),
-        std::string(queue_group),
-        [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(identity_ns::identity_step_command_subject),
+                             std::string(queue_group),
+                             [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(identity_ns::identity_compensation_command_subject),
-        std::string(queue_group),
-        [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(identity_ns::identity_compensation_command_subject),
+                             std::string(queue_group),
+                             [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); }));
 
     return subs;
 }

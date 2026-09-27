@@ -26,8 +26,8 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/party_provisioning_plan.hpp"
-#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
@@ -164,9 +164,7 @@ public:
                                                          std::move(hdrs),
                                                          std::chrono::seconds(5));
                 const auto resp = codec.decode<clear_bootstrap_mode_response>(resp_msg.data);
-                if (resp
-                    && resp->result.outcome
-                           == ores::utility::domain::outcome::ok) {
+                if (resp && resp->result.outcome == ores::utility::domain::outcome::ok) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << "Bootstrap mode cleared for tenant: " << ids.front();
                 } else {
@@ -1071,8 +1069,7 @@ private:
         req.change.write.mime_type = *rows.front()[1];
         // The template function returns the column as stored: base64 text.
         // The write record carries raw bytes, so decode that hop here.
-        req.change.write.data =
-            ores::utility::convert::base64_converter::convert(*rows.front()[2]);
+        req.change.write.data = ores::utility::convert::base64_converter::convert(*rows.front()[2]);
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
         req.intent.reason_code = "system.external_data_import";
         req.intent.commentary = "Copied from system-tenant template: " + key;
@@ -1174,8 +1171,7 @@ private:
             changed = true;
         }
         if (!party.image_id) {
-            auto image_id =
-                copy_template_image(client, ctx, tenant_id, "acme_party_logo");
+            auto image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo");
             if (image_id) {
                 party.image_id = image_id;
                 changed = true;

@@ -390,7 +390,7 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
     const auto id = try_uuid(token);
 
     synthetic::messaging::list_fx_spot_generation_configs_request fx_req{.offset = 0,
-                                                                        .limit = 1000};
+                                                                         .limit = 1000};
     auto fx_result =
         do_auth_request<synthetic::messaging::list_fx_spot_generation_configs_response>(
             out, session, std::string(fx_req.nats_subject), fx_req);
@@ -825,7 +825,7 @@ bool synthetic_commands::list_configs(std::ostream& out,
     BOOST_LOG_SEV(lg(), debug) << "Listing market data generation configs.";
 
     synthetic::messaging::list_market_data_generation_configs_request req{.offset = 0,
-                                                                         .limit = 1000};
+                                                                          .limit = 1000};
     auto result =
         do_auth_request<synthetic::messaging::list_market_data_generation_configs_response>(
             out, session, std::string(req.nats_subject), req);

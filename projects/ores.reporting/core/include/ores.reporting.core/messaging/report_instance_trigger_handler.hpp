@@ -151,8 +151,8 @@ private:
         if (!def) {
             response.result.outcome = ores::utility::domain::outcome::missing;
             response.result.code = "definition_not_found";
-            response.result.message = std::format(
-                "No report definition {} in tenant {}.", definition_id, tenant);
+            response.result.message =
+                std::format("No report definition {} in tenant {}.", definition_id, tenant);
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }

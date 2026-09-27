@@ -35,33 +35,37 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     const std::string queue = "ores.storage.service";
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(put_objects_request::nats_subject), queue,
-        [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
-            objects_handler h(nats, ctx, store, verifier);
-            h.put(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(put_objects_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
+                                 objects_handler h(nats, ctx, store, verifier);
+                                 h.put(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_objects_request::nats_subject), queue,
-        [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
-            objects_handler h(nats, ctx, store, verifier);
-            h.get(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(get_objects_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
+                                 objects_handler h(nats, ctx, store, verifier);
+                                 h.get(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(delete_objects_request::nats_subject), queue,
-        [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
-            objects_handler h(nats, ctx, store, verifier);
-            h.remove(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(delete_objects_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
+                                 objects_handler h(nats, ctx, store, verifier);
+                                 h.remove(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(list_objects_request::nats_subject), queue,
-        [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
-            objects_handler h(nats, ctx, store, verifier);
-            h.list(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(list_objects_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
+                                 objects_handler h(nats, ctx, store, verifier);
+                                 h.list(std::move(msg));
+                             }));
 
     return subs;
 }

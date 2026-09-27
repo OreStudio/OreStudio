@@ -155,10 +155,8 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
 
     ores::variability::service::system_settings_service settings(ctx_);
     settings.refresh();
-    const auto start_offset =
-        read_int_setting(settings,
-                         "calendar.materialisation.start_offset_years",
-                         k_default_start_offset_years);
+    const auto start_offset = read_int_setting(
+        settings, "calendar.materialisation.start_offset_years", k_default_start_offset_years);
     const auto horizon_year =
         clamp_horizon_year(end_year ? static_cast<int>(*end_year) :
                                       read_int_setting(settings,

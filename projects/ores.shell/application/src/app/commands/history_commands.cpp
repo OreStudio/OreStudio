@@ -65,8 +65,7 @@ void history_commands::process_get(std::ostream& out,
         fail(out) << "Usage: history get <entity_type> <entity_id> [--diff] "
                      "[--version <n>]"
                   << std::endl;
-        fail(out) << "For example: history get ores.workflow.workflow_instance <uuid>"
-                  << std::endl;
+        fail(out) << "For example: history get ores.workflow.workflow_instance <uuid>" << std::endl;
         return;
     }
 
@@ -97,8 +96,7 @@ void history_commands::process_get(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Initiating history read for " << entity_type << " "
-                               << entity_id;
+    BOOST_LOG_SEV(lg(), debug) << "Initiating history read for " << entity_type << " " << entity_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to read history." << std::endl;

@@ -53,8 +53,8 @@ void log_host_command(ores::logging::logger_t& lg,
  * logged in full.
  */
 inline void log_host_failure(ores::logging::logger_t& lg,
-                            const std::exception& e,
-                            std::string_view failure_message) {
+                             const std::exception& e,
+                             std::string_view failure_message) {
     using namespace ores::logging;
 
     const auto* const be(dynamic_cast<const boost::exception* const>(&e));

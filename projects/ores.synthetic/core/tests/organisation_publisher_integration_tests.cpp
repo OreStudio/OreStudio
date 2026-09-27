@@ -116,8 +116,8 @@ void seed_reference_data(ores::database::context& ctx,
                          "name, official_name, modified_by, performed_by, "
                          "change_reason_code, change_commentary) "
                          "SELECT '" +
-                         alpha2 + "', '" + tenant_id + "'::uuid, 0, '" + alpha3 + "', '" +
-                         numeric + "', '" + name + "', '" + official_name +
+                         alpha2 + "', '" + tenant_id + "'::uuid, 0, '" + alpha3 + "', '" + numeric +
+                         "', '" + name + "', '" + official_name +
                          "', current_user, current_user, "
                          "'system.new_record', 'Test seed' "
                          "WHERE NOT EXISTS (SELECT 1 FROM ores_refdata_countries_tbl "

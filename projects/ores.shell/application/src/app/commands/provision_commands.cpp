@@ -21,8 +21,8 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/party_provisioning_plan.hpp"
-#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
@@ -679,8 +679,8 @@ void provision_commands::process_party(std::ostream& out,
     onboarding_req.party_id = party->id;
     auto onboarding_result =
         do_request(out, session, onboarding_req, std::chrono::seconds(30), true);
-    if (!onboarding_result
-        || onboarding_result->result.outcome != ores::utility::domain::outcome::ok) {
+    if (!onboarding_result ||
+        onboarding_result->result.outcome != ores::utility::domain::outcome::ok) {
         out << "⚠ Could not record party onboarding completion; the party setup wizard may "
                "reappear on next login."
             << std::endl;

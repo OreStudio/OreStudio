@@ -23,9 +23,9 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The seven shadowed verbs are measured and deleted. The menu merge and the startup guard are next. |
-| Waiting on    | Nothing.                               |
-| Next          | Give each menu one owner, through a registry the generated units insert into. |
+| Now           | Implemented and open for review as PR #2272. The root claims one name per menu, the four collision names are one menu each, and the gate holds the invariant the runtime check reads. |
+| Waiting on    | Review of PR #2272.                    |
+| Next          | Take the PR through its review round, then close the story. |
 | Last touched  | 2026-09-27                               |
 
 * Acceptance
@@ -43,6 +43,31 @@ The shell has one owner per menu and per verb. A duplicate registration fails lo
 | [[id:FBFF4403-2636-4D04-9BFA-7146B7D39B60][Implement Stop ores.shell menus from silently shadowing each other]] | STARTED | 2026-09-27 | | Initial task for: Stop ores.shell menus from silently shadowing each other |
 
 * Decisions
+
+** One owner per menu, enforced at startup, not by registration order
+
+cli::Menu holds its children in a vector and answers a name by first match, so
+the order of the calls in repl.cpp decided which unit answered. The root is now
+a shell_root_menu that claims a name once and refuses a second claim, and every
+unit inserts through a seam the codegen template declares, so a component that
+gains a unit joins the rule with no edit.
+
+** A second unit extends a menu instead of registering its own
+
+The generated entity unit owns the menu named for its entity. The hand-written
+unit beside it contributes the verbs the model cannot express through
+extend_menu, and the root applies those once every unit has registered, so the
+order the units register in cannot decide whether an extension lands. Merging
+rather than renaming keeps every verb at the address callers and recipes
+already use.
+
+** The name is read through Menu::Prompt()
+
+cli::Command keeps a command's name protected, so the root cannot read it back
+directly. Prompt() is the same string because every shell menu is constructed
+from its name alone, and check_shell_menu_collisions.py rejects a construction
+that passes a separate prompt, which is what holds the two together.
+
 
 * Out of scope
 

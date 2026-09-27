@@ -21,7 +21,7 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -81,3 +81,4 @@ Recorded rather than done, each with its reason:
 - =core= and =server= expose no test target, and thirteen hand-written sources have no same-basename test.
 - The auth middleware skips its whole block when no authenticator is configured, and the server warns rather than refusing. It is already captured in the backlog as =authentication_is_optional_at_runtime_on_both_transports=, which is a posture decision rather than a patch.
 - The other 77 of 94 components' diagrams still differ from what the fixed capture draws. Each gains its member functions when its own clean task refreshes it, which is the arrangement already recorded.
+- The generated HTTP recipes carry no request body, so 57 of the 82 answer =400= where the recipe asserts =200=. The fix belongs to the =ores.doc.http-recipe= facet and its template, which is codegen work rather than component work; the defect is captured in the backlog as =http_recipes_send_no_request_body=.

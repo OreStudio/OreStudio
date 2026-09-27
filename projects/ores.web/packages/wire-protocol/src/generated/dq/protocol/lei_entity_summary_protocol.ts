@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,85 +19,75 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_DQ_API_MESSAGING_LEI_ENTITY_SUMMARY_PROTOCOL_HPP
-#define ORES_DQ_API_MESSAGING_LEI_ENTITY_SUMMARY_PROTOCOL_HPP
-
-#include <string>
-#include <string_view>
-#include <vector>
-
-namespace ores::dq::messaging {
-
 /**
  * @brief One legal entity, reduced to the fields the shell lists it by.
  */
-struct lei_entity_summary {
+export interface LeiEntitySummary {
     /**
      * @brief The entity's LEI.
      */
-    std::string lei;
+    lei: string;
     /**
      * @brief The entity's registered legal name.
      */
-    std::string entity_legal_name;
+    entity_legal_name: string;
     /**
      * @brief The entity's category, as the registry classifies it.
      */
-    std::string entity_category;
+    entity_category: string;
     /**
      * @brief The country of the entity's legal address.
      */
-    std::string country;
-};
+    country: string;
+}
 
 /**
  * @brief Asks for the active root legal entities, optionally of one country.
  */
-struct get_lei_entities_summary_request {
-    using response_type = struct get_lei_entities_summary_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei-entities.summary";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface GetLeiEntitiesSummaryRequest {
     /**
      * @brief The country to list, or empty for every country's count.
      */
-    std::string country_filter;
+    country_filter: string;
     /**
      * @brief How many rows to skip.
      */
-    int offset = 0;
+    offset: number;
     /**
      * @brief How many rows to return.
      */
-    int limit = 1000;
-};
+    limit: number;
+}
 
 /**
  * @brief Reports the summary rows, or why they could not be read.
  */
-struct get_lei_entities_summary_response {
+export interface GetLeiEntitiesSummaryResponse {
     /**
      * @brief Whether the read completed.
      */
-    bool success = false;
+    success: boolean;
     /**
      * @brief Why it failed, when it did.
      */
-    std::string error_message;
+    error_message: string;
     /**
      * @brief The summarised entities.
      */
-    std::vector<lei_entity_summary> entities;
-};
-
+    entities: LeiEntitySummary[];
 }
 
-#endif
+export const subjects = {
+    get_lei_entities_summary_request: "dq.v1.lei-entities.summary",
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    get_lei_entities_summary_request: true,
+} as const;

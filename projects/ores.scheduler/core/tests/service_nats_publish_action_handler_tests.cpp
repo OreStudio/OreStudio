@@ -175,9 +175,12 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     auto svc_nats = make_unauthenticated_client(nats);
     nats_publish_action_handler handler(nats, svc_nats);
 
-    const auto job = make_job(R"({"subject":"reporting.v1.ops.trigger_report_instance",)"
-                              R"("report_definition_id":"00000000-0000-0000-0000-000000000000",)"
-                              R"("tenant_id":"00000000-0000-0000-0000-000000000000"})");
+    // The payload names the subject the responder answers on, so both sides of
+    // the test spell it once, from trigger_subject.
+    const auto payload = std::string(R"({"subject":")") + std::string(trigger_subject) +
+                         R"(","report_definition_id":"00000000-0000-0000-0000-000000000000",)"
+                         R"("tenant_id":"00000000-0000-0000-0000-000000000000"})";
+    const auto job = make_job(payload);
     const action_context ctx{job, h.context(), 7};
 
     boost::asio::io_context io;

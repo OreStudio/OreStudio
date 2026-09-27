@@ -47,6 +47,7 @@ declare
     v_root_party_id uuid;
     v_inserted bigint := 0;
 begin
+    perform ores_utility_allow_version_replace_fn();
     -- Resolve root party: explicit param or query tenant's operational root.
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,

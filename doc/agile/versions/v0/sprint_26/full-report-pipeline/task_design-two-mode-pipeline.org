@@ -112,3 +112,16 @@ measured, because that is what changes the plan:
 Three questions are left open on purpose rather than settled by assertion:
 where the export's inputs live between stages, whether the demo input binding
 is a stage or an absence, and what a run should do when no grid is present.
+
+* Added after review: the orchestration section
+
+A review of the first PR asked whether ores.workflow was really in the design,
+given that a run coordinates four services. It was — as a participant in both
+diagrams and as the publisher of every step command — but the design treated
+the coordinator as given and never stated the contract with it. The document
+now carries an *Orchestration* section: the participant interface, the
+at-least-once dispatch that makes idempotency a requirement on every stage,
+the properties the engine gives against what the design needs, the two state
+machines and which is authoritative, and the three engine gaps the pipeline
+leans on. The contract itself is tasked separately as *Define and enforce the
+orchestration contract*.

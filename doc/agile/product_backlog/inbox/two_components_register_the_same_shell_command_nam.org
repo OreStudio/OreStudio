@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 207B3EA7-333C-4103-99F4-C2602164AD2A
+:END:
+#+title: Two components register the same shell command name, and the…
+#+description: Two components register the same shell command name, and the first registration wins. The DQ shell part registers a menu called report_definitions through dq_commands::register_commands (repl.cpp:105), and the reporting part registers its own report_definitions menu later (repl.cpp:116). The DQ one takes precedence, so the reporting entity's shell commands are unreachable: a request for report_definitions list arrives at the DQ service as dq.v1.report_definitions.list, and the recipes generated for reporting's signatures are rejected by the DQ menu with 'Expected 8 arguments, got 9'. Nothing detects a duplicate menu name. Evidence: projects/ores.shell/application/src/app/repl.cpp:105 and :116, projects/ores.shell/application/src/app/commands/dq/dq_commands.cpp:48, and the reporting service log, which shows no request while the DQ service log shows the query.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

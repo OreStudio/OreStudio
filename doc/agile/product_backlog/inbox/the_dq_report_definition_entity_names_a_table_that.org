@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: BAFCC111-35D6-43FC-A7B5-26C5E8D56FEE
+:END:
+#+title: The DQ report_definition entity names a table that no script…
+#+description: The DQ report_definition entity names a table that no script creates. ores.dq.modeling declares tablename ores_dq_report_definitions_tbl at projects/ores.dq/modeling/ores.dq.report_definition.org:124, and the generated entity at projects/ores.dq/core/include/ores.dq.core/repository/report_definition_entity.hpp:43 uses it, but no file under projects/ores.sql/ mentions the table. The DQ service therefore answers internal_error, 'relation public.ores_dq_report_definitions_tbl does not exist', to every report_definitions read that reaches it. Found while replaying the reporting component's shell commands, where the request is routed to DQ by a separate menu-name collision. Evidence: the DQ service log, and grep over projects/ores.sql/ returning nothing.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

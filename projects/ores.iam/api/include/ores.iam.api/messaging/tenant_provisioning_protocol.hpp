@@ -61,9 +61,10 @@ struct complete_tenant_provisioning_response {
 //
 // The answer takes minutes, not the seconds the transport allows by
 // default: the handler waits up to 1500 seconds on the base bundle it
-// publishes. A caller therefore has to wait longer than the transport's
-// default, or it gives up first and reports a timeout for work that was
-// still running.
+// publishes. The budget this message declares is 1800 seconds --
+// deliberately larger than that wait, so the caller keeps waiting while
+// the handler is still working. At the transport default the caller gives
+// up first and reports a timeout for a run that had not finished.
 struct provision_acme_tenant_command {
     using response_type = struct provision_acme_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";

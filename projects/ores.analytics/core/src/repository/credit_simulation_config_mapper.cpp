@@ -43,6 +43,9 @@ credit_simulation_config_mapper::map(const credit_simulation_config_entity& v) {
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
+    r.configuration_id = v.configuration_id.has_value() ?
+                             boost::lexical_cast<boost::uuids::uuid>(*v.configuration_id) :
+                             boost::uuids::uuid{};
     r.market = v.market.value_or("");
     r.credit = v.credit.value_or("");
     r.zero_market_pnl = v.zero_market_pnl.value_or(0);
@@ -72,6 +75,9 @@ credit_simulation_config_mapper::map(const domain::credit_simulation_config& v) 
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.name = v.name;
+    r.configuration_id = v.configuration_id == boost::uuids::uuid{} ?
+                             std::nullopt :
+                             std::optional(boost::uuids::to_string(v.configuration_id));
     r.market = v.market.empty() ? std::nullopt : std::optional(v.market);
     r.credit = v.credit.empty() ? std::nullopt : std::optional(v.credit);
     r.zero_market_pnl = v.zero_market_pnl == 0 ? std::nullopt : std::optional(v.zero_market_pnl);

@@ -48,6 +48,17 @@ Surrogate key for the configuration.
 
 The name of the configuration, which is ours and not ORE's.
 
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The reporting configuration this content belongs to. Nullable because the
+content can be imported before it is registered as a configuration; the
+mapper does not invent a header, the caller supplies one.
+
 ** market
 :PROPERTIES:
 :type:     text
@@ -137,6 +148,16 @@ How loan exposure is computed.
 :END:
 
 * Foreign keys
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      true
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
+:list_by:       true
+:END:
 
 * Insert trigger
 

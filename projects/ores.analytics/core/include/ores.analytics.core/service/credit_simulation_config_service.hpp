@@ -90,6 +90,9 @@ public:
         const messaging::delete_credit_simulation_config_request& request);
     messaging::delete_many_credit_simulation_configs_response delete_many_credit_simulation_configs(
         const messaging::delete_many_credit_simulation_configs_request& request);
+    messaging::list_by_configuration_id_credit_simulation_configs_response
+    list_by_configuration_id_credit_simulation_configs(
+        const messaging::list_by_configuration_id_credit_simulation_configs_request& request);
     messaging::list_credit_simulation_config_versions_response
     list_credit_simulation_config_versions(
         const messaging::list_credit_simulation_config_versions_request& request);
@@ -113,6 +116,27 @@ public:
      * @return Total number of active credit simulation configurations.
      */
     std::uint32_t count_configs();
+
+
+    /**
+     * @brief Lists credit simulation configurations filtered by configuration_id, with pagination.
+     *
+     * @param configuration_id The configuration_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching credit simulation configurations for the requested page.
+     */
+    std::vector<domain::credit_simulation_config> list_configs_by_configuration_id(
+        const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active credit simulation configurations filtered by
+     * configuration_id.
+     *
+     * @param configuration_id The configuration_id to filter by.
+     * @return Total number of matching credit simulation configurations.
+     */
+    std::uint32_t count_configs_by_configuration_id(const std::string& configuration_id);
 
 
     /**

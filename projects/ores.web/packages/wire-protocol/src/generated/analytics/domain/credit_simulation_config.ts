@@ -36,6 +36,7 @@ export interface CreditSimulationConfig {
     workspace_id: string;
     id: string;
     name: string;
+    configuration_id: string;
     market: string;
     credit: string;
     zero_market_pnl: boolean;

@@ -252,6 +252,58 @@ credit_simulation_config_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+std::vector<domain::credit_simulation_config>
+credit_simulation_config_repository::read_latest_by_configuration_id(
+    context ctx, const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest credit simulation configurations. configuration_id: " << configuration_id
+        << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<credit_simulation_config_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "configuration_id"_c == configuration_id && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<credit_simulation_config_entity, domain::credit_simulation_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return credit_simulation_config_mapper::map(entities); },
+        lg(),
+        "Reading latest credit simulation configurations by configuration_id.");
+}
+
+std::uint32_t credit_simulation_config_repository::get_total_config_count_by_configuration_id(
+    context ctx, const std::string& configuration_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Retrieving total active credit simulation configurations count. configuration_id: "
+        << configuration_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<credit_simulation_config_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "configuration_id"_c == configuration_id && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug)
+        << "Total active credit simulation configurations count by configuration_id: " << count;
+    return count;
+}
+
+
 credit_simulation_config_repository::remove_status credit_simulation_config_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing credit simulation configuration. " << "id: " << id;

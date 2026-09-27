@@ -42,6 +42,7 @@ struct credit_simulation_config_key {
 struct credit_simulation_config_write {
     boost::uuids::uuid id;
     std::string name;
+    boost::uuids::uuid configuration_id;
     std::string market;
     std::string credit;
     bool zero_market_pnl;
@@ -66,6 +67,10 @@ struct credit_simulation_config_removal {
 struct credit_simulation_config_lookup {
     credit_simulation_config_key key;
     std::optional<ores::analytics::domain::credit_simulation_config> credit_simulation_config;
+};
+
+struct credit_simulation_configs_filter {
+    std::optional<boost::uuids::uuid> configuration_id;
 };
 
 struct credit_simulation_config_event {
@@ -101,6 +106,7 @@ struct list_credit_simulation_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<credit_simulation_configs_filter> filter;
 };
 
 struct list_credit_simulation_configs_response {
@@ -221,6 +227,31 @@ struct delete_many_credit_simulation_configs_request {
 
 struct delete_many_credit_simulation_configs_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_configuration_id_credit_simulation_configs_request {
+    using response_type = struct list_by_configuration_id_credit_simulation_configs_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.credit_simulation_configs.list_by_configuration_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid configuration_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<credit_simulation_configs_filter> filter;
+};
+
+struct list_by_configuration_id_credit_simulation_configs_response {
+    ores::utility::domain::result result;
+    std::vector<ores::analytics::domain::credit_simulation_config> configs;
+    std::uint64_t total;
 };
 
 struct list_credit_simulation_config_versions_request {

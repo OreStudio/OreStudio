@@ -132,6 +132,15 @@ A report definition's configuration is a set of strongly typed entities rather t
   assertion over an empty vector is not an assertion, and a test that
   cannot fail is worse than no test.
 
+- **Where a configuration's entities live.** ORE's own =Analytics= block decides
+  it. If ORE names the document in that block it belongs to =ores.analytics=;
+  if the run or an analytic merely references it, it belongs to the component
+  that owns the concept, which is =ores.refdata= for curves, conventions,
+  calendars, currencies and tenors, and =ores.reporting= for the run document
+  and the registry. =ores.ore= holds the mappers and no state. A configuration
+  is a header row in =reporting.configurations= and its content is in the
+  owning component, joined by =configuration_id=.
+
 * Out of scope
 
 -

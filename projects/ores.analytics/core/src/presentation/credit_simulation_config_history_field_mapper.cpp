@@ -36,6 +36,8 @@ render_credit_simulation_config_fields(const domain::credit_simulation_config& v
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back(
+        {.name = "Configuration ID", .value = boost::uuids::to_string(v.configuration_id)});
     fields.push_back({.name = "Market", .value = v.market});
     fields.push_back({.name = "Credit", .value = v.credit});
     fields.push_back({.name = "Zero Market Pnl", .value = v.zero_market_pnl ? "true" : "false"});

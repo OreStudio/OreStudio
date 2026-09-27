@@ -87,24 +87,26 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <market> <credit> <zero_market_pnl> <evaluation> <double_default> <seed>
-     * <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>
+     * @brief add <name> <configuration_id> <market> <credit> <zero_market_pnl> <evaluation>
+     * <double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <market> <credit> <zero_market_pnl> <evaluation> <double_default>
-     * <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary> [--version <n>]
+     * @brief set <id> <name> <configuration_id> <market> <credit> <zero_market_pnl> <evaluation>
+     * <double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <market> <credit> <zero_market_pnl> <evaluation>
-     * <double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>
+     * @brief put-many --count <n> <id> <name> <configuration_id> <market> <credit>
+     * <zero_market_pnl> <evaluation> <double_default> <seed> <paths> <credit_mode>
+     * <loan_exposure_mode> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -123,6 +125,14 @@ public:
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief by-configuration-id <configuration_id> [--offset <n>] [--limit <n>] [--order <field>]
+     * [--desc]
+     */
+    static void process_by_configuration_id(std::ostream& out,
+                                            ores::nats::service::nats_client& session,
+                                            const std::vector<std::string>& args);
 
     /**
      * @brief versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface CreditSimulationConfigKey {
     name: string;
@@ -35,6 +36,7 @@ export interface CreditSimulationConfigKey {
 export interface CreditSimulationConfigWrite {
     id: string;
     name: string;
+    configuration_id: string;
     market: string;
     credit: string;
     zero_market_pnl: boolean;
@@ -61,6 +63,10 @@ export interface CreditSimulationConfigLookup {
     credit_simulation_config: CreditSimulationConfig | null;
 }
 
+export interface CreditSimulationConfigsFilter {
+    configuration_id: string | null;
+}
+
 export interface CreditSimulationConfigEvent {
     event_id: string;
     key: CreditSimulationConfigKey;
@@ -85,6 +91,7 @@ export interface ListCreditSimulationConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CreditSimulationConfigsFilter | null;
 }
 
 export interface ListCreditSimulationConfigsResponse {
@@ -149,6 +156,21 @@ export interface DeleteManyCreditSimulationConfigsResponse {
     result: Result;
 }
 
+export interface ListByConfigurationIdCreditSimulationConfigsRequest {
+    configuration_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CreditSimulationConfigsFilter | null;
+}
+
+export interface ListByConfigurationIdCreditSimulationConfigsResponse {
+    result: Result;
+    configs: CreditSimulationConfig[];
+    total: number;
+}
+
 export interface ListCreditSimulationConfigVersionsRequest {
     key: CreditSimulationConfigKey;
     offset: number;
@@ -173,15 +195,20 @@ export interface GetCreditSimulationConfigVersionResponse {
 }
 
 export const subjects = {
-    list_credit_simulation_configs_request: "analytics.v1.credit_simulation_configs.list",
-    get_credit_simulation_config_request: "analytics.v1.credit_simulation_configs.get",
-    get_many_credit_simulation_configs_request: "analytics.v1.credit_simulation_configs.get_many",
-    put_credit_simulation_config_request: "analytics.v1.credit_simulation_configs.put",
-    put_many_credit_simulation_configs_request: "analytics.v1.credit_simulation_configs.put_many",
-    delete_credit_simulation_config_request: "analytics.v1.credit_simulation_configs.delete",
-    delete_many_credit_simulation_configs_request: "analytics.v1.credit_simulation_configs.delete_many",
-    list_credit_simulation_config_versions_request: "analytics.v1.credit_simulation_configs_versions.list",
-    get_credit_simulation_config_version_request: "analytics.v1.credit_simulation_configs_versions.get",
+    list_credit_simulation_configs_request: 'analytics.v1.credit_simulation_configs.list',
+    get_credit_simulation_config_request: 'analytics.v1.credit_simulation_configs.get',
+    get_many_credit_simulation_configs_request: 'analytics.v1.credit_simulation_configs.get_many',
+    put_credit_simulation_config_request: 'analytics.v1.credit_simulation_configs.put',
+    put_many_credit_simulation_configs_request: 'analytics.v1.credit_simulation_configs.put_many',
+    delete_credit_simulation_config_request: 'analytics.v1.credit_simulation_configs.delete',
+    delete_many_credit_simulation_configs_request:
+        'analytics.v1.credit_simulation_configs.delete_many',
+    list_by_configuration_id_credit_simulation_configs_request:
+        'analytics.v1.credit_simulation_configs.list_by_configuration_id',
+    list_credit_simulation_config_versions_request:
+        'analytics.v1.credit_simulation_configs_versions.list',
+    get_credit_simulation_config_version_request:
+        'analytics.v1.credit_simulation_configs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -196,6 +223,7 @@ export const requiresSession = {
     put_many_credit_simulation_configs_request: true,
     delete_credit_simulation_config_request: true,
     delete_many_credit_simulation_configs_request: true,
+    list_by_configuration_id_credit_simulation_configs_request: true,
     list_credit_simulation_config_versions_request: true,
     get_credit_simulation_config_version_request: true,
 } as const;
@@ -206,7 +234,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "analytics.v1.credit_simulation_configs_events.created",
-    updated: "analytics.v1.credit_simulation_configs_events.updated",
-    deleted: "analytics.v1.credit_simulation_configs_events.deleted",
+    created: 'analytics.v1.credit_simulation_configs_events.created',
+    updated: 'analytics.v1.credit_simulation_configs_events.updated',
+    deleted: 'analytics.v1.credit_simulation_configs_events.deleted',
 } as const;

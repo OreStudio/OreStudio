@@ -67,6 +67,13 @@ struct credit_simulation_config final {
     std::string name;
 
     /**
+     * @brief The reporting configuration this content belongs to. Nullable because the content can
+     * be imported before it is registered as a configuration; the mapper does not invent a header,
+     * the caller supplies one.
+     */
+    boost::uuids::uuid configuration_id;
+
+    /**
      * @brief The market risk mode the run uses.
      */
     std::string market;

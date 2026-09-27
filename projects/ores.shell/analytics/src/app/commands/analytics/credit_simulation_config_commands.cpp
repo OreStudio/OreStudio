@@ -142,24 +142,26 @@ void credit_simulation_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <name> <market> <credit> <zero_market_pnl> <evaluation> <double_default> <seed> "
-        "<paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>");
+        "add <name> <configuration_id> <market> <credit> <zero_market_pnl> <evaluation> "
+        "<double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <name> <market> <credit> <zero_market_pnl> <evaluation> <double_default> <seed> "
-        "<paths> <credit_mode> <loan_exposure_mode> <reason> <commentary> [--version <n>]");
+        "set <id> <name> <configuration_id> <market> <credit> <zero_market_pnl> <evaluation> "
+        "<double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <name> <market> <credit> <zero_market_pnl> <evaluation> "
-        "<double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> <commentary>");
+        "put-many --count <n> <id> <name> <configuration_id> <market> <credit> <zero_market_pnl> "
+        "<evaluation> <double_default> <seed> <paths> <credit_mode> <loan_exposure_mode> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -174,6 +176,14 @@ void credit_simulation_config_commands::register_commands(cli::Menu& root_menu,
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
         "delete-many <name> <reason> <commentary>");
+
+    menu->Insert(
+        "by-configuration-id",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_configuration_id(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-configuration-id <configuration_id> [--offset <n>] [--limit <n>] [--order <field>] "
+        "[--desc]");
 
     menu->Insert(
         "versions",
@@ -354,13 +364,15 @@ void credit_simulation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
         read_token(req.change.write.name, parsed->positionals[next++], "name");
+        read_token(
+            req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
         read_token(req.change.write.market, parsed->positionals[next++], "market");
         read_token(req.change.write.credit, parsed->positionals[next++], "credit");
         read_token(
@@ -414,13 +426,15 @@ void credit_simulation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
+        read_token(
+            req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
         read_token(req.change.write.market, parsed->positionals[next++], "market");
         read_token(req.change.write.credit, parsed->positionals[next++], "credit");
         read_token(
@@ -486,8 +500,8 @@ void credit_simulation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -495,6 +509,8 @@ void credit_simulation_config_commands::process_put_many(std::ostream& out,
             messaging::credit_simulation_config_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.name, parsed->positionals[next++], "name");
+            read_token(
+                change.write.configuration_id, parsed->positionals[next++], "configuration_id");
             read_token(change.write.market, parsed->positionals[next++], "market");
             read_token(change.write.credit, parsed->positionals[next++], "credit");
             read_token(
@@ -622,6 +638,61 @@ void credit_simulation_config_commands::process_delete_many(std::ostream& out,
 
     auto result = do_auth_request<messaging::delete_many_credit_simulation_configs_response>(
         out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void credit_simulation_config_commands::process_by_configuration_id(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-configuration-id request.";
+
+    using request_type = messaging::list_by_configuration_id_credit_simulation_configs_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-configuration-id." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.configuration_id = ores::shell::app::from_token<boost::uuids::uuid>(
+            parsed->positionals[next++], "configuration_id");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result =
+        do_auth_request<messaging::list_by_configuration_id_credit_simulation_configs_response>(
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

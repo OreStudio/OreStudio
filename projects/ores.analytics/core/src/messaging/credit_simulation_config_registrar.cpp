@@ -70,6 +70,12 @@ std::vector<ores::nats::service::subscription> register_credit_simulation_config
                                             h->delete_many_credit_simulation_configs(
                                                 std::move(msg));
                                         }));
+    subs.push_back(nats.queue_subscribe(
+        list_by_configuration_id_credit_simulation_configs_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_configuration_id_credit_simulation_configs(std::move(msg));
+        }));
     subs.push_back(
         nats.queue_subscribe(list_credit_simulation_config_versions_request::nats_subject,
                              queue_group,

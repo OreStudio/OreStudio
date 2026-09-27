@@ -519,6 +519,23 @@ all-component run, and the next regeneration reverted it. The
 per-component dry run is the gate that catches a hand-edited generated
 file, and the edit now lives in the model where it belongs.
 
+** 5b. The capability units
+
+Four units carry the defects that need a generator capability before a
+model change can express them. The story fixes their shape as D11, D12
+and D13.
+
+| Unit | Defect | What it delivers |
+|------+--------+------------------|
+| U1, dates | 2 | The generator expresses a plain date column: the entity member stays a string, the domain member is =std::chrono::year_month_day=, and the mapper and history field mapper convert it. Then the 64 columns across 35 models move, with 49 hand-written consumers. |
+| U2, decimal | 3 | A decimal domain type over =boost::multiprecision=, with JSON, table and SQL =numeric= I/O, and the generator seam that separates an entity's type from its domain type. Then the 87 =double= money columns move; rates, volatilities and correlations stay double. |
+| U3, collections | 1 | The four JSON columns become child tables with foreign keys: =callable_swap_instrument.call_dates_json=, =commodity_instrument.basket_json=, =equity_swap_instrument.basket_json= and =equity_position_instrument.option_data_json=, plus anything else the census finds. |
+| U4, enumerations | 4, 5, 8 | A reference table and a foreign key per closed set, the checks move from PL/pgSQL to the schema, and the missing reference tables are populated from FpML or ORE. |
+
+U1 is in flight. U2 follows it, because both need the same generator
+seam, and two writers must not hold the templates at once. U3 and U4
+each need the enumeration and collection census before they start.
+
 ** 6. Regenerate and prove
 
 Regenerate the component and re-run the dry run twice. Every new

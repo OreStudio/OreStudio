@@ -479,6 +479,30 @@ row is updated as each PR lands.
   claim the same DDL and drift against each other. The model is
   =swap_leg=, child-shaped: uuid key, tenant and workspace scope, a
   parent foreign key to the instrument. PR 3 authors it.
+- *D11, monetary amounts.* An amount is a decimal, built on
+  =boost::multiprecision=, never a =double=. The database already stores
+  these columns as =numeric=, so the SQL does not change: the C++ domain
+  type, the JSON and table I/O, the mapper and the generator's type
+  separation move to it. The 87 =double= columns that carry a price,
+  strike, premium, payout or notional adopt it; rates, volatilities and
+  correlations stay =double=, because they are not money. The type lands
+  before the columns move, and the generator must first separate an
+  entity's type from its domain type, which is the same seam the plain
+  date column needs.
+- *D12, collections.* The trading domain model carries no JSON
+  collection. A collection is a child table with a foreign key to its
+  parent. The four columns that still hold JSON -- =call_dates_json= on
+  =callable_swap_instrument=, =basket_json= on =commodity_instrument=
+  and =equity_swap_instrument=, and =option_data_json= on
+  =equity_position_instrument= -- become child entities, and any other
+  serialised collection the census finds goes the same way. The model
+  states the shape and the database enforces it.
+- *D13, enumerations.* A closed set of values gets a reference table and
+  a foreign key, and its check leaves the PL/pgSQL functions for the
+  schema. The missing reference tables are populated from the standard,
+  FpML or ORE, never invented; where the data belongs to another
+  component the dependency is recorded instead of a local copy. This
+  closes defects 4, 5 and 8 as one thread.
 
 * Delivery plan
 

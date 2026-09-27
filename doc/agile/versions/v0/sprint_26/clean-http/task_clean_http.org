@@ -7,57 +7,81 @@
 #+level: s1
 #+filetags: :clean-http:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-http
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.http passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] for a component of kind *Protocol*.
+ores.http passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] at the scope the sprint 26 decomposition left it: a six-part component whose =api=, =core= and =server= parts are hand-written and whose =assets=, =refdata= and =iam= parts hold route units generated from other components' models.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Baseline captured; the inventory survey is in flight. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | Finish the inventory (B02 to B06), then work Models. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to this component passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.http is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
 
 * Plan
 
-Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order, one entity at a time, and
-record each item's result in the table below.
+Work the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] in its section order and record each item's result in the table below.
 
-1. Baseline and inventory (B01 to B05). Record the baseline before any
-   edit.
+1. Baseline and inventory (B01 to B06).
 2. Models (M01 to M10).
 3. Protocol (P01 to P06).
-4. Generation (G01 to G06).
+4. Generation (G01 to G08).
 5. Wiring and data (W01 to W04).
 6. Shell (S01, S02).
-7. Structure and hygiene (H01 to H03).
-8. Verification (V01 to V06), ending with the registry entry.
+7. Structure and hygiene (H01 to H05).
+8. Verification (V01 to V08), ending with the registry entry.
+
+Scope. The decomposition that landed in sprint 26 split the component
+into six parts. =api=, =core= and =server= are hand-written: the server
+library, the route engine, the OpenAPI registry, the process entry point
+and the storage and variability routes. =assets=, =refdata= and =iam=
+hold route units generated from the assets, refdata and iam models. The
+pass covers all six parts.
+
+Applicability. The Protocol items apply, because the gateway serves
+=http.v1.info.get= and sends the subject of every route it proxies. The
+Entity items do not apply: the component declares no entity, junction or
+operation model of its own, so it has no table, no repository, no service
+and no generated shell unit or recipe. Its routes are generated for it by
+the source components, which own the entity work.
+
+A prior pass on this task was abandoned when the decomposition landed.
+It worked against the pre-decomposition three-part shape, and 593 commits
+have reached main since its base. Eleven of the files it touched no
+longer exist. That work is preserved by the tag
+=archive/clean-http-pre-restructure= and is not rebased; this pass redoes
+the survey against the tree that exists.
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Baseline captured on the task branch, which is =origin/main= at =af159c1084= with nothing changed. Every read-only gate is green except one: the CMake source-list check reports 36 stale lists across the tree, none of them in this component. The component-drift and model-drift gates report no drift. The whole tree does not build, and the break is not this component's: =projects/ores.trading/modeling/ores.trading.trade.org=, =ores.trading.core/messaging/trade_handler.hpp= and =ores.workflow.core/service/fsm_state_map.cpp= include =ores.dq.api/messaging/fsm_protocol.hpp=, which =dd131c388b= split into =fsm_state_protocol.hpp= and =fsm_transition_protocol.hpp= without migrating. | gate run below; =git rev-parse HEAD= |
+| B02 | Pending survey. | survey |
+| B03 | Pending survey. | survey |
+| B04 | Pending survey. | survey |
+| B05 | No in-flight branch works on this component's own files, but one is about to. The worktree =ores_dev_solid_dirac= holds =feature/storage-bucket-protocol=, unpushed and 28 commits ahead, and it changes =projects/ores.http/api/src/net/http_server.cpp=, =api/src/net/http_session.cpp=, =api/src/net/router.cpp= and =server/src/app/application.cpp=. Those four files are in this task's scope, so this pass should land before that branch's pull request or rebase after it. Nine open captures name the component; the two that bear on the structure items are =country_http_endpoints_and_codegen= and =codegen-cli-http-shell-wt-layer-coverage=, both about the per-component route layer. | =compass fleet=; =git diff --stat main feature/storage-bucket-protocol -- projects/ores.http=; =doc/agile/product_backlog/= |
+| B06 | Pending survey. | survey |
 
 * Notes
 

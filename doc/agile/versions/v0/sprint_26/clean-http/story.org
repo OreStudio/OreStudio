@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,16 +21,16 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
+| Now           | The baseline is captured and the inventory survey is in flight. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Next          | Work the standard's sections in order. |
+| Last touched  | 2026-09-27                               |
 
 * Acceptance
 
-- Every checklist item that applies to a component of kind *Protocol* passes, with its evidence recorded on the task.
+- Every checklist item that applies to this component passes, with its evidence recorded on the task.
 - Every item that does not apply is recorded as not applicable, with the reason.
 - Every generator defect found is fixed at its source, with a regression test.
 - ores.http is listed in =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes.
@@ -39,7 +39,7 @@ ores.http meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean S
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6B2C0AA5-94BB-4F07-9585-C4374295C983][Bring ores.http to the clean standard]] | BACKLOG | | | Work ores.http through the Component Clean Standard in order and record each item. |
+| [[id:6B2C0AA5-94BB-4F07-9585-C4374295C983][Bring ores.http to the clean standard]] | STARTED | 2026-09-27 | | Work ores.http through the Component Clean Standard in order and record each item. |
 
 * Notes
 

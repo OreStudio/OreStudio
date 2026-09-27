@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 664F4EF8-4F93-4938-9D67-88729CACE86B
+:END:
+#+title: Task: Close the ores.shell remnants
+#+description: Initial task for: Clean up the ores.shell remnants
+#+type: task
+#+level: s1
+#+filetags: :shell_remnants:sprint_26:v0:
+#+owner: marco
+#+branch: feature/shell-remnants
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9][Clean up the ores.shell remnants]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell holds no hand-written unit that generation supersedes, the three defects the clean-standard pass found are fixed rather than remembered, and every accepted exception that the menu-ownership change invalidated reads the way the code now behaves.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9][Clean up the ores.shell remnants]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The fourteen hand-written trading instrument units are gone, and every verb they answered is answered by a generated unit, or its removal is recorded with its reason.
+- accounts sessions answers against the live fleet, with the parse defect fixed at its source.
+- bootstrap_smoke.ores runs twice in a row without colliding on the tenants it creates.
+- The hand-written accounts verbs that duplicate a capability the generated authorization menu already carries are resolved, and the decision is recorded per verb.
+- The iam S01 accepted exception states what the registry now enforces, and check_registry_exceptions.py still passes.
+
+* Plan
+
+Four pieces of work, in the order the standard asks for them: remove what
+generation supersedes, fix what is broken, and correct the record.
+
+** 1. Remove the fourteen hand-written trading instrument units
+
+They live in =projects/ores.shell/application/src/app/commands/trading/= and
+they are the shell surface of =ores.trading= entities. Measured against that
+component's models:
+
+| Unit | Model | Shell facet |
+|------+-------+-------------|
+| balance_guaranteed_swap_instrument, bond_instrument, callable_swap_instrument, cap_floor_instrument, fra_instrument, inflation_swap_instrument, knock_out_swap_instrument, rpa_instrument, swaption_instrument, trade, vanilla_swap_instrument | present | off |
+| commodity_instrument, composite_instrument, credit_instrument, scripted_instrument | absent | n/a |
+
+Their verbs are =get= (a paged list, not the canonical =get <key>=), =add=,
+=delete= and =history=, which is a subset of what generation produces and with a
+non-canonical spelling. =ore_commands.cpp= is not in this set: it is the ORE
+document round trip, it models no entity, and nothing supersedes it.
+
+Eleven of them need =:ores.cpp.shell-command.enabled: true= on their model and a
+regeneration; four need a model first. Both are =ores.trading= work, and the
+regeneration cannot be narrowed to the shell facet, so it carries that
+component's drift. Remove the units only where the generated replacement exists,
+and record each removal with the unit that replaces it.
+
+** 2. Fix the three defects, at their source
+
+=accounts sessions= aborts against the live fleet:
+
+#+begin_src text
+✗ Command failed: accounts sessions (from_iso8601_utc: missing UTC designator
+  (Z, +00:00, or +00) in: 2026-09-27 12:15:14)
+#+end_src
+
+The session listing formats a timestamp the service returns in a shape the
+parser refuses. Fix the parse or the producer, whichever is wrong, and prove the
+verb answers against the live fleet.
+
+=bootstrap_smoke.ores= is not idempotent: it creates the tenants =acme= and
+=example=, so a second run collides. The recipe is tangled from
+=doc/recipes/shell/provisioning/bootstrap_smoke.org=, so the fix is in the org
+source.
+
+A capability duplication, not a name collision. The generated =authorization=
+menu already carries =assign-role=, =revoke-role=, =get-account-roles=,
+=get-account-permissions= and =suggest-role-commands=, so the hand-written
+=accounts= verbs of those names do the same job at a different address. Resolve
+each one: retire the hand-written verb and point callers at the generated one,
+or keep it and record why the addresses both earn their place.
+
+** 3. Correct the iam record
+
+=component_registry.py= carries an accepted exception on item S01 for =iam=
+whose reason reads "registered after the generated aggregator, so some
+overlapping verbs are shadowed". #2272 made that impossible: a second
+registration throws, and the hand-written unit extends the generated menu. The
+reason is rewritten to describe what the registry now enforces and what remains
+open. This is a documentation change; no behaviour moves.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

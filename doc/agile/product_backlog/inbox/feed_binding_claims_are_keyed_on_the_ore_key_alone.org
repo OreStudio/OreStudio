@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 78F38558-7F15-47BF-BF57-F2C04B41C4F5
+:END:
+#+title: A feed binding's existence claim is keyed on the ORE key alone
+#+description: A feed binding's natural key is its party with its ORE key and its source, and the table's unique index says so. The service's must-not-exist claim reads the row by ORE key alone, so a second party cannot be bound to a source the first party already holds: the store refuses the write and the caller reads a conflict with no message. The key the claim is read by must be the entity's natural key.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:feed_bindings:correctness:bug:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Answer a feed binding's existence claim by the binding's natural key: its
+party together with its ORE key and its source. A tenant holds one binding
+per party for a given source, and the table's unique index states that
+triple, so a claim that means "this party holds no binding for this source"
+has to be read against the triple. Today it is read against the ORE key
+alone.
+
+* Why
+
+Consistent-world market data gives every party its own bindings onto one
+shared stream, so a tenant's parties hold bindings for the same ORE keys and
+the same sources by design. A caller that creates them one party at a time
+claims that the row it writes does not exist yet, and the second party's
+claim is refused although that party holds no such row. The refusal is a
+conflict, and the conflict carries no message, so the caller learns neither
+which row collided nor which key judged it.
+
+Two consequences follow. Provisioning binds the theme for whichever party is
+reached first and fails for every party after it, and a caller that ignores
+the response reports a bound tenant that is only partly bound. And every
+caller has to compensate with its own read of the tenant's bindings and its
+own skip of the party's rows, which leaves the store's guard decorative and
+puts the real guard in each caller, where a new caller will omit it.
+
+The fix is the key the claim is read by: the protocol's key for a binding
+must carry the party and the source beside the ORE key, and the read that
+answers the claim must follow the same triple the unique index states. The
+entity model is the authority for the triple. Then a caller can claim
+creation and have the store decide it, and the compensation reads disappear.
+
+* References
+
+- [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] — the model whose natural key the claim must follow.
+- [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — the workflow whose market-feeds step binds every party the tenant holds, and the caller that met this defect.
+
+* See also
+
+-

@@ -120,3 +120,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in [[https://github.com/OreStudio/OreStudio/pull/2344][PR #2344]], all
+checks green.
+
+*The analysis.* Running alongside the documentation work, it answered the story's
+question about whether reporting uses what the workflow engine offers. It does
+not, in three places. No handler uses the engine's idempotency check, so a run
+recovered after a restart repeats the work of every phase it re-dispatches, and
+=assemble_bundle= writes a second bundle row. No handler answers with warnings,
+and adopting them would also change failure behaviour, because the engine does
+not compensate a warned step. And no phase has a deadline, because the engine has
+none, so a silent phase needs a person. The analysis also found that the engine
+has no failure-policy field, so the compensate-or-stop choice the workflow pages
+describe is documentation rather than a mechanism. It is recorded as
+[[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][Does reporting use what the workflow
+engine guarantees?]], and the story now starts the orchestration contract at the
+idempotency check.
+
+*The documents.* The =report= document type exists, with its contract page, its
+registration in codegen and compass, its place in the taxonomy, the glossary and
+the recipe, and eight generator cases. The report inventory and two report pages
+went in with it: Headline Position as a production report, and the sample bundle
+smoke test as the report the ACME story needs. The report execution workflow now
+has a page with every section its type requires, an interaction diagram, and a
+row in the workflow inventory.
+
+*The correction.* Four statements on three pages described a system the code no
+longer has, and three diagrams carried the same claims. The pipeline page said a
+run is six phases with no chain selection; the orchestration page said the phase
+builder ignores its inputs; the scheduling page said the scheduler publishes the
+workflow start itself and derives the run's identity from a firing. The
+interfaces page named six subjects that do not exist, which is the correction
+that mattered most, because it is the page an implementer works from.
+
+Two findings were recorded rather than fixed, because both are code rather than
+documentation and neither is in this task's scope: the idempotency gap above, and
+that neither bulk read filters by the run's scope beyond the trades call's book
+list, so a report narrower than its tenant exports the tenant's data.

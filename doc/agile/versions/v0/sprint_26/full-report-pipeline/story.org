@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_26:v0:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,10 +25,10 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The run configuration selects the phases a run executes, and step results are addressed by role. |
+| Now           | The run configuration selects the phases a run executes, and the reports have a document type and an inventory. The analysis found that reporting does not use three of the engine's guarantees, of which the idempotency check is a correctness defect. |
 | Waiting on    | The reporting to compute handoff, which the ACME smoke-test story owns. |
-| Next          | Define and enforce the orchestration contract. |
-| Last touched  | 2026-09-27                               |
+| Next          | Use the engine's idempotency check in the reporting handlers, then define and enforce the orchestration contract. |
+| Last touched  | 2026-09-28                               |
 
 * Acceptance
 
@@ -81,9 +81,44 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
    end, is carried by the two proof tasks below.
 8. *Live processing is designed now and built later.* No phase that a
    substituted run proves may need to change to admit it.
+9. *The orchestration contract starts with the idempotency check.* The analysis
+   on [[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][Does reporting use what the
+   workflow engine guarantees?]] found that no reporting handler checks whether
+   the step it answers has already run, so a run recovered after a restart
+   repeats the work of every phase it re-dispatches: =assemble_bundle= writes a
+   second bundle row, and the export and the upload happen twice. The engine
+   offers the check a handler needs and reporting does not use it. The contract
+   cannot be called enforced while a phase does not converge, so
+   [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the
+   orchestration contract]] begins there rather than with the interface.
+10. *A report page is where a report is described.* Each report gets a page
+    carrying its purpose, audience, frequency, measures, ORE configuration,
+    parameters and test coverage, and an inventory lists them. The tree holds
+    three enumerations of reports that do not agree, at three levels: a business
+    catalogue, the seeded definitions, and the engine's analytic types. A report
+    page is where those three meet for one report; they are not merged, because
+    they are not the same list.
+11. *The phase list and the step list are different decompositions.* A run is
+    six phases and seven steps, or four when pre-processing is substituted.
+    Pre-processing is four steps rather than one, and retrieval and
+    post-processing are one step rather than two. Both decompositions are
+    correct, so the pages state the mapping rather than picking one.
+12. *Deadlines and warnings are decided, not assumed.* The engine has no step
+    timeout, so a phase whose service never answers leaves the run in progress
+    and is re-dispatched on every restart; until a deadline exists, recovering
+    such a run needs a person. No reporting phase answers with warnings, and
+    adopting them is a behaviour change rather than a cosmetic one, because the
+    engine does not compensate a warned step.
+13. *A workflow owns no failure policy.* The engine has one behaviour: on a
+    failed step it compensates the steps that completed. =workflow_definition=
+    has no policy field, so the story does not ask a workflow to declare the
+    compensate-or-stop choice the engine cannot honour.
 
 * Out of scope
 
 - Building the live chain. It is designed and tasked, not built.
 - Parsing ORE results beyond writing them into the database; no analytics on
   them.
+- Implementing the reports their pages describe. A page states what a report is
+  for, who reads it and how it is configured; the analytics that produces it is
+  separate work, and the pages say which parts of a report's run are not built.

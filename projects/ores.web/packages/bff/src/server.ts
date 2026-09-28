@@ -43,6 +43,7 @@ import {
     imageBytesToBuffer,
     toWireTimestamp,
     loginResultSchema,
+    passwordPolicySchema,
     provisionTenantRequestSchema,
     provisionTenantResultSchema,
     retryWorkflowInstanceResultSchema,
@@ -461,6 +462,24 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw new NotAuthenticatedError('Session ended during party selection');
         }
         return sessionResponse(activated);
+    });
+
+    /**
+     * The rules a password must satisfy.
+     *
+     * Served without a session, like the bootstrap read beside it, because the
+     * screen that shows the rules is the one a person signs in on. The rules
+     * come from the server's validator, so the screen states them rather than
+     * keeping a copy of them.
+     */
+    server.get('/api/password-policy', async () => {
+        const { client, connect } = createClient();
+        try {
+            await connect();
+            return passwordPolicySchema.parse(await client.passwordPolicy());
+        } finally {
+            await client.close().catch(() => undefined);
+        }
     });
 
     /**

@@ -60,9 +60,12 @@ import {
     toProvisionTenantResult,
     toRetryWorkflowInstanceCommand,
     toRetryWorkflowInstanceResult,
+    passwordPolicyReplySchema,
+    toPasswordPolicy,
     workflowProgressSchema,
     workflowStepsRequestSchema,
     type LoginResponse,
+    type PasswordPolicy,
     type ProvisionTenantRequest,
     type ProvisionTenantResult,
     type RetryWorkflowInstanceRequest,
@@ -359,6 +362,25 @@ export class OresClient {
             { timeoutMs: this.#timeouts.slowMs },
         );
         return toProvisionTenantResult(reply);
+    }
+
+    /**
+     * The rules a password must satisfy.
+     *
+     * Asked for before anybody has signed in, because the sign-in screen is
+     * where the rules are shown. The answer is the server's own policy, so the
+     * screen never keeps a copy of rules the server could change.
+     */
+    async passwordPolicy(): Promise<PasswordPolicy> {
+        const reply = await this.#call(
+            SUBJECTS.passwordPolicy,
+            emptyRequestSchema.parse({}),
+            passwordPolicyReplySchema,
+            {
+                timeoutMs: this.#timeouts.fastMs,
+            },
+        );
+        return toPasswordPolicy(reply);
     }
 
     /**

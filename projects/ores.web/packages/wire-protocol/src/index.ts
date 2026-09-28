@@ -138,6 +138,9 @@ export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
 export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
 export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
 
+export { passwordPolicySchema } from './operations.js';
+export type { PasswordPolicy } from './operations.js';
+
 export {
     retryWorkflowInstanceRequestSchema,
     retryWorkflowInstanceResultSchema,

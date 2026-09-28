@@ -36,10 +36,10 @@ to the reference-data work and are out of scope, per decision D5.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | The commodity family is ported and proven end to end. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
+| Now          | The commodity family is ported and proven end to end, the knock-out date column is deleted with its gap recorded under defect 14, and the equity position's option entries are child rows with the producer wired through the nested sub-trade. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
 | Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
-| Next         | U3, the four JSON collection columns become child tables with foreign keys, then U4 the enumerations; then regenerate and prove the component once more, update the story's checklist rows, and raise PR 3. |
-| Last touched | 2026-09-27                               |
+| Next         | The last U3 collection, =equity_swap_instrument.basket_json=, waits for defect 9; then U4 the enumerations; then regenerate and prove the component once more, update the story's checklist rows, and raise PR 3. |
+| Last touched | 2026-09-28                               |
 
 * Acceptance
 
@@ -638,10 +638,10 @@ the deployed database agrees with the models on all eight.
 | Column                              | Instrument                | Producer                                  | Judgement |
 |-------------------------------------+---------------------------+-------------------------------------------+-----------|
 | =call_dates_json=                     | =callable_swap_instrument=  | =swap_instrument_mapper= (forward only)     | Migrated: child =callable_swap_call_date= |
-| =knock_out_dates_json=                | =knock_out_swap_instrument= | none                                      | No ORE source: =knockOutSwapData= states =BarrierData= (a =Levels= float list), one =BarrierStartDate= and two legs, and no date list anywhere in the schema. Reported, not invented |
+| =knock_out_dates_json=                | =knock_out_swap_instrument= | none                                      | Deleted: no ORE source. =knockOutSwapData= states =BarrierData= (a =Levels= float list), one =BarrierStartDate= and two legs, and no date list anywhere in the schema. The family is never produced, so the column had nothing to hold. The coverage gap belongs to defect 14 |
 | =basket_json=                         | =commodity_instrument=      | none                                      | Migrated: child =commodity_basket_constituent=, producer added for =CommodityBasketOption= |
 | =basket_json=                         | =equity_swap_instrument=    | =equity_instrument_mapper= (both ways)      | Collection with a real payload. Remaining, see below |
-| =option_data_json=                    | =equity_position_instrument= | none                                     | =equityOptionPositionData= declares a =Quantity= and an =Underlying= list, so the shape is grounded; the producer is not wired. Remaining, see below |
+| =option_data_json=                    | =equity_position_instrument= | =equity_instrument_mapper= (added)       | Migrated: child =equity_position_option_underlying=, producer added for the nested =EquityOptionPosition= sub-trade |
 | =events_json=, =underlyings_json=, =parameters_json= | =scripted_instrument= | =scripted_instrument_mapper= | Not a collection: the payload is a user script whose shape the domain does not fix. This is defect 1's stated exception. Left as =text= |
 
 Two further checks found no other collection: no trading model declares a
@@ -725,6 +725,95 @@ from the schema's =basketOptionData= shape and asserts the two
 constituents' codes, ordinals and weights, then rebuilds the document and
 asserts them again.
 
+** The column that was deleted: =knock_out_dates_json=
+
+The owner ruled on 2026-09-28 that
+=knock_out_swap_instrument.knock_out_dates_json= carries no ORE source and
+that its family is never produced. The column was deleted from the model
+and from the development database. There is nothing to model, so no child
+table replaces it.
+
+The evidence is threefold.
+
+1. The schema states no date list. =knockOutSwapData=
+   (=external/ore/xsd/instruments.xsd=) states exactly three members:
+   =BarrierData=, one =BarrierStartDate=, and =LegData= with
+   =minOccurs="2" maxOccurs="2"=. The only list anywhere in the block is
+   =BarrierData/Levels=, an =xsd::vector<float>= of barrier levels. No
+   member holds observation dates.
+2. The corpus document states no date list either.
+   =Exotic_KnockOutSwap.xml= (=assets/test_data/golden_dataset= and
+   =external/ore/examples=) holds one =BarrierData= with one =Level=, one
+   =BarrierStartDate=, and two =LegData= blocks. The file names no
+   observation date.
+3. Nothing produces the instrument. =trade_mapper.cpp= sends
+   =KnockOutSwap= to =scripted_instrument_mapper::forward_knock_out_swap=,
+   which writes the scripted instrument's =parameters_json= and never a
+   =knock_out_swap_instrument= row. The table is therefore always empty,
+   so the column was always null.
+
+The gap is a coverage gap, not a collection gap: the model declares a
+column for a family that the mapper never fills. The gap belongs to
+coverage defect 14, "declared coverage is incomplete, and elsewhere
+undeclared" ([[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] defect
+table). The deletion is recorded here; the coverage defect itself stays
+with defect 14.
+
+** The child that landed: =equity_position_option_underlying=
+
+The ORE schema states an equity option position's members in
+=equityOptionPositionData=: a required =Quantity= and an unbounded
+=Underlying= list of =equityOptionUnderlyingData=, each of which is a
+shared =underlying=, an =optionData= and a =Strike=. The column claimed to
+hold that list as serialised text and nothing ever wrote it: the mapper
+had no dispatch for =EquityPosition= or =EquityOptionPosition= at all, and
+the corpus path is a =TotalReturnSwap= whose =UnderlyingData/SubTrade= is
+an =EquityOptionPosition=. The producer is now wired, so the payload's
+shape comes from the document rather than from the column's own
+description.
+
+| Decision      | Value |
+|---------------+-------|
+| Table         | =ores_trading_equity_position_option_underlyings_tbl= |
+| Key           | =(tenant_id, instrument_id, sequence_number, valid_from, valid_to)= — the parent id plus the entry's ordinal, the shape the two children above use |
+| Parent        | =instrument_id= references the equity position instrument. The component declares no SQL foreign key yet (defect 7), so the reference is the column and its prose, as in =bond_leg= |
+| Scope         | =has_tenant_id: true= only. The child rides the instrument's tenant, workspace and party, so no workspace column rides it |
+| Natural key   | none; the ordinal is the identity |
+| Audit/validity| the template's audit columns and the bitemporal =valid_from=/=valid_to= pair with the exclusion constraint |
+| Quantity      | stays on the parent: it is a property of the position, not of one entry |
+| Columns       | =sequence_number integer not null=, =underlying_name text not null=, =strike numeric(28, 10) not null=, =weight numeric(28, 10) null=, =long_short text not null=, =option_type text null=, =exercise_type text null=, =settlement_type text null= |
+| Strike type   | =ores::utility::decimal::decimal= — a strike is money-role (D11), and the ORE element is a float |
+| Weight type   | =std::optional<ores::utility::decimal::decimal>= — a weight is money-role (D11) and the shared =underlying= type makes =Weight= optional, so an absent weight stays null |
+| Option terms  | the corpus entry carries =LongShort=, =OptionType=, =Style= and =Settlement=, so each has a column; the names follow =equity_option_instrument= |
+| Checks        | ="sequence_number" > 0=, ="underlying_name" <> ''=, and the generated nil-uuid check |
+
+The one value this child does not carry is the entry's exercise date
+list. The corpus states =OptionData/ExerciseDates/ExerciseDate= as a
+list, so a single date column would silently drop the rest of it. The
+list is a collection of its own, and defect 16 (no observation schedule)
+owns the shape that models it. The omission is recorded rather than
+papered over with a truncated scalar.
+
+The producer is =equity_instrument_mapper::forward_equity_option_position=,
+dispatched from =trade_mapper::map_equity_instrument=. A
+=TotalReturnSwap= (or =ContractForDifference=) whose underlying sub-trade
+type is =EquityPosition= or =EquityOptionPosition= is dispatched to the
+same family, so the nested corpus path reaches the producer. The forward
+mapper reads every =Underlying= entry in document order and emits one row
+per entry. The reverse,
+=equity_instrument_mapper::reverse_equity_option_position=, rebuilds
+=EquityOptionPositionData= from the rows and wraps it back inside the
+=TotalReturnSwap= it came from. =EquityPosition= (the plain position, no
+option terms) is dispatched too, and produces the parent row with no
+children: its entries carry no strike or option data, so they cannot be
+rows of this table. That gap is defect 15's multi-underlying shape.
+
+The corpus does exercise the producer.
+=xml_equity_mapper_roundtrip_tests.cpp= loads
+=Hybrid_GenericTRS_with_EquityOptionPosition.xml=, maps it, asserts both
+entries' names, strikes, ordinal, weight and option terms, then reverses
+and asserts the same values in the rebuilt document.
+
 ** What the other collections need
 
 - =equity_swap_instrument.basket_json= has a real payload (the
@@ -735,32 +824,15 @@ asserts them again.
   split is defect 9, which this task does not own. The child is an
   =equity_swap_basket_underlying= row keyed like this one, and it lands
   with the product split.
-- =knock_out_swap_instrument.knock_out_dates_json= has no ORE source.
-  =knockOutSwapData= (=external/ore/xsd/instruments.xsd=) states exactly
-  three members: =BarrierData= (whose only list is =Levels=, a
-  =xsd::vector<float>= of barrier levels), one =BarrierStartDate= and
-  =LegData= (minOccurs 2, maxOccurs 2). No date list exists in the
-  document, so no child can be drawn from the payload. The column and
-  the instrument are also unproduced: =KnockOutSwap= trades route to
-  =scripted_instrument_mapper::forward_knock_out_swap=, which writes the
-  scripted instrument's =parameters_json= and never a
-  =knock_out_swap_instrument=. The column is left as =text= and the
-  no-source finding is recorded; it is not invented.
-- =equity_position_instrument.option_data_json= has a grounded shape but
-  no producer. =equityOptionPositionData= (=xsd=; =domain.hpp=) states a
-  required =Quantity= (=xs:float=) and an unbounded =Underlying= list of
-  =equityOptionUnderlyingData=, each of which is an =underlying=, an
-  =optionData= and a =Strike=. The real document is
-  =Hybrid_GenericTRS_with_EquityOptionPosition.xml= (a
-  =TotalReturnSwap= whose =SubTradeType= is =EquityOptionPosition=, with
-  =Quantity= 1000 and two =.SPX= entries). The parent instrument already
-  carries =quantity= (a =double=, which stays a =double= because it is
-  not money) and =underlying_name=, so the child that remains to be
-  drawn is one row per =Underlying= entry; the producer must be added,
-  most likely by dispatching =EquityPosition= and =EquityOptionPosition=
-  through =equity_instrument_mapper= and by carrying the rows in a new
-  equity family carrier, since =equity_instrument_variant= is today a
-  direct element of =trade_instrument=. This is the next unit.
+- =knock_out_swap_instrument.knock_out_dates_json= was deleted. The ORE
+  schema states no date list, the corpus states none, and nothing
+  produces the instrument, so the column had nothing to hold. See "The
+  column that was deleted" above; the coverage gap itself belongs to
+  defect 14.
+- =equity_position_instrument.option_data_json= was migrated. The child is
+  =equity_position_option_underlying=, keyed like the two children above,
+  and the producer is wired for the nested =EquityOptionPosition=
+  sub-trade. See "The child that landed" above.
 - =scripted_instrument='s three columns are the defect's stated
   exception. The repair the defect names is =jsonb= rather than =text=,
   which is a type change with no collection and no child table; it is not
@@ -801,6 +873,37 @@ policy were created, and =basket_json= was dropped; 28
 =commodity_instruments= rows held 0 non-null baskets, so no value was
 lost.
 
+The equity position unit. Codegen source: the new
+=ores.trading.equity_position_option_underlying= model; the parent model
+loses =option_data_json=, loses the cross-column check that read it, and
+names the child; =trade.org= reads the entries beside the instrument.
+Generated: the child's 33-file set, the parent's regenerated set, the
+trade handler, the shell unit, the cmake lists, and the child's four SQL
+scripts. Hand-written: =instrument.hpp= (an =equity_instrument_data=
+carrier with =stamp_ids=), =trade_instrument.hpp= (the variant element is
+the carrier), =instrument_payload.cpp= (the wire shape, with a fallback
+that reads a pre-child body as an empty entry list), =equity_instrument_mapper.{hpp,cpp}=
+(the =EquityPosition= and =EquityOptionPosition= forward and reverse, and
+the nested sub-trade lookup), =trade_mapper.{hpp,cpp}= (the equity
+carrier and the sub-trade dispatch), =exporter.cpp=, =importer.cpp=,
+=ore_import_execute_handler.cpp= (the child saves), a new hand-written
+verb =equity_position_option_underlying_commands.{hpp,cpp}= in
+=ores.shell/application=, the aggregates (the two SQL masters, the RLS
+policy file, the three cmake lists, the history registrar, the equity
+handler registrar and the service application), and the equity, planner
+and repository tests. SQL: the child's create, notify trigger, drop and
+RLS policy, and the three aggregate scripts. Database: the table, its
+insert and notify triggers and its RLS policy were created, and
+=option_data_json= was dropped; the table held 64 rows and 0 non-null
+=option_data_json= values at the drop, so no value was lost.
+
+The knock-out column deletion. Codegen source: the parent model loses
+=knock_out_dates_json= and the entity is regenerated. Hand-written: the
+knock-out swap shell verb in =ores.shell/application= loses the argument
+it used to take, and the import handler loses the field it used to write.
+SQL: the column leaves the create script. Database: the column was
+dropped; the table held no rows, so no value was lost.
+
 ** Judgement calls
 
 - D12 is followed literally: a child entity per collection. The defect
@@ -818,6 +921,29 @@ lost.
   of =with_legs<>=, because a constituent's parent reference is a direct
   =instrument_id= column (the callable child's shape) and not a grouped
   =identity.instrument_id=, so =with_legs='s =stamp_ids= does not apply.
+- The equity position carrier wraps the whole =equity_instrument_variant=
+  rather than one leaf, because nine equity leaves share the family and
+  only the position leaf states entries. The wire shape is then per-leaf,
+  as the rates family does for its legs and call dates.
+- The equity position producer reads the nested =UnderlyingData/SubTrade=
+  shape a total return swap uses, not only the top-level
+  =EquityOptionPositionData= element. =ContractForDifference= keeps the
+  composite dispatch it had: its reverse rebuilds a different data member,
+  and intercepting it made =Hybrid_CFD.xml= unreadable on export.
+- The equity entries verb is hand-written in =ores.shell/application=
+  rather than a template hook. A hook would change a template every
+  component's shell unit is rendered from, for one family's child; the
+  hand-written verb mirrors the commodity basket precedent and is one
+  file pair.
+- A plain =EquityPosition= sub-trade is dispatched, so its parent row is
+  produced, but it gets no child rows: =equityPositionData.Underlying= is
+  a bare =underlying= list with no strike and no option data, which this
+  table's not-null columns cannot hold. That multi-underlying gap stays
+  defect 15's.
+- The entry's exercise date list is not modelled, and no single-date
+  column is invented. The round trip asserts the entry values the mapper
+  used to drop; the dates are the one value it still does not carry, and
+  defect 16 owns the observation schedule that would.
 
 * Test Scenarios
 
@@ -829,6 +955,8 @@ lost.
 | The database rebuilds from the tree | Met | =compass db recreate -y -k= exits 0 with no local workaround |
 | The fleet starts | Met | 24 of 24 units ready in two seconds, over busctl |
 | The seven remaining ports repeat the method | Not met | Each needs its model, regeneration, consumer migration and proof |
+| The knock-out column is deleted, with no source invented | Met | The model, the create script, the shell verb and the import handler lose the field, the database column is dropped, and the gap is recorded under defect 14 |
+| The equity position child lands and its producer is wired | Met | The table is created with its triggers and its policy, =option_data_json= is dropped, the corpus round trip passes, and the eight suites plus the codegen suite are green |
 
 * PRs
 
@@ -876,3 +1004,41 @@ The five failures belong to other components:
   a portfolio whose natural keys the seed holds.
 - =ores.marketdata.core.tests=: a series classification rule event never
   arrives.
+
+** The knock-out deletion and the equity position child (measured 2026-09-28)
+
+Both units were checked on =feature/model-missing-trading-families= at
+=ef918bbdd8=, in one tree, in this order.
+
+| Check     | Result |
+|-----------+--------|
+| Build     | =cmake --build build/output/linux-clang-debug-make -j 3= exits 0 with 0 =error:= lines |
+| Drift     | =check_component_drift.py --component trading-cpp --dry-run= reports no drift, twice; =--all --dry-run= reports no drift |
+| Codegen   | =pytest projects/ores.codegen/tests= is 806 passed |
+| Owned     | The eight ctest suites are 8 of 8: =ores.trading.api=, =.core=, =.service=, =ores.ore.api=, =.core=, =.service=, =ores.shell.trading= and =ores.shell.application=. With the codegen suite that is the nine owned suites |
+| Suite     | =ctest= runs 86 tests in 334 seconds: 81 pass, 5 fail, the same five the branch already records (dq, shell.api, refdata, marketdata) |
+| Round trip| =equity_option_position_forward_carries_every_entry= and =equity_option_position_roundtrip_rebuilds_the_entries= pass, 40 assertions, on =Hybrid_GenericTRS_with_EquityOptionPosition.xml= |
+| Corpus walk | =roundtrip mirrors every portfolio in the ORE example corpus= passes, so every mapped trade still reaches an output |
+| Database  | The child table, its insert and notify triggers and its tenant policy exist; =option_data_json= is gone; the parent held 64 rows with 0 non-null =option_data_json= values at the drop, and the child starts at 0 |
+
+Two findings from the work:
+
+- The knock-out shell verb in =ores.shell/application= and the import
+  handler both still named =knock_out_dates_json= after the model lost it.
+  The shell verb's argument was removed and the handler's assignment
+  deleted; the generated shell in =ores.shell/trading= had no such
+  argument. The whole-tree build is what caught both, which is why the
+  build gate runs after the regeneration rather than before.
+- The first equity attempt intercepted =ContractForDifference= as well as
+  =TotalReturnSwap=. The reverse then wrote =TotalReturnSwapData= under a
+  =ContractForDifference= trade, and =Hybrid_CFD.xml= stopped reading
+  back, which the corpus walk's mapped/lost check caught as
+  =181 == 182=. The =ContractForDifference= interception was removed;
+  those documents stay with the composite mapper, which is where they
+  were before this unit.
+- =projects/ores.sql/modeling/ores_schema.puml= still names
+  =knock_out_dates_json=. The file is generated by
+  =plantuml_er_generate.sh= and is already stale for the two children that
+  landed before this unit, so regenerating it would sweep in unrelated
+  schema history. It is left as it was found, and the drift gate does not
+  cover it.

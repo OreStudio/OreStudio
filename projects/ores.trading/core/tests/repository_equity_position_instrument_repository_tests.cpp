@@ -50,7 +50,6 @@ equity_position_instrument make_instrument(database_helper& h) {
     r.currency = "USD";
     r.quantity = 18101.486;
     r.price = ores::utility::decimal::decimal::from_string("6927.586").value();
-    r.option_data_json = "";
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";

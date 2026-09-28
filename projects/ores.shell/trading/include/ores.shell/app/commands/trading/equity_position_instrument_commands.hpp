@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <trade_type_code> <trade_id> <underlying_name> <currency> <quantity> <price>
-     * <option_data_json> <description> <reason> <commentary>
+     * <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <instrument_id> <trade_type_code> <trade_id> <underlying_name> <currency>
-     * <quantity> <price> <option_data_json> <description> <reason> <commentary> [--version <n>]
+     * <quantity> <price> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <underlying_name>
-     * <currency> <quantity> <price> <option_data_json> <description> <reason> <commentary>
+     * <currency> <quantity> <price> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

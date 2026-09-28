@@ -38,10 +38,14 @@ namespace ores::trading::domain {
  * @brief Equity Position instrument.
  *
  * Represents EquityPosition and EquityOptionPosition trades: a plain
- * equity holding or an equity option position. For option positions,
- * option_data_json holds the serialised option parameters; for plain
- * equity positions, price captures the reference price and
- * option_data_json is null.
+ * equity holding or an equity option position. quantity is the number of
+ * shares or contracts and stays on this row, because it belongs to the
+ * position and not to one underlying. An option position's members are not
+ * a column: each is a row of
+ * ores.trading.equity_position_option_underlying, keyed to this
+ * instrument and its ordinal in the document. A text column held the list
+ * as JSON and could not be typed, indexed or questioned, so the collection
+ * is a child table now.
  */
 struct equity_position_instrument final {
     instrument_identity identity;
@@ -67,11 +71,6 @@ struct equity_position_instrument final {
      * @brief Entry price; absent for market-price positions.
      */
     std::optional<ores::utility::decimal::decimal> price;
-
-    /**
-     * @brief EquityOptionPosition only: serialised option parameters; empty otherwise.
-     */
-    std::string option_data_json;
 
     /**
      * @brief Optional free-text description.

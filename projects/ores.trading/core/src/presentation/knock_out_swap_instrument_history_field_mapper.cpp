@@ -47,7 +47,6 @@ render_knock_out_swap_instrument_fields(const domain::knock_out_swap_instrument&
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Barrier Level", .value = std::to_string(v.barrier_level)});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
-    fields.push_back({.name = "Knock Out Dates Json", .value = v.knock_out_dates_json});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

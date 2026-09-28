@@ -47,7 +47,6 @@ struct knock_out_swap_instrument_write {
     std::chrono::year_month_day maturity_date;
     double barrier_level;
     std::string barrier_type;
-    std::string knock_out_dates_json;
     std::string description;
 };
 

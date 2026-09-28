@@ -193,6 +193,9 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
         REQUIRE(fs::exists(source));
         trades_lost_with_gaps += count_mapped_trades(source);
     }
+    INFO("trades_in_outputs=" << trades_in_outputs
+                              << " trades_lost_with_gaps=" << trades_lost_with_gaps
+                              << " mapped=" << summary.trades_mapped);
     CHECK(trades_in_outputs + trades_lost_with_gaps ==
           static_cast<std::size_t>(summary.trades_mapped));
 }

@@ -39,7 +39,6 @@ create table if not exists "ores_trading_knock_out_swap_instruments_tbl" (
     "maturity_date" date not null,
     "barrier_level" numeric(18, 10) not null,
     "barrier_type" text not null,
-    "knock_out_dates_json" text null,
     "description" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,

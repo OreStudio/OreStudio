@@ -71,13 +71,6 @@ struct knock_out_swap_instrument final {
     std::string barrier_type;
 
     /**
-     * @brief Optional JSON array of knock-out observation dates.
-     *
-     * ISO 8601 date strings for discrete barrier observation.
-     */
-    std::string knock_out_dates_json;
-
-    /**
      * @brief Optional free-text description.
      *
      * Human-readable notes about this instrument.

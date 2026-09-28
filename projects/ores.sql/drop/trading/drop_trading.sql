@@ -142,6 +142,11 @@
 \ir ./trading_commodity_basket_constituents_notify_trigger_drop.sql
 \ir ./trading_commodity_basket_constituents_drop.sql
 
+-- Equity position option underlyings (child rows drop on their own; the
+-- equity position instrument tables are not named in this master yet).
+\ir ./trading_equity_position_option_underlyings_notify_trigger_drop.sql
+\ir ./trading_equity_position_option_underlyings_drop.sql
+
 -- Composite instruments (drop legs before header)
 \ir ./trading_composite_legs_notify_trigger_drop.sql
 \ir ./trading_composite_legs_drop.sql

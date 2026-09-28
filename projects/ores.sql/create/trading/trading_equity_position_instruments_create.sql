@@ -25,10 +25,14 @@
  * Equity Position Instrument Table
  *
  * Represents EquityPosition and EquityOptionPosition trades: a plain
- * equity holding or an equity option position. For option positions,
- * option_data_json holds the serialised option parameters; for plain
- * equity positions, price captures the reference price and
- * option_data_json is null.
+ * equity holding or an equity option position. quantity is the number of
+ * shares or contracts and stays on this row, because it belongs to the
+ * position and not to one underlying. An option position's members are not
+ * a column: each is a row of
+ * ores.trading.equity_position_option_underlying, keyed to this
+ * instrument and its ordinal in the document. A text column held the list
+ * as JSON and could not be typed, indexed or questioned, so the collection
+ * is a child table now.
  */
 
 create table if not exists "ores_trading_equity_position_instruments_tbl" (
@@ -42,7 +46,6 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     "currency" text not null,
     "quantity" numeric(28, 10) not null,
     "price" numeric(28, 10) null,
-    "option_data_json" text null,
     "description" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -61,8 +64,7 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition')),
-    check (("trade_type_code" = 'EquityOptionPosition' and "option_data_json" is not null) or ("trade_type_code" = 'EquityPosition' and "option_data_json" is null))
+    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition'))
 );
 
 -- Version uniqueness for optimistic concurrency

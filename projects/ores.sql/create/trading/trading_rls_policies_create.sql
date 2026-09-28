@@ -821,6 +821,19 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Equity Position Option Underlyings
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_position_option_underlyings_tbl enable row level security;
+
+create policy equity_position_option_underlyings_tenant_isolation_policy on ores_trading_equity_position_option_underlyings_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Credit Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_credit_instruments_tbl enable row level security;

@@ -25,6 +25,8 @@
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/domain/equity_instrument_variant.hpp"
+#include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/rates_instrument_variant.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -77,6 +79,15 @@ struct commodity_instrument_data {
     std::vector<commodity_basket_constituent> constituents;
 };
 
+// An equity position states an entry collection beside the instrument that
+// owns it, so the carrier holds the two together and each entry travels
+// with its instrument. An equity leaf that states no position leaves the
+// collection empty.
+struct equity_instrument_data {
+    equity_instrument_variant instrument;
+    std::vector<equity_position_option_underlying> underlyings;
+};
+
 template <Instrument T>
 void stamp_ids(T& instr, boost::uuids::uuid instrument_id, boost::uuids::uuid trade_id) {
     instr.identity.instrument_id = instrument_id;
@@ -116,6 +127,14 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_ids(data.instrument, instrument_id, trade_id);
     for (auto& constituent : data.constituents)
         constituent.instrument_id = instrument_id;
+}
+
+inline void stamp_ids(equity_instrument_data& data,
+                      boost::uuids::uuid instrument_id,
+                      boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, instrument_id, trade_id);
+    for (auto& underlying : data.underlyings)
+        underlying.instrument_id = instrument_id;
 }
 
 } // namespace ores::trading::domain

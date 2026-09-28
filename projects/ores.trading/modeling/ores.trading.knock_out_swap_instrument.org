@@ -141,17 +141,6 @@ UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls belo
 std::string("UpAndOut")
 #+end_src
 
-** knock_out_dates_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Optional JSON array of knock-out observation dates.
-
-ISO 8601 date strings for discrete barrier observation.
-
 ** description
 :PROPERTIES:
 :type:     text

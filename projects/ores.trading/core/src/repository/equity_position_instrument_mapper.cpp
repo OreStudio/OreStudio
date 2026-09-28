@@ -54,7 +54,6 @@ equity_position_instrument_mapper::map(const equity_position_instrument_entity& 
     r.price = v.price.has_value() ?
                   std::optional(ores::utility::decimal::decimal::from_string(*v.price).value()) :
                   std::nullopt;
-    r.option_data_json = v.option_data_json.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -84,8 +83,6 @@ equity_position_instrument_mapper::map(const domain::equity_position_instrument&
     r.currency = v.currency;
     r.quantity = v.quantity;
     r.price = v.price.has_value() ? std::optional(v.price->to_string()) : std::nullopt;
-    r.option_data_json =
-        v.option_data_json.empty() ? std::nullopt : std::optional(v.option_data_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

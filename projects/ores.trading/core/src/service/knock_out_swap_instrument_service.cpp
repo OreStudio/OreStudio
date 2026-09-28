@@ -91,7 +91,6 @@ to_domain(const messaging::knock_out_swap_instrument_write& write) {
     v.maturity_date = write.maturity_date;
     v.barrier_level = write.barrier_level;
     v.barrier_type = write.barrier_type;
-    v.knock_out_dates_json = write.knock_out_dates_json;
     v.description = write.description;
     return v;
 }

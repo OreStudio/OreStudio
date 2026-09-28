@@ -31,8 +31,10 @@
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
+#include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 
 namespace ores::ore::domain {
 
@@ -104,6 +106,13 @@ public:
     static trading::domain::equity_instrument_variant
     forward_equity_worst_of_basket_swap(const trade& t);
 
+    // Equity position — forward. A total return swap states the position as
+    // its underlying sub-trade, so the mapper reads the top-level shape and
+    // the nested one. The entries of an option position become child rows.
+    static trading::domain::equity_instrument_data forward_equity_position(const trade& t);
+    static trading::domain::equity_instrument_data
+    forward_equity_option_position(const trade& t);
+
     // Phase 4 — reverse
     static trade
     reverse_equity_option(const ores::trading::domain::equity_option_instrument& instr);
@@ -138,6 +147,16 @@ public:
     reverse_equity_cliquet_option(const ores::trading::domain::equity_option_instrument& instr);
     static trade
     reverse_equity_worst_of_basket_swap(const ores::trading::domain::equity_swap_instrument& instr);
+
+    // Equity position — reverse. The outer type names the document the
+    // position came from, so the total return swap is rebuilt as one.
+    static trade reverse_equity_position(
+        const ores::trading::domain::equity_position_instrument& instr,
+        const std::string& outer_trade_type);
+    static trade reverse_equity_option_position(
+        const ores::trading::domain::equity_position_instrument& instr,
+        const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings,
+        const std::string& outer_trade_type);
 };
 
 

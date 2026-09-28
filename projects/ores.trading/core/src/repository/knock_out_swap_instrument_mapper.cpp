@@ -53,7 +53,6 @@ knock_out_swap_instrument_mapper::map(const knock_out_swap_instrument_entity& v)
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.barrier_level = v.barrier_level;
     r.barrier_type = v.barrier_type;
-    r.knock_out_dates_json = v.knock_out_dates_json.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -83,8 +82,6 @@ knock_out_swap_instrument_mapper::map(const domain::knock_out_swap_instrument& v
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.barrier_level = v.barrier_level;
     r.barrier_type = v.barrier_type;
-    r.knock_out_dates_json =
-        v.knock_out_dates_json.empty() ? std::nullopt : std::optional(v.knock_out_dates_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

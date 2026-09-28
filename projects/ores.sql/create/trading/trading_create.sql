@@ -216,6 +216,9 @@
 \ir ./trading_equity_position_instruments_create.sql
 \ir ./trading_equity_position_instruments_notify_trigger_create.sql
 
+\ir ./trading_equity_position_option_underlyings_create.sql
+\ir ./trading_equity_position_option_underlyings_notify_trigger_create.sql
+
 -- Commodity instruments (depends on reference data above)
 \ir ./trading_commodity_instruments_create.sql
 \ir ./trading_commodity_instruments_notify_trigger_create.sql

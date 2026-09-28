@@ -667,6 +667,7 @@ and msgpack headers the storage export needs.
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
@@ -1029,11 +1030,34 @@ type, then read each product's table in one batch.
             add_fx(svc.get_fx_variance_swap_instruments(fxvar_ids));
         }
 
-        // Equity types
+        // Equity types. An equity option position states its entries as rows
+        // of their own, so they are fetched beside the instrument and only
+        // for the positions that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::equity_position_option_underlying>>
+            equity_underlyings_map;
+        if (!eq_pos_ids.empty()) {
+            repository::equity_position_option_underlying_repository underlying_repo;
+            for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
+                equity_underlyings_map[boost::uuids::to_string(underlying.instrument_id)]
+                    .push_back(std::move(underlying));
+        }
+
+        auto take_equity_underlyings = [&](const std::string& id) {
+            auto it = equity_underlyings_map.find(id);
+            return it != equity_underlyings_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::equity_position_option_underlying>{};
+        };
+
         auto add_eq = [&](auto&& results) {
-            for (auto& v : results)
-                imap[boost::uuids::to_string(v.identity.instrument_id)] =
-                    ores::trading::domain::equity_instrument_variant{std::move(v)};
+            for (auto& v : results) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                ores::trading::domain::equity_instrument_data data;
+                data.instrument = ores::trading::domain::equity_instrument_variant{std::move(v)};
+                data.underlyings = take_equity_underlyings(id);
+                imap[id] = std::move(data);
+            }
         };
         if (!eq_opt_ids.empty()) {
             service::equity_option_instrument_service svc(ctx);

@@ -16,10 +16,14 @@
 #+updated: 2026-08-05
 
 Represents EquityPosition and EquityOptionPosition trades: a plain
-equity holding or an equity option position. For option positions,
-=option_data_json= holds the serialised option parameters; for plain
-equity positions, =price= captures the reference price and
-=option_data_json= is null.
+equity holding or an equity option position. =quantity= is the number of
+shares or contracts and stays on this row, because it belongs to the
+position and not to one underlying. An option position's members are not
+a column: each is a row of
+=ores.trading.equity_position_option_underlying=, keyed to this
+instrument and its ordinal in the document. A text column held the list
+as JSON and could not be typed, indexed or questioned, so the collection
+is a child table now.
 
 * Flags
 :PROPERTIES:
@@ -137,16 +141,6 @@ Number of shares / contracts held.
 
 Entry price; absent for market-price positions.
 
-** option_data_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-EquityOptionPosition only: serialised option parameters; empty
-otherwise.
-
 ** description
 :PROPERTIES:
 :type:     text
@@ -172,7 +166,6 @@ Human-readable notes about this instrument.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "trade_type_code" in ('EquityPosition', 'EquityOptionPosition') |
-| ("trade_type_code" = 'EquityOptionPosition' and "option_data_json" is not null) or ("trade_type_code" = 'EquityPosition' and "option_data_json" is null) |
 
 ** Indexes
 
@@ -251,3 +244,4 @@ repository profiles regenerate correctly.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:BC790632-BD5D-43DD-A32A-88B1D40C2B35][ores.trading.equity_position_option_underlying]] — the position's option entries, one row per underlying.

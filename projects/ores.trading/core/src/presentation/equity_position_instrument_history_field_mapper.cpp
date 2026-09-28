@@ -45,7 +45,6 @@ render_equity_position_instrument_fields(const domain::equity_position_instrumen
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Quantity", .value = std::to_string(v.quantity)});
     fields.push_back({.name = "Price", .value = v.price ? v.price->to_string() : std::string{}});
-    fields.push_back({.name = "Option Data Json", .value = v.option_data_json});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

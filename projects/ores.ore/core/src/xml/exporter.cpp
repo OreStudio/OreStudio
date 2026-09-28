@@ -44,7 +44,7 @@ using trading::domain::swap_instrument_data;
 using trading::domain::fx_instrument_variant;
 using trading::domain::bond_instrument_data;
 using trading::domain::credit_instrument;
-using trading::domain::equity_instrument_variant;
+using trading::domain::equity_instrument_data;
 using trading::domain::commodity_instrument_data;
 using trading::domain::composite_instrument_data;
 using trading::domain::scripted_instrument;
@@ -271,15 +271,30 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for credit type: " << tt;
                         return;
                     }
-                } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
+                } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
                     // Equity reverse mappers are per-type; routing by trade_type_code
                     // mirrors trade_mapper::map_equity_instrument. Keep in sync.
+                    // The position leaf is keyed by the outer document's type, so a
+                    // total return swap is rebuilt as one.
                     bool matched = false;
                     std::visit(
                         [&](const auto& instr) {
                             using I = std::decay_t<decltype(instr)>;
                             using namespace trading::domain;
-                            if constexpr (std::is_same_v<I, equity_option_instrument>) {
+                            if constexpr (std::is_same_v<I, equity_position_instrument>) {
+                                const bool option_position =
+                                    !r.underlyings.empty() ||
+                                    instr.identity.trade_type_code == "EquityOptionPosition";
+                                if (option_position) {
+                                    xsd_t =
+                                        equity_instrument_mapper::reverse_equity_option_position(
+                                            instr, r.underlyings, tt);
+                                } else {
+                                    xsd_t = equity_instrument_mapper::reverse_equity_position(
+                                        instr, tt);
+                                }
+                                matched = true;
+                            } else if constexpr (std::is_same_v<I, equity_option_instrument>) {
                                 if (tt == "EquityOption") {
                                     xsd_t = equity_instrument_mapper::reverse_equity_option(instr);
                                     matched = true;
@@ -357,7 +372,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                                 }
                             }
                         },
-                        r);
+                        r.instrument);
                     if (!matched) {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for equity type: " << tt;
                         return;

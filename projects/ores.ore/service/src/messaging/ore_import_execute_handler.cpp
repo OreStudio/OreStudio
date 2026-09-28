@@ -60,6 +60,7 @@
 #include "ores.trading.api/messaging/equity_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_position_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/equity_position_option_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/equity_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fra_instrument_protocol.hpp"
@@ -1479,7 +1480,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         using ores::trading::domain::fx_instrument_variant;
         using ores::trading::domain::bond_instrument_data;
         using ores::trading::domain::credit_instrument;
-        using ores::trading::domain::equity_instrument_variant;
+        using ores::trading::domain::equity_instrument_data;
         using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
         using ores::trading::domain::scripted_instrument;
@@ -1602,7 +1603,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.maturity_date = instr.maturity_date;
                                 req.change.write.barrier_level = instr.barrier_level;
                                 req.change.write.barrier_type = instr.barrier_type;
-                                req.change.write.knock_out_dates_json = instr.knock_out_dates_json;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
@@ -1820,11 +1820,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     req.change.write.tranche_detachment = r.tranche_detachment;
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
-                } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
-                    return std::visit(
+                } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
+                    boost::uuids::uuid equity_instrument_id{};
+                    const auto equity_saved = std::visit(
                         [&](const auto& instr) -> bool {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
+                            equity_instrument_id = instr.identity.instrument_id;
                             if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
                                 put_equity_option_instrument_request req;
                                 req.change.write.instrument_id = instr.identity.instrument_id;
@@ -1992,7 +1994,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.currency = instr.currency;
                                 req.change.write.quantity = instr.quantity;
                                 req.change.write.price = instr.price;
-                                req.change.write.option_data_json = instr.option_data_json;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
@@ -2006,7 +2007,28 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 return false;
                             }
                         },
-                        r);
+                        r.instrument);
+                    if (!equity_saved)
+                        return false;
+                    int equity_sequence_number = 0;
+                    for (const auto& underlying : r.underlyings) {
+                        put_equity_position_option_underlying_request underlying_req;
+                        underlying_req.change.write.instrument_id = equity_instrument_id;
+                        underlying_req.change.write.sequence_number = ++equity_sequence_number;
+                        underlying_req.change.write.underlying_name = underlying.underlying_name;
+                        underlying_req.change.write.strike = underlying.strike;
+                        underlying_req.change.write.weight = underlying.weight;
+                        underlying_req.change.write.long_short = underlying.long_short;
+                        underlying_req.change.write.option_type = underlying.option_type;
+                        underlying_req.change.write.exercise_type = underlying.exercise_type;
+                        underlying_req.change.write.settlement_type = underlying.settlement_type;
+                        auto underlying_resp =
+                            nats_call(delegated_nats, underlying_req, instr_error);
+                        if (!underlying_resp ||
+                            underlying_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    return true;
                 } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                     const auto& instr = r.instrument;
                     put_commodity_instrument_request req;

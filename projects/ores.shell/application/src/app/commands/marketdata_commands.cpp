@@ -44,9 +44,10 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-// Imports can be large market.txt/fixings.txt files; mirror the
-// bundles publish command's generous request timeout.
-constexpr std::chrono::minutes import_timeout(5);
+// Import and export both carry a whole market.txt/fixings.txt file's worth of
+// content in one request; mirror the bundles publish command's generous
+// request timeout.
+constexpr std::chrono::minutes bulk_transfer_timeout(5);
 
 bool write_file(const std::string& path, const std::string& content) {
     std::ofstream file(path);
@@ -151,7 +152,7 @@ void marketdata_commands::process_import(std::ostream& out,
     out << "Importing market data..." << std::endl;
 
     auto result = do_auth_request<marketdata::messaging::import_market_data_response>(
-        out, session, std::string(req.nats_subject), req, import_timeout);
+        out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
     if (!result)
         return;
 
@@ -210,7 +211,7 @@ void marketdata_commands::process_export(std::ostream& out,
 
     marketdata::messaging::export_market_data_request req;
     auto result = do_auth_request<marketdata::messaging::export_market_data_response>(
-        out, session, std::string(req.nats_subject), req, import_timeout);
+        out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
     if (!result)
         return;
 

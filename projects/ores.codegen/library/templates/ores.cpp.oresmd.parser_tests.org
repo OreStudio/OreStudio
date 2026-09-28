@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-08-09
-#+updated: 2026-08-11
+#+updated: 2026-09-28
 
 The Catch2 tests for the oresmd parser: the design doc's worked examples (static),
 then the spec tables -- Round-trip and Round-trip (extended) rows become round-trip

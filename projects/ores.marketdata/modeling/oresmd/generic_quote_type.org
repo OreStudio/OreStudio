@@ -2,7 +2,7 @@
 :ID: 813470BF-C674-4FCC-97FA-B0333AD27AAF
 :END:
 #+title: Generic oresmd quote type family
-#+description: oresmd specification for ORE's generic index namespace, whose identity is the index name itself, and which has no quote key.
+#+description: oresmd specification for ORE's generic index namespace: the name is the identity, and there is no quote key.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: generic
 #+validate: inline
@@ -18,12 +18,12 @@
 This class carries no quote type, and therefore no quote key, so no
 =* Quote types= table follows and no =quote_type= field is generated.
 
-ORE resolves the =GENERIC-= prefix in its own parser, which asserts the prefix
-and builds a =GenericIndex= from the rest of the name. That rest is the whole of
-the index's identity: a generic index is whatever its producer called it, and ORE
-has no market-data key for one. The corpus carries two of them, on fixing rows
-only: =GENERIC-JuniorNote= in =Legacy/Example_46/Input/fixings.txt= and
-=GENERIC-PortfolioBasket#1= in =Products/Input/fixings.csv=.
+ORE resolves the =GENERIC-= prefix in its own parser. The name is the whole of the
+index's identity: a generic index is whatever its producer called it, the corpus
+carries no other key for either series, and ORE has no market-data key for one. The
+corpus carries two of them, on fixing rows only: =GENERIC-JuniorNote= in
+=Legacy/Example_46/Input/fixings.txt= and =GENERIC-PortfolioBasket#1= in
+=Products/Input/fixings.csv=.
 
 ** The =GENERIC-MD/= sibling is a market-data key, not an index name
 

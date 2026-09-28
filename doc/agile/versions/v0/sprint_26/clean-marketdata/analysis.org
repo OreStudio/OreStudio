@@ -4,7 +4,7 @@
 #+level: cross
 #+filetags: :clean_marketdata:analysis:oresmd:sprint_26:v0:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 
 * Summary
 
@@ -1383,10 +1383,9 @@ part of what remains.
 
 *Update, 2026-09-28 (task AB2922AA, commit 7b3918b6fe).* The generic class is
 closed, and the two market-data keys are settled. ORE resolves =GENERIC-= in a
-parser of its own and builds a =GenericIndex= from the rest of the name, so that
-rest is the whole of the identity: the identifier carries the name upper-cased and
-the case ORE wrote it in beside it in =name_spelling=, which is the FX
-=source_spelling= rule. Both names the corpus carries name and round-trip --
+parser of its own, and the name is all the identity there is: the identifier
+carries it upper-cased and the case ORE wrote it in beside it in =name_spelling=,
+which is the FX =source_spelling= rule. Both names the corpus carries name and
 =GENERIC-JuniorNote= and =GENERIC-PortfolioBasket#1=, the second through the =%23=
 its =#= becomes in a URI -- so the corpus total is **139 of 158**. The two
 =GENERIC-MD/EQUITY_OPTION/PRICE/...= rows are SPX call prices in a fixing column

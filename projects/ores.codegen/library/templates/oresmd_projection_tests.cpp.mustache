@@ -1138,8 +1138,8 @@ TEST_CASE("from_index_name_rejects_commodity_names_that_are_not_the_shape", tags
 
 TEST_CASE("from_index_name_reads_the_generic_names_the_corpus_carries", tags) {
     // The two GENERIC- names in external/ore/examples are both fixings. ORE resolves
-    // the prefix in a parser of its own and builds a GenericIndex from the rest of
-    // the name, so that rest is the whole of the index's identity.
+    // the prefix in a parser of its own, and the name is all the identity the fixing
+    // boundary has: the corpus carries no other key for either series.
     for (const auto& name : {"GENERIC-JuniorNote", "GENERIC-PortfolioBasket#1"}) {
         const auto id = oresmd_projections::from_index_name(name);
         REQUIRE(id.has_value());

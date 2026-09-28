@@ -1192,8 +1192,9 @@ std::optional<std::string> index_name_commodity(const commodity_market_data_iden
 
 /*
  * GENERIC-<NAME>, the name ORE gives a generic index and nothing else. ORE's own
- * parser asserts the prefix and builds a GenericIndex from the rest, so the rest
- * is the whole identity and there is no quote key to project.
+ * parser resolves the prefix, and the name is all the identity there is: the
+ * corpus carries no other key for either series, and there is no quote key to
+ * project.
  *
  * The name is written from the spelling the corpus used when it has one, and from
  * the upper-cased name otherwise, exactly as an FX source is: two spellings of

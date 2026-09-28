@@ -42,10 +42,10 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 * The index names, and what each class needs
 
 Measured over =external/ore/examples= (every =*fixing*.txt= and =*fixing*.csv=
-outside =ExpectedOutput=): **158 distinct index names**. They fall into seven shapes,
-and only the first is nameable today. =COMM-= and =POWER-= are one shape up to the
-prefix but two classes in the census below, because the prefix is what the class
-tag is: 25 and 48 names.
+outside =ExpectedOutput=): **158 distinct index names**. They fall into seven shapes
+as first read, and only the first was nameable at that point. =COMM-= and =POWER-=
+are one shape up to the prefix but two classes in the census below, because the
+prefix is what the class tag is: 25 and 48 names.
 
 | class | count | shape | nameable now | what it needs |
 |-------+-------+-------+--------------+---------------|
@@ -56,7 +56,7 @@ tag is: 25 and 48 names.
 | commodity | 25 | =COMM-<EXCHANGE>:<CONTRACT>-<YYYY-MM>= | 0 | a currency, a delivery period |
 | power | 48 | =POWER-<EXCHANGE>:<CONTRACT>[-<YYYY-MM-DD>[-<SEC>-<SEC>[-DST]]]= | 0 | a delivery window, and the class |
 | security | 2 | =BOND-ISIN:<isin>[-<month>]= | 0 | the security class already models it |
-| (unclassified) | 4 | =GENERIC-...= | 0 | see below |
+| (unclassified) | 4 | =GENERIC-...= | 0 | split below: =generic= for the two index names, a refusal for the two keys |
 
 **The interest-rate 57 split two ways.** The ones whose family the enum holds
 are nameable; 22 of the rest are real benchmark families it does not: =BBSW=,
@@ -271,10 +271,9 @@ stays true.
 
 The last open question is settled. The four =GENERIC= names split two ways.
 
-=GENERIC-= is a prefix ORE resolves: =parseGenericIndex()= asserts it and builds a
-=GenericIndex= from the rest, so =GENERIC-JuniorNote= and
-=GENERIC-PortfolioBasket#1= are index names like any other, and a generic index's
-identity is its own name. =GENERIC-MD= is not the same prefix: it is the
+=GENERIC-= is a prefix ORE resolves in a parser of its own, so =GENERIC-JuniorNote=
+and =GENERIC-PortfolioBasket#1= are index names like any other, and a generic
+index's identity is its own name. =GENERIC-MD= is not the same prefix: it is the
 market-data wrapper whose inner type and metric name the series, and it is already
 one of the coverage gate's two recorded exemptions. Its two rows in
 =Products/Input/fixings.csv= carry SPX call prices -- 2862.29 at the 3300 strike
@@ -305,10 +304,10 @@ checked against Example_46's portfolio rather than assumed either way.
 * The generic index, and the two keys that are not index names
 
 =GENERIC-= is a prefix ORE resolves rather than a spelling of another class, so it
-gets a class of its own. ORE's parser asserts the prefix and builds a
-=GenericIndex= from the rest of the name, which makes that rest the whole of the
-index's identity: a generic index is whatever its producer called it, and there is
-no market-data key for one. The corpus carries two, =GENERIC-JuniorNote= in
+gets a class of its own. ORE's parser resolves the prefix, and the name is all the
+identity there is: a generic index is whatever its producer called it, the corpus
+carries no other key for either series, and ORE has no market-data key for one. The
+corpus carries two, =GENERIC-JuniorNote= in
 =Legacy/Example_46/Input/fixings.txt= and =GENERIC-PortfolioBasket#1= in
 =Products/Input/fixings.csv=, both on fixing rows. So =generic= joins =power= as a
 fixing-only class: it carries no quote type, and =quote_key_generic()= returns
@@ -335,18 +334,20 @@ as fixings to model.
 
 *** Why the name is a spelling, not the entity's own case
 
-The path segment is upper-cased, as it is for every other class, and the case the
-corpus wrote sits beside it in =name_spelling=. Both corpus names arrive in mixed
-case, so without the field neither would read back as ORE wrote it. That is the FX
-=source_spelling= precedent, and the same rule the interest-rate family spells
-under: the identifier holds the normalised token, and the name keeps the spelling it
-arrived under.
+The identifier holds the name upper-cased, as every other class's entity field
+does, and =to_uri()= lower-cases it into the path segment as it does for every
+class. The case the corpus wrote sits beside it in =name_spelling=. Both corpus
+names arrive in mixed case, so without the field neither would read back as ORE
+wrote it. That is the FX =source_spelling= precedent, and the same rule the
+interest-rate family spells under: the identifier holds the normalised token, and
+the name keeps the spelling it arrived under.
 
 Carrying the name verbatim as the entity is the alternative, and it is the only one
 that needs a special case: the parser's entity assignment and =to_uri()='s path
 segment are generated from the Fields table for every class alike, and both
-case-fold what they carry. The spelling reuses the machinery the FX source already
-has, so the class adds no template branch of its own.
+case-fold what they carry. The spelling is a query key whose value the parser
+carries raw, which is what the FX source already is, so the class needed one guard
+slot in the parser's field list and no new shape of its own.
 
 The character set is ORE's and not the URI's. =#= is a fragment delimiter, so it is
 percent-encoded in the path segment and in the spelling, and the parser decodes
@@ -413,7 +414,8 @@ task and name that file in the Command column.
 | Generic names that name, after | 2 of 2, both round-tripped through a URI and back | =ores.marketdata.core.tests "[fixing]"= | =7b3918b6fe= |
 | Corpus names that name, after the generic work | 139 of 158 (interest rates 57, power 48, commodity 25, FX 7, generic 2) | same | =7b3918b6fe= |
 | =ores.marketdata.core= suite, after the generic work | 1641 assertions in 378 cases | =ores.marketdata.core.tests= | =7b3918b6fe= |
-| codegen suite, after the generic work | 992 passed | =pytest projects/ores.codegen/tests= | =7b3918b6fe= |
+| codegen suite, after the generic work | 990 passed | =pytest projects/ores.codegen/tests= | =7b3918b6fe= |
+| codegen suite, after the declared-case check | 992 passed | same | =9edae76203= |
 | Declared oresmd test cases no template emitted, before | 22 of 198 (power 11, generic 11) | =pytest projects/ores.codegen/tests/test_oresmd_spec_test_cases.py=, run against the same generated files at =7b3918b6fe~1= | =9edae76203= |
 
 The test binaries are under
@@ -573,6 +575,18 @@ via its "Verifies task" field.
 | 48 | Commodity's reject list is a hand copy of the shared check minus =delivery= | the commodity model and the parser template | decline | It is the codegen gap the task already records, now confirmed by the reviewer. A shared helper taking an allowed set is the fix, and it belongs with the rest of the validation-mode work rather than here. |
 | 49 | The shape checks admit a calendar-invalid date and an out-of-day window | =ores.cpp.oresmd.projection_tests.org= | accept | Deliberate and already in the PR's limitations; a comment on the case now says so, so a reader is not surprised by what passes. |
 | 50 | The fixes made after the two-axis review were not re-reviewed | the branch | accept | Agreed and already stated in the PR's testing limitations. The two comment changes here are the only code touched since, and they are comments. |
+| 51 | Stale =#+updated:= on the four archetype sources this branch edits, and on =analysis.org= | the four oresmd templates, =analysis.org= | accept | All five bumped to 2026-09-28. The field is read by no template, so nothing regenerates from it; the nine models with the same defect were fixed in =a7bfbc2f91=. |
+| 52 | =generic_quote_type.org='s =#+description:= is 124 characters, over the documented 120 | =generic_quote_type.org= | accept | Shortened to 108. Siblings exceed it too, and no tooling enforces it. |
+| 53 | The power and generic template blocks are byte-identical; one shared key would carry both | =ores.cpp.oresmd.parser_tests.org=, =projection_tests.org= | decline | The per-class block is the file's idiom for all twelve classes, and each block's position reproduces the hand-crafted file it replaced. A shared list would need a class discriminator and would stop a reader finding one class's cases by name. |
+| 54 | The name-spelling case re-lists the same eleven class URIs as the delivery case | =ores.cpp.oresmd.parser_tests.org= | decline | The refusal is per key and each case reads as the key it pins. The list is data in a test rather than logic, and neither list can drift without a class being added, which the corpus census already fails on. |
+| 55 | The new check has no =scripts/check_*.py= entry point | =test_oresmd_spec_test_cases.py= | decline | It runs in the codegen suite, which the pull-request checks run. The sibling scripts are invoked by path because they are gates over the tree rather than pytest cases. |
+| 56 | ORE is claimed to build the =GenericIndex= from the rest of the name, four times | this task, =generic_quote_type.org=, =analysis.org=, the projections template and its case | accept | The claim is not verifiable here -- ORE's source is not vendored -- and it is removed. The prose now states what the corpus shows: the name is the identity, and no other key exists for either series. |
+| 57 | "The path segment is upper-cased" is backwards | this task | accept | Reversed: the identifier's field holds the name upper-cased, and =to_uri()= lower-cases the segment as it does for every class. |
+| 58 | "The class adds no template branch of its own" is false | this task, Result | accept | It adds one guard slot to the parser's field list for a query key the parser carries raw. The sentence now says that. |
+| 59 | The codegen-suite measurement cites 992 at a commit whose suite is 990 | this task | accept | Split: 990 at =7b3918b6fe= and 992 at =9edae76203=, the commit that added the two-case file. |
+| 60 | The census table's "seven shapes" and "(unclassified) 4" contradict the new section | this task, =oresmd_fixing_coverage_tests.cpp= | accept | The table is marked as the first reading and its last row points at the split. The coverage test no longer states a shape count, so it cannot go stale again. |
+| 61 | Acceptance 1 (an empty allowlist) and 3 (the import creates a series) remain unmet | this task | no action | Acknowledged and unchanged: the Status stays STARTED, rows 10 and 11 record both, and the three remaining classes are the next step. |
+| 62 | The diff also emits power's eleven declared cases and adds the cross-model check | the branch | no action | Disclosed in the commit bodies and the pull request's changes. The check is what keeps the repair from being undone. |
 
 * Result
 
@@ -631,5 +645,4 @@ of its own, so =generic= joins =power= as a class the corpus's prefix names: the
 identifier carries the index name upper-cased and the case ORE wrote it in beside it
 in =name_spelling=, which is the FX =source_spelling= rule. Both names the corpus
 carries name and round-trip, the second of them through the =%23= its =#= becomes in
-a URI, and 2 of 2 takes the corpus total to 139 of 158. The class adds no template
-branch: the spelling reuses the field machinery the FX source already has.
+a URI, and 2 of 2 takes the corpus total to 139 of 158.

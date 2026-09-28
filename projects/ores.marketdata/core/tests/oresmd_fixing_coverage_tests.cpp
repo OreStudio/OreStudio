@@ -47,9 +47,9 @@
  * The sibling coverage test measures the instrument keys, and it steps around
  * these files because they are the other reader's payload.
  *
- * The corpus carries 158 distinct index names across nine shapes. This test
- * walks them with the real fixing reader, so a name it counts is a name the
- * import sees, and asks the real projection library to name each one: one way for
+ * The corpus carries 158 distinct index names. This test walks them with the
+ * real fixing reader, so a name it counts is a name the import sees, and asks
+ * the real projection library to name each one: one way for
  * each class whose grammar is decided, and nothing for the classes whose grammar
  * is not. The full table is reported on every run, so the current figure is
  * visible rather than asserted in prose, and the classes that name nothing are
@@ -90,11 +90,11 @@ struct refused_file {
 /// family belongs to -- and the shape is what this library discriminates on, so
 /// the classification is stated in the same terms.
 std::string class_of(std::string_view name) {
-    // Two prefixes, not one. GENERIC-<name> is an index name ORE resolves and
-    // builds a GenericIndex from, while GENERIC-MD/<TYPE>/<METRIC>/... is the
-    // market-data key form an oresmd URI replaces. The corpus puts two of the
-    // latter in a fixing payload, and they are errors rather than fixings, so the
-    // two are counted apart: one names, the other cannot.
+    // Two prefixes, not one. GENERIC-<name> is an index name ORE resolves, while
+    // GENERIC-MD/<TYPE>/<METRIC>/... is the market-data key form an oresmd URI
+    // replaces. The corpus puts two of the latter in a fixing payload, and they
+    // are errors rather than fixings, so the two are counted apart: one names,
+    // the other cannot.
     const std::pair<std::string_view, std::string_view> prefixed[] = {{"FX-", "fx"},
                                                                       {"EQ-", "equity"},
                                                                       {"COMM-", "commodity"},

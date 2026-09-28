@@ -42,6 +42,7 @@ struct report_definition_key {
 struct report_definition_write {
     boost::uuids::uuid id;
     std::string name;
+    boost::uuids::uuid party_id;
     std::string description;
     std::string report_type;
     std::optional<boost::uuids::uuid> fsm_state_id;

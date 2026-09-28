@@ -1,0 +1,51 @@
+Live run of the provision tenant workflow that completes, 2026-09-28,
+environment eager_maxwell, branch feature/complete-the-tenant-provisioning-run.
+
+The database was recreated, the fleet restarted on the branch's binaries, the
+initial administrator bootstrapped, and the Operational profile provisioned
+from the shell with a leaf root LEI that exists in the gleif.lei_entities.small
+staging extract:
+
+  tenant_provisioning provision-tenant empty_operational op_probe2 \
+    "Operational Probe Two" op-probe2.example "Operational probe tenant" \
+    admin_op_probe2 admin@op-probe2.example Secure-Password-123 \
+    root_lei=029200140H7L9YA7H589,counterparty_size=small
+
+  {"success":true,"instance_id":"8bcd7506-07ff-44cf-9a0c-67adf94b5bf5",
+   "tenant_id":"41e704d1-3180-4678-965f-a405246813a9",
+   "account_id":"01a0e8c9-ec96-7d01-abc0-6ddf9b63c766"}
+
+The workflow service's log for that instance, with the repository and
+notification lines removed:
+
+  17:12:22 [INFO] workflow_engine] Workflow STARTED: type=provision_tenant_workflow
+      workflow=8bcd7506-... step_count=4 first_step=publish_bundle
+      subject=iam.v1.tenants.provision-step
+  17:12:34 [INFO] workflow_engine] Step-completed ... outcome=completed   (publish_bundle)
+  17:12:34 [INFO] workflow_engine] Step-completed ... outcome=completed   (import_lei_hierarchy)
+  17:12:35 [INFO] workflow_engine] Step-completed ... outcome=completed   (provision_party)
+  17:12:36 [INFO] workflow_engine] Step-completed ... outcome=completed   (complete_provisioning)
+  17:12:36 [INFO] workflow_engine] Workflow COMPLETED:
+      type=provision_tenant_workflow workflow=8bcd7506-... steps=4
+
+The tenant's readiness and the data it holds, read from the database:
+
+  system.bootstrap_mode = false
+  parties      = 2
+  report_defs  = 62        (31 report definitions for each of the two parties)
+
+What this proves, against the task's acceptance:
+
+- the definition registers and the engine drives the run it starts;
+- every step kind the profile declares becomes one engine step, in the
+  profile's display order, dispatched to iam.v1.tenants.provision-step;
+- provision_party runs once per party the tenant holds, and the report
+  definitions it publishes are one set per party (62 rows for two parties),
+  which is what the composite natural key bought;
+- the run completes on the live deployment and the tenant leaves bootstrap
+  mode, holding the data its profile ordered.
+
+The run before this one, recorded in provision_tenant_run_live.txt, stopped in
+provision_party because the report-definition publication was guarded per party
+but keyed per tenant. That gap is closed by scoping the natural key to the
+party, and this run is its proof.

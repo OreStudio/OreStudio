@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <description> <report_type> <fsm_state_id> <schedule_expression>
+     * @brief add <name> <party_id> <description> <report_type> <fsm_state_id> <schedule_expression>
      * <concurrency_policy> <scheduler_job_id> <pre_processing> <prepared_input_key>
      * <post_processing> <reason> <commentary>
      */
@@ -96,16 +96,16 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <description> <report_type> <fsm_state_id> <schedule_expression>
-     * <concurrency_policy> <scheduler_job_id> <pre_processing> <prepared_input_key>
-     * <post_processing> <reason> <commentary> [--version <n>]
+     * @brief set <id> <name> <party_id> <description> <report_type> <fsm_state_id>
+     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing>
+     * <prepared_input_key> <post_processing> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <description> <report_type> <fsm_state_id>
+     * @brief put-many --count <n> <id> <name> <party_id> <description> <report_type> <fsm_state_id>
      * <schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing>
      * <prepared_input_key> <post_processing> <reason> <commentary>
      */

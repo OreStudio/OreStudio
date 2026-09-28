@@ -132,6 +132,7 @@ begin
         select id into v_def_id
         from ores_reporting_report_definitions_tbl
         where tenant_id = v_tenant
+          and party_id = v_party
           and name = rec.name
           and valid_to = ores_utility_infinity_timestamp_fn();
 

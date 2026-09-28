@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch: feature/define-the-tenant-provisioning-workflow
-#+pr: 2332
+#+branch: feature/complete-the-tenant-provisioning-run
+#+pr: 2338
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -26,11 +26,11 @@ iam.v1.tenants.provision starts a real run. The provision_tenant_workflow defini
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The definition, its registration and the step executor are in, and a run is proven on the live fleet: it starts, builds four steps in the profile's order, publishes the base bundle through its nested run, and stops on the next step with the missing argument named. The run cannot yet reach the completing step, because the profile's LEI-import row names no bundle and party_essentials is registered in no populate file. |
-| Waiting on   | Two bundles from ores.dq: one carrying a generic LEI hierarchy import, and party_essentials. |
-| Next         | Raise the pull request with the live evidence and the two data gaps recorded. |
+| Now          | Complete: a live run of the Operational profile finishes in four steps, the tenant leaves bootstrap mode and holds the data its profile ordered. |
+| Waiting on   | Nothing. |
+| Next         | The three kinds only the ACME card declares (load_staff, attach_photos, start_market_feeds) are the story's next task. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -169,6 +169,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2338][#2338]] | [reporting] Scope the report definition's natural key to its party |
 | [[https://github.com/OreStudio/OreStudio/pull/2332][#2332]] | [iam] Run the provision tenant workflow's steps |
 | [[https://github.com/OreStudio/OreStudio/pull/2330][#2330]] | [iam] Define the tenant provisioning workflow and document the engine |
 
@@ -187,18 +188,23 @@ per-workflow pages, under the new workflow document type, including the
 tenant provisioning page this definition has to satisfy; the scheduler
 cluster; and the capture of the scheduler's fixed minute wake.
 
-The implementation followed on its own branch. The definition and its
-step-kind catalogue, the registration that makes a start resolve, and the
-step executor that serves the step subject are in, with the catalogue,
-dispatch and refusal logic under test. A live run of the Operational
-profile proves the lifecycle and stops where the data stops it: the
-profile's LEI-import row names no bundle and `party_essentials` is
-registered nowhere, so the completing step is never dispatched and the
-tenant stays in bootstrapping. The run and the workflow service's own log
-lines for it are in
-=evidence/provision_tenant_run_live.txt=.
+The definition, its registration and the step executor followed, and the
+acceptance is met on the live deployment. A run of the Operational
+profile completes: four steps in the profile's order, each reporting
+completion; the tenant leaves bootstrap mode; and it holds two parties
+with thirty-one report definitions each. The runs are recorded beside
+this task: =evidence/provision_tenant_run_live.txt= is the run that
+stopped in =provision_party=, and
+=evidence/provision_tenant_run_completed.txt= is the run that finished.
 
-Two things block the acceptance's last bullet, and both are DQ data
-rather than this component's: a bundle carrying a generic LEI hierarchy
-import, and =party_essentials=. Until they land, the Operational card
-refuses or fails by name, which is the behaviour the story asked for.
+Two gaps were closed to get there. The Operational profile ordered two
+bundles that did not exist, so =lei_hierarchy= and =party_essentials=
+were added as DQ populate data. And the report definition's natural key
+was tenant-wide while its publication guard and its row-level policy are
+per party, so the key is now the party's; that one model line is what let
+=provision_party= publish for the second party.
+
+What this task does not land: the three step kinds only the ACME card
+declares — =load_staff=, =attach_photos= and =start_market_feeds= — which
+are the story's next task. A profile that orders them is refused before
+its tenant exists, which is the behaviour the story asked for.

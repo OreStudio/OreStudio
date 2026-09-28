@@ -52,8 +52,8 @@ namespace {
  * @brief Split a comma-separated token into the elements of a list field.
  *
  * The token __NONE__ states the empty list, because the command line cannot
- * carry an empty argument: the tokenizer drops one, and a command that
- * declares no elements has no other way to say so.
+ * carry an empty argument: the tokenizer drops one, and a command whose list
+ * field should be empty has no other way to say so.
  */
 std::vector<std::string> split_list_token(const std::string& value) {
     if (value == "__NONE__")

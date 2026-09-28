@@ -414,10 +414,14 @@ class TestTheRealModels:
         account = self._operation("ores.iam.account_messages.org")
         assert account["shell_has_list"] is True
 
-    def test_the_pre_authentication_operations_are_exactly_the_session_establishing_ones(self):
-        # The shell has one guard for the operations that act on a caller and
-        # none for the operations that produce the caller's session, so this
-        # set is what decides whether `login` can run at all.
+    def test_the_public_operations_are_exactly_the_ones_the_sign_in_needs(self):
+        # A caller with no session may run these and nothing else. Most of
+        # them establish the session, but not all do: bootstrap-status asks
+        # whether the environment holds an administrator yet, and the password
+        # policy states the rules the first administrator's password must
+        # satisfy. The sign-in screen reads both before anyone holds a token,
+        # so an operation that only tells the caller what the sign-in demands
+        # belongs here, while one that acts on an account does not.
         public = set()
         for path in sorted(IAM_MODELING.glob("*.org")):
             try:
@@ -431,6 +435,7 @@ class TestTheRealModels:
         assert public == {
             "login", "service-login", "signup",
             "bootstrap-status", "create-initial-admin", "provision-tenant",
+            "get-password-policy",
         }
 
     def test_the_one_command_that_declares_a_budget_is_acme_provisioning(self):

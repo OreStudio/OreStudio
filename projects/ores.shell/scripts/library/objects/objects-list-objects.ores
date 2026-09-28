@@ -1,0 +1,6 @@
+# =list-objects=
+#
+# GENERATED from doc/recipes/shell/objects/objects.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+objects list-objects __none__ __none__

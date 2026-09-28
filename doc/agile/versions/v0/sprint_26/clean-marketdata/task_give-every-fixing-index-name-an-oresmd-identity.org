@@ -267,6 +267,41 @@ discriminator. So =power= joins =shape_profile= and =rating= as a class the corp
 own prefix names, and the =class_of()= census, which already counts power separately,
 stays true.
 
+* The remaining classes, and the two rows that are market data
+
+The last open question is settled. The four =GENERIC= names split two ways.
+
+=GENERIC-= is a prefix ORE resolves: =parseGenericIndex()= asserts it and builds a
+=GenericIndex= from the rest, so =GENERIC-JuniorNote= and
+=GENERIC-PortfolioBasket#1= are index names like any other, and a generic index's
+identity is its own name. =GENERIC-MD= is not the same prefix: it is the
+market-data wrapper whose inner type and metric name the series, and it is already
+one of the coverage gate's two recorded exemptions. Its two rows in
+=Products/Input/fixings.csv= carry SPX call prices -- 2862.29 at the 3300 strike
+and 2767.41 at 3400, about 95 apart for a 100 strike step -- so they are market
+data in a file whose header declares =fixingId= for its second column. The owner
+reads them as errors rather than as fixings to model.
+
+So the target is **156 of 158**: the two =GENERIC-MD= rows are errors, and the
+other nineteen names are named.
+
+| class | names | what it needs |
+|-------+-------+---------------|
+| inflation | 7 | a known index-code list: the corpus's own header words are dash-less too, and ORE carries such a list in its parser |
+| equity | 8 | nothing new: =ccy_optional_for_fixing= already settles the currency, so the projection is =EQ-<ticker-or-ric>= |
+| security | 2 | =delivery= reused for the bond future's expiry month, the shape commodity's contract month already uses |
+| generic | 2 | the name carried as the entity and projected back as =GENERIC-<name>= |
+
+The names are =AUCPI=, =EUHICP=, =EUHICPXT=, =FRHICP=, =UKRPI=, =USCPI= and =ZACPI=
+for inflation; =EQ-SP5= and seven =EQ-RIC:= or =EQ-FIGI:= tickers for equity;
+=BOND-ISIN:IE00BH3SQ895= and its =-2025-08= future for security; and
+=GENERIC-JuniorNote= and =GENERIC-PortfolioBasket#1= for generic.
+
+One row stays unexplained and is not part of this: =GENERIC-JuniorNote= is valued
+at 4000000 in =Legacy/Example_46/Input/fixings.txt=, alone after a blank line among
+ordinary index fixings. Four million is not a rate or a price, so it should be
+checked against Example_46's portfolio rather than assumed either way.
+
 * Plan
 
 1. **Measure first.** Walk every fixing payload with the real fixing reader,

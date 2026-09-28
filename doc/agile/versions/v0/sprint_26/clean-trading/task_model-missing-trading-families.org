@@ -34,11 +34,11 @@ to the reference-data work and are out of scope, per decision D5.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Every model-side unit of PR 3 is closed on =feature/model-missing-trading-families=. The nine missing families are ported and proven, the M09 fragments are cleared, the M02 survey is complete (fifty-one bindings, twenty-nine recorded no-matches at 2026-09-28, from thirty-one and twenty-six at the 2026-09-26 survey), the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure), and the M04 sweep checked all eighty entity models with no inert assignment. The enumeration sets are closed (defect 4, 5 and 8), the two duplicated names are renamed (defect 6), the average type is a local reference entity with its producer contradiction fixed, and =call_type= is deleted. Defects 14, 15 and 16 are carried to PR 4 by the owner's ruling. The whole-tree build exits 0 with no =error:=, the codegen suite is 806 passed, the component and all-component drift dry runs are empty, the nine owned suites are 9 of 9, and =validate_docs.sh= reports 40 components. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Raise PR 3. The full-suite figure is not re-measured here: the five failures the branch records belong to dq, shell.api, refdata and marketdata and none is trading's. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -1482,7 +1482,16 @@ is pre-existing and outside this unit; the next =compass db recreate= resolves i
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The scripted instrument's trade-type check was widened to the master list | =ores.trading.scripted_instrument.org= | Accepted | Restored the model's own four codes. The same master list in ten other models this PR adds has no documented per-table set, so it is recorded rather than guessed |
+| 2 | Commodity =payment_frequency_code= carried no check | =ores.trading.commodity_instrument.org= | Accepted | Checked against refdata's nine values |
+| 3 | Equity position option =long_short= carried no check | =ores.trading.equity_position_instrument.org= | Accepted | The =in ('Long','Short')= check its siblings carry, plus the soft-FK sentence |
+| 4 | Credit =first_exercise_date= emitted an empty date when the schedule was absent | =ores.ore.core= credit mapper | Accepted | Returns =std::optional= and =nullopt= on the early returns; the reverse emits no empty element |
+| 5 | Swaption =start_date=/=maturity_date= assigned an invalid-date sentinel | =ores.ore.core= swap mapper | Accepted | =.ok()= guards; the audit found only the swaption's targets optional |
+| 6 | =try_one_swap= lost its pre-PR bare payload fallback | =instrument_payload.cpp= | Accepted | The fallback is restored, so payloads written before this PR no longer decode to =monostate= |
+| 7 | The synthetic generator template had no decimal branch | =cpp_domain_type_generator.cpp.mustache= | Accepted | The branch is added and re-tangled; it exposed two conditional-null row checks, fixed at their models |
+| 8 | The commodity shell verb parsed UUIDs unguarded | =ores.shell/application= commodity verb | Accepted | Both conversions wrap in =try/catch= with =fail(out)=, matching the equity child verb |
+| 9 | New =create policy= statements were not re-runnable | =trading_rls_policies_create.sql= | Accepted | All fifteen now drop themselves first; the hygiene gate is 1676 files, 0 problems |
+| 10 | Three duplications and one CLI gap | mappers, shell, child verb | Recorded | The ISO-8601 conversion pair (seven translation units), the triplicated per-entity field lists, and the equity position option CLI's missing read-back each get their own change |
 
 * Result
 
@@ -1619,4 +1628,39 @@ Another finding, not fixed: the one-shot
 names =day_count_code=. It is a historical reshape against a pre-reshape
 database, is referenced by no aggregator, and is neither compiled nor run, so it
 is expected to keep the legacy name on its source side.
+
+** PR 3 merged (recorded 2026-09-28)
+
+PR #2333 merged into =main= as =9631df6bff= at 2026-09-28T17:45:18Z, with all
+fifteen checks green, after one review round and a rebase onto main. The review
+round is in the table above; the fixes rode in as =ec0c04117c= and the ER
+diagram regeneration as =1ac467197a=.
+
+| Check     | Result |
+|-----------+--------|
+| Review    | Ten findings decided: nine fixed at their source, each with a test that fails without the fix, and one recorded as follow-ups |
+| Rebase    | The branch rebased onto main's merge of PR #2240, then onto =9631df6bff= with no conflict on the final push |
+| Database  | A fresh =compass db recreate -y -k= from the tree exits 0 |
+| Build     | =cmake --build build/output/linux-clang-debug-make -j 3= exits 0 with zero =error:= |
+| Fleet     | The fleet is 24 units ready, 25 running with nats |
+| Suite     | =ctest= is 89 of 89 on the fresh database, the nine owned suites included |
+| Codegen   | =pytest projects/ores.codegen/tests -q= is 978 passed |
+| Drift     | =check_component_drift.py --component trading-cpp --dry-run= twice, =--all --dry-run= and =--sweep --dry-run=, all no drift |
+| Hygiene   | =check_sql_hygiene.py projects/ores.sql= is 1676 files with 0 problems |
+
+Two environment facts this round established, both of which cost a CI cycle:
+
+- The codegen gates evaluate the merge with main, so the rebase must precede
+  the final local run. A template-driven reflow passed every local gate while
+  CI stayed red, because main's copy of the affected file still held the old
+  wrap.
+- CI installs =clang-format= from apt on ubuntu-24.04, which is 18.1.3, while
+  the codegen venv held 18.1.8. The one-line difference in
+  =trade_service.cpp= is what the drift gate caught. The venv now carries
+  18.1.3, and regeneration runs with it first on =PATH=.
+
+The lookup aggregator finding above was corrected after it was written: the
+close-out unit wired =trading_create.sql= to 165 of 166 and
+=drop_trading.sql= to 163 of 164 reachable scripts and removed two dangling
+=\ir= lines, so a fresh recreate reaches the lookup tables.
 

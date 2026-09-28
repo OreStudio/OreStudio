@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/composite_instruments/composite_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+composite_instruments list --limit 1

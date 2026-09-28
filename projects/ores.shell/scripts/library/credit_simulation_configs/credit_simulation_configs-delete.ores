@@ -1,0 +1,6 @@
+# =delete=
+#
+# GENERATED from doc/recipes/shell/credit_simulation_configs/credit_simulation_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+credit_simulation_configs delete __none__ system.new_record generated_script

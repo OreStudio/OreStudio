@@ -1,0 +1,6 @@
+# =by-transition-matrix-id=
+#
+# GENERATED from doc/recipes/shell/credit_simulation_matrix_row_configs/credit_simulation_matrix_row_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+credit_simulation_matrix_row_configs by-transition-matrix-id 00000000-0000-0000-0000-000000000000 --limit 1

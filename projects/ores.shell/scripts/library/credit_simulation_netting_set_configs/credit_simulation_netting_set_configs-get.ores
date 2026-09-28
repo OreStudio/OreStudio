@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/credit_simulation_netting_set_configs/credit_simulation_netting_set_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+credit_simulation_netting_set_configs get __none__

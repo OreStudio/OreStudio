@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/fx_accumulator_instruments/fx_accumulator_instrument.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-fx_accumulator_instruments add __none__ __none__ __none__ 0 0 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+fx_accumulator_instruments add __none__ - __none__ __none__ 0 __none__ __none__ 1970-01-01 - __none__ system.new_record generated_script

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/bond_instruments/bond_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+bond_instruments list --limit 1

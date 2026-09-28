@@ -230,6 +230,8 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/2185][#2185]] | [marketdata] Make the models truthful and fix the junction gate |
 | [[https://github.com/OreStudio/OreStudio/pull/2228][#2228]] | [marketdata] Close the oresmd coverage gap and name every corpus key |
 | [[https://github.com/OreStudio/OreStudio/pull/2243][#2243]] | [marketdata] Regenerate, migrate the consumers, delete what generation supersedes |
+| [[https://github.com/OreStudio/OreStudio/pull/2313][#2313]] | [marketdata] Wire the import boundary through oresmd, and make its grammar honest |
+| [[https://github.com/OreStudio/OreStudio/pull/2321][#2321]] | [marketdata] Write the stored market data back out as ORE text |
 
 * Review
 

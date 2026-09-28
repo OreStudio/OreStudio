@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-the-convention-categories
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
 #+updated: 2026-09-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

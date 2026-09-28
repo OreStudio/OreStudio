@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 6F3517B3-89B6-453C-B506-22FA63DCAC81
+:END:
+#+title: The IAM seed-profile tests fail on a second run against the same database
+#+description: ores.iam.core.tests writes seed profiles whose code is <noun>_profile-<n>, with n counted from zero inside each process. The unique index covers an active code across the whole table, so a second run of the suite collides with the rows the first run left: duplicate key value violates unique constraint seed_profiles_code_uniq_idx on CD_profile-0. Two tests fail, and only a database recreate makes the suite green again.
+#+type: capture
+#+level: cross
+#+filetags: :iam:tests:hygiene:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make =ores.iam.core.tests= pass on a database that has already run the suite
+once. Today only a =compass db recreate= makes it green.
+
+The failure is on the second run:
+
+#+begin_example
+Repository error: Executing INSERT failed: ERROR: duplicate key value violates
+unique constraint "seed_profiles_code_uniq_idx"
+DETAIL: Key (code)=(CD_profile-0) already exists.
+#+end_example
+
+Two cases fail, both in =seed_profile_eventing_integration_tests.cpp=:
+=write_seed_profile_publishes_an_event= (line 118) and
+=write_seed_profile_step_publishes_an_event= (line 122).
+
+* Why
+
+The synthetic generator builds the code from a counter that starts at zero in
+every process
+(==projects/ores.iam/api/src/generators/seed_profile_generator.cpp==, lines 48
+to 49):
+
+#+begin_src cpp
+const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+r.code = std::string(faker::word::noun()) + "_profile" + "-" + std::to_string(idx);
+#+end_src
+
+The unique index covers one active code across the whole table
+(==projects/ores.sql/create/iam/iam_seed_profiles_create.sql==, line 93):
+
+#+begin_src sql
+create unique index if not exists seed_profiles_code_uniq_idx
+on "ores_iam_seed_profiles_tbl" (code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+So the first run writes =CD_profile-0=, the second run writes the same code, and
+the insert is refused. The tests do not remove what they wrote, and the
+generated code carries nothing that distinguishes one run from the next.
+
+The same shape threatens every synthetic code that a unique index covers. The
+development database also holds =CD_tenant-0= through =CD_tenant-10= and four
+=marketdata.corpus_*= tenants from earlier runs of the suite, so the next
+generator that gains a unique code index fails the same way.
+
+Two candidate fixes, and the choice is open:
+
+- Give each test a code that is unique per run. The seed-profile tests already
+  override =change_reason_code=, so they can set =code= the same way.
+- Make the generated code unique at the source. That is a codegen change, and it
+  reaches the generator of every entity.
+
+* References
+
+- =projects/ores.iam/core/tests/seed_profile_eventing_integration_tests.cpp= --
+  the two failing cases.
+- =projects/ores.iam/api/src/generators/seed_profile_generator.cpp= -- the code
+  that repeats.
+- =projects/ores.sql/create/iam/iam_seed_profiles_create.sql= -- the index that
+  refuses the repeat.
+
+* See also
+
+- [[id:0F5115A5-05FA-4A0E-A24B-1305F6DBC41B][Workflow tests leave in-progress runs behind in every database they touch]] --
+  the same class of leftover state, found the same way.

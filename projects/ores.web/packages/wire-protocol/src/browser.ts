@@ -81,3 +81,8 @@ export { SUBJECTS } from './operations.js';
 // definition the server serialised it from.
 export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';
 export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
+
+// The provision request and its answer, parsed by the browser for the same
+// reason: the BFF serialised them from these definitions.
+export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
+export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';

@@ -135,6 +135,9 @@ export type { ChangeReason } from './operations.js';
 export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';
 export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
 
+export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
+export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
+
 export {
     imageInfoSchema,
     listImagesRequestSchema,

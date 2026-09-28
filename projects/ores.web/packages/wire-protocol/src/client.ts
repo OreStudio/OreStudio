@@ -48,11 +48,17 @@ import {
     logoutResponseSchema,
     partyRequestSchema,
     partyResponseSchema,
+    provisionTenantReplySchema,
+    provisionTenantRequestSchema,
     refreshResponseSchema,
     accountPageSchema,
     httpInfoResponseSchema,
     listAccountsRequestSchema,
+    toProvisionTenantCommand,
+    toProvisionTenantResult,
     type LoginResponse,
+    type ProvisionTenantRequest,
+    type ProvisionTenantResult,
     type SeedProfileChoice,
     type WireAccountPage,
 } from './operations.js';
@@ -320,6 +326,30 @@ export class OresClient {
                 ? left.code.localeCompare(right.code)
                 : left.order - right.order,
         );
+    }
+
+    /**
+     * Provisions a tenant from a starting point.
+     *
+     * The tenant and its administrator exist by the time this answers, and the
+     * answer carries the id of the workflow instance that runs the steps the
+     * profile orders. Those steps take minutes, so the run is followed by its
+     * id rather than by waiting here: the call itself is as slow as creating
+     * the tenant and its account, which is why it is not a fast call.
+     *
+     * A refusal the server states, such as an unknown profile or a parameter
+     * its schema does not accept, comes back as a result with `success` false
+     * rather than as a thrown error: it is an answer to the request, not a
+     * failure of the call.
+     */
+    async provisionTenant(input: ProvisionTenantRequest): Promise<ProvisionTenantResult> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.provisionTenant,
+            toProvisionTenantCommand(provisionTenantRequestSchema.parse(input)),
+            provisionTenantReplySchema,
+            { timeoutMs: this.#timeouts.slowMs },
+        );
+        return toProvisionTenantResult(reply);
     }
 
     /**

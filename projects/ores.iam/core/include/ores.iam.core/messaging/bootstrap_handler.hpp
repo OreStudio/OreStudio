@@ -23,14 +23,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
-#include "ores.iam.core/service/account_operations_service.hpp"
-#include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
+#include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -38,8 +36,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -53,9 +49,6 @@ inline auto& bootstrap_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.messaging.bootstrap_handler");
     return instance;
 }
-
-/// The role a provisioned tenant's own administrator takes.
-constexpr std::string_view tenant_admin_role = "TenantAdmin";
 
 } // namespace
 
@@ -174,91 +167,24 @@ public:
             return;
         }
         try {
-            using ores::database::service::tenant_context;
-            using ores::database::repository::execute_parameterized_multi_column_query;
-
-            // Call the SQL provisioner in system tenant context. The procedure
-            // creates the tenant, copies all system-tenant reference data (roles,
-            // permissions, lookup tables), seeds the WRLD business centre, creates
-            // the system party, and sets the bootstrap mode flag.
-            auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-            // The actor for the provisioning operation is the IAM service
-            // account, not the new tenant admin (req->principal). The admin
-            // username is not yet a known account at this point and would
-            // fail the modified_by validation in the SQL trigger.
-            // Use ctx_.service_account() so the name is always env-scoped and
-            // matches what iam_service_accounts_populate.sql registered.
-            const auto rows = execute_parameterized_multi_column_query(
-                sys_ctx,
-                "SELECT tenant_id::text, system_party_id::text"
-                " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)",
-                {req->type,
-                 req->code,
-                 req->name,
-                 req->hostname,
-                 req->description,
-                 ctx_.service_account()},
-                bootstrap_handler_lg(),
-                "Provisioning tenant");
-
-            if (rows.empty() || rows[0].size() < 2 || !rows[0][0] || !rows[0][1]) {
-                reply(nats_,
-                      msg,
-                      provision_tenant_response{.success = false,
-                                                .error_message =
-                                                    "Provisioner returned incomplete result"});
-                return;
-            }
-
-            const auto& tenant_id_str = *rows[0][0];
-            const auto& system_party_id_str = *rows[0][1];
-            BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                << "Provisioned tenant: " << req->code << " (id: " << tenant_id_str
-                << ", system_party: " << system_party_id_str << ")";
-
-            // Create the admin account in the new tenant's context. The
-            // username is the part of the principal before the hostname, and
-            // the audit columns take the same name rather than the principal.
-            const auto username = username_of(req->principal);
-            auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id_str);
-            service::account_operations_service svc(tenant_ctx);
-            auto acct =
-                svc.create_account(username, req->email, req->password, ctx_.service_account());
-
-            // Associate the admin account with the system party returned by provisioner.
-            domain::account_party ap;
-            ap.account_id = acct.id;
-            ap.party_id = boost::uuids::string_generator{}(system_party_id_str);
-            ap.tenant_id = tenant_id_str;
-            ap.modified_by = username;
-            ap.performed_by = username;
-            ap.change_reason_code = "system.initial_load";
-            ap.change_commentary = "Provision tenant: associate admin with system party";
-            service::account_party_service ap_svc(tenant_ctx);
-            ap_svc.save_account_party(ap);
-            BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                << "Associated " << username << " with system party " << system_party_id_str;
-
-            // The provisioner copies the system tenant's role definitions into
-            // the new tenant but assigns none of them, so without this the
-            // admin can log in and do nothing: a role is what carries the
-            // permissions. TenantAdmin is the tenant's own administrator, as
-            // against SuperAdmin, which holds the platform-level tenant verbs.
-            service::authorization_service auth_svc(tenant_ctx);
-            if (auto role = auth_svc.find_role_by_name(std::string(tenant_admin_role))) {
-                auth_svc.assign_role(acct.id, role->id, ctx_.service_account());
-                BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                    << "Assigned " << tenant_admin_role << " to " << username;
-            } else {
-                BOOST_LOG_SEV(bootstrap_handler_lg(), error)
-                    << "Tenant " << req->code << " has no " << tenant_admin_role
-                    << " role, so " << username
-                    << " was created without one and holds no permissions";
-            }
+            // The tenant and its administrator are created the way every
+            // provisioning verb creates them, so this verb and the generic one
+            // that replaces it (iam.v1.tenants.provision) cannot drift apart
+            // while both are reachable.
+            const auto created =
+                service::tenant_provisioning_service(ctx_)
+                    .provision(req->type,
+                               req->code,
+                               req->name,
+                               req->hostname,
+                               req->description,
+                               username_of(req->principal),
+                               req->email,
+                               req->password);
 
             // Reload the new tenant's party cache: the SQL provisioner created
             // the system party directly, no NATS event is published for it.
-            std::thread([pc = party_cache_, tid = tenant_id_str]() {
+            std::thread([pc = party_cache_, tid = created.tenant_id]() {
                 (void)pc->load(tid);
             }).detach();
 
@@ -266,8 +192,8 @@ public:
             reply(nats_,
                   msg,
                   provision_tenant_response{.success = true,
-                                            .account_id = boost::uuids::to_string(acct.id),
-                                            .tenant_id = tenant_id_str});
+                                            .account_id = created.account_id,
+                                            .tenant_id = created.tenant_id});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(

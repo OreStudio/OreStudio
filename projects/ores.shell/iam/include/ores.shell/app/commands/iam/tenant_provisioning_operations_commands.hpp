@@ -70,6 +70,14 @@ public:
                                                      const std::vector<std::string>& args);
 
     /**
+     * @brief provision-tenant <profile_code> <tenant_code> <tenant_name> <tenant_hostname>
+     * <tenant_description> <admin_username> <admin_email> <admin_password> <parameters>
+     */
+    static void process_provision_tenant(std::ostream& out,
+                                         ores::nats::service::nats_client& session,
+                                         const std::vector<std::string>& args);
+
+    /**
      * @brief provision-acme-tenant
      */
     static void process_provision_acme_tenant(std::ostream& out,

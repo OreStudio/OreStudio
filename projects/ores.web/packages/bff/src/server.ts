@@ -43,6 +43,8 @@ import {
     imageBytesToBuffer,
     toWireTimestamp,
     loginResultSchema,
+    provisionTenantRequestSchema,
+    provisionTenantResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
@@ -473,6 +475,25 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return seedProfilesResponseSchema.parse({
             profiles: await session.client.seedProfiles(),
         });
+    });
+
+    /**
+     * Provisions a tenant from a starting point.
+     *
+     * The tenant and its administrator exist by the time this answers, and the
+     * answer carries the id of the run that provisions the rest of the profile.
+     * The browser follows that run by its id rather than waiting here, because
+     * the steps it orders take minutes.
+     */
+    server.post('/api/provision-tenant', async (request) => {
+        const session = requireSession(request);
+        const parsed = provisionTenantRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest(
+                'A profile code, the tenant fields and the administrator fields are required.',
+            );
+        }
+        return provisionTenantResultSchema.parse(await session.client.provisionTenant(parsed.data));
     });
 
     /**

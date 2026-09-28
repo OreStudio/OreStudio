@@ -31,9 +31,15 @@
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
+#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
+#include "ores.iam.core/service/seed_profile_parameter_check.hpp"
+#include "ores.iam.core/service/seed_profile_parameter_service.hpp"
+#include "ores.iam.core/service/seed_profile_service.hpp"
+#include "ores.iam.core/service/seed_profile_step_service.hpp"
+#include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
@@ -45,6 +51,7 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
@@ -53,6 +60,7 @@
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -76,6 +84,23 @@ inline auto& tenant_provisioning_handler_lg() {
     static auto instance =
         ores::logging::make_logger("ores.iam.messaging.tenant_provisioning_handler");
     return instance;
+}
+
+/// The first field a provision request must carry and does not, or an empty
+/// string when it carries them all. The field is named because the person who
+/// left it out is the one who has to fill it in.
+[[nodiscard]] inline std::string first_empty_field(const provision_tenant_command& req) {
+    const std::vector<std::pair<std::string, const std::string&>> required{
+        {"tenant_code", req.tenant_code},
+        {"tenant_name", req.tenant_name},
+        {"tenant_hostname", req.tenant_hostname},
+        {"admin_username", req.admin_username},
+        {"admin_email", req.admin_email},
+        {"admin_password", req.admin_password}};
+    for (const auto& [name, value] : required)
+        if (value.empty())
+            return "The field '" + name + "' has no value.";
+    return {};
 }
 
 } // namespace
@@ -181,6 +206,139 @@ public:
             reply(nats_,
                   msg,
                   complete_tenant_provisioning_response{.success = false, .message = e.what()});
+        }
+    }
+
+    /**
+     * @brief Provisions a tenant from a seed profile.
+     *
+     * A refusal happens before anything is created: an unknown profile code, a
+     * tenant or administrator field the request leaves empty, and a parameter
+     * the profile does not declare or whose value its data type or its choices
+     * refuse. Only then are the tenant and its administrator created, and the
+     * steps the profile orders are started as a workflow instance whose id the
+     * answer carries.
+     */
+    void provision_tenant(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
+
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!has_permission(*ctx_expected, "iam::tenants:create")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        auto req = decode<provision_tenant_command>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  provision_tenant_command_response{.success = false,
+                                            .message = "Invalid request payload."});
+            return;
+        }
+
+        try {
+            const auto empty_field = first_empty_field(*req);
+            if (!empty_field.empty()) {
+                reply(nats_,
+                      msg,
+                      provision_tenant_command_response{.success = false, .message = empty_field});
+                return;
+            }
+
+            // A profile is system-owned registered data, and the SQL provisioner
+            // refuses to run outside the system tenant anyway, so the read and
+            // the write share one context.
+            auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+            const auto profiles =
+                ores::iam::service::seed_profile_service(sys_ctx).list_seed_profiles(0, 1000);
+            const auto profile =
+                std::find_if(profiles.begin(), profiles.end(), [&](const auto& candidate) {
+                    return candidate.code == req->profile_code;
+                });
+            if (profile == profiles.end()) {
+                reply(nats_,
+                      msg,
+                      provision_tenant_command_response{
+                          .success = false,
+                          .message =
+                              "The seed profile '" + req->profile_code + "' does not exist."});
+                return;
+            }
+
+            const auto profile_id = boost::uuids::to_string(profile->id);
+            const auto declared = ores::iam::service::seed_profile_parameter_service(sys_ctx)
+                                      .list_seed_profile_parameters_by_seed_profile_id(
+                                          profile_id, 0, 1000);
+            const auto checked = ores::iam::service::check_parameters(declared, req->parameters);
+            if (!checked.accepted()) {
+                reply(nats_,
+                      msg,
+                      provision_tenant_command_response{.success = false, .message = checked.refusal});
+                return;
+            }
+
+            const auto created =
+                ores::iam::service::tenant_provisioning_service(sys_ctx)
+                    .provision(profile->tenant_type,
+                               req->tenant_code,
+                               req->tenant_name,
+                               req->tenant_hostname,
+                               req->tenant_description,
+                               req->admin_username,
+                               req->admin_email,
+                               req->admin_password);
+
+            const auto declared_steps =
+                ores::iam::service::seed_profile_step_service(sys_ctx)
+                    .list_seed_profile_steps_by_seed_profile_id(profile_id, 0, 1000);
+
+            ores::iam::workflow::provision_tenant_workflow_request run;
+            run.profile_code = profile->code;
+            run.tenant_code = req->tenant_code;
+            run.tenant_hostname = req->tenant_hostname;
+            for (const auto& value : checked.values)
+                run.parameters.push_back({value.name, value.value});
+            for (const auto& step : declared_steps)
+                run.steps.push_back({step.step_kind, step.arguments_json});
+
+            // The instance id is minted here, so the answer names the run the
+            // caller follows without waiting for the engine to create it. The
+            // engine treats a repeat of the same id as the same run.
+            boost::uuids::random_generator generate;
+            const auto instance_id = boost::uuids::to_string(generate());
+
+            ores::workflow::messaging::start_workflow_message start;
+            start.type = std::string(ores::iam::workflow::provision_tenant_workflow_type);
+            start.tenant_id = created.tenant_id;
+            start.request_json = rfl::json::write(run);
+            start.correlation_id = correlation_id;
+            start.instance_id = instance_id;
+
+            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
+                             ores::nats::default_wire_codec().encode(start),
+                             ores::nats::service::forwarded_caller_headers(msg));
+
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "Started " << start.type << " for tenant " << req->tenant_code
+                << " (instance: " << instance_id << ")";
+
+            reply(nats_,
+                  msg,
+                  provision_tenant_command_response{.success = true,
+                                            .instance_id = instance_id,
+                                            .tenant_id = created.tenant_id,
+                                            .account_id = created.account_id});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, provision_tenant_command_response{.success = false, .message = e.what()});
         }
     }
 

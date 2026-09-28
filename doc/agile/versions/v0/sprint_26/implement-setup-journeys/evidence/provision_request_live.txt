@@ -1,0 +1,59 @@
+Live proof of iam.v1.tenants.provision, recorded 2026-09-28 on the
+eager_maxwell environment after `compass db recreate -y -k` and a
+restart of ores.iam.service and ores.web.service, at branch
+feature/add-the-generic-provision-request (base commit 6261ae8bc5).
+
+The four answers the BFF's /api/provision-tenant route gave, in order:
+the first administrator of a fresh installation, that administrator's
+session, and then the three provision requests.
+
+--- 1. create the first administrator ---
+{"accountId":"5ec412d6-9b1d-412e-87c2-784af5c25e60","tenantId":"ffffffff-ffff-ffff-ffff-ffffffffffff"}
+HTTP 200
+
+--- 2. sign in ---
+{"outcome":"active","session":{"username":"super_admin","email":"super_admin@system.ores","accountId":"5ec412d6-9b1d-412e-87c2-784af5c25e60","tenantId":"ffffffff-ffff-ffff-ffff-ffffffffffff","tenantName":"","party":{"id":"45f71205-e349-4c8d-a175-ad26547c2dd0","name":"System Party","partyCategory":"System","businessCenterCode":"WRLD"},"availableParties":[{"id":"45f71205-e349-4c8d-a175-ad26547c2dd0","name":"System Party","partyCategory":"System","businessCenterCode":"WRLD"}],"accessLifetimeSeconds":1800,"passwordResetRequired":false}}
+HTTP 200
+
+--- 3. unknown profile code ---
+{"success":false,"message":"The seed profile 'nope' does not exist.","instanceId":"","tenantId":"","accountId":""}
+HTTP 200
+
+--- 4. a value outside the declared schema ---
+{"success":false,"message":"The value 'huge' for 'counterparty_size' is not one of: small, large.","instanceId":"","tenantId":"","accountId":""}
+HTTP 200
+
+--- 5. the accepted request ---
+{"success":true,"message":"","instanceId":"b34f75fb-81ac-4446-983c-cdb1d0b442cd","tenantId":"ae6a47ce-5822-4a1e-9770-1192bfbd9fb0","accountId":"01a0e607-2bca-7162-9d88-e8b6bfe0b2a0"}
+HTTP 200
+
+The tenant the accepted request created. Its type is the profile's,
+`production`, which the request never names:
+
+   code    |    type    |       name        |       hostname        |    status
+-----------+------------+-------------------+-----------------------+---------------
+ northwind | production | Northwind Capital | northwind.example.com | bootstrapping
+
+The administrator it created, with the role that carries its
+permissions:
+
+   username   |            email            |    role
+--------------+-----------------------------+-------------
+ tenant_admin | admin@northwind.example.com | TenantAdmin
+
+The run the answer named. The definition is plan step 7's, so the
+engine received the start and refused it for the reason recorded here,
+and no instance row exists:
+
+  select count(*) as instances from ores_workflow_workflow_instances_tbl
+  where id = 'b34f75fb-81ac-4446-983c-cdb1d0b442cd';
+   instances
+  -----------
+           0
+
+  04:20:24.995563 [INFO] [ores.iam.messaging.tenant_provisioning_handler] Started provision_tenant_workflow for tenant northwind (instance: b34f75fb-81ac-4446-983c-cdb1d0b442cd)
+  04:20:24.996782 [INFO] [ores.workflow.service.workflow_engine] Start-workflow request received: type=provision_tenant_workflow instance_id=b34f75fb-81ac-4446-983c-cdb1d0b442cd corr=902476eb-5edc-4b58-9bb8-c7fdeb263f2f
+  04:20:24.996855 [ERROR] [ores.workflow.service.workflow_engine] No workflow definition for type: provision_tenant_workflow
+
+The tenant stays in its `bootstrapping` status, which is the status the
+SQL provisioner gives a new tenant and which completing the run clears.

@@ -43,17 +43,21 @@
 
 \echo '--- Seed Profiles ---'
 
--- Operational: for real use. It publishes the base bundle, imports the parties
--- under a GLEIF root LEI the administrator names, and creates no test data. It
--- prefills no tenant detail, because the administrator supplies the tenant and
--- its own identity.
+-- Operational: for real use, so the tenant it makes is a production one. It
+-- publishes the base bundle, imports the parties under a GLEIF root LEI the
+-- administrator names, and creates no test data. It prefills no tenant detail,
+-- because the administrator supplies the tenant and its own identity.
+--
+-- ACME demo: for demos and testing, so its tenant is an evaluation one. Its
+-- tenant type is the only tenant detail the form does not ask for, and the
+-- starting point the person chose states it.
 --
 -- The card copy is the prototype's: the accepted starting-point design states
 -- the tagline, the audience line and the three bullets, and a new profile
 -- states its own in its row.
 insert into ores_iam_seed_profiles_tbl (
     id, code, name, summary, audience, bullets_json,
-    tenant_name, tenant_code, tenant_hostname, admin_username, admin_email,
+    tenant_type, tenant_name, tenant_code, tenant_hostname, admin_username, admin_email,
     inherits_admin_password, force_password_change, display_order,
     version, modified_by, performed_by, change_reason_code, change_commentary
 ) values (
@@ -63,7 +67,7 @@ insert into ores_iam_seed_profiles_tbl (
     'Production-ready setup',
     'For real use',
     '["Standard reference data and counterparties", "Your legal entities, from their LEI", "No test data"]'::jsonb,
-    '', '', null, '', '',
+    'production', '', '', null, '', '',
     false, true, 10,
     0, current_user, current_user, 'system.initial_load',
     'Initial population of seed profiles'
@@ -74,7 +78,7 @@ insert into ores_iam_seed_profiles_tbl (
     'Pre-configured sandbox',
     'For demos and testing',
     '["4 legal entities, books and desks", "45 staff to sign in as", "Live synthetic market data"]'::jsonb,
-    'Acme Corporation', 'acme_corporation', 'acme_corporation',
+    'evaluation', 'Acme Corporation', 'acme_corporation', 'acme_corporation',
     'tenant_admin', 'admin@acme_corporation.com',
     true, false, 20,
     0, current_user, current_user, 'system.initial_load',

@@ -48,10 +48,10 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The tenant journey is next. |
+| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, and one provision request creates a tenant and its administrator for every tenant, the first included. |
 | Waiting on    | Nothing. |
-| Next          | The rest of plan step 4: the seed profile read, the provision request, progress and retry. |
-| Last touched  | 2026-09-27                               |
+| Next          | Plan step 7: order the tenant provisioning steps as the workflow definition the provision request starts. |
+| Last touched  | 2026-09-28                               |
 
 * Acceptance
 
@@ -98,6 +98,7 @@ state and the progress are real.
 | [[id:2888E3D3-CCC0-43B5-AEB4-6A20A5298188][Model the seed profile and seed the two profiles]] | DONE | 2026-09-27 | 2026-09-28 | The seed profile is registered data: a row orders step kinds from a fixed catalogue and declares the parameters its form takes. Empty operational and ACME demo become rows. |
 | [[id:00CDF787-728D-4422-B9D5-2B7C00C129A1][Read the seed profiles through the BFF]] | DONE | 2026-09-28 | 2026-09-28 | The tenant journey's first step shows the starting points, and the browser reaches the server through one hand-written BFF route per step. Add the route that returns the profiles with their ordered steps and their declared parameters, and the wire-client method behind it. |
 | [[id:F016C6D3-2832-46A0-B4EB-8680DD5E4B8E][Make the seed profile rows match the prototype's cards]] | DONE | 2026-09-28 | 2026-09-28 | The prototype at prototype/first-run-journey is the accepted record for the cards' copy and shape. The rows seeded by the previous task carry a longer description, no bullets, and a counterparty count where the contract and the prototype both say a counterparty size. Reconcile the model, the rows and the read with the prototype. |
+| [[id:B03D4339-FECB-4A9E-B5A1-1CA23FB2BF17][Add the generic provision request]] | DONE | 2026-09-28 | 2026-09-28 | Provisioning a tenant is one request for every tenant, the first one included, instead of a bootstrap-specific request and an ACME-specific one. The request names the seed profile and the values its parameters take, and answers with a workflow instance id at once. |
 
 * Plan
 
@@ -140,6 +141,18 @@ none of them depends on it and all of them are permanent.
   catalogue, so a new profile is a row and a new step kind is code. The
   screen builds its form from the profile's declared parameter schema
   and holds no profile of its own.
+- *The tenant's type is the starting point's, and a replaced verb retires
+  with its last caller.* A tenant row carries a type that a lookup table
+  validates, and the profile states it: Operational's tenants are
+  production and ACME demo's are evaluation. The column went on
+  =seed_profile= rather than the provision request, because a request
+  that named the type would be a second starting point beside the one the
+  person chose. For the same reason the two verbs the generic request
+  replaces stay reachable until their last caller moves: the shell is
+  that caller, plan step 12 is where it moves, and the work the ACME verb
+  orchestrates server-side is the work the provisioning definition orders
+  — retiring it before step 7 would leave =--source acme= creating a
+  tenant with none of its data.
 - *The provisioning steps are idempotent.* A retry resumes from the
   failed step and keeps the steps that completed. Discarding a
   half-provisioned tenant is a separate administrator action.

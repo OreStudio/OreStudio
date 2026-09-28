@@ -325,13 +325,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
             return pc->compute_visible_party_ids(tenant_id, party_id);
         });
     // --- Tenant provisioning ---
-    // The provisioning workflow is hand-written, so its two commands are
-    // wired here beside the handler that serves them.
+    // The provisioning commands are hand-written, so they are wired here
+    // beside the handler that serves them.
     auto tph =
         std::make_shared<tenant_provisioning_handler>(nats, ctx, signer, std::move(impersonation));
     subs.push_back(nats.queue_subscribe(
         complete_tenant_provisioning_command::nats_subject, qg, [tph](ores::nats::message msg) {
             tph->complete_provisioning(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        provision_tenant_command::nats_subject, qg, [tph](ores::nats::message msg) {
+            tph->provision_tenant(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         provision_acme_tenant_command::nats_subject, qg, [tph](ores::nats::message msg) {

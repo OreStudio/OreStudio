@@ -87,8 +87,8 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code>
-     * <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
+     * @brief add <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name>
+     * <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
      * <force_password_change> <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -96,8 +96,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code>
-     * <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
+     * @brief set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name>
+     * <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
      * <force_password_change> <display_order> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -106,7 +106,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json>
-     * <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email>
+     * <tenant_type> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email>
      * <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

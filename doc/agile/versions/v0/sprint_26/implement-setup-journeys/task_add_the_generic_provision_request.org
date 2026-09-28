@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: B03D4339-FECB-4A9E-B5A1-1CA23FB2BF17
+:END:
+#+title: Task: Add the generic provision request
+#+description: Provisioning a tenant is one request for every tenant, the first one included, instead of a bootstrap-specific request and an ACME-specific one. The request names the seed profile and the values its parameters take, and answers with a workflow instance id at once.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/add-the-generic-provision-request
+#+pr: 2319
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One provision request replaces iam.v1.bootstrap.provision-tenant and iam.v1.tenants.provision-acme. It takes a profile code and the parameter values the profile's declared schema accepts, refuses values the schema does not declare or does not accept, and answers with the instance id the run follows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- iam.v1.tenants.provision takes a seed profile code and its parameter values and answers with a workflow instance id, for every tenant including the first.
+- The request refuses an unknown profile code, a parameter the profile does not declare, and a value that does not fit the profile's declared parameter schema, naming the field.
+- The tenant and its administrator exist by the time the request answers, and the tenant type is the profile's.
+- The BFF has one hand-written route for the step, and the browser's wire client a method behind it.
+- The route, the client and the validation have tests that call them the way their callers do.
+- The live deployment accepts the request and creates the tenant and its administrator. The run's steps are step 7's, as the plan records.
+- The two requests it replaces stay reachable until their last caller moves in step 12, which is where the story's plan retires them.
+
+* Plan
+
+Step 6 adds the one verb the two clients will share.
+=iam.v1.tenants.provision= takes the profile code, the tenant's own
+name, code, hostname and description, its administrator's username,
+email and password, and the profile's parameter values. It answers at
+once with the id of the run it started, the tenant it created and that
+tenant's administrator account.
+
+The decisions taken here:
+
+- *The tenant type is the profile's, not the request's.* A tenant row
+  carries a type validated against =ores_iam_tenant_types_tbl=
+  (=production=, =evaluation=, =automation=), and the two cards differ
+  exactly there: Operational is for real use, ACME demo is for demos and
+  testing. So =seed_profile= gains a =tenant_type= column, seeded
+  =production= and =evaluation=. Neither the screen nor the request
+  carries the field. Had the request carried it, the BFF would have had
+  to invent a value, and the profile would have stopped being the whole
+  starting point.
+- *The request carries no "inherit the administrator's password" flag.*
+  A server cannot read the caller's password. "Use my password" is the
+  client sending the password it already holds as =admin_password=; the
+  profile's =inherits_admin_password= stays screen guidance, which is
+  the only thing it can be.
+- *Validation is a pure function over the declared schema.* The refusal
+  names the field, and the function is tested without a database. It
+  refuses a profile it does not know, a parameter the profile does not
+  declare, a required parameter that is missing, a value that is not one
+  of a =choice= parameter's choices, and a value that does not read as
+  the declared =data_type=.
+- *The tenant and its administrator are created synchronously; the run
+  carries the provisioning steps.* The tenant has to exist for the first
+  tenant to be reachable at all, and creating it is fast. The work the
+  profile orders — bundle publishes, an LEI hierarchy, parties, feeds —
+  is minutes long, and that is what the instance id answers for.
+- *The tenant creation moves into a service both verbs call.* The
+  bootstrap verb does the same four things today: call the SQL
+  provisioner, create the administrator, associate it with the system
+  party, assign =TenantAdmin=. The successor and the verb it retires
+  must not drift apart while both are reachable, so the sequence moves
+  to =service/tenant_provisioning_service.hpp= and both handlers call
+  it.
+- *The two retired subjects stay until their last caller moves.* The
+  story's plan puts the shell's alignment in step 12, and the shell is
+  the last caller of both =iam.v1.bootstrap.provision-tenant= and
+  =iam.v1.tenants.provision-acme=. Their own orchestration covers work
+  the run cannot do until step 7 orders it, so retiring them here would
+  leave the =--source acme= path producing a tenant with none of its
+  data. The retirement is step 12's, with the shell, and this task
+  records it rather than claiming it.
+- *The run itself is step 7's.* =provision_tenant_workflow= is the next
+  task. Until it is registered the engine records that it has no
+  definition for the type and creates no instance, so this task proves
+  the request, its refusals, the tenant and its administrator on the
+  live deployment. It does not yet prove the run, and the last
+  acceptance line is met in step 7.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The validation's own cases | 12 | =grep -c '^TEST_CASE' projects/ores.iam/core/tests/service_seed_profile_parameter_check_tests.cpp= | 6261ae8bc5 |
+| The iam test binaries | 5, none failed; =ores.iam.core.tests= ran 112 cases | =./compass.sh test run -- -R iam= | 6261ae8bc5 |
+| The web workspace's tests | 125, none failed (bff 38, web 44, wire-protocol 43) | =npm test= in =projects/ores.web= | 6261ae8bc5 |
+| The web workspace's types and formatting | clean | =npm run typecheck=, =npm run format:check= | 6261ae8bc5 |
+| The provision verb | 1 subject, 9 request fields, 5 answer fields | =projects/ores.iam/modeling/ores.iam.tenant_provisioning_messages.org= | 6261ae8bc5 |
+| The codegen gates | 8, all green | =check_shell_menu_collisions=, =check_protocol_twin_coverage=, =check_test_case_reachability=, =check_handler_permissions=, =check_paste_block_symbols=, =check_registry_exceptions=, =regenerate_shell_recipe_inventory --check=, =regenerate_http_recipe_inventory --check= | 6261ae8bc5 |
+| Components passing the documentation audit | 40 | =projects/ores.codegen/validate_docs.sh= | 6261ae8bc5 |
+| Repository lint | green, with 173 advisory durable-document links | =./compass.sh lint= | 6261ae8bc5 |
+| The live request | three answers: an unknown profile refused by name, a value outside the choices refused by field and choices, and an acceptance carrying an instance, a tenant and an account id | =evidence/provision_request_live.txt= | 6261ae8bc5 |
+| The run behind the answered id | 0 instance rows, and the engine logged that it has no definition for =provision_tenant_workflow=: the definition is step 7's | =evidence/provision_request_live.txt= | 6261ae8bc5 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2319][#2319]] | [iam] Add the generic tenant provision request |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=iam.v1.tenants.provision= is in. It takes the seed profile's code, the
+tenant's own name, code, hostname and description, its administrator's
+username, email and password, and the profile's parameter values, and it
+answers with the id of the run it started, the tenant it created and
+that tenant's administrator account.
+
+What it does, in the order it does it:
+
+- *It refuses before it creates anything.* An unknown profile code, a
+  tenant or administrator field with no value, a parameter the profile
+  does not declare, a required parameter with no value, a value that is
+  not one of a choice parameter's choices, and a value that does not read
+  as the declared data type are each refused with the field named. The
+  check is a pure function over the profile's declared schema
+  (=service/seed_profile_parameter_check.hpp=), so it is tested without a
+  database, in 12 cases. A parameter the request omits takes the
+  profile's default; a required one with no default to take is refused.
+- *It creates the tenant and its administrator.* That sequence moved to
+  =service/tenant_provisioning_service.hpp=, and the bootstrap verb this
+  one replaces calls it too, so the two cannot drift apart while both are
+  reachable. The tenant's type comes from the profile: =seed_profile=
+  gained a =tenant_type= column, seeded =production= for Operational and
+  =evaluation= for ACME demo.
+- *It starts the run.* The handler reads the profile's ordered steps,
+  puts them and the accepted parameter values into
+  =provision_tenant_workflow_request=, mints the instance id, and
+  publishes a =start_workflow_message= carrying it, so the answer names
+  the run without waiting for the engine to create it. The engine treats
+  a repeated id as the same run.
+
+The browser reaches the verb through =POST /api/provision-tenant= and
+the client's =provisionTenant= method, each with tests that call it the
+way a caller does.
+
+Two things are recorded rather than claimed:
+
+- *The run's steps are step 7's.* No definition registers
+  =provision_tenant_workflow= yet, so the engine receives the start and
+  records that it has no definition for the type, and no instance row
+  exists. That is why the last acceptance line is met in step 7. The
+  tenant stays in the =bootstrapping= status the SQL provisioner gives it
+  until the run completes.
+- *The two verbs this one replaces stay reachable.* The shell is the last
+  caller of both =iam.v1.bootstrap.provision-tenant= and
+  =iam.v1.tenants.provision-acme=, and the story's plan moves the shell
+  in step 12. Retiring them here would leave =--source acme= creating a
+  tenant with none of its data, because the work those verbs orchestrate
+  is the work step 7 orders.
+
+The generated shell library scripts the seed profile models produce had
+never been committed by this story's earlier tasks; they are committed
+here beside the new =tenant_provisioning-provision-tenant.ores=.

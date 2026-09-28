@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: FCDE3910-A534-4598-A44D-4FC280DB04B5
+:END:
+#+title: Task: Document the reports and the report workflow
+#+description: Give individual reports their own document type and inventory, document the report execution workflow with the workflow document type, reconcile the reporting architecture pages with the run configuration and the engine guarantees, and record the analysis.
+#+type: task
+#+level: s1
+#+filetags: :documentation:reporting:workflow:codegen:full-report-pipeline:sprint_26:v0:
+#+owner: marco
+#+branch: feature/document-the-reports-and-the-report-workflow
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader can find one page per report, one page for the report execution workflow, and architecture pages that agree with the code. The report document type carries the sections an individual report needs: purpose, audience, frequency, the ORE XML that configures it, and its inputs and outputs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
+| Now          | Implemented; open for review.          |
+| Waiting on   | Nothing.                               |
+| Next         | Merge, then close.                     |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The report document type is registered in codegen and in compass, with a contract page and a generated scaffold.
+- A report inventory lists the documented reports, and at least one report is documented end to end.
+- The report execution workflow has a workflow page with every required section, an interaction diagram, and a row in the workflow inventory.
+- The reporting architecture pages state the two run chains and name-addressed step results, and the analysis records where reporting does not meet the engine guarantees.
+
+* Plan
+
+1. Read the three clusters and verify the code each page describes, claim by
+   claim. Four read-only surveys ran in parallel, one per cluster plus one for
+   the report enumerations, and then every claim this task acts on was verified
+   directly in the tree.
+2. Add the =report= document type: the template, its registration in codegen and
+   compass, the contract page, the glossary entry, the taxonomy row, the recipe
+   section, the generator document, the regulatory-function row, the regenerated
+   skill table, and a test suite.
+3. Add the report inventory and two report pages, scaffolded through the new
+   verb rather than written by hand.
+4. Add the report execution workflow page, its interaction diagram, and its row
+   in the workflow inventory.
+5. Correct the four places where a page contradicted the code, and re-render the
+   three diagrams that carried the same claims.
+6. Record the analysis as an investigation, and state the idempotency, warning
+   and deadline findings on the pages that own them.
+7. Run the lint, the generator checks and the codegen suite, then open the PR.
+
+The plan is unchanged from what was agreed before work started, except that the
+report pages number two rather than one: the test report the sibling story needs
+is a report page too, and documenting only a production report would have left
+the framework's second use case untested.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Document types registered in the generator | 31, was 30 | =.audit/cgvenv/bin/python -c "import sys; sys.path.insert(0,'projects/ores.codegen/src'); import doc_generate; print(len(doc_generate.TYPE_TO_TEMPLATE))"= | =d3325300d5= |
+| Report pages | 2 | =ls doc/knowledge/reports/report_*.org | wc -l= | =d3325300d5= |
+| Workflow pages | 3, was 2 | =ls doc/knowledge/workflows/workflow_*.org | wc -l= | =d3325300d5= |
+| Pages corrected for contradicting the code | 3, plus 3 diagrams | the =Conclusions= table on [[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][the investigation]] | =d3325300d5= |
+| Generator tests | 8 added | =.audit/cgvenv/bin/python -m pytest projects/ores.codegen/tests/test_doc_report_type.py -q= | =d3325300d5= |
+
+The commit column names the tree the numbers describe, which is the tree the
+branch started from. The suite size in the final run is on the PR.
+
+* Notes
+
+- The analysis is
+  [[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][Does reporting use what the workflow engine guarantees?]].
+  It found that reporting does not use three of the engine's guarantees:
+  the idempotency check, the warning outcome, and a step deadline. The first is
+  a correctness defect that restart recovery creates, and it is recorded on
+  [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]].
+- The report pages are written from the report's definition and its ORE
+  configuration, not from a run. Neither report has been run yet, and the pages
+  say so where it matters: the smoke test's =* Test coverage= names the four-step
+  chain it will run, and the production report's =* Outputs= states that the
+  result store is not built.
+- The three report enumerations in the tree do not agree: 22 business reports on
+  the risk reporting page, 31 operational definitions in the seed, and 35 ORE
+  analytic types in the schema-derived taxonomy. The inventory states which is
+  which rather than merging them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

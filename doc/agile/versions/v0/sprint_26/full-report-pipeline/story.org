@@ -50,6 +50,7 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
 | [[id:AF9F5930-3D00-4EF7-AA4B-B6996AB71C13][Measure report processing and record a baseline]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:8C2D973B-5D85-4FFC-8322-3603DD385E96][Prove the pipeline with both ends substituted]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:2FF71147-6F1C-42F3-8566-8A208598653C][Prove the full pipeline against live data]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
+| [[id:FCDE3910-A534-4598-A44D-4FC280DB04B5][Document the reports and the report workflow]] | STARTED | 2026-09-28 | | Give individual reports their own document type and inventory, document the report execution workflow with the workflow document type, reconcile the reporting architecture pages with the run configuration and the engine guarantees, and record the analysis. |
 
 * Decisions
 

@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 9FCFFA0C-3272-42AF-BEF7-BA793048903A
+:END:
+#+title: Investigation: Does reporting use what the workflow engine guarantees?
+#+description: A reconciliation of the reporting, scheduling and workflow documentation against the code on main, recording where the pages contradict the implementation and where reporting does not meet the engine's guarantees.
+#+type: investigation
+#+level: s1
+#+filetags: :full-report-pipeline:sprint_26:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A point-in-time record, written while
+[[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]]
+was open, of an
+[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into whether the
+reporting component uses the guarantees the workflow engine now offers it, and
+into whether the three documentation clusters that describe the subject agree
+with the code.
+
+It is a snapshot, not a description of the system. Whatever it concludes that
+the code must keep doing belongs on the page that owns the subject; the pages
+below were corrected during this work, and they, not this page, are what later
+readers should cite.
+
+* Context
+
+The reporting component was recently brought to the standard of its sibling
+components, and the workflow engine recently gained error handling, compensation,
+restart recovery and name-addressed step results. Two questions followed.
+
+1. Does reporting use what the engine now offers, or does it work around it?
+2. Do the reporting, scheduling and workflow pages still describe the code?
+
+The second question matters more than it looks. Three clusters describe the same
+run from three angles, and a contradiction between them is invisible to a reader
+who reads only one. A page that states a rule the code no longer follows is worse
+than a missing page, because it is the page a reader finds first.
+
+* Methodology
+
+Four read-only surveys ran in parallel against the tree at =d3325300d5=, each
+with a different remit: the reporting and report-processing documentation, the
+scheduling documentation, the workflow documentation together with the engine's
+error handling, and every enumeration of report types in the repository. Each
+survey cited the code it read. Every claim that this page acts on was then
+verified directly in the tree, by reading the file and line named.
+
+The claims verified in the code, rather than taken from a survey, were: the two
+chain shapes and the step names in =report_execution_workflow.hpp=; the
+configuration columns on =report_definition.hpp=; the reporting to compute
+handoff in =report_submit_handler.cpp=; the dispatcher in
+=workunit_dispatcher.cpp=; the batch close and bridge in
+=result_submit_handler.hpp= and =batch_workflow_bridge.hpp=; the absent
+idempotency check, warning answer and deadline in =ores.reporting=; and the
+scheduler trigger path in =nats_publish_action_handler.cpp=.
+
+* Paths taken
+
+** The reporting documentation is missing, which is false
+
+The expectation was that the reporting pages would need writing. They exist: a
+structure note and nine pages under
+[[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]], plus three
+PlantUML diagrams. The cluster is more complete than the scheduling and workflow
+ones. The work was therefore correction, not authoring.
+
+** The report execution workflow has a page, which is also false
+
+The [[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]] folder holds
+pages for the identity and tenant-provisioning workflows only. The reporting
+workflow, which is the largest registered definition, had no page and no row in
+the workflow inventory. That page was written during this work.
+
+** The reports have no catalogue, which is false
+
+[[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] carries
+22 market risk reports, each with five classification axes, a purpose and its
+measures, plus a ten-report end-of-day batch. What it does not carry is anything
+per report that a reader can act on: no audience in a role's terms, no ORE XML,
+no parameters. That is the gap the report document type fills.
+
+** One list of reports, which becomes three
+
+The search for the report list found three enumerations that do not agree: 22
+business reports on the risk reporting page, 31 operational definitions in
+=reporting_report_definitions_populate.sql=, and 35 ORE analytic types in the
+schema-derived taxonomy under =.audit/ore-taxonomy/=. The repository has been
+treating "the reports" as one list when it is three, at three levels of
+abstraction. The report inventory now states which is which.
+
+** A phase list that is not a step list
+
+The pipeline page decomposes a run into six phases. The workflow implements seven
+steps, or four when pre-processing is substituted. The two decompositions do not
+map one to one in either direction: pre-processing is four steps rather than one,
+and retrieval and post-processing are one step rather than two. A reader who
+learns the six phases cannot predict the chain, which is why the pipeline page now
+carries the mapping.
+
+* Conclusions
+
+** Reporting does not use three of the engine's guarantees
+
+The engine offers a consumer more than reporting takes. Three gaps are material.
+
+1. *Idempotency.* No handler in =ores.reporting= calls the engine's idempotency
+   check, and =assemble_bundle= generates a fresh bundle identifier on every
+   invocation
+   (=projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:295=).
+   A step re-dispatched after a restart therefore does its work a second time: a
+   second bundle row, a second export, a second upload. The engine's own record
+   keeps the run from moving twice, which is why a green run never shows it. This
+   is the most serious of the three, because it is a correctness defect that
+   recovery creates, and the reporting pages already state the convergence
+   obligation the code does not meet.
+2. *Warnings.* No handler answers =completed_with_warnings=; =warn()= is never
+   called. A phase that partly succeeded must today answer either completed or
+   failed, and answer failed when it means "completed, with a caveat". The engine
+   does not compensate a warned step, so adopting warnings is a behaviour change
+   and not only a cosmetic one.
+3. *Deadlines.* The engine has no step timeout, and no reporting phase arms one.
+   A phase whose service never answers leaves the run in progress indefinitely,
+   re-dispatched on every restart. The engine's guarantee here is an absence, and
+   reporting inherits it.
+
+** Compensation is used, but it is a terminal transition rather than an undo
+
+Every one of the eight steps declares the same compensation subject, the message
+that marks the report instance failed. Compensation therefore collapses to a
+single first-writer-wins transition, and what a completed phase produced stays
+where it is. That is a defensible design for a report run, where the phases
+produce shared objects rather than private state. It was not stated anywhere, and
+two pages implied the opposite by describing compensation as an undo. Both now
+say what it does.
+
+** The documentation contradicted the code in four places
+
+| Page | Claim | Reality |
+|------+-------+---------|
+| =report_execution_pipeline.org= | a run is six phases, with no chain selection | the run configuration selects two chains, of seven steps and four |
+| =report_execution_orchestration.org= | the phase builder ignores its three inputs | it reads the run configuration and throws on one it cannot build |
+| =scheduling_and_workflows.org= | the scheduler publishes =workflow.v1.start= itself | the scheduler calls the reporting trigger, and reporting is the only publisher of the start |
+| =scheduling_and_workflows.org= | the run's identity comes from the firing | the trigger carries the firing as the instance's trigger run; the run's identity is generated when the instance is created |
+
+All four are corrected. The first two were stale text from before the run
+configuration landed. The last two described a design that the reporting route
+does not follow, and the page now states both routes rather than one.
+
+** The engine has no failure policy, so no consumer can declare one
+
+=workflow_definition= carries a type name, a description and a step builder.
+There is no policy field, and the compensate-or-stop choice the workflow
+knowledge pages describe is documentation rather than a mechanism. Every
+registered workflow compensates, because that is the only behaviour the engine
+has. A page that asks a workflow to declare its policy asks for a field that does
+not exist.
+
+* What this work changed
+
+- Added the =report= document type: the template, its registration in codegen and
+  compass, the contract page, the glossary entry, the taxonomy row, the recipe
+  section and the regenerated skill table.
+- Added the report inventory and two report pages: a production report, and the
+  smoke test the sibling story needs.
+- Added the report execution workflow page, its interaction diagram, and its row
+  in the workflow inventory.
+- Corrected the three pages above, and the two scheduling diagrams.
+- Recorded the idempotency, warning and deadline gaps where the pages that own
+  them can be read.
+
+* Recommendations
+
+1. *Use the engine's idempotency check in the reporting handlers.* It is the
+   highest-value fix in this cluster, because it turns a class of silent
+   double-work into a checked one. It belongs to
+   [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]],
+   which owns the phase contract.
+2. *Decide the deadline question rather than leaving it implicit.* Either give a
+   step a deadline, or state that a silent phase requires a person. Today the
+   behaviour is the second, and no page said so.
+3. *Decide whether any phase answers with warnings.* Until one does, the engine's
+   warning path is dead code for reporting, and the pages should not imply it is
+   available.
+4. *Keep the three report lists distinct.* Do not merge the business catalogue,
+   the seeded definitions and the ORE analytic types. State which is authoritative
+   for what, and let a report page be where the three meet for one report.
+5. *Give a workflow a failure policy only when the engine has one.* Until then,
+   the workflow pages should state the engine's single behaviour instead of asking
+   each workflow to declare a choice it cannot make.
+
+* See also
+
+- [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] — the phase contract, now stating the gaps above.
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the workflow page this work added.
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — the inventory this work added.
+- [[id:4498456E-71DE-4250-8080-727690FAEFE6][Document type: report]] — the contract this work added.
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the engine cluster this page measured reporting against.

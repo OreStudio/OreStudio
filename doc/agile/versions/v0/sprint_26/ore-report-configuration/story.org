@@ -23,9 +23,9 @@ A report definition's configuration is a set of strongly typed entities rather t
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The reporting registry and the credit simulation round trip are delivered. The harness every later document type registers with has its design settled. |
+| Now           | The harness exists, and credit simulation and calendar adjustments round trip through it. The shared reference kinds are measured: currencies lose ORE's currency type, and conventions lose every category the mapper does not model. |
 | Waiting on    | Nothing.                               |
-| Next          | Register credit simulation through the harness, then take the remaining document kinds in ascending corpus size. |
+| Next          | Give the refdata currency a home for ORE's currency type, then model the convention categories and fields the mapper skips. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -59,7 +59,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:1E32AD44-F4D6-4275-9630-4B41840EFE29][Round trip the historical return configuration]] | BACKLOG | | | historicalreturnconfig.xml end to end: the return convention per risk factor key and its displacement, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
 | [[id:4AC5DEB0-FCE5-485C-BECB-DEDA62C7913B][Round trip the Basel traffic light configuration]] | BACKLOG | | | baselTrafficLightconfig.xml end to end: the MPOR observation buckets and the amber and red limits that classify them, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
 | [[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]] | BACKLOG | | | curveconfig.xml end to end: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes, with both mappers and a round trip over every file in the corpus. |
-| [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | BACKLOG | | | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
+| [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | STARTED | 2026-09-28 | | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
 | [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | BACKLOG | | | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
 
 * Decisions

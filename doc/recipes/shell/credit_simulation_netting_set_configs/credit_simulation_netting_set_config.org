@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: D4E1D402-2A44-5430-8043-52C61522FAAD
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the credit_simulation_netting_set_configs commands from the shell?
+#+description: Every command the credit_simulation_netting_set_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:credit_simulation_netting_set_configs:
+
+This file documents the credit_simulation_netting_set_configs resource at the shell, one section per command. Every command is a subcommand of =credit_simulation_netting_set_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F8785AEF-25E2-55D3-B634-2442CC6541A5
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.list=.
+
+#+name: credit_simulation_netting_set_configs-list
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-list.ores :exports none
+credit_simulation_netting_set_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2236E429-E6C9-5473-B40E-608523FAA4C9
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs get <netting_set_id>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.get=.
+
+#+name: credit_simulation_netting_set_configs-get
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-get.ores :exports none
+credit_simulation_netting_set_configs get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 79978062-FC1A-5534-8E35-982678948FFE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs get-many <netting_set_id>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.get_many=.
+
+#+name: credit_simulation_netting_set_configs-get-many
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-get-many.ores :exports none
+credit_simulation_netting_set_configs get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: BD603548-5710-5406-940B-76AE7FDCB38A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs add <credit_simulation_config_id> <netting_set_id> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.put=.
+
+#+name: credit_simulation_netting_set_configs-add
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-add.ores :exports none
+credit_simulation_netting_set_configs add 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AF4A5F71-2573-5F51-A4F9-AE4D46D5493F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs set <id> <credit_simulation_config_id> <netting_set_id> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.put=.
+
+#+name: credit_simulation_netting_set_configs-set
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-set.ores :exports none
+credit_simulation_netting_set_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: FF729FCD-9F4B-59C6-87C8-5B62041A9497
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs put-many --count <n> <id> <credit_simulation_config_id> <netting_set_id> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.put_many=.
+
+#+name: credit_simulation_netting_set_configs-put-many
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-put-many.ores :exports none
+credit_simulation_netting_set_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2EDD8DFD-9E38-5F65-BDF9-85206527EFB3
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs delete <netting_set_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.delete=.
+
+#+name: credit_simulation_netting_set_configs-delete
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-delete.ores :exports none
+credit_simulation_netting_set_configs delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: FB413A1F-2CF8-534A-B2B5-0D0BBBB8316F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs delete-many <netting_set_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.delete_many=.
+
+#+name: credit_simulation_netting_set_configs-delete-many
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-delete-many.ores :exports none
+credit_simulation_netting_set_configs delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-credit-simulation-config-id=
+:PROPERTIES:
+:ID: 287D83D9-371E-56CF-BB28-6E9544491F30
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs by-credit-simulation-config-id <credit_simulation_config_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs.list_by_credit_simulation_config_id=.
+
+#+name: credit_simulation_netting_set_configs-by-credit-simulation-config-id
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-by-credit-simulation-config-id.ores :exports none
+credit_simulation_netting_set_configs by-credit-simulation-config-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EBEDCB74-3369-5FA6-BCE0-C08057586538
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs versions <netting_set_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs_versions.list=.
+
+#+name: credit_simulation_netting_set_configs-versions
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-versions.ores :exports none
+credit_simulation_netting_set_configs versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 0086E8D6-6287-5F2C-B44F-8E9D45CF7C1F
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_netting_set_configs version <netting_set_id> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_netting_set_configs_versions.get=.
+
+#+name: credit_simulation_netting_set_configs-version
+#+begin_src ores-shell :tangle credit_simulation_netting_set_configs-version.ores :exports none
+credit_simulation_netting_set_configs version __none__ --version 1
+#+end_src
+

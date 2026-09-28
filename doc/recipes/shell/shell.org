@@ -863,3 +863,7 @@ tangled into the runnable script library
 * Seed Profiles
 
 - [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I run the seed_profiles commands from the shell?]]
+
+* Credit Simulation Netting Set Configs
+
+- [[id:D4E1D402-2A44-5430-8043-52C61522FAAD][How do I run the credit_simulation_netting_set_configs commands from the shell?]]

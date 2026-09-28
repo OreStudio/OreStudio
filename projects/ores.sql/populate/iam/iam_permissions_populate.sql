@@ -668,6 +668,8 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_matrix_configs:write', 'Create and modify credit simulation matrix configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_matrix_row_configs:delete', 'Delete credit simulation matrix row configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_matrix_row_configs:write', 'Create and modify credit simulation matrix row configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_netting_set_configs:delete', 'Delete credit simulation netting set configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_netting_set_configs:write', 'Create and modify credit simulation netting set configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_types:read',         'View report types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_types:write',        'Create and modify report types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_types:delete',       'Delete report types');

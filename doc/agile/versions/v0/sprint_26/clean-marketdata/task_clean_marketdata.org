@@ -28,10 +28,10 @@ ores.marketdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | PRs 1 to 3 merged. PR 4 under way on =feature/clean-marketdata-import-boundary-2=: the oresmd grammar's dropped fields are rejected, the import boundary is wired through =from_ore_key()=, and the shell import verb reaches the strict duplicate policy. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | PR 4's remaining half: the verbatim key column and the ORE export path. |
+| Last touched | 2026-09-27                               |
 
 * Acceptance
 
@@ -62,7 +62,7 @@ record each item's result in the table below.
 | B03 | Pass | 285 C++ files: 188 generated, 97 hand-written (20 tests, 77 not). The 77 divide into 24 generatable, 36 infrastructure that stays, 17 dead. Survey table on the task's evidence. |
 | B04 | Pass | 12 protocol headers: 6 generated, 6 hand-written. Subject inventory on the task's evidence. |
 | B05 | Pass | Captures read: the unwired =series_classification_rule= event mapping ([[id:8FA7076B-62EE-43A5-9A40-177663F15F00][marketdata never composes the series_classification_rule event registrar]]), the missing =market_observation_repository= tests ([[id:74EA1446-87F9-4895-B4C9-15D2CCD1B710][market_observation_repository has no test coverage]]), the RLS party-isolation stopgap ([[id:F70CF285-C22F-4A09-A36C-5FE7A834F056][commit 83292021a added party_id to ores.marketdata]]), the timeseries metatype question ([[id:EAD8E0DF-EB0F-45FC-BE94-89FFD64515DE][timeseries entity codegen analysis]]). No in-flight branch collides: =feature/identity-core-series-and-bindings= is abandoned and holds PR 5's work. |
-| B06 | Pass | 49 public symbols with a production consumer, 19 test-only, 4 with none. Test-only counts as dead. The oresmd layer's test-only symbols are the one recorded exception, and PR 4 checked what that consumer actually is: =import_service.cpp= parses through =ores::ore::market::parse_market_data= and the import path names no oresmd symbol at all. So the boundary is not half-wired, it is unwired, and the oresmd layer is reached by tests alone. |
+| B06 | Pass | 49 public symbols with a production consumer, 19 test-only, 4 with none. Test-only counts as dead. The oresmd layer's test-only symbols were the one recorded exception, and PR 4 closed it rather than keeping it: =import_service.cpp= now runs every parsed datum through =from_ore_key()= -> =market_data_identifier= -> =to_quote_key()= and builds the series and observation rows from the registry's decomposition of that canonical spelling. A key oresmd cannot name -- BOND, the option and capfloor families -- keeps the parser's own decomposition and is imported anyway, because ORE's examples carry such keys. The FX/RATE reversed-pair correction moved with it: it used to find the slash in the qualifier and swap two currencies by hand, and now =from_ore_key(key, checker)= swaps the identifier's =pair= field. Proved on the corpus, not on the two hand-written lines the import suite feeds it: all 118 market payload files still import and read back under the hidden =.corpus-full= tag. |
 | M01 | Pass | No legacy JSON, no =lookup_entity=, no retired table type; all 15 entity and junction models load on the current format. |
 | M02 | Pass | Four models bound and =feed_binding= recorded as a no-match with its actual feature values and the reason. =check_model_drift.py= exits 0. |
 | M03 | Pass | The junction's restated =:has_tenant_id: true= removed, together with the same restatement on the four newly bound models. |
@@ -190,11 +190,19 @@ and sometimes two currencies, ZERO carries a day count, the futures carry
 a contract month and an exchange, CORRELATION carries two operands on a
 strike surface, and CPR has no currency at all.
 
-Two live defects fall out of the same walk. The IR 6-segment path discards
-the settlement segment and rebuilds it as a hardcoded ="2D"=, so the 1,338
-corpus keys carrying =0D= are stored as =2D= -- the row already differs
-from the file. And the CSV tokeniser needs two commas, so a line with
-exactly one aborts its whole file.
+Two defects fell out of the same walk, and both are closed. The IR
+6-segment path discarded the settlement segment and rebuilt it as a
+hardcoded ="2D"=, so the 1,338 corpus keys carrying =0D= would have been
+stored as =2D= -- PR 2 added =settle= to =ir_market_data_identifier= and
+stopped rewriting it, and the segment now reaches the series qualifier as
+the file wrote it. =import_keeps_the_ir_swap_settlement_segment_the_file_carried=
+pins that for a =0D= key and for one carrying an explicit settlement date,
+which is the other thing the segment can be. The CSV tokeniser needed two
+commas, so a line with exactly one aborted its whole file; PR 2 fixed that
+too. What is left of the settlement question is the projection's ="2D"=
+fallback, for an identifier built from something other than a key, and
+there the proposed source -- refdata's per-currency spot days -- is the FX
+convention rather than ORE's swap convention; see the analysis.
 
 =projects/ores.codegen/scripts/check_oresmd_ore_coverage.py= makes the
 coverage record permanent and rerunnable; =--corpus= adds the line counts.

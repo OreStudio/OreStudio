@@ -143,6 +143,40 @@ TEST_CASE("import_leaves_point_id_empty_for_series_with_short_key", tags) {
     CHECK(observations.front().point_id.empty());
 }
 
+TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The settlement segment is part of the series' own qualifier, so it is
+    // stored as the file wrote it -- a spot lag, or a date. An earlier reading
+    // of the corpus held that this segment was discarded and rebuilt as the
+    // projection's "2D" fallback, which would store the 821 USD 0D keys and the
+    // explicit-date keys as 2D. It is the fallback that is unreachable here, not
+    // the segment: the identifier records settle whenever it is not "2D", and
+    // the projection emits what it recorded.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 IR_SWAP/RATE/USD/0D/3M/PAR_RATE 0.043120\n"
+                              "20160205 IR_SWAP/RATE/GBP/20220922/3M/PAR_RATE 0.051000\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 2);
+    CHECK(resp.errors.empty());
+
+    CHECK(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/2D/3M").empty());
+    CHECK(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "GBP/2D/3M").empty());
+    REQUIRE(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/0D/3M").size() == 1);
+    REQUIRE(
+        series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "GBP/20220922/3M").size() ==
+        1);
+}
+
 TEST_CASE("import_stores_a_named_key_under_its_canonical_spelling", tags) {
     auto lg(make_logger(test_suite));
 

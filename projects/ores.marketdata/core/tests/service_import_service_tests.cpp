@@ -151,31 +151,22 @@ TEST_CASE("import_leaves_point_id_empty_for_series_with_short_key", tags) {
 TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
     auto lg(make_logger(test_suite));
 
-    // A stand-in for ores.refdata's currency_pair reference data. This branch is
-    // the reason the warning is worth reading: a key the grammar merely re-spells
-    // is a tidy-up, while a key reversed against refdata is stored under the pair
+    // Reference data named here rather than fetched. This branch is the reason
+    // the warning is worth reading: a key the grammar merely re-spells is a
+    // tidy-up, while a key reversed against refdata is stored under the pair
     // it should have been written with, and only the file's owner can fix that.
-    // With no pairs to check against the checker never swaps, which is why an
-    // unconnected auth client hid this path -- and why the two warnings are told
-    // apart by the pair actually moving rather than by the asset class.
-    ores::nats::service::client nats(ores::testing::make_nats_options());
-    nats.connect();
-    REQUIRE(nats.is_connected());
-
-    ores::refdata::messaging::list_currency_pairs_request probe;
-    auto responder = nats.subscribe(probe.nats_subject, [&nats](ores::nats::message msg) {
-        ores::refdata::domain::currency_pair gbp_usd;
-        gbp_usd.base_currency = "GBP";
-        gbp_usd.quote_currency = "USD";
-        ores::refdata::messaging::list_currency_pairs_response pairs;
-        pairs.pairs.push_back(gbp_usd);
-        pairs.total = 1;
-        nats.publish(msg.reply_subject, ores::nats::default_wire_codec().encode(pairs));
-    });
+    // The pairs are injected because the live read races whatever
+    // ores.refdata.service answers on the same subject: with a fleet running,
+    // the stub below is not the only responder, and the case failed on a
+    // machine that had one.
+    std::set<ores::ore::market::fx_quote_convention_checker::currency_pair> known{
+        ores::ore::market::fx_quote_convention_checker::currency_pair{"GBP", "USD"}};
 
     database_helper h;
+    ores::nats::service::client nats(ores::testing::make_nats_options());
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string{}; });
-    import_service svc(h.context(), auth_nats);
+    import_service svc(
+        h.context(), auth_nats, [known]() { return known; });
     ores::marketdata::repository::market_series_repository series_repo;
 
     ores::marketdata::messaging::import_market_data_request req;

@@ -8,7 +8,7 @@
 #+filetags: :documentation:reporting:workflow:codegen:full-report-pipeline:sprint_26:v0:
 #+owner: marco
 #+branch: feature/document-the-reports-and-the-report-workflow
-#+pr:
+#+pr: 2344
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2344][#2344]] | [reporting] Document the reports, the report workflow, and reconcile the pages |
 
 * Review
 

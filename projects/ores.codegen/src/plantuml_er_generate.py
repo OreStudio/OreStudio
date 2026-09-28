@@ -20,11 +20,19 @@
 PlantUML ER Diagram Generator
 
 Renders PlantUML ER diagram from JSON model using Mustache template.
+
+Modes:
+  (default)   Write the rendered diagram to --output.
+  --check     Exit non-zero if --output differs from a fresh render; write
+              nothing (CI gate).
 """
 
 import argparse
+import difflib
 import json
+import re
 import sys
+import tempfile
 from pathlib import Path
 
 import pystache
@@ -48,7 +56,77 @@ def render_diagram(model: dict, template: str) -> str:
     return renderer.render(template, model)
 
 
-def main():
+def write_diagram(diagram: str, output_path: Path) -> None:
+    """Write the rendered diagram to output_path."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(diagram)
+
+
+def count_differing_lines(current: str, desired: str) -> int:
+    """How many lines a regeneration would add, drop or change.
+
+    autojunk is off: the diagram repeats lines such as braces and column
+    text often enough that difflib would treat them as noise and report a
+    count much larger than the diff really is.
+    """
+    matcher = difflib.SequenceMatcher(
+        None, current.splitlines(), desired.splitlines(), autojunk=False)
+    total = 0
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag != 'equal':
+            total += max(i2 - i1, j2 - j1)
+    return total
+
+
+_GENERATED_AT_RE = re.compile(r"^' Generated: .*$", re.MULTILINE)
+
+
+def without_generated_at(text: str) -> str:
+    """The diagram with its generation stamp blanked out.
+
+    The stamp records when the render ran, so a fresh render never reproduces
+    it. Every other line must match, or the diagram is stale.
+    """
+    return _GENERATED_AT_RE.sub("' Generated: <timestamp>", text)
+
+
+def check_diagram(diagram: str, output_path: Path) -> int:
+    """Compare a fresh render with the committed output; write nothing.
+
+    The render passes through the same writer a real run uses, into a
+    temporary directory, so the comparison sees the real bytes -- encoding and
+    line endings included -- and the committed diagram is never touched. The
+    generation stamp is the one line excluded, because it records when the
+    render ran rather than what it drew.
+    """
+    if not output_path.exists():
+        print("stale ER diagram:", file=sys.stderr)
+        print(f"  {output_path} (output file does not exist)", file=sys.stderr)
+        print("\nrun: projects/ores.codegen/plantuml_er_generate.sh",
+              file=sys.stderr)
+        return 1
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        rendered_path = Path(tmp_dir) / output_path.name
+        write_diagram(diagram, rendered_path)
+        rendered = rendered_path.read_text(encoding='utf-8')
+
+    committed = output_path.read_text(encoding='utf-8')
+    if without_generated_at(rendered) == without_generated_at(committed):
+        print(f"{output_path} is up to date", file=sys.stderr)
+        return 0
+
+    differing = count_differing_lines(committed, rendered)
+    plural = "line differs" if differing == 1 else "lines differ"
+    print("stale ER diagram:", file=sys.stderr)
+    print(f"  {output_path} ({differing} {plural})", file=sys.stderr)
+    print("\nrun: projects/ores.codegen/plantuml_er_generate.sh",
+          file=sys.stderr)
+    return 1
+
+
+def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description='Generate PlantUML ER diagram from JSON model'
     )
@@ -58,8 +136,10 @@ def main():
                         help='Mustache template file')
     parser.add_argument('--output', '-o', required=True,
                         help='Output PlantUML file')
+    parser.add_argument('--check', action='store_true',
+                        help='Exit non-zero if the output is stale; write nothing.')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     model_path = Path(args.model)
     template_path = Path(args.template)
@@ -67,11 +147,11 @@ def main():
 
     if not model_path.exists():
         print(f"Error: Model file not found: {model_path}", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     if not template_path.exists():
         print(f"Error: Template file not found: {template_path}", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     # Load inputs
     print(f"Loading model: {model_path}", file=sys.stderr)
@@ -84,10 +164,11 @@ def main():
     print("Rendering diagram...", file=sys.stderr)
     diagram = render_diagram(model, template)
 
+    if args.check:
+        return check_diagram(diagram, output_path)
+
     # Write output
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(diagram)
+    write_diagram(diagram, output_path)
 
     print(f"Diagram written to: {output_path}", file=sys.stderr)
 
@@ -95,7 +176,8 @@ def main():
     print(f"Packages: {len(model.get('packages', []))}", file=sys.stderr)
     total_tables = sum(len(p.get('tables', [])) for p in model.get('packages', []))
     print(f"Tables: {total_tables}", file=sys.stderr)
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

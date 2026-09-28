@@ -249,7 +249,6 @@ Optional free-text description.
 
 | column | validation_function |
 |--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
 | payment_frequency | ores_refdata_validate_payment_frequency_fn |
 
 * C++

@@ -58,6 +58,9 @@ Leg type of the repo leg (Fixed, Floating).
 The flattening mapper corrupts the coupon frequency from this value
 today; the reworked mapper must stop.
 
+Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating, OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Fixed")
 #+end_src

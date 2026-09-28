@@ -158,6 +158,9 @@ struct credit_instrument final {
 
     /**
      * @brief Call or Put for CreditDefaultSwapOption; empty otherwise.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 

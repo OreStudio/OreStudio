@@ -140,6 +140,9 @@ ores::utility::decimal::decimal::from_string("1000").value()
 
 Call or Put.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -178,6 +181,9 @@ std::chrono::year_month_day{std::chrono::year{2026}/8/15}
 :END:
 
 European, American, or Bermudan.
+
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -218,6 +224,9 @@ ores::utility::decimal::decimal::from_string("3500").value()
 
 UpIn, UpOut, DownIn, DownOut.
 
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("UpAndOut")
 #+end_src
@@ -239,6 +248,9 @@ Double-barrier only: upper barrier level.
 :END:
 
 Type for upper barrier; empty for single barrier.
+
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+
 
 ** rebate
 :PROPERTIES:
@@ -274,6 +286,10 @@ Optional free-text description.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "trade_type_code" in ('EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption') |
+| "option_type" in ('Call', 'Put') |
+| "exercise_type" in ('European', 'Bermudan', 'American') |
+| "lower_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
+| "upper_barrier_type" is null or "upper_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 
 ** Indexes
 
@@ -282,15 +298,6 @@ Optional free-text description.
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | type | tenant_id, trade_type_code | false | true | |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

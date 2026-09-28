@@ -69,6 +69,9 @@ struct equity_digital_option_instrument final {
 
     /**
      * @brief Call or Put; empty for touch options.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
@@ -84,6 +87,9 @@ struct equity_digital_option_instrument final {
 
     /**
      * @brief e.g. UpIn, DownOut; empty for digital.
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
 

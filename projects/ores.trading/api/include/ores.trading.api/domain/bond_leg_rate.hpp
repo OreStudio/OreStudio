@@ -201,6 +201,11 @@ struct bond_leg_rate final {
 
     /**
      * @brief Rounding the front stub's interpolated rate is rounded by.
+     *
+     * Soft FK to ores_refdata_rounding_types_tbl: the values are the closed ORE roundingType set
+     * (Up, Down, Closest, Floor, Ceiling), and the table belongs to ores.refdata, so the dependency
+     * is recorded rather than copied. The SQL schema states the set as a check. PR 4 tightens the
+     * soft reference into a real foreign key.
      */
     std::optional<std::string> front_stub_rounding_type;
 
@@ -221,6 +226,11 @@ struct bond_leg_rate final {
 
     /**
      * @brief Rounding the back stub's interpolated rate is rounded by.
+     *
+     * Soft FK to ores_refdata_rounding_types_tbl: the values are the closed ORE roundingType set
+     * (Up, Down, Closest, Floor, Ceiling), and the table belongs to ores.refdata, so the dependency
+     * is recorded rather than copied. The SQL schema states the set as a check. PR 4 tightens the
+     * soft reference into a real foreign key.
      */
     std::optional<std::string> back_stub_rounding_type;
 

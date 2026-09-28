@@ -149,6 +149,9 @@ ores::utility::decimal::decimal::from_string("100").value()
 
 Option type: Call or Put. Empty for touch options.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -204,6 +207,9 @@ Strike level. Absent for touch options.
 Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent
 for plain digital options.
 
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+
+
 ** lower_barrier
 :PROPERTIES:
 :type:     numeric(28, 10)
@@ -248,6 +254,8 @@ Optional free-text description.
 | "payoff_currency" <> '' |
 | "long_short" in ('Long', 'Short') |
 | "trade_type_code" in ('FxDigitalOption', 'FxDigitalBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption') |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 
 ** Indexes
 
@@ -255,15 +263,6 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

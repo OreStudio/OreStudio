@@ -97,7 +97,8 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
-    check ("long_short" in ('Long', 'Short'))
+    check ("long_short" in ('Long', 'Short')),
+    check ("option_type" is null or "option_type" in ('Call', 'Put'))
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -72,6 +72,110 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Moment Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_moment_types_tbl enable row level security;
+
+create policy moment_types_tenant_isolation_policy on ores_trading_moment_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Price Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_price_types_tbl enable row level security;
+
+create policy price_types_tenant_isolation_policy on ores_trading_price_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Amortization Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_amortization_types_tbl enable row level security;
+
+create policy amortization_types_tenant_isolation_policy on ores_trading_amortization_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Option Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_option_types_tbl enable row level security;
+
+create policy option_types_tenant_isolation_policy on ores_trading_option_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Exercise Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_exercise_types_tbl enable row level security;
+
+create policy exercise_types_tenant_isolation_policy on ores_trading_exercise_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Settlement Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_settlement_types_tbl enable row level security;
+
+create policy settlement_types_tenant_isolation_policy on ores_trading_settlement_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Barrier Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_barrier_types_tbl enable row level security;
+
+create policy barrier_types_tenant_isolation_policy on ores_trading_barrier_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Activity Categorys
+-- -----------------------------------------------------------------------------
+alter table ores_trading_activity_categories_tbl enable row level security;
+
+create policy activity_categories_tenant_isolation_policy on ores_trading_activity_categories_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Long Short Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_long_short_types_tbl enable row level security;

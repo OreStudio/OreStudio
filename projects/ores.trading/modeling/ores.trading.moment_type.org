@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 8EF6EE2A-FC4D-48FC-A684-8B8610BA21BD
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.moment_type
+#+description: Codegen entity model for the trading =moment_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Variance or volatility swap moment code.
+#+entity_singular: moment_type
+#+entity_plural: moment_types
+#+entity_title: Moment Type
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Reference data table defining the closed moment set of a variance
+or volatility swap. The set is the ORE =momentType= simple type under
+=external/ore/xsd/ore_types.xsd=.
+
+The values are the ORE XSD spellings, so a stored value round-trips through the
+ORE XML unchanged. No conversion is introduced here.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique moment type code.
+
+Examples: 'Variance', 'Volatility'.
+
+#+begin_src cpp :name generator
+std::string("Variance")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the moment type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_moment_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_moment_type_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: moment_type
+:entity_plural_short:   moment_types
+:entity_singular_words: moment type
+:entity_plural_words:   moment types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mt
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -52,7 +52,8 @@ create table if not exists "ores_trading_trade_identifiers_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("id_type" in ('UTI', 'USI', 'Internal'))
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -122,6 +122,12 @@ std::string()
 :tablename: ores_trading_trade_identifiers_tbl
 :END:
 
+** Checks
+
+| expression |
+|---|
+| "id_type" in ('UTI', 'USI', 'Internal') |
+
 * C++
 
 ** Flags

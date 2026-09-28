@@ -83,6 +83,9 @@ struct bond_leg_amortization final {
 
     /**
      * @brief How the step amortizes, as the document spells it.
+     *
+     * Soft FK to ores_trading_amortization_types_tbl: the values are the closed ORE
+     * amortizationType set. PR 4 tightens the soft reference into a real foreign key.
      */
     std::string amortization_type;
 

@@ -135,6 +135,9 @@ not null.
 
 Call or Put, when the document states one.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 ** exercise_type
 :PROPERTIES:
 :type:     text
@@ -146,6 +149,9 @@ European, American, or Bermudan, when the document states one.
 
 The ORE element is =OptionData/Style=.
 
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+
+
 ** settlement_type
 :PROPERTIES:
 :type:     text
@@ -156,6 +162,9 @@ The ORE element is =OptionData/Style=.
 Cash or Physical, when the document states one.
 
 The ORE element is =OptionData/Settlement=.
+
+Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
+
 
 * SQL
 
@@ -170,6 +179,9 @@ The ORE element is =OptionData/Settlement=.
 |-------------------------|
 | "sequence_number" > 0   |
 | "underlying_name" <> '' |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American') |
+| "settlement_type" is null or "settlement_type" in ('Physical', 'Cash') |
 
 * C++
 

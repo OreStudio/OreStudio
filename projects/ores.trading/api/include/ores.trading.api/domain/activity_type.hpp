@@ -70,6 +70,9 @@ struct activity_type final {
      * @brief High-level category grouping this activity type.
      *
      * One of: new_activity, lifecycle_event, misbooking, valuation_change, cancellation.
+     *
+     * Soft FK to ores_trading_activity_categories_tbl: the values are the closed activity category
+     * set. PR 4 tightens the soft reference into a real foreign key.
      */
     std::string category;
 

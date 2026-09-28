@@ -95,6 +95,9 @@ struct commodity_instrument final {
 
     /**
      * @brief Call or Put; null for non-option products.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
@@ -105,6 +108,9 @@ struct commodity_instrument final {
 
     /**
      * @brief European or American exercise.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 
@@ -159,6 +165,9 @@ struct commodity_instrument final {
 
     /**
      * @brief UpAndIn, UpAndOut, DownAndIn, DownAndOut.
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
 

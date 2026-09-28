@@ -176,15 +176,6 @@ Human-readable notes about this instrument.
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | trade_type | tenant_id, trade_type_code | false | true | |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

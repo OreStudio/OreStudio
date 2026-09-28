@@ -70,7 +70,8 @@ create table if not exists "ores_trading_bond_leg_amortizations_tbl" (
     check ("leg_role" <> ''),
     check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
     check ("leg_number" > 0),
-    check ("sequence_number" > 0)
+    check ("sequence_number" > 0),
+    check ("amortization_type" in ('FixedAmount', 'RelativeToInitialNotional', 'RelativeToPreviousNotional', 'Annuity', 'LinearToMaturity'))
 );
 
 -- Version uniqueness for optimistic concurrency

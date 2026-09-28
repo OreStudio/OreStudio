@@ -69,6 +69,9 @@ struct equity_asian_option_instrument final {
 
     /**
      * @brief Call or Put.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
@@ -84,6 +87,9 @@ struct equity_asian_option_instrument final {
 
     /**
      * @brief European or American.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 

@@ -111,6 +111,10 @@ struct bond_leg final {
      *
      * The type is the document's own member and drives which arm of the rate group a document
      * states. It is kept as text, not decoded, so export re-emits the spelling.
+     *
+     * Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating,
+     * OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::optional<std::string> leg_type;
 

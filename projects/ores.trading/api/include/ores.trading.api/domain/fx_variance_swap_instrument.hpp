@@ -90,6 +90,10 @@ struct fx_variance_swap_instrument final {
 
     /**
      * @brief Whether the product is a Variance or Volatility swap.
+     *
+     * Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set
+     * (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the
+     * soft reference into a real foreign key.
      */
     std::string moment_type;
 

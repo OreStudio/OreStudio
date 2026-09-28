@@ -74,6 +74,9 @@ struct bond_option final {
 
     /**
      * @brief Call or Put.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
@@ -89,6 +92,9 @@ struct bond_option final {
 
     /**
      * @brief The price type the document states.
+     *
+     * Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set
+     * (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> price_type;
 

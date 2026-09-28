@@ -90,7 +90,9 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     check ("spread" >= 0),
     check ("recovery_rate" >= 0 AND "recovery_rate" <= 1),
     check ("reference_entity" <> ''),
-    check ("tenor" <> '')
+    check ("tenor" <> ''),
+    check ("option_type" is null or "option_type" in ('Call', 'Put')),
+    check ("trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -136,9 +138,6 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate payment_frequency_code
     NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);

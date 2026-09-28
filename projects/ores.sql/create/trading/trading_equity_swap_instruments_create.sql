@@ -111,9 +111,6 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
-
     -- Validate payment_frequency
     NEW.payment_frequency := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency);
 

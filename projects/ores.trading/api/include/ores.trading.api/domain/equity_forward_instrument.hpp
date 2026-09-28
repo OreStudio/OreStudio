@@ -79,6 +79,9 @@ struct equity_forward_instrument final {
 
     /**
      * @brief Cash or Physical; empty when not specified.
+     *
+     * Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType
+     * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
 

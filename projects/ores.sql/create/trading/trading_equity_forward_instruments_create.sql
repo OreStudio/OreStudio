@@ -60,7 +60,8 @@ create table if not exists "ores_trading_equity_forward_instruments_tbl" (
     check ("quantity" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityForward'))
+    check ("trade_type_code" in ('EquityForward')),
+    check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -106,9 +107,6 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

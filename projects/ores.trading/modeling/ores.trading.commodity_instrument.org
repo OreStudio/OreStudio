@@ -195,6 +195,9 @@ Fixed price for forwards and fixed-leg swaps.
 
 Call or Put; null for non-option products.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 ** strike_price
 :PROPERTIES:
 :type:     numeric(28, 10)
@@ -212,6 +215,9 @@ Option strike price.
 :END:
 
 European or American exercise.
+
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+
 
 ** average_type
 :PROPERTIES:
@@ -313,6 +319,9 @@ Knock-out barrier level for accumulator products.
 
 UpAndIn, UpAndOut, DownAndIn, DownAndOut.
 
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+
+
 ** lower_barrier
 :PROPERTIES:
 :type:     numeric(28, 10)
@@ -394,6 +403,7 @@ Optional free-text description.
 | "exercise_type" is null or "exercise_type" in ('European', 'American') |
 | "average_type" is null or "average_type" in ('Arithmetic', 'Geometric') |
 | "barrier_type" is null or "barrier_type" in ('UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut') |
+| "trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
 
 ** Indexes
 
@@ -402,15 +412,6 @@ Optional free-text description.
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | trade_type | tenant_id, trade_type_code | false | true | |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

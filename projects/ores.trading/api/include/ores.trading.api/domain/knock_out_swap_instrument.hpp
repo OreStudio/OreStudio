@@ -67,6 +67,9 @@ struct knock_out_swap_instrument final {
      * @brief Barrier type: UpAndOut or DownAndOut.
      *
      * UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls below.
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
 

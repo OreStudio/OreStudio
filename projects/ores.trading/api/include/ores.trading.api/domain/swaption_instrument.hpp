@@ -54,6 +54,9 @@ struct swaption_instrument final {
      * @brief Exercise type: European, Bermudan, or American.
      *
      * Determines when the option may be exercised.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 
@@ -61,6 +64,9 @@ struct swaption_instrument final {
      * @brief Settlement type: Cash or Physical.
      *
      * Determines how the swaption is settled upon exercise.
+     *
+     * Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType
+     * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
 

@@ -81,6 +81,9 @@ std::string("Long")
 
 The option's type, as the document spelled it.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 ** payoff_type
 :PROPERTIES:
 :type:     text
@@ -394,6 +397,7 @@ Date the settlement block fixes on, when the document states one.
 | expression                        |
 |-----------------------------------|
 | "long_short" in ('Long', 'Short') |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
 
 * C++
 

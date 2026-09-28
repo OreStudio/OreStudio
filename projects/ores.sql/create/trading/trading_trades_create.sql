@@ -69,7 +69,9 @@ create table if not exists "ores_trading_trades_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01')),
+    check ("activity_type_code" in ('new_booking', 'new_internal_transfer', 'draft_capture', 'execution', 'amendment', 'confirmation', 'novation', 'partial_termination', 'full_termination', 'maturity', 'exercise', 'assignment', 'increase', 'decrease', 'roll', 'compression', 'clearing', 'netting', 'rate_reset', 'fx_reset', 'accrual', 'cashflow', 'correction', 'rebook', 'maturity_reversal', 'cancellation_reversal', 'transfer', 'split', 'merge', 'cancel', 'cancel_confirmed', 'void'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -180,12 +182,6 @@ begin
     if NEW.asset_class is not null then
         NEW.asset_class := ores_refdata_validate_asset_class_fn(NEW.tenant_id, NEW.asset_class);
     end if;
-
-    -- Validate trade_type
-    NEW.trade_type := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type);
-
-    -- Validate activity_type_code
-    NEW.activity_type_code := ores_trading_validate_activity_type_fn(NEW.tenant_id, NEW.activity_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

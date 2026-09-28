@@ -64,6 +64,9 @@ High-level category grouping this activity type.
 One of: new_activity, lifecycle_event, misbooking, valuation_change,
 cancellation.
 
+Soft FK to ores_trading_activity_categories_tbl: the values are the closed activity category set. PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("new_activity")
 #+end_src
@@ -146,20 +149,7 @@ drop function if exists ores_trading_validate_activity_type_fn;
 | expression |
 |---|
 | "category" in ('new_activity', 'lifecycle_event', 'misbooking', 'valuation_change', 'cancellation') |
-
-* Validation function
-:PROPERTIES:
-:tenant_scope: system
-:END:
-
-* Insert trigger
-
-** Validations
-
-| column                | validation_function                  |
-|-----------------------+--------------------------------------|
-| fpml_event_type_code  | ores_trading_validate_fpml_event_type_fn |
-
+| "fpml_event_type_code" is null or "fpml_event_type_code" in ('New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination') |
 * C++
 
 ** Flags

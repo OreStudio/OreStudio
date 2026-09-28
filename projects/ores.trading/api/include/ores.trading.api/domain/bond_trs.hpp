@@ -85,6 +85,10 @@ struct bond_trs final {
 
     /**
      * @brief Leg type of the funding leg (Fixed, Floating).
+     *
+     * Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating,
+     * OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string funding_leg_type;
 
@@ -109,6 +113,9 @@ struct bond_trs final {
 
     /**
      * @brief Price type the total return is struck on (Dirty, Clean).
+     *
+     * Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set
+     * (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
      *
      * The schema declares the member required. It is not the return_type column beside it: that one
      * names the return side of the swap, and this one names how the price is quoted.

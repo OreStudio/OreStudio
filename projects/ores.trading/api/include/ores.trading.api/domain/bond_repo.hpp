@@ -69,6 +69,10 @@ struct bond_repo final {
      *
      * The flattening mapper corrupts the coupon frequency from this value today; the reworked
      * mapper must stop.
+     *
+     * Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating,
+     * OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string repo_type;
 

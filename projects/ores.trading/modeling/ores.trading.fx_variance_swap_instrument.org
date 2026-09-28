@@ -190,6 +190,8 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 
 Whether the product is a Variance or Volatility swap.
 
+Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("Variance")
 #+end_src
@@ -229,15 +231,6 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

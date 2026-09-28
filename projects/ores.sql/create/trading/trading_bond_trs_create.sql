@@ -69,7 +69,8 @@ create table if not exists "ores_trading_bond_trs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("return_type" in ('TotalReturn', 'PriceReturn')),
-    check ("funding_leg_type" in ('Fixed', 'Floating'))
+    check ("funding_leg_type" in ('Fixed', 'Floating')),
+    check ("price_type" is null or "price_type" in ('Clean', 'Dirty'))
 );
 
 -- Version uniqueness for optimistic concurrency

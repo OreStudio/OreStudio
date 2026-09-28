@@ -56,6 +56,9 @@ rides the fact tables.
 
 Option type of the conversion option (Call, Put).
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -66,6 +69,12 @@ std::string("Call")
 :PROPERTIES:
 :tablename: ores_trading_ascots_tbl
 :END:
+
+** Checks
+
+| expression |
+|---|
+| "ascot_option_type" in ('Call', 'Put') |
 
 * C++
 

@@ -20,7 +20,10 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "activity_category_eventing_integration_tests.cpp"
     "activity_type_eventing_integration_tests.cpp"
+    "amortization_type_eventing_integration_tests.cpp"
+    "barrier_type_eventing_integration_tests.cpp"
     "commodity_instrument_eventing_integration_tests.cpp"
     "composite_instrument_eventing_integration_tests.cpp"
     "composite_leg_eventing_integration_tests.cpp"
@@ -34,6 +37,7 @@ set(files
     "equity_position_instrument_eventing_integration_tests.cpp"
     "equity_swap_instrument_eventing_integration_tests.cpp"
     "equity_variance_swap_instrument_eventing_integration_tests.cpp"
+    "exercise_type_eventing_integration_tests.cpp"
     "fpml_event_type_eventing_integration_tests.cpp"
     "fx_accumulator_instrument_eventing_integration_tests.cpp"
     "fx_asian_forward_instrument_eventing_integration_tests.cpp"
@@ -46,7 +50,10 @@ set(files
     "long_short_type_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_export_portfolio_codec_tests.cpp"
+    "moment_type_eventing_integration_tests.cpp"
+    "option_type_eventing_integration_tests.cpp"
     "party_role_type_eventing_integration_tests.cpp"
+    "price_type_eventing_integration_tests.cpp"
     "repository_activity_type_repository_tests.cpp"
     "repository_bond_leg_amount_repository_tests.cpp"
     "repository_equity_accumulator_instrument_repository_tests.cpp"
@@ -69,6 +76,7 @@ set(files
     "scripted_instrument_eventing_integration_tests.cpp"
     "service_bond_instrument_reader_tests.cpp"
     "service_trade_envelope_reader_tests.cpp"
+    "settlement_type_eventing_integration_tests.cpp"
     "swap_leg_eventing_integration_tests.cpp"
     "trade_eventing_integration_tests.cpp"
     "trade_id_type_eventing_integration_tests.cpp"

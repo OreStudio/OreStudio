@@ -1146,26 +1146,137 @@ than per model.
 
 No create script gained a table or a check, so no DDL was applied for Set 1.
 
-** Set 2, defect 4: the reference entity per closed set
+** Set 2, defect 4: done, nine reference entities
 
-A reference entity per closed set the defect page names, in its order:
-=long_short= (7), =option_type= (12), =exercise_type= (6), =barrier_type= (5),
-=settlement_type= (4), then the once-or-twice sets. Each binds =simple-lookup=
-like =activity_type=, its rows come from the ORE XSD simple type above, and the
-referencing column states the reference in its prose and states its closed set in
-the model's SQL Checks. The C++ member and column name do not change: D13 asks
-for the table, the reference and the schema check, and defect 6 owns the naming.
+Each new entity binds =simple-lookup=, keys on a text =code=, carries the four
+audit columns and the bitemporal pair, and states its values in the ORE XSD
+spelling so a stored value round-trips through the ORE XML unchanged. None
+declares a =* Validation function=: the closed set is stated in the schema's
+Checks instead, and the real foreign key is PR 4's.
 
-** Set 3, defect 8: the enumerations enforced in PL/pgSQL
+| Entity | Table | Rows | Row source | Referencing columns |
+|--------+-------+------+------------+---------------------|
+| =long_short_type= | =ores_trading_long_short_types_tbl= | 2 | ORE =longShort= | =long_short= in 7 models |
+| =moment_type= | =ores_trading_moment_types_tbl= | 2 | ORE =momentType= | =fx_variance_swap_instrument.moment_type= |
+| =price_type= | =ores_trading_price_types_tbl= | 2 | ORE =bondPriceType= | =bond_option.price_type=, =bond_trs.price_type= |
+| =amortization_type= | =ores_trading_amortization_types_tbl= | 5 | ORE =amortizationType= | =bond_leg_amortization.amortization_type= |
+| =option_type= | =ores_trading_option_types_tbl= | 2 | ORE =optionType= | =option_type= in 12 models plus =ascot.ascot_option_type= |
+| =exercise_type= | =ores_trading_exercise_types_tbl= | 3 | ORE =exerciseStyle= | =exercise_type= in 6 models plus =fx_vanilla_option_instrument.exercise_style= |
+| =settlement_type= | =ores_trading_settlement_types_tbl= | 2 | ORE =settlementType= | =settlement_type= in 4 models |
+| =barrier_type= | =ores_trading_barrier_types_tbl= | 10 | ORE =barrierType= | =barrier_type= in 5 models plus the two barrier halves on =equity_barrier_option_instrument= |
+| =activity_category= | =ores_trading_activity_categories_tbl= | 5 | the trading activity seed | =activity_type.category= |
 
-With Sets 1 and 2 in place: delete the =* Insert trigger / ** Validations= rows
-whose function validates a closed set, so the generated trigger stops calling the
-function; keep the 68 + 68 state guards, the 6 soft-FK existence checks and the
-FSM checks; state the four trading-owned closed sets in the models' SQL Checks so
-the schema carries them and retire those five raise sites; record that the six
-external sets (=refdata.*=, =dq.*=) gain their real foreign key in PR 4; and
-either wire =trade_identifier.id_type= to =ores_trading_validate_trade_id_type_fn=
-or record why it stays unenforced.
+=ascot_option_type= is the same set as =option_type=, so it references the one
+table rather than a second copy. Each entity has a seed under
+=projects/ores.sql/populate/trading/= wired into =populate_trading.sql=, a row in
+=ores.trading.module.org=, and an RLS policy beside the other lookups.
+
+The checks that entered the schema with this set: the option right on 10
+models, the exercise style on 4, the settlement form on 3, the barrier set on 4
+columns (and =fx_barrier_option_instrument='s =<> ''= check was replaced by the
+in-list), the price type on 2, the amortization type on 1.
+
+*** The sets that belong to another component
+
+=rounding_type=, =leg_type=, =day_count_fraction_type=, =payment_frequency=,
+=business_day_convention_type=, =floating_index_type=, =asset_class_code= and
+=currency= are =ores.refdata= lookups. =rounding_type= was the one that looked
+local: =bond_leg_rate='s two stub rounding columns named it, and a trading
+=rounding_type= model was authored and then withdrawn when
+=ores_refdata_rounding_types_tbl= turned up already holding the same five codes.
+A foreign key to it and a local in-list check would be the local copy D13
+forbids, so the two columns record the dependency and carry no in-list. The same
+treatment applies to =bond_trs.funding_leg_type=, =bond_repo.repo_type= and
+=bond_leg.leg_type= against =ores_refdata_leg_types_tbl=; the two existing
+=in ('Fixed', 'Floating')= checks stay, because they are a product gate and were
+already there.
+
+*** The sets whose rows are not in this tree
+
+Five columns state a closed set in the model and in a schema check, and their
+values are in neither the ORE XSD nor the FpML schema nor a seed. D13 says the
+rows are populated from the standard and never invented, so no table is created
+for them; the finding is recorded instead.
+
+| Column | Model's stated set | What the standard holds |
+|--------+--------------------+-------------------------|
+| =commodity_instrument.average_type=, =equity_asian_option_instrument.average_type= | Arithmetic, Geometric | no =averageType= simple type. FpML's nearest, =FxAveragingMethodEnum=, is Arithmetic/Harmonic. The commodity mappers set it from =PriceType= (Spot/FutureSettlement), which the model's own check would reject |
+| =bond_trs.return_type=, =equity_swap_instrument.return_type= | TotalReturn, PriceReturn | ORE states =ReturnType= as a free =xs:string=; the bond total return mapper hard-sets =TotalReturn= |
+| =equity_accumulator_instrument.payoff_type=, =instrument_option.payoff_type= | Accumulator, Decumulator, TaRF | ORE states =PayoffType= as a free =xs:string= |
+| =equity_accumulator_instrument.target_type= | TargetFull, TargetExact | not in the ORE XSD; no mapper writes it |
+| =callable_swap_instrument.call_type= | Bermudan, One-Time | not in the ORE XSD; no mapper writes it |
+
+=rate_kind= and =schedule_kind= are the two remaining closed sets. They are
+storage-shape discriminators rather than domain enumerations: =rate_kind= names
+which arm of the rate group the document engaged and =schedule_kind= names which
+arm of the schedule choice. Their valid set is already readable in the schema's
+check, so defect 4's complaint ("the valid set is not written down anywhere a
+person or a query can read it") does not apply, and they stay checks.
+
+** Set 3, defect 8: done
+
+The four trading-owned validate functions and the one that was never called are
+retired. The 33 =** Validations= rows that named them are deleted, the empty
+=* Insert trigger= sections are removed, and the =* Validation function= section
+is removed from =trade_type=, =activity_type=, =party_role_type=,
+=fpml_event_type= and =trade_id_type=, so the generated create scripts no longer
+emit the functions at all. They were then dropped from the development database.
+
+| Retired function | Trigger call sites | Schema check that replaces it |
+|------------------+-------------------:+-------------------------------|
+| =ores_trading_validate_trade_type_fn= | 30 | the full =ores_trading_trade_types_tbl= set (121 codes) stated on =trade.trade_type= and on the 11 instrument tables that carried no family check; the 18 already carrying a family in-list keep it, and every family set was checked to be a subset of the reference set |
+| =ores_trading_validate_activity_type_fn= | 1 | ="activity_type_code" in (<32 activity codes>)= on =trade= |
+| =ores_trading_validate_party_role_type_fn= | 1 | ="role" in ('Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee')= on =trade_party_role= |
+| =ores_trading_validate_fpml_event_type_fn= | 1 | ="fpml_event_type_code" is null or ... in ('New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination')= on =activity_type= |
+| =ores_trading_validate_trade_id_type_fn= | 0 | ="id_type" in ('UTI', 'USI', 'Internal')= on =trade_identifier=, so the column is validated for the first time |
+
+The 68 create-collides, the 68 version conflicts, the 6 soft-FK existence
+checks and the 5 FSM checks stay: they are state or reference checks a check
+constraint cannot express, and the six soft references are PR 4's to tighten.
+
+The six =ores_refdata_validate_*= functions stay too. They are another
+component's functions, so refdata is not edited and the dependency is recorded:
+=asset_class=, =business_day_convention_code=, =day_count_fraction_code=,
+=floating_index_code=, =leg_type_code= and =payment_frequency_code=, on
+=swap_leg=, =credit_instrument=, =equity_swap_instrument= and =trade=. Their real
+foreign key is PR 4's, behind the two value-domain gaps above.
+
+*** One test fixture wrote a value outside its own model's set
+
+The new =price_type= check failed on the development database, and the reason
+was a fixture, not data drift: =service_bond_instrument_reader_tests.cpp= wrote
+=price_type = "Price"= and asserted it round-tripped, while the model states the
+ORE =bondPriceType= set (Clean, Dirty) and no ORE document states =Price=. The
+fixture now writes =Clean=, and the 52 stale rows the fixture had written were
+moved to =Clean= with the DDL user.
+
+*** DDL applied to =ores_dev_merry_newton=
+
+| Change | Count |
+|--------+-------|
+| New tables created (9 lookups) with their indexes, insert fn, insert trigger and delete rule | 9 |
+| Notify trigger functions and triggers created | 9 |
+| RLS policies created | 9 |
+| Reference rows seeded | 31 across 9 tables |
+| =alter table ... add check (...)= for the checks the create scripts could not add, because =create table if not exists= skips an existing table | 43 |
+| Trading validate functions dropped | 5 |
+| Generated create scripts re-applied to resync every insert trigger (159 files; 16 =must be owner of table= errors, all on =ores_trading_commodity_basket_constituents_tbl=, which the postgres role owns and which no retired function touched) | 159 |
+| Stale =price_type='Price'= rows updated to =Clean= | 52 |
+
+=ores_trading_commodity_basket_constituents_tbl= is owned by the =postgres= role
+rather than the DDL user, so the DDL user cannot re-apply its create script. It
+is pre-existing and outside this unit; the next =compass db recreate= resolves it.
+
+** Gates after each set
+
+| Gate | Set 1 | Set 2 | Set 3 |
+|------+-------+-------+-------|
+| =pytest projects/ores.codegen/tests -q= | 806 | 806 | 806 |
+| =check_component_drift.py --component trading-cpp --dry-run= twice | No drift | No drift | No drift |
+| =check_component_drift.py --all --dry-run= | No drift | No drift | No drift |
+| =cmake --build build/output/linux-clang-debug-make -j 3= | 0, zero =error:= | 0, zero =error:= | 0, zero =error:= |
+| =ctest= the nine owned suites | 9 of 9 | 9 of 9 | 9 of 9 |
+| =validate_docs.sh= | 40 components | 40 components | 40 components |
 
 * Test Scenarios
 

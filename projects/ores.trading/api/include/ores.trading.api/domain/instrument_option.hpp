@@ -91,6 +91,9 @@ struct instrument_option final {
 
     /**
      * @brief The option's type, as the document spelled it.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> option_type;
 

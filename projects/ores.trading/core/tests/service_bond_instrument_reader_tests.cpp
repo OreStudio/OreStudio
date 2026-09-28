@@ -700,7 +700,7 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
     bond_instrument_repository().write(ctx, plain);
     auto fact = make_option(s, option.identity.instrument_id);
     fact.redemption = "Bullet";
-    fact.price_type = "Price";
+    fact.price_type = "Clean";
     fact.knocks_out = "Up";
     bond_option_repository().write(ctx, fact);
 
@@ -721,7 +721,7 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
     // Three members of the option block sit beside it rather than inside
     // it, so they ride on the fact row and not the shared option table.
     CHECK(with_option.option_redemption == "Bullet");
-    CHECK(with_option.option_price_type == "Price");
+    CHECK(with_option.option_price_type == "Clean");
     CHECK(with_option.option_knocks_out == "Up");
 }
 
@@ -910,7 +910,7 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
 
     auto trs = make_trs(s, instrument_id);
     trs.payer = "true";
-    trs.price_type = "Price";
+    trs.price_type = "Clean";
     trs.initial_price = ores::utility::decimal::decimal::from_string("99.25").value();
     bond_trs_repository().write(ctx, trs);
 
@@ -933,7 +933,7 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     // return side's own owner role.
     REQUIRE(rebuilt.trs_payer.has_value());
     CHECK(*rebuilt.trs_payer == "true");
-    CHECK(rebuilt.trs_price_type == "Price");
+    CHECK(rebuilt.trs_price_type == "Clean");
     REQUIRE(rebuilt.trs_initial_price.has_value());
     CHECK(*rebuilt.trs_initial_price == 99.25);
 

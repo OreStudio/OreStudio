@@ -69,6 +69,9 @@ struct equity_option_instrument final {
 
     /**
      * @brief Call or Put.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
@@ -84,6 +87,9 @@ struct equity_option_instrument final {
 
     /**
      * @brief European, American, or Bermudan.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 
@@ -94,6 +100,9 @@ struct equity_option_instrument final {
 
     /**
      * @brief Cash or Physical; empty when not specified.
+     *
+     * Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType
+     * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
 

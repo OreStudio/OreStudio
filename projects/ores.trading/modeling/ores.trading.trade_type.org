@@ -114,12 +114,6 @@ false
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_trading_validate_trade_type_fn;
 #+end_src
-
-* Validation function
-:PROPERTIES:
-:tenant_scope: system
-:END:
-
 * C++
 
 ** Flags

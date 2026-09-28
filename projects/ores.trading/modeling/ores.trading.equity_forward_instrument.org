@@ -168,6 +168,9 @@ std::string("Long")
 
 Cash or Physical; empty when not specified.
 
+Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
+
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -192,6 +195,7 @@ Optional free-text description.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "trade_type_code" in ('EquityForward') |
+| "settlement_type" is null or "settlement_type" in ('Physical', 'Cash') |
 
 ** Indexes
 
@@ -200,15 +204,6 @@ Optional free-text description.
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | trade_type | tenant_id, trade_type_code | false | true | |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

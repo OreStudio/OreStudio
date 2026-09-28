@@ -34,6 +34,14 @@
 \ir ./trading_party_role_types_populate.sql
 \ir ./trading_trade_id_types_populate.sql
 \ir ./trading_long_short_types_populate.sql
+\ir ./trading_moment_types_populate.sql
+\ir ./trading_price_types_populate.sql
+\ir ./trading_amortization_types_populate.sql
 
 \echo ''
 \echo '=== Trade Population Complete ==='
+\ir ./trading_option_types_populate.sql
+\ir ./trading_exercise_types_populate.sql
+\ir ./trading_settlement_types_populate.sql
+\ir ./trading_barrier_types_populate.sql
+\ir ./trading_activity_categories_populate.sql

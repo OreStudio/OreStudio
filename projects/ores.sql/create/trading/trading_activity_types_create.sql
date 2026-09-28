@@ -59,7 +59,8 @@ create table if not exists "ores_trading_activity_types_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("category" in ('new_activity', 'lifecycle_event', 'misbooking', 'valuation_change', 'cancellation'))
+    check ("category" in ('new_activity', 'lifecycle_event', 'misbooking', 'valuation_change', 'cancellation')),
+    check ("fpml_event_type_code" is null or "fpml_event_type_code" in ('New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -82,11 +83,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate fpml_event_type_code (optional field -- skip validation when null)
-    if NEW.fpml_event_type_code is not null then
-        NEW.fpml_event_type_code := ores_trading_validate_fpml_event_type_fn(NEW.tenant_id, NEW.fpml_event_type_code);
-    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -152,48 +148,3 @@ on delete to "ores_trading_activity_types_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
-
--- =============================================================================
--- Validation function for activity_type
--- Validates that a code exists in the activity_types table.
--- Returns the validated value, or default if null/empty.
--- Uses system tenant data (shared reference data).
--- =============================================================================
-create or replace function ores_trading_validate_activity_type_fn(
-    p_tenant_id uuid,
-    p_value text
-) returns text as $$
-begin
-    -- Return default if null or empty
-    if p_value is null or p_value = '' then
-        raise exception 'Invalid activity_type: value cannot be null or empty'
-            using errcode = '23502';
-    end if;
-
-    -- Allow pass-through during bootstrap (no active rows for system tenant).
-    if not exists (
-        select 1 from ores_trading_activity_types_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        return p_value;
-    end if;
-
-    -- Validate against reference data
-    if not exists (
-        select 1 from ores_trading_activity_types_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and code = p_value
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid activity_type: %. Must be one of: %', p_value, (
-            select string_agg(code::text, ', ' order by code)
-            from ores_trading_activity_types_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) using errcode = '23503';
-    end if;
-
-    return p_value;
-end;
-$$ language plpgsql security definer set search_path = public, pg_temp;

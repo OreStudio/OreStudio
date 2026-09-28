@@ -55,10 +55,9 @@ namespace ores::trading::domain {
  * The ten codes, in seed order (trading_trade_types_populate.sql):
  * Bond, ForwardBond, BondFuture, BondOption, BondRepo, BondTRS,
  * BondPosition, CallableBond, ConvertibleBond, Ascot. The trade_type_code
- * check is the membership check against ores_trading_trade_types_tbl
- * through ores_trading_validate_trade_type_fn, the mechanism every
- * generated trading instrument uses, plus the in-list coverage check
- * over the ten codes below. For Bond, ForwardBond, CallableBond,
+ * check is the in-list coverage check over the ten codes below, which is
+ * the schema's statement of the closed set; the real foreign key to
+ * ores_trading_trade_types_tbl is PR 4's (defect 7). For Bond, ForwardBond, CallableBond,
  * ConvertibleBond and BondPosition the issue is the bond itself; for
  * BondRepo the issue is the collateral the financing runs against; for
  * BondOption, BondFuture, BondTRS and Ascot the issue is the bond the

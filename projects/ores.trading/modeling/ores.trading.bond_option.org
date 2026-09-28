@@ -61,6 +61,9 @@ rides the fact tables.
 
 Call or Put.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -96,6 +99,8 @@ The redemption code the document states.
 
 The price type the document states.
 
+Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
+
 ** knocks_out
 :PROPERTIES:
 :type:     text
@@ -124,6 +129,7 @@ would lose the spelling on every document that carries one.
 |---|
 | "option_type" in ('Call', 'Put') |
 | "option_strike" >= 0 |
+| "price_type" is null or "price_type" in ('Clean', 'Dirty') |
 
 * C++
 

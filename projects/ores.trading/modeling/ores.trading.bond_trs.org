@@ -79,6 +79,9 @@ std::string("TotalReturn")
 
 Leg type of the funding leg (Fixed, Floating).
 
+Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating, OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Floating")
 #+end_src
@@ -136,6 +139,8 @@ std::optional<std::string>(std::string("true"))
 
 Price type the total return is struck on (Dirty, Clean).
 
+Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
+
 The schema declares the member required. It is not the =return_type=
 column beside it: that one names the return side of the swap, and this
 one names how the price is quoted.
@@ -173,6 +178,7 @@ std::make_optional(ores::utility::decimal::decimal::from_string("109.712").value
 |----------------------------------------|
 | "return_type" in ('TotalReturn', 'PriceReturn') |
 | "funding_leg_type" in ('Fixed', 'Floating') |
+| "price_type" is null or "price_type" in ('Clean', 'Dirty') |
 
 * C++
 

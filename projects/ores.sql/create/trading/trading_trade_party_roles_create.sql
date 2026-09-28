@@ -49,7 +49,8 @@ create table if not exists "ores_trading_party_roles_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("role" in ('Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -102,9 +103,6 @@ begin
         raise exception 'Invalid counterparty_id: %. Counterparty must exist for tenant.', NEW.counterparty_id
             using errcode = '23503';
     end if;
-
-    -- Validate role
-    NEW.role := ores_trading_validate_party_role_type_fn(NEW.tenant_id, NEW.role);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

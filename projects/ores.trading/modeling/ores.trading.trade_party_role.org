@@ -92,6 +92,12 @@ std::string("Counterparty")
 :index_prefix: party_roles
 :END:
 
+** Checks
+
+| expression |
+|---|
+| "role" in ('Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee') |
+
 ** Indexes
 
 | name         | columns                   | unique | current_only | where_extra |
@@ -116,15 +122,6 @@ Trade this role assignment belongs to; must exist in ores_trading_trades_tbl.
 :END:
 
 Counterparty fulfilling the role; must exist in ores_refdata_counterparties_tbl.
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function                     |
-|--------+-----------------------------------------|
-| role   | ores_trading_validate_party_role_type_fn |
-
 * C++
 
 ** Flags

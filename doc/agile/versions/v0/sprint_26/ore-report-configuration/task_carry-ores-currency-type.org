@@ -26,11 +26,11 @@ A currency carries the ORE currency type it was imported with, so the export wri
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Implemented and passing; open for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge.                                 |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -99,3 +99,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in [[https://github.com/OreStudio/OreStudio/pull/2351][PR #2351]].
+
+The refdata currency carries ORE's =CurrencyType= verbatim in
+=ore_currency_type=, a nullable text column, and the mapper reads it in and
+writes it back rather than translating it. =monetary_nature= is still derived
+from it, because that derivation is our classification and is still wanted; it
+is simply no longer the only place the vendor's token could go.
+
+The column is nullable because ORE declares the element as a free string and
+most documents set none, and it is text rather than a lookup because the
+vocabulary is ORE's and a lookup of ours would have to be kept in step with a
+document we do not own. Twelve of the thirteen corpus files depend on the
+nullability: they set no =CurrencyType= and must export none.
+
+Three tests encoded the old contract, where =monetary_nature= doubled as the
+token. They now set the token, and one asserts the derivation: a token of
+=Crypto= comes back as =Crypto= with a nature of =synthetic=. A currency that
+has a nature but no token can no longer round trip its nature, because ORE's
+document cannot express one. That is the contract now, and the tests say so
+rather than leaving it to be discovered.
+
+The currencies kind goes from twelve of thirteen corpus files to thirteen, and
+is registered with the harness as a test rather than measured by the hidden
+probe.
+
+Two generated artefacts had to be regenerated, and both gates were right to
+refuse the change without them: the shell scripts tangled from the entity's
+recipe shifted by a parameter, and the ER diagram is drawn from the models, so a
+new column makes it stale.

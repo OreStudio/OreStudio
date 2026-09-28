@@ -96,6 +96,14 @@ export interface SessionStore {
     activate(id: string, session: ActiveSession): LiveSession | undefined;
     /** Records a re-issued token and its new lifetime after a refresh. */
     refresh(id: string, accessLifetimeSeconds: number): void;
+    /**
+     * Records that the signed-in account set a password of its own.
+     *
+     * The flag is a snapshot the login took, so a session that has just
+     * changed its password still reports the change as outstanding until this
+     * runs, and the next read would ask for it a second time.
+     */
+    passwordChanged(id: string): LiveSession | undefined;
     /** Closes the connection and forgets the session. */
     destroy(id: string): Promise<void>;
     destroyAll(): Promise<void>;
@@ -197,6 +205,15 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             if (record !== undefined) {
                 record.accessLifetimeSeconds = accessLifetimeSeconds;
             }
+        },
+
+        passwordChanged(id) {
+            const record = sessions.get(hash(id));
+            if (record === undefined) {
+                return undefined;
+            }
+            record.passwordResetRequired = false;
+            return toLive(id, record);
         },
 
         async destroy(id) {

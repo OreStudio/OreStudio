@@ -169,10 +169,11 @@ export type { WireImage, WireImageInfo } from './entities/image.js';
 export {
     ACCOUNT_SUBJECTS,
     changeOwnPassword,
+    changeOwnPasswordRequestSchema,
     deleteAccount,
     setAccountsLocked,
 } from './account-operations.js';
-export type { AuthenticatedCaller } from './account-operations.js';
+export type { AuthenticatedCaller, ChangeOwnPasswordRequest } from './account-operations.js';
 
 // The HTTP contract shared by the BFF and the browser. Both sides parse with
 // these definitions, so the network boundary is checked at runtime.

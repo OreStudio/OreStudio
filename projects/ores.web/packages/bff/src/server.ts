@@ -33,6 +33,8 @@ import {
     OresClient,
     SUBJECTS,
     bootstrapStatusSchema,
+    changeOwnPassword,
+    changeOwnPasswordRequestSchema,
     changeReasonPageSchema,
     createAdministratorRequestSchema,
     getImagesRequestSchema,
@@ -462,6 +464,31 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw new NotAuthenticatedError('Session ended during party selection');
         }
         return sessionResponse(activated);
+    });
+
+    /**
+     * The signed-in account's own password.
+     *
+     * A person who must change their password has a session already: they
+     * signed in with the password the deployment gave them, and this is what
+     * replaces it with one only they know. Nobody else's password is reachable
+     * here, and the account is the session's own, so the route takes no
+     * account id.
+     */
+    server.post('/api/account/password', async (request) => {
+        const session = requireSession(request);
+        const parsed = changeOwnPasswordRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('The current password and the new password are required.');
+        }
+        await changeOwnPassword(session.client, parsed.data);
+        /*
+         * The session's copy of the flag is a snapshot of the login, so it is
+         * cleared here rather than read again: the account has just done what
+         * the flag asked for.
+         */
+        sessions.passwordChanged(session.id);
+        return { success: true };
     });
 
     /**

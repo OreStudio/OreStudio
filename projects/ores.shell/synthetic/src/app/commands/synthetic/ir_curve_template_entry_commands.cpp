@@ -28,6 +28,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
@@ -141,7 +142,7 @@ void ir_curve_template_entry_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> "
+        "add <party_id> <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> "
         "<instrument_code> <reason> <commentary>");
 
     menu->Insert(
@@ -149,16 +150,16 @@ void ir_curve_template_entry_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> "
-        "<instrument_code> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <ir_curve_config_id> <sequence_index> <start_tenor_code> "
+        "<end_tenor_code> <instrument_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <ir_curve_config_id> <sequence_index> <start_tenor_code> "
-        "<end_tenor_code> <instrument_code> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <ir_curve_config_id> <sequence_index> "
+        "<start_tenor_code> <end_tenor_code> <instrument_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -188,7 +189,7 @@ void ir_curve_template_entry_commands::register_commands(cli::Menu& root_menu,
         },
         "version <id> --version <n>");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void ir_curve_template_entry_commands::process_list(std::ostream& out,
@@ -352,12 +353,13 @@ void ir_curve_template_entry_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(
             req.change.write.ir_curve_config_id, parsed->positionals[next++], "ir_curve_config_id");
         read_token(req.change.write.sequence_index, parsed->positionals[next++], "sequence_index");
@@ -408,12 +410,13 @@ void ir_curve_template_entry_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(
             req.change.write.ir_curve_config_id, parsed->positionals[next++], "ir_curve_config_id");
         read_token(req.change.write.sequence_index, parsed->positionals[next++], "sequence_index");
@@ -476,14 +479,15 @@ void ir_curve_template_entry_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::ir_curve_template_entry_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
+            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(
                 change.write.ir_curve_config_id, parsed->positionals[next++], "ir_curve_config_id");
             read_token(change.write.sequence_index, parsed->positionals[next++], "sequence_index");

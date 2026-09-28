@@ -87,30 +87,30 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
-     * <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date>
-     * <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason>
-     * <commentary>
+     * @brief add <party_id> <config_id> <currency_code> <index_family> <tenor> <role>
+     * <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source>
+     * <vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
-     * <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date>
-     * <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason>
-     * <commentary> [--version <n>]
+     * @brief set <id> <party_id> <config_id> <currency_code> <index_family> <tenor> <role>
+     * <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source>
+     * <vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <config_id> <currency_code> <index_family> <tenor> <role>
-     * <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source>
-     * <vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id>
-     * <reason> <commentary>
+     * @brief put-many --count <n> <id> <party_id> <config_id> <currency_code> <index_family>
+     * <tenor> <role> <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source>
+     * <vintage_source> <vintage_date> <description> <fixed_leg_payment_frequency_code>
+     * <source_name> <folder_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

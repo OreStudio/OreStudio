@@ -106,7 +106,26 @@ under which the corpus's own text determines the identity. It is a grammar chang
 affecting identifiers outside the fixing boundary, so it is recorded here for a
 decision rather than taken.
 
+* Decided
+
+Requiredness follows the entity kind: a fixing and a quote do not share a set of
+required fields, because they do not answer the same question. A quote says what
+a thing is worth and in what currency; a fixing says what an index was on a date.
+So the currency is required of every type that is not a fixing, and not of a
+fixing -- which is what the parser now enforces, with the type carrying it as
+optional rather than mandatory.
+
+This settles the equity and commodity half of the gap. Still open, and separate:
+
+- the **interest-rate families** the enum does not hold -- =EONIA=, =CIBOR=,
+  =NIBOR=, =STIBOR=, =SIOR=, =FedFunds=, =CMS=, =SIFMA=, =BBSW=, =AONIA=,
+  =CAMARA=, =REPOFIX= and the rest -- which is data rather than grammar;
+- the **FX source** (=FX-ECB-EUR-USD= against =FX-TR20H-EUR-USD=), which is a
+  field the FX identifier does not have; and
+- the **power contract-hour shape**, which is a shape the grammar does not have.
+
 * Plan
+
 
 
 (Implementation strategy. Written when work starts; key decisions

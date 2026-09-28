@@ -118,5 +118,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/market_series_export_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/market_series_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/observation_lineage_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/ore_export_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/series_classification_rule_protocol.hpp"
 )

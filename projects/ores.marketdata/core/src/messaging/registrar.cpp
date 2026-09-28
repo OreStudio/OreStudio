@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
+#include "ores.marketdata.core/messaging/ore_export_handler.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_observation_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
@@ -112,6 +113,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              [&nats, ctx, verifier, &auth_nats](ores::nats::message msg) mutable {
                                  import_handler h(nats, ctx, verifier, auth_nats);
                                  h.import(std::move(msg));
+                             }));
+
+    // Export
+    subs.push_back(
+        nats.queue_subscribe(std::string(export_market_data_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 ore_export_handler h(nats, ctx, verifier);
+                                 h.write_all(std::move(msg));
                              }));
 
     // Publish-from-DQ workflow step handler

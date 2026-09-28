@@ -53,6 +53,7 @@ struct market_observation_entity {
 
     std::string point_id;
 
+    std::optional<std::string> key;
     std::string value;
     std::optional<std::string> source;
     db_timestamp valid_from = "9999-12-31 23:59:59";

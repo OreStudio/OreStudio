@@ -52,6 +52,7 @@ domain::market_observation market_observation_mapper::map(const market_observati
 
     r.point_id = v.point_id;
 
+    r.key = v.key.value_or("");
     r.value = v.value;
     r.source = v.source.value_or("");
 
@@ -74,6 +75,7 @@ market_observation_entity market_observation_mapper::map(const domain::market_ob
 
     r.point_id = v.point_id;
 
+    r.key = v.key.empty() ? std::nullopt : std::optional(v.key);
     r.value = v.value;
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
 

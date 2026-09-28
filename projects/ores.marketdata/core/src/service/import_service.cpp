@@ -326,6 +326,9 @@ import_service::import(const messaging::import_market_data_request& req) {
                 // A key that carries no point of its own takes the series
                 // type's answer for its single point.
                 obs.point_id = point.value_or(registry.default_point_for(series_type));
+                // The file's own text, kept because the rows above hold the
+                // canonical spelling rather than it.
+                obs.key = d.key;
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

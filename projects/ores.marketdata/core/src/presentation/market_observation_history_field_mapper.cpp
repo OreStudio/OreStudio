@@ -41,6 +41,7 @@ render_market_observation_fields(const domain::market_observation& v) {
         {.name = "Observation Datetime",
          .value = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime)});
     fields.push_back({.name = "Point ID", .value = v.point_id});
+    fields.push_back({.name = "Key", .value = v.key});
     fields.push_back({.name = "Value", .value = v.value});
     fields.push_back({.name = "Source", .value = v.source});
 

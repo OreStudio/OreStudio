@@ -40,9 +40,12 @@ struct composite_instrument_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Changed composite instrument UUIDs (as strings).
+     * @brief Changed composite trade UUIDs (as strings).
+     *
+     * An instrument's key is the trade it belongs to, so the id of a
+     * changed instrument row is the id of its trade.
      */
-    std::vector<std::string> composite_instrument_ids;
+    std::vector<std::string> composite_trade_ids;
 
     /**
      * @brief The tenant that owns the changed entity.

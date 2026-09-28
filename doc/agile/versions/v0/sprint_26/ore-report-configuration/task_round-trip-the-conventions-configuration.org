@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 8A0973B9-A595-45D1-97EC-E83ECCCF5B27
+:END:
+#+title: Task: Round trip the conventions configuration
+#+description: conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Fourteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip.
+#+type: task
+#+level: s1
+#+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/round-trip-the-conventions-configuration
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every conventions document in the corpus imports, exports and matches, with the two normalisations the mapper performs on purpose stated in the kind's comparison rather than hidden.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Scoped. The mapper counts what it skips; the corpus is measured and the work is cut into three parts. |
+| Waiting on   | Nothing.                               |
+| Next         | Map the fields the modelled categories already have, then model the fourteen categories the corpus uses. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The mapper reads and writes every field the modelled categories carry, so no element is dropped.
+- Each convention category the corpus uses has an entity in ores.refdata and a mapper in both directions.
+- The conventions kind is registered with the round-trip harness and all seventy-two corpus files round trip.
+- The mapper reports any category it does not model, and a test asserts that it reports none.
+
+* Plan
+
+1. Make the skip countable before changing anything. The mapper dropped
+   seventeen categories in silence, which is why seventy-two files went
+   unmeasured: nothing could say which categories the documents use. It now
+   fills =mapped_conventions::unmodelled= and warns per category.
+2. Measure which categories the corpus needs, and which files use only modelled
+   categories. The probes are hidden tests, because the kind does not round trip
+   and a test that passes while a document loses a category is worse than a
+   measurement a person reads.
+3. Fix the modelled categories first, because they are the cheap half and they
+   are why nine files fail for a reason unrelated to the unmodelled categories.
+4. Then model the fourteen categories, most used first, each with a refdata
+   entity, both mappers, and its own round trip.
+5. State the two normalisations the mapper performs on purpose in the kind's
+   comparison, and only once the categories are modelled, because until then the
+   kind cannot pass whatever the comparison says.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files of the conventions kind | 72 | =ores.ore.core.tests "[.][conventions]" -s= | =8215ab6253= |
+| Files using a category the mapper does not model | 63 | the same | =8215ab6253= |
+| Categories the document carries | 26, of which 9 are modelled | =grep -A 30 "struct conventions {" domain.hpp= | =8215ab6253= |
+| Categories the corpus uses and the mapper does not model | 14 | the same | =8215ab6253= |
+| Files using only modelled categories that round trip | 0 of 9 | the same | =8215ab6253= |
+| The per-category counts and the field-level causes | =evidence/round_trip_conventions_gap.md= | the same | =8215ab6253= |
+
+* Notes
+
+- The cheapest work is not the unmodelled categories. Nine files carry no
+  unmodelled category and still fail, on two causes: =<IndexBased>= is dropped,
+  and a boolean and a day counter come back in ORE's enum spelling rather than
+  the document's.
+- =<IndexBased>= is a mapper line on Deposit, whose column already exists, and a
+  new column on Zero, which has none although ORE writes an index-based zero
+  convention.
+- =true= against =True=, and =A365= against =A365F=, are the mapper's deliberate
+  normalisation of booleans and enum aliases to canonical codes. Both carry the
+  same information, so the comparison may state them. A dropped element carries
+  less information than the document, so it may not.
+- The mapper now warns once per unmodelled category on every import, which will
+  be noisy for the corpus until the categories land. That noise is the point:
+  the skip was invisible for as long as it was silent.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -623,6 +623,104 @@ Update the story's checklist rows for M02, M04, M05, M08 and M09.
   another component. If so, record the dependency rather than inventing
   rows here.
 
+* Defect 1: collections held as JSON
+
+D12 governs: the trading domain model carries no JSON collection, and a
+collection is a child table keyed to its parent. This unit closes the
+collection that has a real producer and leaves the others recorded.
+
+** The census (measured 2026-09-28 at =8ee64b5002=)
+
+Eight columns across six instruments hold a collection in a =text=
+column. No column is typed =json= or =jsonb=; every one is =text=, and
+the deployed database agrees with the models on all eight.
+
+| Column                              | Instrument                | Producer                                  | Judgement |
+|-------------------------------------+---------------------------+-------------------------------------------+-----------|
+| =call_dates_json=                     | =callable_swap_instrument=  | =swap_instrument_mapper= (forward only)     | Migrated: child =callable_swap_call_date= |
+| =knock_out_dates_json=                | =knock_out_swap_instrument= | none                                      | Collection; no ORE producer exists, so the payload shape is ungrounded. Remaining |
+| =basket_json=                         | =commodity_instrument=      | none                                      | Collection; no producer. Remaining |
+| =basket_json=                         | =equity_swap_instrument=    | =equity_instrument_mapper= (both ways)      | Collection with a real payload. Remaining, see below |
+| =option_data_json=                    | =equity_position_instrument= | none                                     | Collection; =equityOptionPositionData= declares only =Quantity= and =Underlying=, so the column has no source field. Remaining |
+| =events_json=, =underlyings_json=, =parameters_json= | =scripted_instrument= | =scripted_instrument_mapper= | Not a collection: the payload is a user script whose shape the domain does not fix. This is defect 1's stated exception. Left as =text= |
+
+Two further checks found no other collection: no trading model declares a
+=std::vector= or =std::map= column, and no trading create script declares
+a =json= or =jsonb= type.
+
+** The child that landed: =callable_swap_call_date=
+
+The ORE document states the callable swap's exercise dates as an
+unbounded list of ISO 8601 dates inside =CallableSwapData.OptionData=.
+The mapper built a JSON array by hand and the reverse mapper discarded it
+(a comment called the parse "a gap"). The child row is therefore the
+payload's own shape, not a guess:
+
+| Decision      | Value |
+|---------------+-------|
+| Table         | =ores_trading_callable_swap_call_dates_tbl= |
+| Key           | =(tenant_id, instrument_id, sequence_number, valid_from, valid_to)= — the parent id plus the date's ordinal, the shape =bond_leg= and =trade_envelope_additional_field= use |
+| Parent        | =instrument_id= references the callable swap instrument. The component declares no SQL foreign key yet (defect 7), so the reference is the column and its prose, as in =bond_leg= |
+| Scope         | =has_tenant_id: true= only. The child rides the instrument's tenant, workspace and party, so no workspace column rides it |
+| Natural key   | none; the ordinal is the identity |
+| Audit/validity| the template's audit columns and the bitemporal =valid_from=/=valid_to= pair with the exclusion constraint |
+| Columns       | =sequence_number integer not null=, =call_date date not null= |
+| Checks        | ="sequence_number" > 0=, the generated nil-uuid check, and the column types themselves (a malformed date, a null entry and an out-of-range ordinal are each refused) |
+| Payload losses| none. A repeated date stays two rows because the date is not part of the key; the document's order is the ordinal |
+
+The shared =instrument_schedule= + =instrument_schedule_date= pair is the
+shape the defect page proposes, and it already exists. It was not used
+here because the rates family carries no schedule in its container and no
+read path returns one, so wiring it is the same work as the child plus a
+change to a table nine families share. That generalisation is defect 16,
+which this task does not own. The child entity is the minimal migration
+that satisfies D12; folding it into the shared schedule is recorded as
+remaining work.
+
+** What the other collections need
+
+- =equity_swap_instrument.basket_json= has a real payload (the
+  underlyings' names, forward and reverse). It is not migrated because
+  the defect-9 XOR check reads the column to tell a basket swap from a
+  single-name swap. Removing the column without a parent-side
+  basket-presence record would weaken that assertion, and the product
+  split is defect 9, which this task does not own. The child is an
+  =equity_swap_basket_underlying= row keyed like this one, and it lands
+  with the product split.
+- =commodity_instrument.basket_json=, =equity_position_instrument.option_data_json=
+  and =knock_out_swap_instrument.knock_out_dates_json= have no mapper
+  that writes them. Their child shape cannot come from real data, and
+  inventing one would be a guess. They stay as columns until a producer
+  exists or their product is modelled.
+- =scripted_instrument='s three columns are the defect's stated
+  exception. The repair the defect names is =jsonb= rather than =text=,
+  which is a type change with no collection and no child table; it is not
+  this unit's shape change and stays recorded.
+
+** Files changed
+
+Codegen source: the new =ores.trading.callable_swap_call_date= model; the
+parent model loses the column and names the child; =trade.org= reads the
+child beside the legs. Generated: 33 files for the child, the parent's
+regenerated set, and the trade handler. Hand-written: =instrument.hpp=
+(the rates carrier gains the schedule), =instrument_payload.cpp= (the
+wire shape), =swap_instrument_mapper.{hpp,cpp}=, =exporter.cpp=,
+=ore_import_execute_handler.cpp=, the callable swap shell verb, and the
+swaption mapper test. SQL: the child's create, notify trigger, drop and
+RLS policy, and the three aggregate scripts. Database: the table, its
+notify trigger and its RLS policy were created, and
+=call_dates_json= was dropped; both tables held no rows, so no value was
+lost.
+
+** Judgement calls
+
+- D12 is followed literally: a child entity per collection. The defect
+  page's shared schedule table is recorded as the later generalisation.
+- A column with no producer gets no invented child. The task requires the
+  payload's shape to come from the real data.
+- =basket_json= waits for defect 9 so that its removal cannot weaken the
+  XOR assertion.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

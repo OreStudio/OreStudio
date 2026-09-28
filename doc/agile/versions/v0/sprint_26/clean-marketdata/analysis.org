@@ -1536,3 +1536,28 @@ projects/ores.codegen/venv/bin/python tmp/marketdata_analysis/coverage_probe.py
 - Whether =feed_binding='s no-match profile gap is fixed here or in the
   profile catalogue, since =reporting.report_definition= has the same
   shape.
+
+*Update, 2026-09-29 (PR 6's survey).* The component was put through V06's gates to
+see whether the story can close, and it is one item short.
+
+**Met.** The drift check reports no drift for =marketdata= at all eight addresses --
+=ores.cmake=, =ores.cpp=, =ores.doc=, =ores.plantuml=, =ores.shell=, =ores.sql=,
+=ores.ts.domain= and =ores.ts.protocol= -- including the market series entity that
+gained the =oresmd_uri= column, so the component regenerates byte for byte from its
+models. Its populate references resolve, its handler permissions are seeded, and its
+suites pass.
+
+**Not met, and it is the whole of what stands between it and
+=COMPONENTS_UNDER_TEST=.** Seven of its protocol headers carry no TypeScript twin,
+so the twin gate fails the moment the component is listed:
+=crm_protocol.hpp=, =curve_republish_protocol.hpp=, =curve_snapshot_protocol.hpp=,
+=import_protocol.hpp=, =market_feed_config_protocol.hpp=,
+=market_series_export_protocol.hpp= and =ore_export_protocol.hpp=. They are
+hand-written rather than generated from an operation model, and a twin is generated
+from the model, so each needs one first. That is the standard's M06 item.
+
+Listing the component was tried and reverted, because the gate exists to refuse
+exactly that: it went from "protocol twin coverage intact, all 171 headers in 12
+committed components" to "incomplete" on the addition alone. The component's
+registration is therefore one modelling pass away, and the survey above is what says
+so.

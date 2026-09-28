@@ -33,7 +33,7 @@ name workflow type // the definition the run follows
 tenant id tenant // the tenant the run acts for
 text request payload // the material every step builder reads
 text correlation identifier // ties the run to the originating request
-text instance identifier // the firing's own identity, so a repeated publish of one firing is the same run
+text instance identifier // the run's identity; a repeated publish of one start is the same run
 end note
 
 @enduml

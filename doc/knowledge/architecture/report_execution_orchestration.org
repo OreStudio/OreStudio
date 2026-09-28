@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:workflow:orchestration:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 
 * Summary
 
@@ -34,10 +34,12 @@ name, a function that returns the ordered phases, and for each phase a name, a
 command subject, a compensation subject and the payload to send.
 
 The function that builds the phases receives the start message's payload, the
-tenant and a correlation identifier. It currently ignores all three and returns
-the same phases every time, which is why no definition can select a shorter
-chain today. In the target it reads the run configuration and returns the phases
-that configuration names, including any substitutes.
+tenant and a correlation identifier. It reads the run configuration out of the
+payload and returns the chain that configuration names, and it throws if the
+configuration names a chain reporting does not implement, so the run fails
+before a step is dispatched. The tenant and the correlation identifier go
+unused, because each step's command is built from the run's own request rather
+than from the envelope the engine was handed.
 
 Because the function is re-run on every dispatch and on recovery, it must be a
 pure function of its inputs. A phase list that read anything else could be
@@ -62,12 +64,17 @@ Source: [[./report_execution_orchestration_loop.puml][=report_execution_orchestr
 
 ** What the engine guarantees
 
+The engine's own statement of its rules is
+[[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]]. The table below is only
+the part a report phase depends on.
+
+#+ATTR_HTML: :class hug-leading
 | Property | Guarantee |
 |----------+-----------|
 | ordering | a phase is dispatched only after its predecessor has reported completion |
 | persistence | a phase is recorded as in progress before its command is published, so a crash leaves a record |
 | resumption | every phase left in progress is re-dispatched when a service restarts |
-| failure | a failing phase ends the run; the engine walks the completed phases in reverse, publishing each one's compensation subject |
+| failure | a failing phase ends the run; the engine walks the phases whose state is exactly completed, in reverse, and publishes each one's compensation subject |
 | selection | the phase list is rebuilt from the start message on every dispatch |
 
 ** What a phase must guarantee in return
@@ -77,6 +84,7 @@ with no acknowledgement and no timeout, so a phase can be invoked again after a
 crash or a restart. Every phase must therefore converge when repeated rather
 than accumulate.
 
+#+ATTR_HTML: :class hug-leading
 | Phase | What convergence means |
 |-------+------------------------|
 | Pre-processing | a repeated run finds either no artifact under its digest or a complete one; it never appends to an existing artifact |
@@ -84,6 +92,16 @@ than accumulate.
 | Retrieval | recording the same output location twice is the same as recording it once |
 | Post-processing | loading the same result file twice does not double the rows |
 | Finalisation | a terminal state is terminal; a second transition to it is refused, not applied |
+
+*The report phases do not meet this yet.* No reporting handler checks whether the
+step it is answering has already run, so a re-dispatched phase does its work
+again: =assemble_bundle= writes a second bundle row, and =gather_trades= and
+=prepare_ore_package= re-export and re-upload what they exported before. The
+engine's own record keeps the double invocation from moving the run twice, which
+is why the defect is invisible in a green run. The fix is the idempotency check
+the engine offers a handler; until it is used, treat a recovered run as one that
+may have acted more than once. This gap is recorded on
+[[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]].
 
 ** The two records
 
@@ -100,10 +118,18 @@ state machine, and nothing else may write that state.
 ** Failure
 
 A phase fails by answering with a failure rather than by staying silent, and the
-engine then compensates: it walks the phases that completed, in reverse, and
-publishes each one's compensation so that the work they did can be undone or
-marked. For a report run, compensation ends in the fail phase, which moves the
-instance to a terminal failed state with the reason.
+engine then compensates: it walks the phases whose state is exactly completed, in
+reverse, and publishes each one's compensation subject.
+
+For a report run, every phase's compensation is the same message, the one that
+marks the instance failed. Compensation here is therefore not an undo. It is a
+single terminal transition, and the first compensation to arrive wins, so the
+error a reader sees is the first phase's. What a completed phase produced, a
+stored object or a compute batch, stays where it is; nothing deletes it.
+
+Note also that a phase which answered with warnings rather than plain completion
+is not compensated at all, because the engine walks only the steps whose state is
+exactly completed. No reporting phase answers with warnings today.
 
 Two failure modes are not covered by this and must be designed for:
 

@@ -10,13 +10,13 @@
 #+updated: 2026-09-28
 
 A schedule determines when work starts; a workflow run executes work that
-lasts longer than one action. The connection is one-directional: the
-job's action publishes a start message, the engine creates the run, and
-the scheduler's part ends at the publish. This page defines the boundary
-from the scheduler's side: what the start message carries, what the job
-must not wait for, and what the scheduler must not read. The design of
-the run belongs to the workflow cluster, and this page assumes only that
-a run exists.
+lasts longer than one action. The connection is one-directional: the job's
+action publishes a message, the run's owner creates the row the run acts on and
+starts the run, and the scheduler's part ends at the reply. This page defines
+the boundary from the scheduler's side: what the trigger and the start message
+carry, what the job must not wait for, and what the scheduler must not read. The
+design of the run belongs to the workflow cluster, and this page assumes only
+that a run exists.
 
 * Detail
 
@@ -25,9 +25,16 @@ a run exists.
 Each action type has a defined reach: a database statement, a queue
 message, or a published message. None of them executes work that outlives
 one firing. When the work must outlive it, the job's action publishes a
-start message on the workflow start subject, and the engine, as process
-manager, creates a run and dispatches the steps the run's definition
-declares. The run holds the steps, records each step's result, and ends
+message rather than executing anything, and which message depends on whether
+the run needs a domain row first.
+
+A run with no such row is started directly on the workflow start subject, and
+the engine, as process manager, creates the run and dispatches the steps the
+run's definition declares. A run that acts on a domain row is started through
+the service that owns the row: the action calls that service's trigger, the
+service creates the row, and the service publishes the start. Report execution
+takes the second route, because a report instance must exist before its run
+does. Either way the run holds the steps, records each step's result, and ends
 when the last declared step completes.
 
 The job does not wait for that end and does not read the run's state. The
@@ -36,27 +43,35 @@ run continues independently. The same rule applies to every action the
 scheduler performs, because the scheduler's responsibility ends when the
 action returns.
 
-** The start message is the only interface
+** The trigger and the start message
 
-The start message is published on the workflow start subject. It carries
-the workflow type, the tenant, the request payload, the correlation
-identifier, and the instance identifier of the run.
+A job with a published action names a subject and a body. A trigger message
+carries what the owner needs to create its row, which for a report is the
+definition, the tenant and the firing's identity.
 
-#+caption: The start message a firing publishes: the run's identity comes from the firing, so re-publishing one firing opens the same run.
+The start message is published on the workflow start subject, by the owner
+rather than by the scheduler. It carries the workflow type, the tenant, the
+request payload, the correlation identifier, and the instance identifier of the
+run.
+
+#+caption: The start message a caller publishes: the run's identity is named in the message, so re-publishing one start re-opens the same run.
 [[proj:doc/knowledge/architecture/scheduled_workflow_start.png]]
 
 Source: [[proj:doc/knowledge/architecture/scheduled_workflow_start.puml][=scheduled_workflow_start.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/scheduled_workflow_start.puml=.
 
-The instance identifier comes from the firing, so re-publishing one
-firing opens the same run rather than a second one. A scheduled caller
-needs that property, because a retried action must not start two runs for
-one occurrence.
+The run's instance identifier is named in the start message, so re-publishing
+one start opens the same run rather than a second one. The engine offers that
+idempotency and the caller supplies the identifier. A caller that routes through
+a domain service passes the firing's identity to that service instead, and the
+service records it against the row it creates; report execution does this, and
+stores the firing on the report instance as its trigger run. What neither route
+may do is start two runs for one occurrence.
 
-The interaction has one exchange. The scheduler publishes the start and
-records the firing; everything after the start belongs to the run.
+The interaction has one exchange. The scheduler publishes the trigger and
+records the reply; everything after the start belongs to the run.
 
-#+caption: A firing that starts a run: the scheduler publishes the start and records the firing, and the run proceeds without it.
+#+caption: A firing that starts a run: the scheduler publishes the trigger and records the reply, the run's owner creates its row and publishes the start, and the run then proceeds without the scheduler.
 [[proj:doc/knowledge/architecture/scheduled_workflow_start_sequence.png]]
 
 Source: [[proj:doc/knowledge/architecture/scheduled_workflow_start_sequence.puml][=scheduled_workflow_start_sequence.puml=]].
@@ -68,8 +83,11 @@ Regenerate with
 Each side owns part of the boundary. Three obligations fall to the
 scheduler, and each follows from the scheduler's own design.
 
-- /Derive the run identity from the firing./ The instance identifier the
-  start carries is the firing's, so a repeated publish opens the same run.
+- /Name the run's identity, or pass the firing's on./ A caller that publishes
+  the start supplies the run's instance identifier, so a repeated publish opens
+  the same run. A caller that routes through a domain service passes the
+  firing's identity to that service, which records it against the row it
+  creates and publishes the start itself.
 - /Publish and return./ The job never waits for the run and never reads
   its state. A job that waited would hold the scheduler's loop for the
   duration of the run.
@@ -110,8 +128,9 @@ owner.
 
 1. Register the job definition with the cron expression and the action
    that starts the run.
-2. Point the action at the workflow start subject, so the firing
-   publishes the start instead of executing the work.
+2. Point the action at the subject that starts the run: the workflow start
+   subject when the run needs no domain row, or the domain service's trigger
+   when it does.
 3. Leave the steps, their subjects and their failure policy in the
    workflow definition, where
    [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][the step protocol]]

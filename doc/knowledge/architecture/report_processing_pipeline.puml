@@ -19,57 +19,58 @@
 
 title Report processing: one run end to end
 
-actor Operator
+actor "Operator\n(or the schedule)" as Operator
 participant "ores.scheduler" as sched
 participant "ores.reporting" as rep
-participant "ores.trading" as trade
-participant "ores.marketdata" as mkt
-participant "ores.ore\n(mappers)" as ore
+participant "ores.ore\n(package handler)" as ore
 database PostgreSQL as db
 participant "workflow engine\n(ores.workflow)" as wf
 participant "ores.compute" as comp
 participant "NATS\nJetStream" as js
 participant "worker node" as node
 participant "ORE engine" as engine
-participant "ores.storage" as store
+participant "storage" as store
 
 == Seeded once ==
 Operator -> store : PUT the engine package
-Operator -> db : report type, definition and its run configuration,\nrisk report config, book scope, compute app version, scheduler job
+Operator -> db : report type, definition and its run configuration,\nbook scope, compute app version, and any prepared input archive
 
-== A schedule fires ==
+== The run is triggered ==
 sched -> db : job instance (starting)
 sched -> rep : reporting.v1.ops.trigger_report_instance\n{definition, tenant, job instance}
+Operator -> rep : reporting.v1.ops.trigger_report_instance\n{definition, tenant}
 rep -> db : report instance (pending), read the run configuration
 rep -> wf : workflow.v1.start {type, run configuration}
 rep --> sched : outcome
 sched -> db : job instance succeeded
 
-== The workflow runs the phases ==
-wf -> wf : build the phase list from the run configuration
+== The workflow builds the chain ==
+wf -> wf : build the step list from\npre_processing and post_processing
 note right of wf : rebuilt on every dispatch,\nso it must be a pure function
 
-group pre-processing
-    wf -> rep : reporting.v1.ops.preprocess
-    rep -> trade : trading.v1.ops.scope-read {scope, as-of}
-    trade --> rep : trades
-    rep -> mkt : marketdata.v1.ops.resolve {trades}
-    mkt --> rep : curves, fixings, quotes
-    rep -> ore : map to the engine's documents (in-process)
-    rep -> store : HEAD reporting/inputs/{digest}.tar.gz
-    alt the artifact exists
-        store --> rep : hit
-    else
-        rep -> store : PUT reporting/inputs/{digest}.tar.gz\n(Input/ore.xml and the files it names)
-    end
-    rep -> wf : workflow.v1.events.step-completed {input location, digest}
+alt pre-processing executes
+    wf -> rep : reporting.v1.report.gather-trades
+    rep -> db : the trades in scope, and their storage key
+    rep --> wf : gather_trades_result
+    wf -> rep : reporting.v1.report.gather-market-data
+    rep -> db : the market data the trades require, and its key
+    rep --> wf : gather_market_data_result
+    wf -> rep : reporting.v1.report.assemble-bundle
+    rep -> db : input bundle row naming both objects
+    rep --> wf : assemble_bundle_result
+    wf -> ore : ore.v1.report.prepare-package
+    ore -> store : PUT the input archive
+    ore --> wf : prepare_ore_package_result
+else pre-processing is substituted
+    wf -> rep : reporting.v1.report.resolve-prepared-input
+    note right of rep : the archive is named, not read
+    rep --> wf : prepare_ore_package_result\n{the named archive}
 end
 
 group submission and execution
-    wf -> comp : compute.v1.report.submit\n{instance, tenant, correlation, input locations}
-    comp -> db : batch, workunits, results
+    wf -> comp : compute.v1.report.submit {input locations}
+    comp -> db : batch, workunits
     comp -> js : compute.v1.work.assignments.{tenant}.{platform}\n{result, workunit, package and digest, input, output}
-    comp -> wf : workflow.v1.events.step-completed {batch}
     js -> node : deliver assignment
     node -> store : GET the package, GET the input
     node -> engine : spawn (Input/ore.xml)
@@ -77,28 +78,28 @@ group submission and execution
     node -> store : PUT compute/output/{result}.tar.gz
     node -> comp : compute.v1.results.submit {result, host, output, outcome}
     comp -> db : result done, workunit canonical, batch closed
+    comp -> wf : workflow.v1.events.step-completed {batch}
 end
 
-group retrieval
-    wf -> rep : reporting.v1.ops.retrieve-results
-    rep -> comp : compute.v1.results.list (by instance)
-    comp --> rep : result and output location
-    rep -> db : record the output location
-    rep -> wf : workflow.v1.events.step-completed {output location}
+alt post-processing executes
+    wf -> rep : reporting.v1.report.collect-compute-results {batch}
+    note right of rep : retrieval and post-processing\nare one step today, and it is a stub
+    rep --> wf : collect_compute_results_result
+else post-processing is ignored
+    wf -> rep : reporting.v1.report.ignore-compute-results {batch}
+    note right of rep : the batch is recorded,\nits output left unread
+    rep --> wf : collect_compute_results_result
 end
 
-group post-processing
-    wf -> rep : reporting.v1.ops.postprocess
-    rep -> store : GET compute/output/{result}.tar.gz
-    store --> rep : the output archive
-    rep -> db : bulk load the result files
-    rep -> wf : workflow.v1.events.step-completed {rows loaded}
-end
-
-wf -> rep : reporting.v1.ops.finalise
+wf -> rep : reporting.v1.report.finalise
 rep -> db : instance completed
-rep -> wf : workflow.v1.events.step-completed
+rep --> wf : finalise_report_result
 
-Operator -> rep : report_instances get\n(state, output location, results, substitutions)
+Operator -> rep : reporting.v1.report_instances get\n(state, output location, substitutions)
+
+group on any step failure
+    wf -> rep : reporting.v1.report.fail {instance, the step's error}
+    rep -> db : instance failed
+end
 
 @enduml

@@ -79,6 +79,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | metric |
 | source |
 | source_spelling |
+| name_spelling |
 
 * Test cases
 ** Projections

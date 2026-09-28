@@ -71,6 +71,7 @@ struct query_params final {
     std::optional<std::string> delivery;
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
+    std::optional<std::string> name_spelling;
 
     static query_params from(const boost::urls::url_view& u) {
         query_params qp;
@@ -121,6 +122,8 @@ struct query_params final {
                 qp.source = p.value;
             else if (p.key == "source_spelling")
                 qp.source_spelling = p.value;
+            else if (p.key == "name_spelling")
+                qp.name_spelling = p.value;
             else
                 BOOST_THROW_EXCEPTION(
                     oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
@@ -190,6 +193,7 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "role", qp.role);
     reject_if_present("fx", "metric", qp.metric);
     reject_if_present("fx", "delivery", qp.delivery);
+    reject_if_present("fx", "name_spelling", qp.name_spelling);
     if (qp.source && parse_type(qp) != instrument_type::fixing)
         BOOST_THROW_EXCEPTION(
             oresmd_exception("oresmd://fx/... 'source' is only meaningful when type=fixing."));
@@ -203,6 +207,7 @@ void validate_ir(const query_params& qp) {
     reject_if_present("ir", "source", qp.source);
     reject_if_present("ir", "source_spelling", qp.source_spelling);
     reject_if_present("ir", "delivery", qp.delivery);
+    reject_if_present("ir", "name_spelling", qp.name_spelling);
     if (qp.metric && parse_type(qp) != instrument_type::quote)
         BOOST_THROW_EXCEPTION(
             oresmd_exception("oresmd://ir/... 'metric' is only meaningful when type=quote."));
@@ -211,10 +216,10 @@ void validate_ir(const query_params& qp) {
 /*
  * The query keys none of the classes that delegate here models. index, tenor,
  * role and metric belong to another class's grammar, source and source_spelling
- * to an FX fixing, and delivery to a commodity or power fixing. equity and credit
- * generate no reject list of their own, so for those two this is the whole of
- * their query validation and a key refused everywhere but its owner has to be
- * named here.
+ * to an FX fixing, delivery to a commodity or power fixing, and name_spelling to
+ * a generic index. equity and credit generate no reject list of their own, so for
+ * those two this is the whole of their query validation and a key refused
+ * everywhere but its owner has to be named here.
  */
 void validate_no_foreign_keys(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "index", qp.index);
@@ -224,6 +229,7 @@ void validate_no_foreign_keys(std::string_view asset_class, const query_params& 
     reject_if_present(asset_class, "source", qp.source);
     reject_if_present(asset_class, "source_spelling", qp.source_spelling);
     reject_if_present(asset_class, "delivery", qp.delivery);
+    reject_if_present(asset_class, "name_spelling", qp.name_spelling);
 }
 
 void validate_equity(const query_params& qp) {
@@ -523,6 +529,7 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     reject_if_present("correlation", "source", qp.source);
     reject_if_present("correlation", "source_spelling", qp.source_spelling);
     reject_if_present("correlation", "delivery", qp.delivery);
+    reject_if_present("correlation", "name_spelling", qp.name_spelling);
     correlation_market_data_identifier id;
     id.factor_pair = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -563,6 +570,7 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     reject_if_present("inflation", "source", qp.source);
     reject_if_present("inflation", "source_spelling", qp.source_spelling);
     reject_if_present("inflation", "delivery", qp.delivery);
+    reject_if_present("inflation", "name_spelling", qp.name_spelling);
     inflation_market_data_identifier id;
     id.index_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -618,6 +626,7 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     reject_if_present("commodity", "metric", qp.metric);
     reject_if_present("commodity", "source", qp.source);
     reject_if_present("commodity", "source_spelling", qp.source_spelling);
+    reject_if_present("commodity", "name_spelling", qp.name_spelling);
     commodity_market_data_identifier id;
     id.commodity_code = to_upper(first_segment(u));
     // A fixing's key is an index name, and an index name does not carry the
@@ -694,6 +703,7 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
     reject_if_present("security", "source", qp.source);
     reject_if_present("security", "source_spelling", qp.source_spelling);
     reject_if_present("security", "delivery", qp.delivery);
+    reject_if_present("security", "name_spelling", qp.name_spelling);
     security_market_data_identifier id;
     id.security_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -727,6 +737,7 @@ market_data_identifier parse_shape_profile(const boost::urls::url_view& u, const
     reject_if_present("shape_profile", "source", qp.source);
     reject_if_present("shape_profile", "source_spelling", qp.source_spelling);
     reject_if_present("shape_profile", "delivery", qp.delivery);
+    reject_if_present("shape_profile", "name_spelling", qp.name_spelling);
     shape_profile_market_data_identifier id;
     id.profile_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -762,6 +773,7 @@ market_data_identifier parse_rating(const boost::urls::url_view& u, const query_
     reject_if_present("rating", "source", qp.source);
     reject_if_present("rating", "source_spelling", qp.source_spelling);
     reject_if_present("rating", "delivery", qp.delivery);
+    reject_if_present("rating", "name_spelling", qp.name_spelling);
     rating_market_data_identifier id;
     id.provider_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -801,12 +813,56 @@ market_data_identifier parse_power(const boost::urls::url_view& u, const query_p
     reject_if_present("power", "point", qp.point);
     reject_if_present("power", "source", qp.source);
     reject_if_present("power", "source_spelling", qp.source_spelling);
+    reject_if_present("power", "name_spelling", qp.name_spelling);
     power_market_data_identifier id;
     id.commodity_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
     reject_if_present("power", "model", qp.model);
     if (qp.delivery)
         id.delivery = to_lower(*qp.delivery);
+    return id;
+}
+
+market_data_identifier parse_generic(const boost::urls::url_view& u, const query_params& qp) {
+    reject_if_present("generic", "ccy", qp.ccy);
+    reject_if_present("generic", "index", qp.index);
+    reject_if_present("generic", "index_spelling", qp.index_spelling);
+    reject_if_present("generic", "tenor", qp.tenor);
+    reject_if_present("generic", "second_tenor", qp.second_tenor);
+    reject_if_present("generic", "second_ccy", qp.second_ccy);
+    reject_if_present("generic", "contract_month", qp.contract_month);
+    reject_if_present("generic", "contract_code", qp.contract_code);
+    reject_if_present("generic", "second_factor", qp.second_factor);
+    reject_if_present("generic", "curve_id", qp.curve_id);
+    reject_if_present("generic", "day_count", qp.day_count);
+    reject_if_present("generic", "settle", qp.settle);
+    reject_if_present("generic", "shift", qp.shift);
+    reject_if_present("generic", "strip", qp.strip);
+    reject_if_present("generic", "role", qp.role);
+    reject_if_present("generic", "metric", qp.metric);
+    reject_if_present("generic", "quote", qp.quote);
+    reject_if_present("generic", "point", qp.point);
+    reject_if_present("generic", "source", qp.source);
+    reject_if_present("generic", "source_spelling", qp.source_spelling);
+    reject_if_present("generic", "delivery", qp.delivery);
+    generic_market_data_identifier id;
+    id.name = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    reject_if_present("generic", "model", qp.model);
+    // The spelling is the token as ORE wrote it, so it is carried raw rather than
+    // case-normalised with the name it sits beside. It has to be that name in
+    // another case: a spelling that is not would leave the identifier holding two
+    // identities, the one its entity names and the one its index name reads back
+    // as.
+    if (qp.name_spelling) {
+        if (to_upper(*qp.name_spelling) != id.name)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                std::format("oresmd://generic/... name_spelling '{}' is not the name '{}' in "
+                            "another case.",
+                            *qp.name_spelling,
+                            id.name)));
+        id.name_spelling = *qp.name_spelling;
+    }
     return id;
 }
 
@@ -898,6 +954,8 @@ market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
         return parse_rating(u, qp);
     if (asset_token == "power")
         return parse_power(u, qp);
+    if (asset_token == "generic")
+        return parse_generic(u, qp);
 
     BOOST_THROW_EXCEPTION(
         oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
@@ -1039,6 +1097,11 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.commodity_code));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_if(u, "delivery", id.delivery);
+            } else if constexpr (std::is_same_v<T, generic_market_data_identifier>) {
+                u.set_host("generic");
+                u.segments().push_back(to_lower(id.name));
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_if(u, "name_spelling", id.name_spelling);
             }
         },
         identifier);

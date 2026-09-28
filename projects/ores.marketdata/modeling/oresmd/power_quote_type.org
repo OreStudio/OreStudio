@@ -108,6 +108,7 @@ A logical, possibly-partial oresmd requirement for an intraday power index.
 | point |
 | source |
 | source_spelling |
+| name_spelling |
 
 * Test cases
 ** Projections

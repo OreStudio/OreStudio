@@ -4,7 +4,7 @@
 #+level: cross
 #+filetags: :clean_marketdata:analysis:oresmd:sprint_26:v0:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 
 * Summary
 
@@ -1380,6 +1380,19 @@ Two of the four =GENERIC= tokens are market-data keys that sit inside a fixings
 file rather than index names, and the reader reads them as fixings because that is
 the file they are in. Whether it should refuse a key that is not an index name is
 part of what remains.
+
+*Update, 2026-09-28 (task AB2922AA, commit 7b3918b6fe).* The generic class is
+closed, and the two market-data keys are settled. ORE resolves =GENERIC-= in a
+parser of its own, and the name is all the identity there is: the identifier
+carries it upper-cased and the case ORE wrote it in beside it in =name_spelling=,
+which is the FX =source_spelling= rule. Both names the corpus carries name and
+=GENERIC-JuniorNote= and =GENERIC-PortfolioBasket#1=, the second through the =%23=
+its =#= becomes in a URI -- so the corpus total is **139 of 158**. The two
+=GENERIC-MD/EQUITY_OPTION/PRICE/...= rows are SPX call prices in a fixing column
+rather than index names; the index-name projection refuses any name that carries a
+slash, which keeps them out of the fixing space, so the target is **156 of 158**
+rather than 158. Three classes remain: inflation (7), equity (8) and security (2).
+The =FIXING= exemption in the oresmd coverage gate still stands, unchanged.
 
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 

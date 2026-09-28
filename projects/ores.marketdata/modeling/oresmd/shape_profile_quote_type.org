@@ -11,7 +11,7 @@
 #+level: s2
 #+filetags: :codegen:oresmd:shape_profile:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 
 * Quote types
 
@@ -67,6 +67,7 @@ A logical, possibly-partial oresmd requirement for a shape profile.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * URI order
 

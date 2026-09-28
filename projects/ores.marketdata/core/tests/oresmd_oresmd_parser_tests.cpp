@@ -715,6 +715,129 @@ TEST_CASE("round_trip_commodity_fixing_delivery", tags) {
 }
 
 /*
+ * The fixing-only classes: an intraday power index and a generic index are named
+ * by their index names and by nothing else, so each URI below projects an index
+ * name and no quote key.
+ */
+
+TEST_CASE("round_trip_power", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_power_delivery_date", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_power_delivery_window", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_power_delivery_window_dst", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000-dst"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_generic", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_generic_with_a_spelled_name", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://generic/juniornote?type=fixing&name_spelling=JuniorNote"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_generic_name_with_a_key_separator", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://generic/portfoliobasket%231?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+/*
  * Round-trip tests for new IR quote types (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
  */
 
@@ -1448,6 +1571,19 @@ TEST_CASE("parse_commodity_fwd_quote", tags) {
     REQUIRE(co.point == "6m");
 }
 
+TEST_CASE("parse_generic_index", tags) {
+    // The path segment is upper-cased like every other class's entity, and the
+    // spelling the corpus wrote is carried raw beside it, so the index name the
+    // fixing boundary writes back is the one ORE wrote.
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://generic/juniornote?type=fixing&name_spelling=JuniorNote"));
+    const auto& generic = std::get<generic_market_data_identifier>(id);
+    CHECK(generic.type == instrument_type::fixing);
+    CHECK(generic.name == "JUNIORNOTE");
+    REQUIRE(generic.name_spelling.has_value());
+    CHECK(*generic.name_spelling == "JuniorNote");
+}
+
 TEST_CASE("reject_commodity_quote_when_type_not_quote", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=fixing&quote=fwd")),
@@ -1469,6 +1605,83 @@ TEST_CASE("reject_commodity_model_when_type_not_vol", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&model=rate_lnvol")),
         oresmd_exception);
+}
+
+TEST_CASE("reject_power_uri_with_a_currency", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&ccy=usd")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_power_uri_with_a_point", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&point=2021-01-04")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_power_uri_with_a_quote_type", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&quote=spot")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_power_uri_with_a_source", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&source=ecb")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_power_uri_with_a_tenor", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&tenor=3m")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_power_uri_with_an_index", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&index=libor")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_a_currency", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&ccy=usd")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_an_index", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&index=libor")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_a_tenor", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&tenor=3m")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_a_delivery", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&delivery=2025-10")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_a_quote_type", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&quote=spot")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_a_point", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&point=2025-10-03")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_with_a_source", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://generic/juniornote?type=fixing&source=ecb")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_generic_uri_whose_spelling_is_not_a_case_of_the_name", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri(
+                          "oresmd://generic/juniornote?type=fixing&name_spelling=NotJuniorNote")),
+                      oresmd_exception);
 }
 
 TEST_CASE("reject_security_uri_with_ccy", tags) {
@@ -1672,6 +1885,32 @@ TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
         oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&delivery=2024-12")));
     REQUIRE(power.delivery.has_value());
     CHECK(*power.delivery == "2024-12");
+}
+
+TEST_CASE("reject_name_spelling_on_every_class_that_does_not_name_it", tags) {
+    // A generic index's spelling carries the case ORE wrote the index name in, and
+    // nothing else. Every class but generic refuses it, through its own Reject keys
+    // table or, where the model generates none, through the shared check.
+    for (const auto& rejected :
+         {"oresmd://equity/sp5?type=fixing&name_spelling=Sp5",
+          "oresmd://credit/vod?ccy=eur&type=fixing&name_spelling=Vod",
+          "oresmd://commodity/ice:b?type=fixing&name_spelling=B",
+          "oresmd://power/ice:pdq?type=fixing&name_spelling=Pdq",
+          "oresmd://fx/eurusd?type=fixing&source=ecb&name_spelling=Ecb",
+          "oresmd://inflation/ukrpi?type=fixing&name_spelling=Ukrpi",
+          "oresmd://ir/usd?type=fixing&index=sofr&name_spelling=Sofr",
+          "oresmd://correlation/ccy-eur-usd?type=fixing&name_spelling=Ccy",
+          "oresmd://rating/provider_1?type=fixing&name_spelling=Provider",
+          "oresmd://security/isin:de000a3h2wp2?type=fixing&name_spelling=Isin",
+          "oresmd://shape_profile/pjm_wh_rt_pk?type=fixing&name_spelling=Pjm"}) {
+        REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
+    }
+    // The class that names it keeps it raw: the spelling is the arrival text, so it
+    // is carried in the case it arrived in.
+    const auto generic = std::get<generic_market_data_identifier>(oresmd_parser::parse(
+        uri("oresmd://generic/juniornote?type=fixing&name_spelling=JuniorNote")));
+    REQUIRE(generic.name_spelling.has_value());
+    CHECK(*generic.name_spelling == "JuniorNote");
 }
 
 TEST_CASE("reject_ir_term_index_fixing_without_a_tenor", tags) {

@@ -47,9 +47,9 @@
  * The sibling coverage test measures the instrument keys, and it steps around
  * these files because they are the other reader's payload.
  *
- * The corpus carries 158 distinct index names across eight shapes. This test
- * walks them with the real fixing reader, so a name it counts is a name the
- * import sees, and asks the real projection library to name each one: one way for
+ * The corpus carries 158 distinct index names. This test walks them with the
+ * real fixing reader, so a name it counts is a name the import sees, and asks
+ * the real projection library to name each one: one way for
  * each class whose grammar is decided, and nothing for the classes whose grammar
  * is not. The full table is reported on every run, so the current figure is
  * visible rather than asserted in prose, and the classes that name nothing are
@@ -90,12 +90,18 @@ struct refused_file {
 /// family belongs to -- and the shape is what this library discriminates on, so
 /// the classification is stated in the same terms.
 std::string class_of(std::string_view name) {
+    // Two prefixes, not one. GENERIC-<name> is an index name ORE resolves, while
+    // GENERIC-MD/<TYPE>/<METRIC>/... is the market-data key form an oresmd URI
+    // replaces. The corpus puts two of the latter in a fixing payload, and they
+    // are errors rather than fixings, so the two are counted apart: one names,
+    // the other cannot.
     const std::pair<std::string_view, std::string_view> prefixed[] = {{"FX-", "fx"},
                                                                       {"EQ-", "equity"},
                                                                       {"COMM-", "commodity"},
                                                                       {"POWER-", "power"},
                                                                       {"BOND-ISIN:", "security"},
-                                                                      {"GENERIC-", "unclassified"}};
+                                                                      {"GENERIC-MD/", "market-data-key"},
+                                                                      {"GENERIC-", "generic"}};
     for (const auto& [prefix, cls] : prefixed) {
         if (name.starts_with(prefix))
             return std::string(cls);
@@ -230,11 +236,17 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
                      round_tripped));
 
     // The classes whose index-name grammar is a decision this task has not taken
-    // yet. Each is recorded with its reason on the task; this list is the
-    // measured half of the same claim. It fails when one is closed without the
-    // record being updated, and when a change breaks a class that worked.
+    // yet, plus the one the corpus misfiles. Each is recorded with its reason on
+    // the task; this list is the measured half of the same claim. It fails when
+    // one is closed without the record being updated, and when a change breaks a
+    // class that worked.
+    //
+    // market-data-key is not a class this library owes an index name to: the two
+    // GENERIC-MD/... rows in Products/Input/fixings.csv are market-data keys in a
+    // fixing column, and the owner reads them as errors. They stay counted here so
+    // that the census keeps its whole population.
     const std::set<std::string> recorded{
-        "equity", "inflation", "security", "unclassified"};
+        "equity", "inflation", "security", "market-data-key"};
 
     REQUIRE(classes_with_unnamed_names() == recorded);
 }
@@ -253,7 +265,7 @@ TEST_CASE("the_closed_classes_name_every_fixing_name_the_corpus_carries", tags) 
     // The classes whose grammar is decided, pinned at every name the corpus
     // carries rather than at a sample, so a family or a source that regresses in
     // one variant fails here.
-    for (const auto& cls : {"ir", "fx", "commodity", "power"}) {
+    for (const auto& cls : {"ir", "fx", "commodity", "power", "generic"}) {
         const auto& c = corpus_coverage().classes.at(cls);
 
         CHECK(c.named == c.names);

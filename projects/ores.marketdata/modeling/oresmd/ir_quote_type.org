@@ -11,7 +11,7 @@
 #+level: s2
 #+filetags: :codegen:oresmd:ir:
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-09-28
 
 * Quote types
 
@@ -152,6 +152,7 @@ arrived is carried beside it, so a name reads back as it came.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * Type-gated keys
 

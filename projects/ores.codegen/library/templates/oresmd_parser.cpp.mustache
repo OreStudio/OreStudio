@@ -49,6 +49,7 @@ struct query_params final {
     std::optional<std::string> delivery;
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
+    std::optional<std::string> name_spelling;
 
     static query_params from(const boost::urls::url_view& u) {
         query_params qp;
@@ -99,6 +100,8 @@ struct query_params final {
                 qp.source = p.value;
             else if (p.key == "source_spelling")
                 qp.source_spelling = p.value;
+            else if (p.key == "name_spelling")
+                qp.name_spelling = p.value;
             else
                 BOOST_THROW_EXCEPTION(
                     oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
@@ -169,10 +172,10 @@ void validate_{{asset_class}}(const query_params& qp) {
 /*
  * The query keys none of the classes that delegate here models. index, tenor,
  * role and metric belong to another class's grammar, source and source_spelling
- * to an FX fixing, and delivery to a commodity or power fixing. equity and credit
- * generate no reject list of their own, so for those two this is the whole of
- * their query validation and a key refused everywhere but its owner has to be
- * named here.
+ * to an FX fixing, delivery to a commodity or power fixing, and name_spelling to
+ * a generic index. equity and credit generate no reject list of their own, so for
+ * those two this is the whole of their query validation and a key refused
+ * everywhere but its owner has to be named here.
  */
 void validate_no_foreign_keys(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "index", qp.index);
@@ -182,6 +185,7 @@ void validate_no_foreign_keys(std::string_view asset_class, const query_params& 
     reject_if_present(asset_class, "source", qp.source);
     reject_if_present(asset_class, "source_spelling", qp.source_spelling);
     reject_if_present(asset_class, "delivery", qp.delivery);
+    reject_if_present(asset_class, "name_spelling", qp.name_spelling);
 }
 
 {{#oresmd_validate_post}}
@@ -386,6 +390,22 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     if (qp.delivery)
         id.delivery = to_lower(*qp.delivery);
 {{/has_delivery}}
+{{#has_name_spelling}}
+    // The spelling is the token as ORE wrote it, so it is carried raw rather than
+    // case-normalised with the name it sits beside. It has to be that name in
+    // another case: a spelling that is not would leave the identifier holding two
+    // identities, the one its entity names and the one its index name reads back
+    // as.
+    if (qp.name_spelling) {
+        if (to_upper(*qp.name_spelling) != id.name)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://{{asset_class}}/... name_spelling '{}' is not the name '{}' in "
+                "another case.",
+                *qp.name_spelling,
+                id.name)));
+        id.name_spelling = *qp.name_spelling;
+    }
+{{/has_name_spelling}}
 {{#fx}}
     // A fixing carries the source that published it, lower-cased the way the
     // index families are, with the token as ORE wrote it kept beside it when the

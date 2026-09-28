@@ -5535,13 +5535,13 @@ _ORESMD_GENERATED_FIELDS = ("quote_type", "point", "vol")
 # templates emit the generated fields above from theirs. They carry a query key
 # nothing else uses, so the parser template needs a boolean to branch on, but
 # their declaration stays in the header's verbatim field loop.
-_ORESMD_PARSER_FIELDS = ("delivery",)
+_ORESMD_PARSER_FIELDS = ("delivery", "name_spelling")
 
 # Hand-crafted parse-time case mapping: entity fields and ccy are upper-
 # cased, tenor/point lower-cased, everything else passes through raw. A fixing
 # source is a provider token the corpus writes in mixed case, so it is lower-cased
 # like the enum names it stands beside; its spelling passes through raw.
-_ORESMD_UPPER_FIELDS = {"pair", "ccy", "ticker", "reference_entity",
+_ORESMD_UPPER_FIELDS = {"pair", "ccy", "ticker", "reference_entity", "name",
                         "commodity_code", "index_code", "factor_pair"}
 _ORESMD_LOWER_FIELDS = {"tenor", "point", "delivery", "source"}
 

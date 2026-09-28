@@ -155,9 +155,8 @@ std::optional<named_key>
 canonical_key(const std::string& key,
               const ores::ore::market::series_key_registry& registry,
               const ores::ore::market::fx_quote_convention_checker* fx_checker) {
-    const auto identifier = fx_checker ?
-                                core::oresmd_projections::from_ore_key(key, *fx_checker) :
-                                core::oresmd_projections::from_ore_key(key);
+    const auto identifier = fx_checker ? core::oresmd_projections::from_ore_key(key, *fx_checker) :
+                                         core::oresmd_projections::from_ore_key(key);
     if (!identifier)
         return std::nullopt;
     auto canonical = core::oresmd_projections::to_quote_key(*identifier);
@@ -299,8 +298,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 // A key oresmd cannot name keeps the registry's own
                 // decomposition; one it can name is taken from the
                 // identifier, canonical spelling and all.
-                const auto series_type =
-                    named ? named->decomposition.series_type : d.series_type;
+                const auto series_type = named ? named->decomposition.series_type : d.series_type;
                 const auto metric = named ? named->decomposition.metric : d.metric;
                 const auto qualifier = named ? named->decomposition.qualifier : d.qualifier;
                 const auto point = (named && named->decomposition.point_id) ?
@@ -326,6 +324,9 @@ import_service::import(const messaging::import_market_data_request& req) {
                 // A key that carries no point of its own takes the series
                 // type's answer for its single point.
                 obs.point_id = point.value_or(registry.default_point_for(series_type));
+                // The file's own text, kept because the rows above hold the
+                // canonical spelling rather than it.
+                obs.key = d.key;
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
@@ -349,7 +350,8 @@ import_service::import(const messaging::import_market_data_request& req) {
             fixings.reserve(data.size());
             for (const auto& f : data) {
                 // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name
-                const auto series = find_or_create_series("FIXING", "RATE", f.qualifier);
+                const auto series =
+                    find_or_create_series(std::string(fixing_series_type), "RATE", f.qualifier);
 
                 domain::market_fixing fix;
                 fix.id = gen();

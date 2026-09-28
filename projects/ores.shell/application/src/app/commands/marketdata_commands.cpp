@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.marketdata.api/messaging/import_protocol.hpp"
+#include "ores.marketdata.api/messaging/ore_export_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -43,9 +44,18 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-// Imports can be large market.txt/fixings.txt files; mirror the
-// bundles publish command's generous request timeout.
-constexpr std::chrono::minutes import_timeout(5);
+// Import and export both carry a whole market.txt/fixings.txt file's worth of
+// content in one request; mirror the bundles publish command's generous
+// request timeout.
+constexpr std::chrono::minutes bulk_transfer_timeout(5);
+
+bool write_file(const std::string& path, const std::string& content) {
+    std::ofstream file(path);
+    if (!file.is_open())
+        return false;
+    file << content;
+    return file.good();
+}
 
 std::optional<std::string> read_file(const std::string& path) {
     std::ifstream file(path);
@@ -77,6 +87,14 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
         },
         "Import ORE market.txt/fixings.txt content via import_market_data_request",
         {"[--file <path>] [--fixings <path>] [--source <tag>] [--duplicates-are-errors]"});
+
+    marketdata_menu->Insert(
+        "export",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_export(std::ref(out), std::ref(session), args);
+        },
+        "Write the tenant's market data back out as ORE market.txt/fixings.txt files",
+        {"[--market-data <path>] [--fixings <path>]"});
 
     ores::shell::app::insert_menu(root_menu, std::move(marketdata_menu));
 }
@@ -134,7 +152,7 @@ void marketdata_commands::process_import(std::ostream& out,
     out << "Importing market data..." << std::endl;
 
     auto result = do_auth_request<marketdata::messaging::import_market_data_response>(
-        out, session, std::string(req.nats_subject), req, import_timeout);
+        out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
     if (!result)
         return;
 
@@ -164,6 +182,61 @@ void marketdata_commands::process_import(std::ostream& out,
                               << result->observation_count << " observations, "
                               << result->fixing_count << " fixings, " << result->warnings.size()
                               << " warning(s).";
+}
+
+void marketdata_commands::process_export(std::ostream& out,
+                                         nats_client& session,
+                                         const std::vector<std::string>& args) {
+    auto parsed =
+        parse_args(args,
+                   {{.name = "market-data", .requires_value = true, .default_value = "market.txt"},
+                    {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    const auto& market_path = parsed->flag("market-data");
+    const auto& fixings_path = parsed->flag("fixings");
+
+    BOOST_LOG_SEV(lg(), info) << "Exporting market data (market-data: " << market_path
+                              << ", fixings: " << fixings_path << ")";
+    out << "Exporting market data..." << std::endl;
+
+    marketdata::messaging::export_market_data_request req;
+    auto result = do_auth_request<marketdata::messaging::export_market_data_response>(
+        out, session, std::string(req.nats_subject), req, bulk_transfer_timeout);
+    if (!result)
+        return;
+
+    if (!result->success) {
+        fail(out) << "Failed to export market data: " << result->message << std::endl;
+        return;
+    }
+
+    // Both files are written even when one is empty, because ORE reads both and
+    // an absent fixings.txt fails the run -- which is exactly the state the
+    // TA002 example ships in, with a fixings.txt of zero lines.
+    if (!write_file(market_path, result->market_data_content)) {
+        fail(out) << "Cannot write file: " << market_path << std::endl;
+        return;
+    }
+    if (!write_file(fixings_path, result->fixings_content)) {
+        fail(out) << "Cannot write file: " << fixings_path << std::endl;
+        return;
+    }
+
+    out << "✓ Exported " << result->series_count << " series, " << result->observation_count
+        << " observation(s), " << result->fixing_count << " fixing(s) to " << market_path << " and "
+        << fixings_path << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Export succeeded: " << result->series_count << " series, "
+                              << result->observation_count << " observations, "
+                              << result->fixing_count << " fixings.";
 }
 
 }

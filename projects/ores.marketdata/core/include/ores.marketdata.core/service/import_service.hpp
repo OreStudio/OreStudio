@@ -50,6 +50,17 @@ public:
     using context = ores::database::context;
 
     /**
+     * @brief The series type fixings are catalogued under.
+     *
+     * A fixing does not follow ORE's TYPE/METRIC/QUALIFIER/POINT_ID grammar --
+     * its key is an index name and a date -- so the import files it under a
+     * series type of its own. The export reads this name rather than repeating
+     * the string, because the two are inverses and a fixing series the export
+     * failed to recognise would be emitted as though it were market data.
+     */
+    static constexpr std::string_view fixing_series_type = "FIXING";
+
+    /**
      * @param auth_nats Authenticated client used to fetch ores.refdata's
      *        currency_pair reference data (for fx_quote_convention_checker).
      *        If the fetch fails (refdata unreachable, etc.), the import

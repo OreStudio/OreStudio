@@ -92,6 +92,22 @@ struct market_observation final {
     std::string point_id;
 
     /**
+     * @brief The instrument key exactly as the producer wrote it, when the producer wrote one.
+     *
+     * An import sets this from the key it parsed off the line. It is kept because the import
+     * deliberately rewrites that key: a key oresmd can name is stored under the canonical spelling
+     * its own projection emits, and an FX/RATE key refdata reports as reversed is stored under the
+     * corrected pair. The series' columns therefore hold the importer's text, not the file's, and
+     * rebuilding a key from them returns the canonical spelling -- the right thing to query by, the
+     * wrong thing to write back. This is the file's text.
+     *
+     * Null for an observation no file produced: a tick from a feed or a curve bootstrap has no
+     * producer key to preserve, and an export rebuilds its key from the series, which is exact for
+     * every row the import did not rewrite.
+     */
+    std::string key;
+
+    /**
      * @brief Serialised market value (numeric string; format is series-type-specific).
      */
     std::string value;

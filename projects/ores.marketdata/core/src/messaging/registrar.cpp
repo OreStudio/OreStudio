@@ -32,6 +32,7 @@
 #include "ores.marketdata.core/messaging/market_series_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
+#include "ores.marketdata.core/messaging/ore_export_handler.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
@@ -113,6 +114,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                  import_handler h(nats, ctx, verifier, auth_nats);
                                  h.import(std::move(msg));
                              }));
+
+    // Export
+    subs.push_back(nats.queue_subscribe(std::string(export_market_data_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            ore_export_handler h(nats, ctx, verifier);
+                                            h.write_all(std::move(msg));
+                                        }));
 
     // Publish-from-DQ workflow step handler
     {

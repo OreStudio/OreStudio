@@ -39,6 +39,7 @@ export interface MarketObservationWrite {
     series_id: string;
     observation_datetime: string;
     point_id: string;
+    key: string;
     value: string;
     source: string;
 }

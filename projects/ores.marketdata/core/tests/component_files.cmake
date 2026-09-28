@@ -32,4 +32,5 @@ set(files
     "series_classification_rule_eventing_integration_tests.cpp"
     "service_corpus_import_tests.cpp"
     "service_import_service_tests.cpp"
+    "service_ore_export_tests.cpp"
 )

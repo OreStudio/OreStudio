@@ -71,6 +71,7 @@ set(files
     "service/market_observation_service.cpp"
     "service/market_series_service.cpp"
     "service/observation_lineage_service.cpp"
+    "service/ore_export_service.cpp"
     "service/series_classification_rule_service.cpp"
 )
 
@@ -93,6 +94,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/observation_lineage_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/ore_export_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_handler.hpp"
@@ -139,5 +141,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/market_observation_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/market_series_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/observation_lineage_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/ore_export_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_classification_rule_service.hpp"
 )

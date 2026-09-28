@@ -1109,6 +1109,55 @@ Then, in order:
   validated as a currency, and =split_market_series_key= dropping the point
   against the registry's four-field key.
 
+*What PR 4 delivered.*
+
+The boundary, the grammar and the export are in. Two items were re-checked
+and withdrawn, below. Two were built differently from the plan, and the
+reasons belong here rather than in a commit nobody re-reads.
+
+- **The boundary.** =import_service= runs every parsed datum through
+  =from_ore_key()= -> =market_data_identifier= -> =to_quote_key()= and builds
+  the series and observation rows from the registry's decomposition of that
+  canonical spelling. A key oresmd cannot name keeps the parser's own
+  decomposition and is imported anyway. The FX reversed-pair correction moved
+  onto the identifier with it. Proved on the corpus: all 118 market payload
+  files still import and read back under =[.corpus-full]=.
+- **The verbatim key**, which the wiring made necessary: the import now
+  deliberately rewrites a key it can name, so the series' columns hold the
+  importer's text and an export reading them back cannot return the file's.
+  Built as a *nullable* column on =market_observation= only. Nullable because
+  the rows no file produced -- feed ticks, curve bootstraps -- have no producer
+  key to preserve, and forcing every writer to invent one would give the column
+  two meanings. Observations only because a fixing's index name is already
+  stored verbatim as its series qualifier: there is no rewrite to undo, so a
+  column there would carry nothing new.
+- **The export.** =ore_export_service= reads the tenant's series, observations
+  and fixings and hands them to =ores.ore.core='s serializer, so both ends
+  agree on the format by construction rather than by two implementations kept
+  in step. A key line is the producer's own text where the row has one, and
+  otherwise rebuilt from the series with the point dropped for a type that has
+  no point dimension -- every point-free row stores one anyway, =SPOT= for an
+  FX rate, and emitting it would turn =FX/RATE/EUR/USD= into
+  =FX/RATE/EUR/USD/SPOT=, a key no producer writes.
+- **The subject and the verb.** =marketdata.v1.export= and =marketdata export
+  [--market-data path] [--fixings path]=, mirroring the import pair so the two
+  read as inverses. The handler asks for =marketdata::observations:read=
+  rather than a code of its own, because the export only reads and W02 already
+  records this component's permission seeding as failing -- seeded codes no
+  handler checks, and a handler checking a code that is not seeded. A seventh
+  hand-written protocol header joins the six M06 tracks.
+
+*And the test that was missing.* The first two export cases imported a real
+ORE file and asserted the exported keys were the file's own. **Both passed
+with the point-elision rule disabled**, because an imported row always carries
+a producer key and the rebuild path never ran -- so the rule the export exists
+for was untested by the test written to test it. The third case writes
+observations directly, as a feed or a bootstrap does; disabling the rule makes
+it report =FX/RATE/EUR/USD/SPOT= against =FX/RATE/EUR/USD=. That is the lesson
+the corpus walk taught earlier in this task, in a new place: a test that
+exercises the path you had in mind is not the same as a test that exercises
+the rule.
+
 *What the re-checks found.*
 
 The grammar bullet asked for four holes to be re-checked against the current

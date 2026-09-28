@@ -48,9 +48,9 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, and one provision request creates a tenant and its administrator for every tenant, the first included. |
+| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. |
 | Waiting on    | Nothing. |
-| Next          | Plan step 7: order the tenant provisioning steps as the workflow definition the provision request starts. |
+| Next          | Plan step 8: follow the progress, retry from the failed step, and settle the event payload. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -143,6 +143,21 @@ none of them depends on it and all of them are permanent.
   catalogue, so a new profile is a row and a new step kind is code. The
   screen builds its form from the profile's declared parameter schema
   and holds no profile of its own.
+- *A step kind reads what it acts on from its own arguments.* A profile's
+  row states the bundles, the parties, the datasets and the keys a kind
+  works from, so the executor holds no profile's names and one kind serves
+  every profile that orders it. A kind that needs the run's parameters
+  reads them too, which is how a form supplies an LEI the row leaves out.
+  A row whose kind cannot be honoured is refused before the run starts,
+  naming the kind, so no card can half-provision a tenant.
+- *A party is named by the legal name its hierarchy import created it
+  with.* A party's external identifier is guarded by party isolation,
+  which a step's own context does not carry, so the name is the handle the
+  profile can state and the deployment's party read answers.
+- *Every kind fails its step rather than half-finishing it.* The engine
+  keeps the steps that completed and stops the run on the one that failed.
+  The synchronous ACME handler the work was lifted from is not the model:
+  it reported no step, so its uneven best-effort behaviour is not carried.
 - *The tenant's type is the starting point's, and a replaced verb retires
   with its last caller.* A tenant row carries a type that a lookup table
   validates, and the profile states it: Operational's tenants are

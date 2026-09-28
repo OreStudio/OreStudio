@@ -28,9 +28,9 @@ iam.v1.tenants.provision drives the ACME demo card end to end: the three step ki
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Started: the plan below decides what each kind acts on and what the ACME demo's rows state. |
+| Now          | The three executors, their argument parsers and the ACME demo's rows are in, and the demo card's run completes on the live deployment. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the three executors and their argument parsers. |
+| Next         | Raise the pull request.                |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -119,9 +119,43 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Step kinds the executor runs | 6 | =./compass.sh test run -- -R ores.iam.api.tests\|ores.iam.core.tests= (the workflow tests assert the executed list) | fff1e5b733 |
+| Argument-parser test cases added | 9 | =./compass.sh test run -- -R ores.iam.core.tests= (136 cases, all passing) | fff1e5b733 |
+| Steps the demo card's run took, and its duration | 7 steps, 30 s | =./compass.sh shell -l build/ores_provision_acme2.ores= followed by the workflow log | 76c4147e-9bd8-4959-abe2-bd6698635fc1 |
+| Staff accounts the tenant holds, of which photographed | 59, 58 photographed | =./compass.sh sql= over =ores_iam_accounts_tbl= for tenant =dc607c96-…= | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Feed bindings the run created | 65, 13 for each of the tenant's five parties | =./compass.sh sql= over =ores_marketdata_feed_bindings_tbl= grouped by party | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Market observations the running feeds materialised | 1639 across five parties | =./compass.sh sql= over =ores_marketdata_market_observations_tbl= grouped by party | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+
+The raw output of the run is =evidence/provision_acme_run_completed.txt= beside this
+task.
 
 * Notes
+
+- *What a kind reads, and why a party is named by its legal name.* The
+  profile's rows state each kind's arguments. A party is named by the legal
+  name the hierarchy import created it with, because a party's external
+  identifier is guarded by party isolation, which a step's own context does
+  not carry: the name is the handle the party read answers and the profile
+  can state. The datasets, bundles, template keys and theme are named
+  outright, so the executor composes no ACME name of its own.
+- *The demo card's rows.* =load_staff= names four parties with the bundles
+  that carry their staff, the holding party marked as the administrator's
+  default. =attach_photos= names the four accounts datasets and the party
+  logo's template key. =start_market_feeds= names the three configuration
+  bundles and the theme. All of them live in the seed profile's rows, which
+  is what makes the card data rather than code.
+- *A feed binding's existence claim.* The first live run stopped in
+  =start_market_feeds= because the store's must-not-exist claim for a
+  binding is read by the ORE key alone while the binding's natural key is
+  the party with the ORE key and the source, so the second party's binding
+  for a shared source was refused. The step now states no expectation for
+  that write and keeps its own freshness check, which is what lets it bind
+  every party; the key defect is captured for the component that owns it.
+- *The completing step's warning.* The run's last step reports
+  =completed_with_warnings= because the settings write that clears a
+  tenant's bootstrap mode is a create over a row the provisioner seeded.
+  The tenant's status is active and its data is in place, so the run is
+  accepted; the settings defect is captured for the components that own it.
 
 * Test Scenarios
 
@@ -147,3 +181,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The executor runs the three step kinds the ACME demo card declares, and the
+card's run completes on the live deployment. The run is recorded beside this
+task in =evidence/provision_acme_run_completed.txt=: seven steps in thirty
+seconds, every step kind reporting completion, and the tenant holds the data
+the three kinds produced — its four legal entities active and linked to
+their staff, fifty-eight photographed staff accounts, sixty-five feed
+bindings, and the observations its running feeds materialise.
+
+Two defects were found by running the card, neither of them this unit's own,
+and both are captured in the product backlog's inbox: a feed binding's
+existence claim is read by the ORE key alone rather than by the binding's
+natural key, which this kind works around with its own freshness check; and
+the completing step cannot clear a tenant's bootstrap mode, which is the
+run's single warning.
+

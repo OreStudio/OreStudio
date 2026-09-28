@@ -8,7 +8,7 @@
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
 #+branch: chore/close-dq-clean-task
-#+pr:
+#+pr: 2316
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -236,6 +236,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2316][#2316]] | [agile] Close the dq clean-standard task |
 | [[https://github.com/OreStudio/OreStudio/pull/2315][#2315]] | [dq] Make the FSM state flags boolean |
 | [[https://github.com/OreStudio/OreStudio/pull/2309][#2309]] | [dq] Verify V03 and V04 against a live fleet |
 | [[https://github.com/OreStudio/OreStudio/pull/2305][#2305]] | [agile] Close the dq V08 item with a reason for every untouched file |

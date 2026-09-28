@@ -153,16 +153,11 @@ void record_index_name_spelling(ir_market_data_identifier& id, std::string_view 
 std::optional<std::string> index_name_ir(const ir_market_data_identifier& id) {
     if (id.type != instrument_type::fixing || !id.index)
         return std::nullopt;
-    // The family token comes from index_token() rather than from the enum name, so
-    // a name that arrived under one of the family's other spellings reads back as
-    // it came, the same way the ORE-key projections already emit it.
+    // The family token comes from index_token(), so a name that arrived under one
+    // of the family's other spellings reads back as it came. A curve drops the
+    // tenor of an overnight family into the curve key, where a fixing keeps the
+    // tenor the index was published at; `role` is what separates the two.
     const auto family = index_token(id);
-    // A curve identifier carries the curve's own tenor beside the index the curve
-    // samples, and ORE names a curve on an overnight family -- sofr, saron -- by
-    // the family alone, so there the tenor belongs to the curve key and not to the
-    // index name. A fixing identifier carries the tenor the index was published
-    // at, where USD-SOFR and USD-SOFR-3M are two different fixings. `role` is what
-    // separates the two: only a curve config names one.
     const auto tenor_is_the_curves = id.role.has_value() && !requires_tenor(*id.index);
     if (!id.tenor || tenor_is_the_curves)
         return std::format("{}-{}", id.ccy, family);

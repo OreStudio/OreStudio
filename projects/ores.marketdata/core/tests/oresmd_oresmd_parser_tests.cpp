@@ -104,14 +104,15 @@ TEST_CASE("parse_ir_eur_estr_discount_fixing", tags) {
 }
 
 TEST_CASE("every_index_family_parses_a_fixing_the_way_its_index_name_is_written", tags) {
-    // Generated from the Index family table of ir_quote_type.org, so a family added
-    // to the model is covered here without anyone editing this list. The hand-kept
-    // list this replaces had already gone wrong: it called shibor, taibor and tiie
-    // overnight because the curve-configuration CHECK does, while the corpus's index
-    // names for them -- CNY-SHIBOR-3M, TWD-TAIBOR-3M, MXN-TIIE-28D -- are term ones.
+    // Generated from the Index family table of ir_quote_type.org, so a family
+    // added to the model is covered here without anyone editing this list.
     //
     // A family ORE writes bare parses without a tenor. A family whose index name
-    // always carries one is refused without it, and parses with it.
+    // always carries one is refused without it, and parses with it. The
+    // classification is a property of the index name and not of the
+    // curve-configuration CHECK, which answers an empty tenor for shibor, taibor
+    // and tiie while their names here are CNY-SHIBOR-3M, TWD-TAIBOR-3M and
+    // MXN-TIIE-28D.
     const std::vector<std::pair<std::string, index_family>> overnight{
         {"sofr", index_family::sofr},         {"estr", index_family::estr},
         {"sonia", index_family::sonia},       {"tona", index_family::tona},

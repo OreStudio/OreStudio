@@ -868,9 +868,9 @@ TEST_CASE("from_index_name_round_trips_through_to_index_name", tags) {
     // The list carries one name per reason the pair could break: the two
     // segment counts, a term family that arrived with a tenor, the two families
     // whose spelling differs from the enum's name (ESTER, TONAR), a family whose
-    // spelling differs only in case (FedFunds), and the term families this work
-    // added, whose tenor has to survive the round trip rather than be collapsed
-    // the way an overnight family's would be.
+    // spelling differs only in case (FedFunds), and the term families whose tenor
+    // has to survive the round trip rather than be collapsed the way an overnight
+    // family's is.
     for (const auto& name : {"USD-LIBOR-3M", "EUR-EURIBOR-6M", "USD-SOFR", "EUR-ESTR",
                              "EUR-ESTER",    "JPY-TONAR",      "USD-FedFunds",
                              "DKK-CIBOR-3M", "EUR-CMS-5Y",     "SEK-SIOR",
@@ -905,9 +905,9 @@ TEST_CASE("from_index_name_resolves_a_spelling_to_its_family_and_keeps_the_spell
 TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     // A term family without a tenor: the forward emits the two-segment form
     // for overnight families alone, and the parser rejects a term-index fixing
-    // with no tenor, so this name is nobody's. Both are asserted -- one of the
-    // original term families and one this work added -- because the rule comes
-    // from the family's own classification rather than from a list of two.
+    // with no tenor, so this name is nobody's. Two are asserted, one from each end
+    // of the family list, because the rule comes from each family's own
+    // classification rather than from a hard-coded pair.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD-LIBOR").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("DKK-CIBOR").has_value());
     // Segment counts the forward never emits.

@@ -235,7 +235,7 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
     // measured half of the same claim. It fails when one is closed without the
     // record being updated, and when a change breaks a class that worked.
     //
-    // Interest rates are absent because they are the class this work closes, and
+    // Interest rates are absent because every one of their names is named, and
     // the assertion below fails if they come back.
     const std::set<std::string> recorded{
         "commodity", "equity", "fx", "inflation", "power", "security", "unclassified"};
@@ -254,8 +254,8 @@ TEST_CASE("no_fixing_index_class_loses_names_on_the_way_back", tags) {
 }
 
 TEST_CASE("the_interest_rate_fixing_names_all_reach_an_identifier", tags) {
-    // The class this work closes, pinned at every name the corpus carries rather
-    // than at a sample, so a family that regresses in one variant fails here.
+    // Every interest-rate name the corpus carries, rather than a sample, so a
+    // family that regresses in one variant fails here.
     const auto& ir = corpus_coverage().classes.at("ir");
 
     CHECK(ir.named == ir.names);

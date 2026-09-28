@@ -292,9 +292,8 @@ TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
 TEST_CASE("parse_fixings_accepts_a_semicolon_separated_line", tags) {
     // The three lines of CurveBuilding/Input/fixings_bondyieldshifted.csv, the
     // fixing file ore_bondyieldshifted.xml names. It separates with semicolons and
-    // dates with DD.MM.YY; the date was already readable and the separator was
-    // not, so every line failed as a single token and the file could not be read
-    // at all. The last line has no trailing newline, as the file has none.
+    // dates with DD.MM.YY, and both have to be read for its rows to arrive. The
+    // last line has no trailing newline, as the file has none.
     std::istringstream in("01.03.22;USD-FedFunds;0.0083\n"
                           "01.03.22;USD-LIBOR-3M;0.01626\n"
                           "31.01.22;USD-LIBOR-3M;0.01626");

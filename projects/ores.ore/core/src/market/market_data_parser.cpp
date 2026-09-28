@@ -122,9 +122,8 @@ line_tokens tokenize(std::string_view line) {
     // exactly one fell through to the whitespace path, failed to yield three
     // tokens, and aborted its whole file.
     //
-    // The date in that semicolon file is DD.MM.YY, which parse_date() already
-    // reads for the same example; the separator was the half that was missing, so
-    // the file parsed as one token per line and aborted every line it held.
+    // The CurveBuilding fixing files date their rows DD.MM.YY, which parse_date()
+    // reads, and separate them with semicolons, which this reads.
     std::string normalised(line);
     std::replace(normalised.begin(), normalised.end(), ',', ' ');
     std::replace(normalised.begin(), normalised.end(), ';', ' ');

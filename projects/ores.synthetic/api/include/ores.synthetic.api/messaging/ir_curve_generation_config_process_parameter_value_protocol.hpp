@@ -163,7 +163,7 @@ struct put_ir_curve_generation_config_process_parameter_value_request {
 
 struct put_ir_curve_generation_config_process_parameter_value_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::ir_curve_generation_config_process_parameter_value
+    std::optional<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>
         ir_curve_generation_config_process_parameter_value;
 };
 
@@ -271,7 +271,8 @@ struct get_ir_curve_generation_config_process_parameter_value_version_request {
 
 struct get_ir_curve_generation_config_process_parameter_value_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::ir_curve_generation_config_process_parameter_value version;
+    std::optional<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>
+        version;
 };
 
 /**

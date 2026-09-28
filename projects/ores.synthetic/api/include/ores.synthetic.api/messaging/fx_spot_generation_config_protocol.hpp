@@ -41,6 +41,7 @@ struct fx_spot_generation_config_key {
 
 struct fx_spot_generation_config_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     std::string base_currency_code;
     std::string quote_currency_code;
@@ -166,7 +167,7 @@ struct put_fx_spot_generation_config_request {
 
 struct put_fx_spot_generation_config_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::fx_spot_generation_config fx_spot_generation_config;
+    std::optional<ores::synthetic::domain::fx_spot_generation_config> fx_spot_generation_config;
 };
 
 struct put_many_fx_spot_generation_configs_request {
@@ -267,7 +268,7 @@ struct get_fx_spot_generation_config_version_request {
 
 struct get_fx_spot_generation_config_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::fx_spot_generation_config version;
+    std::optional<ores::synthetic::domain::fx_spot_generation_config> version;
 };
 
 /**

@@ -41,6 +41,7 @@ struct ir_curve_generation_config_key {
 
 struct ir_curve_generation_config_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     std::string currency_code;
     std::string index_family;
@@ -169,7 +170,7 @@ struct put_ir_curve_generation_config_request {
 
 struct put_ir_curve_generation_config_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::ir_curve_generation_config ir_curve_generation_config;
+    std::optional<ores::synthetic::domain::ir_curve_generation_config> ir_curve_generation_config;
 };
 
 struct put_many_ir_curve_generation_configs_request {
@@ -270,7 +271,7 @@ struct get_ir_curve_generation_config_version_request {
 
 struct get_ir_curve_generation_config_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::ir_curve_generation_config version;
+    std::optional<ores::synthetic::domain::ir_curve_generation_config> version;
 };
 
 /**

@@ -83,6 +83,7 @@ messaging::gmm_component_key key_from(const domain::gmm_component& v) {
 domain::gmm_component to_domain(const messaging::gmm_component_write& write) {
     domain::gmm_component v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.fx_spot_config_id = write.fx_spot_config_id;
     v.component_index = write.component_index;
     v.description = write.description;

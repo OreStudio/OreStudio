@@ -41,6 +41,7 @@ struct gmm_component_key {
 
 struct gmm_component_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid fx_spot_config_id;
     int component_index;
     std::string description;
@@ -157,7 +158,7 @@ struct put_gmm_component_request {
 
 struct put_gmm_component_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::gmm_component gmm_component;
+    std::optional<ores::synthetic::domain::gmm_component> gmm_component;
 };
 
 struct put_many_gmm_components_request {
@@ -253,7 +254,7 @@ struct get_gmm_component_version_request {
 
 struct get_gmm_component_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::gmm_component version;
+    std::optional<ores::synthetic::domain::gmm_component> version;
 };
 
 /**

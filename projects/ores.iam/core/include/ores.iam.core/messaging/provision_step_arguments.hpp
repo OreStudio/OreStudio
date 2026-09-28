@@ -37,6 +37,9 @@ enum class provision_step_action {
     publish_bundle,
     import_lei_hierarchy,
     provision_party,
+    load_staff,
+    attach_photos,
+    start_market_feeds,
     complete_provisioning,
     refuse
 };
@@ -62,6 +65,12 @@ enum class provision_step_action {
         return provision_step_action::import_lei_hierarchy;
     if (kind == "provision_party")
         return provision_step_action::provision_party;
+    if (kind == "load_staff")
+        return provision_step_action::load_staff;
+    if (kind == "attach_photos")
+        return provision_step_action::attach_photos;
+    if (kind == "start_market_feeds")
+        return provision_step_action::start_market_feeds;
     return provision_step_action::refuse;
 }
 
@@ -121,6 +130,65 @@ read_step_arguments(const std::string& arguments_json) {
     return *text;
 }
 
+[[nodiscard]] inline bool read_bool(const rfl::Object<rfl::Generic>& arguments,
+                                    std::string_view field) {
+    const auto* value = member(arguments, field);
+    if (value == nullptr)
+        return false;
+
+    const auto* flag = std::get_if<bool>(&value->get());
+    if (flag == nullptr)
+        throw std::runtime_error("The step's argument '" + std::string(field) +
+                                 "' is not a boolean.");
+    return *flag;
+}
+
+[[nodiscard]] inline std::vector<rfl::Object<rfl::Generic>>
+read_object_list(const rfl::Generic& value, std::string_view field) {
+    const auto* list = std::get_if<std::vector<rfl::Generic>>(&value.get());
+    if (list == nullptr)
+        throw std::runtime_error("The step's argument '" + std::string(field) +
+                                 "' is not a list of objects.");
+
+    std::vector<rfl::Object<rfl::Generic>> result;
+    result.reserve(list->size());
+    for (const auto& element : *list) {
+        const auto* object = std::get_if<rfl::Object<rfl::Generic>>(&element.get());
+        if (object == nullptr)
+            throw std::runtime_error("The step's argument '" + std::string(field) +
+                                     "' is not a list of objects.");
+        result.push_back(*object);
+    }
+    return result;
+}
+
+/// A string a kind cannot act without. The context names what carries the field,
+/// so the message says which entry of a list has to be fixed.
+[[nodiscard]] inline std::string read_required_string(const rfl::Object<rfl::Generic>& arguments,
+                                                      std::string_view field,
+                                                      std::string_view context) {
+    auto value = read_string(arguments, field);
+    if (value.empty())
+        throw std::runtime_error("The step's " + std::string(context) + " names no '" +
+                                 std::string(field) + "' argument.");
+    return value;
+}
+
+/// The bundle codes a step's arguments name. A step that names no bundle is a
+/// profile row that asked for no data, so the field is required rather than
+/// treated as a no-op.
+[[nodiscard]] inline std::vector<std::string>
+read_bundles(const rfl::Object<rfl::Generic>& arguments) {
+    const auto* found = member(arguments, "bundles");
+    if (found == nullptr)
+        throw std::runtime_error("The step names no 'bundles' argument.");
+
+    auto bundles = read_string_list(*found, "bundles");
+    if (bundles.empty())
+        throw std::runtime_error("The step names no bundle in its 'bundles' argument.");
+    return bundles;
+}
+
 [[nodiscard]] inline std::string
 parameter_value(const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters,
                 std::string_view name) {
@@ -141,15 +209,7 @@ parameter_value(const std::vector<ores::iam::workflow::provision_tenant_paramete
  */
 [[nodiscard]] inline std::vector<std::string>
 parse_step_bundles(const std::string& arguments_json) {
-    const auto arguments = detail::read_step_arguments(arguments_json);
-    const auto* found = detail::member(arguments, "bundles");
-    if (found == nullptr)
-        throw std::runtime_error("The step names no 'bundles' argument.");
-
-    auto bundles = detail::read_string_list(*found, "bundles");
-    if (bundles.empty())
-        throw std::runtime_error("The step names no bundle in its 'bundles' argument.");
-    return bundles;
+    return detail::read_bundles(detail::read_step_arguments(arguments_json));
 }
 
 /// The bundles an import_lei_hierarchy step publishes and the root LEI it
@@ -180,6 +240,113 @@ struct lei_hierarchy_step_arguments {
         throw std::runtime_error("The step states no 'root_lei' argument and the run supplies no "
                                  "'root_lei' parameter.");
 
+    return result;
+}
+
+/// One party a kind acts on, named by its legal name, with the bundles the kind
+/// publishes against it and whether it becomes the administrator's default.
+struct staff_party_assignment {
+    std::string party_name;
+    std::vector<std::string> bundles;
+    bool is_default = false;
+};
+
+/**
+ * @brief Reads a load_staff step's arguments.
+ *
+ * The profile names each party by the legal name the LEI import created it
+ * with, so the kind reaches the party through the party read rather than
+ * through an office code of its own. Each entry carries the bundles that load
+ * that party's staff and organisation.
+ */
+[[nodiscard]] inline std::vector<staff_party_assignment>
+parse_staff_assignments(const std::string& arguments_json) {
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    const auto* found = detail::member(arguments, "parties");
+    if (found == nullptr)
+        throw std::runtime_error("The step names no 'parties' argument.");
+
+    auto entries = detail::read_object_list(*found, "parties");
+    if (entries.empty())
+        throw std::runtime_error("The step names no party in its 'parties' argument.");
+
+    std::vector<staff_party_assignment> result;
+    result.reserve(entries.size());
+    for (const auto& entry : entries) {
+        staff_party_assignment assignment;
+        assignment.party_name = detail::read_required_string(entry, "name", "party entry");
+        assignment.bundles = detail::read_bundles(entry);
+        assignment.is_default = detail::read_bool(entry, "default");
+        result.push_back(std::move(assignment));
+    }
+    return result;
+}
+
+/// One party an attach_photos step acts on, with the dataset that carries its
+/// staff's photo keys.
+struct photo_party_assignment {
+    std::string party_name;
+    std::string dataset;
+};
+
+/// The parties an attach_photos step dresses, and the template key of the
+/// party logo it attaches to each of them.
+struct photo_step_arguments {
+    std::vector<photo_party_assignment> parties;
+    std::string party_logo;
+};
+
+/**
+ * @brief Reads an attach_photos step's arguments.
+ *
+ * A party's staff photos come from the dataset its entry names, so the kind
+ * reads no office code and composes no dataset name of its own.
+ */
+[[nodiscard]] inline photo_step_arguments
+parse_photo_arguments(const std::string& arguments_json) {
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    const auto* found = detail::member(arguments, "parties");
+    if (found == nullptr)
+        throw std::runtime_error("The step names no 'parties' argument.");
+
+    auto entries = detail::read_object_list(*found, "parties");
+    if (entries.empty())
+        throw std::runtime_error("The step names no party in its 'parties' argument.");
+
+    photo_step_arguments result;
+    result.party_logo = detail::read_string(arguments, "party_logo");
+    result.parties.reserve(entries.size());
+    for (const auto& entry : entries) {
+        photo_party_assignment assignment;
+        assignment.party_name = detail::read_required_string(entry, "name", "party entry");
+        assignment.dataset = detail::read_required_string(entry, "dataset", "party entry");
+        result.parties.push_back(std::move(assignment));
+    }
+    return result;
+}
+
+/// The configuration bundles a start_market_feeds step publishes against the
+/// system party, and the theme whose feeds it starts.
+struct market_feed_step_arguments {
+    std::vector<std::string> bundles;
+    std::string theme;
+};
+
+/**
+ * @brief Reads a start_market_feeds step's arguments.
+ *
+ * The theme names the dataset the feeds' configurations belong to; the kind
+ * reads every other fact — the system party, the bindings' parties, the
+ * folder — from the deployment.
+ */
+[[nodiscard]] inline market_feed_step_arguments
+parse_market_feed_arguments(const std::string& arguments_json) {
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    market_feed_step_arguments result;
+    result.bundles = detail::read_bundles(arguments);
+    result.theme = detail::read_string(arguments, "theme");
+    if (result.theme.empty())
+        throw std::runtime_error("The step names no 'theme' argument.");
     return result;
 }
 

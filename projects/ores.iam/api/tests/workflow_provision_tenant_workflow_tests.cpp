@@ -196,37 +196,38 @@ TEST_CASE("a kind the catalogue does not know is refused when the run starts", t
         std::runtime_error);
 }
 
-TEST_CASE("this build executes the kinds it has runners for and no others", tags) {
+TEST_CASE("every kind the catalogue declares has a runner in this build", tags) {
     for (const auto kind : provision_executed_step_kinds)
         CHECK(is_executed_step_kind(kind));
 
     CHECK(is_executed_step_kind("publish_bundle"));
     CHECK(is_executed_step_kind("import_lei_hierarchy"));
     CHECK(is_executed_step_kind("provision_party"));
+    CHECK(is_executed_step_kind("load_staff"));
+    CHECK(is_executed_step_kind("attach_photos"));
+    CHECK(is_executed_step_kind("start_market_feeds"));
 
-    CHECK_FALSE(is_executed_step_kind("load_staff"));
-    CHECK_FALSE(is_executed_step_kind("attach_photos"));
-    CHECK_FALSE(is_executed_step_kind("start_market_feeds"));
     CHECK_FALSE(is_executed_step_kind(complete_provisioning_step_kind));
     CHECK_FALSE(is_executed_step_kind("publish_everything"));
 }
 
-TEST_CASE("a profile that orders a kind this build does not execute is refused when the run "
-          "starts, naming the kind",
-          tags) {
+TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
     const auto def = definition();
+    const auto steps = def.build_steps(
+        request_json(
+            {declared("load_staff",
+                      R"({"parties":[{"name":"Acme Corporation Plc","bundles":["acme_group"]}]})"),
+             declared("attach_photos",
+                      R"({"parties":[{"name":"Acme Corporation Plc","dataset":"acme.acme_group.accounts"}]})"),
+             declared("start_market_feeds", R"({"bundles":["synthetic_realistic_2026"],"theme":"synthetic.themes.realistic_2026"})")}),
+        tenant_id,
+        correlation_id);
 
-    for (const auto kind : {"load_staff", "attach_photos", "start_market_feeds"}) {
-        try {
-            def.build_steps(request_json({declared(kind)}), tenant_id, correlation_id);
-            FAIL(std::string("the definition accepted a kind this build does not execute: ") +
-                 kind);
-        } catch (const std::runtime_error& e) {
-            const std::string message(e.what());
-            CHECK(message.find(kind) != std::string::npos);
-            CHECK(message.find("does not execute") != std::string::npos);
-        }
-    }
+    REQUIRE(steps.size() == 4);
+    CHECK(steps[0].name == "load_staff");
+    CHECK(steps[1].name == "attach_photos");
+    CHECK(steps[2].name == "start_market_feeds");
+    CHECK(steps[3].name == complete_provisioning_step_kind);
 }
 
 TEST_CASE("a profile may not order the step every run appends", tags) {

@@ -79,7 +79,12 @@ inline constexpr std::string_view provision_step_kinds[] = {"publish_bundle",
 /// profile that orders the rest is refused before its run starts rather than
 /// half-provisioned. Growing it is a code change beside the executor.
 inline constexpr std::string_view provision_executed_step_kinds[] = {
-    "publish_bundle", "import_lei_hierarchy", "provision_party"};
+    "publish_bundle",
+    "import_lei_hierarchy",
+    "provision_party",
+    "load_staff",
+    "attach_photos",
+    "start_market_feeds"};
 
 /// Whether this build executes the kind. A kind the catalogue does not know is
 /// not executed either, so one predicate answers both refusals.
@@ -190,8 +195,9 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
     def.type_name = std::string(provision_tenant_workflow_type);
     def.description =
         "Provisions a tenant from a seed profile: publishes the bundles the profile orders, "
-        "imports its LEI hierarchy, provisions its parties, and completes the tenant. One engine "
-        "step per declared step kind, in the profile's order, plus the step that completes it.";
+        "imports its LEI hierarchy, provisions its parties, loads its staff, attaches its "
+        "images, starts its market feeds, and completes the tenant. One engine step per declared "
+        "step kind, in the profile's order, plus the step that completes it.";
 
     def.build_steps = [](const std::string& request_json,
                          const std::string& tenant_id,

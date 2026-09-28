@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-28T15:58:57.088454Z
+' Generated: 2026-09-28T17:37:59.345767Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -5222,6 +5222,33 @@ package "geo" #FFF9C4 {
 ' ==================== trading (Trading & Lifecycle) ====================
 '
 package "trading" #E8F5E9 {
+    entity ores_trading_activity_categories_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_activity_categories_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Activity Category Table
+    Reference data table defining the closed activity category set used by
+    ores.trading.activity_type. The rows are the categories the trading
+    activity seed (projects/ores.sql/populate/trading/trading_activity_types_populate.sql)
+    already uses, so the set is the component's own rather than an external standard.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
+    end note
+
     entity ores_trading_activity_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -5241,9 +5268,45 @@ package "trading" #E8F5E9 {
     }
 
     note right of ores_trading_activity_types_tbl
-    Activity Types - Internal trade activity classification (~30 types).
-    Each activity type maps optionally to an FpML event type and/or to an
-    FSM transition that drives trade status changes.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Activity Type Table
+    Internal trade activity classification. Each activity type states what
+    happened to a trade (e.g. new_booking, amendment, novation). It optionally
+    maps to an FpML event type code for wire-format messages, and optionally
+    links to an FSM transition that drives the trade's operational status
+    change.
+    The table is bi-temporal and audited: it carries version, the four audit
+    columns and the valid_from/valid_to pair with the GIST exclusion and the
+    delete rule, so the model takes the ordinary audited shape and needs no
+    shape flag.
+    end note
+
+    entity ores_trading_amortization_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_amortization_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Amortization Type Table
+    Reference data table defining the closed amortization set of a bond leg
+    notional schedule. The set is the ORE amortizationType simple type
+    under external/ore/xsd/ore_types.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
     end note
 
     entity ores_trading_ascots_tbl <<junction>> #ECECEC {
@@ -5277,6 +5340,39 @@ package "trading" #E8F5E9 {
     carries what the ER names, no more.
     end note
 
+    entity ores_trading_average_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_average_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Average Type Table
+    Reference data table defining the averaging method a commodity or equity
+    Asian-style option uses: Arithmetic or Geometric.
+    *This set is trading-local by decision, and the divergence from ORE is
+    deliberate.* ORE states no averaging member and no averaging enumeration
+    for either family. commodityAveragePriceOptionData carries no average
+    member and singleUnderlyingAsianOptionData carries none either; there is
+    no averageType simple type anywhere under external/ore/xsd/, and no
+    AverageType element appears under external/ore/examples/. The only
+    Arithmetic token in ORE is part of the scripted product names
+    EquityAsianOptionArithmeticPrice and ...ArithmeticStrike, and ORE never
+    states Geometric at all. The set is therefore the two values the columns
+    already deploy, and it is not derived from an ORE schema.
+    end note
+
     entity ores_trading_balance_guaranteed_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
@@ -5305,6 +5401,31 @@ package "trading" #E8F5E9 {
     Balance Guaranteed Swap Instrument Table
     Represents a Balance Guaranteed Swap instrument where the notional
     amortises in line with an underlying pool of assets (e.g., mortgages).
+    end note
+
+    entity ores_trading_barrier_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_barrier_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Barrier Type Table
+    Reference data table defining the closed barrier set. The set is the ORE
+    barrierType simple type under external/ore/xsd/instruments.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
     end note
 
     entity ores_trading_bond_forwards_tbl <<temporal>> #C6F0D8 {
@@ -5458,10 +5579,9 @@ package "trading" #E8F5E9 {
     The ten codes, in seed order (trading_trade_types_populate.sql):
     Bond, ForwardBond, BondFuture, BondOption, BondRepo, BondTRS,
     BondPosition, CallableBond, ConvertibleBond, Ascot. The trade_type_code
-    check is the membership check against ores_trading_trade_types_tbl
-    through ores_trading_validate_trade_type_fn, the mechanism every
-    generated trading instrument uses, plus the in-list coverage check
-    over the ten codes below. For Bond, ForwardBond, CallableBond,
+    check is the in-list coverage check over the ten codes below, which is
+    the schema's statement of the closed set; the real foreign key to
+    ores_trading_trade_types_tbl is PR 4's (defect 7). For Bond, ForwardBond, CallableBond,
     ConvertibleBond and BondPosition the issue is the bond itself; for
     BondRepo the issue is the collateral the financing runs against; for
     BondOption, BondFuture, BondTRS and Ascot the issue is the bond the
@@ -5539,7 +5659,7 @@ package "trading" #E8F5E9 {
           face_value : numeric(28, 10)
           coupon_rate : numeric(28, 10)
           coupon_frequency_code : text
-          day_count_code : text
+          day_count_fraction_code : text
           issue_date : date
           settlement_days : integer
           calendar : text
@@ -5564,7 +5684,7 @@ package "trading" #E8F5E9 {
     One row per bond issue (ISIN), the stable row every instrument of the
     family references. The columns map one to one from bondData
     (instruments.xsd lines 382-403): security_id, issuer, currency,
-    face_value, coupon_rate, coupon_frequency_code, day_count_code,
+    face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
     issue_date and settlement_days. Only SecurityId is required by that
     schema; every other element is optional, so every other column is
     nullable and an absent element is stored as NULL rather than as an
@@ -5887,6 +6007,43 @@ package "trading" #E8F5E9 {
     round trip is whole without them, and they are a recorded scope limit.
     end note
 
+    entity ores_trading_callable_swap_call_dates_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * instrument_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * call_date : date
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_callable_swap_call_dates_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Callable Swap Call Date Table
+    One row per date the callable swap's exercise schedule names, keyed to
+    the instrument and the date's ordinal within the schedule.
+    The ORE schema states the callable swap's exercise dates as an unbounded
+    list of ISO 8601 dates on the option block. The list order is the
+    document's order and the ordinal preserves it, so export re-emits the
+    dates as the document held them.
+    A date list states no rule, no calendar and no convention: the document
+    writes out every date it means. The columns here are therefore the
+    date's own ordinal and the date itself, and nothing else. A malformed
+    date is refused by the column's type rather than by a convention the
+    readers must share, and a repeated date stays two rows because the
+    ordinal, not the date, is part of the key.
+    The instrument row carries the trade, the workspace and the party. The
+    call date rows are family-owned and ride the instrument's scope, so no
+    workspace column rides them.
+    end note
+
     entity ores_trading_callable_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
@@ -5897,8 +6054,6 @@ package "trading" #E8F5E9 {
           trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
-          call_dates_json : text
-          call_type : text
           description : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -5916,6 +6071,17 @@ package "trading" #E8F5E9 {
     Callable Swap Instrument Table
     Represents a callable interest rate swap where one party has the right
     to terminate the swap early on specified call dates.
+    The call dates are not a column: each is a row of
+    ores.trading.callable_swap_call_date, keyed to this instrument and its
+    ordinal in the schedule. A text column held the list as a JSON array and
+    could not be typed, indexed or questioned, so the collection is a child
+    table.
+    call_type was deleted. ORE's only CallType element is on
+    nettingSetDetails (external/ore/xsd/instruments.xsd, line 225), a
+    netting-agreement field, and no <CallType> element appears under
+    external/ore/examples/. Nothing produced the trading column: the only
+    writer was the import handler copying a domain member no producer ever
+    set.
     end note
 
     entity ores_trading_cap_floor_instruments_tbl <<temporal>> #C6F0D8 {
@@ -5947,14 +6113,50 @@ package "trading" #E8F5E9 {
     Legs are defined separately in the swap_legs table.
     end note
 
-    entity ores_trading_commodity_instruments_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_commodity_basket_constituents_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * instrument_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
         --
         * version : integer
+        * underlying_code : text
+          weight : numeric(28, 10)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_commodity_basket_constituents_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Basket Constituent Table
+    One row per underlying a commodity basket product names, keyed to the
+    instrument and the constituent's ordinal within the document.
+    The ORE schema states a commodity basket's members as an unbounded list of
+    Underlying elements, each carrying a Name and an optional Weight.
+    The list order is the document's order and the ordinal preserves it, so
+    export re-emits the constituents as the document held them.
+    A constituent is a name and, when the document states one, a weight. The
+    weight is money-role decimal, so the column holds an exact numeric and not
+    a binary float. The document may state no weight, and then the column is
+    null rather than a zero the document never wrote.
+    The instrument row carries the trade, the workspace and the party. The
+    constituent rows are family-owned and ride the instrument's scope, so no
+    workspace column rides them.
+    end note
+
+    entity ores_trading_commodity_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * instrument_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
         * party_id : uuid <<FK>>
           trade_id : uuid <<FK>>
-        * trade_type_code : text
         * commodity_code : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -5977,8 +6179,7 @@ package "trading" #E8F5E9 {
           barrier_type : text
           lower_barrier : numeric(28, 10)
           upper_barrier : numeric(28, 10)
-          basket_json : text
-          day_count_code : text
+          day_count_fraction_code : text
           payment_frequency_code : text
           swaption_expiry_date : date
           description : text
@@ -5991,14 +6192,32 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
+    note right of ores_trading_commodity_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Instrument Table
+    Represents every commodity product type ORE states. trade_type_code
+    discriminates the exact product, and each optional field block is null
+    when the sub-type does not state it: the option block for option
+    products, the pricing block for average-price and spread products, and
+    the exotic block for variance, accumulator, barrier and basket
+    products.
+    A basket product's constituents are not a column: each is a row of
+    ores.trading.commodity_basket_constituent, keyed to this instrument and
+    its ordinal in the document. A text column held the list as a JSON array
+    and could not be typed, indexed or questioned, so the collection is a
+    child table now.
+    end note
+
     entity ores_trading_composite_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * instrument_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_type_code : text
         * party_id : uuid <<FK>>
           trade_id : uuid <<FK>>
-        * trade_type_code : text
           description : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -6008,6 +6227,20 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_composite_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Composite Instrument Table
+    Represents the composite product types ORE states. trade_type_code
+    discriminates the exact product, and the constituent trades live in the
+    composite_legs child table keyed by this instrument's instrument_id.
+    The parent row carries only the basket identity and its optional free-text
+    description: the basket's constituents are child rows, so there is no
+    per-leg block to hold here. The table is bi-temporal and audited, so the
+    model takes the ordinary audited shape and needs no shape flag.
+    end note
 
     entity ores_trading_composite_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -6027,14 +6260,33 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
+    note right of ores_trading_composite_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Composite Leg Table
+    Child table of composite_instruments. Each row is one constituent trade
+    of a composite basket and names the parent through instrument_id, with
+    leg_sequence giving the leg's 1-based ordinal inside the basket.
+    The leg carries no economics of its own: the ORE schema states a basket as
+    a list of whole trades, so the constituent is a child row that points at
+    the parent and records which constituent it is. The table is bi-temporal
+    and audited, so the model takes the ordinary audited shape and needs no
+    shape flag.
+    The row keeps its own id surrogate: composite_legs is one of the five
+    id-keyed tables the component's investigation names, and its
+    instrument_id is a foreign key to the instrument rather than the row's
+    own key.
+    end note
+
     entity ores_trading_credit_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * instrument_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_type_code : text
         * party_id : uuid <<FK>>
           trade_id : uuid <<FK>>
-        * trade_type_code : text
         * reference_entity : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6043,13 +6295,19 @@ package "trading" #E8F5E9 {
         * tenor : text
         * start_date : date
         * maturity_date : date
-        * day_count_code : text
+        * day_count_fraction_code : text
         * payment_frequency_code : text
           index_name : text
           index_series : integer
           seniority : text
           restructuring : text
           description : text
+          option_type : text
+          option_expiry_date : date
+          option_strike : numeric(28, 10)
+          linked_asset_code : text
+          tranche_attachment : numeric(28, 10)
+          tranche_detachment : numeric(28, 10)
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -6058,6 +6316,29 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_credit_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Instrument Table
+    Represents the credit product types ORE states. trade_type_code
+    discriminates the exact product, and the optional field blocks are null
+    when the sub-type does not state them: the index block for CDSIndex
+    products, the option block for CDS option products, the tranche block for
+    CBO and SyntheticCDO products, and the linked-asset code for
+    CreditLinkedSwap.
+    The table is a flat instrument sub-type, so it binds
+    :profile: trading-instrument. Three table features justify that binding:
+    the table is tenant-scoped through tenant_id and the tenant isolation
+    policy, it is workspace-scoped through workspace_id, and its insert
+    trigger stamps party_id from the session variable app.current_party_id
+    rather than taking it from the client. The profile also fixes the identity
+    and audit field groups, the batch read and the generator facet, and leaves
+    the table with no UI surface -- the per-instrument forms were hand-crafted
+    in the removed desktop client and consumed the generated messaging
+    protocol.
+    end note
 
     entity ores_trading_equity_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -6318,7 +6599,6 @@ package "trading" #E8F5E9 {
         * currency : text
         * quantity : numeric(28, 10)
           price : numeric(28, 10)
-          option_data_json : text
           description : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -6335,10 +6615,65 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Equity Position Instrument Table
     Represents EquityPosition and EquityOptionPosition trades: a plain
-    equity holding or an equity option position. For option positions,
-    option_data_json holds the serialised option parameters; for plain
-    equity positions, price captures the reference price and
-    option_data_json is null.
+    equity holding or an equity option position. quantity is the number of
+    shares or contracts and stays on this row, because it belongs to the
+    position and not to one underlying. An option position's members are not
+    a column: each is a row of
+    ores.trading.equity_position_option_underlying, keyed to this
+    instrument and its ordinal in the document. A text column held the list
+    as JSON and could not be typed, indexed or questioned, so the collection
+    is a child table now.
+    end note
+
+    entity ores_trading_equity_position_option_underlyings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * instrument_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * underlying_name : text
+        * strike : numeric(28, 10)
+          weight : numeric(28, 10)
+        * long_short : text
+          option_type : text
+          exercise_type : text
+          settlement_type : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_position_option_underlyings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Position Option Underlying Table
+    One row per underlying entry an equity option position names, keyed to
+    the instrument and the entry's ordinal within the document.
+    The ORE schema states an equity option position's members as an unbounded
+    list of Underlying elements, each carrying a shared underlying, an
+    optionData and a Strike. The list order is the document's order and
+    the ordinal preserves it, so export re-emits the entries as the document
+    held them.
+    The position's Quantity stays on the parent instrument: it is a
+    property of the position, not of one entry. The entry itself is the
+    underlying name, the option terms the document states, the strike and,
+    when the document states one, the entry's weight.
+    The strike is a money-role value per D11, so the column holds an exact
+    numeric and not a binary float. A weight is money-role too, and the
+    shared underlying type makes Weight optional, so an absent weight
+    stays null rather than becoming a zero the document never wrote.
+    The corpus states the option terms as LongShort, OptionType,
+    Style and Settlement, so each of those has a column. The entry's
+    exercise date list stays unmodelled: it is a collection of its own, and
+    a single date column would silently drop the rest of the list. That
+    shape belongs to defect 16, the observation schedule.
+    The instrument row carries the trade, the workspace and the party. The
+    entry rows are family-owned and ride the instrument's scope, so no
+    workspace column rides them.
     end note
 
     entity ores_trading_equity_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -6357,7 +6692,7 @@ package "trading" #E8F5E9 {
         * start_date : date
         * maturity_date : date
         * long_short : text
-        * payment_frequency : text
+        * payment_frequency_code : text
           description : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -6411,6 +6746,31 @@ package "trading" #E8F5E9 {
     Represents EquityVarianceSwap trades.
     end note
 
+    entity ores_trading_exercise_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_exercise_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Exercise Type Table
+    Reference data table defining the closed exercise style set. The set is
+    the ORE exerciseStyle simple type under external/ore/xsd/ore_types.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
+    end note
+
     entity ores_trading_fpml_event_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -6426,8 +6786,18 @@ package "trading" #E8F5E9 {
     }
 
     note right of ores_trading_fpml_event_types_tbl
-    FpML Event Types - Standard FpML lc_EventType_Type coding scheme
-    (New, Amendment, Novation, PartialTermination, FullTermination)
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FpML Event Type Table
+    Reference data table holding the standard FpML lc_EventType_Type coding
+    scheme. Each row names one wire-format event code: New, Amendment,
+    Novation, PartialTermination and FullTermination. These are the FpML
+    equivalents the internal activity types map to.
+    The table is bi-temporal and audited: it carries version, the four audit
+    columns and the valid_from/valid_to pair with the GIST exclusion and the
+    delete rule, so the model takes the ordinary audited shape and needs no
+    shape flag.
     end note
 
     entity ores_trading_fra_instruments_tbl <<temporal>> #C6F0D8 {
@@ -7081,7 +7451,6 @@ package "trading" #E8F5E9 {
         * maturity_date : date
         * barrier_level : numeric(18, 10)
         * barrier_type : text
-          knock_out_dates_json : text
           description : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -7124,6 +7493,85 @@ package "trading" #E8F5E9 {
     Lifecycle Event Table
     Reference data table defining valid trade lifecycle event types.
     Examples: 'New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination'.
+    end note
+
+    entity ores_trading_long_short_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_long_short_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Long Short Type Table
+    Reference data table defining valid position direction codes.
+    The set is closed and will not grow: the ORE longShort simple type under
+    external/ore/xsd/ore_types.xsd states exactly Long and Short. Defect 4 of
+    trade_model_defects.org records that the trading columns held this closed set
+    as free text with no reference table; this table is that reference.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_moment_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_moment_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Moment Type Table
+    Reference data table defining the closed moment set of a variance
+    or volatility swap. The set is the ORE momentType simple type under
+    external/ore/xsd/ore_types.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_option_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_option_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Option Type Table
+    Reference data table defining the closed option right set. The set is
+    the ORE optionType simple type under external/ore/xsd/ore_types.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
     end note
 
     entity ores_trading_party_role_types_tbl <<temporal>> #C6F0D8 {
@@ -7175,6 +7623,96 @@ package "trading" #E8F5E9 {
     Supports multiple counterparties per trade in different roles.
     end note
 
+    entity ores_trading_payoff_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_payoff_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Payoff Type Table
+    Reference data table defining the closed payoff set ORE states on
+    optionData.PayoffType and optionData.PayoffType2
+    (external/ore/xsd/instruments.xsd, lines 337 and 338).
+    ORE declares those elements as bare xs:string with no enum, so there is no
+    XSD enumeration to read. The set is the one the ORE example corpus actually
+    uses: every PayoffType element across external/ore/examples/ is one of
+    Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull or
+    Vanilla, and nothing else. The list is the corpus's, not the model's own; the
+    model previously stated "Accumulator, Decumulator, or TaRF" and never wrote it.
+    TargetFull and TargetExact are two of these seven, not a separate ORE set:
+    equity_accumulator_instrument.target_type holds one of them, and the ORE
+    tarfData.TargetType element is a scripted free-style number that no corpus
+    document states.
+    end note
+
+    entity ores_trading_price_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_price_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Price Type Table
+    Reference data table defining the closed price quotation set of a bond
+    option or total return swap. The set is the ORE bondPriceType simple
+    type under external/ore/xsd/ore_types.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_return_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_return_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Return Type Table
+    Reference data table defining the closed return type set of an equity leg.
+    ORE states EquityLegData.ReturnType as a bare xs:string
+    (external/ore/xsd/instruments.xsd, lines 856 and 1127), so there is no XSD
+    enum to read. The set is the one the ORE example corpus actually uses: every
+    ReturnType element across external/ore/examples/ is either Total or
+    Price, and nothing else. The list is therefore the corpus's, not the model's
+    own: the model previously carried TotalReturn and PriceReturn, and only
+    TotalReturn was ever written, by a mapper default that no ORE document
+    supports.
+    end note
+
     entity ores_trading_rpa_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>
@@ -7209,12 +7747,12 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_scripted_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * instrument_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_type_code : text
         * party_id : uuid <<FK>>
           trade_id : uuid <<FK>>
-        * trade_type_code : text
         * script_name : text
           script_body : text
           events_json : text
@@ -7230,12 +7768,63 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
+    note right of ores_trading_scripted_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Scripted Instrument Table
+    Represents the AMC script-based product types ORE states:
+    ScriptedTrade with its inline or library script, Autocallable_01,
+    DoubleDigitalOption and PerformanceOption_01. trade_type_code
+    discriminates the exact product and script_name names the payoff
+    script, while the optional JSON fields carry the script's events, its
+    underlyings and its parameters. The table stays flat by design: it holds
+    no nested sub-struct, because the script definition is embedded text and
+    not a set of typed columns.
+    The table is a flat instrument sub-type, so it binds
+    :profile: trading-instrument. Three table features justify that binding:
+    the table is tenant-scoped through tenant_id and the tenant isolation
+    policy, it is workspace-scoped through workspace_id, and its insert
+    trigger stamps party_id from the session variable app.current_party_id
+    rather than taking it from the client. The profile also fixes the identity
+    and audit field groups, the batch read and the generator facet, and leaves
+    the table with no UI surface -- the per-instrument forms were hand-crafted
+    in the removed desktop client and consumed the generated messaging
+    protocol.
+    end note
+
+    entity ores_trading_settlement_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_settlement_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Settlement Type Table
+    Reference data table defining the closed option settlement set. The set
+    is the ORE settlementType simple type under
+    external/ore/xsd/ore_types.xsd.
+    The values are the ORE XSD spellings, so a stored value round-trips through the
+    ORE XML unchanged. No conversion is introduced here.
+    end note
+
     entity ores_trading_swap_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
+        * party_id : uuid <<FK>>
         * instrument_id : uuid <<FK>>
         * leg_number : integer
         * leg_type_code : text
@@ -7255,6 +7844,37 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_trading_swap_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Leg Table
+    The shared legs table of the nine rates instrument families. Each row is one
+    leg of an FRA, vanilla swap, cap/floor, swaption, balance-guaranteed swap,
+    callable swap, knock-out swap, inflation swap or RPA instrument. A plain
+    interest rate swap has two rows, one fixed and one floating; a cross-currency
+    swap has two rows with different currencies.
+    leg_type_code is the discriminator and the leg type is data, not a table, so
+    one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
+    leg type does not state are null: fixed_rate is null for a floating leg and
+    floating_index_code is null for a fixed leg.
+    The row keeps its own id surrogate and names the parent instrument through
+    instrument_id, which is a soft foreign key to the instrument family rather
+    than to one table.
+    It binds :profile: trading-instrument, like the nine instrument sub-types
+    whose legs it holds. Three table features justify the bind: the table is
+    tenant-scoped through tenant_id and the tenant isolation policy, it is
+    workspace-scoped through workspace_id, and its insert trigger stamps
+    party_id from the session variable app.current_party_id rather than taking
+    it from the client. The bind leaves the table with no UI surface -- the
+    per-instrument forms were hand-crafted in the removed desktop client and
+    consumed the generated messaging protocol. The identity and audit field
+    groups and the generator facet are the model's own flags, stated under C++
+    below, not profile assignments.
+    The table is bi-temporal and audited, so the model takes the ordinary audited
+    shape and needs no shape flag.
+    end note
 
     entity ores_trading_swaption_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -7480,7 +8100,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * party_id : uuid <<FK>>
-          external_id : text <<FK>>
+        * external_id : text <<FK>>
         * book_id : uuid <<FK>>
         * portfolio_id : uuid <<FK>>
           successor_trade_id : uuid <<FK>>

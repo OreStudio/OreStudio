@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 2C59492F-B715-4195-8FC7-761CE5515449
+:END:
+#+title: The workflow instance and step states
+#+description: The state contract the workflow instance and step machines declare: every state a run or a step occupies, the transitions between them, and what each transition means.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Two state machines define the contract that a run of the workflow engine and each step inside it must honour: the workflow instance machine governs the run, and the workflow step machine governs a step. The contract names every state a run or a step may occupy, marks the states that end a lifecycle, and names each transition with the event that causes it. The graph is the written contract, and the engine performs the transitions of both machines. This note states the contract, and the retry policy its retry edge serves is argued in [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]], the reason a re-run is safe is in [[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]], and the dispatch around these writes is in [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][the step protocol]].
+
+* Detail
+
+** The two machines and the contract they declare
+
+The workflow instance machine governs the run as a whole, from its creation to its final outcome. Its contract declares six states and six transitions. =pending= is the initial state, =in_progress= is the state of a run that executes, and =completed=, =failed=, =compensating= and =compensated= are the states a run can end in; of those four, =completed=, =failed= and =compensated= are terminal.
+
+Each transition names one move between those states. =initial_start= carries a newly created run into =in_progress=. =complete= records that every step succeeded and leaves the run in =completed=. =fail= records that the engine could not continue and leaves the run in =failed=. =begin_compensation= opens the saga rollback by moving the run to =compensating=. =finish_compensation= closes a rollback that succeeded and leaves the run in =compensated=. =fail_during_compensation= closes a rollback that itself threw and leaves the run in =failed=.
+
+** The step contract
+
+The workflow step machine governs one step of a run and shares the instance machine's shape. Its contract declares six states and six transitions. =pending= is the initial state, =in_progress= is the state of a step the engine has dispatched, and =completed=, =completed_with_warnings=, =failed= and =compensated= are terminal. Each transition names one move between those states. =initial_start= carries a newly created step into =in_progress=. =complete= leaves a step that succeeded in =completed=, and =complete_with_warnings= leaves a step that succeeded with partial item failures in =completed_with_warnings=. =fail= leaves a step that failed in =failed=. =compensate= records a step's rollback by moving it from =failed= to =compensated=. =retry= resumes a failed step by moving it from =failed= back to =in_progress=, where it keeps its identity and the run keeps every step that completed.
+
+** The two machines on one page
+
+The contract of both machines is drawn in [[proj:doc/knowledge/architecture/workflow_instance_states.puml][=workflow_instance_states.puml=]]:
+
+#+caption: The declared state contract of the workflow instance and step machines, with the =failed= -> =in_progress= retry edge a resumable failure needs.
+[[proj:doc/knowledge/architecture/workflow_instance_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_instance_states.puml][=workflow_instance_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_instance_states.puml=.

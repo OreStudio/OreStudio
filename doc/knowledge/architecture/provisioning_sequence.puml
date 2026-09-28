@@ -1,0 +1,108 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Tenant provisioning journey: request to running instance
+
+actor "Person" as person
+participant "ores.web" as web
+participant "BFF" as bff
+participant "ores.iam" as iam
+participant "workflow engine" as engine
+database "the platform's store" as db
+
+== The setup screen closes bootstrap mode ==
+
+person -> web : create the first administrator\non the setup screen
+web -> bff : request the administrator's creation
+bff -> iam : create the first administrator
+iam -> db : create the first administrator's account;\nclear the bootstrap flag
+iam --> bff : the account identifier, the tenant identifier
+bff --> web : the administrator exists
+note over iam, db : bootstrap mode is closed
+
+== The person picks a starting point and fills the form ==
+
+person -> web : choose a starting point
+web -> bff : read the registered starting points
+bff -> iam : list the starting points,\ntheir operations and their parameters
+iam -> db : read the registered starting points
+db --> iam : the starting points
+iam --> bff : the starting points
+bff --> web : the cards
+person -> web : describe the tenant\nand its administrator
+
+== The person confirms ==
+
+person -> web : confirm
+web -> bff : request tenant provisioning
+bff -> iam : provision_tenant_command\n(iam.v1.tenants.provision)
+iam -> db : read the starting point and its declared parameters
+iam -> iam : validate every field and every parameter
+note over iam : a refusal is answered here;\nnothing is created
+iam -> db : create the tenant and its administrator\n(synchronous)
+db --> iam : the tenant identifier, the account identifier
+iam -> iam : mint the instance identifier
+iam -> engine : publish start_workflow_message\n(workflow.v1.start, the instance identifier)
+iam --> bff : the instance identifier, the tenant identifier,\nthe account identifier
+bff --> web : the instance identifier, the tenant identifier,\nthe account identifier
+web --> person : the run has started;\nthe tenant and its administrator exist
+
+== The engine runs the starting point's operations, in order ==
+
+engine -> engine : look up the definition\n(by the run's workflow type)
+engine -> db : create the run in progress\nwith the ordered operations
+loop for each operation the starting point orders, in order
+    engine -> iam : dispatch the step\n(iam.v1.tenants.provision-step)
+    iam -> db : run the step
+    iam --> engine : step completed
+end
+engine -> iam : dispatch the completing operation\n(the appended final step)
+iam -> db : mark the tenant active
+iam --> engine : step completed
+
+== The page follows the run through the read ==
+
+loop while the run is in progress
+    web -> bff : read the run's progress
+    bff -> engine : read the run's progress\n(workflow.v1.instances.steps)
+    engine -> db : read the run and its steps
+    db --> engine : the status, the steps
+    engine --> bff : the status, the steps
+    bff --> web : the status, the steps
+    note over web : render the rail: pending,\nrunning, done, failed
+end
+
+== The terminal branches ==
+
+alt the run completed
+    web --> person : the tenant is ready;\nhand off to the tenant administrator
+else a step failed
+    engine --> bff : the failed status, the failed step\nand its error
+    bff --> web : the failed status
+    web --> person : offer retry and discard
+    alt the person retries
+        web -> bff : retry the run
+        bff -> engine : resume the run from the failed step
+    else the person discards
+        web -> bff : discard the run
+        bff -> iam : reset the tenant\n(iam.v1.system.reset-tenant)
+    end
+end
+
+@enduml

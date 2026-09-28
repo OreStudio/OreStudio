@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 247E1FE4-A00C-42D1-A6BA-831BC22C8078
+:END:
+#+title: The step protocol
+#+description: What a caller and a step handler must know to take part in a workflow: the start message, the definition, dispatch, completion, and how a run finishes.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A workflow is a two-message protocol: the caller publishes a start message, the
+handler publishes a completion event, and the workflow engine, as the process
+manager, derives every step command from a registered definition rather than from
+an executor written for one workflow type. This note states the design the engine
+honours: what the start message carries, what the definition declares, how the
+engine builds its step list, what the command tells the handler, the results a
+later step may read, and the positional end of the instance. See
+[[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]] and
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]].
+
+* Detail
+
+** The caller opens an instance with one start message
+
+The caller starts an instance by publishing =start_workflow_message= to
+=workflow.v1.start=. The message is fire-and-forget, and the fields it carries are
+drawn below.
+
+#+caption: The start message and the fields that carry meaning: the workflow type, the tenant, the request payload, the correlation identifier and the optional instance identifier.
+[[proj:doc/knowledge/architecture/workflow_start_message.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_start_message.puml][=workflow_start_message.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_start_message.puml=.
+
+The caller-supplied identifier is what makes a retried start the same run. A
+non-empty identifier becomes the instance uuid, and a second start bearing an
+identifier that is already known is that same instance, which the engine notes and
+leaves unchanged; an empty identifier gets a fresh uuid.
+
+A start the design cannot use is refused: an unknown workflow type, a tenant that is
+not a uuid, a step list the definition fails to build, or an empty step list. An
+accepted start keeps the request, the correlation identifier and the step count, so
+that every later builder call works from the same material.
+
+** What the component diagram shows
+
+#+caption: The step protocol: the caller, the process manager, the definition, the step handler, the run state the platform persists and the reader. Each connector carries the message it names and its objective.
+[[proj:doc/knowledge/architecture/workflow_step_protocol.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_step_protocol.puml][=workflow_step_protocol.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_step_protocol.puml=.
+
+The diagram places the process manager at the centre of the protocol. The caller
+starts a run with one message and is answered at once; the definition supplies the
+ordered step list; the process manager stamps each step command with the three
+identifiers the handler needs; the handler reports one outcome; and the reader
+follows the run from the state the platform persists.
+
+** The definition declares the whole chain
+
+A definition declares the workflow type its starts are matched against, a
+description, and the step list. Each declared step carries a name, the identity
+that addresses its result; a command subject; a compensation subject, absent when
+the step has no rollback; a builder for its command payload, which turns the
+request and the results so far into that payload; and a builder for its
+compensation payload, which turns the original command and the step's result into
+the rollback.
+
+** The definition builds the step list from the request alone
+
+The engine, as the process manager, builds the step list at start and again on every
+advance, always from the instance's stored request, the tenant and the correlation
+identifier. The protocol admits nothing else, so no completed step's result reaches
+the builder. That is the guarantee the design demands: a definition cannot depend
+on anything the engine does not hold when it builds the list.
+
+The list must be the same on every advance, because an advance dispatches the step
+at the next position out of the list just built. The engine guards that invariant by
+recording what the definition declared at start and comparing each rebuild against
+it, so a differing list is caught rather than obeyed.
+
+** The engine dispatches a command the handler can trust
+
+The engine persists the step before it publishes, and sends the command to the
+subject the step declares, exactly as declared. The publish is fire-and-forget: it
+carries no reply inbox and no acknowledgement.
+
+#+caption: The step command and the fields that carry meaning: the three identifiers the engine stamps on the step, instance and tenant, and the payload the operation performs.
+[[proj:doc/knowledge/architecture/workflow_step_command.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_step_command.puml][=workflow_step_command.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_step_command.puml=.
+
+The command carries the three identifiers of the step, the instance and the tenant.
+It carries no caller token, so the handler cannot authenticate as the caller, and
+the actor stays on the step's record as its last modifier.
+
+** The handler answers with a completion event
+
+The handler publishes =step_completed_event= to =workflow.v1.events.step-completed=,
+and the step identifier it carries echoes the one on the command. The three headers
+on the command tell it which run it serves and which step it answers for.
+
+#+caption: The completion event and the fields that carry meaning: the step identifier it echoes, the outcome, the result, the error, and one log entry per item the step could not do cleanly.
+[[proj:doc/knowledge/architecture/workflow_step_completion.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_step_completion.puml][=workflow_step_completion.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_step_completion.puml=.
+
+The completion reports one of three outcomes: success with a result, success with
+warnings, which adds per-item log entries, or failure, which carries an error and an
+empty result. The engine treats success and success with warnings as success and
+dispatches the next step, while failure begins compensation. It drops a completion
+it cannot place — one for a step it does not know, and one for a step that is no
+longer in progress — so a duplicate or a late completion is harmless. See
+[[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]].
+
+** A later step reads the results of the steps before it
+
+A step's command builder receives the instance's request and the results so far.
+Each result carries the name of the step that produced it and a response, and a
+later step addresses an earlier result by that name, never by position; a step that
+returns nothing contributes nothing, and a failed step is never built past.
+
+** An instance ends when its last declared step completes
+
+An advance takes the step after the instance's current position; once that position
+passes the last stored step, the engine marks the instance complete with the last
+step's result and publishes a status event. Completion is therefore positional: the
+run stops because it exhausted the steps its definition declared, and no further
+step is dispatched.
+
+There is no completion hook. A definition that must act at the end declares that
+work as a step and places it last. The states are catalogued in
+[[id:2C59492F-B715-4195-8FC7-761CE5515449][the instance and step states]].
+
+** A failed step either compensates or stops for a retry
+
+A definition declares the policy its failed step follows. Under the compensate
+policy the engine moves the run to compensating, walks the completed forward steps
+in reverse, and publishes each one's compensation subject until the run is
+compensated, so the run undoes its completed work. Under the stop-and-retry policy
+the engine parks the run on the failed step, keeps the completed steps, and waits
+for a retry verb, so the work that succeeded is not thrown away.
+
+#+caption: The retry verb and the fields that carry meaning: the tenant, the run to resume, and the optional step to resume from.
+[[proj:doc/knowledge/architecture/workflow_retry_verb.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_retry_verb.puml][=workflow_retry_verb.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_retry_verb.puml=.
+
+A caller sends the retry verb to resume a stopped run. It names the run, and it may
+name the step to resume from. The run's state is the platform's record of what has
+already happened, so a retry resumes from that record rather than from the caller's
+memory of it. See
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]].

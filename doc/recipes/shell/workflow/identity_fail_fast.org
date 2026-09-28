@@ -9,7 +9,7 @@
 #+created: 2026-09-26
 #+updated: 2026-09-26
 
-The fail-fast configuration of the [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][identity workflow]]. The =ores-shell= block
+The fail-fast configuration of the [[id:25ED321D-A489-449C-BF60-15F1A1B3DBE7][identity workflow]]. The =ores-shell= block
 below is tangled into the runnable script library as =identity_fail_fast.ores=.
 
 * Question

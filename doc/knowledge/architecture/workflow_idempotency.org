@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 183361A9-31B8-4066-A13D-94CA35270F42
+:END:
+#+title: Idempotency in a workflow step
+#+description: The contract that keeps a workflow step from doing its work twice across re-publish and retry.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A workflow step takes effect once, however many times its command arrives. The
+contract places that guarantee in the step handler, not the engine, because the
+engine may publish a step command more than once: startup recovery re-dispatches
+every unfinished step, and a caller may retry a step whose completion it never
+saw. A handler honours the contract in one of two ways. It asks the engine to
+replay the step's recorded outcome before it acts, or it makes its own write
+converge so a repeat reaches the same end state. Both forms key on the step's
+stable identity, which the engine holds. See
+[[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][the step protocol]] for dispatch and
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure and retry]] for the failure
+path.
+
+* Detail
+
+** The contract
+
+The contract binds every step handler to idempotence on the step's stable
+identity. The engine stamps that identity on each command it publishes, and it
+holds the identity stable across a re-publish. The handler keeps the other half,
+because only the handler performs the effect: a second execution of one step
+identity must leave the system as the first left it.
+
+** Why the engine publishes a step twice
+
+Two routine events re-publish a step command, so a handler must expect the
+repeat. Recovery re-dispatches every unfinished step of every unfinished
+instance, and it runs once at service start. Recovery writes no new step, so the
+command carries the identity the handler has already seen. A caller's retry
+after a lost reply re-sends that same command.
+
+** The completion guard
+
+The completion guard deduplicates the engine's bookkeeping and nothing more. The
+engine discards a completion for a step that is no longer running, so a
+duplicate completion cannot overwrite a terminal state or advance the instance
+twice. The handler has already run by then; see
+[[id:2C59492F-B715-4195-8FC7-761CE5515449][the instance and step states]] for the state machine
+the guard reads.
+
+** The replay guard
+
+A handler can ask the engine to replay the outcome the step already produced.
+The handler sends the step's identity and its tenant with the request, and a hit
+returns the cached outcome — result, error and log — which the handler publishes
+as its own completion, reproducing the answer without the work. The request is
+bounded by a short timeout.
+
+The guard fails open: a timeout or a transport error returns no cached result,
+and the handler proceeds with normal execution. The guard therefore optimises a
+repeat rather than preventing one, and the underlying work must stay safe to
+repeat.
+
+The engine serves the request from a tenant-scoped read, and it reports the step
+as absent unless the cached outcome belongs to the requesting tenant.
+
+** The converging write
+
+The converging write makes the handler's own effect repeat-safe and needs no
+conversation with the engine. The publish steps of the bundle workflow give the
+reason they carry no compensation action: each of them writes so that a repeat
+converges. A repeat meets its own earlier effect and is absorbed, and the same
+end state stands.
+
+** What a new operation must do
+
+A new operation must satisfy the step-identity contract before it ships, because
+neither engine mechanism covers it: the completion guard acts after the work,
+and the replay guard fails open. It therefore either asks the engine to replay a
+recorded outcome before it acts, or writes so that a repeat converges on stable
+business data.

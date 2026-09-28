@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: FF8BAB73-9A76-4B23-87F5-59D1BE1A2877
+:END:
+#+title: The workflow definition
+#+description: How a workflow type declares its steps: definitions as code, the registry that holds them, how one is added or changed, and what protects a run in flight.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A workflow definition declares the step sequence of one workflow type. A
+definition is code, not data: the component that owns a workflow's steps
+builds the definition, and the workflow service registers it at startup in
+an in-process registry keyed by type name. A start message names the type,
+the engine resolves it in the registry, and the definition builds the step
+list for that run once, at start, after which the resolved list is
+persisted on the run. This page defines the parts of a definition, how one
+is added or changed, and what a change cannot affect.
+
+* Detail
+
+** The parts of a definition
+
+A definition carries a type name, a description, a failure policy, and one
+function that builds the step list for a run. The type name is the interface:
+it is the key in the registry, the value the start message carries, and the
+value the run stores. The failure policy is the definition's choice between
+compensating a failed run and stopping it for a retry, and
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and
+retry]] defines both.
+
+#+caption: The workflow definition and its step definitions: the definition builds a step list once per run, and the resolved steps are persisted on the run.
+[[proj:doc/knowledge/architecture/workflow_definition.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_definition.puml]].
+Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_definition.puml=.
+
+A step definition carries a name, a description, the subject that answers
+its command, an optional subject that answers its compensation, a function
+that builds the command payload, and an optional function that builds the
+compensation payload. A step is addressed by its name, so a later step
+reads the result of an earlier one by name rather than by position.
+
+** Definitions are code
+
+A definition lives in the component that owns the steps, beside the
+handlers that answer the step subjects, and the workflow service registers
+it at startup. The reason is coupling: a step's command subject and its
+payload builder must agree with the handler that answers the subject, so
+the definition and the handler change together. Holding the definition
+outside the component that implements it would split one change into two.
+
+The registry is in-process and keyed by type name; registering a type name
+that already exists replaces the entry. The store holds runs and steps,
+not definitions: there is no definition table, no definition write
+operation, and no version row for a definition.
+
+** Adding a workflow
+
+Four changes add a workflow, and they belong to two owners.
+
+1. The owning component builds the definition: a function that returns the
+   step list for a run, and the payload builders each step needs.
+2. The owning component implements the handlers that answer the step
+   command subjects.
+3. The workflow service registers the definition in its registrar, beside
+   the definitions of the other components.
+4. The caller publishes a start message that names the new type.
+
+A start message that names a type the registry does not hold is refused at
+start, so an unregistered definition is a refusal to the caller rather
+than a run that stalls.
+
+** Changing a workflow
+
+A change to a definition is a code change and a deployment. There is no
+update message and no stored version: the deployed build is the version of
+the definition.
+
+Two rules make the change safe.
+
+- /Keep the type name stable./ A start message names the type, and a run
+  stores it. A rename therefore breaks every caller and every existing
+  run, and a new type name is a new workflow rather than a new version of
+  an old one.
+- /Keep answering the old step subjects until their runs have ended./ The
+  step subjects are contracts with handlers. A deployment that stops
+  answering a subject leaves the runs that started under the old
+  definition without an answer, because the engine dispatches the
+  persisted step list and does not consult the new definition for them.
+
+#+caption: Registering a definition at startup, and resolving it when a start message arrives.
+[[proj:doc/knowledge/architecture/workflow_definition_registration.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_definition_registration.puml]].
+Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_definition_registration.puml=.
+
+** What protects a run in flight
+
+The engine builds the step list once, at start, and persists the result on
+the run: the step count, and the name, command subject and compensation
+subject of each step. The definition is not consulted again for that run.
+
+This is what makes a definition change safe for work in progress. A
+restart does not rebuild the list, and neither does a deployment that
+changes the definition. A run that started under one step sequence
+finishes under that sequence, and a run that starts after the deployment
+uses the new one. Reshaping work in progress is not possible by
+deployment, which removes the class of failure where a step is removed or
+reordered under a run that is waiting on it.
+
+** What the definition does not hold
+
+The definition declares the shape of a run, and the run's parameters are
+data. The start message carries a request payload, and the definition's
+build function reads that payload, the tenant and the correlation
+identifier to decide which steps apply and what each command carries.
+
+The separation matters when a user chooses a starting point. The choice is
+registered data with its own write path, and the step sequence is code.
+The tenant provisioning workflow is the worked case: the profile a user
+selects is data, and the step kinds the profile selects are code. See
+[[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and
+the plan]].
+
+* See also
+
+- [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/ProcessManager.html][Process Manager]] — the pattern the engine implements, and the reason a definition declares steps rather than performing them.

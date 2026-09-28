@@ -466,6 +466,13 @@ via its "Verifies task" field.
 | 43 | The =DST= flag is refused in a spelling ORE matches case-insensitively | projections and the power model | decline | Deliberate: a flag written any other way would not read back as it arrived, which is the test the rest of the class's refusals are held to. Already recorded in the model, and the fix if the corpus ever writes another spelling is a =delivery_spelling= field, the FX =source_spelling= precedent. |
 | 44 | =inbox.org= gained index rows for two captures unrelated to this work | =inbox.org= | decline | The regenerator rewrites a bucket index from the directory, so it lists captures the index had drifted from. No capture file is touched by this branch. |
 
+| 45 | The explicit =DST= check in the power arm overlaps the shape check | =ores.cpp.oresmd.projections.org= | accept | A comment now says why it is deliberate: the shape check runs on the lower-cased tail, so it cannot tell ORE's spelling from an invented one. |
+| 46 | =parse_power= accepts =type=quote=, which then projects nothing | the power arm and its cases | decline | The behaviour is already pinned by =from_index_name_rejects_power_names_that_are_not_the_shape=, and IR has the same property: its default type is =quote= and a quote with no quote key names nothing. Rejecting the type would need a gate no class has. |
+| 47 | =reject_if_present("power", "model", ...)= sits below the =id= setup | =ores.cpp.oresmd.parser.org= | decline | Cosmetic, and generated that way for every =inline= class rather than for power: the model reject comes from the shape-slot branch that follows the type parse. |
+| 48 | Commodity's reject list is a hand copy of the shared check minus =delivery= | the commodity model and the parser template | decline | It is the codegen gap the task already records, now confirmed by the reviewer. A shared helper taking an allowed set is the fix, and it belongs with the rest of the validation-mode work rather than here. |
+| 49 | The shape checks admit a calendar-invalid date and an out-of-day window | =ores.cpp.oresmd.projection_tests.org= | accept | Deliberate and already in the PR's limitations; a comment on the case now says so, so a reader is not surprised by what passes. |
+| 50 | The fixes made after the two-axis review were not re-reviewed | the branch | accept | Agreed and already stated in the PR's testing limitations. The two comment changes here are the only code touched since, and they are comments. |
+
 * Result
 
 The interest-rate third of the fixing key space is closed. =from_index_name= names

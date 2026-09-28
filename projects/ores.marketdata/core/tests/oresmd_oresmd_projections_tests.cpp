@@ -1342,6 +1342,11 @@ TEST_CASE("from_index_name_keeps_a_power_fixings_delivery_window", tags) {
 }
 
 TEST_CASE("from_index_name_rejects_power_names_that_are_not_the_shape", tags) {
+    // These are shape checks and nothing more: a date that is not a calendar date,
+    // and a window that lies outside a day, both pass here. The calendar that would
+    // judge them arrives with the migration that gives this library reference data,
+    // which is the same one the FX pair's currencies wait for.
+    //
     // The commodity name is the first dash-delimited token, so an empty one
     // leaves the name with nothing to carry.
     REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-").has_value());

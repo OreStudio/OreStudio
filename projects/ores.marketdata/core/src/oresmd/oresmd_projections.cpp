@@ -2246,6 +2246,9 @@ oresmd_projections::from_index_name(const std::string& index_name) {
         id.commodity_code = to_upper(parts[0]);
         if (parts.size() == 1)
             return id;
+        // The shape check runs on the lower-cased tail, so it cannot tell the flag
+        // ORE spells from one a producer invented. This refuses the latter, and is
+        // what makes the spelling a rule rather than an accident of lower-casing.
         if (parts.size() == 7 && parts[6] != "DST")
             return std::nullopt;
         std::string tail = parts[1];

@@ -1476,7 +1476,7 @@ is pre-existing and outside this unit; the next =compass db recreate= resolves i
 
 | PR | Title |
 |----+-------|
-|    | Model the unmodelled trading families and bind the unbound |
+| [[https://github.com/OreStudio/OreStudio/pull/2333][#2333]] | Model the unmodelled trading families and bind the unbound |
 
 * Review
 

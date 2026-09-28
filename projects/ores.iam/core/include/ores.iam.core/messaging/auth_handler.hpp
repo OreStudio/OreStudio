@@ -25,6 +25,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/password_policy_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
@@ -43,6 +44,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/validation/password_validator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -272,7 +274,8 @@ public:
 
             service::account_operations_service svc(login_ctx);
             auto ip = boost::asio::ip::address_v4::loopback();
-            auto acct = svc.login(username, req->password, ip);
+            const auto outcome = svc.login(username, req->password, ip);
+            const auto& acct = outcome.account;
 
             // Check if this non-system tenant needs its provisioning wizard
             const bool in_tenant_bootstrap =
@@ -343,6 +346,7 @@ public:
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.password_reset_required = outcome.password_reset_required;
                 resp.access_lifetime_s = token_settings()->access_lifetime_s;
                 resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
@@ -405,6 +409,7 @@ public:
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.password_reset_required = outcome.password_reset_required;
                 resp.access_lifetime_s = token_settings()->party_selection_lifetime_s;
                 resp.session_id = session_id_str;
                 if (acct.default_party_id) {
@@ -440,6 +445,29 @@ public:
             resp.error_message = e.what();
             reply(nats_, msg, resp);
         }
+    }
+
+    /**
+     * @brief Serves iam.v1.auth.password-policy.
+     *
+     * The rules the server enforces, answered from the validator that enforces
+     * them, so a screen states the server's rules rather than keeping a copy.
+     * A caller reaches this before it has a session, because the screen that
+     * shows the rules is the one a person signs in on.
+     */
+    void password_policy(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
+
+        const auto rules = ores::security::validation::password_validator::policy();
+        get_password_policy_response resp;
+        resp.success = true;
+        resp.min_length = static_cast<int>(rules.min_length);
+        resp.require_uppercase = rules.require_uppercase;
+        resp.require_lowercase = rules.require_lowercase;
+        resp.require_digit = rules.require_digit;
+        resp.require_special = rules.require_special;
+        resp.special_chars = rules.special_chars;
+        reply(nats_, msg, resp);
     }
 
     void public_key(ores::nats::message msg) {

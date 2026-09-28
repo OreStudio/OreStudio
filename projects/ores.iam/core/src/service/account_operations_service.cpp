@@ -211,7 +211,7 @@ void account_operations_service::delete_account(const boost::uuids::uuid& accoun
                               << boost::uuids::to_string(account_id);
 }
 
-domain::account account_operations_service::login(const std::string& username,
+authenticated_login account_operations_service::login(const std::string& username,
                                                   const std::string& password,
                                                   const boost::asio::ip::address& ip_address) {
 
@@ -301,7 +301,9 @@ domain::account account_operations_service::login(const std::string& username,
 
     login_info_repo_.write(ctx_, login_info);
 
-    return account;
+    return authenticated_login{.account = account,
+                              .password_reset_required =
+                                  login_info.password_reset_required};
 }
 
 bool account_operations_service::lock_account(const boost::uuids::uuid& account_id) {

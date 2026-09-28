@@ -195,7 +195,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
     const auto account = sut.create_account(e.username, e.email, password, e.modified_by);
 
     auto ip = internet::ipv4();
-    auto a = sut.login(account.username, password, ip);
+    auto a = sut.login(account.username, password, ip).account;
 
     CHECK(a.username == e.username);
     CHECK(a.id == account.id);
@@ -370,7 +370,7 @@ TEST_CASE("unlock_account_successful", tags) {
     BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
 
     // Should now be able to login successfully
-    auto logged_in_account = sut.login(generated.username, password, ip);
+    auto logged_in_account = sut.login(generated.username, password, ip).account;
 
     CHECK(logged_in_account.username == account.username);
 }
@@ -417,7 +417,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs.";
     for (int i = 0; i < 3; ++i) {
         auto ip = internet::ipv4();
-        auto login = sut.login(account.username, password, ip);
+        auto login = sut.login(account.username, password, ip).account;
 
         BOOST_LOG_SEV(lg, info) << "Login " << i << " from IP: " << ip
                                 << " - account: " << account.username;

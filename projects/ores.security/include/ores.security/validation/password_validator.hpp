@@ -27,6 +27,25 @@
 namespace ores::security::validation {
 
 /**
+ * @brief The rules a password must satisfy, as data.
+ *
+ * The rules are stated once, here, and the validator enforces exactly what it
+ * states. A caller that shows the rules to a person asks for this record
+ * rather than keeping a copy of them, so the rules on screen cannot drift from
+ * the rules the server applies.
+ */
+struct ORES_SECURITY_EXPORT password_policy {
+    /// The shortest password the policy accepts.
+    std::size_t min_length = 0;
+    bool require_uppercase = false;
+    bool require_lowercase = false;
+    bool require_digit = false;
+    bool require_special = false;
+    /// The symbols that satisfy the special-character rule.
+    std::string special_chars;
+};
+
+/**
  * @brief Validates passwords against a security policy.
  *
  * The password_validator class enforces a strong password policy based
@@ -40,6 +59,13 @@ namespace ores::security::validation {
  */
 class ORES_SECURITY_EXPORT password_validator {
 public:
+    /**
+     * @brief The policy the validator enforces.
+     *
+     * The single statement of the rules: validate() applies this record and
+     * nothing else, so a caller that reads it states what the server applies.
+     */
+    [[nodiscard]] static password_policy policy();
     /**
      * @brief Validates a password against the security policy.
      *
@@ -58,9 +84,6 @@ public:
      */
     static validation_result validate(const std::string& password, bool enforce_policy = true);
 
-private:
-    static constexpr std::size_t MIN_LENGTH = 12;
-    static constexpr const char* SPECIAL_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 };
 
 }

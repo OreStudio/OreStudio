@@ -25,6 +25,7 @@
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/password_policy_protocol.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
@@ -146,6 +147,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(
         nats.queue_subscribe(logout_request::nats_subject, qg, [ah](ores::nats::message msg) {
             ah->logout(std::move(msg));
+        }));
+    // The rules a password must satisfy, answered before anybody has signed
+    // in, because the sign-in screen is where they are shown.
+    subs.push_back(nats.queue_subscribe(
+        get_password_policy_request::nats_subject, qg, [ah](ores::nats::message msg) {
+            ah->password_policy(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(public_key_request::nats_subject, qg, [ah](ores::nats::message msg) {

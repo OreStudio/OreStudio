@@ -186,3 +186,36 @@ TEST_CASE("validation_enabled_by_default", tags) {
     CHECK(!result.is_valid);
     CHECK(!result.error_message.empty());
 }
+
+TEST_CASE("the policy a caller reads is the policy the validator enforces", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The rules are stated once, in policy(), and validate() applies that
+    // record. So a password the record refuses is refused, and one that meets
+    // every rule it states is accepted: a client that shows the record states
+    // the server's rules.
+    const auto rules = password_validator::policy();
+    BOOST_LOG_SEV(lg, info) << "Policy states a minimum length of " << rules.min_length;
+
+    // One character short of the stated length, and otherwise complete.
+    std::string too_short(rules.min_length - 1, 'a');
+    too_short[0] = 'A';
+    too_short[1] = '1';
+    too_short[2] = rules.special_chars.front();
+    const auto short_result = password_validator::validate(too_short);
+    CHECK_FALSE(short_result.is_valid);
+    CHECK(short_result.error_message.find(std::to_string(rules.min_length)) != std::string::npos);
+
+    // The same password at the stated length is accepted.
+    std::string long_enough(rules.min_length, 'a');
+    long_enough[0] = 'A';
+    long_enough[1] = '1';
+    long_enough[2] = rules.special_chars.front();
+    CHECK(password_validator::validate(long_enough).is_valid);
+
+    CHECK(rules.require_uppercase);
+    CHECK(rules.require_lowercase);
+    CHECK(rules.require_digit);
+    CHECK(rules.require_special);
+    CHECK_FALSE(rules.special_chars.empty());
+}

@@ -24,6 +24,15 @@
 
 namespace ores::security::validation {
 
+password_policy password_validator::policy() {
+    return password_policy{.min_length = 12,
+                           .require_uppercase = true,
+                           .require_lowercase = true,
+                           .require_digit = true,
+                           .require_special = true,
+                           .special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"};
+}
+
 validation_result password_validator::validate(const std::string& password, bool enforce_policy) {
     validation_result result{.is_valid = true, .error_message = ""};
 
@@ -34,10 +43,12 @@ validation_result password_validator::validate(const std::string& password, bool
     if (!enforce_policy)
         return result;
 
-    if (password.length() < MIN_LENGTH) {
+    const auto rules = policy();
+
+    if (password.length() < rules.min_length) {
         result.is_valid = false;
         result.error_message =
-            std::format("Password must be at least {} characters long", MIN_LENGTH);
+            std::format("Password must be at least {} characters long", rules.min_length);
         return result;
     }
 
@@ -53,32 +64,32 @@ validation_result password_validator::validate(const std::string& password, bool
             has_lowercase = true;
         if (std::isdigit(c))
             has_digit = true;
-        if (std::strchr(SPECIAL_CHARS, c))
+        if (std::strchr(rules.special_chars.c_str(), c))
             has_special = true;
     }
 
-    if (!has_uppercase) {
+    if (rules.require_uppercase && !has_uppercase) {
         result.is_valid = false;
         result.error_message = "Password must contain at least one uppercase letter (A-Z)";
         return result;
     }
 
-    if (!has_lowercase) {
+    if (rules.require_lowercase && !has_lowercase) {
         result.is_valid = false;
         result.error_message = "Password must contain at least one lowercase letter (a-z)";
         return result;
     }
 
-    if (!has_digit) {
+    if (rules.require_digit && !has_digit) {
         result.is_valid = false;
         result.error_message = "Password must contain at least one digit (0-9)";
         return result;
     }
 
-    if (!has_special) {
+    if (rules.require_special && !has_special) {
         result.is_valid = false;
         result.error_message =
-            std::format("Password must contain at least one special character ({})", SPECIAL_CHARS);
+            std::format("Password must contain at least one special character ({})", rules.special_chars);
         return result;
     }
 

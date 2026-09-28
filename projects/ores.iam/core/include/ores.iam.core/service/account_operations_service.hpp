@@ -38,6 +38,19 @@ namespace ores::iam::service {
 /**
  * @brief Service for managing user accounts including creation, listing, and deletion.
  */
+/**
+ * @brief The account a login authenticated, and what its own record says the
+ * next sign-in must do.
+ *
+ * The reset flag lives on the account's login record rather than on the
+ * account, and the login path reads that record to check it is not locked, so
+ * the answer carries the flag rather than a second read of the same row.
+ */
+struct ORES_IAM_CORE_EXPORT authenticated_login {
+    domain::account account;
+    bool password_reset_required = false;
+};
+
 class ORES_IAM_CORE_EXPORT account_operations_service {
 private:
     inline static std::string_view logger_name = "ores.iam.service.account_operations_service";
@@ -168,7 +181,7 @@ public:
      * @throws std::invalid_argument If username or password is empty
      * @throws std::runtime_error If account is locked or credentials are invalid
      */
-    domain::account login(const std::string& username,
+    authenticated_login login(const std::string& username,
                           const std::string& password,
                           const boost::asio::ip::address& ip_address);
 

@@ -28,6 +28,7 @@
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.iam.core/service/login_info_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -102,6 +103,9 @@ public:
      * @param admin_username Administrator's username, with no hostname part.
      * @param admin_email    Administrator's email address.
      * @param admin_password Administrator's initial password, in the clear.
+     * @param force_password_change Whether the starting point the tenant is
+     *        provisioned from makes its administrator set a password of their
+     *        own at first sign-in.
      *
      * @throws std::runtime_error When the provisioner answers incompletely.
      */
@@ -112,7 +116,8 @@ public:
                                                const std::string& description,
                                                const std::string& admin_username,
                                                const std::string& admin_email,
-                                               const std::string& admin_password) const {
+                                               const std::string& admin_password,
+                                               bool force_password_change = false) const {
         using ores::database::repository::execute_parameterized_multi_column_query;
         using ores::database::service::tenant_context;
 
@@ -138,6 +143,24 @@ public:
         account_operations_service accounts(tenant_ctx);
         auto account = accounts.create_account(
             admin_username, admin_email, admin_password, ctx_.service_account());
+
+        // The starting point's choice reaches the account's own record, which
+        // is what the login path reads and answers with.
+        if (force_password_change) {
+            login_info_service logins(tenant_ctx);
+            if (auto record = logins.get_login_info(account.id)) {
+                auto marked = *record;
+                marked.password_reset_required = true;
+                logins.save_login_info(marked);
+                BOOST_LOG_SEV(lg(), ores::logging::info)
+                    << "Administrator " << admin_username
+                    << " must set a password at first sign-in";
+            } else {
+                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                    << "No login record for " << admin_username
+                    << ", so the forced password change was not recorded";
+            }
+        }
 
         domain::account_party link;
         link.account_id = account.id;

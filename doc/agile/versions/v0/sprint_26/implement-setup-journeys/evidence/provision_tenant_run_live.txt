@@ -1,0 +1,70 @@
+Live run of the provision tenant workflow, 2026-09-28, environment eager_maxwell.
+
+Database recreated, fleet restarted on the branch's binaries, initial
+administrator bootstrapped, then the Operational profile provisioned from the
+shell:
+
+  tenant_provisioning provision-tenant empty_operational op_probe \
+    "Operational Probe" op-probe.example "Operational probe tenant" \
+    admin_op_probe admin@op-probe.example Secure-Password-123 \
+    root_lei=529900T8BM49AURSDO55,counterparty_size=small
+
+  {"success":true,"instance_id":"95206a55-b585-4997-b8c3-3a7c8bf39bc0",
+   "tenant_id":"f2d575b0-dcc8-4a40-97f5-ee2293f3b6c9",
+   "account_id":"01a0e87b-a4cc-708f-8a77-8ff4ecbd8e38"}
+
+The workflow service's own log for that instance, with the repository and
+notification lines removed:
+
+  15:46:52 [INFO] workflow_engine] Start-workflow request received:
+      type=provision_tenant_workflow instance_id=95206a55-b585-4997-b8c3-3a7c8bf39bc0
+  15:46:52 [INFO] workflow_engine] Publishing step command:
+      workflow=95206a55-... step_index=0 step_name=publish_bundle
+      step_id=14c06af6-8de4-4cfa-a546-3b5ad60013eb
+      subject=iam.v1.tenants.provision-step
+  15:46:52 [INFO] workflow_engine] Workflow STARTED: type=provision_tenant_workflow
+      workflow=95206a55-... step_count=4 first_step=publish_bundle
+      subject=iam.v1.tenants.provision-step
+  15:47:02 [INFO] workflow_engine] Step-completed event received:
+      workflow=95206a55-... step=14c06af6-... outcome=completed
+  15:47:02 [INFO] workflow_engine] Publishing step command:
+      workflow=95206a55-... step_index=1 step_name=import_lei_hierarchy
+      step_id=c5492730-6972-49ca-b093-6a7e3a32e122
+      subject=iam.v1.tenants.provision-step
+  15:47:02 [INFO] workflow_engine] Dispatched step 1/3 (import_lei_hierarchy)
+      for workflow=95206a55-... type=provision_tenant_workflow
+  15:47:02 [INFO] workflow_engine] Step-completed event received:
+      workflow=95206a55-... step=c5492730-... outcome=failed
+      error=The step names no 'bundles' argument.
+  15:47:02 [WARN] workflow_engine] Workflow FAILED - beginning compensation:
+      type=provision_tenant_workflow workflow=95206a55-...
+      error=The step names no 'bundles' argument.
+  15:47:02 [INFO] workflow_engine] No compensation steps needed for
+      workflow 95206a55-...
+
+What the run proves:
+
+- the definition is registered: the start names provision_tenant_workflow and
+  the engine resolves it;
+- the definition builds four steps from the profile, in the profile's order,
+  and dispatches every one of them to iam.v1.tenants.provision-step;
+- the step executor serves that subject, performs real work (the base bundle
+  published through its nested run) and reports completion, so the run
+  advances;
+- a kind whose arguments are absent is refused with the field named, and the
+  run stops on that step instead of hanging.
+
+What it does not reach, and why:
+
+- the Operational profile's import_lei_hierarchy row states no bundle
+  ('{}'), so the step refuses before it publishes anything;
+- party_essentials, the bundle its provision_party row names, is registered in
+  no populate file, so that step has no data to publish;
+- the completing step is therefore never dispatched, and the tenant stays in
+  bootstrapping. Both gaps are DQ/seeder data, which the task leaves to that
+  component's owner.
+
+Observed while probing the refusal path: the shell cannot send an empty
+parameter list, so a profile that declares no parameters (acme_demo) cannot be
+provisioned from the shell at all - "Expected 9 arguments, got 8". The kind
+refusal itself is covered by the definition and executor tests.

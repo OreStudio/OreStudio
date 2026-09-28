@@ -80,6 +80,13 @@
 
 - ores_refdata_publish_
 
+# The LEI party publish copies the system tenant's template logo onto a
+# known-LEI counterparty, and reads it through the same security-definer
+# accessor the Acme provisioner uses (see refdata_publish_from_dq_create.sql).
+# The accessor no longer carries the default PUBLIC grant, so this role needs
+# it named here.
+- ores_assets_get_template_image_
+
 * ores.workspace.service
 :PROPERTIES:
 :psql_var:    workspace_service

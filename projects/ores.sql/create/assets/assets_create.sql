@@ -19,6 +19,7 @@
  */
 
 \ir ./assets_images_create.sql
+\ir ./assets_template_image_fn_create.sql
 \ir ./assets_images_notify_trigger_create.sql
 \ir ./assets_tags_create.sql
 \ir ./assets_tags_notify_trigger_create.sql

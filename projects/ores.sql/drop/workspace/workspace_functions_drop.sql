@@ -10,5 +10,7 @@
 -- Workspace functions the entity generator cannot express.
 -- =============================================================================
 
+drop trigger if exists ores_workspaces_require_live_trg on ores_workspaces_tbl;
+drop function if exists ores_workspaces_require_live_fn() cascade;
 drop function if exists ores_workspace_validate_fn(uuid) cascade;
 drop function if exists ores_workspace_resolution_order_fn(uuid, uuid) cascade;

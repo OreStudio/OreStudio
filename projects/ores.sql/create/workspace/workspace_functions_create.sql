@@ -72,3 +72,43 @@ begin
     return p_workspace_id;
 end;
 $$;
+
+-- =============================================================================
+-- Live workspace guard. The Live workspace is the root of every inheritance
+-- chain, so it must always have a current version: archiving or deleting it
+-- would leave every chain in its tenant without a root.
+--
+-- The guard is a deferred constraint trigger rather than a check inside the
+-- insert trigger, because a replace and a delete both close the current row
+-- and differ only in what follows -- a replace inserts the next version, a
+-- delete does not. Deferring to the end of the transaction is what lets the
+-- two be told apart. SECURITY DEFINER because the caller may be subject to a
+-- row-level security policy that hides the row it is closing.
+-- =============================================================================
+
+create or replace function ores_workspaces_require_live_fn()
+returns trigger as $$
+begin
+    if not exists (
+        select 1 from ores_workspaces_tbl
+        where id = old.id
+          and tenant_id = old.tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'The Live workspace cannot be archived or deleted'
+            using errcode = '23514';
+    end if;
+
+    return null;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+drop trigger if exists ores_workspaces_require_live_trg on ores_workspaces_tbl;
+
+create constraint trigger ores_workspaces_require_live_trg
+after update or delete on ores_workspaces_tbl
+deferrable initially deferred
+for each row
+when (old.id = ores_utility_live_workspace_id_fn())
+execute function ores_workspaces_require_live_fn();
+

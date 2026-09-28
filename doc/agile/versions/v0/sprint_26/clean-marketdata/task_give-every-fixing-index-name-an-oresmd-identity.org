@@ -39,7 +39,75 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 - Each asset class the corpus puts in the fixing space has a stated mapping, or a recorded reason it has none.
 - The corpus fixing import creates a series for every fixing row, with no skipped-name warnings.
 
+* The index names, and what each class needs
+
+Measured over =external/ore/examples= (every =*fixing*.txt= and =*fixing*.csv=
+outside =ExpectedOutput=): **158 distinct index names**. They fall into six
+shapes, and only the first is nameable today.
+
+| class | count | shape | nameable now | what it needs |
+|-------+-------+-------+--------------+---------------|
+| ir    | 57 | =CCY-FAMILY[-TENOR]= | 34 | 23 families the enum does not hold |
+| inflation | 7 | a bare index code | 0 | the inflation class already models it |
+| equity | 8 | =EQ-<ticker-or-ric>= | 0 | a currency the name does not carry |
+| fx | 7 | =FX-<source>-<CCY1>-<CCY2>= | 0 | a source field |
+| commodity | 73 | =<COMM\|POWER>-<EXCHANGE>:<CONTRACT>-<month-or-date>[-<hours>]= | 0 | a currency, a contract shape |
+| security | 2 | =BOND-ISIN:<isin>[-<month>]= | 0 | the security class already models it |
+| (unclassified) | 4 | =GENERIC-...= | 0 | see below |
+
+**The interest-rate 57 split two ways.** The ones whose family the enum holds
+are nameable; the rest are real benchmark families it does not: =AONIA=, =BBSW=,
+=CAMARA=, =REPOFIX=, =CZEONIA=, =PRIBOR=, =CIBOR=, =DKKOIS=, =CMS=, =EONIA=,
+=FedFunds=, =NIBOR=, =SIOR=, =STIBOR=, =SIFMA=, =HIBOR=. Two more are spelling
+mismatches rather than missing families: the corpus writes =AONIA= where the enum
+has =aonia=, and =TONAR= where it has =tona=. The identifier already carries
+=index_spelling= for exactly this -- "the spelling that arrived is carried beside
+the family so the key reads back as it came" -- so the spelling mismatches need
+an alias, and the missing families need adding.
+
+**Two of the four =GENERIC= names are not fixings at all.** They are
+=GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C= and its sibling:
+market-data keys that appear inside a fixings file, read by the whole-line parser
+as fixings because that is the file they are in. Whether the reader should refuse
+a key that is not an index name is part of this task. The other two,
+=GENERIC-JuniorNote= and =GENERIC-PortfolioBasket#1=, are a curve name and a
+basket name, and need classifying rather than mapping.
+
+* The decision that gates the rest
+
+Four of the six classes need a field the index name does not carry:
+
+- an **equity** fixing (=EQ-SP5=) names a ticker and no currency, and the equity
+  identifier requires one;
+- a **commodity** or **power** fixing (=COMM-NYMEX:CL-2024-12=,
+  =POWER-ICE:PDQ-2021-01-04-14400-18000=) names a contract and no currency, and
+  the commodity identifier requires one;
+- an **FX** fixing (=FX-ECB-EUR-USD=) names a *source* as well as a pair, and the
+  FX identifier has no field for one.
+
+Two readings, and they produce different permanent URIs:
+
+1. **A fixing's identity does not include a currency.** For =type=fixing= the
+   currency is a property of where the instrument is quoted, not of which index it
+   is, so the grammar should not require it. =oresmd://equity/sp5?type=fixing= and
+   =oresmd://commodity/nymex:cl-2024-12?type=fixing=, each carrying a contract as
+   its point where there is one. This is the reading the IR case already follows
+   in reverse -- there the currency *is* in the name, so the identifier has it --
+   and it needs no field the corpus cannot supply.
+2. **The caller supplies the missing fields.** The fixing boundary would look the
+   currency up (refdata knows a ticker's currency) and add =ccy= to the URI. This
+   keeps the identifier's invariants intact and moves the problem to the import,
+   but it makes the URI depend on reference data: the same file would produce
+   different URIs in two databases that disagree.
+
+The recommendation is the first, with the FX source carried as a spelling beside
+the pair the way =index_spelling= carries one, because it is the only reading
+under which the corpus's own text determines the identity. It is a grammar change
+affecting identifiers outside the fixing boundary, so it is recorded here for a
+decision rather than taken.
+
 * Plan
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the

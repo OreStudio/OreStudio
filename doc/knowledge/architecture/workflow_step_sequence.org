@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: D0CD9449-ED47-4651-9381-FDD726773EA7
+:END:
+#+title: The life of a step
+#+description: How one engine step travels, from the caller's start message to the completion that advances or finishes the run.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A step is the unit of work the workflow engine dispatches, and its life is fixed:
+the caller mints the instance identifier and publishes a start message, the engine
+creates the run and publishes the step's command, the step handler does the work
+and publishes a completion, and the engine advances the run or finishes it. The
+caller is answered before any of that work happens, because the start message
+carries no reply subject, so the caller reads the run's progress rather than
+receiving it. The engine decides three things from one completion: whether the
+step is still in progress, whether it succeeded, and whether a next step exists.
+This note follows one step through that sequence and through the engine's
+decision path, including the policy a failed step follows: compensation that rolls
+the completed steps back, or a stop that parks the run for a retry verb.
+
+* Detail
+
+** The start: the caller mints the id and is answered
+
+Tenant provisioning begins at the caller, not at the engine. The provisioning
+operation validates the request, creates the tenant and its administrator, mints
+the instance identifier, and publishes =start_workflow_message= to
+=workflow.v1.start=. The message carries that identifier, because the start
+message's optional instance identifier lets a caller name the run before the
+engine has seen the message.
+
+The caller does not wait for the engine. It publishes the start message and no
+reply inbox, then answers the person with the instance identifier, the tenant
+identifier and the account identifier. A repeat of the same start is the same run,
+because the engine sees the existing instance and returns without touching it.
+[[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][the step protocol]] states the full
+obligation each side carries.
+
+** The engine persists the step it publishes
+
+The workflow service turns a start message into a run. It looks up the definition
+by the workflow type, builds the step list from the request, the tenant and the
+correlation identifier, and creates the instance with its step count and its step
+list. It then builds the first step, persists the step, and publishes the command.
+
+The order of those two acts carries the contract: the engine writes the step
+before it publishes it, so a restart can re-dispatch a step whose command never
+arrived. The command goes to the subject the step declares and carries exactly
+three headers - the step identifier, the instance identifier and the tenant. The
+step header is also the marker that tells a handler it has received a workflow
+command.
+
+Every later step travels the same road. The engine computes the next position,
+rebuilds the step list, builds the command from the instance's request and the
+results so far, persists the new step, publishes it, and advances the instance's
+step position. A later builder reads an earlier result by the name of the step that
+produced it, never by position.
+
+** The handler answers, and the run advances
+
+A handler recognises its workflow command from the headers and does its work. It
+reads the three headers and answers with one outcome: success, success with
+warnings, or failure. Each answer publishes a =step_completed_event= to
+=workflow.v1.events.step-completed=, whose step identifier echoes the one on the
+command it answers.
+
+The engine turns one completion into one decision. It ignores the event unless the
+step is still in progress, records the terminal state the outcome names, and treats
+success and success with warnings as success while failure leaves the forward path.
+On success it dispatches the next step; when the next position passes the last
+stored step, it marks the run complete with the last step's result. The run finishes
+positionally and needs no completion hook.
+[[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]] covers what a
+repeat of this path costs.
+
+** What the sequence diagram shows
+
+#+caption: The life of one step from the caller's start message to the finished run: the caller mints the instance identifier and is answered, the engine creates the run and dispatches each step with the step, the instance and the tenant, a handler completes the step, and the engine advances or finishes the run. The lower branch is a failed step, and it draws the two failure policies a definition may declare: compensation of the completed steps and stop-and-retry.
+[[proj:doc/knowledge/architecture/workflow_step_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_step_sequence.puml][=workflow_step_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_step_sequence.puml=.
+
+The diagram makes three facts visible that a reader of the design would otherwise
+assemble in pieces. First, the reply to the administrator does not wait for the
+engine to create any step, which is why the run's progress is read rather than
+returned. Second, the three identifiers are the whole of the step's identity: the engine
+stores the actor on the step's record but sends no caller token. Third, the
+completion is a fire-and-forget event on a fixed subject, so the engine cannot
+answer a step; it can only move the run on or leave the forward path.
+
+** What the flowchart shows
+
+#+caption: The engine's decision path for one step completion: a duplicate is ignored, a failed step follows the definition's failure policy, and a successful step either dispatches the next step or completes the run.
+[[proj:doc/knowledge/architecture/workflow_step_flow.png]]
+
+Source: [[proj:doc/knowledge/architecture/workflow_step_flow.puml][=workflow_step_flow.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/workflow_step_flow.puml=.
+
+The flowchart reads the same completion as three questions. The first is the
+duplicate guard: a completion for a step that is no longer in progress is a repeat,
+and the engine drops it. The second is the outcome: success and success with
+warnings continue the run, and failure leaves the forward path. The third is
+position: a next step exists, or the last step has finished and the run is
+complete. Every dispatch recomputes that position from the instance's current step
+position and its step count, not from the states of the steps that ran.
+
+** The branch a failed step follows
+
+The flowchart draws both policies a definition may declare for a failed step. Under
+the compensate policy the engine moves the run to compensating, walks the completed
+forward steps in reverse, and publishes each one's compensation subject until the
+run is compensated, so the run undoes its completed work. Under the stop-and-retry
+policy the engine parks the run on the failed step, keeps the completed steps, and
+waits for a retry verb to re-dispatch the step that failed. A definition declares
+which policy its run follows, and the run's state is the engine's record of where
+that policy left it.
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]]
+argues why provisioning chooses the stop-and-retry policy;
+[[id:2C59492F-B715-4195-8FC7-761CE5515449][the instance and step states]] records
+the states and edges each policy uses.
+
+* See also
+
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The run progress read: the fields a page follows
+
+class "run progress read\n(workflow.v1.instances.steps)" as progress_read <<message>> #E1F5FF {
+    {field} +status : state
+    {field} +step count : count
+    {field} +current step : index
+    {field} +step summaries : list
+}
+
+class "step summary" as step_summary <<message>> #E1F5FF {
+    {field} +name : text
+    {field} +state : state
+    {field} +error : text
+}
+
+progress_read *-- "0..*" step_summary : one summary per step
+
+note top of progress_read
+What a page reads to follow a run and render one line per operation.
+state status // the run's state: in_progress, completed, failed, compensating or compensated
+count step count // how many steps the run declares
+index current step // the step the run is executing
+list step summaries // one summary for each step
+end note
+
+note top of step_summary
+What one step of a run reports to the page.
+text name // the operation the step performs
+state state // the step's own state
+text error // what went wrong, where the step failed
+end note
+
+@enduml

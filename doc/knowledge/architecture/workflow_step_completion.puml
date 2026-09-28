@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The completion event
+
+class "completion event" as completion <<message>> #E1F5FF {
+    +step identifier : text
+    +outcome : text
+    +result : text
+    +error : text
+    +log entries : list
+}
+
+class "log entry" as log_entry <<value>> #F7E5FF {
+    +item : text
+    {field} +what happened : text
+}
+
+completion *-- log_entry : per-item log
+
+note top of completion
+Reports one step's outcome: the handler tells the engine how the step ended.
+- step identifier: echoes the identifier on the command.
+- outcome: success, success with warnings, or failure.
+- result: what the step produced; empty on failure.
+- error: why the step failed; empty on success.
+- log entries: one entry per item the step could not do cleanly.
+end note
+
+note right of log_entry
+One item of a step's work and what happened to it.
+- item: the item the step acted on.
+- what happened: the outcome for that item.
+end note
+
+@enduml

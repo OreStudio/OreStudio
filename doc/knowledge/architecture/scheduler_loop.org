@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 172812F0-17F0-47BC-9933-7A70848105BC
+:END:
+#+title: The scheduler loop
+#+description: How the scheduler sleeps until the next due instant: the in-memory job set and its re-arm, the due condition, the asynchronous firing, and the limits on what the loop does.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+The scheduler sleeps until the next due instant and runs the actions of the
+jobs it holds. It keeps each job's next occurrence, sleeps until the
+earliest of them, and on each wake fires the jobs whose occurrence has
+arrived and recomputes theirs. A firing runs asynchronously: the loop does
+not wait for it, so a slow action delays neither the next firing nor another
+job. The loop re-reads the job set when a change event arrives and re-arms
+its timer, and at startup it takes each job's last recorded firing as the
+reference point, so a restart does not re-run what already ran. This page
+describes the loop and the limits on what it does.
+
+* Detail
+
+** Sleeping until the next due instant
+
+The scheduler holds one timer and no fixed grid. It sleeps until the
+earliest next occurrence among the jobs it holds, and at that instant it
+fires every job whose occurrence has arrived. Nothing else wakes the loop:
+there is no per-job timer, and a wake that finds a job due is the only wake
+that has work to do.
+
+#+caption: One wake: the loop fires each job whose occurrence has arrived, and recomputes that job's next occurrence.
+[[proj:doc/knowledge/architecture/scheduler_wake.png]]
+
+Source: [[proj:doc/knowledge/architecture/scheduler_wake.puml]]. Regenerate
+with =plantuml -tpng doc/knowledge/architecture/scheduler_wake.puml=.
+
+The cost of a wake follows the jobs that are due rather than the jobs that
+are held: only a due job has a handler selected and an action started. A job
+that is not due costs nothing at a wake, because its next occurrence was
+computed when it entered the job set or when it last fired.
+
+** The in-memory job set
+
+The loop holds the active jobs and each job's next occurrence. It reads the
+jobs across all tenants, because it runs the system's jobs as well as a
+tenant's, and it keeps them for the wakes that follow.
+
+The loop does not poll the job table. A change to a job definition is
+delivered as an event, and the handler for that event re-reads the job set
+and re-arms the timer. The re-arm is part of the contract rather than an
+optimisation: a new or edited job may be due sooner than the instant the loop
+is sleeping towards, and a loop that re-read the set without re-arming would
+serve that job late.
+
+Two properties follow from the re-read. An inactive or deleted job leaves the
+set and stops being an occurrence the loop sleeps towards, and a job the loop
+already holds keeps its next occurrence, so a change to one job neither
+resets nor delays another.
+
+** The due condition
+
+At each wake the loop fires every job whose occurrence has arrived. An
+occurrence has arrived when the job's active flag is true and the next
+occurrence after its last recorded firing is at or before the current
+instant, which is the condition
+[[id:EF7AE225-7DBE-4D19-B3DC-F6720A4B52DA][the cron expression]] defines. The
+loop holds no other notion of when a job should run, which is why changing an
+expression needs no change to the loop.
+
+** The firing does not block the loop
+
+For each due job the loop writes the firing, selects the handler for the job's
+action type, starts the action, and recomputes that job's next occurrence. The
+loop's part in an action ends at that hand-off.
+
+Three properties follow, and all three are deliberate.
+
+- /Jobs do not delay each other./ The actions of different jobs run
+  independently, so a job whose action takes a minute does not hold back the
+  jobs fired in the same wake.
+- /A job can overlap itself./ A job whose action takes longer than its
+  recurrence interval can have more than one firing in flight. Each firing
+  has its own record, and the live status read reports the number in flight.
+- /The loop is independent of the action's result./ The result is written to
+  the firing record when the action returns, and it does not affect the next
+  occurrence the loop sleeps towards.
+
+** The sleep and the wall clock
+
+A cron expression names wall-clock instants, and a timer measures elapsed
+time. The two part company when the wall clock moves: a step from a time
+source or a daylight-saving change moves the instants a job names while a
+timer keeps its original duration.
+
+The sleep is therefore bounded and re-derived. The loop never sleeps on the
+strength of one reading of the clock for longer than the bound, and on waking
+it derives the next occurrence from the current wall clock rather than from
+the interval it slept. A clock adjustment can therefore delay a firing by no
+more than the bound, and it cannot leave the loop asleep past an instant that
+has already arrived.
+
+** Startup and the reference point
+
+At startup the loop reads the active jobs and, for each, the instant of its
+most recent recorded firing. That instant is the reference point for the due
+condition and the base of the job's first next occurrence, so a job that
+already ran is not run again because the process restarted. The reference
+comes from the firing record:
+[[id:29714C54-9022-494B-9751-CC6FCED10313][the firing]] is what the loop
+reads to decide when a job is next due.
+
+** The limits of the loop
+
+The loop holds jobs, not work. It keeps no queue of pending actions and no
+backlog of missed firings, so a firing either runs at its occurrence or does
+not run at all. Two limits follow.
+
+- /The loop does not retry./ A failed action is recorded as failed, and the
+  job's next execution is the next occurrence its expression defines. A retry
+  would be a second firing, which the expression did not define.
+- /The loop does not track the work an action starts./ An action may start
+  work that outlives it, and the loop neither waits for that work nor reads
+  its result. That work belongs to the component that owns it, and
+  [[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]]
+  defines the boundary.
+
+* See also
+
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the notation whose instants the loop sleeps towards.

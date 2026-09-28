@@ -1,0 +1,49 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A first schedule: registration, firing and notification
+
+actor "the operator" as operator
+participant "the scheduler" as scheduler
+database "the firing record" as record
+participant "whatever watches\nthe subject" as watcher
+
+operator -> scheduler : register a job\n(the name, the expression,\nthe action kind, the subject)
+
+note over scheduler
+    The name is the natural key, so registering
+    the same name again updates the one job
+    instead of adding a second.
+end note
+
+... the next occurrence arrives ...
+
+scheduler -> scheduler : the job is due
+scheduler -> record : record the firing as starting\n(the job, the point, the moment)
+scheduler -> watcher : publish on the subject\n(no reply is read)
+watcher --> watcher : receive the notification
+scheduler -> record : record the outcome\n(succeeded, or failed with the reason)
+operator -> record : read the executions\nand the live status
+
+note over scheduler, watcher
+    Nothing has to answer the subject.
+    The message is the notification.
+end note
+
+@enduml

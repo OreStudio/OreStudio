@@ -1,0 +1,50 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The step protocol: the participants and the messages between them
+
+skinparam componentStyle rectangle
+
+package "the client" {
+    [caller] as caller
+    [reader] as reader
+}
+
+package "the platform" {
+    [workflow engine\n(the process manager)] as engine
+    [definition] as definition
+    [step handler\n(an operation)] as handler
+    database "the run state" as state
+}
+
+caller --> engine : publish the start message\n(the caller names the instance,\nand is answered before the run finishes)
+
+engine --> definition : build the step list\n(from the run's stored request alone,\nthe same list on every advance)
+
+engine --> handler : publish the step command\n(the step, the instance and the tenant;\nno caller token)
+
+handler --> engine : publish the completion event\n(complete, warn or fail\nfor the step the command named)
+
+engine --> state : record the run and its steps\n(the process manager's record\nof every outcome)
+
+engine --> handler : publish the retry verb\n(stop the run on the failed step,\nthen re-dispatch it)
+
+reader --> state : read the progress\n(the caller follows the run rather than waiting)
+
+@enduml

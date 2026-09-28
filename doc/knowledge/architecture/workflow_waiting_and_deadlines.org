@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: C71A0118-63B5-4150-9C9F-007C690CBF11
+:END:
+#+title: Waiting, deadlines and cancellation
+#+description: How a long-running operation waits by subscription, where its budget belongs, and what happens when the budget expires.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+An operation whose work takes minutes is awaited by subscription. The engine
+publishes a notification on every instance transition, and the browser's event
+stream carries published events, so the operation subscribes before it starts
+the work, declares its budget in its own definition, and reports the budget's
+expiry as a failure. A run a person can abandon also carries a cancellation path
+that reaches work in flight.
+
+* Detail
+
+** Wait by subscription, because no polling path is needed
+
+Both hops of the push chain are subscriptions. A service publishes a
+step-completed event, and the engine consumes it under a durable subscription.
+Each subscription calls its handler on the dispatch thread, and the durable form
+carries a durable name and a queue group and nothing else. The push chain needs
+no pull path: a waiter never asks a stream for a batch of messages on demand.
+Subscribe before publishing the work that will notify, because a core event
+reaches only subscribers present at publish time.
+
+** Every push mechanism, and what each needs
+
+The engine publishes a state-change notification on every instance transition,
+carrying only the changed entity, its timestamp, its identifiers and its tenant.
+That notification is an alert rather than a payload, so the waiter follows it
+with a read of the instance's steps; the instance stream carries the changed
+instance itself for a waiter that wants the data. The in-process event bus is
+synchronous: a subscriber's handler runs on the publisher's thread. Its producer
+relays change notifications raised by the database, and a consumer that is down
+loses the event, because the transport leg carries no queue.
+
+A screen needs none of that. A server-sent event channel carries the
+changed-entity frames to the browser, a watch declaration says what the screen
+watches, and the browser backend keeps one shared, reference-counted
+subscription per tenant, component and entity. The subscription derives its
+subject from the component and the entity, so watching the workflow component
+and the instance entity reaches the engine's notification.
+
+** The budget belongs to the definition, and expiry is a failure
+
+Declare how long the operation will wait in its own definition, so the number
+travels with it. The budget belongs to the operation's definition rather than to
+each call site, so every wait the operation performs is bounded by the same
+declared number and no caller chooses a deadline of its own. Expiry is a
+reported outcome: the operation publishes a failed completion with its reason,
+and the engine records that against the step and the instance, so the progress
+read surfaces it instead of leaving the step running forever.
+
+** Timers and scheduled work
+
+Scheduled work fires at calendar points and cannot express a single fire at an
+arbitrary time for one run, which is what a deadline needs. A step budget is
+therefore not scheduled work: arm the operation's own timer on the executor that
+owns the subscription, so the deadline travels with the run.
+
+** Cancelling a run
+
+A waiter must never block a thread that nothing can interrupt, because nothing
+can cancel it. Cancellation is a property of the run, not of the wait: a run a
+person can abandon has a cancel path that reaches work in flight, and the path
+touches four things. The instance has a state edge out of running and a
+handler for it, because only a step completion, a start failure or the restart
+recovery otherwise moves an instance out of that state. The step protocol
+defines the response to cancellation. The compute batch has a terminal state
+beyond its normal close, and the bridge removes its link record rather than
+publishing a completion. And the operations that own long-running external work —
+the import's saves and the dataset population routines — observe a
+cancellation flag, because they block inside database calls that no message can
+interrupt.
+
+Stopping delivery is not stopping the work, so the cancel path reaches the work
+itself.
+
+** The rule a new long-running operation follows
+
+Subscribe to the instance's state-change notification, or to the change alert
+when an alert is enough, before publishing the work, and read state only when a
+notification arrives. Declare the budget in the operation's own definition, and
+arm the operation's own timer for it on the executor that owns the subscription.
+On expiry, fail the step with the reason and let the failure policy of
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]]
+decide whether the run stops or compensates. Make the work idempotent, as
+[[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]] requires,
+so a retry after an expired budget is safe. Do not schedule the expiry as
+recurring work, and do not wait on a thread that nothing can cancel.
+
+* See also
+
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://docs.nats.io/nats-concepts/core-nats][NATS core publish/subscribe]]
+- [[https://docs.nats.io/nats-concepts/jetstream][NATS JetStream]]
+- [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events][Server-Sent Events]]

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: C4F7114C-B454-4B07-A804-64442D989FD4
+:END:
+#+title: Document type: workflow
+#+description: The contract for the workflow document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page defines the =workflow= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =workflow=.
+
+* Contract
+
+- Implements :: sequencing, declaration, recording. A workflow page
+  declares the work a named workflow does, sequences its steps, and
+  records what each step produces and how a failure of it is handled.
+  See [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
+- Folder :: [[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]], one page per
+  workflow, as =workflow_<slug>.org=. The folder sits beside
+  [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] for the same reason a journey
+  folder sits beside it: a workflow page is a durable, cross-cutting
+  contract, not a record of one story's work.
+- Scope :: the page owns *one named workflow* — what it achieves, who
+  takes part, which messages it exchanges, and which steps it runs.
+  The engine that runs it is *not* this page's subject. The step
+  protocol, the instance and step states, failure and retry,
+  idempotency, and waiting and deadlines are knowledge about the engine
+  and stay in [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]], indexed by
+  [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]]. A workflow page links to that cluster; it does not
+  restate it.
+- Level :: =cross=.
+- Filename :: =workflow_<slug>.org=. The =workflow_= prefix sorts the
+  pages together in the folder and makes the type obvious in =ls=.
+- Title :: free-form; the codegen adds no prefix. Write the workflow's
+  name as a reader would say it, for example =Tenant provisioning=.
+- Not stateful — no TODO, no =* Status= table. A workflow page is the
+  definition of a repeatable process, not a run of it. The run of a
+  workflow is a [[id:2C59492F-B715-4195-8FC7-761CE5515449][workflow instance]], and its progress is read, not
+  written down here.
+- How to create :: =compass add workflow=. =--parent-dir= is optional
+  and defaults to [[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]]. See
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] for the flags, and
+  [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] for the verb.
+- Required sections (in this order) ::
+  - /Blurb/ — three to five sentences between the frontmatter and the
+    first =*= heading. It states the workflow's purpose and what it
+    leaves behind when it finishes. A workflow page carries no =* Summary=
+    heading; the blurb is the summary.
+  - =* Purpose= — the business outcome the workflow achieves, and what
+    is true when it finishes.
+  - =* Participants= — the components and the roles that take part, and
+    what each one is responsible for.
+  - =* Messages= — every message the workflow exchanges, each named
+    with its subject and its objective. A message's key fields are shown
+    by a class diagram rather than listed in prose.
+  - =* Steps= — a table of the workflow's steps: the operation, what it
+    produces, and how a failure of it is handled.
+  - =* Interaction= — the interaction diagram, embedded with a
+    =#+caption:= line and a =[[proj:...png]]= image, followed by the
+    =.puml= source link and the =plantuml -tpng= regenerate line.
+  - =* Failure and recovery= — the failure policy the workflow
+    declares, what a retry resumes from, and what cancelling it does.
+  - =* Progress= — the read a client follows to render progress, and
+    the states it exposes.
+  - =* Related= — a link to every page that bears on the workflow:
+    =[[file:...]]= links for pages in the documentation, and =id:=
+    links for the agile artefacts that built it, such as its story and
+    its task.
+  - =* See also= — external references only. An internal link belongs
+    in =* Related= or in the body, never here.
+
+* Where the durable half goes
+
+A workflow page is the durable statement of a process, so it outlives the
+sprint that wrote it. Two rules follow.
+
+- /The page is written from the definition, not from the run./ Read the
+  definition a service registers and the messages it declares, then write
+  the page from them. A run that has not finished yet is not evidence for
+  the page; the state a run reached belongs in a task or an investigation.
+- /The page owns the workflow, not the engine./ A fact about how the
+  engine dispatches, retries, or compensates a step belongs to the
+  architecture cluster. When a workflow needs a rule the engine already
+  states, link the rule; do not copy it. A copied rule drifts, and the
+  copy is the one a reader finds first.
+
+* Relation to a user journey
+
+A [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user journey]] is a design document: what one person is trying to do,
+before anything is built. A workflow page is the server-side process that
+carries out the part of a journey that outlives a request. When a journey
+needs resumable state, the state is a workflow instance and the journey
+links the workflow page that defines it. See
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] for where the
+transaction boundary sits between the two.

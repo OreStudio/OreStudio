@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 25ED321D-A489-449C-BF60-15F1A1B3DBE7
+:END:
+#+title: Identity
+#+description: The engine's own fixture: a workflow that runs the steps its request declares and reports the outcome each one asks for, with no domain data.
+#+type: workflow
+#+level: cross
+#+filetags: :workflow:engine:fixture:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+startup: inlineimages
+
+This page defines the [[id:902A5312-B3A2-4C66-8017-34F0F26658C6][workflow]]
+Identity: the engine's own fixture, and the reference implementation of the
+step protocol. It runs the steps its request declares and reports the outcome
+each one asks for, so a caller exercises a completion, a completion with
+warnings, a failure, a compensation, a slow step and a long run from the shell,
+with no domain data and no other component. A run leaves the workflow instance
+and its steps behind, and changes no record of another component. Recovery is
+the engine's own path: a completed step that declared a compensation is unwound
+when a later step fails, and a failed step carries its error and its log to the
+progress read.
+
+* Purpose
+
+The identity workflow exists to exercise the engine. It makes every path the
+engine supports reachable from the shell with no other component: a start and a
+dispatch, a step that completes, a step that completes with warnings, a step
+that fails, a run that compensates its completed steps, a step that waits so a
+run can be observed in flight, and a run of many steps. When it finishes, the
+workflow instance and its steps are the whole of what exists, and the progress
+read reports what happened.
+
+The fixture is also the worked reference for the step protocol. Its step handler
+takes the step context from the message headers and reports its outcome through
+the same completion path a domain step uses, so a reader sees the contract
+implemented rather than described.
+
+* Participants
+
+The caller starts a run from the shell, declaring the steps and the outcome each
+one reports, then follows the run. The workflow service owns the definition and
+serves both step subjects itself, because the fixture's work is the engine's
+rather than a domain component's. The process manager builds the step list from
+the request, dispatches one step at a time, records each outcome, and settles
+the run. The store holds the run, its steps, their results, errors and logs.
+
+#+ATTR_HTML: :class hug-leading
+| Participant       | Kind      | Responsibility                                                                    |
+|-------------------+-----------+------------------------------------------------------------------------------------|
+| Caller            | role      | Starts a run from the shell, declaring the steps and the outcome each one reports, and follows it |
+| Workflow service  | component | Owns the definition and serves both step subjects                                  |
+| Process manager   | component | Builds the step list, dispatches each step, records each outcome, and settles the run |
+| Store             | store     | Holds the run, its steps, their results, errors and logs                           |
+| Client            | component | Follows the run through the progress read                                          |
+
+* Messages
+
+One subject dispatches every step, because the payload rather than the subject
+says what a step does. A step is addressed by its name, so a later step reads an
+earlier step's result by name.
+
+#+ATTR_HTML: :class hug-leading
+| Message              | Subject                             | Objective                                                                             |
+|----------------------+-------------------------------------+---------------------------------------------------------------------------------------|
+| Start message        | =workflow.v1.start=                 | Opens the run with the type =identity_workflow= and the request that lists the steps   |
+| Step command         | =workflow.v1.identity.step=         | Dispatches one declared step to the fixture's own handler                             |
+| Compensation command | =workflow.v1.identity.compensate=   | Dispatches the compensation of a completed step that declared one                     |
+| Step completion      | =workflow.v1.events.step-completed= | Reports the outcome the request asked for: completed, completed with warnings, or failed |
+| Progress read        | =workflow.v1.instances.steps=       | Returns the run's status and one summary per declared step                            |
+| Retry action         | =workflow.v1.instances.retry=       | Resumes a stopped run from its failed step                                            |
+
+The fields the request carries, and the fields of a step within it:
+
+#+caption: The fixture's request: the steps to run, each naming the outcome it should report, whether it declares a compensation, and how long it should wait before it reports.
+[[proj:doc/knowledge/workflows/identity_step_request.png]]
+
+The fields of the step command and of the completion a step reports:
+
+#+caption: The fields a step command carries: the step identifier, the instance identifier, the tenant, and the payload the operation performs.
+[[proj:doc/knowledge/architecture/workflow_step_command.png]]
+
+#+caption: The fields a step completion carries: the step identifier it echoes, the outcome, the result, the error, and one log entry per item the step could not do cleanly.
+[[proj:doc/knowledge/architecture/workflow_step_completion.png]]
+
+* Steps
+
+Every step is one entry in the request, and its name is its identity. A step
+performs no domain work: it waits if the request asks it to, then reports the
+outcome the request declares.
+
+#+ATTR_HTML: :class hug-leading
+| Operation             | Produces                                                        | On failure                                                              |
+|-----------------------+-----------------------------------------------------------------+-------------------------------------------------------------------------|
+| Report completion     | The step marked completed, with the request echoed as its result | Nothing; the run advances to the next step                              |
+| Report warnings       | The step marked completed with warnings, with one log entry      | Nothing; the run advances                                                |
+| Report failure        | The step marked failed, with an error and a log entry            | The engine compensates the completed steps that declared a compensation  |
+| Wait, then report     | The outcome its behaviour declares, after the stated delay       | The delay does not change the failure rule                              |
+| Declare a compensation | A compensation subject on the step                              | The step is unwound when a later failure compensates the run             |
+
+A behaviour the request does not recognise fails the step rather than passing
+for a completion, so a mistyped request is visible in the run rather than
+silently succeeding.
+
+* Interaction
+
+The diagram draws one run: the caller starting it, the process manager
+dispatching each declared step to the fixture's own handler, the handler
+reporting the outcome the request asked for, the compensation path when a step
+fails, and the client reading progress.
+
+#+caption: Identity: the caller starts a run declaring its steps, the process manager dispatches each one to the fixture's handler, the handler reports the declared outcome, a failure compensates the completed steps that declared a compensation, and the client follows the run through the progress read.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/workflows/identity_workflow_interaction.png]]
+
+Source: [[proj:doc/knowledge/workflows/identity_workflow_interaction.puml][=identity_workflow_interaction.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/workflows/identity_workflow_interaction.puml=.
+
+* Failure and recovery
+
+The definition declares the compensate policy, because the fixture's completed
+steps are its own records and nothing a person expects to keep. What a failing
+run unwinds is decided by the compensation subjects the request declares: a
+completed step that declared one is compensated at a negative step index when a
+later step fails, and a completed step that declared none has nothing to undo,
+so the failure stands on the failing step with its error and its log.
+
+A retry resumes a failed run at its failed step, under the same step identity,
+and the completed steps keep their results. The fixture's steps do no domain
+work, so a retry leaves no data to repair; its value is as a rehearsal of the
+engine's own path. The policies themselves live in
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and
+retry]].
+
+* Progress
+
+The fixture adds nothing to the platform's progress read. A client follows the
+run through =workflow.v1.instances.steps= and renders one line per declared
+step, with the step's state and its error. The states a run occupies are
+pending, in progress, completed, completed with warnings, compensated and
+failed, and a client must be ready to display each of them, because the fixture
+can reach all of them from a request.
+
+* Related
+
+- [[id:FF8BAB73-9A76-4B23-87F5-59D1BE1A2877][The workflow definition]] — how this definition is registered, and what a change to it does to a run in progress.
+- [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][The step protocol]] — the contract the fixture's handler implements.
+- [[id:2C59492F-B715-4195-8FC7-761CE5515449][The workflow instance and step states]] — the states a run of the fixture occupies.
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note for the workflow cluster this page belongs to.
+- [[id:645A06C7-D9D5-4ED1-969B-B6366D122BC9][Workflow pages]] — the inventory of the platform's workflows.
+- [[id:C4F7114C-B454-4B07-A804-64442D989FD4][Document type: workflow]] — the contract this page follows.
+- [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Task: Add the identity workflow and the commands that drive it]] — the task that built the fixture.
+- [[proj:doc/recipes/shell/workflow][The shell recipes]] — the six configurations of this workflow: happy path, warnings, fail fast, saga, fan out and long running.
+
+* See also
+
+- [[https://dl.acm.org/doi/10.1145/38713.38742][Garcia-Molina and Salem, =Sagas=]] — the compensation the fixture exercises, and why a completed step must be able to undo itself.

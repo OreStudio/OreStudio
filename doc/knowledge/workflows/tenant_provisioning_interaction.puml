@@ -1,0 +1,84 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Tenant provisioning: the request, the workflow instance and the terminal actions
+
+actor "Caller" as caller
+participant "Client" as client
+participant "Component owning\nthe operations" as operations
+participant "Process manager" as manager
+participant "Definition" as definition
+database "Store" as store
+
+== The caller confirms the provision request ==
+
+caller -> client : choose a starting point,\ndescribe the tenant and its administrator
+client -> operations : the provision request
+operations -> store : validate every field and every parameter
+note over operations : a refusal is answered here;\nnothing is created
+operations -> store : create the tenant, its administrator\nand its reference data
+store --> operations : the tenant and the administrator
+operations -> operations : mint the workflow instance identifier
+operations -> manager : the start message
+operations --> client : the created tenant, its administrator\nand the workflow instance identifier
+client --> caller : the tenant and its administrator exist;\nthe workflow instance has started
+
+== The process manager advances the workflow instance ==
+
+manager -> definition : ask for the ordered steps
+definition --> manager : the step list
+manager -> store : record the workflow instance in progress
+loop for each operation the starting point orders
+    manager -> operations : a step command\n(the operation and its arguments)
+    operations -> store : perform the operation
+    operations --> manager : the step's completion
+    manager -> store : record the step's outcome
+end
+manager -> operations : the completing operation
+operations -> store : mark the tenant ready
+operations --> manager : the step's completion
+manager -> store : record the workflow instance complete
+
+== The client follows the workflow instance ==
+
+loop while the workflow instance runs
+    client -> manager : the progress read
+    manager -> store : read the workflow instance and its steps
+    store --> manager : the states and the errors
+    manager --> client : the states and the errors
+    note over client : one line per operation:\npending, running, done, failed
+end
+
+== The terminal actions ==
+
+alt every step completes
+    client --> caller : the tenant is ready
+else a step fails
+    manager --> client : the stopped workflow instance,\nthe failed step and its error
+    client --> caller : offer a retry and a discard
+    alt the caller retries
+        client -> manager : the retry
+        manager -> operations : the step again,\nunder the same step identity
+    else the caller discards
+        client -> operations : the discard
+        operations -> store : discard the tenant and stop\nthe workflow instance
+    end
+end
+
+@enduml

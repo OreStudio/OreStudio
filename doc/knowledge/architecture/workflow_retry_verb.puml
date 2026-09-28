@@ -1,0 +1,36 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The retry verb
+
+class "retry verb" as retry <<message>> #E1F5FF {
+    +tenant : tenant id
+    +run : instance id
+    +from step : text
+}
+
+note top of retry
+Resumes a stopped run: the caller asks for the failed step again.
+- tenant: the tenant the run belongs to.
+- run: the run to resume.
+- from step: the step to resume from; absent when the
+  run resumes from the step that failed.
+end note
+
+@enduml

@@ -1,0 +1,85 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The life of a step: from the start message to the finished run
+
+actor "Tenant\nadministrator" as admin
+participant "iam.v1.tenants.provision\nhandler" as caller
+participant "workflow engine" as engine
+database "the run state" as db
+participant "step handler\n(an operation)" as step
+
+admin -> caller : provision tenant
+caller -> caller : create the tenant and its administrator;\nmint the instance identifier
+caller -> engine : publish start_workflow_message\n(workflow.v1.start; the instance identifier\nis set; no reply subject)
+caller --> admin : the provision answer\n(the instance identifier, the tenant identifier\nand the account identifier)
+
+note over caller, engine
+    The caller is answered before the run finishes.
+    The start message carries no reply subject, so the
+    reply above does not wait for the engine.
+end note
+
+engine -> engine : build the step list\n(from the run's request, the tenant\nand the correlation identifier)
+engine -> db : record the run in progress\n(with its step count and its step list)
+engine -> db : record the first step in progress
+engine -> step : publish the step command\n(the step, the instance and the tenant)
+step -> step : do the work
+step -> engine : step_completed_event\n(the step identifier echoes the command)
+engine -> db : record the step completed;\nkeep its result
+
+alt the step reported completed or completed_with_warnings
+
+    engine -> engine : take the next position
+    loop each remaining step, until the last
+        engine -> db : record the new step in progress
+        engine -> step : publish the step command\n(the step, the instance and the tenant)
+        step -> engine : step_completed_event
+        engine -> db : record the step completed
+    end
+    engine -> db : record the run completed\n(with the last step's result)
+    engine -->> caller : asynchronously: ores.workflow.workflow_instance_changed\n(the reply above left before the run finished)
+
+else the step reported failed
+
+    engine -> db : record the step failed
+
+    alt the definition chooses the compensate policy
+
+        engine -> db : record the run compensating
+        loop every completed forward step, in reverse
+            engine -> step : publish the compensation subject
+            step -> engine : step_completed_event
+        end
+        engine -> db : record the run compensated;\nclear the run's error
+
+    else the definition chooses the stop-and-retry policy
+
+        engine -> db : record the run failed;\nthe failed step stays failed,\nevery completed step untouched
+        note right of engine
+            The run parks on the failed step.
+            A retry re-dispatches that step under
+            its same step identity and keeps the rest.
+        end note
+
+    end
+
+end
+
+@enduml

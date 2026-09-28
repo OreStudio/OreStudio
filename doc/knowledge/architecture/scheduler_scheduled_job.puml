@@ -1,0 +1,57 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The scheduled job and the firings it records
+
+class "job\n(job definition)" as job <<configuration>> #E1F5FF {
+    {field} +job name : name
+    {field} +schedule expression : cron expression
+    {field} +action kind : name
+    {field} +action material : text
+    {field} +tenant : tenant id, or none for a system job
+    {field} +party : party id, or none
+    {field} +active : flag
+}
+
+class "firing\n(job instance)" as firing <<state>> #FFF4E1 {
+    {field} +job : job definition id
+    {field} +action kind : name
+    {field} +triggered at : instant
+    {field} +started at : instant
+    {field} +completed at : instant, or none
+    {field} +duration : milliseconds, or none
+    {field} +state : starting | succeeded | failed
+    {field} +reason : text
+}
+
+job "1" --> "*" firing : records
+
+note bottom of job
+    Configuration: it defines when the job runs
+    and what the firing does. A change affects
+    later firings, not earlier ones.
+end note
+
+note bottom of firing
+    State: one execution, recorded before its
+    action starts. The reason is stored when
+    the state is failed.
+end note
+
+@enduml

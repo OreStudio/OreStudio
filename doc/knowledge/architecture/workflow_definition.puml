@@ -1,0 +1,59 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The workflow definition and its step definitions
+
+class "workflow definition\n(registered code)" as def <<definition>> #E1F5FF {
+    {field} +type name : name
+    {field} +description : text
+    {field} +failure policy : compensate | stop-and-retry
+    {field} +build steps : function(request, tenant, correlation)
+}
+
+class "step definition" as step <<definition>> #E1F5FF {
+    {field} +name : name
+    {field} +description : text
+    {field} +command subject : subject
+    {field} +compensation subject : subject, or none
+    {field} +build command : function(request, results)
+    {field} +build compensation : function(command, result)
+}
+
+class "materialised step\n(persisted on the run)" as mat <<state>> #FFF4E1 {
+    {field} +name : name
+    {field} +command subject : subject
+    {field} +compensation subject : subject
+}
+
+def "1" --> "*" step : builds once per run
+step ..> mat : resolved into
+
+note bottom of def
+    The type name is the interface: the key in
+    the registry, the value the start message
+    carries, and the value the run stores.
+end note
+
+note bottom of mat
+    Persisted at start and never rebuilt, so
+    a restart or a deployment does not reshape
+    a run that is in progress.
+end note
+
+@enduml

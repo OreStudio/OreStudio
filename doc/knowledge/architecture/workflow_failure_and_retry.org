@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 353DC9B3-65BC-4801-B6D8-08ADD2647F24
+:END:
+#+title: Failure, compensation and retry
+#+description: The failure contract a definition declares, the compensation and stop-and-retry policies it chooses between, and the retry verb that resumes a stopped run while keeping every completed step.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:failure:retry:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+The failure policy belongs to the definition. The default policy is compensate, so
+a failed step is rolled back and the run's error is cleared, which is the right
+answer for a short saga of writes. Provisioning declares stop instead, because its
+completed work is published data that a person expects to keep and the recovery it
+wants is a retry rather than a rollback. This note states the failure contract, the
+two policies a definition chooses between, and the retry contract that serves both.
+
+* Detail
+
+** The failure contract on a step that fails
+
+The failure contract starts with the step's own report. A handler that cannot do its work publishes a =failed= completion, and the run records that outcome on the step together with its error and its log. A successful step advances the run to its next step, while a failed step follows the failure policy its definition declares.
+
+Compensation is the rollback of the run, and it belongs to the definitions whose completed work is a liability. The engine walks the completed steps in reverse and compensates only those the contract marks =completed=; a step that finished =completed_with_warnings= is not compensated. When the rollback finishes, the run reaches =compensated= and both its result and its error are cleared, which is the outcome the definition asked for when it declared compensate.
+
+The engine keeps the run state =failed= for the paths that cannot proceed without a step report at all: an unknown workflow type, a step position out of range, a startup recovery that finds no steps, and a failure while starting.
+
+** The failure policy belongs to the definition
+
+The failure policy belongs to the definition, and it differs with what a completed step is worth. In a saga of writes — provisioning one party, say — a partial run is a liability, so undoing it is the safe answer, and such a definition declares compensate. In a tenant provisioning run the completed steps have published bundles of real reference data; undoing them costs minutes to hours and helps nobody, while retrying the failed step is cheap because every step is idempotent, so provisioning declares stop-and-retry.
+
+Provisioning declares stop-and-retry: its steps are idempotent, a failed step stops the instance, the tenant stays provisioning and can be retried from that step, and *Discard tenant* is a separate system-admin action. A failed line therefore offers *Retry from failed step* and *Discard tenant*, because the completed steps are kept and retrying is safe.
+
+The policy therefore stands on the definition, not on the engine. A definition declares it, and the engine reads it: a definition that declares stop leaves the run in =failed= with its error intact until a person acts, and every completed step untouched, while a definition that declares compensate keeps the rollback above.
+
+** The retry contract
+
+A retry is a message, and the message resumes a failed run at its failed step. The verb carries the instance to resume and optionally names the step to resume from. It re-dispatches that step under the same step identity, restores the run's current step, and clears the run's error so that the failure no longer stands against the run.
+
+A resume reads only what the run persists. The failed step keeps its position, its error and its log; the completed steps keep their results, which a later step's command builder reads by name; the run records how many steps it declared and which steps it declared at start; and each step carries its stable identity and its command. A retry clears the run's error explicitly, because clearing acts only on a value that is present.
+
+** Why a retry is safe
+
+The step identity must stay stable for a retry to be safe, and stability is the property the retry reuses. The engine ignores a completion for a step that is not =in_progress=, and a handler can ask the engine to replay the step's last outcome instead of repeating the work. A retry that re-dispatches the step under its own identity therefore runs the step once, however the messages interleave — see [[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]].
+
+** The shape the two policies take together
+
+A definition declares its failure policy. Provisioning declares stop; a saga of writes keeps compensate. The engine rests a stopped run in =failed= with the failed step left =failed= and every completed step untouched, which is what the progress read exposes.
+
+The retry message re-dispatches the step under its own identity and leaves the completed steps alone, and that same identity is what makes the retry safe: the engine ignores a late completion for a step that is not =in_progress=, and a handler that replays instead of repeating runs the work once.
+
+Discard is a separate action, and it must also stop the run: a delete of a tenant must leave no workflow instance of that tenant running behind it.
+
+* See also
+
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

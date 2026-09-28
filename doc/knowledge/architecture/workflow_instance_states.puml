@@ -1,0 +1,99 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Workflow instance and step states
+
+hide empty description
+
+state "the workflow instance machine" as wi {
+    state "start" as i_start <<start>>
+    state "pending" as i_pend
+    state "in_progress" as i_prog
+    state "completed" as i_done
+    state "failed" as i_fail
+    state "compensating" as i_comp
+    state "compensated" as i_compd
+}
+
+state "the workflow step machine" as ws {
+    state "start" as s_start <<start>>
+    state "pending" as s_pend
+    state "in_progress" as s_prog
+    state "completed" as s_done
+    state "completed_with_warnings" as s_warn
+    state "failed" as s_fail
+    state "compensated" as s_compd
+}
+
+i_start --> i_pend : initial_start
+i_pend --> i_prog : initial_start
+i_prog --> i_done : complete
+i_prog --> i_fail : fail
+i_prog --> i_comp : begin_compensation
+i_comp --> i_compd : finish_compensation
+i_comp --> i_fail : fail_during_compensation
+
+s_start --> s_pend : initial_start
+s_pend --> s_prog : initial_start
+s_prog --> s_done : complete
+s_prog --> s_warn : complete_with_warnings
+s_prog --> s_fail : fail
+s_fail --> s_compd : compensate
+s_fail --> s_prog : retry
+
+note right of i_pend
+    A run waits in =pending= until
+    =initial_start= puts it in =in_progress=.
+end note
+
+note right of i_comp
+    A reader of a compensating run knows the run
+    is undoing its completed steps, and that its
+    next state is =compensated= or =failed=.
+end note
+
+note right of s_pend
+    A step waits in =pending= until
+    =initial_start= puts it in =in_progress=.
+end note
+
+note right of s_done
+    =completed= is the state in which a step
+    keeps its result for the steps after it.
+end note
+
+note bottom of s_fail
+    =failed= carries the step's error and log.
+    =retry= resumes the step from it, and
+    =compensate= rolls it back.
+end note
+
+note bottom of i_done
+    =completed=, =failed= and =compensated= are
+    the terminal run states.
+end note
+
+legend bottom
+    Rounded state: a state a run or a step may occupy.
+    Arrow: a declared transition, labelled with the event that causes it.
+    A run ends in =completed=, =failed= or =compensated=; a step ends in
+    =completed=, =completed_with_warnings=, =failed= or =compensated=.
+end legend
+
+@enduml

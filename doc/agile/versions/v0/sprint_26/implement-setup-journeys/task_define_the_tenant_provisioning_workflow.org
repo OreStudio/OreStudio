@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: 1516C4BD-65A6-4A5D-A2AD-A1F358D14050
+:END:
+#+title: Task: Define the tenant provisioning workflow
+#+description: The provision-tenant definition over the fixed step kinds, in the shape workflow.v1.parties.provision already uses, running provision party once per party.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/define-the-tenant-provisioning-workflow
+#+pr: 2330
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+iam.v1.tenants.provision starts a real run. The provision_tenant_workflow definition builds one engine step per step kind the seed profile declares, dispatches each to the subject that kind names, runs provision party once per party, and completes the tenant, so the instance id the request answers with names a workflow instance that exists and finishes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | The reconnaissance and the target-state documentation this task produced are in pull request #2330, which carries documentation only. The definition and the run lifecycle are not written: nothing registers a provision tenant workflow and no handler serves a step subject. |
+| Waiting on   | Nothing.                               |
+| Next         | Write the definition and its step-kind catalogue, the iam step executor that serves the step subject for the kinds this task lands, and the registration that makes a start run. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- provision_tenant_workflow registers itself, and the instance id iam.v1.tenants.provision answers with names a run that the engine drives.
+- Every step kind a seed profile declares becomes an engine step, in the profile's display order, dispatched to the subject that kind names.
+- provision party runs once per party the tenant has, after the step that creates them.
+- The run completes on the live deployment: the tenant leaves its bootstrapping status and holds the data its profile ordered.
+- The definition's step list is asserted from the request its caller builds, and the live deployment proves the run.
+
+* Plan
+
+Step 7 makes the instance id step 6 answers with name a run that
+exists and finishes. The reconnaissance that decided the shape:
+
+*What the engine actually requires.* The engine publishes a step
+command fire-and-forget and waits for nothing
+(=workflow_engine.cpp=, =publish_command=). A run advances only when the
+handler on the far end publishes a =step_completed_event= echoing the
+=X-Workflow-Step-Id= header the engine set. There is no step timeout, no
+per-step retry, and no completion hook on a definition: a run finishes
+only by running its declared steps out, so the last step is an ordinary
+step. An engine step sent to a subject that never reports completion
+hangs the run for ever. A step is sent with three headers only —
+=X-Workflow-Step-Id=, =X-Workflow-Instance-Id= and =X-Tenant-Id= — and
+never with the caller's token, so a step handler runs as the service.
+
+=build_steps= is called at start *and again on every advance*, always
+with the same three strings, so the list it returns must be the same
+list every time; nothing else is passed to it, and in particular no
+completed step's result. A later step's =build_command= does see the
+earlier results, addressed by step name; only steps that reported a
+non-empty result are visible, and step names must therefore be unique.
+
+*Which subjects can be a step today.* Only the leaves that call
+=workflow_step_context::from_message= report completion: the
+=publish_from_dq= publisher in each component that owns one (=dq=,
+=refdata=, =marketdata=, =assets=, =synthetic=, =reporting=, =iam=),
+plus =refdata.v1.parties.put=, =iam.v1.accounts.*= and
+=iam.v1.account_parties.*=. The composite verbs are
+*not* step-compatible: =dq.v1.bundles.publish= and
+=workflow.v1.parties.provision= start nested runs and answer the
+caller, and never emit a completion event, so dispatching a step
+straight at them would hang the run.
+
+*The design this forces.* ores.iam owns a step executor per step kind.
+The definition dispatches each step to an iam subject that carries the
+kind and its arguments; the iam handler does the kind's work by calling
+the composite verbs request/reply — which is what =provision_acme= does
+today, including its waits — and then reports completion through
+=workflow_step_context=. Where the work is a nested run, the handler
+follows that run to its end through the workflow query subject before it
+reports, so a step completes only when its data is really in place. No
+other component changes, and the work that =provision_acme= already does
+is lifted rather than rewritten, so step 12 can delete it.
+
+The step kinds are the catalogue in code, which this task creates: a
+kind the definition does not know is refused when the run starts rather
+than silently skipped.
+
+*The split.* The six kinds are not one task's worth. This task lands the
+definition, the run lifecycle, and the three kinds the Operational
+profile declares — =publish_bundle=, =import_lei_hierarchy= and
+=provision_party= — because they are the production path and the path
+the shell's =provision tenant= takes. The three kinds only the ACME demo
+declares — =load_staff=, =attach_photos= and =start_market_feeds= — are
+the next task, which is added to the story beside this one. A profile
+that declares a kind this task has not built is refused when its run
+starts, so the browser's card for it cannot half-provision a tenant.
+
+*Acceptance, read against that split.* The third and fourth bullets
+above are met for the kinds this task lands: the tenant leaves
+=bootstrapping= and holds the data its profile ordered for the
+Operational card, and the demos those bullets describe for the ACME card
+arrive with the three remaining kinds.
+
+* The shape, decided with the plan's owner
+
+The ACME demo path lands first. The six executors are lifted from
+=provision_acme=, so the demo card provisions end to end against data
+that exists and no other component changes. Two decisions follow from
+that and from the reconnaissance:
+
+- *A kind reads what it acts on from its own arguments.* The lift would
+  otherwise leave ACME's names in code — =Acme Corporation Plc=,
+  uk/us/hk, =acme_group=, =acme_lei_import= — and the story already
+  decided the seed profile is data. So =publish_bundle= takes the bundle
+  codes to publish, =import_lei_hierarchy= the bundle that carries the
+  hierarchy and the root LEI (or the root LEI alone, from the request's
+  parameters, when the form supplied it), =provision_party= the party
+  bundles with the name each holds, and the three demo kinds the bundles
+  and keys their work needs. Each refuses, naming the field, when the
+  argument is absent. The ACME rows grow those arguments in ores.iam's
+  own seed script; the Operational rows keep what they have.
+- *A profile whose kinds cannot be honoured is refused before the run
+  starts, naming the kind.* This is what keeps the ACME-shaped interim
+  from publishing demo data into a production tenant: the Operational
+  card needs =party_essentials= and a bundle carrying a generic LEI
+  import, neither of which exists, and it is refused until they do. Those
+  two bundles are DQ/seeder data and become their own task with that
+  component's owner.
+
+The plumbing the executors need lands first: the run's request and every
+step command carry the tenant administrator's account id, because the
+engine sends a step without the caller's token and the handler has to
+mint its own.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2330][#2330]] | [iam] Define the tenant provisioning workflow and document the engine |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Pull request #2330 delivers the reconnaissance and the target-state
+documentation this task produced, and nothing else. It carries the
+investigation that decided the provisioning architecture; the workflow
+engine cluster and the per-workflow pages, under the new workflow
+document type, including the tenant provisioning page this task's
+definition has to satisfy; the scheduler cluster, rewritten to document
+the scheduler itself; and the capture of the scheduler's fixed minute
+wake.
+
+The task's acceptance is untouched by it. No definition is registered
+and no handler serves a step subject, so a provision tenant request still
+starts no run. The definition with its step-kind catalogue, the iam step
+executor for the kinds this task lands, and the registration are the next
+unit of work, on their own branch.

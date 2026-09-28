@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: EF7AE225-7DBE-4D19-B3DC-F6720A4B52DA
+:END:
+#+title: The cron expression
+#+description: When a job runs: the five fields of a cron expression, the value forms, the validation at the boundary, and the condition that makes a job due.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A cron expression defines the instants at which a job runs. It has five
+fields, read left to right: minute, hour, day of month, month, and day of
+week. The scheduler validates an expression at the API boundary, so it
+never stores a job whose expression it cannot evaluate. Every expression
+resolves to a whole minute, so the minimum interval between two firings
+is one minute. This page defines the fields, the value forms, the
+validation rule, and the condition under which a job is due.
+
+* Detail
+
+** The five fields
+
+An expression has five fields, in this order.
+
+| position | field        | values                          |
+|----------+--------------+---------------------------------|
+| first    | minute       | the minute of the hour, 0 to 59 |
+| second   | hour         | the hour of the day, 0 to 23    |
+| third    | day of month | the day of the month, 1 to 31   |
+| fourth   | month        | the month of the year, 1 to 12  |
+| fifth    | day of week  | the day of the week             |
+
+** The value forms
+
+A field takes one of five forms.
+
+- =*= — any value.
+- a single value, such as =6=.
+- a range, such as =1-5=.
+- a list, such as =1,15=.
+- a step over a range, such as =*/15=.
+
+The forms compose within a field, so one expression can select the first
+minute of the first working day of a month.
+
+| expression    | it defines                              |
+|---------------+-----------------------------------------|
+| =* * * * *=   | every minute                            |
+| =0 * * * *=   | the first minute of every hour          |
+| =*/15 * * * *=| every fifteen minutes                   |
+| =0 6 * * 1-5= | six in the morning, on a working day    |
+| =0 0 1 * *=   | midnight on the first day of each month |
+
+There is no seconds field: an expression resolves to whole minutes, so the
+shortest interval between two firings is one minute and a firing is never due
+at a stated second. A recurrence more frequent than once a minute cannot be
+expressed.
+
+** Validation at the API boundary
+
+The boundary that accepts a job validates its expression, and a malformed
+expression is rejected there, before it reaches a row. Validation happens
+once, on the way in: the scheduler stores only expressions it can
+evaluate, and the stored text is the text that passed validation. A
+rejected expression is returned to the caller as an error, because the
+caller asked for a schedule and got none.
+
+The scheduler never parses an expression into fields of its own. It asks
+the expression for the next occurrence after a given instant. Adding a
+value form to the notation therefore adds it to every stored expression.
+
+** When a job is due
+
+A job is due when both of these hold.
+
+1. The job's active flag is true.
+2. The next occurrence after the job's last recorded firing has already
+   passed.
+
+Condition two fixes the last firing as the reference point, and three
+properties follow from it.
+
+- /A new job runs at its next occurrence./ A job with no recorded firing
+  is evaluated from the current minute, so its first execution is the
+  next occurrence its expression defines, not the moment of registration.
+- /Missed occurrences are not replayed./ A job whose occurrence passed
+  while the scheduler was down runs once when the scheduler restarts.
+  The reference is the last recorded firing, so the scheduler builds no
+  backlog and performs no work for the occurrences it missed.
+- /An inactive job is never due./ The active flag is condition one, so an
+  inactive job does not fire. It keeps its row and its execution history,
+  and activating it applies the same rule as before.
+
+The loop evaluates this condition for every job it holds at each minute.
+[[id:172812F0-17F0-47BC-9933-7A70848105BC][The scheduler loop]]
+describes the evaluation and what follows from it.
+
+** The expression defines when, and nothing else
+
+An expression defines no property of the action: not the action type, not
+the payload, not the tenant or party the job runs for. Those are separate
+fields of the job definition, read at the firing. The separation is why an
+expression can be changed without changing what a job does, and why the
+action can be replaced without moving the schedule.
+
+* See also
+
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the five-field notation this page follows.

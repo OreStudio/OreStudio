@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: DFC57D4F-9AB2-4428-BDEC-BF44D106A75D
+:END:
+#+title: Scheduler
+#+description: Structure note for the scheduler: the job definition, the cron expression it holds, the loop that evaluates it, the firing it records, and the actions a firing performs.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:structure_note:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+* Summary
+
+The scheduler runs jobs on cron schedules. It has three domain types. A
+*job definition* is configuration: a name, a cron expression, an action
+type with its payload, an active flag, and an optional tenant and party.
+A *firing* is the record of one execution of a job: the job it belongs
+to, the instant it was triggered, its start and end times, its status,
+and its error. An *action* is the operation a firing performs; the
+scheduler registers one handler per action type and selects the handler
+by the action type the job declares.
+
+The scheduler has minute granularity: a cron expression resolves to whole
+minutes and the loop fires a job at the minute it names, so the shortest
+interval between two firings is one minute. An action runs either a database
+statement or a message delivery. The scheduler does not wait for the work a
+message starts, and it does not retry an action that fails.
+
+Read the pages below in the order given. The first is an end-to-end
+example, the next five describe one type each in the order of the path,
+and the last section is the boundary with the workflow cluster.
+
+* Reading order
+
+** The end-to-end example
+
+[[id:15BC870B-4922-4DA8-8161-30DF9FA5A010][A first schedule]]. Read it
+first. It registers one job, shows the firing that job produces, and
+shows the message its action publishes. It introduces the terms the other
+pages use, and it depends on no other component. A reader who needs only
+the structure of the scheduler can stop after it.
+
+** The types, in the order of the path
+
+[[id:74597EAF-C5EB-4750-87D2-9B1DF46FEBED][The job definition]]. Read
+it second, because it is the configuration the rest of the path reads. It
+defines the fields, the natural key, the write path with its
+precondition, the versions a write creates, and how a change reaches the
+loop.
+
+[[id:EF7AE225-7DBE-4D19-B3DC-F6720A4B52DA][The cron expression]].
+Read it third: it defines the field that decides when a job runs. It
+covers the five fields, the value forms, the validation at the API
+boundary, and the condition that makes a job due.
+
+[[id:172812F0-17F0-47BC-9933-7A70848105BC][The scheduler loop]]. Read
+it fourth. It describes the sleep until the next due instant, the in-memory
+job set and its re-arm on a change event, and the rule that a firing does not
+block the loop.
+
+[[id:29714C54-9022-494B-9751-CC6FCED10313][The firing]]. Read it
+fifth. It describes the record written before the action runs, the three
+states a firing moves through, and the two read operations over the
+record.
+
+[[id:A47C612B-9CAB-4656-B4FC-E9DA1D414F83][Job actions]]. Read it
+sixth. It describes the three action types, the handler registry, and
+whether a firing waits for a reply.
+
+** The boundary with the workflow cluster
+
+[[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]].
+Read it last. It defines the start message a firing publishes and the
+three obligations the scheduler has at that boundary. The job starts a
+run; it does not execute it, and the run belongs to the workflow cluster.
+
+** Components that use the scheduler
+# aside
+
+The pages in this section are not about the scheduler. Each describes a
+component that uses it, and each assumes the pages above.
+
+[[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and
+schedule]]. Reporting's use of the scheduler: one job per report
+definition, the schedule held outside the definition, and the firing that
+triggers a report instance. Read it after the pages above, because the
+division of ownership needs the job, the firing and the action to be
+already defined.
+
+[[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]]. Read it
+when the question is what a scheduled run consists of rather than when it
+starts. The cluster defines the phases of a report run and what each
+phase may assume of the one before it.
+
+[[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]]. Read it
+alongside the previous page. It owns the engine that executes what a
+firing started: the step protocol, the states a run and a step occupy,
+and the failure handling. This cluster starts a run, that one executes
+it, and the two meet at the start message a firing publishes.
+
+* What this cluster does not cover
+
+[[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and
+Events]] owns calendar reference data: business days, holidays and market
+events. The scheduler does not read it. A cron expression defines
+wall-clock instants, so a firing is due at a stated minute and not on a
+business day, and a recurrence that must follow the business calendar
+cannot be expressed as a cron expression.
+
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] owns
+the grid's jobs: batches, workunits, results and hosts. The word job has
+two distinct meanings here. A scheduled job is a definition that fires; a
+compute job is a unit of work submitted to the grid.
+
+The workflow cluster owns the contents of a run, and this cluster owns
+only the point at which a run may be started. The division is why either
+cluster can be read without the other.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is, and why its order is authored rather than computed.

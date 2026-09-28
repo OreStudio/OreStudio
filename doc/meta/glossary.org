@@ -272,6 +272,28 @@ operations into higher-level runbooks. Lives under [[proj:doc/llm/runbooks][=doc
 | Example         | [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]]            |
 | Inventory       | [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]]                  |
 
+* Workflow
+:PROPERTIES:
+:ID: 902A5312-B3A2-4C66-8017-34F0F26658C6
+:END:
+
+A durable design document for one named server-side process: what it achieves,
+who takes part, which messages it exchanges, the steps it runs and what each one
+produces, the failure policy it declares, and the read a client follows to
+render its progress. A workflow page is written from the definition a service
+registers, not from a run of it — the run is a
+[[id:2C59492F-B715-4195-8FC7-761CE5515449][workflow instance]]. Lives under
+[[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]]. See
+[[id:C4F7114C-B454-4B07-A804-64442D989FD4][Document type: workflow]] for the
+contract.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Value                                       |
+|-----------------+---------------------------------------------|
+| Owner           | cross-cutting                               |
+| How to generate | =compass add workflow=                      |
+| Inventory       | [[id:645A06C7-D9D5-4ED1-969B-B6366D122BC9][Workflow pages]] |
+
 * Knowledge document
 :PROPERTIES:
 :ID: BD1F3458-F991-46BE-ABEB-5F06C2633375

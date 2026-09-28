@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 645A06C7-D9D5-4ED1-969B-B6366D122BC9
+:END:
+#+title: Workflow pages
+#+description: Index of workflow pages — one durable contract per named server-side process, what it leaves behind, and how its progress is read.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:workflow:index:architecture:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A [[id:902A5312-B3A2-4C66-8017-34F0F26658C6][workflow]] page is the durable contract for one named
+server-side process: what it achieves, which components and roles take part,
+which messages it exchanges, the steps it runs and what each one produces, the
+failure policy it declares, and the read a client follows to render its
+progress. A workflow page is written from the definition a service registers,
+never from a run of it. The run is a
+[[id:2C59492F-B715-4195-8FC7-761CE5515449][workflow instance]], and its progress
+is read rather than written down here.
+
+This folder holds the pages for individual workflows, as
+=workflow_<slug>.org=. It sits beside
+[[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] for the same
+reason the journey pages sit beside it: a workflow is a durable, cross-cutting
+statement, and it outlives the sprint that wrote it.
+
+* What belongs here, and what does not
+
+- A page here owns *one workflow* — its purpose, its participants, its messages,
+  its steps, its failure policy, and its progress read.
+- The *engine* that runs a workflow is not this folder's subject. The step
+  protocol, the instance and step states, failure and retry, idempotency, and
+  waiting and deadlines are knowledge about the engine and live in
+  [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] under
+  [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]]. A workflow page links
+  to that cluster; it never restates it, because a copied rule drifts and the
+  copy is the one a reader finds first.
+- A fact about one *run* — where it stopped, what it published, what failed —
+  belongs in the task or the investigation that owns that run, not here.
+
+* Workflows
+
+This page is the inventory of the workflows the platform supports. Each row
+names one workflow, what it achieves, and the page that defines it; a new
+workflow is a new row and nothing else.
+
+#+ATTR_HTML: :class hug-leading
+| Workflow | What it does |
+|----------+--------------|
+| [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] | Creates a tenant from a starting point and brings it to a working state, with its administrator, its reference data and its parties. |
+| [[id:25ED321D-A489-449C-BF60-15F1A1B3DBE7][Identity]] | Exercises the engine end to end with no domain data: a completion, a completion with warnings, a failure, a compensation, a slow step and a long run. |
+
+The engine cluster that runs these workflows is ordered by
+[[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]].
+
+* Adding a workflow
+
+#+begin_src sh :results verbatim
+compass add workflow \
+  --slug <slug> \
+  --title "<title>" \
+  --description "<one line>" \
+  --tags "workflow,<topic>"
+#+end_src
+
+=--parent-dir= defaults to =doc/knowledge/workflows=, so it can be omitted. The
+file is =workflow_<slug>.org=. Fill in every section the scaffold leaves, then
+add a row to the table above. The full contract is on
+[[id:C4F7114C-B454-4B07-A804-64442D989FD4][Document type: workflow]]; the recipe
+is [[id:6E3B4E5F-1F62-4F1C-8C4E-8A3D2B1C0F91][New workflow]].
+
+* See also
+
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — where the
+  transaction boundary sits between a user journey and the workflow that carries
+  its state.

@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 4327303A-B544-47D8-B641-A57D3F6D4974
+:END:
+#+title: The tenant provisioning journey
+#+description: The end-to-end path a person takes to provision a tenant: what the request answers at once, what runs after it, and how the page follows the run.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:workflow:provisioning:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A person provisions a tenant by creating the deployment's first administrator, choosing a starting
+point, describing the tenant, and confirming. The confirmation answers at once: the tenant and its
+administrator already exist, and the answer names the run that performs the rest of the starting
+point's operations. The run then dispatches those operations in order, in the background, while the
+page follows its progress and renders one line per operation. This note traces that journey from the
+setup screen to the terminal actions, retry and discard. It states the design; the plan a starting
+point describes as data is in
+[[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][provisioning operations and the plan]].
+
+* Detail
+
+** The journey in one diagram
+
+#+caption: The tenant provisioning journey: the setup screen that closes bootstrap mode, the starting point the person chooses, the provision request that answers with a created tenant and a named run, the operations the engine dispatches in order, the page that follows the run through the progress read, and the two terminal branches, retry and discard.
+[[proj:doc/knowledge/architecture/provisioning_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/provisioning_sequence.puml][=provisioning_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/provisioning_sequence.puml=.
+
+** The provision request creates the tenant and names the run
+
+Provisioning opens on the setup screen, the only screen in bootstrap mode. The person creates the
+first administrator there, and the server clears the bootstrap flag, so a second creation is refused.
+
+The person chooses a starting point. The page reads the registered starting points through the BFF,
+and each starting point arrives with the operations it orders and the parameters its form declares.
+The person then describes the tenant and confirms.
+
+#+caption: The fields a provision request carries: the starting point that fixes the operations the run performs and the parameter schema its form is built from, the tenant's own details, the administrator's details, and one value for each parameter the schema declares.
+[[proj:doc/knowledge/architecture/provisioning_request_message.png]]
+
+Source: [[proj:doc/knowledge/architecture/provisioning_request_message.puml][=provisioning_request_message.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/provisioning_request_message.puml=.
+
+Confirmation reaches ores.iam as one request, =iam.v1.tenants.provision=. The request is refused
+before anything is created: an empty field, an unknown starting point, or a parameter the starting
+point refuses. So nothing is created on a refusal, and no run starts.
+
+Only then does the request create. ores.iam creates the tenant, copies the system tenant's registered
+data into it, creates the administrator in the new tenant's context, associates that account with the
+tenant's system party, and assigns the tenant-administrator role. Tenant and administrator exist
+before the request answers.
+
+The answer reports what the request created and the run that performs the rest of the starting
+point's operations, which ores.iam mints before it publishes the start message.
+
+#+caption: The fields a provision answer returns: the identifier of the tenant the request created, the identifier of the administrator it created, and the identifier of the run that performs the rest of the starting point's operations.
+[[proj:doc/knowledge/architecture/provisioning_answer_message.png]]
+
+Source: [[proj:doc/knowledge/architecture/provisioning_answer_message.puml][=provisioning_answer_message.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/provisioning_answer_message.puml=.
+
+The mint lets the caller name the run without waiting for the engine, and a repeat of the identifier
+addresses the same run.
+
+** The work after the answer is asynchronous
+
+The request is synchronous up to the tenant write and asynchronous from the engine onward.
+
+Creating the tenant is a database write, so its failure arrives as an answer. The request then publishes =start_workflow_message= on =workflow.v1.start= and
+returns.
+
+The engine creates the run in progress with the ordered operations the request declares, and advances
+one operation per completion. Every operation goes to one subject, =iam.v1.tenants.provision-step=,
+and the payload names the work. The definition appends the completing operation after the starting
+point's operations, so marking the tenant ready is an operation.
+
+An operation that fails stops the run: the engine records the error and moves the run to a terminal
+state. Operations declare no compensation, so nothing is undone.
+
+** The page follows the run through the read
+
+The answer names the run, and the page follows it rather than waiting, because the operations run
+after the request has answered. The engine records the run's state, its current step and each step's
+state and error as it advances, and the page reads that record.
+
+#+caption: The fields the run progress read returns: the run's status, the number of steps it declares, the step it is currently executing, and one summary per step, each summary naming the operation, its state and its error.
+[[proj:doc/knowledge/architecture/provisioning_progress_read_message.png]]
+
+Source: [[proj:doc/knowledge/architecture/provisioning_progress_read_message.puml][=provisioning_progress_read_message.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/provisioning_progress_read_message.puml=.
+
+The page renders the rail from that read, one line per operation: pending, running, done, failed. The
+engine also publishes =ores.workflow.workflow_instance_changed= on each change.
+
+* See also
+
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.
+- [[https://plantuml.com/sequence-diagram][PlantUML sequence diagrams]] — the notation
+  =provisioning_sequence.puml= uses.

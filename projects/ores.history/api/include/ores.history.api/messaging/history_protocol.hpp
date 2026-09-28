@@ -22,8 +22,8 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_HISTORY_MESSAGING_HISTORY_PROTOCOL_HPP
-#define ORES_HISTORY_MESSAGING_HISTORY_PROTOCOL_HPP
+#ifndef ORES_HISTORY_API_MESSAGING_HISTORY_PROTOCOL_HPP
+#define ORES_HISTORY_API_MESSAGING_HISTORY_PROTOCOL_HPP
 
 #include "ores.diff/domain/diff_result.hpp"
 #include "ores.diff/domain/field_value.hpp"

@@ -38,6 +38,8 @@ const std::string correlation_id("33333333-3333-4333-8333-333333333333");
 using ores::iam::workflow::complete_provisioning_step_kind;
 using ores::iam::workflow::detail::unique_step_name;
 using ores::iam::workflow::is_declared_step_kind;
+using ores::iam::workflow::is_executed_step_kind;
+using ores::iam::workflow::provision_executed_step_kinds;
 using ores::iam::workflow::provision_step_kinds;
 using ores::iam::workflow::provision_tenant_step;
 using ores::iam::workflow::provision_tenant_step_command;
@@ -88,7 +90,7 @@ TEST_CASE("the definition registers under its workflow type", tags) {
     CHECK_FALSE(found->description.empty());
 }
 
-TEST_CASE("the catalogue accepts every kind a profile may order", tags) {
+TEST_CASE("the catalogue knows every declared kind", tags) {
     for (const auto kind : provision_step_kinds)
         CHECK(is_declared_step_kind(kind));
 }
@@ -192,6 +194,39 @@ TEST_CASE("a kind the catalogue does not know is refused when the run starts", t
     CHECK_THROWS_AS(
         def.build_steps(request_json({declared("publish_everything")}), tenant_id, correlation_id),
         std::runtime_error);
+}
+
+TEST_CASE("this build executes the kinds it has runners for and no others", tags) {
+    for (const auto kind : provision_executed_step_kinds)
+        CHECK(is_executed_step_kind(kind));
+
+    CHECK(is_executed_step_kind("publish_bundle"));
+    CHECK(is_executed_step_kind("import_lei_hierarchy"));
+    CHECK(is_executed_step_kind("provision_party"));
+
+    CHECK_FALSE(is_executed_step_kind("load_staff"));
+    CHECK_FALSE(is_executed_step_kind("attach_photos"));
+    CHECK_FALSE(is_executed_step_kind("start_market_feeds"));
+    CHECK_FALSE(is_executed_step_kind(complete_provisioning_step_kind));
+    CHECK_FALSE(is_executed_step_kind("publish_everything"));
+}
+
+TEST_CASE("a profile that orders a kind this build does not execute is refused when the run "
+          "starts, naming the kind",
+          tags) {
+    const auto def = definition();
+
+    for (const auto kind : {"load_staff", "attach_photos", "start_market_feeds"}) {
+        try {
+            def.build_steps(request_json({declared(kind)}), tenant_id, correlation_id);
+            FAIL(std::string("the definition accepted a kind this build does not execute: ") +
+                 kind);
+        } catch (const std::runtime_error& e) {
+            const std::string message(e.what());
+            CHECK(message.find(kind) != std::string::npos);
+            CHECK(message.find("does not execute") != std::string::npos);
+        }
+    }
 }
 
 TEST_CASE("a profile may not order the step every run appends", tags) {

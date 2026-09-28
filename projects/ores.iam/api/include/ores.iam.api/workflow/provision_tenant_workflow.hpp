@@ -54,11 +54,12 @@ inline constexpr std::string_view provision_tenant_step_subject = "iam.v1.tenant
 /// "the tenant is ready" is a step rather than a property of the definition.
 inline constexpr std::string_view complete_provisioning_step_kind = "complete_provisioning";
 
-/// The step kinds a seed profile may order. A kind that is not here is a code
-/// change: the catalogue is fixed and a profile states only which kinds it
-/// orders and with what arguments. The completing step is deliberately absent,
-/// because every run appends it; a profile that orders it is refused rather than
-/// given a second one.
+/// The step kinds the notation knows. A kind that is not here is a code change:
+/// the catalogue is fixed and a profile states only which kinds it orders and
+/// with what arguments. The completing step is deliberately absent, because
+/// every run appends it; a profile that orders it is refused rather than given
+/// a second one. Not every kind here is one this build executes; see
+/// @ref provision_executed_step_kinds for the subset a profile may order today.
 inline constexpr std::string_view provision_step_kinds[] = {"publish_bundle",
                                                             "import_lei_hierarchy",
                                                             "provision_party",
@@ -66,10 +67,25 @@ inline constexpr std::string_view provision_step_kinds[] = {"publish_bundle",
                                                             "attach_photos",
                                                             "start_market_feeds"};
 
-/// Whether the catalogue knows the kind as one a profile may order.
+/// Whether the catalogue knows the kind.
 [[nodiscard]] inline bool is_declared_step_kind(std::string_view kind) {
     return std::any_of(std::begin(provision_step_kinds),
                        std::end(provision_step_kinds),
+                       [kind](std::string_view known) { return known == kind; });
+}
+
+/// The declarable kinds this build executes. The catalogue above states the
+/// notation; this list states which of its kinds have an executor here, so a
+/// profile that orders the rest is refused before its run starts rather than
+/// half-provisioned. Growing it is a code change beside the executor.
+inline constexpr std::string_view provision_executed_step_kinds[] = {
+    "publish_bundle", "import_lei_hierarchy", "provision_party"};
+
+/// Whether this build executes the kind. A kind the catalogue does not know is
+/// not executed either, so one predicate answers both refusals.
+[[nodiscard]] inline bool is_executed_step_kind(std::string_view kind) {
+    return std::any_of(std::begin(provision_executed_step_kinds),
+                       std::end(provision_executed_step_kinds),
                        [kind](std::string_view known) { return known == kind; });
 }
 
@@ -160,9 +176,10 @@ namespace detail {
  * serves: the engine sends a step and waits for the handler to report it, so a
  * step's kind must have an executor there.
  *
- * A kind outside the catalogue is refused by throwing, which the engine logs
- * and abandons. The request handler refuses it first, naming the kind, so the
- * throw is the guard against a request that never came through that handler.
+ * A kind the catalogue does not know, and a kind this build does not execute,
+ * are both refused by throwing before the engine creates the run, naming the
+ * kind in the message. The throw is the guard the engine logs and abandons, so
+ * a profile that orders an unbuilt kind can never half-provision a tenant.
  */
 inline void
 register_provision_tenant_workflow(ores::workflow::service::workflow_registry& registry) {
@@ -220,6 +237,9 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
             if (!is_declared_step_kind(declared.kind))
                 throw std::runtime_error("The profile orders the step kind '" + declared.kind +
                                          "', which this deployment does not know.");
+            if (!is_executed_step_kind(declared.kind))
+                throw std::runtime_error("The profile orders the step kind '" + declared.kind +
+                                         "', which this deployment does not execute.");
             add_step(declared.kind, declared.arguments_json);
         }
 

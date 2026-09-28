@@ -234,6 +234,16 @@ closure of defects 7, 9, 10 and 13.
 
 * Result
 
+The collapse is delivered and merged as PR #2348. The instrument's key is
+the trade it belongs to: =instrument_id= is gone from the identity field
+group and from all 58 models that carried it, every instrument table is
+keyed by a non-null =trade_id=, the 28 tables that named an instrument
+name that same trade, =trade.instrument_id= is deleted, and the
+relationship is declared in the model and checked by the generated insert
+trigger. The bond security split moved to its own task by D17, and the
+owner's ruling of 2026-09-28 moved defects 14 and 16 to the bond pilot and
+defect 15 to the split. What follows is the measured record.
+
 ** What the collapse changed (measured 2026-09-28)
 
 | Change | Count |

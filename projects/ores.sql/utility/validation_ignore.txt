@@ -361,21 +361,20 @@ RLS_002 ores_marketdata_crm_enabled_derived_pairs_tbl
 
 
 # =============================================================================
-# Workspace tables — system-level cross-cutting context, not tenant-specific.
-# Workspaces are global data contexts that span tenant boundaries; tenant_id
-# has no meaning here. Multi-tenant isolation for workspace data is enforced
-# at the workspace permission level, not at the row level.
+# Workspace tables.
+#
+# ores_workspaces_tbl needs no entry: it carries tenant_id, version,
+# modified_by and change_reason_code, and workspace_rls_policies_create.sql
+# turns on row level security for it.
+#
+# ores_workspace_trade_scope_tbl is a plain two-column whitelist: it has no
+# tenant, no version and no audit columns, and takes its isolation from the
+# workspace row it names.
 # =============================================================================
-TENANT_001 ores_workspaces_tbl
 TENANT_001 ores_workspace_trade_scope_tbl
-TEMPORAL_004 ores_workspaces_tbl
-TEMPORAL_005 ores_workspaces_tbl
-TEMPORAL_006 ores_workspaces_tbl
 TEMPORAL_004 ores_workspace_trade_scope_tbl
 TEMPORAL_005 ores_workspace_trade_scope_tbl
 TEMPORAL_006 ores_workspace_trade_scope_tbl
-RLS_001 ores_workspaces_tbl
-RLS_001 ores_workspace_trade_scope_tbl
 
 # =============================================================================
 # Synthetic market data generation configs - tenant_id/party_id nullable by

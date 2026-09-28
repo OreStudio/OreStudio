@@ -18,17 +18,33 @@
  *
  */
 #include "ores.workspace.core/messaging/registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.workspace.api/messaging/workspace_protocol.hpp"
-#include "ores.workspace.core/messaging/workspace_handler.hpp"
+#include "ores.workspace.api/messaging/workspace_operations_protocol.hpp"
+#include "ores.workspace.core/messaging/workspace_history_provider_registrar.hpp"
+#include "ores.workspace.core/messaging/workspace_operations_handler.hpp"
+#include "ores.workspace.core/messaging/workspace_registrar.hpp"
 #include <memory>
 #include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::workspace::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.workspace.service";
+
+constexpr std::string_view queue_group = "ores.workspace.service";
+
+// The registry must outlive the history.v1.get subscription, and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
+
 } // namespace
 
 std::vector<ores::nats::service::subscription>
@@ -38,27 +54,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<ores::nats::service::subscription> subs;
 
-    // ----------------------------------------------------------------
-    // Workspaces
-    // ----------------------------------------------------------------
+    // The workspace entity stack is generated: the CRUD, version and change
+    // verbs come from the entity registrar.
+    for (auto& sub : register_workspace_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // Resolution and trade scope are operations rather than entity verbs, so
+    // their handlers are hand-written beside the operation model that declares
+    // their subjects.
     {
-        auto h = std::make_shared<workspace_handler>(nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            list_workspaces_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->list(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            create_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->create(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            archive_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->archive(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            remove_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->remove(std::move(msg));
-            }));
+        auto h = std::make_shared<workspace_operations_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
             resolve_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->resolve(std::move(msg));
@@ -71,10 +76,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
             clear_trade_scope_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->clear_trade_scope(std::move(msg));
             }));
-        subs.push_back(nats.queue_subscribe(
-            get_workspace_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->history(std::move(msg));
-            }));
+    }
+
+    // Workspace history comes from the generic history provider.
+    {
+        auto& hist_registry = history_registry();
+        register_workspace_history_provider(hist_registry);
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "workspace", queue_group, ctx, verifier));
     }
 
     return subs;

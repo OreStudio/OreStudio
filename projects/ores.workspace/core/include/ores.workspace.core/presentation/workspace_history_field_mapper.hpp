@@ -17,36 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_API_EVENTING_WORKSPACE_CHANGED_EVENT_HPP
-#define ORES_WORKSPACE_API_EVENTING_WORKSPACE_CHANGED_EVENT_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_field_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKSPACE_CORE_PRESENTATION_WORKSPACE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_WORKSPACE_CORE_PRESENTATION_WORKSPACE_HISTORY_FIELD_MAPPER_HPP
 
-#include "ores.eventing.api/domain/event_traits.hpp"
-#include <chrono>
-#include <string>
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.workspace.core/export.hpp"
 #include <vector>
 
-namespace ores::workspace::eventing {
+namespace ores::workspace::presentation {
 
 /**
- * @brief Domain event indicating that workspace data has changed.
- *
- * Published when any workspace entity is created, updated, or deleted.
- * The ids field contains the UUIDs of the affected workspaces.
+ * @brief Renders a workspace to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-struct workspace_changed_event final {
-    std::chrono::system_clock::time_point timestamp;
-    std::vector<std::string> ids;
-    std::string tenant_id;
-};
-
-}
-
-namespace ores::eventing::domain {
-
-template <>
-struct event_traits<ores::workspace::eventing::workspace_changed_event> {
-    static constexpr std::string_view name = "ores.workspace.workspace_changed";
-};
+[[nodiscard]] ORES_WORKSPACE_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_workspace_fields(const domain::workspace& v);
 
 }
 

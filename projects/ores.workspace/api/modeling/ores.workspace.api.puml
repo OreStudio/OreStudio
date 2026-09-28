@@ -26,57 +26,149 @@ namespace ores #F2F2F2 {
         namespace domain #F2F2F2 {
             class workspace <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +name : string
+                +party_id : boost::uuids::uuid
+                +owner_id : boost::uuids::uuid
                 +description : string
                 +source_path : string
                 +parent_workspace_id : optional<boost::uuids::uuid>
                 +scope_portfolio_id : optional<boost::uuids::uuid>
-                +owner_id : boost::uuids::uuid
                 +status_code : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
+                {static} +operator==(const workspace&, const workspace&) : bool
             }
         }
         namespace messaging #F2F2F2 {
+            ' ---------------------------------------------------------------
+            ' workspace_protocol.hpp: the canonical entity protocol.
+            ' ---------------------------------------------------------------
+            class workspace_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class workspace_write <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +party_id : boost::uuids::uuid
+                +owner_id : boost::uuids::uuid
+                +description : string
+                +source_path : string
+                +parent_workspace_id : optional<boost::uuids::uuid>
+                +scope_portfolio_id : optional<boost::uuids::uuid>
+                +status_code : string
+            }
+            class workspace_change <<struct>> {
+                +write : workspace_write
+                +precondition : utility::domain::precondition
+            }
+            class workspace_removal <<struct>> {
+                +key : workspace_key
+                +precondition : utility::domain::precondition
+            }
+            class workspace_lookup <<struct>> {
+                +key : workspace_key
+                +workspace : optional<domain::workspace>
+            }
+            class workspace_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : workspace_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class workspace_version_key <<struct>> {
+                +workspace : workspace_key
+                +version : uint32_t
+            }
+            class workspace_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
             class list_workspaces_request <<struct>> {
-                +offset : int
-                +limit : int
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : utility::domain::order
             }
             class list_workspaces_response <<struct>> {
-                +workspaces : vector<ores::workspace::domain::workspace>
+                +result : utility::domain::result
+                +workspaces : vector<domain::workspace>
+                +total : uint64_t
             }
-            class create_workspace_request <<struct>> {
-                +data : ores::workspace::domain::workspace
+            class get_workspace_request <<struct>> {
+                +key : workspace_key
             }
-            class create_workspace_response <<struct>> {
-                +success : bool
-                +message : string
-                +id : string
+            class get_workspace_response <<struct>> {
+                +result : utility::domain::result
+                +workspace : optional<domain::workspace>
             }
-            class archive_workspace_request <<struct>> {
-                +id : string
-                +modified_by : string
-                +change_reason_code : string
-                +change_commentary : string
+            class get_many_workspaces_request <<struct>> {
+                +keys : vector<workspace_key>
             }
-            class archive_workspace_response <<struct>> {
-                +success : bool
-                +message : string
+            class get_many_workspaces_response <<struct>> {
+                +result : utility::domain::result
+                +entries : vector<workspace_lookup>
             }
-            class remove_workspace_request <<struct>> {
-                +id : string
-                +modified_by : string
-                +change_reason_code : string
-                +change_commentary : string
+            class put_workspace_request <<struct>> {
+                +change : workspace_change
+                +intent : utility::domain::change_intent
             }
-            class remove_workspace_response <<struct>> {
-                +success : bool
-                +message : string
+            class put_workspace_response <<struct>> {
+                +result : utility::domain::result
+                +workspace : optional<domain::workspace>
             }
+            class put_many_workspaces_request <<struct>> {
+                +changes : vector<workspace_change>
+                +intent : utility::domain::change_intent
+            }
+            class put_many_workspaces_response <<struct>> {
+                +result : utility::domain::result
+                +workspaces : vector<domain::workspace>
+            }
+            class delete_workspace_request <<struct>> {
+                +removal : workspace_removal
+                +intent : utility::domain::change_intent
+            }
+            class delete_workspace_response <<struct>> {
+                +result : utility::domain::result
+            }
+            class delete_many_workspaces_request <<struct>> {
+                +removals : vector<workspace_removal>
+                +intent : utility::domain::change_intent
+            }
+            class delete_many_workspaces_response <<struct>> {
+                +result : utility::domain::result
+            }
+            class list_workspace_versions_request <<struct>> {
+                +key : workspace_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : utility::domain::order
+                +filter : optional<workspace_versions_filter>
+            }
+            class list_workspace_versions_response <<struct>> {
+                +result : utility::domain::result
+                +versions : vector<domain::workspace>
+                +total : uint64_t
+            }
+            class get_workspace_version_request <<struct>> {
+                +key : workspace_version_key
+            }
+            class get_workspace_version_response <<struct>> {
+                +result : utility::domain::result
+                +version : optional<domain::workspace>
+            }
+
+            ' ---------------------------------------------------------------
+            ' workspace_operations_protocol.hpp: the operations that are not
+            ' entity verbs, declared in this same namespace.
+            ' ---------------------------------------------------------------
             class resolve_workspace_request <<struct>> {
                 +workspace_id : string
             }
@@ -99,8 +191,51 @@ namespace ores #F2F2F2 {
                 +message : string
             }
         }
+        namespace eventing #F2F2F2 {
+            class workspace_event_traits {
+                +subject_prefix : string_view
+                {static} +from_notification(n) : messaging::workspace_event
+            }
+        }
+        namespace generators #F2F2F2 {
+            class workspace_generator {
+                {static} +generate_synthetic_workspace(ctx) : domain::workspace
+                {static} +generate_synthetic_workspaces(n, ctx) : vector<domain::workspace>
+            }
+        }
     }
 }
+
+' ---------------------------------------------------------------------------
+' Relationships, derived from the members above. Every edge below is a
+' member that holds a neighbour by value.
+' ---------------------------------------------------------------------------
+
+ores::workspace::messaging::workspace_key <-- ores::workspace::messaging::workspace_removal : key
+ores::workspace::messaging::workspace_key <-- ores::workspace::messaging::workspace_lookup : key
+ores::workspace::messaging::workspace_key <-- ores::workspace::messaging::workspace_event : key
+ores::workspace::messaging::workspace_key <-- ores::workspace::messaging::workspace_version_key : workspace
+ores::workspace::messaging::workspace_key <-- ores::workspace::messaging::get_workspace_request : key
+ores::workspace::messaging::workspace_key <-- ores::workspace::messaging::list_workspace_versions_request : key
+ores::workspace::messaging::workspace_version_key <-- ores::workspace::messaging::get_workspace_version_request : key
+
+ores::workspace::messaging::workspace_write <-- ores::workspace::messaging::workspace_change : write
+ores::workspace::messaging::workspace_change <-- ores::workspace::messaging::put_workspace_request : change
+ores::workspace::messaging::workspace_change <-- ores::workspace::messaging::put_many_workspaces_request : changes
+ores::workspace::messaging::workspace_removal <-- ores::workspace::messaging::delete_workspace_request : removal
+ores::workspace::messaging::workspace_removal <-- ores::workspace::messaging::delete_many_workspaces_request : removals
+ores::workspace::messaging::workspace_versions_filter <-- ores::workspace::messaging::list_workspace_versions_request : filter
+
+ores::workspace::messaging::workspace_lookup <-- ores::workspace::messaging::get_many_workspaces_response : entries
+
+ores::workspace::domain::workspace <-- ores::workspace::messaging::list_workspaces_response : workspaces
+ores::workspace::domain::workspace <-- ores::workspace::messaging::get_workspace_response : workspace
+ores::workspace::domain::workspace <-- ores::workspace::messaging::put_workspace_response : workspace
+ores::workspace::domain::workspace <-- ores::workspace::messaging::put_many_workspaces_response : workspaces
+ores::workspace::domain::workspace <-- ores::workspace::messaging::list_workspace_versions_response : versions
+ores::workspace::domain::workspace <-- ores::workspace::messaging::get_workspace_version_response : version
+ores::workspace::domain::workspace <-- ores::workspace::messaging::workspace_lookup : workspace
+ores::workspace::domain::workspace <-- ores::workspace::generators::workspace_generator : generates
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 

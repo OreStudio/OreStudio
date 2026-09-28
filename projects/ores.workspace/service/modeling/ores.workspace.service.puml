@@ -26,8 +26,14 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    +run(io_ctx, cfg) : awaitable<void>
+                    -make_context(db_opts) : context
+                }
+                class application_exception {
+                    +what() : const char* noexcept
                 }
                 class host {
+                    {static} +execute(args, std_output, error_output, io_ctx) : awaitable<int>
                 }
             }
             namespace config #F2F2F2 {
@@ -37,11 +43,32 @@ namespace ores #F2F2F2 {
                     +database : ores::database::database_options
                 }
                 class parser {
+                    +parse(arguments, info, error) : optional<options>
+                }
+                class parser_exception {
+                    +what() : const char* noexcept
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class workspace_event_registrar <<free functions>> {
+                    +register_workspace_event_mapping(event_source, event_bus, nats) : subscription
                 }
             }
         }
     }
 }
+
+' ---------------------------------------------------------------------------
+' Relationships.
+' ---------------------------------------------------------------------------
+
+ores::workspace::service::app::application_exception --|> std::exception : inherits
+ores::workspace::service::config::parser_exception --|> std::exception : inherits
+ores::workspace::service::app::host --> ores::workspace::service::app::application : runs
+ores::workspace::service::app::application --> ores::workspace::service::config::parser : parses options
+ores::workspace::service::config::parser ..> ores::workspace::service::config::parser_exception : throws
+ores::workspace::service::app::application ..> ores::workspace::service::app::application_exception : throws
+ores::workspace::service::app::application --> ores::workspace::service::messaging::workspace_event_registrar : registers
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 

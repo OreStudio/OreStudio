@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_nats_handler.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_WORKSPACE_CORE_MESSAGING_WORKSPACE_HANDLER_HPP
 #define ORES_WORKSPACE_CORE_MESSAGING_WORKSPACE_HANDLER_HPP
 
@@ -27,22 +32,16 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 #include "ores.workspace.core/service/workspace_service.hpp"
 #include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <optional>
-#include <string>
-#include <thread>
-#include <vector>
 
 namespace ores::workspace::messaging {
 
 namespace {
 inline auto& workspace_handler_lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.workspace.core.messaging.workspace_handler");
+    static auto instance = ores::logging::make_logger("ores.workspace.messaging.workspace_handler");
     return instance;
 }
 } // namespace
@@ -51,9 +50,11 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for workspace operations.
+ */
 class workspace_handler {
 public:
     workspace_handler(ores::nats::service::client& nats,
@@ -63,294 +64,388 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    /**
+     * @brief Serves workspace.v1.workspaces.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_workspaces(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "workspace::workspaces:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::workspace_service svc(ctx);
-        list_workspaces_response resp;
+        const auto& req_ctx = *req_ctx_expected;
         auto req = decode<list_workspaces_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, resp);
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
+        service::workspace_service svc(req_ctx);
         try {
-            resp.workspaces = svc.list_workspaces();
+            auto response = svc.list_workspaces(*req);
             BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_workspaces_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
-        reply(nats_, msg, resp);
     }
 
-    void create(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    /**
+     * @brief Serves workspace.v1.workspaces.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_workspace(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "workspace::workspaces:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_workspace_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::workspace_service svc(req_ctx);
+        try {
+            auto response = svc.get_workspace(*req);
+            BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_workspace_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves workspace.v1.workspaces.get_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_many_workspaces(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_many_workspaces_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::workspace_service svc(req_ctx);
+        try {
+            auto response = svc.get_many_workspaces(*req);
+            BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_many_workspaces_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves workspace.v1.workspaces.put.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_workspace(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workspace::workspaces:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::workspace_service svc(ctx);
-        auto req = decode<create_workspace_request>(msg);
+        auto req = decode<put_workspace_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(
-                nats_,
-                msg,
-                create_workspace_response{.success = false, .message = "Failed to decode request"});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
+        service::workspace_service svc(req_ctx);
         try {
-            const auto id = svc.create_workspace(req->data);
-            BOOST_LOG_SEV(workspace_handler_lg(), debug)
-                << "Completed " << msg.subject << " id=" << id;
-            reply(nats_, msg, create_workspace_response{.success = true, .id = id});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, create_workspace_response{.success = false, .message = e.what()});
-        }
-    }
-
-    void archive(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        auto req = decode<archive_workspace_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_,
-                  msg,
-                  archive_workspace_response{.success = false,
-                                             .message = "Failed to decode request"});
-            return;
-        }
-
-        // Three-tier permission check per design:
-        //   live workspace    → workspace::live_workspace:archive  (SuperAdmin)
-        //   caller's own ws   → workspace::workspaces:archive      (Trading+)
-        //   another user's ws → workspace::workspaces:archive_any  (TenantAdmin+)
-        const bool is_live = (req->id == ores::utility::uuid::live_workspace_uuid_str);
-
-        service::workspace_service svc(ctx);
-
-        if (is_live) {
-            if (!has_permission(ctx, "workspace::live_workspace:archive")) {
-                error_reply(nats_, msg, ores::service::error_code::forbidden);
-                return;
-            }
-        } else {
-            const auto ws = svc.get_workspace(req->id);
-            const bool is_owner =
-                ws.has_value() && ctx.party_id().has_value() && (ws->owner_id == *ctx.party_id());
-            const auto required =
-                is_owner ? "workspace::workspaces:archive" : "workspace::workspaces:archive_any";
-            if (!has_permission(ctx, required)) {
-                error_reply(nats_, msg, ores::service::error_code::forbidden);
-                return;
-            }
-        }
-
-        try {
-            svc.archive_workspace(
-                req->id, req->modified_by, req->change_reason_code, req->change_commentary);
+            auto response = svc.put_workspace(*req);
             BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, archive_workspace_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, archive_workspace_response{.success = false, .message = e.what()});
+            put_workspace_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void resolve(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    /**
+     * @brief Serves workspace.v1.workspaces.put_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void put_many_workspaces(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::workspace_service svc(ctx);
-        resolve_workspace_response resp;
-        auto req = decode<resolve_workspace_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, resp);
-            return;
-        }
-        try {
-            resp.resolution_order = svc.resolve(req->workspace_id);
-            BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
-        }
-        reply(nats_, msg, resp);
-    }
-
-    void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        auto req = decode<remove_workspace_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(
-                nats_,
-                msg,
-                remove_workspace_response{.success = false, .message = "Failed to decode request"});
-            return;
-        }
-
-        // Three-tier permission: same ownership logic as archive, but :delete permissions.
-        const bool is_live = (req->id == ores::utility::uuid::live_workspace_uuid_str);
-
-        if (is_live) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workspace::workspaces:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-
-        service::workspace_service svc(ctx);
-        const auto ws = svc.get_workspace(req->id);
-        const bool is_owner =
-            ws.has_value() && ctx.party_id().has_value() && (ws->owner_id == *ctx.party_id());
-        const auto required =
-            is_owner ? "workspace::workspaces:delete" : "workspace::workspaces:delete_any";
-        if (!has_permission(ctx, required)) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
+        auto req = decode<put_many_workspaces_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-
+        service::workspace_service svc(req_ctx);
         try {
-            svc.remove_workspace(req->id);
+            auto response = svc.put_many_workspaces(*req);
             BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, remove_workspace_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, remove_workspace_response{.success = false, .message = e.what()});
+            put_many_workspaces_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void set_trade_scope(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    /**
+     * @brief Serves workspace.v1.workspaces.delete.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_workspace(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "workspace::workspaces:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workspace::workspaces:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::workspace_service svc(ctx);
-        auto req = decode<set_trade_scope_request>(msg);
+        auto req = decode<delete_workspace_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(
-                nats_,
-                msg,
-                set_trade_scope_response{.success = false, .message = "Failed to decode request"});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
+        service::workspace_service svc(req_ctx);
         try {
-            boost::uuids::string_generator gen;
-            std::vector<boost::uuids::uuid> trade_uuids;
-            trade_uuids.reserve(req->trade_ids.size());
-            for (const auto& s : req->trade_ids)
-                trade_uuids.push_back(gen(s));
-            svc.set_trade_scope(req->workspace_id, trade_uuids);
+            auto response = svc.delete_workspace(*req);
             BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, set_trade_scope_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, set_trade_scope_response{.success = false, .message = e.what()});
+            delete_workspace_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
-    void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    /**
+     * @brief Serves workspace.v1.workspaces.delete_many.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void delete_many_workspaces(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "workspace::workspaces:read")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workspace::workspaces:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<get_workspace_history_request>(msg);
+        auto req = decode<delete_many_workspaces_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, get_workspace_history_response{});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        std::thread([this, msg = std::move(msg), ctx, id = req->id]() mutable {
-            service::workspace_service svc(ctx);
-            get_workspace_history_response resp;
-            try {
-                resp.workspaces = svc.get_workspace_history(id);
-                resp.success = true;
-                BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(workspace_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.message = e.what();
-            }
-            reply(nats_, msg, resp);
-        }).detach();
+        service::workspace_service svc(req_ctx);
+        try {
+            auto response = svc.delete_many_workspaces(*req);
+            BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            delete_many_workspaces_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
-    void clear_trade_scope(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(workspace_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    /**
+     * @brief Serves workspace.v1.workspaces_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_workspace_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "workspace::workspaces:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::workspace_service svc(ctx);
-        auto req = decode<clear_trade_scope_request>(msg);
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<list_workspace_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_,
-                  msg,
-                  clear_trade_scope_response{.success = false,
-                                             .message = "Failed to decode request"});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
+        service::workspace_service svc(req_ctx);
         try {
-            svc.clear_trade_scope(req->workspace_id);
+            auto response = svc.list_workspace_versions(*req);
             BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, clear_trade_scope_response{.success = true});
+            reply(nats_, msg, response);
         } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
             BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, clear_trade_scope_response{.success = false, .message = e.what()});
+            list_workspace_versions_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves workspace.v1.workspaces_versions.get.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void get_workspace_version(ores::nats::message msg) {
+        BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_workspace_version_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(workspace_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::workspace_service svc(req_ctx);
+        try {
+            auto response = svc.get_workspace_version(*req);
+            BOOST_LOG_SEV(workspace_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(workspace_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_workspace_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 
@@ -361,4 +456,5 @@ private:
 };
 
 } // namespace ores::workspace::messaging
+
 #endif

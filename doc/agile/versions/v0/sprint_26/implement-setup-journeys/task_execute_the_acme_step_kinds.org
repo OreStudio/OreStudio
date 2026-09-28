@@ -26,11 +26,11 @@ iam.v1.tenants.provision drives the ACME demo card end to end: the three step ki
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The three executors, their argument parsers and the ACME demo's rows are in, and the demo card's run completes on the live deployment. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request.                |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

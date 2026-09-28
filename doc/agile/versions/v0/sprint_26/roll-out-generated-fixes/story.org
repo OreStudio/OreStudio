@@ -28,11 +28,11 @@ matches its header. The work is captured in the next bucket as
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED |
+| State         | DONE |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Five of the seven components are regenerated, one commit each, and the branch passes every gate. The fifth consequence of a shared-template change surfaced on the way: a regenerated protocol stops a hand-written caller in another component from compiling, and the shell's scheduler command had to be migrated. Trade and workspace-cpp remain. |
+| Now           | Nothing. |
 | Waiting on    | The pull request's checks. |
-| Next          | Merge. Trade and workspace-cpp stay in the capture with the reasons they are out. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-28 |
 
 * Acceptance
@@ -51,7 +51,7 @@ matches its header. The work is captured in the next bucket as
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:21B66CCB-379C-434B-821E-418CB5EC5867][Regenerate the five components and fix the callers the new shapes break]] | STARTED | 2026-09-28 | | Regenerate history, scheduler, storage, marketdata and synthetic against the current templates, commit each component on its own, and migrate every hand-written caller the new response shapes break. |
+| [[id:21B66CCB-379C-434B-821E-418CB5EC5867][Regenerate the five components and fix the callers the new shapes break]] | DONE | 2026-09-28 | 2026-09-28 | Regenerate history, scheduler, storage, marketdata and synthetic against the current templates, commit each component on its own, and migrate every hand-written caller the new response shapes break. |
 
 * Decisions
 

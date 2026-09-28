@@ -28,11 +28,11 @@ generated with. The capture =shell-recipes-no-longer-run= is what asked for it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED |
+| State        | DONE |
 | Parent story | [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] |
-| Now          | All the work is on the branch and every gate is green: build, database recreate, fleet, the full test suite, the drift check and the codegen suite. The pull request is open. |
+| Now          | Nothing. |
 | Waiting on   | The pull request's checks. |
-| Next         | Merge, then flip the capture's remaining two components. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -114,6 +114,26 @@ The order that was followed:
 |   |                 |      |          |       |
 
 * Result
+
+Every acceptance item holds on the branch, and the pull request's fourteen
+checks pass.
+
+- =check_component_drift.py --all= exits 0 with "No drift: regenerated output
+  matches the checked-in tree", so all five components match the templates the
+  refdata pass left behind.
+- Each component is one commit: =ff0290be5e= history, =329f5293fe= scheduler,
+  =7260831807= storage, =1483ee3388= and =ead842e0a4= marketdata,
+  =4f91f9fccf= and =7d917bcfee= synthetic. The recipes ride with their
+  component, and =50b68239b7= carries the recipe inventory entry they add.
+- =dd6150918c= migrates the one hand-written caller the new shapes break. The
+  first full build after the regeneration is what found it, at
+  =scheduler_commands.cpp:290=.
+- =compass build= exits 0, =compass db recreate -y -k= exits 0 with the store
+  reporting =drift: current=, the fleet is 25 of 25, and the full =ctest= suite
+  is 87 of 87 targets with 6706 cases and no failure.
+- The capture names =trading= and =workspace-cpp= as the remainder, with the
+  reason each is out.
+
 
 Not yet merged. On the branch, every acceptance item holds: the five
 components regenerate with no drift, the migrated caller builds, the store

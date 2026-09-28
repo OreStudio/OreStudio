@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/fx-fixing-source-identity
-#+pr: 2336
+#+pr: 2340
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -272,6 +272,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2340][#2340]] | [marketdata] Carry an FX fixing's source and the pair as quoted |
 | [[https://github.com/OreStudio/OreStudio/pull/2336][#2336]] | [marketdata] Give every interest-rate fixing index name an identity |
 
 * Review

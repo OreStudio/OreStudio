@@ -75,6 +75,7 @@ set(files
     "xml_pricingengines_roundtrip_tests.cpp"
     "xml_remaining_phases_mapper_roundtrip_tests.cpp"
     "xml_roundtrip_harness_tests.cpp"
+    "xml_roundtrip_reference_tests.cpp"
     "xml_roundtrip_tests.cpp"
     "xml_scripted_golden_roundtrip_tests.cpp"
     "xml_sensitivityanalysis_roundtrip_tests.cpp"

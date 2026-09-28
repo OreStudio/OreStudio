@@ -83,6 +83,26 @@ struct roundtrip_kind {
 ORES_ORE_CORE_EXPORT std::string first_difference(const std::string& lhs, const std::string& rhs);
 
 /**
+ * @brief Compares two parsed documents by the canonical form of each.
+ *
+ * The comparison for a kind whose mapper preserves every value in the spelling
+ * it was written in. A kind whose mapper normalises a field, because the
+ * binding holds it as text and the type holds it as a number, supplies its own
+ * comparison instead, so that the normalisation is stated rather than
+ * discovered as a failure.
+ */
+template <typename Document>
+std::string parsed_text_difference(const Document& lhs,
+                                   const Document& rhs,
+                                   const std::string& path) {
+    const std::string left = save_data(lhs);
+    const std::string right = save_data(rhs);
+    if (left == right)
+        return {};
+    return path + ": " + first_difference(left, right);
+}
+
+/**
  * @brief Builds a kind from a mapper pair and a comparison.
  *
  * Import loads the file into the ORE binding, maps it to the entities, maps

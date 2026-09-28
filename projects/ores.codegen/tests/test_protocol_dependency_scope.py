@@ -15,9 +15,13 @@ generator in silence: the checked-in scripts still omitted the session-party
 positional and still sent ``__none__`` where the shell wants its absent token,
 so 71 of refdata's 732 generated commands aborted.
 
-Both halves are asserted, because the gate is right about the model that
-suppresses its protocol and only wrong about the address that was used to reach
-it.
+This file pins the half that matters to refdata: that its recipe is reached
+from every address, including the ones that cannot see the protocol. The gate's
+own negative case -- a model that suppresses its protocol gets no recipe and no
+shell unit -- is pinned in ``test_protocol_dependent_facets_gate.py``, against
+a fixture. It used to be asserted here against a live dq junction, until that
+junction was changed to keep its protocol; a gate's negative case pinned to a
+live model is a statement about the tree, not about the gate.
 """
 import sys
 from pathlib import Path
@@ -32,12 +36,6 @@ CODEGEN_DIR = REPO_ROOT / "projects/ores.codegen"
 # An entity that derives its protocol, so its shell unit and its recipe exist.
 PROTOCOL_ENTITY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.book.org"
 RECIPE_OUTPUT = "doc/recipes/shell/books/book.org"
-
-# A junction that states :ores.cpp.protocol.enabled: false, which is what the
-# gate is for.
-PROTOCOL_SUPPRESSED = (
-    REPO_ROOT / "projects/ores.dq/modeling/ores.dq.badge_mapping_junction.org"
-)
 
 
 def _outputs(model: Path, address: str) -> set[str]:
@@ -57,9 +55,3 @@ def test_the_recipe_facet_is_the_one_the_doc_address_selects():
 def test_an_unscoped_run_still_renders_the_shell_recipe():
     assert RECIPE_OUTPUT in _outputs(PROTOCOL_ENTITY, "ores")
 
-
-def test_a_model_that_suppresses_its_protocol_gets_no_recipe():
-    """The gate's own case: no protocol means no shell unit and no recipe."""
-    recipes = {out for out in _outputs(PROTOCOL_SUPPRESSED, "ores")
-               if out.startswith("doc/recipes/shell/")}
-    assert recipes == set()

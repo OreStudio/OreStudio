@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-28T21:12:44.313523Z
+' Generated: 2026-09-28T23:37:14.676673Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1659,6 +1659,7 @@ package "refdata" #FFF3E0 {
         * format : text
         * monetary_nature : text
         * market_tier : text
+          ore_currency_type : text
           image_id : uuid <<FK>>
         * spot_days : integer
         * day_basis : text
@@ -3840,6 +3841,7 @@ package "dq_staging" #F3E5F5 {
         * format : text
         * monetary_nature : text
         * market_tier : text
+          ore_currency_type : text
           image_id : uuid <<FK>>
         * spot_days : integer
         * day_basis : text

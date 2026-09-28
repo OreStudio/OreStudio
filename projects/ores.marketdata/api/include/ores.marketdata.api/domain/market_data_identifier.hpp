@@ -117,8 +117,12 @@ struct ir_market_data_identifier final {
 /**
  * @brief A fully-resolved oresmd identifier for an equity/index instrument (asset_class=equity).
  *
- * `ccy` is required here (unlike IR, where `entity` already is the currency) since an
- * equity's `entity` is a ticker -- the quote currency is independent information.
+ * `ccy` is a quote's to give, and a fixing's is not: a quote is a price and has to say
+ * what it is denominated in, while a fixing's key is an index name -- EQ-SP5 is the
+ * level of an index, not a price in a currency. The field is therefore optional in the
+ * type and the parser requires it for every `type` except `fixing`. Unlike IR, where
+ * `entity` already is the currency, an equity's `entity` is a ticker, so this is
+ * independent information rather than a repeat of the path segment.
  */
 struct equity_market_data_identifier final {
     std::string ticker;

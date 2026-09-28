@@ -64,6 +64,15 @@ market_data_identifier resolve_{{asset_class}}(const {{asset_class}}_market_data
 {{/default}}
 {{/resolver_skip}}
 {{/fields}}
+{{#ccy_optional_for_fixing}}
+    // Requiredness follows the entity kind here as well as in the parser. A
+    // requirement resolved without a currency would otherwise produce an
+    // identifier the parser refuses and no quote key can be built from, which
+    // is a failure this function is better placed to report than the caller.
+    if (!id.ccy && id.type != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://{{asset_class}}/... requires a ccy unless type=fixing."));
+{{/ccy_optional_for_fixing}}
     return id;
 }
 

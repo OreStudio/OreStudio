@@ -114,3 +114,63 @@ TEST_CASE("resolve_commodity_requirement_missing_commodity_code_throws", tags) {
 
     REQUIRE_THROWS_AS(oresmd_resolver::resolve(req, defaults), oresmd_exception);
 }
+
+/*
+ * Requiredness follows the entity kind in the resolver as well as in the parser.
+ * A requirement is a partial description, so the resolver is where a caller that
+ * never said what a quote is denominated in has to be told; a fixing is not
+ * asked, because an index name does not carry a currency.
+ */
+
+TEST_CASE("resolve_equity_quote_requirement_missing_ccy_throws", tags) {
+    equity_market_data_requirement req;
+    req.ticker = "SP5";
+    req.type = instrument_type::quote;
+    // ccy unset in both the requirement and the defaults.
+
+    equity_market_data_identifier defaults;
+    defaults.type = instrument_type::quote;
+
+    REQUIRE_THROWS_AS(oresmd_resolver::resolve(req, defaults), oresmd_exception);
+}
+
+TEST_CASE("resolve_commodity_quote_requirement_missing_ccy_throws", tags) {
+    commodity_market_data_requirement req;
+    req.commodity_code = "GOLD";
+    req.type = instrument_type::quote;
+
+    commodity_market_data_identifier defaults;
+    defaults.type = instrument_type::quote;
+
+    REQUIRE_THROWS_AS(oresmd_resolver::resolve(req, defaults), oresmd_exception);
+}
+
+TEST_CASE("resolve_equity_fixing_requirement_needs_no_ccy", tags) {
+    equity_market_data_requirement req;
+    req.ticker = "SP5";
+    req.type = instrument_type::fixing;
+
+    equity_market_data_identifier defaults;
+    defaults.type = instrument_type::fixing;
+
+    const auto id = oresmd_resolver::resolve(req, defaults);
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    CHECK(eq.ticker == "SP5");
+    CHECK(eq.type == instrument_type::fixing);
+    CHECK_FALSE(eq.ccy.has_value());
+}
+
+TEST_CASE("resolve_commodity_fixing_requirement_needs_no_ccy", tags) {
+    commodity_market_data_requirement req;
+    req.commodity_code = "GOLD";
+    req.type = instrument_type::fixing;
+
+    commodity_market_data_identifier defaults;
+    defaults.type = instrument_type::fixing;
+
+    const auto id = oresmd_resolver::resolve(req, defaults);
+    const auto& co = std::get<commodity_market_data_identifier>(id);
+    CHECK(co.commodity_code == "GOLD");
+    CHECK(co.type == instrument_type::fixing);
+    CHECK_FALSE(co.ccy.has_value());
+}

@@ -26,11 +26,11 @@ Every conventions document in the corpus imports, exports and matches, with the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The mapper counts what it skips, and the nine files that use only modelled categories round trip. The fourteen categories the corpus uses are scoped and not yet modelled. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Model the fourteen categories, most used first, each with a refdata entity, both mappers and its own round trip. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -114,3 +114,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in [[https://github.com/OreStudio/OreStudio/pull/2354][PR #2354]], which
+closes this task with the modelled half of conventions proven and the unmodelled
+half scoped. The task's third acceptance bullet, that all seventy-two files
+round trip, is not met; the fourteen categories that stand between the corpus
+and it are carried by
+[[id:A436B63F-778C-4EE5-BD9C-9BAB5133316A][Model the convention categories the
+mapper skips]], which continues this work.
+
+*What the mapper did.* It ignored seventeen of the document's twenty-six
+categories without saying so, which is why seventy-two files passed a
+round-trip test that only compared element counts. It now counts what it skips
+into =mapped_conventions::unmodelled= and warns per category.
+
+*What now round trips.* The nine files that carry only modelled categories do.
+They failed on a value spelling rather than a lost element: =true= came back as
+=True= and =A365= as =A365F=, because the mapper collapses ORE's boolean
+spellings and enum aliases to the canonical codes the refdata columns hold. The
+kind's comparison answers it in two parts, and it is sound because the first
+part refuses a lost element and the second cannot hide one.
+
+*What does not.* The other sixty-three files each carry at least one of the
+fourteen categories the mapper does not model, from =CrossCurrencyBasis= in
+forty-nine files to =IntradayPowerLoad= in one. A category the mapper cannot
+write is content the export cannot hold, so those files stay measured by a
+hidden probe rather than asserted.
+
+*A correction this task had to make.* An earlier note claimed the export dropped
+=<IndexBased>=. It does not: the comparison quotes a window starting forty bytes
+before the difference, so the element at the top of the imported side was
+context rather than the difference. Dumping the export settled it, and the fix
+the claim implied, a mapper line and a new column, was not needed.

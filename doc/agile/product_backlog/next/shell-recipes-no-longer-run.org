@@ -75,6 +75,9 @@ two components that remain.
   registrar, handler and presentation files that the component does not carry
   today.
 
+That branch merged as =17fa9f47fd= through PR #2334, so the five are on main
+and only the two above remain.
+
 * References
 
 - The task that found them: =doc/agile/versions/v0/sprint_26/clean-refdata/task_clean_refdata.org=,

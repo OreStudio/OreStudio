@@ -37,7 +37,7 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 
 - from_index_name names every distinct index name the corpus carries, asserted by a corpus-driven test whose allowlist is empty. **Met**: the class list is empty and the census reads 156 of 156 index names.
 - Each asset class the corpus puts in the fixing space has a stated mapping, or a recorded reason it has none. **Met**: the two rows that are not index names are the only ones with a reason, and it is recorded.
-- The corpus fixing import creates a series for every fixing row, with no skipped-name warnings. **Not met, and not this task's**: the import still writes the index name into the series qualifier and never calls from_index_name, which is the identity cutover's work. Review rows 10 and 11 record it.
+- The corpus fixing import creates a series for every fixing row, with no skipped-name warnings. **Not met, and not this task's**: the import still writes the index name into the series qualifier and never calls from_index_name, which is the identity cutover's work. Review row 11 records it.
 
 * The index names, and what each class needs
 
@@ -459,6 +459,8 @@ task and name that file in the Command column.
 | =ores.marketdata.core= suite, after the last three classes | 1764 assertions in 394 cases | =ores.marketdata.core.tests= | =48eb0e27aa= |
 | codegen suite, after the last three classes | 992 passed | =pytest projects/ores.codegen/tests= | =48eb0e27aa= |
 | Component file lists, the marketdata parts and codegen | up to date, rc 0 for each | =regenerate_cmake_component_files.py --component <name> --check= | =48eb0e27aa= |
+| =ores.marketdata.core= suite, after the review fixes | 1770 assertions in 398 cases | =ores.marketdata.core.tests= | =509bb244d7= |
+| Corpus names, after the review fixes | 156 of 156 index names, 2 keys pinned apart | =ores.marketdata.core.tests "[fixing]"= | =509bb244d7= |
 
 The test binaries are under
 =build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the
@@ -541,6 +543,14 @@ nothing else. =test_oresmd_spec_test_cases.py= now loads every model through the
 generator's own loader and requires each declared description to appear as a
 =TEST_CASE= in the generated sources. Run against the tree before the wiring it
 names all 22 rows.
+
+**The delivery key is gated in the template, because the table cannot reach it.**
+The Type-gated keys table is emitted only for the classes that build a
+=validate_<class>()=, so a class that validates inline gets no gate from it, which
+is the codegen gap the models record for =delivery=. The gate therefore lives in the
+shared ={{#has_delivery}}= block, where every class that names the field passes
+through it, so commodity, power and security all refuse a delivery off a fixing and
+the claim that no class accepts the key and drops it is true of all three.
 
 **One component file list is stale on main, and it is not this task's.**
 =regenerate_cmake_component_files.py --all --check= reports
@@ -644,6 +654,18 @@ via its "Verifies task" field.
 | 65 | =from_index_name= hard-codes =substr(8)= for the prefix length | the projections template | accept | A named =generic_prefix= carries the prefix, and the test and the offset both read from it. |
 | 66 | =to_upper= on a non-ASCII name depends on the shared helper's behaviour | the projections template | recorded as a limit | =detail::to_upper= is the helper every class's entity already passes through, and the corpus is ASCII. Widening the input belongs to the cutover. |
 | 67 | The check matches the literal =TEST_CASE("<description>"= | =test_oresmd_spec_test_cases.py= | accept | A comment states the coupling: a template that reformats the call breaks the check rather than passing it. |
+| 68 | The commit bodies run past the documented 72 columns | this branch | accept | The three original messages are re-wrapped by a reflow over the branch; the two written after this round are wrapped as they are written. |
+| 69 | The loader's new comment claimed a last-item marker nothing emits | =org_loader.py= | accept | The comment now says what the template does: one code per row, comma included. |
+| 70 | The prefix-and-tail shape is duplicated between commodity and security | the projections template | accept | =split_code_and_month= and =index_name_code_and_month= carry it, and both classes' arms and emitters call them. |
+| 71 | =market_data_key= names a class label, while the vector holds keys | the coverage test | accept | Renamed =market_data_key_class=. |
+| 72 | "The one index-name prefix pair that is a bare token" names nothing | the projections template | accept | The comment now says the class has no prefix to strip. |
+| 73 | The inflation rule holds on the read side only | the parser and projections templates | accept | Both sides use the same generated table: a fixing URI whose code the model does not carry is refused as it is parsed, and an identifier holding one has no name to write. |
+| 74 | A rejection case also asserts a positive routing | the projections tests | accept | The assertion moved into the inflation case that owns the routing. |
+| 75 | =delivery= is accepted on a security quote and dropped | the parser template and the three models | accept | The same defect class the previous review closed elsewhere, and it is closed for every class that names a delivery: the gate is in the shared block, since the Type-gated keys table reaches only the classes that build a validator. Each of the three models declares the rejection. |
+| 76 | The inflation table is bypassed where an identity is minted | the parser and projections templates | accept | Both directions are gated on the same table, so neither mints an identity the other refuses. |
+| 77 | The census reports its population without asserting it | the coverage test | accept | It now asserts that the classes and the pinned keys add up to the corpus's 158 names, so a payload that leaves the walk fails instead of shrinking the total quietly. |
+| 78 | The acceptance cites the wrong review rows | this task | accept | Row 11 alone records the import gap; row 10 records the allowlist, which is met. |
+| 79 | The classifier is narrower than the projection for a security name | the coverage test | accept | It matches any =BOND-= tail, as the projection accepts one. |
 
 * Result
 
@@ -720,4 +742,4 @@ distinct name the corpus carries.
 What remains is not this task's. The import still stores the index name in the
 series qualifier and never calls =from_index_name=, so the acceptance criterion
 about the import creating a series for every fixing row belongs to the identity
-cutover, as Review rows 10 and 11 record.
+cutover, as Review row 11 records.

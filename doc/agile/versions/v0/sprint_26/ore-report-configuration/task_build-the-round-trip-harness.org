@@ -28,9 +28,9 @@ The harness turns round trip from a claim into a command. It is built once and e
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Design settled; implementation not begun. |
+| Now          | Implemented and passing; open for review. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the kind registry, then register credit simulation through it. |
+| Next         | Merge, then register the remaining kinds as their mappers land. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -77,6 +77,8 @@ The harness turns round trip from a claim into a command. It is built once and e
 | Mappers in =ores.ore.core= | 13 | =ls projects/ores.ore/core/src/domain/*mapper*.cpp | wc -l= | =e2bda9e108= |
 | Kinds with an entity-level round trip today | 1, credit simulation | =ls projects/ores.ore/core/src/domain/ \| grep credit_simulation= | =e2bda9e108= |
 | Run documents in the corpus | 416 | =find external/ore/examples -iname "ore*.xml" | wc -l= | =e2bda9e108= |
+| Files the harness walks for credit simulation | 14, all passing | the harness suite's =walk.files= and =walk.passed= | this branch |
+| Assertions in =ores.ore.core.tests= | 429951 in 564 cases | =build/output/linux-clang-debug-make/publish/bin/ores.ore.core.tests= | this branch |
 
 The commit column names the tree each number describes. The census numbers are
 from the commit the census was written at, not from this branch.
@@ -85,12 +87,22 @@ from the commit the census was written at, not from this branch.
 
 - The harness is not a new test framework. It is a registry plus a walker, and
   the walker is the same idea as the binding one, with the per-kind counters
-  lifted into the registry so that adding a kind is a registration rather than
-  an edit.
+  lifted into the registration so that adding a kind is a value rather than an
+  edit.
 - The binding walker stays. It proves the generated bindings read and write a
   document; the harness proves the entities do. Where a kind has both, both run:
   a binding defect and a mapper defect are different defects and a single test
   cannot attribute them.
+- The first implementation compared the two documents as text and failed on all
+  14 credit simulation files. The differences were ORE's =t0="0.0"= against our
+  =t0="0"=, and the indentation inside a =Data= element: the same document, held
+  differently. That is why the harness takes a comparison from the kind instead
+  of comparing text, and why the credit simulation comparison moved out of its
+  test into the mapper so that both callers share it. A generic comparison would
+  have had to ignore text, which is how a lost value hides.
+- The harness's failure path has a test with a deliberately lossy mapper pair,
+  because a rig that has only ever passed is not evidence that it checks
+  anything.
 
 * Test Scenarios
 

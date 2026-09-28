@@ -140,6 +140,21 @@ A report definition's configuration is a set of strongly typed entities rather t
   and the registry. =ores.ore= holds the mappers and no state. A configuration
   is a header row in =reporting.configurations= and its content is in the
   owning component, joined by =configuration_id=.
+- **The harness takes a per-kind comparison, because parsed equality is not
+  text equality.** The binding holds some numeric attributes as text and the
+  mapper writes them back in its own spelling: ORE's =t0="0.0"= and our
+  =t0="0"= are the same bound, and the netting set list is indented differently
+  although its codes are the same. A generic text comparison fails a faithful
+  round trip; a rule that ignores text hides a lost value. So a kind supplies
+  its comparison beside its mappers and the harness owns the walk, the count and
+  the failure list. The credit simulation comparison moved out of its test into
+  =credit_simulation_diff.cpp= for this reason, so the test and the harness
+  share one implementation rather than drifting apart.
+- **The harness walks a corpus by file prefix, which is what the census globs.**
+  A kind's files are the ones whose stem starts with the kind's prefix, so
+  =creditsimulation*= finds the 14 credit simulation documents including
+  =creditsimulation3_ts.xml=. Counting files named exactly after the kind
+  undercounts, which the census already recorded.
 
 * Out of scope
 

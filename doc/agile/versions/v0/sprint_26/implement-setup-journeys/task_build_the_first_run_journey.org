@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-first-run-journey
-#+pr:
+#+pr: 2356
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -150,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2356][#2356]] | [web] Build the first run journey |
 
 * Review
 

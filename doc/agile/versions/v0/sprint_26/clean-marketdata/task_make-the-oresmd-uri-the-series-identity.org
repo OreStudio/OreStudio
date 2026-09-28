@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; each lookup asks by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing.                               |
-| Next         | Delete the triple against the census, taking the two fallbacks with it: a series created through the API without an identity would be duplicated by the first import of the same key, which is why the write message has to stop offering the triple first. |
+| Next         | Settle the internal series' identity, which is what the not-null cutover waits on, then delete the triple against the census. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -115,6 +115,40 @@ nor the handler is generated. It is verified by the compiler and the suites and 
 nothing else: this path has no sender anywhere in the tree and no case exercises it,
 which is worth knowing before the cutover leans on it.
 
+**Not every series row in the table can be given an identity, and the constraint
+says so.** Measured on the live database at =ca23d34ef2=: of 5,864 series rows,
+**4,431** carry a series type the ORE key grammar knows, and **1,433 across 28
+types do not**. Almost all of the second population is test-data generator output --
+=CD-0= to =CD-25=, 1,431 rows, whose =series_type=, =metric= and =qualifier= are all
+the same string and whose subclass cycles through the generator's list -- plus one
+=YieldCurve= row the model's own example generator emits. Neither is data.
+
+The population that matters is one row: the FOMC bootstrap's raw grid, seeded by
+=marketdata_market_series_fomc_populate.sql= as =RATES / YIELD / 'USD/SOFR-FOMC'=,
+"the identity the ingest loop resolves the ir_curve_feed's ticks by". =RATES= and
+=YIELD= are not ORE series types, so =from_ore_key()= cannot name that row, and
+neither can any other projection: the synthetic pipeline invented a vocabulary of
+its own.
+
+So the plan's phase one -- the column not null, the natural key moved onto it --
+cannot proceed as written, and this is the third time the same shape has appeared:
+the premise "every identity-bearing row can be given an =oresmd_uri=" holds for what
+ORE's files carry, and fails for what the system invents. =GENERIC-MD= was the first,
+the generated feed binding writer the second. The options, recorded rather than
+chosen:
+
+- the synthetic feed publishes its raw grid under a real ORE key, the way its daily
+  average price already publishes under =COMMODITY_FWD/PRICE/ICE:PDQ/USD/<date>=.
+  This is the least invention and the one that makes the cutover's premise true;
+- oresmd grows a namespace for internally derived series, which is a grammar
+  extension and wants its own decision;
+- derived series keep the triple and the URI stays the key for observed ones, which
+  leaves two keys in one table and defeats the point of the cutover.
+
+The column stays nullable meanwhile, and the identity is what a row gets *if it has
+one*: the constraint would not catch the generator output anyway, since random text
+satisfies a not null column.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
@@ -131,6 +165,9 @@ plan itself stays — it is the historical record of what we did.)
 | Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
 | Production readers left on the triple alone | 0; the two remaining calls are the import's and the ingest loop's fallbacks | grep for =read_latest_by_type= beyond those | =47327e935b= |
 | =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
+| Series rows that carry an ORE series type | 4431 of 5864 | =select series_type, count(*) from ores_marketdata_market_series_tbl= against the 42 registry types | =ca23d34ef2= |
+| Series rows that do not | 1433 across 28 types, 1431 of them =CD-0= to =CD-25= generator output | same | =ca23d34ef2= |
+| Production rows no projection can name | 1: =RATES / YIELD / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =ca23d34ef2= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 

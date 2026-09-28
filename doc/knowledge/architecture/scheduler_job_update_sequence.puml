@@ -1,0 +1,51 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Updating a job definition: the write, the version, and the loop's re-read
+
+actor "the caller" as caller
+participant "the scheduler service" as service
+database "the job definitions table" as table
+participant "the loop" as loop
+
+caller -> service : put the definition\n(the fields, a change reason,\na precondition on the version it read)
+service -> table : close the current row;\ninsert the next version
+table --> service : the stored definition,\nwith its new version
+service --> caller : the stored definition
+
+table --> loop : the change event\n(created, updated or deleted)
+loop -> loop : re-read the job set,\nand re-arm the timer
+
+note over loop
+    The loop does not poll the table.
+    Any change event re-reads the set and
+    re-arms the sleep.
+end note
+
+... the next due instant ...
+
+loop -> loop : fire each definition whose occurrence has arrived
+loop -> loop : recompute that definition's next occurrence
+
+note over service, loop
+    A firing already in flight keeps the definition
+    the loop read; the change applies to later firings.
+end note
+
+@enduml

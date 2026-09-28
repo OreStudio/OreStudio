@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: A47C612B-9CAB-4656-B4FC-E9DA1D414F83
+:END:
+#+title: Job actions
+#+description: The operation a firing performs: the database statement, the queue message and the published message, the handler registry, and whether a firing waits for a reply.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+An action is the operation a firing performs. A job definition stores an
+action type and the payload that action type needs; at each firing the
+scheduler selects the handler registered for that type. Three types
+exist: a database statement, a queue message, and a published message.
+The action type decides whether the firing waits for a reply. This page
+defines the three types, the handler registry, and the limits of an
+action.
+
+* Detail
+
+** The handler registry
+
+The action type is a string stored on the job definition. The scheduler
+registers one handler per type and selects the handler whose type matches
+the job's. The loop, the cron expression and the firing record do not
+depend on the set of types: adding a type adds a handler and changes no
+other component.
+
+A job whose type has no registered handler fails immediately, before any
+work is attempted, and the scheduler's error is stored in the firing
+record. The refusal states that the job asks for something the scheduler
+cannot perform, which is a property of the job and not of the payload.
+
+The registered types are =execute_sql=, =send_mq_message= and
+=nats_publish=, and each reads its payload from the job definition.
+
+#+caption: The payload each action type reads from the job definition: the statement, the queue message, and the published message with its optional receiver.
+[[proj:doc/knowledge/architecture/scheduler_action_payloads.png]]
+
+Source: [[proj:doc/knowledge/architecture/scheduler_action_payloads.puml][=scheduler_action_payloads.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/scheduler_action_payloads.puml=.
+
+** The database statement
+
+The =execute_sql= action runs a statement against the database. The
+statement is stored on the job definition and passed to the database
+unchanged, and it runs under the scheduler's own database identity, so
+the privileges of a scheduled statement are the privileges of that
+identity.
+
+A statement the database rejects fails the firing, and the database's
+error is stored in the record. The scheduler's queue-statistics job,
+=ores.mq.metrics_scrape=, uses this type every minute; a system job that
+maintains derived data is the usual case for it.
+
+** The queue message
+
+The =send_mq_message= action stores a queue identifier, a message type
+and a body in the job payload, and asks the queue component to accept the
+message. The scheduler owns the handover and not the delivery: ordering,
+redelivery and consumption belong to the queue component, and the
+scheduler neither tracks the message nor learns whether it was consumed.
+The firing completes when the queue accepts the message.
+
+** The published message
+
+The =nats_publish= action stores a subject and publishes the job's
+payload on it. Two forms exist, and the payload selects between them.
+
+- /Notification./ No receiver is named, so the scheduler publishes and
+  reads no reply. The firing completes when the publish returns, and no
+  component has to be subscribed for the action to succeed. This is the
+  smallest action a job can perform, and
+  [[id:15BC870B-4922-4DA8-8161-30DF9FA5A010][A first schedule]] uses
+  it as its example.
+- /Request./ A receiver is named, so the scheduler sends an
+  authenticated request under its own service identity. The receiver can
+  name the caller, and an error reply fails the firing, which is how a
+  rejected trigger reaches the schedule instead of being lost. The
+  scheduler waits for the acknowledgement and for nothing else: the work
+  the receiver performs is not part of the firing.
+
+The scheduler's stale-result reaper, =compute.v1.reap.stale_results=,
+publishes on =compute.v1.work.reap= every minute in the notification
+form. The request form belongs to a trigger whose acceptance matters; the
+per-definition trigger that reporting registers is the case in service.
+
+** The limits of an action
+
+The scheduler runs one action per firing and records its result. It does
+not retry an action that failed, and it does not track the work an action
+starts. Both limits follow from the same rule: the scheduler's
+responsibility ends when the action returns, and the receiver owns
+everything after that.
+[[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]]
+defines the boundary for the case where the work behind a subject
+outlives one action.
+
+* See also
+
+- [[https://docs.nats.io/][NATS documentation]] — the transport the published action uses.

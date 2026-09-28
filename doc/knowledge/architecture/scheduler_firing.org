@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 29714C54-9022-494B-9751-CC6FCED10313
+:END:
+#+title: The firing
+#+description: The record of one execution of a job: the row written before the action runs, the three states, and the two read operations over the record.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A firing is the record of one execution of a job. The scheduler writes
+the firing before it starts the action, so an execution that fails still
+has a row, and a row that cannot be written prevents the action from
+running. A firing has three states, and a failure stores its reason. The
+scheduler loop is the only writer of the firing table, and two read
+operations serve it: the execution list and the live status. This page
+defines the record, its states, and the two reads.
+
+* Detail
+
+** The record is written before the action
+
+A firing stores the job it belongs to, the tenant the job runs for, the
+action type, the instant the firing was triggered, the instant the action
+started, the instant it ended, its duration, the state it reached, and
+the reason it failed when it failed.
+
+The write order is deliberate. The row exists before the action runs, so
+the result updates a row that already exists rather than deciding whether
+a row exists. A reader can therefore distinguish an execution that failed
+from an execution that never happened: the second case is a missing row,
+not a row with a failure in it.
+
+If the scheduler cannot write the row, it does not run the action. The
+scheduler does not run work it cannot record, and the job waits for its
+next occurrence.
+
+** The three states
+
+A firing begins in =starting= and ends in =succeeded= or =failed=.
+
+#+caption: The states of a firing: the record is written before the action runs, and a failure stores its reason.
+[[proj:doc/knowledge/architecture/scheduler_job_instance_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/scheduler_job_instance_states.puml][=scheduler_job_instance_states.puml=]]. Regenerate
+with =plantuml -tpng doc/knowledge/architecture/scheduler_job_instance_states.puml=.
+
+=starting= is the state a firing holds while its action runs, and it is
+the state the live status read counts as in flight. A failure stores its
+reason. One failure is decided before any action is selected: a job whose
+action type has no registered handler fails immediately, because the
+scheduler was asked for work it cannot perform.
+
+** The record covers one execution, not the job
+
+The job definition holds the schedule and the action; the firings hold
+the results. A job's execution history is its firings in chronological
+order, and the three states above describe one entry in that history. The
+loop never writes the job definition when a firing completes, so a
+schedule is not rewritten by its own executions.
+
+** What a firing is not
+
+- /It is not cancellable./ No operation stops a firing that has begun,
+  and the loop never revisits one. A firing ends when its action ends.
+- /It is not retried./ A failed firing stands as recorded, and the job's
+  next execution is the next occurrence its expression defines.
+  [[id:172812F0-17F0-47BC-9933-7A70848105BC][The scheduler loop]]
+  states why a retry would be a second firing rather than a repeat of the
+  first.
+- /It does not record the result of the work./ An action that starts work
+  which outlives it is recorded by its own result, and the result of that
+  work belongs to the component that owns it.
+  [[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and
+  workflows]] defines that boundary.
+
+** The two read operations
+
+The scheduler serves two reads over the firings it has written, and they
+answer the two questions an operator asks of a schedule.
+
+The execution list returns a page of firings, newest first, with the
+job's name and action type joined into each row. It answers what the
+scheduler has run, without a query per job.
+
+The live status returns every job with its cron expression, its active
+flag, the time and state of its last firing, the time of its next
+occurrence, and the number of its firings in flight, together with the
+totals a monitor displays. It answers whether a schedule is in order. An
+inactive job has no next occurrence, and neither has an expression the
+evaluator cannot advance.
+
+Both reads apply the tenant rule the record carries. A firing belongs to
+the tenant of its job, and the system's jobs, which serve every tenant,
+belong to none; a caller sees the firings of its own tenant and the
+firings of the system.
+
+The firing table is an append-only execution log with a bounded retention
+window: older firings are dropped. It answers what the scheduler has run
+recently, and it is not a permanent audit record.
+
+* See also
+
+- [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the notation that defines the instants a firing records.

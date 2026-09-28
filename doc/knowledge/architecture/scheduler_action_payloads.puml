@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The material each action kind reads from the job's payload
+
+class "execute_sql" as sql <<action kind>> #E1F5FF {
+    {field} +statement : text
+}
+
+class "send_mq_message" as mq <<action kind>> #E1F5FF {
+    {field} +queue : queue id
+    {field} +message type : name
+    {field} +body : text
+}
+
+class "nats_publish" as pub <<action kind>> #E1F5FF {
+    {field} +subject : subject name
+    {field} +receiver : name, or none
+    {field} +tenant : tenant id, or none
+}
+
+note bottom of sql
+    The statement runs as the scheduler's
+    own database identity, so its reach is
+    a question of permission.
+end note
+
+note bottom of mq
+    The scheduler owns the handover;
+    the queue owns the delivery.
+end note
+
+note bottom of pub
+    A subject with no receiver is a notification:
+    the scheduler publishes and reads no reply.
+    A named receiver makes the publication a
+    request, and a refusal fails the firing.
+end note
+
+@enduml

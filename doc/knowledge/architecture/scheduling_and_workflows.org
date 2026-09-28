@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 13105F27-9C05-495E-B9A0-2EFC9B5AC811
+:END:
+#+title: Scheduling and workflows
+#+description: The boundary between a schedule and a workflow run: the start message a firing publishes, the obligations the scheduler has at that boundary, and why a step deadline is not a scheduled job.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:workflow:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A schedule determines when work starts; a workflow run executes work that
+lasts longer than one action. The connection is one-directional: the
+job's action publishes a start message, the engine creates the run, and
+the scheduler's part ends at the publish. This page defines the boundary
+from the scheduler's side: what the start message carries, what the job
+must not wait for, and what the scheduler must not read. The design of
+the run belongs to the workflow cluster, and this page assumes only that
+a run exists.
+
+* Detail
+
+** The job starts the run; it does not execute it
+
+Each action type has a defined reach: a database statement, a queue
+message, or a published message. None of them executes work that outlives
+one firing. When the work must outlive it, the job's action publishes a
+start message on the workflow start subject, and the engine, as process
+manager, creates a run and dispatches the steps the run's definition
+declares. The run holds the steps, records each step's result, and ends
+when the last declared step completes.
+
+The job does not wait for that end and does not read the run's state. The
+publish is fire-and-forget: it returns when the message is sent, and the
+run continues independently. The same rule applies to every action the
+scheduler performs, because the scheduler's responsibility ends when the
+action returns.
+
+** The start message is the only interface
+
+The start message is published on the workflow start subject. It carries
+the workflow type, the tenant, the request payload, the correlation
+identifier, and the instance identifier of the run.
+
+#+caption: The start message a firing publishes: the run's identity comes from the firing, so re-publishing one firing opens the same run.
+[[proj:doc/knowledge/architecture/scheduled_workflow_start.png]]
+
+Source: [[proj:doc/knowledge/architecture/scheduled_workflow_start.puml][=scheduled_workflow_start.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/scheduled_workflow_start.puml=.
+
+The instance identifier comes from the firing, so re-publishing one
+firing opens the same run rather than a second one. A scheduled caller
+needs that property, because a retried action must not start two runs for
+one occurrence.
+
+The interaction has one exchange. The scheduler publishes the start and
+records the firing; everything after the start belongs to the run.
+
+#+caption: A firing that starts a run: the scheduler publishes the start and records the firing, and the run proceeds without it.
+[[proj:doc/knowledge/architecture/scheduled_workflow_start_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/scheduled_workflow_start_sequence.puml][=scheduled_workflow_start_sequence.puml=]].
+Regenerate with
+=plantuml -tpng doc/knowledge/architecture/scheduled_workflow_start_sequence.puml=.
+
+** The three obligations at the boundary
+
+Each side owns part of the boundary. Three obligations fall to the
+scheduler, and each follows from the scheduler's own design.
+
+- /Derive the run identity from the firing./ The instance identifier the
+  start carries is the firing's, so a repeated publish opens the same run.
+- /Publish and return./ The job never waits for the run and never reads
+  its state. A job that waited would hold the scheduler's loop for the
+  duration of the run.
+- /Do not hold the run's definition./ The steps, their subjects and their
+  failure policy belong to the workflow definition. The job holds the
+  start and no part of the run's shape, so a change to the definition
+  reaches the next run without changing any schedule.
+
+** The scheduler and the run are independent after the start
+
+The schedule can fire again while an earlier run is in flight. Each
+firing starts a separate run, so a slow run does not delay the next
+firing and a failed run does not suppress it. A cron expression defines
+when work starts and says nothing about how long that work takes.
+
+Once a run exists, the schedule is not how a caller follows it. A caller
+follows a run through the progress read, which reports the run's state
+and the state of each step, so a screen renders the work without
+subscribing to the schedule that started it.
+[[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] defines that read
+and the states it reports.
+
+** A step deadline is not a scheduled job
+
+A step that must expire holds a time budget. A cron expression defines a
+recurring set of instants, not one arbitrary instant, so it cannot
+express a deadline for a single run. The step therefore arms its own
+timer on the executor that owns its subscription. Recurrence belongs to
+the scheduler, and expiry belongs to the step that declares it.
+[[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Waiting, deadlines and
+cancellation]] defines where the budget belongs and what its expiry
+reports.
+
+** Adding a scheduled trigger to a workflow
+
+Three steps connect a new schedule to a run, and each belongs to one
+owner.
+
+1. Register the job definition with the cron expression and the action
+   that starts the run.
+2. Point the action at the workflow start subject, so the firing
+   publishes the start instead of executing the work.
+3. Leave the steps, their subjects and their failure policy in the
+   workflow definition, where
+   [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][the step protocol]]
+   defines what each step must implement.
+
+A schedule connected this way has a job definition whose only task is to
+start a run, and a run that owns everything after the start.
+
+* See also
+
+- [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the notation a scheduled start recurs on.

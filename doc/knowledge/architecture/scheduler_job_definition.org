@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 74597EAF-C5EB-4750-87D2-9B1DF46FEBED
+:END:
+#+title: The job definition
+#+description: The configuration a scheduled job stores: its fields, its natural key, the write path with optimistic concurrency, and how a change reaches the loop.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:scheduling:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A job definition is the configuration the scheduler holds: a name, a
+cron expression, an action type with its payload, an active flag, and the
+tenant and party the job runs for. The table is bitemporal. An update
+closes the current row and inserts the next version rather than
+overwriting it, and a delete closes the row without removing it. Every
+write states a precondition, which the store checks against the version
+the caller read. This page defines the fields, the write path, and how a
+change reaches the loop.
+
+* Detail
+
+** The fields
+
+| field             | meaning                                              |
+|-------------------+------------------------------------------------------|
+| job name          | the natural key, unique within the tenant             |
+| cron expression   | when the job runs                                     |
+| action type       | which handler the firing selects                      |
+| action payload    | the material that handler reads                       |
+| active            | whether the job fires at all                          |
+| tenant            | the tenant the job runs for, or none for a system job |
+| party             | the party the job runs for, or none                   |
+| description       | free text for a reader of the job list                |
+
+The name and the tenant identify a job: the pair is unique among current
+rows, so a write that reuses a name updates that job rather than
+inserting a second one. The identifier is a UUID surrogate key, and a job
+with no tenant is a system job.
+
+The store also holds the audit envelope every entity carries: the
+version, the account that made the change, the service that performed it,
+the change reason, and the interval during which the row was current.
+
+** The write path
+
+The scheduler exposes the canonical entity protocol for job definitions.
+
+| subject                                   | operation                              |
+|-------------------------------------------+----------------------------------------|
+| =scheduler.v1.job_definitions.put=        | create or update one definition        |
+| =scheduler.v1.job_definitions.put_many=   | create or update several in one write  |
+| =scheduler.v1.job_definitions.delete=     | remove one definition                  |
+| =scheduler.v1.job_definitions.delete_many=| remove several in one write            |
+| =scheduler.v1.job_definitions.list=       | list the current definitions           |
+| =scheduler.v1.job_definitions.get=        | read one definition by identifier      |
+| =scheduler.v1.job_definitions_versions.list=| list the stored versions of a definition |
+| =scheduler.v1.job_definitions_versions.get=| read one stored version                |
+
+One operation creates and updates, and the precondition distinguishes
+them. A precondition is either "the row must not exist", which makes the
+write a create, or "the row must match this version", which makes it an
+update of the version the caller read. A change also states a change
+reason, which the store validates against the change-reason reference
+data, and the store records both the account that asked for the change
+and the service that performed it.
+
+Reads and writes are tenant-scoped: the current definitions a caller
+lists are its own tenant's. A system job carries no tenant, and the
+system owns it.
+
+** Versioning and optimistic concurrency
+
+A write does not overwrite a job definition. The store closes the current
+row by setting its end instant, and inserts a new row whose version is
+the previous version plus one and whose interval is open. The current
+version of a definition is therefore the single open row, and every
+earlier version remains stored.
+
+The version is the concurrency control. A caller that states a version
+other than the current one has its write refused with a version conflict,
+and a caller that tries to create a row that already exists has the
+create refused. Two writers cannot silently overwrite each other, and a
+caller that reads a definition and then changes it must state the version
+it read.
+
+The stored versions are readable through the version reads above, and
+through the shared history read, which names the entity
+=ores.scheduler.job_definition=. The version reads address a version by
+number or by number range, and each stored version records the interval
+during which it was current. Those intervals are enough to reconstruct
+the definition as it stood at any instant, which is how a firing is
+attributed to the definition it ran under: the firing stores the job's
+identifier and the instant it was triggered, and the version whose
+interval contains that instant is the one it ran under.
+
+** A delete closes the definition
+
+A delete is a supersession with no successor: the store closes the
+current row and inserts nothing. The definition disappears from the
+current reads and its history remains.
+
+Deleting a definition does not delete its firings. The execution record
+is a separate table with its own retention window, and the firings of a
+deleted job remain readable until that window passes.
+
+** How a change reaches the loop
+
+The loop holds the job definitions in memory and does not poll the table.
+Each change is published as an event on the job-definition change
+subjects, one subject per action: created, updated and deleted. The loop
+subscribes to those events, and any of them re-reads the job set and
+re-arms the timer.
+
+#+caption: Updating a job definition: the write stores a new version, the change event re-reads the loop's job set, and the loop re-arms its timer.
+[[proj:doc/knowledge/architecture/scheduler_job_update_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/scheduler_job_update_sequence.puml]].
+Regenerate with
+=plantuml -tpng doc/knowledge/architecture/scheduler_job_update_sequence.puml=.
+
+The loop re-reads the active definitions on that event and re-arms its
+timer, so a new or edited job is discovered at the instant it is next due
+rather than at a fixed grid point, and every write type travels the same
+path.
+
+The loop holds a copy of each definition. A change does not affect a firing
+already in flight: that firing completes with the definition the loop read.
+The same holds for a delete, whose firing in flight still runs. The change
+applies to the firings that follow.
+
+** What an update changes, and what it does not
+
+- /The cron expression./ The new expression applies from the job's last
+  recorded firing, because the due condition is the next occurrence after
+  that firing, evaluated with the current expression. A change whose next
+  occurrence has already passed, which making a schedule more frequent
+  can cause, makes the job due at once; the scheduler still
+  fires it once and does not replay the occurrences it missed.
+- /The active flag./ Setting the flag to false stops future firings. It
+  is the only supported way to stop a job: no operation cancels a firing
+  that has begun, and none removes a firing from the record.
+- /The action./ A change to the action type or its payload applies to the
+  firings that follow, and the firings already recorded keep the action
+  type they ran under.
+- /The execution history./ No update touches it. The firings of earlier
+  versions stay as recorded, and the reference point for the due
+  condition is a firing, not a field of the definition.
+
+* See also
+
+- [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the notation the definition stores.

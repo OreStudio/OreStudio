@@ -1,0 +1,55 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A firing that opens a run: where the schedule's part ends
+
+participant "the scheduler" as scheduler
+database "the firing record" as record
+participant "the workflow engine\n(process manager)" as engine
+database "the run state" as run
+participant "the caller" as caller
+
+scheduler -> record : record the firing as starting\n(the job, the point, the moment)
+scheduler -> engine : publish the start message\n(workflow.v1.start; the run's identity\ncomes from the firing; no reply subject)
+
+note right of scheduler
+    The job neither waits for the run
+    nor reads its state. The start is
+    fire-and-forget, so the publish
+    returns immediately.
+end note
+
+scheduler -> record : record the firing succeeded\n(the message was published;\nthe run is not read)
+
+engine -> run : create the run\n(from the definition the start names)
+engine -> engine : dispatch the declared steps,\none at a time
+engine -> run : record each step's outcome
+engine --> run : the run ends when the last\nstep completes
+
+... the run continues ...
+
+caller -> run : follow the run through\nthe progress read
+
+note over engine, run
+    The contents of the run, and how it ends,
+    belong to the workflow cluster. The firing
+    records only that the start was published.
+end note
+
+@enduml

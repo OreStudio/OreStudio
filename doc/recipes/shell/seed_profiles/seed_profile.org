@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-seed_profiles add <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
+seed_profiles add <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.seed_profiles.put=.
 
 #+name: seed_profiles-add
 #+begin_src ores-shell :tangle seed_profiles-add.ores :exports none
-seed_profiles add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
+seed_profiles add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-seed_profiles set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary> [--version <n>]
+seed_profiles set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.seed_profiles.put=.
 
 #+name: seed_profiles-set
 #+begin_src ores-shell :tangle seed_profiles-set.ores :exports none
-seed_profiles set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
+seed_profiles set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-seed_profiles put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
+seed_profiles put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.seed_profiles.put_many=.
 
 #+name: seed_profiles-put-many
 #+begin_src ores-shell :tangle seed_profiles-put-many.ores :exports none
-seed_profiles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
+seed_profiles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ false false 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

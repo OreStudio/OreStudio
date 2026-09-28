@@ -115,6 +115,14 @@ struct seed_profile final {
     std::string bullets_json;
 
     /**
+     * @brief Classification of the tenant this profile creates, validated against
+     * ores_iam_tenant_types_tbl. A profile for real use makes a production tenant; a demonstration
+     * profile makes an evaluation one. The form does not ask for it, because the starting point the
+     * person chose already states it.
+     */
+    std::string tenant_type;
+
+    /**
      * @brief Tenant display name the profile prefills. An empty value states that the form starts
      * blank and the administrator supplies the name.
      */

@@ -33,6 +33,27 @@ It is addressed at =iam.v1.tenants.complete-provisioning=.
 tenant_provisioning complete-tenant-provisioning
 #+end_src
 
+** =provision-tenant=
+:PROPERTIES:
+:ID: E1BBACD8-156E-5F46-946A-ABBAF2C69FF0
+:END:
+
+Sends =provision_tenant_command= and prints =provision_tenant_command_response=, so the shape is the protocol's and the meaning is the service's. It reads =profile_code=, =tenant_code=, =tenant_name=, =tenant_hostname=, =tenant_description=, =admin_username=, =admin_email=, =admin_password=, =parameters=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_provisioning provision-tenant <profile_code> <tenant_code> <tenant_name> <tenant_hostname> <tenant_description> <admin_username> <admin_email> <admin_password> <parameters>
+#+end_example
+
+It is addressed at =iam.v1.tenants.provision=.
+
+#+name: tenant_provisioning-provision-tenant
+#+begin_src ores-shell :tangle tenant_provisioning-provision-tenant.ores :exports none
+tenant_provisioning provision-tenant __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+
 ** =provision-acme-tenant=
 :PROPERTIES:
 :ID: EF8E648E-5FED-5282-8685-9E6BCEAC7B96

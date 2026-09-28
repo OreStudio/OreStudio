@@ -1,0 +1,6 @@
+# =by-seed-profile-id=
+#
+# GENERATED from doc/recipes/shell/seed_profile_parameters/seed_profile_parameter.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+seed_profile_parameters by-seed-profile-id 00000000-0000-0000-0000-000000000000 --limit 1

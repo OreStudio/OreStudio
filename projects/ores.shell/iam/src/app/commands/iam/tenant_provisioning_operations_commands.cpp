@@ -47,6 +47,28 @@ namespace ores::shell::app::commands {
 using namespace logging;
 using ores::nats::service::nats_client;
 
+namespace {
+
+/**
+ * @brief Split a comma-separated token into the elements of a list field.
+ */
+std::vector<std::string> split_list_token(const std::string& value) {
+    std::vector<std::string> parts;
+    std::string current;
+    for (const char c : value) {
+        if (c == ',') {
+            parts.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(c);
+        }
+    }
+    parts.push_back(current);
+    return parts;
+}
+
+} // namespace
+
 void tenant_provisioning_operations_commands::register_commands(cli::Menu& root_menu,
                                                                 nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("tenant_provisioning");
@@ -57,6 +79,14 @@ void tenant_provisioning_operations_commands::register_commands(cli::Menu& root_
             process_complete_tenant_provisioning(std::ref(out), std::ref(session), std::move(args));
         },
         "complete-tenant-provisioning");
+
+    menu->Insert(
+        "provision-tenant",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_provision_tenant(std::ref(out), std::ref(session), std::move(args));
+        },
+        "provision-tenant <profile_code> <tenant_code> <tenant_name> <tenant_hostname> "
+        "<tenant_description> <admin_username> <admin_email> <admin_password> <parameters>");
 
     menu->Insert(
         "provision-acme-tenant",
@@ -110,6 +140,66 @@ void tenant_provisioning_operations_commands::process_complete_tenant_provisioni
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::complete_tenant_provisioning_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void tenant_provisioning_operations_commands::process_provision_tenant(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating provision-tenant request.";
+
+    using request_type = ores::iam::messaging::provision_tenant_command;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run provision-tenant." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 9;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.profile_code = parsed->positionals[next++];
+        req.tenant_code = parsed->positionals[next++];
+        req.tenant_name = parsed->positionals[next++];
+        req.tenant_hostname = parsed->positionals[next++];
+        req.tenant_description = parsed->positionals[next++];
+        req.admin_username = parsed->positionals[next++];
+        req.admin_email = parsed->positionals[next++];
+        req.admin_password = parsed->positionals[next++];
+        req.parameters = split_list_token(parsed->positionals[next++]);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::provision_tenant_command_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::provision_tenant_command_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::provision_tenant_command_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

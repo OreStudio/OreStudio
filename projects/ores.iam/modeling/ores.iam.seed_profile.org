@@ -136,6 +136,23 @@ none, which is not the same as stating an empty line.
 std::string("[]")
 #+end_src
 
+** tenant_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  'production'
+:END:
+
+Classification of the tenant this profile creates, validated against
+=ores_iam_tenant_types_tbl=. A profile for real use makes a production
+tenant; a demonstration profile makes an evaluation one. The form does not
+ask for it, because the starting point the person chose already states it.
+
+#+begin_src cpp :name generator
+std::string("production")
+#+end_src
+
 ** tenant_name
 :PROPERTIES:
 :type:     text
@@ -273,8 +290,9 @@ faker::number::integer(0, 100)
 
 ** Validations
 
-| column | validation_function |
-|--------+----------------------|
+| column      | validation_function                |
+|-------------+------------------------------------|
+| tenant_type | ores_iam_validate_tenant_type_fn   |
 
 * C++
 

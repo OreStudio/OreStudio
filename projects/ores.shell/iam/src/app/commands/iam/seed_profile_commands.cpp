@@ -141,8 +141,8 @@ void seed_profile_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> "
-        "<tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
+        "add <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name> "
+        "<tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
         "<force_password_change> <display_order> <reason> <commentary>");
 
     menu->Insert(
@@ -150,8 +150,8 @@ void seed_profile_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> "
-        "<tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
+        "set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_type> <tenant_name> "
+        "<tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
         "<force_password_change> <display_order> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -159,9 +159,9 @@ void seed_profile_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> "
-        "<tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
-        "<force_password_change> <display_order> <reason> <commentary>");
+        "put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json> <tenant_type> "
+        "<tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email> "
+        "<inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +355,8 @@ void seed_profile_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -366,6 +366,7 @@ void seed_profile_commands::process_add(std::ostream& out,
         read_token(req.change.write.summary, parsed->positionals[next++], "summary");
         read_token(req.change.write.audience, parsed->positionals[next++], "audience");
         read_token(req.change.write.bullets_json, parsed->positionals[next++], "bullets_json");
+        read_token(req.change.write.tenant_type, parsed->positionals[next++], "tenant_type");
         read_token(req.change.write.tenant_name, parsed->positionals[next++], "tenant_name");
         read_token(req.change.write.tenant_code, parsed->positionals[next++], "tenant_code");
         read_token(
@@ -421,8 +422,8 @@ void seed_profile_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 14 + 2) {
-            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,6 +433,7 @@ void seed_profile_commands::process_set(std::ostream& out,
         read_token(req.change.write.summary, parsed->positionals[next++], "summary");
         read_token(req.change.write.audience, parsed->positionals[next++], "audience");
         read_token(req.change.write.bullets_json, parsed->positionals[next++], "bullets_json");
+        read_token(req.change.write.tenant_type, parsed->positionals[next++], "tenant_type");
         read_token(req.change.write.tenant_name, parsed->positionals[next++], "tenant_name");
         read_token(req.change.write.tenant_code, parsed->positionals[next++], "tenant_code");
         read_token(
@@ -499,8 +501,8 @@ void seed_profile_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 14 + 2) {
-            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 15 + 2) {
+            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -512,6 +514,7 @@ void seed_profile_commands::process_put_many(std::ostream& out,
             read_token(change.write.summary, parsed->positionals[next++], "summary");
             read_token(change.write.audience, parsed->positionals[next++], "audience");
             read_token(change.write.bullets_json, parsed->positionals[next++], "bullets_json");
+            read_token(change.write.tenant_type, parsed->positionals[next++], "tenant_type");
             read_token(change.write.tenant_name, parsed->positionals[next++], "tenant_name");
             read_token(change.write.tenant_code, parsed->positionals[next++], "tenant_code");
             read_token(

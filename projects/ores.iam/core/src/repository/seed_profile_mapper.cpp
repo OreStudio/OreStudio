@@ -47,6 +47,7 @@ domain::seed_profile seed_profile_mapper::map(const seed_profile_entity& v) {
     r.summary = v.summary;
     r.audience = v.audience;
     r.bullets_json = v.bullets_json;
+    r.tenant_type = v.tenant_type;
     r.tenant_name = v.tenant_name;
     r.tenant_code = v.tenant_code;
     r.tenant_hostname = v.tenant_hostname.value_or("");
@@ -79,6 +80,7 @@ seed_profile_entity seed_profile_mapper::map(const domain::seed_profile& v) {
     r.summary = v.summary;
     r.audience = v.audience;
     r.bullets_json = v.bullets_json;
+    r.tenant_type = v.tenant_type;
     r.tenant_name = v.tenant_name;
     r.tenant_code = v.tenant_code;
     r.tenant_hostname = v.tenant_hostname.empty() ? std::nullopt : std::optional(v.tenant_hostname);

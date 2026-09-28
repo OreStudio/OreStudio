@@ -46,6 +46,198 @@ The tenant_provisioning protocol messages.
 :cpp_type: std::string
 :END:
 
+** provision_tenant_command
+:PROPERTIES:
+:subject: iam.v1.tenants.provision
+:response: provision_tenant_command_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Provisions a tenant from a seed profile.
+ *
+ * The tenant and its administrator are created before the answer; the steps
+ * the profile orders run afterwards as a workflow instance, whose id the
+ * answer carries. This is the one verb for every tenant, the first one
+ * included, and it replaces iam.v1.bootstrap.provision-tenant and
+ * iam.v1.tenants.provision-acme.
+ */
+#+end_src
+
+*** profile_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Code of the seed profile to provision from.
+ *
+ * The profile states the tenant's type, the steps to run and the parameters
+ * this request must supply. An unknown code is refused.
+ */
+#+end_src
+
+*** tenant_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Unique code of the tenant to create.
+ */
+#+end_src
+
+*** tenant_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Display name of the tenant.
+ */
+#+end_src
+
+*** tenant_hostname
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Hostname of the tenant.
+ *
+ * A principal of the form username@hostname resolves its tenant through this
+ * value.
+ */
+#+end_src
+
+*** tenant_description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Optional description for the tenant record.
+ */
+#+end_src
+
+*** admin_username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Username of the tenant's first administrator, without a hostname
+ * part.
+ */
+#+end_src
+
+*** admin_email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Email address of that administrator.
+ */
+#+end_src
+
+*** admin_password
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Initial password of that administrator.
+ *
+ * A client that reuses the caller's own password, as a demonstration
+ * profile's form does, sends it here: a server cannot read the password its
+ * caller signed in with.
+ */
+#+end_src
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Values for the profile's declared parameters, one "name=value" entry
+ * each.
+ *
+ * A parameter the profile does not declare is refused, and so is a value the
+ * parameter's data type or its choices refuse. A parameter this list omits
+ * takes the profile's default; one that is required, omitted and declares no
+ * default is refused, and so is a required parameter whose value is empty.
+ */
+#+end_src
+
+** provision_tenant_command_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The answer to a provision request.
+ *
+ * The name carries the verb because @c iam.v1.bootstrap.provision-tenant still
+ * declares a @c provision_tenant_response of its own, and both verbs answer
+ * until the shell's provisioning moves to this one.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Id of the workflow instance that runs the profile's steps.
+ *
+ * The caller follows the run, its progress and its retries by this id.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Id of the tenant the request created.
+ */
+#+end_src
+
+*** account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Id of the administrator account it created.
+ */
+#+end_src
+
 ** provision_acme_tenant_command
 :PROPERTIES:
 :subject: iam.v1.tenants.provision-acme

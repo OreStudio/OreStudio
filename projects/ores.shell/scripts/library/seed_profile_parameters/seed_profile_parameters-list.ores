@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/seed_profile_parameters/seed_profile_parameter.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+seed_profile_parameters list --limit 1

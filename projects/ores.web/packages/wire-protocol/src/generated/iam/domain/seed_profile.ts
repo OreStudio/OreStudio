@@ -39,6 +39,7 @@ export interface SeedProfile {
     summary: string;
     audience: string;
     bullets_json: string;
+    tenant_type: string;
     tenant_name: string;
     tenant_code: string;
     tenant_hostname: string;

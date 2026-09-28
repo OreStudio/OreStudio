@@ -27,6 +27,8 @@ import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstra
 import { subjects as seedProfileSubjects } from './generated/iam/protocol/seed_profile_protocol.js';
 import { subjects as seedProfileParameterSubjects } from './generated/iam/protocol/seed_profile_parameter_protocol.js';
 import { subjects as seedProfileStepSubjects } from './generated/iam/protocol/seed_profile_step_protocol.js';
+import { subjects as tenantProvisioningSubjects } from './generated/iam/protocol/tenant_provisioning_protocol.js';
+import type { ProvisionTenantCommand } from './generated/iam/protocol/tenant_provisioning_protocol.js';
 import type { Uuid } from './primitives.js';
 
 /**
@@ -57,6 +59,7 @@ export const SUBJECTS = {
         seedProfileStepSubjects.list_by_seed_profile_id_seed_profile_steps_request,
     listSeedProfileParameters:
         seedProfileParameterSubjects.list_by_seed_profile_id_seed_profile_parameters_request,
+    provisionTenant: tenantProvisioningSubjects.provision_tenant_command,
 } as const;
 
 /**
@@ -659,3 +662,84 @@ export const seedProfilesResponseSchema = z.object({
 });
 
 export type SeedProfilesResponse = z.infer<typeof seedProfilesResponseSchema>;
+
+/**
+ * A request to provision one tenant from a starting point.
+ *
+ * The profile's parameters travel as a list of `name=value` entries, because
+ * the shell fills them from one command line; the browser holds them as a map
+ * keyed by parameter name, which is what its form produces.
+ * `toProvisionTenantCommand` is the one place the two meet.
+ *
+ * The tenant's type is not here. It is the profile's, and a request that named
+ * it would be a second starting point beside the one the person chose.
+ */
+export const provisionTenantRequestSchema = z.object({
+    profileCode: z.string().min(1),
+    tenantCode: z.string().min(1),
+    tenantName: z.string().min(1),
+    tenantHostname: z.string().min(1),
+    tenantDescription: z.string().default(''),
+    adminUsername: z.string().min(1),
+    adminEmail: z.string().min(1),
+    adminPassword: z.string().min(1),
+    parameters: z.record(z.string(), z.string()).default({}),
+});
+
+export type ProvisionTenantRequest = z.infer<typeof provisionTenantRequestSchema>;
+
+/**
+ * What the provision verb answered, as the interface reads it.
+ *
+ * The instance id is what the journey follows: the steps the profile orders run
+ * after the answer, and the progress read names them by this id.
+ *
+ * `success` defaults to false, so a reply that arrives without the field reads
+ * as a failure the caller can see rather than a success nobody has checked.
+ */
+export const provisionTenantResultSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    instanceId: z.string().default(''),
+    tenantId: z.string().default(''),
+    accountId: z.string().default(''),
+});
+
+export type ProvisionTenantResult = z.infer<typeof provisionTenantResultSchema>;
+
+/** The server's own answer to the provision verb, before it is read as a result. */
+export const provisionTenantReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    instance_id: z.string().default(''),
+    tenant_id: z.string().default(''),
+    account_id: z.string().default(''),
+});
+
+/** The wire command one request becomes. */
+export function toProvisionTenantCommand(request: ProvisionTenantRequest): ProvisionTenantCommand {
+    return {
+        profile_code: request.profileCode,
+        tenant_code: request.tenantCode,
+        tenant_name: request.tenantName,
+        tenant_hostname: request.tenantHostname,
+        tenant_description: request.tenantDescription,
+        admin_username: request.adminUsername,
+        admin_email: request.adminEmail,
+        admin_password: request.adminPassword,
+        parameters: Object.entries(request.parameters).map(([name, value]) => `${name}=${value}`),
+    };
+}
+
+/** The interface's result, read from the server's answer. */
+export function toProvisionTenantResult(
+    reply: z.infer<typeof provisionTenantReplySchema>,
+): ProvisionTenantResult {
+    return {
+        success: reply.success,
+        message: reply.message,
+        instanceId: reply.instance_id,
+        tenantId: reply.tenant_id,
+        accountId: reply.account_id,
+    };
+}

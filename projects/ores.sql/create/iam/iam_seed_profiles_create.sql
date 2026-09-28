@@ -63,6 +63,7 @@ create table if not exists "ores_iam_seed_profiles_tbl" (
     "summary" text not null,
     "audience" text not null,
     "bullets_json" jsonb not null default '[]'::jsonb,
+    "tenant_type" text not null default 'production',
     "tenant_name" text not null default '',
     "tenant_code" text not null default '',
     "tenant_hostname" text null,
@@ -106,6 +107,9 @@ declare
 begin
     -- All seed_profiles belong to the system tenant
     NEW.tenant_id := ores_utility_system_tenant_id_fn();
+
+    -- Validate tenant_type
+    NEW.tenant_type := ores_iam_validate_tenant_type_fn(NEW.tenant_id, NEW.tenant_type);
 
     -- Validate change_reason_code (use system tenant for seed_profiles records)
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(ores_utility_system_tenant_id_fn(), NEW.change_reason_code);

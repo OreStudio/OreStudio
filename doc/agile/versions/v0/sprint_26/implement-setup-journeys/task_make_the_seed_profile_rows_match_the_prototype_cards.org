@@ -26,11 +26,11 @@ A new profile states the card the screen shows. Carry the prototype's card data 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The model, the rows and the read carry the prototype's card data; the live deployment serves the reconciled cards. Working the gates. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the remaining gates and commit.    |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

@@ -157,18 +157,18 @@ void validate_{{asset_class}}(const query_params& qp) {
 {{/reject_keys}}
 {{#type_gated_keys}}
     if (qp.{{key}} && parse_type(qp) != instrument_type::{{type}})
-        BOOST_THROW_EXCEPTION(
-            oresmd_exception("oresmd://{{asset_class}}/... '{{key}}' is only meaningful when type={{type}}."));
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            "oresmd://{{asset_class}}/... '{{key}}' is only meaningful when type={{type}}."));
 {{/type_gated_keys}}
 }
 
 {{/oresmd_validate_pre}}
 /*
- * The query keys one asset class owns and the others refuse. It is the whole of
- * what equity, credit and commodity validate: those three delegate their query
- * validation here rather than emitting the Reject keys table their models carry,
- * so a key that must be refused everywhere but its owner belongs here, and not
- * only in those models' tables.
+ * The query keys none of the classes that delegate here models. index, tenor,
+ * role and metric belong to another class's grammar, and source and
+ * source_spelling to an FX fixing. equity, credit and commodity generate no
+ * reject list of their own, so for those three this is the whole of their query
+ * validation and a key refused everywhere but its owner has to be named here.
  */
 void validate_no_foreign_keys(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "index", qp.index);

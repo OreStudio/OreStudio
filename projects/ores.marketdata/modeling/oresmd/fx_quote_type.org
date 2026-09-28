@@ -45,7 +45,7 @@ file, or the qualifier of a correlation key.
 The pair is the pair as published, never a canonical order. A fixing's value is
 only meaningful in the direction it was published, and the corpus writes
 =FX-TR20H-EUR-GBP= and =FX-TR20H-GBP-EUR= as one rate both ways: reciprocal on all
-122 dates they share, the product of the two being 1.0003 on the median date and
+122 dates they share, the product of the two being 0.9997 on the median date and
 0.9964 on the worst. Folding them together would put two values under one date.
 
 * Requirement brief
@@ -128,5 +128,3 @@ no source, so a source on a quote names nothing.
 | oresmd://fx/eurusd?type=quote&index=libor | reject_fx_uri_with_ir_only_index_field |
 | oresmd://fx/eurusd?type=quote&ccy=usd | reject_fx_uri_with_ccy_query_key |
 | oresmd://fx/eurusd?type=quote&model=rate_lnvol | reject_fx_model_when_type_not_vol |
-| oresmd://fx/eurusd?type=quote&source=ecb | reject_fx_source_on_a_quote |
-| oresmd://fx/eurusd?type=quote&source_spelling=ECB | reject_fx_source_spelling_on_a_quote |

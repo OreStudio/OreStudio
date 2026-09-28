@@ -133,9 +133,9 @@ token as ORE wrote it when the two differ, and both are meaningful only when
 
 The pair is never put into a canonical order. A fixing's value is only meaningful
 in the direction it was published, and the corpus writes =FX-TR20H-EUR-GBP= and
-=FX-TR20H-GBP-EUR= as one rate both ways, on 122 shared dates. Reciprocal, but not
-to the last digit: the product of the two is 1.0003 on the median date and 0.9964 on
-the worst. Canonicalising would put two values under one date, and nothing in the
+=FX-TR20H-GBP-EUR= as one rate both ways, on 122 shared dates, reciprocal to about
+three decimal places and no more. The model brief carries the measured pair of
+figures. Canonicalising would put two values under one date, and nothing in the
 import inverts a value.
 
 * Plan
@@ -186,7 +186,7 @@ task and name that file in the Command column.
 | Corpus names that name, after | 64 of 158 (interest rates 57, FX 7) | same | =fb3c5a4f31= |
 | =ores.marketdata.core= suite, after the FX work | 1472 assertions in 346 cases | =ores.marketdata.core.tests= | =fb3c5a4f31= |
 | codegen suite, after the FX work | 961 passed | =pytest projects/ores.codegen/tests= | =fb3c5a4f31= |
-| The two GBP-EUR directions | 122 shared dates; product 1.0003 median, 0.9964 worst | a walk of =external/ore/examples= pairing =FX-TR20H-EUR-GBP= with =FX-TR20H-GBP-EUR= | =fb3c5a4f31= |
+| The two GBP-EUR directions | 122 shared dates; product 0.9997 median, 0.9964 worst | a walk of =external/ore/examples= pairing =FX-TR20H-EUR-GBP= with =FX-TR20H-GBP-EUR= | =fb3c5a4f31= |
 
 The test binaries are under
 =build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the
@@ -251,11 +251,13 @@ tables are documentation and the shared check is what refuses the keys. That is
 pre-existing -- their other rows are equally unenforced -- and it is why the two
 new keys went into the shared check as well as the six tables that do emit.
 
-**The first reciprocal figure was wrong.** The corpus's two GBP-EUR directions were
-first recorded as reciprocal to six decimal places, from a single sampled date. Over
-all 122 shared dates the product of the two is 1.0003 on the median date and 0.9964
-on the worst, so they agree to three decimal places and not more. The decision not
-to canonicalise does not rest on the precision: two values still land on one date.
+**The reciprocal figure took two attempts.** The corpus's two GBP-EUR directions
+were first recorded as reciprocal to six decimal places, from a single sampled date;
+the correction then read the median of the absolute deviation as a product and said
+1.0003. Over all 122 shared dates the median product is 0.9997 and the worst 0.9964,
+so the two agree to three decimal places and not more, and slightly below one. The
+decision not to canonicalise does not rest on the precision: two values still land
+on one date.
 
 * Test Scenarios
 
@@ -301,8 +303,16 @@ via its "Verifies task" field.
 | 20 | The spelling rule was stated three times | parser, projections, model | Accepted | One statement per site |
 | 21 | =fx_fixing_has_no_quote_key= is negative-only | =oresmd_oresmd_projections_tests.cpp= | Declined | The same table's positive rows fail if =to_quote_key= ever returned nullopt, so the pair is meaningful |
 | 22 | A positive assertion sat inside the FX rejection case | =oresmd_oresmd_projections_tests.cpp= | Accepted | Moved into the case that owns the direction |
-| 23 | The reciprocal figure was six decimal places | this task, =fx_quote_type.org= | Accepted | Measured: median product 1.0003, worst 0.9964. Corrected in all three places |
+| 23 | The reciprocal figure was six decimal places | this task, =fx_quote_type.org= | Accepted, then corrected again | The first correction read the median of the absolute deviation as a product and reported 1.0003; the median product is 0.9997. Caught by the second Spec pass, which also found the figure restated in three places |
 | 24 | The review ran while the tree was still being written | -- | Accepted | Process: the axis pinned a revision and re-verified, but the worktree should have been still. Findings re-checked by hand |
+| 25 | The FX round-trip boilerplate justified having no key-readback comparison with a quote's reason, which is false for a fixing | =ores.cpp.oresmd.parser_tests.org= | Accepted | The block's note now reads true for both, and says the exact readback is the coverage tests' claim |
+| 26 | The new class-refusal loop named six own-table classes and tested two of them | same | Accepted | The loop covers every class but FX, ten assertions |
+| 27 | =validate_no_foreign_keys=' comment called index and metric keys "one asset class owns" | =ores.cpp.oresmd.parser.org= | Accepted | Reworded: the six belong to other classes, and for the three that delegate this is their whole query validation |
+| 28 | =split_index_name='s comment ended up above =split_on_dash= | =oresmd_projections.cpp= | Accepted | Moved back above the function it describes |
+| 29 | Two model-driven reject rows duplicated the hand-written case | =fx_quote_type.org= | Accepted | Rows removed; the type-gated table still declares the rule and the case keeps the positive assertion. Case count 346 to 344 |
+| 30 | The type-gated template line had grown to 111 columns | =ores.cpp.oresmd.parser.org= | Accepted | Split |
+| 31 | Both commit bodies run past 72 columns | -- | Recorded, not fixed | Measured: 22 of main's last 40 non-merge commits also exceed it, and correcting these means force-pushing a branch whose reviewed revisions are already recorded. Titles are 71 and 67 and the trailers are complete |
+| 32 | =source= and the pair are checked for shape, not against a currency list | -- | Recorded as a limit | The library has no reference-data dependency by design, as its own header states; the model brief says what is checked. Tightening it belongs to the migration that gives the library one |
 
 * Result
 

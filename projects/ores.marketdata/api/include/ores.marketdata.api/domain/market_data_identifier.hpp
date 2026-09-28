@@ -82,7 +82,7 @@ struct volatility_surface_point final {
  * The pair is the pair as published, never a canonical order. A fixing's value is
  * only meaningful in the direction it was published, and the corpus writes
  * FX-TR20H-EUR-GBP and FX-TR20H-GBP-EUR as one rate both ways: reciprocal on all
- * 122 dates they share, the product of the two being 1.0003 on the median date and
+ * 122 dates they share, the product of the two being 0.9997 on the median date and
  * 0.9964 on the worst. Folding them together would put two values under one date.
  */
 struct fx_market_data_identifier final {

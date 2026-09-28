@@ -1101,10 +1101,6 @@ std::optional<std::vector<std::string>> split_key(const std::string& key) {
     return parts;
 }
 
-// The index-name key space splits on '-' (e.g. "USD-LIBOR-3M"): exactly two
-// or three segments, all non-empty. It is not the ORE key grammar and shares
-// none of its structure -- a fixing's key names an index, not a series and a
-// point -- so it gets its own splitter rather than a mode of split_key's.
 // Every dash-separated segment of a name, empty segments included; the callers
 // decide which shapes they admit.
 std::vector<std::string> split_on_dash(const std::string& name) {
@@ -1116,6 +1112,10 @@ std::vector<std::string> split_on_dash(const std::string& name) {
     return parts;
 }
 
+// The index-name key space splits on '-' (e.g. "USD-LIBOR-3M"): exactly two
+// or three segments, all non-empty. It is not the ORE key grammar and shares
+// none of its structure -- a fixing's key names an index, not a series and a
+// point -- so it gets its own splitter rather than a mode of split_key's.
 std::optional<std::vector<std::string>> split_index_name(const std::string& name) {
     auto parts = split_on_dash(name);
     if (parts.size() < 2 || parts.size() > 3)

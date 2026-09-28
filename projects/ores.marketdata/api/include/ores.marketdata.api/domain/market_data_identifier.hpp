@@ -122,7 +122,7 @@ struct ir_market_data_identifier final {
  */
 struct equity_market_data_identifier final {
     std::string ticker;
-    std::string ccy;
+    std::optional<std::string> ccy;
     instrument_type type = instrument_type::quote;
     std::optional<domain::equity_quote_type> quote_type;
     std::optional<std::string> point;
@@ -153,7 +153,7 @@ struct credit_market_data_identifier final {
  */
 struct commodity_market_data_identifier final {
     std::string commodity_code;
-    std::string ccy;
+    std::optional<std::string> ccy;
     instrument_type type = instrument_type::quote;
     std::optional<domain::commodity_quote_type> quote_type;
     std::optional<std::string> point;

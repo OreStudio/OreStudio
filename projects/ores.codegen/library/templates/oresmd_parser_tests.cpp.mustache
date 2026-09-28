@@ -686,3 +686,46 @@ TEST_CASE("to_uri_with_empty_canonical_values_passes_scalar_identifiers", tags) 
     REQUIRE(oresmd_parser::to_uri(cr, cv).value ==
             "oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise");
 }
+/*
+ * A fixing's identity carries no currency. An index name does not name the
+ * currency an index is quoted in -- EQ-SP5 is the level of an index, not a
+ * price in one -- so the grammar requires a ccy for every other type and not
+ * for this one. The URI round trip is asserted here rather than in the
+ * round-trip tables, because those also require an ORE key projection and a
+ * fixing has none: ORE's equity and commodity key spaces hold quotes.
+ */
+
+TEST_CASE("parse_equity_fixing_carries_no_currency", tags) {
+    const auto s = uri("oresmd://equity/sp5?type=fixing");
+    const auto id = oresmd_parser::parse(s);
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    CHECK(eq.ticker == "SP5");
+    CHECK(eq.type == instrument_type::fixing);
+    CHECK_FALSE(eq.ccy.has_value());
+    CHECK(oresmd_parser::to_uri(id).value == s.value);
+    // And it has no ORE quote key, which is why the round-trip table cannot
+    // carry it.
+    CHECK_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
+TEST_CASE("parse_commodity_fixing_carries_no_currency", tags) {
+    const auto s = uri("oresmd://commodity/gold?type=fixing");
+    const auto id = oresmd_parser::parse(s);
+    const auto& co = std::get<commodity_market_data_identifier>(id);
+    CHECK(co.commodity_code == "GOLD");
+    CHECK(co.type == instrument_type::fixing);
+    CHECK_FALSE(co.ccy.has_value());
+    CHECK(oresmd_parser::to_uri(id).value == s.value);
+    CHECK_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
+TEST_CASE("parse_equity_and_commodity_still_require_a_currency_off_a_fixing", tags) {
+    // The requirement moved rather than went: every type that is not a fixing
+    // still has to say what the quote is denominated in.
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://equity/aapl?type=quote")),
+                      oresmd_exception);
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://equity/aapl?type=vol&point=1y,atm")),
+                      oresmd_exception);
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://commodity/gold?type=quote")),
+                      oresmd_exception);
+}

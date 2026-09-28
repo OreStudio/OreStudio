@@ -318,12 +318,25 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
         BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
             "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
 {{/fx}}
+{{#ccy_optional_for_fixing}}
+    // A fixing's key is an index name, and an index name does not carry the
+    // currency the index is quoted in -- EQ-SP5 is the level of an index, not
+    // a price in a currency. Every other type still needs one.
+    id.type = parse_type(qp);
+    if (!qp.ccy && id.type != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            "oresmd://{{asset_class}}/... requires a ccy query key unless type=fixing."));
+    if (qp.ccy)
+        id.ccy = to_upper(*qp.ccy);
+{{/ccy_optional_for_fixing}}
 {{#requires_ccy}}
     if (!qp.ccy)
         BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://{{asset_class}}/... requires a ccy query key."));
     id.ccy = to_upper(*qp.ccy);
 {{/requires_ccy}}
+{{^ccy_optional_for_fixing}}
     id.type = parse_type(qp);
+{{/ccy_optional_for_fixing}}
 {{#has_vol}}
     reject_model_unless_vol("{{asset_class}}", qp, id.type);
 {{/has_vol}}
@@ -595,6 +608,10 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
 {{#is_ccy}}
                 u.params().append({"ccy", to_lower(id.ccy)});
 {{/is_ccy}}
+{{#is_ccy_optional}}
+                if (id.ccy)
+                    u.params().append({"ccy", to_lower(*id.ccy)});
+{{/is_ccy_optional}}
 {{#is_enum}}
                 append_enum_if(u, "{{key}}", id.{{name}});
 {{/is_enum}}

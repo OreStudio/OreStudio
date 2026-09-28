@@ -17,29 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_IAM_API_MESSAGING_PASSWORD_POLICY_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_PASSWORD_POLICY_PROTOCOL_HPP
 
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <string>
-#include <string_view>
 
 namespace ores::iam::messaging {
 
-/**
- * @brief Asks for the rules the server enforces on a password.
- *
- * The screen that shows the rules is the sign-in screen and the first-run
- * screen, and neither has a session yet, so this request needs none. The answer
- * is the validator's own policy: one statement of the rules, which the server
- * enforces and a client states.
- */
 struct get_password_policy_request {
     using response_type = struct get_password_policy_response;
     static constexpr std::string_view nats_subject = "iam.v1.auth.password-policy";
-
     /**
      * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
 };
@@ -47,14 +44,11 @@ struct get_password_policy_request {
 struct get_password_policy_response {
     bool success = false;
     std::string message;
-
-    /// The shortest password the policy accepts.
     int min_length = 0;
     bool require_uppercase = false;
     bool require_lowercase = false;
     bool require_digit = false;
     bool require_special = false;
-    /// The symbols that satisfy the special-character rule.
     std::string special_chars;
 };
 

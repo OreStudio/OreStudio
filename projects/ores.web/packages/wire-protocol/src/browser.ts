@@ -89,10 +89,7 @@ export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations
 
 // The run a provision starts, which its journey follows by asking again, and
 // the retry that resumes it from the step that failed.
-export {
-    retryWorkflowInstanceResultSchema,
-    workflowProgressSchema,
-} from './operations.js';
+export { retryWorkflowInstanceResultSchema, workflowProgressSchema } from './operations.js';
 export type {
     RetryWorkflowInstanceResult,
     WorkflowProgress,

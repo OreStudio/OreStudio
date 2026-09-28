@@ -125,7 +125,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The rail a browser renders on an empty installation | nine steps, the welcome screen first, and no sign-in form | =google-chrome --headless --dump-dom http://127.0.0.1:21402/= | 3523c3ec09 |
+| The starting points the server answered | two profiles: *Operational*, three steps and two parameters, forcing a change; *ACME demo*, six steps and no parameters, reusing the creating password | =GET /api/seed-profiles= | 3523c3ec09 |
+| The steps the *ACME demo* run completed | six of six, and =complete_provisioning= completed with warnings | the progress read, =GET /api/provision-tenant/:id= | 3523c3ec09 |
+| The step the *Operational* run stopped on | step 3, =import_lei_hierarchy=, because the derived GLEIF dataset is not staged for the new tenant | the progress read, =GET /api/provision-tenant/:id= | 3523c3ec09 |
+| The forced change a first sign-in reported, and after the change | =passwordResetRequired: true=, then =false=, and the new password signs in | =POST /api/account/password= | 3523c3ec09 |
+| The parties the ACME administrator chooses between | five, one of them the default the login named | =POST /api/session= | 3523c3ec09 |
+| The web suite | 75 cases in 9 files, all passing | =npm test= in =projects/ores.web= | 3523c3ec09 |
 
 * Notes
 
@@ -153,3 +159,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The first run journey is built and proved on a fresh installation. An empty
+deployment opens on the welcome and then on one rail of nine steps: the
+administrator is created, the first tenant's steps run inline, its
+administrator takes over, signs in for the first time and the screen reads
+*Ready*. The evidence beside this task carries the browser's rendering of
+that rail, the journey's calls in the journey's order, and the state the two
+runs were left in.
+
+The five tenant steps are a library and not a copy. The first run places them
+between its own steps, so the *New tenant* journey runs the same ones on its
+own rail, and the two rails address a step by name rather than by position.
+
+Three things the journey needs were settled here rather than assumed. It
+signs in as the administrator it has just created, because the starting-point
+read and the provisioning request belong to an account, and it holds that
+password in memory for no longer than the journey, because a profile may hand
+the password to the tenant's administrator. The browser is held on the rail
+after bootstrap mode closes, which is why the route table carries the journey
+as a mode of its own. And every password field is built from the policy the
+deployment answers with, so the copy the field kept until now is gone.
+
+What the two walks found. The *ACME demo* card completed every step it
+orders, its tenant reached =active=, and its administrator's first sign-in
+asked for a party because the account works in five. The *Operational* card
+reached the forced change — the login answer carried
+=passwordResetRequired: true=, the change succeeded, and the new password
+signed in — but its run stopped on the LEI import, because the deployment
+holds no staged GLEIF rows for the new tenant. The journey behaved as
+designed there: the rail showed the failed step, the retry was offered, and
+the tenant stayed in =bootstrapping=. That gap is captured in the inbox, and
+it is the *Operational* card, which is the card a real installation takes.
+
+What this task leaves: the *New tenant* and *New party* journeys are the next
+step's, the shell moves to the same contract in the one after that, and the
+proof of all three journeys on a fresh installation is the last.

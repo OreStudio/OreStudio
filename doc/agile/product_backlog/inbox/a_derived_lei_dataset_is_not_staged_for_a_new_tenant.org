@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: F6C38DC8-5DEB-4EC1-ABD0-FDBB517E174B
+:END:
+#+title: A derived LEI dataset is not staged for a new tenant
+#+description: The Operational card's provisioning run stops on its LEI import, because the bundle it publishes names the derived gleif.lei_parties.small dataset and the tenant holds no staged GLEIF rows for that publication to read. The same run through the ACME demo card completes, because its LEI dataset is part of the deployment's own seed. A person who takes the Operational card on a fresh installation therefore gets a tenant stuck in bootstrapping.
+#+type: capture
+#+level: cross
+#+filetags: :iam:dq:provisioning:seed-profile:bug:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Stage the GLEIF data a new tenant's LEI import reads, or make the import
+publish the datasets its derived dataset depends on. Today the Operational
+card's second step publishes the bundle =lei_hierarchy=, whose only member is
+the derived dataset =gleif.lei_parties.small=. The publication answers that
+the root LEI is not in staging data, because the tenant holds no staged
+GLEIF rows for it to read, and the run stops on that step with the tenant
+left in =bootstrapping=.
+
+* Why
+
+Found on 2026-09-29 while proving the first run journey on a fresh
+installation. Two walks were made through the same BFF, one per starting
+point:
+
+- The *ACME demo* card completed every step it orders, six of them, and its
+  tenant reached =active=. Its LEI import publishes =acme_lei_import=, whose
+  member =acme.lei_parties= is part of the deployment's own seed, so the
+  publication has rows to read.
+- The *Operational* card stopped on its LEI import:
+  =Root LEI not found in staging data: 9DJT3UXIJZI4WXO774=. The LEI is in the
+  deployment's staging data — =gleif.lei_entities.small= holds it and 12959
+  entities beside it — but the rows belong to the system tenant, and the new
+  tenant holds none of them. The dataset's declared dependencies name
+  =gleif.lei_entities.small= and =gleif.lei_relationships.small= as its
+  hierarchy and entity reference, so the publication should be able to reach
+  them; it does not.
+
+What a person sees: the first run journey provisions the first tenant, the
+rail shows the failed step, the retry is offered, and the tenant stays
+bootstrapping. The journey is behaving as designed; the profile's data is
+what cannot be honoured.
+
+The Operational card is the card a real installation takes, so this is the
+path that matters. The proof is
+=doc/agile/versions/v0/sprint_26/implement-setup-journeys/evidence/first_run_journey_live.txt=.
+
+* References
+
+- The dependency rows that name the datasets the publication should reach:
+  =ores_dq_dataset_dependencies_tbl= for =gleif.lei_parties.small=.
+- The staged rows the publication cannot see: =ores_dq_lei_entities_artefact_tbl=,
+  all of them under the system tenant.
+- The profile row that orders the step: =ores_iam_seed_profile_steps_tbl=,
+  =empty_operational= / =import_lei_hierarchy= / ={"bundles": ["lei_hierarchy"]}=.
+
+* See also
+
+- [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Task: Build the First run journey]]

@@ -175,7 +175,7 @@ struct put_instrument_schedule_request {
 
 struct put_instrument_schedule_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_schedule instrument_schedule;
+    std::optional<ores::trading::domain::instrument_schedule> instrument_schedule;
 };
 
 struct put_many_instrument_schedules_request {
@@ -272,7 +272,7 @@ struct get_instrument_schedule_version_request {
 
 struct get_instrument_schedule_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_schedule version;
+    std::optional<ores::trading::domain::instrument_schedule> version;
 };
 
 /**

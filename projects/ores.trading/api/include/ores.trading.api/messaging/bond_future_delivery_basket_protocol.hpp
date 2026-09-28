@@ -155,7 +155,7 @@ struct put_bond_future_delivery_basket_request {
 
 struct put_bond_future_delivery_basket_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_future_delivery_basket bond_future_delivery_basket;
+    std::optional<ores::trading::domain::bond_future_delivery_basket> bond_future_delivery_basket;
 };
 
 struct put_many_bond_future_delivery_baskets_request {
@@ -256,7 +256,7 @@ struct get_bond_future_delivery_basket_version_request {
 
 struct get_bond_future_delivery_basket_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_future_delivery_basket version;
+    std::optional<ores::trading::domain::bond_future_delivery_basket> version;
 };
 
 /**

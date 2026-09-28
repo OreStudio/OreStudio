@@ -152,7 +152,7 @@ struct put_return_type_request {
 
 struct put_return_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::return_type return_type;
+    std::optional<ores::trading::domain::return_type> return_type;
 };
 
 struct put_many_return_types_request {
@@ -248,7 +248,7 @@ struct get_return_type_version_request {
 
 struct get_return_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::return_type version;
+    std::optional<ores::trading::domain::return_type> version;
 };
 
 /**

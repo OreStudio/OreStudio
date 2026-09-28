@@ -167,7 +167,7 @@ struct put_fx_digital_option_instrument_request {
 
 struct put_fx_digital_option_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_digital_option_instrument fx_digital_option_instrument;
+    std::optional<ores::trading::domain::fx_digital_option_instrument> fx_digital_option_instrument;
 };
 
 struct put_many_fx_digital_option_instruments_request {
@@ -268,7 +268,7 @@ struct get_fx_digital_option_instrument_version_request {
 
 struct get_fx_digital_option_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_digital_option_instrument version;
+    std::optional<ores::trading::domain::fx_digital_option_instrument> version;
 };
 
 /**

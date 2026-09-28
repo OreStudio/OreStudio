@@ -18,7 +18,11 @@
  *
  */
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
+#include "ores.shell/app/commands/trading/activity_category_commands.hpp"
 #include "ores.shell/app/commands/trading/activity_type_commands.hpp"
+#include "ores.shell/app/commands/trading/amortization_type_commands.hpp"
+#include "ores.shell/app/commands/trading/average_type_commands.hpp"
+#include "ores.shell/app/commands/trading/barrier_type_commands.hpp"
 #include "ores.shell/app/commands/trading/balance_guaranteed_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/bond_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
@@ -37,6 +41,7 @@
 #include "ores.shell/app/commands/trading/equity_position_option_underlying_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_variance_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/exercise_type_commands.hpp"
 #include "ores.shell/app/commands/trading/fpml_event_type_commands.hpp"
 #include "ores.shell/app/commands/trading/fra_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_accumulator_instrument_commands.hpp"
@@ -49,10 +54,17 @@
 #include "ores.shell/app/commands/trading/inflation_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/knock_out_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/lifecycle_event_commands.hpp"
+#include "ores.shell/app/commands/trading/long_short_type_commands.hpp"
+#include "ores.shell/app/commands/trading/moment_type_commands.hpp"
+#include "ores.shell/app/commands/trading/option_type_commands.hpp"
 #include "ores.shell/app/commands/trading/ore_commands.hpp"
 #include "ores.shell/app/commands/trading/party_role_type_commands.hpp"
+#include "ores.shell/app/commands/trading/payoff_type_commands.hpp"
+#include "ores.shell/app/commands/trading/price_type_commands.hpp"
+#include "ores.shell/app/commands/trading/return_type_commands.hpp"
 #include "ores.shell/app/commands/trading/rpa_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/scripted_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/settlement_type_commands.hpp"
 #include "ores.shell/app/commands/trading/swap_leg_commands.hpp"
 #include "ores.shell/app/commands/trading/swaption_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_commands.hpp"
@@ -70,7 +82,11 @@ void trading_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session,
                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
+    activity_category_commands::register_commands(root_menu, session);
     activity_type_commands::register_commands(root_menu, session);
+    amortization_type_commands::register_commands(root_menu, session);
+    average_type_commands::register_commands(root_menu, session);
+    barrier_type_commands::register_commands(root_menu, session);
     balance_guaranteed_swap_instrument_commands::register_commands(root_menu, session);
     bond_instrument_commands::register_commands(root_menu, session);
     callable_swap_instrument_commands::register_commands(root_menu, session);
@@ -89,6 +105,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     equity_position_option_underlying_commands::register_commands(root_menu, session);
     equity_swap_instrument_commands::register_commands(root_menu, session);
     equity_variance_swap_instrument_commands::register_commands(root_menu, session);
+    exercise_type_commands::register_commands(root_menu, session);
     fpml_event_type_commands::register_commands(root_menu, session);
     fx_accumulator_instrument_commands::register_commands(root_menu, session);
     fx_asian_forward_instrument_commands::register_commands(root_menu, session);
@@ -101,10 +118,17 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     inflation_swap_instrument_commands::register_commands(root_menu, session);
     knock_out_swap_instrument_commands::register_commands(root_menu, session);
     lifecycle_event_commands::register_commands(root_menu, session);
+    long_short_type_commands::register_commands(root_menu, session);
+    moment_type_commands::register_commands(root_menu, session);
+    option_type_commands::register_commands(root_menu, session);
     ore_commands::register_commands(root_menu, session);
     party_role_type_commands::register_commands(root_menu, session);
+    payoff_type_commands::register_commands(root_menu, session);
+    price_type_commands::register_commands(root_menu, session);
+    return_type_commands::register_commands(root_menu, session);
     rpa_instrument_commands::register_commands(root_menu, session);
     scripted_instrument_commands::register_commands(root_menu, session);
+    settlement_type_commands::register_commands(root_menu, session);
     swap_leg_commands::register_commands(root_menu, session);
     swaption_instrument_commands::register_commands(root_menu, session);
     trade_commands::register_commands(root_menu, session);

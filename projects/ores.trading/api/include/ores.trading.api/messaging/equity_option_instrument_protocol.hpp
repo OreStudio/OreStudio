@@ -165,7 +165,7 @@ struct put_equity_option_instrument_request {
 
 struct put_equity_option_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_option_instrument equity_option_instrument;
+    std::optional<ores::trading::domain::equity_option_instrument> equity_option_instrument;
 };
 
 struct put_many_equity_option_instruments_request {
@@ -265,7 +265,7 @@ struct get_equity_option_instrument_version_request {
 
 struct get_equity_option_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_option_instrument version;
+    std::optional<ores::trading::domain::equity_option_instrument> version;
 };
 
 /**

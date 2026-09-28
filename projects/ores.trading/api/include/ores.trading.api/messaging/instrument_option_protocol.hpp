@@ -183,7 +183,7 @@ struct put_instrument_option_request {
 
 struct put_instrument_option_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option instrument_option;
+    std::optional<ores::trading::domain::instrument_option> instrument_option;
 };
 
 struct put_many_instrument_options_request {
@@ -279,7 +279,7 @@ struct get_instrument_option_version_request {
 
 struct get_instrument_option_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option version;
+    std::optional<ores::trading::domain::instrument_option> version;
 };
 
 /**

@@ -163,7 +163,7 @@ struct put_fx_variance_swap_instrument_request {
 
 struct put_fx_variance_swap_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_variance_swap_instrument fx_variance_swap_instrument;
+    std::optional<ores::trading::domain::fx_variance_swap_instrument> fx_variance_swap_instrument;
 };
 
 struct put_many_fx_variance_swap_instruments_request {
@@ -264,7 +264,7 @@ struct get_fx_variance_swap_instrument_version_request {
 
 struct get_fx_variance_swap_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_variance_swap_instrument version;
+    std::optional<ores::trading::domain::fx_variance_swap_instrument> version;
 };
 
 /**

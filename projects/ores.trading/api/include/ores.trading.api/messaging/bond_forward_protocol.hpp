@@ -162,7 +162,7 @@ struct put_bond_forward_request {
 
 struct put_bond_forward_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_forward bond_forward;
+    std::optional<ores::trading::domain::bond_forward> bond_forward;
 };
 
 struct put_many_bond_forwards_request {
@@ -258,7 +258,7 @@ struct get_bond_forward_version_request {
 
 struct get_bond_forward_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_forward version;
+    std::optional<ores::trading::domain::bond_forward> version;
 };
 
 /**

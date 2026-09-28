@@ -152,7 +152,7 @@ struct put_amortization_type_request {
 
 struct put_amortization_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::amortization_type amortization_type;
+    std::optional<ores::trading::domain::amortization_type> amortization_type;
 };
 
 struct put_many_amortization_types_request {
@@ -248,7 +248,7 @@ struct get_amortization_type_version_request {
 
 struct get_amortization_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::amortization_type version;
+    std::optional<ores::trading::domain::amortization_type> version;
 };
 
 /**

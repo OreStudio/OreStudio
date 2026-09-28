@@ -158,7 +158,7 @@ struct put_vanilla_swap_instrument_request {
 
 struct put_vanilla_swap_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::vanilla_swap_instrument vanilla_swap_instrument;
+    std::optional<ores::trading::domain::vanilla_swap_instrument> vanilla_swap_instrument;
 };
 
 struct put_many_vanilla_swap_instruments_request {
@@ -257,7 +257,7 @@ struct get_vanilla_swap_instrument_version_request {
 
 struct get_vanilla_swap_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::vanilla_swap_instrument version;
+    std::optional<ores::trading::domain::vanilla_swap_instrument> version;
 };
 
 /**

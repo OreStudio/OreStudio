@@ -152,7 +152,7 @@ struct put_fpml_event_type_request {
 
 struct put_fpml_event_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fpml_event_type fpml_event_type;
+    std::optional<ores::trading::domain::fpml_event_type> fpml_event_type;
 };
 
 struct put_many_fpml_event_types_request {
@@ -248,7 +248,7 @@ struct get_fpml_event_type_version_request {
 
 struct get_fpml_event_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fpml_event_type version;
+    std::optional<ores::trading::domain::fpml_event_type> version;
 };
 
 /**

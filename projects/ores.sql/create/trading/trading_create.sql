@@ -48,6 +48,45 @@
 \ir ./trading_trade_id_types_create.sql
 \ir ./trading_trade_id_types_notify_trigger_create.sql
 
+-- Closed-set reference data. Each set is the ORE simple type of the same
+-- name, so the spellings round-trip through the ORE XML unchanged. The
+-- instrument tables reference them, so they load before the instruments.
+\ir ./trading_activity_categories_create.sql
+\ir ./trading_activity_categories_notify_trigger_create.sql
+
+\ir ./trading_amortization_types_create.sql
+\ir ./trading_amortization_types_notify_trigger_create.sql
+
+\ir ./trading_average_types_create.sql
+\ir ./trading_average_types_notify_trigger_create.sql
+
+\ir ./trading_barrier_types_create.sql
+\ir ./trading_barrier_types_notify_trigger_create.sql
+
+\ir ./trading_exercise_types_create.sql
+\ir ./trading_exercise_types_notify_trigger_create.sql
+
+\ir ./trading_long_short_types_create.sql
+\ir ./trading_long_short_types_notify_trigger_create.sql
+
+\ir ./trading_moment_types_create.sql
+\ir ./trading_moment_types_notify_trigger_create.sql
+
+\ir ./trading_option_types_create.sql
+\ir ./trading_option_types_notify_trigger_create.sql
+
+\ir ./trading_payoff_types_create.sql
+\ir ./trading_payoff_types_notify_trigger_create.sql
+
+\ir ./trading_price_types_create.sql
+\ir ./trading_price_types_notify_trigger_create.sql
+
+\ir ./trading_return_types_create.sql
+\ir ./trading_return_types_notify_trigger_create.sql
+
+\ir ./trading_settlement_types_create.sql
+\ir ./trading_settlement_types_notify_trigger_create.sql
+
 -- Instrument reference data (floating_index_type, leg_type) moved to
 -- ores.refdata; refdata_create.sql loads before this file.
 

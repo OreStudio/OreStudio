@@ -161,7 +161,7 @@ struct put_fra_instrument_request {
 
 struct put_fra_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fra_instrument fra_instrument;
+    std::optional<ores::trading::domain::fra_instrument> fra_instrument;
 };
 
 struct put_many_fra_instruments_request {
@@ -257,7 +257,7 @@ struct get_fra_instrument_version_request {
 
 struct get_fra_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fra_instrument version;
+    std::optional<ores::trading::domain::fra_instrument> version;
 };
 
 /**

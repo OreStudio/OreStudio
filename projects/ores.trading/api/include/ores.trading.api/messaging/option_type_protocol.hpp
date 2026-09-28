@@ -152,7 +152,7 @@ struct put_option_type_request {
 
 struct put_option_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::option_type option_type;
+    std::optional<ores::trading::domain::option_type> option_type;
 };
 
 struct put_many_option_types_request {
@@ -248,7 +248,7 @@ struct get_option_type_version_request {
 
 struct get_option_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::option_type version;
+    std::optional<ores::trading::domain::option_type> version;
 };
 
 /**

@@ -165,7 +165,7 @@ struct put_bond_issue_request {
 
 struct put_bond_issue_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue bond_issue;
+    std::optional<ores::trading::domain::bond_issue> bond_issue;
 };
 
 struct put_many_bond_issues_request {
@@ -261,7 +261,7 @@ struct get_bond_issue_version_request {
 
 struct get_bond_issue_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue version;
+    std::optional<ores::trading::domain::bond_issue> version;
 };
 
 /**

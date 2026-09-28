@@ -159,7 +159,7 @@ struct put_scripted_instrument_request {
 
 struct put_scripted_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::scripted_instrument scripted_instrument;
+    std::optional<ores::trading::domain::scripted_instrument> scripted_instrument;
 };
 
 struct put_many_scripted_instruments_request {
@@ -256,7 +256,7 @@ struct get_scripted_instrument_version_request {
 
 struct get_scripted_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::scripted_instrument version;
+    std::optional<ores::trading::domain::scripted_instrument> version;
 };
 
 /**

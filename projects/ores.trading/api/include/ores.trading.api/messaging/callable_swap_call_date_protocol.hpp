@@ -154,7 +154,7 @@ struct put_callable_swap_call_date_request {
 
 struct put_callable_swap_call_date_response {
     ores::utility::domain::result result;
-    ores::trading::domain::callable_swap_call_date callable_swap_call_date;
+    std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
 };
 
 struct put_many_callable_swap_call_dates_request {
@@ -253,7 +253,7 @@ struct get_callable_swap_call_date_version_request {
 
 struct get_callable_swap_call_date_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::callable_swap_call_date version;
+    std::optional<ores::trading::domain::callable_swap_call_date> version;
 };
 
 /**

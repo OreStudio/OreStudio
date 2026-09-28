@@ -157,7 +157,7 @@ struct put_instrument_strike_request {
 
 struct put_instrument_strike_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_strike instrument_strike;
+    std::optional<ores::trading::domain::instrument_strike> instrument_strike;
 };
 
 struct put_many_instrument_strikes_request {
@@ -253,7 +253,7 @@ struct get_instrument_strike_version_request {
 
 struct get_instrument_strike_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_strike version;
+    std::optional<ores::trading::domain::instrument_strike> version;
 };
 
 /**

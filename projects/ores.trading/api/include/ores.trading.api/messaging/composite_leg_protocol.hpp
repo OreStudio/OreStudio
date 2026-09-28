@@ -159,7 +159,7 @@ struct put_composite_leg_request {
 
 struct put_composite_leg_response {
     ores::utility::domain::result result;
-    ores::trading::domain::composite_leg composite_leg;
+    std::optional<ores::trading::domain::composite_leg> composite_leg;
 };
 
 struct put_many_composite_legs_request {
@@ -280,7 +280,7 @@ struct get_composite_leg_version_request {
 
 struct get_composite_leg_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::composite_leg version;
+    std::optional<ores::trading::domain::composite_leg> version;
 };
 
 /**

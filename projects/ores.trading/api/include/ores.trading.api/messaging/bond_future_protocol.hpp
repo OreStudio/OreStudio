@@ -167,7 +167,7 @@ struct put_bond_future_request {
 
 struct put_bond_future_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_future bond_future;
+    std::optional<ores::trading::domain::bond_future> bond_future;
 };
 
 struct put_many_bond_futures_request {
@@ -263,7 +263,7 @@ struct get_bond_future_version_request {
 
 struct get_bond_future_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_future version;
+    std::optional<ores::trading::domain::bond_future> version;
 };
 
 /**

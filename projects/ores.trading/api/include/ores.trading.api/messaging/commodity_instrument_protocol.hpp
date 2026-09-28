@@ -179,7 +179,7 @@ struct put_commodity_instrument_request {
 
 struct put_commodity_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::commodity_instrument commodity_instrument;
+    std::optional<ores::trading::domain::commodity_instrument> commodity_instrument;
 };
 
 struct put_many_commodity_instruments_request {
@@ -277,7 +277,7 @@ struct get_commodity_instrument_version_request {
 
 struct get_commodity_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::commodity_instrument version;
+    std::optional<ores::trading::domain::commodity_instrument> version;
 };
 
 /**

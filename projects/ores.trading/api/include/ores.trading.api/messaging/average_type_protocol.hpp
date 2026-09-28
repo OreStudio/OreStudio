@@ -152,7 +152,7 @@ struct put_average_type_request {
 
 struct put_average_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::average_type average_type;
+    std::optional<ores::trading::domain::average_type> average_type;
 };
 
 struct put_many_average_types_request {
@@ -248,7 +248,7 @@ struct get_average_type_version_request {
 
 struct get_average_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::average_type version;
+    std::optional<ores::trading::domain::average_type> version;
 };
 
 /**

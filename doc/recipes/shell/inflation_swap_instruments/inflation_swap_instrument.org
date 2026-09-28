@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 384A967C-42A1-59F9-B2CA-C8F15907F91C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the inflation_swap_instruments commands from the shell?
+#+description: Every command the inflation_swap_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:inflation_swap_instruments:
+
+This file documents the inflation_swap_instruments resource at the shell, one section per command. Every command is a subcommand of =inflation_swap_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D61723A4-5BF5-5863-A89A-313D8ABA61F7
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.list=.
+
+#+name: inflation_swap_instruments-list
+#+begin_src ores-shell :tangle inflation_swap_instruments-list.ores :exports none
+inflation_swap_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B40AC507-3AE4-5BE1-917F-2E0ED1D4C063
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.get=.
+
+#+name: inflation_swap_instruments-get
+#+begin_src ores-shell :tangle inflation_swap_instruments-get.ores :exports none
+inflation_swap_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 55DA111E-AFA3-597D-875B-E45065B36467
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.get_many=.
+
+#+name: inflation_swap_instruments-get-many
+#+begin_src ores-shell :tangle inflation_swap_instruments-get-many.ores :exports none
+inflation_swap_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 028A31DE-D7CE-560E-9E97-017C6B901654
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments add <trade_type_code> <trade_id> <start_date> <maturity_date> <inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.put=.
+
+#+name: inflation_swap_instruments-add
+#+begin_src ores-shell :tangle inflation_swap_instruments-add.ores :exports none
+inflation_swap_instruments add __none__ - 1970-01-01 1970-01-01 __none__ - __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 458C1798-B19D-5D0D-BA38-25057D375DF7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments set <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date> <inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.put=.
+
+#+name: inflation_swap_instruments-set
+#+begin_src ores-shell :tangle inflation_swap_instruments-set.ores :exports none
+inflation_swap_instruments set 00000000-0000-0000-0000-000000000000 __none__ - 1970-01-01 1970-01-01 __none__ - __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D000AF3D-5682-52F6-9482-2D1DB83D82EB
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date> <inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.put_many=.
+
+#+name: inflation_swap_instruments-put-many
+#+begin_src ores-shell :tangle inflation_swap_instruments-put-many.ores :exports none
+inflation_swap_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - 1970-01-01 1970-01-01 __none__ - __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8D7BE69C-E1BD-5E5E-B485-9F9498F3EC23
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.delete=.
+
+#+name: inflation_swap_instruments-delete
+#+begin_src ores-shell :tangle inflation_swap_instruments-delete.ores :exports none
+inflation_swap_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 906FDB98-4DEF-5488-90AF-0022EF779979
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments.delete_many=.
+
+#+name: inflation_swap_instruments-delete-many
+#+begin_src ores-shell :tangle inflation_swap_instruments-delete-many.ores :exports none
+inflation_swap_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 2FAF7CCE-A26E-54FB-92BA-BF4035A67916
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments_versions.list=.
+
+#+name: inflation_swap_instruments-versions
+#+begin_src ores-shell :tangle inflation_swap_instruments-versions.ores :exports none
+inflation_swap_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 45C55820-307B-5AF6-BFFD-FB22AC05BF72
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.inflation_swap_instruments_versions.get=.
+
+#+name: inflation_swap_instruments-version
+#+begin_src ores-shell :tangle inflation_swap_instruments-version.ores :exports none
+inflation_swap_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

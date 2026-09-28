@@ -55,10 +55,8 @@
 \ir ./trading_knock_out_swap_instruments_drop.sql
 \ir ./trading_inflation_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_inflation_swap_instruments_drop.sql
+\ir ./trading_rpa_instruments_notify_trigger_drop.sql
 \ir ./trading_rpa_instruments_drop.sql
-
-\ir ./trading_instruments_notify_trigger_drop.sql
-\ir ./trading_instruments_drop.sql
 
 -- Per-type FX instruments (Phase 2, drop before generic FX table)
 \ir ./trading_fx_variance_swap_instruments_notify_trigger_drop.sql
@@ -142,10 +140,29 @@
 \ir ./trading_commodity_basket_constituents_notify_trigger_drop.sql
 \ir ./trading_commodity_basket_constituents_drop.sql
 
--- Equity position option underlyings (child rows drop on their own; the
--- equity position instrument tables are not named in this master yet).
+-- Equity position option underlyings (child rows drop on their own)
 \ir ./trading_equity_position_option_underlyings_notify_trigger_drop.sql
 \ir ./trading_equity_position_option_underlyings_drop.sql
+
+-- Per-type equity instruments (drop before the generic equity tables)
+\ir ./trading_equity_position_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_position_instruments_drop.sql
+\ir ./trading_equity_accumulator_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_accumulator_instruments_drop.sql
+\ir ./trading_equity_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_swap_instruments_drop.sql
+\ir ./trading_equity_variance_swap_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_variance_swap_instruments_drop.sql
+\ir ./trading_equity_forward_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_forward_instruments_drop.sql
+\ir ./trading_equity_asian_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_asian_option_instruments_drop.sql
+\ir ./trading_equity_barrier_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_barrier_option_instruments_drop.sql
+\ir ./trading_equity_digital_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_digital_option_instruments_drop.sql
+\ir ./trading_equity_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_option_instruments_drop.sql
 
 -- Composite instruments (drop legs before header)
 \ir ./trading_composite_legs_notify_trigger_drop.sql
@@ -183,6 +200,43 @@
 
 \ir ./trading_trade_types_notify_trigger_drop.sql
 \ir ./trading_trade_types_drop.sql
+
+-- Closed-set reference data (dropped after the tables that reference it)
+\ir ./trading_settlement_types_notify_trigger_drop.sql
+\ir ./trading_settlement_types_drop.sql
+
+\ir ./trading_return_types_notify_trigger_drop.sql
+\ir ./trading_return_types_drop.sql
+
+\ir ./trading_price_types_notify_trigger_drop.sql
+\ir ./trading_price_types_drop.sql
+
+\ir ./trading_payoff_types_notify_trigger_drop.sql
+\ir ./trading_payoff_types_drop.sql
+
+\ir ./trading_option_types_notify_trigger_drop.sql
+\ir ./trading_option_types_drop.sql
+
+\ir ./trading_moment_types_notify_trigger_drop.sql
+\ir ./trading_moment_types_drop.sql
+
+\ir ./trading_long_short_types_notify_trigger_drop.sql
+\ir ./trading_long_short_types_drop.sql
+
+\ir ./trading_exercise_types_notify_trigger_drop.sql
+\ir ./trading_exercise_types_drop.sql
+
+\ir ./trading_barrier_types_notify_trigger_drop.sql
+\ir ./trading_barrier_types_drop.sql
+
+\ir ./trading_average_types_notify_trigger_drop.sql
+\ir ./trading_average_types_drop.sql
+
+\ir ./trading_amortization_types_notify_trigger_drop.sql
+\ir ./trading_amortization_types_drop.sql
+
+\ir ./trading_activity_categories_notify_trigger_drop.sql
+\ir ./trading_activity_categories_drop.sql
 
 -- Trading instrument reference data types (floating_index_type,
 -- leg_type) moved to ores.refdata; dropped there instead.

@@ -160,7 +160,7 @@ struct put_inflation_swap_instrument_request {
 
 struct put_inflation_swap_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::inflation_swap_instrument inflation_swap_instrument;
+    std::optional<ores::trading::domain::inflation_swap_instrument> inflation_swap_instrument;
 };
 
 struct put_many_inflation_swap_instruments_request {
@@ -260,7 +260,7 @@ struct get_inflation_swap_instrument_version_request {
 
 struct get_inflation_swap_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::inflation_swap_instrument version;
+    std::optional<ores::trading::domain::inflation_swap_instrument> version;
 };
 
 /**

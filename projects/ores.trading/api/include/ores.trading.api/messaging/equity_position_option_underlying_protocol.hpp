@@ -167,7 +167,8 @@ struct put_equity_position_option_underlying_request {
 
 struct put_equity_position_option_underlying_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_position_option_underlying equity_position_option_underlying;
+    std::optional<ores::trading::domain::equity_position_option_underlying>
+        equity_position_option_underlying;
 };
 
 struct put_many_equity_position_option_underlyings_request {
@@ -269,7 +270,7 @@ struct get_equity_position_option_underlying_version_request {
 
 struct get_equity_position_option_underlying_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_position_option_underlying version;
+    std::optional<ores::trading::domain::equity_position_option_underlying> version;
 };
 
 /**

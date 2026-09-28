@@ -155,7 +155,7 @@ struct put_composite_instrument_request {
 
 struct put_composite_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::composite_instrument composite_instrument;
+    std::optional<ores::trading::domain::composite_instrument> composite_instrument;
 };
 
 struct put_many_composite_instruments_request {
@@ -253,7 +253,7 @@ struct get_composite_instrument_version_request {
 
 struct get_composite_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::composite_instrument version;
+    std::optional<ores::trading::domain::composite_instrument> version;
 };
 
 /**

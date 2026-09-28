@@ -152,7 +152,7 @@ struct put_payoff_type_request {
 
 struct put_payoff_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::payoff_type payoff_type;
+    std::optional<ores::trading::domain::payoff_type> payoff_type;
 };
 
 struct put_many_payoff_types_request {
@@ -248,7 +248,7 @@ struct get_payoff_type_version_request {
 
 struct get_payoff_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::payoff_type version;
+    std::optional<ores::trading::domain::payoff_type> version;
 };
 
 /**

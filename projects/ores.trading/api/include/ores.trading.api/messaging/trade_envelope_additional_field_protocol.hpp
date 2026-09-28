@@ -162,7 +162,8 @@ struct put_trade_envelope_additional_field_request {
 
 struct put_trade_envelope_additional_field_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_envelope_additional_field trade_envelope_additional_field;
+    std::optional<ores::trading::domain::trade_envelope_additional_field>
+        trade_envelope_additional_field;
 };
 
 struct put_many_trade_envelope_additional_fields_request {
@@ -264,7 +265,7 @@ struct get_trade_envelope_additional_field_version_request {
 
 struct get_trade_envelope_additional_field_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_envelope_additional_field version;
+    std::optional<ores::trading::domain::trade_envelope_additional_field> version;
 };
 
 /**

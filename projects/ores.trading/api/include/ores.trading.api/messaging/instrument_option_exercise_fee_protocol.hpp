@@ -163,7 +163,8 @@ struct put_instrument_option_exercise_fee_request {
 
 struct put_instrument_option_exercise_fee_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option_exercise_fee instrument_option_exercise_fee;
+    std::optional<ores::trading::domain::instrument_option_exercise_fee>
+        instrument_option_exercise_fee;
 };
 
 struct put_many_instrument_option_exercise_fees_request {
@@ -264,7 +265,7 @@ struct get_instrument_option_exercise_fee_version_request {
 
 struct get_instrument_option_exercise_fee_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option_exercise_fee version;
+    std::optional<ores::trading::domain::instrument_option_exercise_fee> version;
 };
 
 /**

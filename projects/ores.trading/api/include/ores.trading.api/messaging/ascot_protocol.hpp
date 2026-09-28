@@ -152,7 +152,7 @@ struct put_ascot_request {
 
 struct put_ascot_response {
     ores::utility::domain::result result;
-    ores::trading::domain::ascot ascot;
+    std::optional<ores::trading::domain::ascot> ascot;
 };
 
 struct put_many_ascots_request {
@@ -248,7 +248,7 @@ struct get_ascot_version_request {
 
 struct get_ascot_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::ascot version;
+    std::optional<ores::trading::domain::ascot> version;
 };
 
 /**

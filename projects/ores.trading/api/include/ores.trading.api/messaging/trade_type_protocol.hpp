@@ -155,7 +155,7 @@ struct put_trade_type_request {
 
 struct put_trade_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_type trade_type;
+    std::optional<ores::trading::domain::trade_type> trade_type;
 };
 
 struct put_many_trade_types_request {
@@ -251,7 +251,7 @@ struct get_trade_type_version_request {
 
 struct get_trade_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_type version;
+    std::optional<ores::trading::domain::trade_type> version;
 };
 
 /**

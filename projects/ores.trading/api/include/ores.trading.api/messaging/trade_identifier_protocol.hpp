@@ -156,7 +156,7 @@ struct put_trade_identifier_request {
 
 struct put_trade_identifier_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_identifier trade_identifier;
+    std::optional<ores::trading::domain::trade_identifier> trade_identifier;
 };
 
 struct put_many_trade_identifiers_request {
@@ -252,7 +252,7 @@ struct get_trade_identifier_version_request {
 
 struct get_trade_identifier_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_identifier version;
+    std::optional<ores::trading::domain::trade_identifier> version;
 };
 
 /**

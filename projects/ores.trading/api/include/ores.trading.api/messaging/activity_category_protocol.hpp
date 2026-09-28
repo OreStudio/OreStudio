@@ -152,7 +152,7 @@ struct put_activity_category_request {
 
 struct put_activity_category_response {
     ores::utility::domain::result result;
-    ores::trading::domain::activity_category activity_category;
+    std::optional<ores::trading::domain::activity_category> activity_category;
 };
 
 struct put_many_activity_categories_request {
@@ -248,7 +248,7 @@ struct get_activity_category_version_request {
 
 struct get_activity_category_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::activity_category version;
+    std::optional<ores::trading::domain::activity_category> version;
 };
 
 /**

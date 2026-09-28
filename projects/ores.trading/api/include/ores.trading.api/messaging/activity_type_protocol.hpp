@@ -156,7 +156,7 @@ struct put_activity_type_request {
 
 struct put_activity_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::activity_type activity_type;
+    std::optional<ores::trading::domain::activity_type> activity_type;
 };
 
 struct put_many_activity_types_request {
@@ -252,7 +252,7 @@ struct get_activity_type_version_request {
 
 struct get_activity_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::activity_type version;
+    std::optional<ores::trading::domain::activity_type> version;
 };
 
 /**

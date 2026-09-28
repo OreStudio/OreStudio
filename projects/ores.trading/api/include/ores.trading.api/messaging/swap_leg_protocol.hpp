@@ -167,7 +167,7 @@ struct put_swap_leg_request {
 
 struct put_swap_leg_response {
     ores::utility::domain::result result;
-    ores::trading::domain::swap_leg swap_leg;
+    std::optional<ores::trading::domain::swap_leg> swap_leg;
 };
 
 struct put_many_swap_legs_request {
@@ -287,7 +287,7 @@ struct get_swap_leg_version_request {
 
 struct get_swap_leg_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::swap_leg version;
+    std::optional<ores::trading::domain::swap_leg> version;
 };
 
 /**

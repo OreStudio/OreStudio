@@ -157,7 +157,7 @@ struct put_commodity_basket_constituent_request {
 
 struct put_commodity_basket_constituent_response {
     ores::utility::domain::result result;
-    ores::trading::domain::commodity_basket_constituent commodity_basket_constituent;
+    std::optional<ores::trading::domain::commodity_basket_constituent> commodity_basket_constituent;
 };
 
 struct put_many_commodity_basket_constituents_request {
@@ -258,7 +258,7 @@ struct get_commodity_basket_constituent_version_request {
 
 struct get_commodity_basket_constituent_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::commodity_basket_constituent version;
+    std::optional<ores::trading::domain::commodity_basket_constituent> version;
 };
 
 /**

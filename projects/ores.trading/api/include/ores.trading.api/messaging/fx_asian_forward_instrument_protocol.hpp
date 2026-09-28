@@ -166,7 +166,7 @@ struct put_fx_asian_forward_instrument_request {
 
 struct put_fx_asian_forward_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_asian_forward_instrument fx_asian_forward_instrument;
+    std::optional<ores::trading::domain::fx_asian_forward_instrument> fx_asian_forward_instrument;
 };
 
 struct put_many_fx_asian_forward_instruments_request {
@@ -267,7 +267,7 @@ struct get_fx_asian_forward_instrument_version_request {
 
 struct get_fx_asian_forward_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_asian_forward_instrument version;
+    std::optional<ores::trading::domain::fx_asian_forward_instrument> version;
 };
 
 /**

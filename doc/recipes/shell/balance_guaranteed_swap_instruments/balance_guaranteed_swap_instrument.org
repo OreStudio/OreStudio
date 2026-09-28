@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 259D76EB-8AA2-558D-9E03-CA90A586C307
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the balance_guaranteed_swap_instruments commands from the shell?
+#+description: Every command the balance_guaranteed_swap_instruments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:balance_guaranteed_swap_instruments:
+
+This file documents the balance_guaranteed_swap_instruments resource at the shell, one section per command. Every command is a subcommand of =balance_guaranteed_swap_instruments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 066A52C3-FA06-5E55-818E-93C7B6C961EE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.list=.
+
+#+name: balance_guaranteed_swap_instruments-list
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-list.ores :exports none
+balance_guaranteed_swap_instruments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9BFD35D1-B061-5207-B297-AA0D269B5B4B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments get <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.get=.
+
+#+name: balance_guaranteed_swap_instruments-get
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-get.ores :exports none
+balance_guaranteed_swap_instruments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 024411A2-1DBD-53C1-9759-56408C9358AA
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments get-many <instrument_id>
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.get_many=.
+
+#+name: balance_guaranteed_swap_instruments-get-many
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-get-many.ores :exports none
+balance_guaranteed_swap_instruments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5BBE8FC4-6323-5182-9653-D543C5F8CB37
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments add <trade_type_code> <trade_id> <start_date> <maturity_date> <lockout_days> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.put=.
+
+#+name: balance_guaranteed_swap_instruments-add
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-add.ores :exports none
+balance_guaranteed_swap_instruments add __none__ - 1970-01-01 1970-01-01 - __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AC377EC0-DC71-5A2E-BCF0-9F6A326E9CF5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments set <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date> <lockout_days> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.put=.
+
+#+name: balance_guaranteed_swap_instruments-set
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-set.ores :exports none
+balance_guaranteed_swap_instruments set 00000000-0000-0000-0000-000000000000 __none__ - 1970-01-01 1970-01-01 - __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: C31E5192-B5C9-5BBC-8EB8-4DD20992735A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date> <lockout_days> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.put_many=.
+
+#+name: balance_guaranteed_swap_instruments-put-many
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-put-many.ores :exports none
+balance_guaranteed_swap_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - 1970-01-01 1970-01-01 - __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8880CEE7-8A72-5FA4-B699-97C7FB7D5B97
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments delete <instrument_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.delete=.
+
+#+name: balance_guaranteed_swap_instruments-delete
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-delete.ores :exports none
+balance_guaranteed_swap_instruments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 436BCE73-B1D6-58BD-A469-D7B96A11F80D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments delete-many <instrument_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments.delete_many=.
+
+#+name: balance_guaranteed_swap_instruments-delete-many
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-delete-many.ores :exports none
+balance_guaranteed_swap_instruments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: CCAB6904-BF5A-5F68-8F19-1E486BD198F9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments_versions.list=.
+
+#+name: balance_guaranteed_swap_instruments-versions
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-versions.ores :exports none
+balance_guaranteed_swap_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DE58648E-0639-53C9-B436-03997CBFAF54
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+balance_guaranteed_swap_instruments version <instrument_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.balance_guaranteed_swap_instruments_versions.get=.
+
+#+name: balance_guaranteed_swap_instruments-version
+#+begin_src ores-shell :tangle balance_guaranteed_swap_instruments-version.ores :exports none
+balance_guaranteed_swap_instruments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

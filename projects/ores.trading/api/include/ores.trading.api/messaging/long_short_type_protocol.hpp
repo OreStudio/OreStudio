@@ -152,7 +152,7 @@ struct put_long_short_type_request {
 
 struct put_long_short_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::long_short_type long_short_type;
+    std::optional<ores::trading::domain::long_short_type> long_short_type;
 };
 
 struct put_many_long_short_types_request {
@@ -248,7 +248,7 @@ struct get_long_short_type_version_request {
 
 struct get_long_short_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::long_short_type version;
+    std::optional<ores::trading::domain::long_short_type> version;
 };
 
 /**

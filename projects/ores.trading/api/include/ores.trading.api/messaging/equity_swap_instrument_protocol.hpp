@@ -163,7 +163,7 @@ struct put_equity_swap_instrument_request {
 
 struct put_equity_swap_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_swap_instrument equity_swap_instrument;
+    std::optional<ores::trading::domain::equity_swap_instrument> equity_swap_instrument;
 };
 
 struct put_many_equity_swap_instruments_request {
@@ -262,7 +262,7 @@ struct get_equity_swap_instrument_version_request {
 
 struct get_equity_swap_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_swap_instrument version;
+    std::optional<ores::trading::domain::equity_swap_instrument> version;
 };
 
 /**

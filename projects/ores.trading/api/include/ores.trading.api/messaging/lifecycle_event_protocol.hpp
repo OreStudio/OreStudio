@@ -153,7 +153,7 @@ struct put_lifecycle_event_request {
 
 struct put_lifecycle_event_response {
     ores::utility::domain::result result;
-    ores::trading::domain::lifecycle_event lifecycle_event;
+    std::optional<ores::trading::domain::lifecycle_event> lifecycle_event;
 };
 
 struct put_many_lifecycle_events_request {
@@ -249,7 +249,7 @@ struct get_lifecycle_event_version_request {
 
 struct get_lifecycle_event_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::lifecycle_event version;
+    std::optional<ores::trading::domain::lifecycle_event> version;
 };
 
 /**

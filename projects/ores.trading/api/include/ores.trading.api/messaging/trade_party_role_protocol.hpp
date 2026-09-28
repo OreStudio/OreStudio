@@ -154,7 +154,7 @@ struct put_trade_party_role_request {
 
 struct put_trade_party_role_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_party_role trade_party_role;
+    std::optional<ores::trading::domain::trade_party_role> trade_party_role;
 };
 
 struct put_many_trade_party_roles_request {
@@ -250,7 +250,7 @@ struct get_trade_party_role_version_request {
 
 struct get_trade_party_role_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_party_role version;
+    std::optional<ores::trading::domain::trade_party_role> version;
 };
 
 /**

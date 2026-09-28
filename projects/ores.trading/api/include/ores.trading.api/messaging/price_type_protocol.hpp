@@ -152,7 +152,7 @@ struct put_price_type_request {
 
 struct put_price_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::price_type price_type;
+    std::optional<ores::trading::domain::price_type> price_type;
 };
 
 struct put_many_price_types_request {
@@ -248,7 +248,7 @@ struct get_price_type_version_request {
 
 struct get_price_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::price_type version;
+    std::optional<ores::trading::domain::price_type> version;
 };
 
 /**

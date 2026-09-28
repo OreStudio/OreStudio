@@ -152,7 +152,7 @@ struct put_moment_type_request {
 
 struct put_moment_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::moment_type moment_type;
+    std::optional<ores::trading::domain::moment_type> moment_type;
 };
 
 struct put_many_moment_types_request {
@@ -248,7 +248,7 @@ struct get_moment_type_version_request {
 
 struct get_moment_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::moment_type version;
+    std::optional<ores::trading::domain::moment_type> version;
 };
 
 /**

@@ -162,7 +162,7 @@ struct put_fx_accumulator_instrument_request {
 
 struct put_fx_accumulator_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_accumulator_instrument fx_accumulator_instrument;
+    std::optional<ores::trading::domain::fx_accumulator_instrument> fx_accumulator_instrument;
 };
 
 struct put_many_fx_accumulator_instruments_request {
@@ -262,7 +262,7 @@ struct get_fx_accumulator_instrument_version_request {
 
 struct get_fx_accumulator_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_accumulator_instrument version;
+    std::optional<ores::trading::domain::fx_accumulator_instrument> version;
 };
 
 /**

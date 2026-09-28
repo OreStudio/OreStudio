@@ -174,7 +174,7 @@ struct put_credit_instrument_request {
 
 struct put_credit_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::credit_instrument credit_instrument;
+    std::optional<ores::trading::domain::credit_instrument> credit_instrument;
 };
 
 struct put_many_credit_instruments_request {
@@ -270,7 +270,7 @@ struct get_credit_instrument_version_request {
 
 struct get_credit_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::credit_instrument version;
+    std::optional<ores::trading::domain::credit_instrument> version;
 };
 
 /**

@@ -28,6 +28,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/messaging/settlement_type_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
@@ -184,7 +185,7 @@ void settlement_type_commands::register_commands(cli::Menu& root_menu, nats_clie
         },
         "version <code> --version <n>");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void settlement_type_commands::process_list(std::ostream& out,

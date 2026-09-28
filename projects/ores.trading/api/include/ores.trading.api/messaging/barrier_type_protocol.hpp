@@ -152,7 +152,7 @@ struct put_barrier_type_request {
 
 struct put_barrier_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::barrier_type barrier_type;
+    std::optional<ores::trading::domain::barrier_type> barrier_type;
 };
 
 struct put_many_barrier_types_request {
@@ -248,7 +248,7 @@ struct get_barrier_type_version_request {
 
 struct get_barrier_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::barrier_type version;
+    std::optional<ores::trading::domain::barrier_type> version;
 };
 
 /**

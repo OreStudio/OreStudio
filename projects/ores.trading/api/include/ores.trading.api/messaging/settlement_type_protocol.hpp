@@ -152,7 +152,7 @@ struct put_settlement_type_request {
 
 struct put_settlement_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::settlement_type settlement_type;
+    std::optional<ores::trading::domain::settlement_type> settlement_type;
 };
 
 struct put_many_settlement_types_request {
@@ -248,7 +248,7 @@ struct get_settlement_type_version_request {
 
 struct get_settlement_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::settlement_type version;
+    std::optional<ores::trading::domain::settlement_type> version;
 };
 
 /**

@@ -152,7 +152,7 @@ struct put_exercise_type_request {
 
 struct put_exercise_type_response {
     ores::utility::domain::result result;
-    ores::trading::domain::exercise_type exercise_type;
+    std::optional<ores::trading::domain::exercise_type> exercise_type;
 };
 
 struct put_many_exercise_types_request {
@@ -248,7 +248,7 @@ struct get_exercise_type_version_request {
 
 struct get_exercise_type_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::exercise_type version;
+    std::optional<ores::trading::domain::exercise_type> version;
 };
 
 /**

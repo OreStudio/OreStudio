@@ -144,6 +144,7 @@ How loan exposure is computed.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_credit_simulation_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

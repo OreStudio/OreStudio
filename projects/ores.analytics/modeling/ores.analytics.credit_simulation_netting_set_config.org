@@ -73,6 +73,7 @@ The order the code appeared in the list.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_credit_simulation_netting_sets_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

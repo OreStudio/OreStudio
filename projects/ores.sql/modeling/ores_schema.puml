@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-17T22:14:18.748968Z
+' Generated: 2026-09-28T15:58:57.088454Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -159,8 +159,8 @@ package "iam" #E8F4FD {
         * id : uuid <<PK>>
         --
         * version : integer
-        * account_type : text
         * username : text
+        * account_type : text
           full_name : text
         * password_hash : text
         * password_salt : text
@@ -172,17 +172,71 @@ package "iam" #E8F4FD {
           job_title : text
           reports_to_account_id : uuid <<FK>>
         * modified_by : text
+        * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * performed_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
     note right of ores_iam_accounts_tbl
-    User accounts with authentication credentials.
-    Supports optimistic locking via version field.
-    Username and email unique for current records.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Account Table
+    An account that can authenticate against the system: one row per user,
+    service, algorithm or LLM identity, carrying the password material, the
+    TOTP secret, the email address and the optional profile and reporting
+    links. The table is bi-temporal and audited (see
+    projects/ores.sql/create/iam/iam_accounts_create.sql): it carries
+    version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion, so the model takes the ordinary audited shape
+    and needs no shape flag.
+    The table is a composite parent: ores_iam_accounts_touch_version_fn
+    lets a child entity (account contact information, party association)
+    bump this account's own version when the child is written. The model
+    declares :generate_touch_function: true, which renders that function
+    under its existing name rather than leaving it hand-written.
+    The model describes the table and nothing else. Two columns need care:
+    - service_password_hash is a real column with no domain member: it is
+    reached only by check_service_credentials and never travels on the
+    wire, so it is declared :sql_only: true and the generated domain
+    struct omits it while the entity struct and the mapper keep it.
+    - image_id and reports_to_account_id are nullable UUID soft
+    references. The hand-written domain struct represented both as a plain
+    boost::uuids::uuid with a nil sentinel, on the claim that a second
+    std::optional<boost::uuids::uuid> member corrupts reflect-cpp
+    aggregate serialisation for multi-element vectors. Re-verified under
+    the generated estate: all three nullable UUIDs are modelled as
+    std::optional<boost::uuids::uuid>, and the api suite's multi-element
+    JSON and table tests plus the core repository's five-account round trip
+    pass, so the workaround is not needed here.
+    The generated read surface is live, and it does not collide with the
+    hand-written one. The hand-written
+    account_operations_protocol.hpp owns the writes,
+    iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq},
+    and the generated account_protocol.hpp owns the reads,
+    iam.v1.accounts.list and iam.v1.accounts.get, with the version reads
+    alongside them. Both registrars are composed in
+    ores.iam/core/src/messaging/registrar.cpp. This entity sets
+    :read_only: true, so the generated half carries no write verb and the split
+    falls out of the flag rather than out of a suppression.
+    The row holds the password material, the TOTP seed and the account holder's
+    own name and mail address, so the generated reads are not open to every
+    signed-in caller: the model sets :guard_reads: true, and the generated
+    iam.v1.accounts.list and iam.v1.accounts.get handlers require
+    iam::accounts:read before they serve anything. The default in this estate
+    is that a read needs authentication alone, which is why the guard is stated
+    per entity rather than assumed.
+    Two behavioural facets are switched off, each with a reason:
+    - The entity's CRUD handler and sub-registrar, because the hand-written
+    account_operations_handler already owns the write verbs.
+    - The generated CRUD service, because the hand-written account_operations_service
+    is the authentication surface (login, lock, unlock, password change
+    and reset, party selection, service-credential check) and the
+    generated service's get_account_history(id) collides in name and
+    signature with the hand-written get_account_history(username) while
+    meaning a different read.
     end note
 
     entity ores_iam_auth_events_tbl  #F7E5FF {
@@ -205,16 +259,37 @@ package "iam" #E8F4FD {
         * last_ip : inet
         * last_attempt_ip : inet
         * failed_logins : integer
-        * locked : integer
+        * locked : boolean
         * last_login : timestamptz
-        * online : integer
-        * password_reset_required : integer
+        * online : boolean
+        * password_reset_required : boolean
     }
 
     note right of ores_iam_login_info_tbl
-    Security tracking for login attempts.
-    Current-state table (no temporal versioning).
-    Tracks failed attempts and lock status.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Login Info Table
+    Login tracking and security state for one account: the last successful
+    login, the running failed-attempt count, the lock and online flags, the
+    forced password-reset flag, and the IP address of the last success and
+    the last attempt. One row per account, keyed by account_id.
+    The table is current-state (see
+    projects/ores.sql/create/iam/iam_login_info_create.sql): it carries no
+    valid_from/valid_to, no GIST exclusion, no version column and no
+    audit tail, unlike the bi-temporal tables every other domain_entity in
+    this component generates. The :current_state: flag in the * SQL **
+    Flags drawer selects that shape. Three suppressions keep the generated
+    DDL at exactly the constraints the hand-written table has:
+    :skip_uuid_check: on account_id drops the nil-UUID check,
+    :skip_check: on the account foreign key drops the account existence
+    check, and the * SQL ** Indexes drawer restates the three hand-written
+    indexes so none is lost.
+    The row states when and from where each account signed in, how many attempts
+    failed and whether the account is locked, so it is not open to every
+    signed-in caller: the model sets :guard_reads: true, and the generated
+    iam.v1.login_info.list and iam.v1.login_info.get handlers require
+    iam::login_info:read before they serve anything.
     end note
 
     entity ores_iam_permissions_tbl <<temporal>> #C6F0D8 {
@@ -228,9 +303,24 @@ package "iam" #E8F4FD {
     }
 
     note right of ores_iam_permissions_tbl
-    Fine-grained permission codes.
-    System-defined constants from bootstrap data.
-    No change tracking (not user-editable).
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Permission Table
+    An atomic permission that can be granted to roles. Permissions follow the
+    hierarchical naming convention component::resource:action (for example
+    iam::accounts:create; "*" grants everything and component::* grants
+    every action within one component).
+    The table is temporal (see
+    projects/ores.sql/create/iam/iam_permissions_create.sql): it carries
+    valid_from/valid_to, the GIST exclusion and the delete rule, but it has
+    no version column and no audit tail -- permissions are system-defined
+    constants seeded from bootstrap data, not user-editable records, so they
+    need no change tracking. The :no_audit_columns: flag in the * SQL **
+    Flags drawer selects exactly that shape: it drops the version column and
+    the four audit columns while keeping the transaction-time window. The
+    :skip_uuid_check: suppression on id drops the nil-UUID check the
+    hand-written table never had.
     end note
 
     entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {
@@ -262,8 +352,168 @@ package "iam" #E8F4FD {
     }
 
     note right of ores_iam_roles_tbl
-    Named roles for grouping permissions.
-    Examples: admin, viewer, editor.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Role Table
+    A named collection of permissions that can be assigned to accounts. Roles
+    group related permissions for easier management: a "Trading" role might
+    include permissions to read and execute trades, while a "Support" role
+    might have read-only access to most resources.
+    The table is bi-temporal and audited (see
+    projects/ores.sql/create/iam/iam_roles_create.sql): it carries
+    version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion and the delete rule, so the model takes the
+    ordinary audited shape and needs no shape flag.
+    The model describes the table alone. The hand-written domain struct also
+    carried a std::vector<std::string> permission_codes that no column
+    backs -- it is denormalised from ores_iam_role_permissions_tbl by an
+    RBAC join. A joined shape is a message or a query result, never an entity
+    member, so the member is not modelled and the generated role.hpp
+    replaces it; the join itself stays in the hand-written authorization
+    layer.
+    The entity's canonical CRUD subjects are generated: role_registrar owns
+    list/get/get-many/put/put-many/delete on iam.v1.roles.*. The
+    authorization operation model declares a different set under the same
+    prefix -- iam.v1.roles.assign, .revoke, .by-account,
+    .permissions and .suggest-commands -- so the two coexist rather than
+    compete, and no handler is suppressed here.
+    end note
+
+    entity ores_iam_seed_profile_parameters_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * seed_profile_id : uuid <<FK>>
+        * name : text
+        * label : text
+        * data_type : text
+          choices_json : jsonb
+          default_value : text
+        * is_required : boolean
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_seed_profile_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Seed Profile Parameter Table
+    The schema of the form that a seed profile presents: one row per
+    parameter, stating the label the form shows, the key a shell command types,
+    the type, the default and whether a value is required. The web builds the
+    tenant form from these rows. The shell takes the same values as
+    =--param key=value=.
+    The declared shape is deliberately small. A profile decides how many
+    counterparties to create and which GLEIF root LEI to import; it does not
+    decide what a step kind does, because that is code.
+    A parameter whose type is choice names the values it accepts, in the order
+    the form offers them. A choice is declared rather than left to free text so
+    that a value the run cannot use is not typeable at all.
+    A profile with no parameters states that its form asks for nothing. The
+    demonstration profile is one: it carries every value it needs, so its
+    journey presents no input at all.
+    The pair (seed_profile_id, name) is the identity.
+    end note
+
+    entity ores_iam_seed_profile_steps_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * seed_profile_id : uuid <<FK>>
+        * step_kind : text
+        * arguments_json : jsonb
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_seed_profile_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Seed Profile Step Table
+    A seed profile's steps, in the order provisioning runs them. The row names
+    a step kind from the catalogue in code and supplies the arguments that
+    kind consumes, so a profile states the same step with different bundles
+    without a code change.
+    The catalogue is fixed: publish_bundle, import_lei_hierarchy,
+    provision_party, load_staff, attach_photos and
+    start_market_feeds. A step kind that is not in the catalogue is a code
+    change, because one new kind means one new step handler.
+    The pair (seed_profile_id, step_kind) is the identity: a profile runs a
+    kind once. Steps are idempotent, and a failed step stops the provisioned
+    instance at that step.
+    end note
+
+    entity ores_iam_seed_profiles_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * code : text
+        * name : text
+        * summary : text
+        * audience : text
+        * bullets_json : jsonb
+        * tenant_type : text
+        * tenant_name : text
+        * tenant_code : text
+          tenant_hostname : text
+        * admin_username : text
+        * admin_email : text
+        * inherits_admin_password : boolean
+        * force_password_change : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_seed_profiles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Seed Profile Table
+    A seed profile is the data set that provisioning gives a new tenant. One
+    row orders step kinds from the catalogue in code, declares the parameters
+    its form takes, carries the tenant details it prefills, and carries the card
+    the person choosing a starting point reads.
+    A new profile is a row, so an operator adds one with no code change. A new
+    step kind is code. The accepted seed profile contract fixes both lists,
+    and the first two rows are:
+    - empty_operational: the production starting point. It publishes the
+    base bundle, takes a counterparty count and a GLEIF root LEI to
+    import, and creates no test data.
+    - acme_demo: the Acme Corporation holding group, with its staff, books
+    and market data. Every test datum lives here.
+    A profile is system-owned registered data. The system_scope flag states
+    that the table stores it under the system tenant and that the insert
+    trigger forces that tenant. Provisioning reads a profile before the tenant
+    it creates exists, so a profile cannot belong to the tenant being made.
+    The profile the model binds is uuid-identified-lookup, the one its
+    sibling ores.iam.tenant binds, because that profile leaves
+    system_scope to the model. uuid-surrogate-lookup fixes it to false,
+    which a row the platform owns cannot be.
+    The ordered steps are rows of ores.iam.seed_profile_step, and the form
+    schema is rows of ores.iam.seed_profile_parameter. Both are children of
+    this entity.
     end note
 
     entity ores_iam_session_samples_tbl  #F7E5FF {
@@ -300,9 +550,39 @@ package "iam" #E8F4FD {
     }
 
     note right of ores_iam_sessions_tbl
-    User session tracking with country-level geolocation.
-    Designed for TimescaleDB hypertable.
-    Partitioned by start_time.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Session Table
+    A user session: one login or service-account connection, recorded for
+    analytics, session listing and end-time tracking. The table is a
+    TimescaleDB hypertable partitioned by start_time with 7-day chunks (see
+    projects/ores.sql/create/iam/iam_sessions_create.sql).
+    The table has no valid_from/valid_to, no GIST exclusion, no version
+    column and no audit tail, and it keys on (id, start_time) rather than a
+    single surrogate key -- the partition column must sit in the primary key
+    of a hypertable. The :current_state: and :hypertable: flags in the
+    * SQL ** Flags drawer select exactly that shape. The compound key is
+    what makes this the first entity in the estate whose key carries a
+    timestamp; the mapper, entity and generator templates gained the
+    timestamp key-column branches they were missing.
+    end_time is text not null default '', not a nullable timestamp, and
+    client_ip is text, not inet. The model mirrors each column's real
+    type; the domain projection is the column's type too, so a session's
+    end_time is an empty string while the session is active and
+    client_ip is a string. The richer readings (an instant, an IP address)
+    belong to the consumer that needs them.
+    The hand-written domain struct also carried party_id,
+    visible_party_ids and username. No column backs any of them; they are
+    the denormalised, party-scoped shape of a session, and the rule that an
+    entity describes its table puts them on a message instead. They are
+    declared as message fields on session_view in
+    ores.iam.session_messages.
+    The entity's canonical CRUD subjects are generated: session_registrar
+    owns list/get/get-many/put/put-many/delete on iam.v1.sessions.*. The
+    operation models declare a different set under the same prefix --
+    iam.v1.sessions.active and iam.v1.sessions.samples -- so the two
+    coexist rather than compete, and no handler is suppressed here.
     end note
 
     entity ores_iam_tenant_statuses_tbl <<temporal>> #C6F0D8 {
@@ -399,27 +679,39 @@ package "iam" #E8F4FD {
 ' ==================== assets (Digital Assets) ====================
 '
 package "assets" #F3E5F5 {
-    entity ores_assets_image_tags_tbl <<junction>> #ECECEC {
+    entity ores_assets_image_tags_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * image_id : uuid <<PK, FK>>
         * tag_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
-        * tenant_id : uuid <<FK>>
+        * version : integer
         * assigned_by : text
         * assigned_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
     note right of ores_assets_image_tags_tbl
-    Many-to-many: images to tags.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Image Tag Table
+    Junction table linking images to tags. An image carries any number of
+    tags, and a tag classifies any number of images. The association itself
+    has no natural key: a row is identified by the image and tag pair it
+    links, and the row records who made the association and when.
     end note
 
     entity ores_assets_images_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * image_id : uuid <<PK>>
+        * id : uuid <<PK>>
         --
         * version : integer
-        * key : text
+        * code : text
         * description : text
         * mime_type : text
         * data : text
@@ -432,16 +724,22 @@ package "assets" #F3E5F5 {
     }
 
     note right of ores_assets_images_tbl
-    Image storage, format-agnostic (SVG, JPEG, ...).
-    "data" holds the raw bytes, base64-encoded; "mime_type" says how to
-    interpret them (e.g. image/svg+xml, image/jpeg).
-    Key provides human-readable lookup.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Image Table
+    An image is a named document the platform renders, such as a currency flag
+    or a commodity icon. The bytes are format-agnostic: an SVG document, a
+    JPEG, or any other media type mime_type names. The database stores them
+    base64-encoded in a text column, and the domain type carries the raw
+    bytes. Images carry tags through the image_tag junction, and an image
+    arrives either by upload or from the data-quality publish path.
     end note
 
     entity ores_assets_tags_tbl <<temporal>> #C6F0D8 {
-        * tag_id : uuid <<PK>>
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
         --
-        * tenant_id : uuid <<FK>>
         * version : integer
         * name : text
         * description : text
@@ -454,8 +752,14 @@ package "assets" #F3E5F5 {
     }
 
     note right of ores_assets_tags_tbl
-    Categories for images.
-    Examples: flag, currency, commodity.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tag Table
+    A tag classifies an image. A tag belongs to one tenant, names a single
+    category such as flag, currency or commodity, and its name is unique
+    within that tenant. Images carry tags through the image_tag junction, so
+    a tag has no lifecycle of its own beyond its own version history.
     end note
 
 }
@@ -506,13 +810,12 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Asset Class Code Table
     General-purpose classification of the top-level asset class a market
-    series, instrument, or curve belongs to. Mirrors
-    ores::marketdata::domain::asset_class (a plain, non-persisted C++
-    enum used for market-series filtering) as a managed, persisted
-    refdata code table, so other entities (instrument_code, and
-    anything else needing to classify by asset class) can FK-validate
-    against it instead of duplicating a hardcoded string list. Managed by
-    the system tenant, like other shared code tables.
+    series, instrument, or curve belongs to. This table is the single
+    source of truth for the taxonomy. Code carries no parallel
+    enumeration, because the list is runtime-managed and no compiled list
+    can be exhaustive over it. Other entities (instrument_code,
+    market_series, feed_binding) FK-validate against this table.
+    Managed by the system tenant, like other shared code tables.
     end note
 
     entity ores_refdata_asset_classes_tbl <<temporal>> #C6F0D8 {
@@ -700,7 +1003,7 @@ package "refdata" #FFF3E0 {
     using FpML-style codes. Each code is unique per tenant regardless of
     coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme's
     code-only primary key -- and optionally linked to a country for
-    flag-icon display in the Qt UI. Referenced by business_unit as a
+    flag-icon display in the UI. Referenced by business_unit as a
     soft FK.
     end note
 
@@ -1334,8 +1637,8 @@ package "refdata" #FFF3E0 {
     reads the enabled config per (tenant, party) and its enabled driver pairs,
     feeds them through ores.analytics.quant::topology_builder::build, and
     keeps one service::rate_engine per (tenant, party) up to date -- see
-    [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. Qt UI is deferred to a later task
-    (ores.cpp.qt.enabled: false above), same as market_series.
+    [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. UI metadata is deferred to a later task, as it
+    is for market_series.
     Scoped to a tenant and a party so each party runs its own, independent
     CRM -- two parties in the same tenant may have entirely different
     topologies and never share an engine.
@@ -1850,8 +2153,8 @@ package "refdata" #FFF3E0 {
     Reference data table defining valid floating rate indices used in
     instrument floating leg definitions. Values are sourced from ORE
     ore_types.xsd.
-    /2026-07-18 moved from ores.trading to ores.refdata/: the Qt UI
-    already lived in ores.qt/refdata's RefdataPlugin, hand-wired
+    /2026-07-18 moved from ores.trading to ores.refdata/: the desktop UI
+    already lived in the removed client's RefdataPlugin, hand-wired
     outside codegen; the backend followed to match, same direction as
     Book/BusinessCentre's own moves to ores.refdata.
     end note
@@ -1917,7 +2220,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * name : text
         * description : text
-        * asset_class : text
+          asset_class : text
           ore_trade_type : text
         * display_order : integer
         * curve_role : text
@@ -1951,8 +2254,9 @@ package "refdata" #FFF3E0 {
     oreTradeType string, where one exists, is preserved separately in
     ore_trade_type (nullable — null only for DEPO) for future ORE
     trade-file interop; it is not itself validated or FK'd anywhere, only
-    carried as a reference. Each row is tagged with the asset_class_code
-    it belongs to. Not scoped to any single consumer: the IR Curve
+    carried as a reference. Each row that describes one instrument is
+    tagged with the asset_class_code it belongs to; rows that do not are
+    left untagged (see asset_class below). Not scoped to any single consumer: the IR Curve
     Template (which consumes the DEPO/FRA/IRS rates entries for its
     tenor roles) is the first consumer, but this catalogue exists
     independently for any future feature needing to classify or enumerate
@@ -2135,8 +2439,8 @@ package "refdata" #FFF3E0 {
     Reference data table defining valid leg types used in instrument leg
     definitions. Values are sourced from ORE ore_types.xsd LegType
     enumeration.
-    /2026-07-18 moved from ores.trading to ores.refdata/: the Qt UI
-    already lived in ores.qt/refdata's RefdataPlugin, hand-wired
+    /2026-07-18 moved from ores.trading to ores.refdata/: the desktop UI
+    already lived in the removed client's RefdataPlugin, hand-wired
     outside codegen; the backend followed to match, same direction as
     Book/BusinessCentre's own moves to ores.refdata, and the same move
     floating_index_type made alongside this one.
@@ -2781,6 +3085,43 @@ package "refdata" #FFF3E0 {
     specify how currency amounts are rounded in financial calculations.
     end note
 
+    entity ores_refdata_series_subclass_codes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_series_subclass_codes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Subclass Code Table
+    Fine-grained classification of a market series within its asset class.
+    market_series.series_subclass carries one of these codes, so a query
+    can slice a tenant's series by shape ("all FX vol surfaces", "all
+    discount curves") without parsing the ORE key.
+    Most codes are shared across asset classes: spot covers both FX spot
+    and equity spot, volatility covers FX options, swaptions and
+    commodity options alike. The table therefore does not partition by
+    asset_class_code; the pairing a producer actually emits is declared
+    where the series is written.
+    This table is the single source of truth for the taxonomy. Code carries
+    no parallel enumeration, because the list is runtime-managed and no
+    compiled list can be exhaustive over it. market_series and
+    ir_curve_tick FK-validate against this table. Managed by the system
+    tenant, like other shared code tables.
+    end note
+
     entity ores_refdata_supervisory_bodies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -3179,12 +3520,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_account_contact_informations_artefact_tbl
-    Staging table for generated account contact information (e.g. Acme Corporation
-    staff real names), consumed by a publish-from-dq function (see the
-    server-side-orchestration follow-up task) that creates rows in
-    ores_iam_account_contact_informations_tbl. account_username identifies the
-    owning account by username (not id) since the id is only known once the
-    account itself is published from its own artefact rows.
+    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). - Artefact Table
     end note
 
     entity ores_dq_account_types_artefact_tbl  #F7E5FF {
@@ -3220,9 +3556,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_accounts_artefact_tbl
-    Staging table for generated staff accounts (e.g. Acme Corporation), consumed by a
-    publish-from-dq function (see the server-side-orchestration follow-up
-    task) that creates rows in ores_iam_accounts_tbl.
+    An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the password material, the TOTP secret, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. Two columns need care: - service_password_hash is a real column with no domain member: it is reached only by check_service_credentials and never travels on the wire, so it is declared :sql_only: true and the generated domain struct omits it while the entity struct and the mapper keep it. - image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the password material, the TOTP seed and the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the model sets :guard_reads: true, and the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything. The default in this estate is that a read needs authentication alone, which is why the guard is stated per entity rather than assumed. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
     end note
 
     entity ores_dq_asset_classes_artefact_tbl  #F7E5FF {
@@ -3268,6 +3602,10 @@ package "dq_staging" #F3E5F5 {
         * display_order : integer
     }
 
+    note right of ores_dq_badge_definitions_artefact_tbl
+    The badge catalogue. Each entry defines the complete visual presentation of a badge: display label, tooltip, background colour, text colour, severity level, and an optional Bootstrap CSS class hint for browser rendering. Badge definitions are the single source of truth for all badge visual metadata across UI clients. They are loaded at client startup as reference data and looked up at render time via BadgeCache. - Artefact Table
+    end note
+
     entity ores_dq_badge_mappings_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3277,6 +3615,10 @@ package "dq_staging" #F3E5F5 {
         * badge_code : text
         * version : integer
     }
+
+    note right of ores_dq_badge_mappings_artefact_tbl
+    Badge Mapping - Artefact Table
+    end note
 
     entity ores_dq_badge_severities_artefact_tbl  #F7E5FF {
         --
@@ -3288,6 +3630,10 @@ package "dq_staging" #F3E5F5 {
         * description : text
         * display_order : integer
     }
+
+    note right of ores_dq_badge_severities_artefact_tbl
+    Reference data defining severity levels used to classify badges. Codes align with Bootstrap 5 contextual classes so browser rendering requires no translation layer. Values: secondary, info, success, warning, danger, primary. - Artefact Table
+    end note
 
     entity ores_dq_benchmark_rates_artefact_tbl  #F7E5FF {
         --
@@ -3317,7 +3663,12 @@ package "dq_staging" #F3E5F5 {
         * book_status : text
         * regulatory_book_type : text
         * is_sweepable : boolean
+          rates_centre_code : text
     }
+
+    note right of ores_dq_books_artefact_tbl
+    Operational ledger leaves. The only entity that holds trades. Serves as the basis for accounting, ownership, and regulatory capital treatment. Must belong to exactly one portfolio. - Artefact Table
+    end note
 
     entity ores_dq_business_centres_artefact_tbl  #F7E5FF {
         --
@@ -3360,6 +3711,10 @@ package "dq_staging" #F3E5F5 {
           unit_type_code : text
     }
 
+    note right of ores_dq_business_units_artefact_tbl
+    Represents internal organizational units (e.g., desks, departments, branches). Supports hierarchical structure via self-referencing parent_business_unit_id. Each unit belongs to a top-level legal entity (party). - Artefact Table
+    end note
+
     entity ores_dq_calendar_types_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3371,6 +3726,10 @@ package "dq_staging" #F3E5F5 {
         * display_order : integer
     }
 
+    note right of ores_dq_calendar_types_artefact_tbl
+    Reference data classifying what a calendar represents. Values include: public_holiday, central_bank_meeting, financial_centre, data_release, other. Lets a single calendar table hold heterogeneous entries (a national holiday calendar, a central bank's meeting schedule, a financial-centre business-day calendar) without collapsing their distinct provenance. - Artefact Table
+    end note
+
     entity ores_dq_calendars_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3381,7 +3740,14 @@ package "dq_staging" #F3E5F5 {
         * calendar_type : text
         * country_code : text <<FK>>
           image_id : uuid <<FK>>
+        * source : text
+        * is_editable : boolean
+          base_calendar_code : text
     }
+
+    note right of ores_dq_calendars_artefact_tbl
+    Validated enumeration of named date collections consumed by ORE and QuantLib: business-day/holiday calendars (TARGET, UnitedStates, UnitedStates.GovernmentBond, ...), central-bank meeting calendars, and other calendar-shaped reference data. Each row is one concrete QuantLib/ORE calendar token — sub-market variants (e.g. UnitedStates.NYSE vs UnitedStates.GovernmentBond) are separate rows, not a joined variant field, so the code column always matches ORE's XML <Calendar> vocabulary verbatim. Classified by [[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] whose calendar it is — supranational calendars (TARGET) use the ZZ sentinel (ISO 3166-1's own reserved user-assigned code) rather than a nullable country reference, since no single country owns them. - Artefact Table
+    end note
 
     entity ores_dq_cashflow_types_artefact_tbl  #F7E5FF {
         --
@@ -3408,6 +3774,10 @@ package "dq_staging" #F3E5F5 {
         * display_order : integer
     }
 
+    note right of ores_dq_code_domains_artefact_tbl
+    A code domain is a classification registry that names the context in which a code value exists. It disambiguates identical codes used in different entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE' in book_status. Code domains are reusable beyond badges: any future system needing to namespace code values (validation rules, audit customisation, etc.) can reference this table. - Artefact Table
+    end note
+
     entity ores_dq_coding_schemes_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3422,6 +3792,10 @@ package "dq_staging" #F3E5F5 {
         * description : text
     }
 
+    note right of ores_dq_coding_schemes_artefact_tbl
+    A published code list that a subject area's values come from, such as an ISO currency list or an FpML codelist. The scheme names the authority that publishes it and the subject area it applies to, and may point at the document that defines it. The authority and the subject-area columns are plain text rather than declared foreign keys, because the table has never carried a constraint and adding one would refuse rows the platform accepts today. - Artefact Table
+    end note
+
     entity ores_dq_countries_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3434,6 +3808,10 @@ package "dq_staging" #F3E5F5 {
         * official_name : text
           image_id : uuid <<FK>>
     }
+
+    note right of ores_dq_countries_artefact_tbl
+    ISO 3166-1 country definitions used for reference data. Countries use alpha-2, alpha-3, and numeric codes per the ISO standard. - Artefact Table
+    end note
 
     entity ores_dq_crm_topology_bundles_artefact_tbl  #F7E5FF {
         --
@@ -3469,6 +3847,10 @@ package "dq_staging" #F3E5F5 {
           holiday_calendar : text
     }
 
+    note right of ores_dq_currencies_artefact_tbl
+    ISO 4217 currency definitions used for reference data. Currencies are managed per-tenant and drive financial calculations, rounding, and display formatting across the system. - Artefact Table
+    end note
+
     entity ores_dq_currency_calendars_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3477,6 +3859,10 @@ package "dq_staging" #F3E5F5 {
         * calendar_code : text
         * version : integer
     }
+
+    note right of ores_dq_currency_calendars_artefact_tbl
+    Currency Calendar - Artefact Table
+    end note
 
     entity ores_dq_currency_countries_artefact_tbl  #F7E5FF {
         --
@@ -3487,6 +3873,10 @@ package "dq_staging" #F3E5F5 {
         * version : integer
     }
 
+    note right of ores_dq_currency_countries_artefact_tbl
+    Currency Country - Artefact Table
+    end note
+
     entity ores_dq_currency_pair_convention_calendars_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3495,6 +3885,10 @@ package "dq_staging" #F3E5F5 {
         * calendar_code : text
         * version : integer
     }
+
+    note right of ores_dq_currency_pair_convention_calendars_artefact_tbl
+    Currency Pair Convention Calendar - Artefact Table
+    end note
 
     entity ores_dq_currency_pair_conventions_artefact_tbl  #F7E5FF {
         --
@@ -3511,6 +3905,10 @@ package "dq_staging" #F3E5F5 {
           end_of_month : boolean
     }
 
+    note right of ores_dq_currency_pair_conventions_artefact_tbl
+    Quoting and date-convention fields for a currency pair — pip factor, tick size, calendars, business day convention, spot-relative/end-of- month flags — folded in from the retired fx_convention entity (see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]). Keyed 1:1 by pair_code, the same value space as [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]'s own primary key — every pair has at most one convention record, so a separate identifier scheme would be pure overhead. Like every other soft-FK relationship in this codebase, pair_code is validated via trigger, not a hard DB foreign key. - Artefact Table
+    end note
+
     entity ores_dq_currency_pairs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3521,6 +3919,10 @@ package "dq_staging" #F3E5F5 {
         * quote_currency : text
         * classification : text
     }
+
+    note right of ores_dq_currency_pairs_artefact_tbl
+    Currency pair identity: base/quote legs, deliverability, classification, and fixing source. Conventions (pip factor, tick size, calendars, business day convention) live 1:1 in [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]], matching the codebase's existing *_convention entity family. spot_days, calendars, and G11 membership are *derived* at read time from the two legs, not stored here — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the full design rationale. - Artefact Table
+    end note
 
     entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
         --
@@ -3544,6 +3946,10 @@ package "dq_staging" #F3E5F5 {
         * tag_id : uuid <<FK>>
     }
 
+    note right of ores_dq_image_tags_artefact_tbl
+    Image Tag - Artefact Table
+    end note
+
     entity ores_dq_images_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3554,6 +3960,10 @@ package "dq_staging" #F3E5F5 {
         * description : text
         * svg_data : text
     }
+
+    note right of ores_dq_images_artefact_tbl
+    An image is a named document the platform renders, such as a currency flag or a commodity icon. The bytes are format-agnostic: an SVG document, a JPEG, or any other media type mime_type names. The database stores them base64-encoded in a text column, and the domain type carries the raw bytes. Images carry tags through the image_tag junction, and an image arrives either by upload or from the data-quality publish path. - Artefact Table
+    end note
 
     entity ores_dq_ip2country_artefact_tbl  #F7E5FF {
         --
@@ -3712,6 +4122,10 @@ package "dq_staging" #F3E5F5 {
         * display_order : integer
     }
 
+    note right of ores_dq_payment_frequencies_artefact_tbl
+    Reference data table for how often a leg's cashflows occur, sourced from ORE's authoritative frequencyType enumeration (external/ore/xsd/ore_types.xsd) -- Once, Annual, Semiannual, Quarterly, Bimonthly, Monthly, Lunarmonth, Weekly, Daily (the canonical long-form names; ORE also accepts single-letter aliases -- Z/A/S/Q/B/M/L/W/D -- not modelled here since this table's code is the long form other components store and display). Each row carries a period_unit/period_multiplier pair reusing [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit]]'s own vocabulary (DAY/WEEK/MONTH/YEAR, plus the NONE sentinel for Once, which has no periodic step at all -- a single payment at termination), so a caller building a payment schedule (e.g. the IR Curve Template's swap fixed leg) can reuse the exact same period-stepping arithmetic ores::refdata::domain::resolve_end_date() already implements for tenors, rather than re-deriving month/day counts from the code string. Not scoped to any single consumer -- this table exists as reusable reference data, the same category as day_count_fraction_type or business_day_convention_type. Managed by the system tenant. This table replaces ores.trading's older payment_frequency_type entity outright -- there is no case for two types modelling the same ORE enumeration ("payment frequency conventions" vs "payment frequencies" is a flimsy distinction); every ores.trading column that stored a payment-frequency code (swap_leg, credit_instrument, commodity_instrument, equity_swap_instrument) now validates against this table instead. See the parent story's * Decisions for the full reasoning. - Artefact Table
+    end note
+
     entity ores_dq_person_roles_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3737,8 +4151,12 @@ package "dq_staging" #F3E5F5 {
           owner_unit_id : uuid <<FK>>
         * purpose_type : text
           aggregation_ccy : text
-        * is_virtual : integer
+        * is_virtual : boolean
     }
+
+    note right of ores_dq_portfolios_artefact_tbl
+    Represents organizational, risk, or reporting groupings. Never holds trades directly. Supports hierarchical structure via self-referencing parent_portfolio_id. - Artefact Table
+    end note
 
     entity ores_dq_regulatory_corporate_sectors_artefact_tbl  #F7E5FF {
         --
@@ -3902,6 +4320,10 @@ package "dq_staging" #F3E5F5 {
         * description : text
     }
 
+    note right of ores_dq_tags_artefact_tbl
+    A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
+    end note
+
 }
 
 '
@@ -3958,7 +4380,7 @@ package "dq_datasets" #E3F2FD {
     for loose coupling - allows declaring membership for datasets that may not
     yet exist in the system.
     Examples:
-    - Bundle "slovaris" contains "slovaris.countries", "slovaris.currencies", etc.
+    - Bundle "crypto" contains "iso.currencies", "crypto.small", etc.
     - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
     end note
 
@@ -3987,9 +4409,9 @@ package "dq_datasets" #E3F2FD {
     of reference data. Bundles provide a way to group related datasets that
     should be installed together.
     Examples:
-    - "slovaris": Synthetic reference data for development and testing
     - "base": Industry-standard reference data (ISO + FpML) for production
     - "crypto": Base system plus cryptocurrency reference data
+    - "risk_management": Sample organisational and risk-reporting data
     end note
 
     entity ores_dq_dataset_dependencies_tbl <<temporal>> #C6F0D8 {
@@ -4035,8 +4457,21 @@ package "dq_datasets" #E3F2FD {
     }
 
     note right of ores_dq_dataset_publications_tbl
-    Audit table for tracking dataset publication history.
-    Records each time a dataset is published to production tables.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Publication Table
+    An append-only log of datasets published to production tables: which dataset
+    went where, under which mode, and how many records each outcome touched. The
+    publish path writes one row per dataset it dispatches.
+    The table is called ores_dq_dataset_publications_tbl, so the model states its
+    table name rather than deriving it: the entity is a publication, and the table
+    names the thing published.
+    It is a run log, not an entity with a lifecycle. Nothing edits a row after it is
+    written, so the model declares :current_state:: no transaction-time pair, no
+    exclusion constraint, no version and no audit tail. Rows carry their own
+    published_at, which is the ordering the reads use. The surrogate id is the
+    primary key because a dataset may be published many times.
     end note
 
     entity ores_dq_datasets_tbl <<temporal>> #C6F0D8 {
@@ -4072,9 +4507,19 @@ package "dq_datasets" #E3F2FD {
     }
 
     note right of ores_dq_datasets_tbl
-    Central dataset registry with full lineage.
-    Tracks provenance via upstream_derivation_id.
-    lineage_depth auto-calculated from hierarchy.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Dataset Table
+    Central dataset registry with full lineage. Tracks provenance through
+    upstream_derivation_id, and lineage_depth is calculated from the hierarchy.
+    A dataset is identified two ways: by its code, and by its name within a
+    subject area and domain. The table enforces both, so the model states code as
+    the natural key and declares the three-column key as an extra unique index.
+    The columns that point at other entities -- coding_scheme_code, origin_code,
+    nature_code, treatment_code, methodology_id and upstream_derivation_id --
+    are plain columns rather than declared references, because the table carries no
+    constraint and adding one would refuse rows the platform accepts today.
     end note
 
 }
@@ -4101,8 +4546,16 @@ package "dq_methodology" #E8F5E9 {
     }
 
     note right of ores_dq_methodologies_tbl
-    Describes transformation/derivation logic.
-    Links to documentation and implementation.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Methodology Table
+    Describes transformation/derivation logic. Links to documentation and
+    implementation.
+    A methodology is a named body of logic that a value is produced by, with an
+    optional pointer to where the logic is written down and an optional note on how
+    it is implemented. Rows are authored directly rather than mirrored from an
+    external source.
     end note
 
     entity ores_dq_nature_dimensions_tbl <<temporal>> #C6F0D8 {
@@ -4121,8 +4574,14 @@ package "dq_methodology" #E8F5E9 {
     }
 
     note right of ores_dq_nature_dimensions_tbl
-    Describes the nature of data.
-    Examples: raw, cleansed, derived.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Nature Dimension Table
+    Describes the nature of data. Examples: raw, cleansed, derived.
+    The dimension answers where a value came from rather than what it means, so it
+    is deliberately small: a code, a name and a description. Rows are authored
+    directly rather than mirrored from an external source.
     end note
 
     entity ores_dq_origin_dimensions_tbl <<temporal>> #C6F0D8 {
@@ -4141,8 +4600,14 @@ package "dq_methodology" #E8F5E9 {
     }
 
     note right of ores_dq_origin_dimensions_tbl
-    Describes the origin of data.
-    Examples: vendor, internal, regulatory.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Origin Dimension Table
+    Describes the origin of data. Examples: vendor, internal, regulatory.
+    The dimension records where a value entered the platform rather than what it
+    means, so it is deliberately small: a code, a name and a description. Rows are
+    authored directly rather than mirrored from an external source.
     end note
 
     entity ores_dq_treatment_dimensions_tbl <<temporal>> #C6F0D8 {
@@ -4161,8 +4626,15 @@ package "dq_methodology" #E8F5E9 {
     }
 
     note right of ores_dq_treatment_dimensions_tbl
-    Describes how data should be treated.
-    Examples: golden, provisional, deprecated.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Treatment Dimension Table
+    Describes how data should be treated. Examples: golden, provisional,
+    deprecated.
+    The dimension records how much trust a value carries, so it is deliberately
+    small: a code, a name and a description. Rows are authored directly rather
+    than mirrored from an external source.
     end note
 
 }
@@ -4230,9 +4702,9 @@ package "dq_metadata" #E1F5FE {
     Badge Definition Table
     The badge catalogue. Each entry defines the complete visual presentation
     of a badge: display label, tooltip, background colour, text colour,
-    severity level, and an optional Bootstrap CSS class hint for Wt.
+    severity level, and an optional Bootstrap CSS class hint for browser rendering.
     Badge definitions are the single source of truth for all badge visual
-    metadata across Qt and Wt. They are loaded at client startup as
+    metadata across UI clients. They are loaded at client startup as
     reference data and looked up at render time via BadgeCache.
     end note
 
@@ -4266,10 +4738,9 @@ package "dq_metadata" #E1F5FE {
     - ('login_status', 'Online')  -> 'login_online'
     - ('dq_nature',    'Actual')  -> 'dq_actual'
     Populated via seed scripts; no management UI needed.
-    NATS/protocol/service are disabled above: badge lookups already go
-    through the hand-maintained badge_handler/badge_service (see
-    registrar.cpp's own comment), so the generic generated messaging
-    stack for this junction would be dead code alongside it.
+    The junction is on the canonical generated stack: its protocol, handler,
+    registrar and service are generated from this model like any other
+    junction's, so the mapping read cannot drift from the entity it projects.
     end note
 
     entity ores_dq_badge_severities_tbl <<temporal>> #C6F0D8 {
@@ -4294,7 +4765,7 @@ package "dq_metadata" #E1F5FE {
     To modify, update the template and regenerate.
     Badge Severity Table
     Reference data defining severity levels used to classify badges.
-    Codes align with Bootstrap 5 contextual classes so Wt rendering
+    Codes align with Bootstrap 5 contextual classes so browser rendering
     requires no translation layer.
     Values: secondary, info, success, warning, danger, primary.
     end note
@@ -4315,12 +4786,17 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_catalogs_tbl
-    A catalog is a named collection of related datasets. It provides a
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Catalog Table
+    A catalog is a named collection of related datasets, providing a
     high-level grouping mechanism for datasets that share a common theme,
-    source, or purpose.
-    Examples:
-    - "ISO Standards" - Contains ISO 3166 countries, ISO 4217 currencies
-    - "Cryptocurrency" - Contains crypto reference data and icons
+    source, or purpose. Examples: "ISO Standards" (ISO 3166 countries,
+    ISO 4217 currencies), "Cryptocurrency" (crypto reference data and
+    icons). Catalogs are optional for datasets but provide useful
+    organizational structure for managing large numbers of them. Rows are
+    authored directly (not mirrored from an external source).
     end note
 
     entity ores_dq_change_reason_categories_tbl <<temporal>> #C6F0D8 {
@@ -4374,10 +4850,10 @@ package "dq_metadata" #E1F5FE {
     To modify, update the template and regenerate.
     Change Reason Table
     A change reason is a specific, selectable reason for making a change
-    to a record, scoped to a change reason category. Examples: "Typo
-    Fix" (category: data_correction), "New Regulation" (category:
-    regulatory_update). Rows are authored directly (not mirrored from an
-    external source).
+    to a record, scoped to a change reason category. The categories the
+    seed creates are system, common and trade, each aligned to a
+    regulatory standard; a reason names one of them. Rows are authored
+    directly (not mirrored from an external source).
     end note
 
     entity ores_dq_code_domains_tbl <<temporal>> #C6F0D8 {
@@ -4426,13 +4902,15 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_coding_scheme_authority_types_tbl
-    Classifies coding schemes by the authority or governance level behind them.
-    This helps distinguish between formal standards, industry conventions, and
-    proprietary identifiers.
-    Values:
-    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)
-    - industry: De facto standards widely adopted in the market but not formally standardized
-    - internal: Proprietary or organization-specific identifiers
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Coding Scheme Authority Type Table
+    Identifies the body that publishes a coding scheme. Examples: ISO, FpML,
+    internal.
+    Kept as its own lookup rather than an enum so the list can grow without a
+    release, and so a scheme names the authority that owns it. Rows are authored
+    directly.
     end note
 
     entity ores_dq_coding_schemes_tbl <<temporal>> #C6F0D8 {
@@ -4455,16 +4933,17 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_coding_schemes_tbl
-    A scheme defines a coding or identification standard used to identify
-    entities such as parties, currencies, or other domain objects. Based on
-    the FPML coding-scheme concept.
-    Each scheme belongs to a subject area within the DQ hierarchy, establishing
-    what type of entity the scheme identifies.
-    Examples:
-    - LEI (Legal Entity Identifier, ISO 17442) for party identification
-    - BIC (Business Identifier Code, ISO 9362) for financial institutions
-    - ISO 4217 for currency codes
-    - ISO 3166 for country codes
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Coding Scheme Table
+    A published code list that a subject area's values come from, such as an ISO
+    currency list or an FpML codelist.
+    The scheme names the authority that publishes it and the subject area it
+    applies to, and may point at the document that defines it. The authority and
+    the subject-area columns are plain text rather than declared foreign keys,
+    because the table has never carried a constraint and adding one would refuse
+    rows the platform accepts today.
     end note
 
     entity ores_dq_data_domains_tbl <<temporal>> #C6F0D8 {
@@ -4518,8 +4997,8 @@ package "dq_metadata" #E1F5FE {
         * version : integer
         * machine_id : uuid <<FK>>
         * name : text
-        * is_initial : integer
-        * is_terminal : integer
+        * is_initial : boolean
+        * is_terminal : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4529,8 +5008,15 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_fsm_states_tbl
-    Defines valid states within a machine. Each state belongs to exactly one
-    machine and may be designated as initial or terminal.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FSM State Table
+    One state of a finite state machine, scoped to the machine it belongs to and
+    unique within it by name.
+    machine_id is a plain uuid column rather than a declared reference, because
+    the table carries no constraint and adding one would refuse rows the platform
+    accepts today.
     end note
 
     entity ores_dq_fsm_transitions_tbl <<temporal>> #C6F0D8 {
@@ -4552,9 +5038,16 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_fsm_transitions_tbl
-    Defines valid state-to-state transitions within a machine. Both from_state_id
-    and to_state_id must belong to the same machine. Optionally references a
-    guard function for business rule enforcement.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FSM Transition Table
+    A transition between two states of a finite state machine, unique within a
+    machine for a given pair of states.
+    from_state_id is nullable, so a transition may start from anywhere rather
+    than from a named state. Like machine_id and to_state_id it is a plain uuid
+    column rather than a declared reference, because the table carries no
+    constraint and adding one would refuse rows the platform accepts today.
     end note
 
     entity ores_dq_subject_areas_tbl <<temporal>> #C6F0D8 {
@@ -4573,8 +5066,13 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_subject_areas_tbl
-    Sub-classification within a data domain.
-    Examples: currencies, countries, images.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Subject Area Table
+    Sub-classification within a data domain. Examples: currencies,
+    countries, images. Rows are authored directly (not mirrored from an
+    external source).
     end note
 
 }
@@ -4585,10 +5083,11 @@ package "dq_metadata" #E1F5FE {
 package "variability" #E8F5E9 {
     entity ores_variability_system_settings_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * party_id : uuid <<PK, FK>>
-        * name : text <<PK>>
+        * id : uuid <<PK>>
         --
         * version : integer
+        * name : text
+        * party_id : uuid <<FK>>
         * value : text
         * data_type : text
         * description : text
@@ -4601,13 +5100,23 @@ package "variability" #E8F5E9 {
     }
 
     note right of ores_variability_system_settings_tbl
-    Unified typed system settings table.
-    Supports boolean, integer, string, and json value types. Uses name as
-    natural key, scoped by (tenant_id, party_id). System- and tenant-wide
-    settings use the tenant's system party (party_category='System');
-    party-specific settings (e.g. onboarding.party) use the party's own id.
-    party_id is not-null: a caller may omit it (send SQL NULL) and the insert
-    trigger defaults it to the tenant's system party, same pattern as tenant_id.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    System Setting Table
+    A system setting is a named configuration value the platform reads while it
+    runs, such as system.bootstrap_mode or onboarding.party. The value is
+    stored as text and data_type says how to read it, because one table carries
+    every type rather than one table per type.
+    A setting is scoped to a tenant and a party. Tenant-wide settings live under
+    the tenant's system party, and a party-specific setting such as
+    onboarding.party lives under that party's own id. The pair is what makes a
+    setting name unique: the same name may hold different values for two parties
+    in one tenant, so a caller always reads within a scope.
+    The table is bitemporal like every other entity, so a setting's history is
+    kept and a configuration change is auditable and reversible. The name is the
+    natural key callers use; id is the surrogate the store keeps for
+    foreign-key stability.
     end note
 
 }
@@ -7141,8 +7650,8 @@ package "scheduler" #F1F8E9 {
         --
           tenant_id : uuid <<FK>>
         * version : integer
-          party_id : uuid <<FK>>
         * job_name : text
+          party_id : uuid <<FK>>
         * description : text
         * command : text
         * schedule_expression : text
@@ -7162,29 +7671,28 @@ package "scheduler" #F1F8E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Job Definition Table
-    Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
-    cron expression, SQL command, target database, and active state.
-    DO NOT regenerate this entity at all -- every facet is out of sync with
-    the hand-maintained C++ (the model's own tenant_id/schedule_expression/
-    is_active column shapes don't match the hand-written job_definition
-    struct's actual types: std::optional<boost::uuids::uuid>, cron_expression,
-    bool. A regenerated tenant_id would come out as the codegen
-    utility::uuid::tenant_id wrapper, not the hand-written std::optional
-    type, so even the "safe" domain/repository-entity/mapper facets would
-    regenerate *wrong types*, not just wrong formatting) on top of the
-    deeper repository/service/messaging divergence documented under
-    ** Custom repository methods below.
-    None of this is modeled here yet; regenerating clobbers it with a
-    generic CRUD-only stack (and silently wrong column types) that breaks
-    all of the above. This model needs a proper resync -- correcting the
-    column shapes to match the hand-written struct, then re-adding
-    repository/messaging support for the four hand-written operations --
-    before any facet of it can be regenerated safely. The Qt facet is
-    equally excluded: its generated controllers/dialogs bind to the
-    hand-maintained scheduler_protocol.hpp classes, so a Qt regen would
-    emit code against a protocol surface that does not exist. Mirrors
-    party's hand-maintained-SQL treatment in the refdata drift-fix task,
-    but wider in scope (no facet is currently safe, not just SQL).
+    A job the scheduler fires on a cron expression. The row carries the schedule
+    (schedule_expression), what to run when it fires, and whether it is active.
+    action_type selects the behaviour: execute_sql runs the SQL in command,
+    and nats_publish publishes the subject and body carried in action_payload.
+    The table is bi-temporal and audited (see
+    projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it
+    carries version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion and the delete rule, so the model takes the ordinary
+    audited shape and needs no shape flag.
+    tenant_id is nullable. A job may belong to no tenant, because the scheduler
+    fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
+    compute stale-result reaper are both such rows. The model binds
+    uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
+    standard presentation tier, and states nullable_tenant_id itself, which that
+    profile leaves to the model.
+    job_name is the natural key and is unique within its tenant; id is the
+    surrogate. Uniqueness is what the component's upsert path relies on: a job that
+    arrives under an existing name updates that row in place instead of adding a
+    second one.
+    The component's operational views — the global job-instance list and the live
+    scheduler status — are operations rather than entity verbs, and are modelled
+    in ores.scheduler.scheduling_operations.
     end note
 
     entity ores_scheduler_job_instances_tbl  #F7E5FF {
@@ -7242,6 +7750,189 @@ package "reporting" #E0F7FA {
     for a report definition that already has a running instance.
     end note
 
+    entity ores_reporting_configuration_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * configuration_id : uuid <<FK>>
+        * parameter_definition_id : uuid <<FK>>
+        * value : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_configuration_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Configuration Parameter Table
+    One value. The value is text because the definition says what it is: the
+    value domain on parameter_definition decides whether this is a currency, a
+    date, a boolean, a tenor or a reference, and the mapper writes it into the
+    document accordingly. Storing it as text is not the same as storing an
+    untyped blob, because the meaning comes from a foreign key rather than from
+    the shape of the row.
+    position keeps the order the document wrote the parameters in.
+    end note
+
+    entity ores_reporting_configuration_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_configuration_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Configuration Type Table
+    Reference data naming the kinds of configuration a report can bind: the ORE
+    run itself, a stress library, a sensitivity analysis, a simulation, a SIMM
+    calibration, a credit simulation, a historical return set, a Basel traffic
+    light set, and the curve and reference documents.
+    This is a seeded vocabulary, not free text. A discriminator stored as a bare
+    code cannot be constrained, counted or joined, which is why every
+    configuration carries one of these rows by foreign key. Adding a kind is a
+    row here plus a workflow, never a column on the report definition.
+    end note
+
+    entity ores_reporting_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * configuration_type_code : text
+        * owning_component : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Configuration Table
+    The name is ours; the detail lives with the component named by
+    owning_component. A report binds a configuration through
+    report_configuration, so several reports share one configuration without
+    copying it, and the kind of configuration it is comes from
+    configuration_type by foreign key rather than from a text code.
+    end note
+
+    entity ores_reporting_parameter_definitions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * scope : text
+        * subtype : text
+        * name : text
+        * position : integer
+        * parameter_value_domain_code : text
+        * is_required : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_parameter_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Parameter Definition Table
+    The vocabulary of the run document. ORE writes parameters as a name and a
+    value inside a block; scope names the block (Setup, Markets, an analytic)
+    and subtype narrows it, so a pair of them plus name says which parameter
+    this is. position keeps the order the document wrote, because a document
+    that is not reproducible in order is not reproducible.
+    165 of the 218 parameter names observed in the shipped corpus belong to
+    exactly one analytic kind, which is why the name alone is not the key.
+    end note
+
+    entity ores_reporting_parameter_value_domains_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * storage_kind : text
+        * referenced_entity : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_parameter_value_domains_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Parameter Value Domain Table
+    Every configuration parameter holds one value, and this says what that value
+    is: a currency, a date, a boolean, an integer, a tenor, a document reference,
+    or a list. Where the value names something in the model, referenced_entity
+    names the entity it points at, so the mapper knows what to write into the
+    document and a reader knows what the value means.
+    A malformed org header makes this loader fail in a misleading way: a line
+    that does not start at column zero, or a stray character before a #+ keyword,
+    leaves the entity type unresolved and the generator writes files called
+    unknown_* rather than reporting the bad line. Check the header first when a
+    model generates unknown.
+    end note
+
+    entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * configuration_type_code : text
+        * configuration_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Configuration Table
+    This is how a report definition reaches its configuration: one row per
+    configuration it binds, where the configuration type is the slot and the
+    configuration fills it. Several reports may fill the same slot with the same
+    configuration, so a configuration is never copied to be shared, and adding a
+    slot is not a column on the report definition.
+    end note
+
     entity ores_reporting_report_definitions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -7255,6 +7946,9 @@ package "reporting" #E0F7FA {
         * schedule_expression : text
         * concurrency_policy : text
           scheduler_job_id : uuid <<FK>>
+        * pre_processing : text
+          prepared_input_key : text
+        * post_processing : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -7270,8 +7964,13 @@ package "reporting" #E0F7FA {
     To modify, update the template and regenerate.
     Report Definition Table
     The persistent template for a report. Describes what to run, when to run it,
-    and how to handle concurrent executions. Type-specific configuration (e.g.
-    risk parameters) lives in a separate table keyed by report_definition_id.
+    how to handle concurrent executions, and how much of the processing pipeline a
+    run executes. Type-specific configuration (e.g. risk parameters) lives in a
+    separate table keyed by report_definition_id.
+    The run configuration is held here rather than in the environment so that a run
+    is reproducible from the database alone. pre_processing and post_processing
+    name, for each substitutable phase, whether the phase runs or is replaced by a
+    prepared substitute.
     Lifecycle is managed through the report_definition_lifecycle FSM machine.
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set
@@ -7490,9 +8189,8 @@ package "compute" #EDE7F6 {
     assignments without the wrapper needing to negotiate package selection.
     The junction uses the full generated stack: NATS protocol, handler
     and registrar. The generated list_by_app_version op returns the
-    platform rows enriched with the platform code, and
-    replace_by_app_version replaces the active platform set of an app
-    version. Both are consumed by the desktop console and by the
+    platform rows enriched with the platform code. Both it and the write
+    and remove ops are consumed by the ores.shell compute commands and by the
     repository tests.
     end note
 
@@ -7586,9 +8284,10 @@ package "compute" #EDE7F6 {
     end note
 
     entity ores_compute_grid_samples_tbl  #F7E5FF {
+        * id : uuid <<PK>>
         * sampled_at : timestamptz <<PK>>
-        * tenant_id : uuid <<PK, FK>>
         --
+        * tenant_id : uuid <<FK>>
         * total_hosts : integer
         * online_hosts : integer
         * idle_hosts : integer
@@ -7605,10 +8304,22 @@ package "compute" #EDE7F6 {
     }
 
     note right of ores_compute_grid_samples_tbl
-    Compute grid server-side telemetry samples.
-    Populated by ores.compute.service every ~30 seconds.
-    One row per sample interval per tenant; designed for TimescaleDB hypertable
-    partitioned by sampled_at.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Grid Sample Table
+    One snapshot of the grid, written by the compute service's poller on its
+    own interval. The counters mirror what the database holds at that moment,
+    so a dashboard reads one stored row rather than aggregating on every
+    refresh.
+    The table is append-only and carries no validity window: a sample is a
+    fact about an instant, and nothing edits it. That is why the model states
+    :current_state:, which drops the transaction-time pair the bi-temporal
+    shape would add and lets the partition column sit in the primary key.
+    The reads the codegen cannot express live beside it. A per-node newest row
+    is a DISTINCT ON (host_id) and the live summary is a call to
+    ores_compute_grid_stats_fn, so both stay hand-written in
+    compute_telemetry_repository.
     end note
 
     entity ores_compute_hosts_tbl <<temporal>> #C6F0D8 {
@@ -7642,10 +8353,11 @@ package "compute" #EDE7F6 {
     end note
 
     entity ores_compute_node_samples_tbl  #F7E5FF {
+        * id : uuid <<PK>>
         * sampled_at : timestamptz <<PK>>
-        * tenant_id : uuid <<PK, FK>>
-        * host_id : uuid <<PK, FK>>
         --
+        * tenant_id : uuid <<FK>>
+        * host_id : uuid <<FK>>
         * tasks_completed : integer
         * tasks_failed : integer
         * tasks_since_last : integer
@@ -7657,16 +8369,26 @@ package "compute" #EDE7F6 {
     }
 
     note right of ores_compute_node_samples_tbl
-    Compute grid per-node telemetry samples.
-    Published by ores.compute.wrapper nodes every ~30 seconds via NATS and
-    persisted by ores.compute.service.
-    One row per node per sample interval; designed for TimescaleDB hypertable
-    partitioned by sampled_at.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Node Sample Table
+    One wrapper node's report, published fire-and-forget on
+    compute.v1.telemetry.node_samples and written here by the service. The
+    rows are append-only, one per node per interval, and the dashboard shows
+    the newest row of each node.
+    The model states :current_state: for the same reason grid_sample does:
+    a sample is a fact about an instant, so the bi-temporal pair has no
+    meaning on it.
+    The per-node newest read stays hand-written. It is a
+    DISTINCT ON (host_id) over the tenant's rows, which no generated read
+    expresses: a read by host_id returns one node's rows, and a read of the
+    newest returns the grid's newest and not one row per node.
     end note
 
     entity ores_compute_platforms_tbl <<temporal>> #C6F0D8 {
-        * id : uuid <<PK>>
         * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
         --
         * version : integer
         * code : text
@@ -7683,6 +8405,24 @@ package "compute" #EDE7F6 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_compute_platforms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Platform Table
+    A target a wrapper and engine can be built for, named by its triplet code
+    (for example x64-linux). A package belongs to an app version and a
+    platform, so the orchestrator matches incoming workunits against the host's
+    triplet through this row.
+    The platform registry is a global one: the platform rows ship under the
+    system tenant and every tenant reads them, which
+    :system_tenant_visible: true states on the repository.
+    is_active retires a triplet without deleting it, so a package that names
+    it still resolves. It is a plain column and not a declared filter, because
+    the generated read refuses a filter, and a filter the service rejects is
+    worse than no filter at all.
+    end note
 
     entity ores_compute_results_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
@@ -7713,17 +8453,44 @@ package "compute" #EDE7F6 {
     Bridges the workunit definition and the actual execution on a grid node.
     Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
     and the location of output data. The BOINC equivalent of 'result'.
-    Change-reason exception (recorded in the codegen drift loop): result is a
-    machine-written, list-only entity — the grid machinery writes results and
-    there is no human edit flow — so has_change_reason_cache is explicitly
-    false, overriding the profile default.
-    Generator-signature exception (recorded in the codegen drift loop): the
-    pre-drift handcrafted generator took a workunit_id parameter
-    (generate_synthetic_result(workunit_id, ctx)). The template signature
-    takes only the generation context, and the sole consumer (the result
-    eventing integration test) now links the FK by member assignment after
-    generation. No model knob or paste block is needed for the parameterized
-    overload; the template shape is the sanctioned surface.
+    The entity carries no change-reason cache: the grid machinery writes results
+    and there is no human edit flow.
+    Generator-signature exception: the generator takes only the generation
+    context; a caller that needs a specific workunit links it by member
+    assignment after generation. No parameterized overload or model knob is
+    needed.
+    result declares no key field, so callers address it by its storage key.
+    end note
+
+    entity ores_compute_workflow_batch_links_tbl  #F7E5FF {
+        * batch_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * workflow_step_id : text <<FK>>
+        * workflow_instance_id : text <<FK>>
+        * created_at : timestamptz
+    }
+
+    note right of ores_compute_workflow_batch_links_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Batch Link Table
+    When a submit_compute workflow step runs, the service creates a batch and
+    records one row here that names the step and the step's instance. The
+    bridge polls this table, and when the batch reaches a terminal state it
+    publishes step_completed_event and deletes the row.
+    The table has no validity window and carries no audit tail: the row is a
+    note that a step is outstanding, and it is deleted rather than closed. The
+    model therefore states :current_state: and :no_audit_columns:.
+    The one decision the model records is the read scope. The bridge is a
+    service-level poller, not a caller acting for one tenant, so it reads
+    every tenant's links and deletes each under the tenant that owns it. That
+    is why the model states :tenant_read_scope: shared, which leaves the
+    tenant filter to row-level security rather than adding one on top, and
+    :rls_system_tenant_visible:, which is what lets the service's
+    system-tenant session see rows the tenant owns. Mutations stay
+    tenant-scoped, so the delete names the link's own tenant.
     end note
 
     entity ores_compute_workunits_tbl <<temporal>> #C6F0D8 {
@@ -7762,10 +8529,11 @@ package "compute" #EDE7F6 {
 ' ==================== workflow (Workflow Orchestration (Saga)) ====================
 '
 package "workflow" #FFF8E1 {
-    entity ores_workflow_workflow_instances_tbl  #F7E5FF {
+    entity ores_workflow_workflow_instances_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
-        * tenant_id : uuid <<FK>>
+        * version : integer
         * type : text
         * state_id : uuid <<FK>>
         * request_json : jsonb
@@ -7778,18 +8546,29 @@ package "workflow" #FFF8E1 {
         * materialised_steps_json : text
           completed_at : timestamptz
           last_event_at : timestamptz
-        * created_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_workflow_workflow_instances_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Instance Table
     Tracks the lifecycle of a workflow execution, including its type, status,
     the serialised request that triggered it, and any result or error produced.
     Instances are append-mostly; status transitions are the primary mutation.
     end note
 
-    entity ores_workflow_workflow_steps_tbl  #F7E5FF {
+    entity ores_workflow_workflow_steps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
+        * version : integer
         * workflow_id : uuid <<FK>>
         * step_index : integer
         * name : text
@@ -7797,6 +8576,7 @@ package "workflow" #FFF8E1 {
         * request_json : jsonb
           response_json : jsonb
           error : text
+          step_log_json : jsonb
         * command_subject : text
         * command_json : text
           command_published_at : timestamptz
@@ -7805,11 +8585,19 @@ package "workflow" #FFF8E1 {
         * compensation_json : text
           started_at : timestamptz
           completed_at : timestamptz
-        * created_at : timestamptz
-          step_log_json : jsonb
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_workflow_workflow_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Step Table
     Records the execution of one step in a saga workflow, including the step
     index, name, status, request/response payloads, and timing. Steps reference
     their parent workflow instance via workflow_id.
@@ -7832,9 +8620,14 @@ package "database" #EFEBE9 {
     }
 
     note right of ores_database_info_tbl
-    Stores the schema version, git commit, and build environment inserted at
-    database creation time. Used to correlate service behaviour with the
-    database schema in use. Contains exactly one row.
+    Stores the schema version, git commit and build environment recorded when
+    the database was created or recreated. Used to correlate service behaviour
+    with the schema in use. Holds exactly one row.
+    Deliberately not a temporal table and not a codegen entity. It records the
+    checkout that built the database before any service is running, so it
+    cannot depend on the audit, history or eventing stacks a generated entity
+    carries. `compass db recreate` inserts the row and `compass bearings` reads
+    the newest one.
     end note
 
 }
@@ -7885,6 +8678,20 @@ package "marketdata" #E3F2FD {
     Rebinding (editing source_name) switches the ingest source without restarting
     producers. Setting enabled  false= suspends the subscription without deleting
     the binding.
+    This model binds to no variability profile, and the omission is
+    deliberate rather than unfinished. A binding is workspace-scoped
+    (has_workspace_id  true=), keyed by a surrogate UUID
+    (has_uuid_primary_key  true=), and carries the standard presentation
+    tier (has_pagination  true=, has_change_reason_cache  true=,
+    has_tenant_id  true=). No profile in the catalogue has that
+    combination: workspace-scoped-lookup fixes
+    has_uuid_primary_key  false= and uuid-surrogate-lookup fixes
+    has_workspace_id  false=, so every candidate contradicts one of the
+    two features that define this entity. Binding to the nearest profile
+    would move a false promise rather than remove it.
+    The gap is a profile the catalogue lacks, not a defect in this model.
+    ores.reporting.report_definition has the same shape and is recorded
+    in KNOWN_MODEL_DRIFT for the same reason.
     end note
 
     entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
@@ -7921,7 +8728,8 @@ package "marketdata" #E3F2FD {
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * series_id : uuid <<FK>>
-          point_id : text <<FK>>
+        * point_id : text <<FK>>
+          key : text
         * value : text
           source : text
         * valid_from : timestamptz
@@ -7934,7 +8742,7 @@ package "marketdata" #E3F2FD {
     To modify, update the template and regenerate.
     Market Observation Table
     A single market data observation: the value of a series at a given
-    observation_datetime and optional point_id (tenor/surface coordinate).
+    observation_datetime and point_id (tenor/surface coordinate).
     observation_datetime is the financial valid-time (UTC); valid_from/valid_to
     is the transaction time. Corrections replace the previous value via the
     soft-update trigger.
@@ -7943,6 +8751,33 @@ package "marketdata" #E3F2FD {
     is enforced via partial unique index and the soft-update/soft-delete trigger pair.
     No audit trail columns (version, modified_by, performed_by, change_reason_code,
     change_commentary) — tick-level data volumes make these impractical.
+    end note
+
+    entity ores_marketdata_market_series_asset_classes_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * market_series_id : uuid <<PK, FK>>
+        * asset_class_code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_series_asset_classes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Market Series Asset Class Table
+    A market series is a container of observations, and the asset classes it
+    serves follow from what it observes rather than from a single value on
+    the series itself. Most series belong to exactly one class, but a
+    pairwise correlation relates two -- an equity index against an FX rate,
+    say -- and belongs to both. A not-null column cannot hold that, so the
+    relationship is a junction.
     end note
 
     entity ores_marketdata_market_series_tbl <<temporal>> #C6F0D8 {
@@ -7954,9 +8789,7 @@ package "marketdata" #E3F2FD {
         * series_type : text
         * metric : text
         * qualifier : text
-        * asset_class : text
         * series_subclass : text
-        * is_scalar : boolean
         * derivation_kind : text
         * derivation_config_id : uuid <<FK>>
         * derivation_config_version : integer
@@ -7978,7 +8811,10 @@ package "marketdata" #E3F2FD {
     temporal reference data; changes infrequently so a regular table with GIST
     exclusion is appropriate.
     Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
-    asset_class and series_subclass carry the coarse taxonomy for filtering.
+    series_subclass carries the coarse taxonomy for filtering, and the asset
+    classes the series belongs to live in
+    market_series_asset_classes -- a set rather than a column, because a
+    pairwise correlation relates two classes at once.
     derivation_kind/derivation_config_id/derivation_config_version mark
     whether this series is directly observed (the sentinel OBSERVED) or
     derived by a named mechanism (e.g. IR_CURVE_BOOTSTRAP,
@@ -8040,12 +8876,275 @@ package "marketdata" #E3F2FD {
     itself handles a rerun.
     end note
 
+    entity ores_marketdata_series_classification_rules_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * series_type : text <<PK>>
+        * metric : text <<PK>>
+        --
+        * version : integer
+        * asset_class_source : text
+          asset_class_code : text
+        * series_subclass_code : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_series_classification_rules_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Classification Rule Table
+    The taxonomy rule for an ORE market data series, one row per series
+    type and metric. An import reads the whole table once, builds a
+    classifier from it, and asks that classifier for the asset classes and
+    the series subclass of every key it meets.
+    The table replaces a compiled C++ map, so the taxonomy is now managed
+    like every other catalogue: a type ORE adds later, or one a user
+    brings, is an inserted row rather than a rebuild. This matters because
+    an import aborts on a type it cannot classify, so a compiled table
+    makes every new ORE type a code change.
+    The class codes name rows in refdata.asset_class_code and the
+    subclass codes name rows in refdata.series_subclass_code, and the
+    insert trigger checks both against those catalogues.
+    Two things a single class column could not hold, and how this table
+    holds them:
+    - A pairwise correlation relates two classes and belongs to both, so
+    neither is a property of the type. Its row names no class at all and
+    its classes are read from the two operands of the key, which is what
+    asset_class_source records.
+    - GENERIC-MD is a wrapper whose metric slot names the instrument
+    inside it, so its rule is keyed by the metric rather than by the type
+    alone.
+    The reader rejects an empty table, because an empty table aborts the
+    first import that reads it and the message should name the table rather
+    than the first series it met.
+    end note
+
+}
+
+'
+' ==================== ore (ORE Engine Integration) ====================
+'
+package "ore" #E0F2F1 {
+    entity ores_ore_series_key_shapes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * series_type : text <<PK>>
+        --
+        * version : integer
+        * qualifier_depth : integer
+        * has_point_dimension : boolean
+        * default_point : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_ore_series_key_shapes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Key Shape Table
+    The key grammar of ORE market data, one row per series type. Every ORE
+    key follows the skeleton TYPE/METRIC/[QUALIFIER...]/[POINT_ID], and
+    this table says where the split falls: qualifier_depth counts the
+    segments after the metric that identify the series and stay stable
+    across market dates, and every remaining segment is the point (a tenor,
+    a strike, a surface coordinate).
+    The table belongs to ores.ore because the grammar it records is
+    ORE's, not ours: ORE defines the file format and we only read it. It
+    replaces a compiled C++ table, so a type ORE adds later, or one a user
+    brings, is an inserted row rather than a rebuild. A type with no row is
+    not an error -- its key folds whole into the qualifier and still
+    reconstructs verbatim -- so an uncatalogued type never aborts an
+    import.
+    Two invariants hold. The reader rejects an empty table, because an
+    empty table silently degrades every key into a series of its own. A row
+    that claims a point dimension and also carries a default point is
+    contradictory and is rejected, both by the reader and by the check
+    constraint below.
+    The table carries an entity, a repository and its SQL, and nothing
+    else. It is a reference table that reads like configuration: one seeded
+    row per series type ORE defines. Nothing sends its subjects, serves its
+    handlers or drives its commands, so every facet that would build a
+    surface for them is disabled, and the repository the component keeps is
+    the whole of its use of this entity. ores.marketdata, the one real
+    consumer, reads it through that repository, in process.
+    end note
+
 }
 
 '
 ' ==================== analytics (Analytics & Pricing Configuration) ====================
 '
 package "analytics" #E8F5E9 {
+    entity ores_analytics_credit_simulation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+          configuration_id : uuid <<FK>>
+          market : text
+          credit : text
+          zero_market_pnl : boolean
+          evaluation : text
+          double_default : boolean
+          seed : integer
+          paths : integer
+          credit_mode : text
+          loan_exposure_mode : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Config Table
+    One CreditSimulation document. The root carries the Risk block as typed
+    columns and owns the entities that migrate; the matrices are shared by name,
+    so they are their own table and an entity points at one.
+    end note
+
+    entity ores_analytics_credit_simulation_entities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * credit_simulation_config_id : uuid <<FK>>
+        * name : text
+        * transition_matrix_id : uuid <<FK>>
+        * initial_state : integer
+          factor_loadings : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_entities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Entity Config Table
+    One entity in the credit portfolio model: its name, its factor loadings,
+    the matrix it migrates on and the state it starts in. ORE refers to the
+    matrix by name in a text attribute; here the reference is a foreign key, so
+    renaming a matrix cannot silently orphan an entity.
+    end note
+
+    entity ores_analytics_credit_simulation_matrices_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * t0 : double
+        * t1 : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_matrices_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Matrix Config Table
+    A matrix is a named, reusable definition. ORE declares the states it spans
+    through the t0 and t1 attributes of its Data element, and the
+    probabilities as a square grid of text; the states and the probabilities
+    are held as rows in credit_simulation_matrix_cell_config, so this table
+    carries the name an entity refers to and nothing that can be derived.
+    end note
+
+    entity ores_analytics_credit_simulation_matrix_rows_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * transition_matrix_id : uuid <<FK>>
+        * from_rating : text
+        * p_aaa : double
+        * p_aa : double
+        * p_a : double
+        * p_baa : double
+        * p_ba : double
+        * p_b : double
+        * p_c : double
+        * p_default : double
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_matrix_rows_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Matrix Row Config Table
+    ORE lays a transition matrix out on a fixed rating scale: every document in
+    the corpus is 8x8 and names the same eight ratings in the same order. Because
+    the scale is a property of the domain rather than data a user enters, it is
+    encoded in the type rather than seeded as rows: one row per source rating,
+    with one probability column per target rating. A matrix is therefore eight
+    rows, and a row reads the way the matrix is written in the document.
+    end note
+
+    entity ores_analytics_credit_simulation_netting_sets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * credit_simulation_config_id : uuid <<FK>>
+        * netting_set_id : text <<FK>>
+        * position : integer
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_netting_sets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Netting Set Config Table
+    ORE writes the netting sets a credit simulation covers as a comma separated
+    list of codes inside one NettingSetIds element, which is a list stored as
+    text. A list is rows, so each code is a row here, keyed to the configuration
+    and carrying its position so the order is reproduced on export.
+    The codes name netting sets that the trading component owns; no netting set
+    entity exists yet, so the code is held as text until one does.
+    end note
+
     entity ores_analytics_pricing_engine_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -8171,14 +9270,14 @@ package "workspace" #E8F5E9 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
-        * party_id : uuid <<FK>>
         * version : integer
         * name : text
+        * party_id : uuid <<FK>>
+        * owner_id : uuid <<FK>>
         * description : text
           source_path : text
           parent_workspace_id : uuid <<FK>>
           scope_portfolio_id : uuid <<FK>>
-        * owner_id : uuid <<FK>>
         * status_code : text
         * modified_by : text
         * performed_by : text
@@ -8187,6 +9286,37 @@ package "workspace" #E8F5E9 {
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
+
+    note right of ores_workspaces_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workspace Table
+    A named, isolated data context. Data a workspace does not carry is
+    resolved from its parent chain, up to the Live workspace
+    (ores_utility_live_workspace_id_fn()).
+    The table is bi-temporal and audited (see
+    projects/ores.sql/create/workspace/workspace_create.sql): it carries
+    version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion and the delete rule, so the model takes the
+    ordinary audited shape and needs no shape flag.
+    A workspace belongs to one tenant and one party, and its name is unique
+    within that pair. party_id is a natural key beside name for that
+    reason: two parties in one tenant may each hold a workspace named prod.
+    Only an active workspace holds its name, so the uniqueness index covers
+    the active rows and an archived name is free to be taken again.
+    parent_workspace_id is a self-referencing soft foreign key, so the model
+    binds self-referencing-hierarchy for its UUID surrogate key, its tenant
+    scope and its self-reference. The same profile generates the recursive
+    subtree read over parent_workspace_id.
+    scope_portfolio_id optionally narrows a workspace to one portfolio. It is
+    a soft foreign key with no declared target, because ores.refdata is
+    created after this component.
+    The component's row-level security stays hand-written in
+    create/workspace/workspace_rls_policies_create.sql: the live fleet creates
+    this table before the iam section that defines
+    ores_iam_current_tenant_id_fn, so an inline policy cannot be emitted here.
+    end note
 
 }
 
@@ -8232,7 +9362,7 @@ package "synthetic" #F9FBE7 {
     driven by TWO_FACTOR_GAUSSIAN may only carry values whose definitions
     belong to TWO_FACTOR_GAUSSIAN. Both soft FKs are additionally
     validated at insert time by the generated validation functions. No
-    standalone Qt layer: value rows are edited from inside the IR curve
+    standalone UI: value rows are edited from inside the IR curve
     generation config detail dialog, which reads definitions and value
     rows via the normal codegen repositories.
     end note
@@ -8272,7 +9402,7 @@ package "synthetic" #F9FBE7 {
     remains the source of truth for name/description/enabled/dataset_id;
     this row's own name is kept in sync for uniform hierarchy display).
     Having real, queryable folder rows (rather than string-parsing) lets any
-    caller -- Qt, ores.shell, or a wt workflow -- resolve "everything under
+    caller -- the shell, or a future UI -- resolve "everything under
     this folder" the same way, via the generated hierarchy function, instead
     of each reimplementing the tree-walk itself.
     end note
@@ -8428,7 +9558,7 @@ package "synthetic" #F9FBE7 {
     Every entry is modelled as a genuine [start, end) period rather than
     a single maturity label: start_tenor_code/end_tenor_code are both
     ordinary tenor references resolved through the same
-    ores::refdata::domain::resolve_window/resolve_end_date machinery
+    ores::refdata::domain::resolve_end_date machinery
     (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments
     (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine
     zero-duration PERIOD/DAY tenor already in the catalog, resolving
@@ -8522,7 +9652,7 @@ package "synthetic" #F9FBE7 {
     strongly-typed process-parameter structs of ores.analytics.quant
     (two_factor_gaussian_params, vasicek_params, ...). The
     (process_type_code, parameter_name) pair uniquely identifies a
-    parameter; four fields drive the Qt parameter table: display_name
+    parameter; four fields drive the parameter table: display_name
     (the English name), symbol (the Greek letter, where one is
     conventional), short_label (the layperson name shown in Simple
     mode) and description (the rich tooltip text). min_value/

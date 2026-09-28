@@ -22,6 +22,8 @@ on:  # yamllint disable-line rule:truthy
       - "projects/*/modeling/**"
       - "projects/ores.codegen/**"
       - "projects/ores.http/**"
+      - "projects/ores.sql/create/**"
+      - "projects/ores.sql/drop/**"
       - "projects/ores.sql/populate/**"
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
@@ -33,6 +35,8 @@ on:  # yamllint disable-line rule:truthy
       - "projects/*/modeling/**"
       - "projects/ores.codegen/**"
       - "projects/ores.http/**"
+      - "projects/ores.sql/create/**"
+      - "projects/ores.sql/drop/**"
       - "projects/ores.sql/populate/**"
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
@@ -94,6 +98,31 @@ jobs:
       - name: Check generated output matches the models
         run: |
           python3 projects/ores.codegen/scripts/check_component_drift.py --all
+      # The cross-component ER diagram, projects/ores.sql/modeling/
+      # ores_schema.puml, is generated from the SQL tree by
+      # projects/ores.codegen/src/plantuml_er_generate.py, but nothing
+      # regenerated it: the committed diagram fell a month behind its own
+      # generator while every gate stayed green. Its generator dry run is the
+      # verdict the component clean standard's G07 item asks for, so the render
+      # is re-run with --check, which compares the fresh render byte for byte
+      # and writes nothing. The wrapper's stage 1 and 2 commands are repeated
+      # rather than reached through plantuml_er_generate.sh because the wrapper
+      # activates the local projects/ores.codegen/venv, which CI does not have;
+      # this step uses the interpreter requirements.txt was installed into. No
+      # plantuml render runs, so the diagram tool is not needed.
+      - name: Check the ER diagram matches the SQL schema
+        run: |
+          python3 projects/ores.codegen/src/plantuml_er_parse_sql.py \
+            --create-dir projects/ores.sql/create \
+            --drop-dir projects/ores.sql/drop \
+            --output build/output/codegen/plantuml_er_model.json \
+            --ignore-file projects/ores.sql/utility/validation_ignore.txt \
+            --warn
+          python3 projects/ores.codegen/src/plantuml_er_generate.py \
+            --model build/output/codegen/plantuml_er_model.json \
+            --template projects/ores.codegen/library/templates/plantuml_er.mustache \
+            --output projects/ores.sql/modeling/ores_schema.puml \
+            --check
       # The drift step proves a committed file matches its model; it cannot see
       # a file the model asks for wrongly. A template that emits an index once
       # per column, and a comment PostgreSQL nests but never closes, both

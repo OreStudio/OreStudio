@@ -21,4 +21,5 @@
 drop rule if exists ores_refdata_counterparties_delete_rule on "ores_refdata_counterparties_tbl";
 drop trigger if exists ores_refdata_counterparties_insert_trg on "ores_refdata_counterparties_tbl";
 drop function if exists ores_refdata_counterparties_insert_fn;
+drop function if exists ores_refdata_counterparties_hierarchy_fn(uuid, uuid, boolean);
 drop table if exists "ores_refdata_counterparties_tbl";

@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists credit_simulation_netting_sets_tbl_tenant_isolation_policy on "ores_analytics_credit_simulation_netting_sets_tbl";
 drop rule if exists ores_analytics_credit_simulation_netting_sets_delete_rule on "ores_analytics_credit_simulation_netting_sets_tbl";
 drop trigger if exists ores_analytics_credit_simulation_netting_sets_insert_trg on "ores_analytics_credit_simulation_netting_sets_tbl";
 drop function if exists ores_analytics_credit_simulation_netting_sets_insert_fn;

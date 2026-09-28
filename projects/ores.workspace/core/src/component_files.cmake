@@ -38,6 +38,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/messaging/workspace_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/messaging/workspace_operations_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/messaging/workspace_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/ores.workspace.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/presentation/workspace_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/repository/workspace_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.core/repository/workspace_mapper.hpp"

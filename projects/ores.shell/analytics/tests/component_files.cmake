@@ -20,6 +20,11 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "credit_simulation_config_commands_tests.cpp"
+    "credit_simulation_entity_config_commands_tests.cpp"
+    "credit_simulation_matrix_config_commands_tests.cpp"
+    "credit_simulation_matrix_row_config_commands_tests.cpp"
+    "credit_simulation_netting_set_config_commands_tests.cpp"
     "main.cpp"
     "pricing_engine_type_commands_tests.cpp"
     "pricing_model_config_commands_tests.cpp"

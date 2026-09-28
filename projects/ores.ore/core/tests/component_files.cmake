@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "credit_simulation_database_roundtrip_tests.cpp"
     "domain_currency_mapper_tests.cpp"
     "domain_trade_mapper_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
@@ -46,7 +47,6 @@ set(files
     "xml_counterpartyinformation_roundtrip_tests.cpp"
     "xml_credit_golden_roundtrip_tests.cpp"
     "xml_credit_mapper_roundtrip_tests.cpp"
-    "credit_simulation_database_roundtrip_tests.cpp"
     "xml_creditsimulation_mapper_roundtrip_tests.cpp"
     "xml_creditsimulation_roundtrip_tests.cpp"
     "xml_crossassetmodel_roundtrip_tests.cpp"

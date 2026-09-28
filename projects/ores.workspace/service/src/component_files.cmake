@@ -38,4 +38,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.service/messaging/workspace_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.service/ores.workspace.service.hpp"
 )

@@ -74,6 +74,7 @@ analytics or refdata. Reporting references it rather than copying it.
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_configurations_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

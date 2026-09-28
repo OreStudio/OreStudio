@@ -21,6 +21,12 @@
 # To modify, update the template and regenerate.
 set(files
     "app/commands/reporting/concurrency_policy_commands.cpp"
+    "app/commands/reporting/configuration_commands.cpp"
+    "app/commands/reporting/configuration_parameter_commands.cpp"
+    "app/commands/reporting/configuration_type_commands.cpp"
+    "app/commands/reporting/parameter_definition_commands.cpp"
+    "app/commands/reporting/parameter_value_domain_commands.cpp"
+    "app/commands/reporting/report_configuration_commands.cpp"
     "app/commands/reporting/report_definition_commands.cpp"
     "app/commands/reporting/report_instance_commands.cpp"
     "app/commands/reporting/report_operations_operations_commands.cpp"
@@ -30,6 +36,12 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/concurrency_policy_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/configuration_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/configuration_parameter_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/configuration_type_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/parameter_definition_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/parameter_value_domain_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_configuration_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_instance_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"

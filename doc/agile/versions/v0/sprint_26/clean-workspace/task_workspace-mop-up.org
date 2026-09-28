@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 3AE56807-65BE-4965-9863-D2E6116C211F
+:END:
+#+title: Task: Mop up the workspace clean-up leftovers
+#+description: Clear what the clean-standard pass recorded as open: the outermost namespace documentation header (G08), the cross-component ER diagram (H05), the Live workspace guard the canonical protocol has no seam for, the two captures the pass filed, and the two repository-wide checks that are red on main.
+#+type: task
+#+level: s1
+#+filetags: :clean-workspace:sprint_26:v0:
+#+owner: marco
+#+branch: feature/workspace-mop-up
+#+pr: 2337
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Everything the [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][clean-standard pass]] recorded as open is either closed or shown to need a task of its own. The component carries the namespace documentation header G08 asks for, the Live workspace cannot be archived or deleted through any path, the ER diagram generator has the check mode G07 assumes and the artefact it writes is current, and the two repository-wide checks that were red on main are green.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] |
+| Now          | Every item below is done or recorded as needing its own task. The branch is green on the gates this work is in scope for. |
+| Waiting on   | Nothing.                               |
+| Next         | The review round, then the merge. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The three namespace documentation headers exist and the outermost one's =@brief= is what the diagram conventions read.
+- The Live workspace cannot be archived or deleted, and a replace of it still succeeds.
+- The ER diagram generator has a check mode, a regression test that fails on a stale artefact, and a CI step that runs it; the committed diagram is current.
+- =validate_schemas.sh= reports no warning, and =regenerate_cmake_component_files.py --all --check= reports nothing stale.
+- Every item left open names the task that should take it, with the measurement behind the decision.
+
+* Plan
+
+1. G08: find the convention rather than assume it, then write the headers the
+   component is missing and let the CMake file lists pick them up.
+2. The Live workspace guard: decide where an invariant belongs once the
+   canonical protocol makes archive and delete ordinary verbs, and prove it
+   against the running database.
+3. The ER diagram: measure what a refresh costs before committing to it, and
+   give the generator the check mode its own standard assumes.
+4. The captures: fix the one that is a one-line model change, and measure the
+   other until it is specific enough to hand over.
+5. The two repository-wide checks: one is mechanical, the other needs a
+   decision per table.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. Where the raw output matters, it is in
+=build/output/= on the branch.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Warnings =validate_schemas.sh= reported before this task | 20 (=RLS_001=) plus 6 (=TENANT_002/003=) | =bash projects/ores.sql/utility/validate_schemas.sh= | =f17a28921e= |
+| Warnings it reports after | 0, of 1604 files | the same command | this branch |
+| Stale CMake source lists before | 32 files | =regenerate_cmake_component_files.py --all --check= | =f17a28921e= |
+| Stale CMake source lists after | 0 | the same command | this branch |
+| ER refresh: hunks | 132 | =git diff -U0 ores_schema.puml \| grep -c '^@@'= | =f17a28921e= |
+| ER refresh: lines | +1362 / -232 (8585 to 9715) | =git diff --numstat= | =f17a28921e= |
+| ER refresh: lines naming the workspace tables | 1 | =git diff \| grep -cE '^\+.*(ores_workspaces\|ores_workspace_trade_scope)'= | =f17a28921e= |
+| ER rendered image | 13.8 MB to 28.5 MB | =ls -la ores_schema.png= | this branch |
+| Namespace headers the component was missing | 3 of 3 | =grep -rl 'namespace ores::workspace' projects/ores.workspace/*/include= | =f17a28921e= |
+| Codegen suite | 959 passed | =pytest projects/ores.codegen/tests -q= | this branch |
+| ER check regression tests | 6 passed | =pytest projects/ores.codegen/tests/test_plantuml_er_generate_check.py -q= | this branch |
+
+* Notes
+
+- *The scheduler record's G08 claim is wrong and was corrected here.*
+  =task_clean_scheduler.org= says iam and compute "keep one
+  =ores.<component>.hpp= in the core module and no api header". iam keeps
+  four: core, api, client and service. compute is simply missing api,
+  client and wrapper, and scheduler is missing its own api header. The
+  rule G08 states is one per module, and 94 headers across the tree
+  follow it. The workspace component had none of its three.
+- *The header the diagrams read is the core one.*
+  =plantuml_class_diagram_conventions.org= sources a namespace's note
+  from =<namespace>.hpp=, and G08 says the outermost one is the
+  description the diagram conventions read. So
+  =core/include/ores.workspace.core/ores.workspace.core.hpp= carries the
+  sentence that describes the whole component, and the api and service
+  headers describe their own modules.
+- *An invariant that a replace and a delete share a first step cannot
+  live in that step.* Both close the current version row; only a
+  replace follows it with the next version. A check inside the insert
+  trigger therefore cannot tell them apart. The guard is a deferred
+  constraint trigger instead: it fires for the Live row and asks, at the
+  end of the transaction, whether that row still has a current version.
+  A replace leaves one and passes; an archive or a delete leaves none
+  and raises. Proved live: the delete raises, the replace inserts and
+  leaves version 2 current.
+- *The ER refresh is not a workspace change, and the numbers say so.*
+  132 hunks, +1362/-232, and exactly one added line names a workspace
+  table. The rest is a month of accumulated drift from about twenty
+  other entities. It is committed separately so it can be split off; the
+  durable fix is the check mode, which is what stops it recurring.
+- *A check against a stamped artefact can never pass.* The first cut of
+  the ER check compared byte for byte, and the template writes
+  =' Generated: {{generated_at}}=, so every run reported one line
+  differing. The check now blanks that line on both sides and says why,
+  and two regression tests pin it: a different stamp passes, and a
+  changed body still fails.
+- *Two of the twenty warnings were not RLS warnings at all.* The iam
+  seed-profile tables carry =tenant_id= but are =:system_scope:=, so the
+  column is always the system tenant and belongs in neither the primary
+  key nor the exclusion constraint. Those got the =TENANT_002/003=
+  entries the tenants table already had, with the same reason.
+
+* What this task leaves open
+
+- *The composite part gate.* [[id:CE7B4C2A-AD37-4D0D-885C-179E1FFA15F3][A composite's part models are outside every
+  drift gate]] stays in the inbox, now with the measurement behind it.
+  The file lists are covered; the part =CMakeLists.txt= files are
+  hand-authored and no gate can render them without failing every
+  composite at once. The capture now names the two candidate fixes and
+  the narrower first step.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2337][#2337]] | [workspace] Mop up the clean-up leftovers |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+G08: the component now carries the three namespace documentation headers it
+was missing, with the outermost one in the core module carrying the sentence
+the diagram conventions read.
+
+The Live workspace guard: a deferred constraint trigger in the component's
+hand-written SQL. Archiving or deleting the Live workspace raises; replacing
+it still succeeds. Both were run against the live database.
+
+The ER diagram: the generator gained a =--check= mode, its shell wrapper gained
+the same flag, two regression tests pin the stamp case, and a CI step in the
+drift job runs it. The committed diagram is refreshed and the check passes on
+it.
+
+The captures: counterparty's drop now removes its hierarchy function, and the
+composite part capture carries the measurement and the two candidate fixes
+instead of a hunch.
+
+The two red checks: =validate_schemas.sh= reports zero warnings across 1604
+files where it reported 26, and the CMake source lists are current across the
+tree where 32 were stale.

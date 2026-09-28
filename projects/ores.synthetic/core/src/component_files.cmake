@@ -93,7 +93,7 @@ set(files
     "service/yield_curve_process_type_service.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/generators/account_generator.hpp"

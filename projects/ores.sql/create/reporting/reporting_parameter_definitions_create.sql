@@ -156,3 +156,20 @@ on delete to "ores_reporting_parameter_definitions_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Parameter Definition
+-- =============================================================================
+alter table ores_reporting_parameter_definitions_tbl enable row level security;
+
+drop policy if exists parameter_definitions_tbl_tenant_isolation_policy
+    on ores_reporting_parameter_definitions_tbl;
+
+create policy parameter_definitions_tbl_tenant_isolation_policy
+on ores_reporting_parameter_definitions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

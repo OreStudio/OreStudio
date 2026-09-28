@@ -62,6 +62,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/program_options/shared_domain_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/rfl/ores.utility.rfl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/rfl/reflectors.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/rfl/skip_comparison.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/rfl/time_point_parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/serialization/error_code.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/streaming/ores.utility.streaming.hpp"

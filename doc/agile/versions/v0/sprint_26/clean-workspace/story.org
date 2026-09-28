@@ -21,7 +21,7 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Nothing. The component is generated, builds, tests, recreates its schema from scratch, and is listed in =COMPONENTS_UNDER_TEST=. |
 | Waiting on    | Nothing.                               |
@@ -40,6 +40,7 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][Bring ores.workspace to the clean standard]] | DONE | 2026-09-28 | 2026-09-28 | Work ores.workspace through the Component Clean Standard in order and record each item. |
+| [[id:3AE56807-65BE-4965-9863-D2E6116C211F][Mop up the workspace clean-up leftovers]] | STARTED | 2026-09-28 | | Clear what the clean-standard pass recorded as open: the outermost namespace documentation header (G08), the cross-component ER diagram (H05), the Live workspace guard the canonical protocol has no seam for, the two captures the pass filed, and the two repository-wide checks that are red on main. |
 
 * Notes
 

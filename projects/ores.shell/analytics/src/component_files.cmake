@@ -20,6 +20,11 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/commands/analytics/credit_simulation_config_commands.cpp"
+    "app/commands/analytics/credit_simulation_entity_config_commands.cpp"
+    "app/commands/analytics/credit_simulation_matrix_config_commands.cpp"
+    "app/commands/analytics/credit_simulation_matrix_row_config_commands.cpp"
+    "app/commands/analytics/credit_simulation_netting_set_config_commands.cpp"
     "app/commands/analytics/pricing_engine_type_commands.cpp"
     "app/commands/analytics/pricing_model_config_commands.cpp"
     "app/commands/analytics/pricing_model_product_commands.cpp"
@@ -28,6 +33,11 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/credit_simulation_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/credit_simulation_entity_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/credit_simulation_matrix_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/credit_simulation_matrix_row_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/credit_simulation_netting_set_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/pricing_engine_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/pricing_model_config_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/pricing_model_product_commands.hpp"

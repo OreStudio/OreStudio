@@ -25,7 +25,7 @@ set(files
     "parser/parser.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode/domain/document.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode/domain/heading.hpp"

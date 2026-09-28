@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: C8FE8C3E-1AB8-4908-8C3A-41D756EFDB69
+:END:
+#+title: Task: Implement Hotfix: a Boost library landed without its vcpkg port
+#+description: Declare boost-multiprecision in vcpkg.json, prove the decimal translation unit and its consumer build and pass, add the check that a Boost include has a port behind it and wire it before the Continuous Linux build, then raise the pull request.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:build:vcpkg:linux:utility:sprint_26:v0:boost-multiprecision-hotfix:
+#+owner: marco
+#+branch: hotfix/boost-multiprecision
+#+pr: 2343
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7AB722C0-9CCC-4ED4-996C-C2118CBEBFCE][Hotfix: a Boost library landed without its vcpkg port]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Declare the port the decimal type needs, prove the translation unit and
+its consumer build against a vcpkg tree that did not have it, and leave a
+check that names the port the next time a Boost library arrives without
+one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7AB722C0-9CCC-4ED4-996C-C2118CBEBFCE][Hotfix: a Boost library landed without its vcpkg port]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- A clean configure installs =boost-multiprecision=, and the decimal
+  translation unit compiles against it.
+- The decimal suite and the bond leg amount suite pass.
+- =check_boost_dependencies.py= passes on the tree, and fails when the
+  port is removed from the manifest, naming the include and the line to
+  add.
+- The check runs before the Continuous Linux build.
+
+* Plan
+
+1. Add the port to =vcpkg.json= and reconfigure, so vcpkg itself proves
+   the header is installed rather than assumed.
+2. Build the decimal unit and a consumer, and run their suites.
+3. Write the check against the vendored ports' own manifests, and prove it
+   both ways: passing on the tree, failing with the port removed.
+4. Wire it into the Linux workflow before the build, then raise the pull
+   request.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Boost header directories used by the tree | 18 | =python3 build/scripts/check_boost_dependencies.py= | this branch |
+| Ports vcpkg installs for the declared set | 116 | same | this branch |
+| Missing ports, before the fix | 1: =boost-multiprecision= | same, with the port removed from the manifest | this branch |
+| Missing ports, after the fix | 0 | same | this branch |
+| Port installed by a clean configure | =boost-multiprecision:x64-linux@1.91.0= | =cmake --preset linux-clang-debug-make= | this branch |
+| Decimal suite | 71 assertions, 17 cases, all pass | =ores.utility.tests "[decimal]"= | this branch |
+| Bond leg amount suite | 28 assertions, 3 cases, all pass | =ores.trading.core.tests "[bond_leg_amount]"= | this branch |
+
+* Notes
+
+- The header was genuinely absent from this worktree's vcpkg tree as well,
+  which is why the failure is not a CI cache artefact: the tree had never
+  installed the port, and the include compiled nowhere. That is also why
+  the check could be proved cheaply, by removing the line and re-running it.
+- The check accepts a library that arrives transitively. =boost-math= is
+  installed because =boost-multiprecision= depends on it and is not
+  declared; a check that demanded one line per include would fail the tree
+  for being right.
+- =vcpkg.json= is the only file the build needed. Boost.Multiprecision is
+  header-only, so no =find_package= component and no link line changes.
+- A pull-request-time version of the check would need the workflow to fetch
+  the vcpkg submodule, which no pull-request workflow does today. The story
+  records that option rather than taking it, because it changes the cost of
+  every pull request.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=vcpkg.json= declares =boost-multiprecision=, and a clean configure of this
+worktree's preset installed =boost-multiprecision:x64-linux@1.91.0= (with
+=boost-math=, which it depends on). The decimal translation unit compiles,
+the decimal suite passes 71 assertions in 17 cases, and the bond leg amount
+suite, which consumes the type the commit converted, passes 28 assertions
+in 3 cases.
+
+=build/scripts/check_boost_dependencies.py= compares the
+=boost/<library>/= directories the tree includes with the closure of the
+declared ports, read from the ports' own manifests. On this tree it reports
+18 directories used and 116 ports installed, with nothing missing; with the
+new line removed from the manifest it fails and names the include and the
+line to add. Continuous Linux runs it before the build.

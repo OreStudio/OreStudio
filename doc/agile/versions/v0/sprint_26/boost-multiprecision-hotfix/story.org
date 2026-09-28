@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 7AB722C0-9CCC-4ED4-996C-C2118CBEBFCE
+:END:
+#+title: Story: Hotfix: a Boost library landed without its vcpkg port
+#+description: The decimal amount type includes boost/multiprecision/cpp_dec_float.hpp, and vcpkg installs Boost as per-library ports, so every clean continuous build fails at that translation unit with a missing header. The port is declared, and a check now fails when a Boost include has no port behind it.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:vcpkg:linux:utility:sprint_26:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every continuous Linux job is red, in all four configurations, at one
+translation unit:
+
+#+begin_src text
+projects/ores.utility/include/ores.utility/decimal/decimal.hpp:24:10: fatal error:
+  'boost/multiprecision/cpp_dec_float.hpp' file not found
+#+end_src
+
+The decimal amount type, which
+[[id:4C97BB89-71E9-479A-BC04-4BA00D006052][Decide how an exact decimal is represented in C++]]
+settled and commit =466ea3109f= then added, gives the estate exact
+base-ten arithmetic with
+=boost::multiprecision::cpp_dec_float_50=, and =vcpkg.json= was not told.
+vcpkg installs Boost as one port per library, so =boost/multiprecision= is
+not there unless it is declared or arrives as another port's dependency.
+It compiled for whoever wrote it, whose vcpkg tree predates the include or
+was installed by hand, and fails on every clean install -- which is every
+continuous build, on every platform, not only Linux.
+
+The fix declares the port. The check that would have caught it at pull
+request time did not exist, so this story adds one as well: every
+=boost/<library>/= the tree includes must have a port behind it, or the
+closure of a declared port, so a library that arrives transitively is not
+declared twice.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-28                               |
+
+* Acceptance
+
+- =vcpkg.json= declares =boost-multiprecision=, and a clean configure
+  installs it.
+- The decimal translation unit compiles, and the decimal and bond leg
+  amount suites pass.
+- =check_boost_dependencies.py= passes on the tree and fails when a port
+  is removed from the manifest, naming the include and the line to add.
+- The check runs before the Continuous Linux build, so a missing port
+  fails in seconds and not after the compile.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C8FE8C3E-1AB8-4908-8C3A-41D756EFDB69][Implement Hotfix: a Boost library landed without its vcpkg port]] | DONE | 2026-09-28 | 2026-09-28 | Declare the port, prove the decimal unit and its consumer build and pass, write the check and wire it before the build, then raise the pull request. |
+
+* Decisions
+
+- The port is declared rather than the decimal type reimplemented. The
+  dependency is deliberate: the commit chose exact base-ten arithmetic and
+  wrote down why, and a decimal that rounds in binary is the defect that
+  decision exists to prevent.
+- The check reads the ports' own manifests for the dependency closure
+  instead of keeping a list of libraries that arrive transitively. A list
+  would have to be right about Boost's graph, and the first time it was
+  wrong it would pass a missing port in silence -- which is the failure
+  mode this story exists to close.
+- The check runs before the build on Continuous Linux rather than on the
+  pull request. A pull-request check would have to fetch the vcpkg
+  submodule in a workflow that does not currently, which is a CI design
+  decision rather than part of this fix; the task records that option.
+
+* Out of scope
+
+- Non-Boost third-party dependencies. The check reads =boost/= includes
+  only; sqlgen, reflectcpp or immer landing without a manifest entry would
+  still reach CI. A general check needs a header-to-port map that does not
+  exist for those libraries.
+- A pull-request-time build, which is the gate that would have caught this
+  without any check at all. It costs a vcpkg install per pull request.

@@ -50,9 +50,9 @@ fx_barrier_option_instrument make_instrument(database_helper& h) {
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "FxBarrierOption";
     r.bought_currency = "EUR";
-    r.bought_amount = 1000000.0;
+    r.bought_amount = ores::utility::decimal::decimal::from_string("1000000").value();
     r.sold_currency = "USD";
-    r.sold_amount = 1100000.0;
+    r.sold_amount = ores::utility::decimal::decimal::from_string("1100000").value();
     r.option_type = "Call";
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.barrier_type = "UpAndIn";
@@ -84,9 +84,9 @@ TEST_CASE("fx_barrier_option_instrument_write_and_read_latest", tags) {
     REQUIRE(read.size() == 1);
     CHECK(read[0].identity.trade_type_code == "FxBarrierOption");
     CHECK(read[0].bought_currency == "EUR");
-    CHECK(read[0].bought_amount == 1000000.0);
+    CHECK(read[0].bought_amount.to_double() == 1000000.0);
     CHECK(read[0].sold_currency == "USD");
-    CHECK(read[0].sold_amount == 1100000.0);
+    CHECK(read[0].sold_amount.to_double() == 1100000.0);
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].barrier_type == "UpAndIn");

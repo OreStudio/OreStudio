@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_leg_amortization_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_leg_amortization_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -45,7 +46,9 @@ bond_leg_amortization_mapper::map(const bond_leg_amortization_entity& v) {
     r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.amortization_type = v.amortization_type;
-    r.value = v.value;
+    r.value = v.value.has_value() ?
+                  std::optional(ores::utility::decimal::decimal::from_string(*v.value).value()) :
+                  std::nullopt;
     r.start_date = v.start_date;
     r.end_date = v.end_date;
     r.frequency = v.frequency;
@@ -72,7 +75,7 @@ bond_leg_amortization_mapper::map(const domain::bond_leg_amortization& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.amortization_type = v.amortization_type;
-    r.value = v.value;
+    r.value = v.value.has_value() ? std::optional(v.value->to_string()) : std::nullopt;
     r.start_date = v.start_date;
     r.end_date = v.end_date;
     r.frequency = v.frequency;

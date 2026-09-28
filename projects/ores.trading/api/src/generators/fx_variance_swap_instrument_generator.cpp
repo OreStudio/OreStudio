@@ -54,7 +54,7 @@ generate_synthetic_fx_variance_swap_instrument(utility::generation::generation_c
     r.underlying_code = std::string("TR20H-EUR-USD");
     r.long_short = std::string("Long");
     r.strike = 0.04;
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.moment_type = std::string("Variance");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

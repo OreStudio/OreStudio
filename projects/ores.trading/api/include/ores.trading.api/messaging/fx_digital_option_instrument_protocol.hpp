@@ -46,7 +46,7 @@ struct fx_digital_option_instrument_write {
     std::string foreign_currency;
     std::string domestic_currency;
     std::string payoff_currency;
-    double payoff_amount;
+    ores::utility::decimal::decimal payoff_amount;
     std::string option_type;
     std::chrono::year_month_day expiry_date;
     std::string long_short;

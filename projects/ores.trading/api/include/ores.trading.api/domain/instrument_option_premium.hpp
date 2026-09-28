@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_PREMIUM_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_PREMIUM_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -76,7 +77,7 @@ struct instrument_option_premium final {
     /**
      * @brief Amount of the premium.
      */
-    double amount = 0.0;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief Currency the premium pays in.

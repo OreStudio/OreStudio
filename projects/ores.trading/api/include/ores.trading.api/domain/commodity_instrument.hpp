@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -80,7 +81,7 @@ struct commodity_instrument final {
     /**
      * @brief Fixed price for forwards and fixed-leg swaps.
      */
-    std::optional<double> fixed_price;
+    std::optional<ores::utility::decimal::decimal> fixed_price;
 
     /**
      * @brief Call or Put; null for non-option products.
@@ -90,7 +91,7 @@ struct commodity_instrument final {
     /**
      * @brief Option strike price.
      */
-    std::optional<double> strike_price;
+    std::optional<ores::utility::decimal::decimal> strike_price;
 
     /**
      * @brief European or American exercise.
@@ -120,7 +121,7 @@ struct commodity_instrument final {
     /**
      * @brief Spread amount for spread options.
      */
-    std::optional<double> spread_amount;
+    std::optional<ores::utility::decimal::decimal> spread_amount;
 
     /**
      * @brief Strip frequency code for option strips (e.g. Monthly, Quarterly).
@@ -135,12 +136,12 @@ struct commodity_instrument final {
     /**
      * @brief Per-fixing accumulation amount for accumulator products.
      */
-    std::optional<double> accumulation_amount;
+    std::optional<ores::utility::decimal::decimal> accumulation_amount;
 
     /**
      * @brief Knock-out barrier level for accumulator products.
      */
-    std::optional<double> knock_out_barrier;
+    std::optional<ores::utility::decimal::decimal> knock_out_barrier;
 
     /**
      * @brief UpAndIn, UpAndOut, DownAndIn, DownAndOut.
@@ -150,12 +151,12 @@ struct commodity_instrument final {
     /**
      * @brief Lower barrier level.
      */
-    std::optional<double> lower_barrier;
+    std::optional<ores::utility::decimal::decimal> lower_barrier;
 
     /**
      * @brief Upper barrier level.
      */
-    std::optional<double> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
 
     /**
      * @brief JSON array of {code, weight} constituents for basket products.

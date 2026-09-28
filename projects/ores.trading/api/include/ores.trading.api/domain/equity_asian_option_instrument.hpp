@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -60,7 +61,7 @@ struct equity_asian_option_instrument final {
     /**
      * @brief Notional amount. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Call or Put.
@@ -70,7 +71,7 @@ struct equity_asian_option_instrument final {
     /**
      * @brief Strike price. Must be non-negative.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike;
 
     /**
      * @brief Expiry date (ISO 8601 date string).

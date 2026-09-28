@@ -58,15 +58,14 @@ Ordinal of this premium within the option block's list.
 ** amount
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Amount of the premium.
 
 #+begin_src cpp :name generator
-1000.0
+ores::utility::decimal::decimal::from_string("1000").value()
 #+end_src
 
 ** currency
@@ -175,6 +174,7 @@ Date the premium's settlement block fixes on.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

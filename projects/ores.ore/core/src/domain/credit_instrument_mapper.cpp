@@ -81,7 +81,7 @@ void credit_instrument_mapper::map_cds_leg(const legData& ld, credit_instrument&
     if (ld.Currency)
         instr.currency = std::string(*ld.Currency);
     if (ld.Notionals && !ld.Notionals->Notional.empty())
-        instr.notional = static_cast<double>(ld.Notionals->Notional.front());
+        instr.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(ld.Notionals->Notional.front())).value();
     if (ld.DayCounter)
         instr.day_count_code = to_string(*ld.DayCounter);
     if (ld.legDataType && ld.legDataType->FixedLegData &&
@@ -106,10 +106,10 @@ legData credit_instrument_mapper::reverse_cds_leg(const credit_instrument& instr
     ld.Payer = true;
     if (!instr.currency.empty())
         ld.Currency = instr.currency;
-    if (instr.notional != 0.0) {
+    if (!instr.notional.is_zero()) {
         legData_Notionals_t n;
         legData_Notionals_t_Notional_t nv;
-        static_cast<float&>(nv) = static_cast<float>(instr.notional);
+        static_cast<float&>(nv) = static_cast<float>(instr.notional.to_double());
         n.Notional.push_back(nv);
         ld.Notionals = std::move(n);
     }
@@ -335,7 +335,7 @@ trade credit_instrument_mapper::reverse_credit_linked_swap(const credit_instrume
     static_cast<std::string&>(d.CreditCurveId) = instr.reference_entity;
     if (instr.recovery_rate != 0.0)
         d.FixedRecoveryRate = static_cast<float>(instr.recovery_rate);
-    if (!instr.currency.empty() || instr.notional != 0.0) {
+    if (!instr.currency.empty() || !instr.notional.is_zero()) {
         creditLinkedSwapData_ContingentPayments_t cp;
         cp.LegData.push_back(reverse_cds_leg(instr));
         d.ContingentPayments = std::move(cp);

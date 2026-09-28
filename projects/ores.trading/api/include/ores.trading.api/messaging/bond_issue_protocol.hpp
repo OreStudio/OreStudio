@@ -44,7 +44,7 @@ struct bond_issue_write {
     std::string security_id;
     std::string issuer;
     std::string currency;
-    double face_value;
+    std::optional<ores::utility::decimal::decimal> face_value;
     double coupon_rate;
     std::string coupon_frequency_code;
     std::string day_count_code;

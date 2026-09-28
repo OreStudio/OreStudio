@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -51,9 +52,9 @@ equity_asian_option_instrument_mapper::map(const equity_asian_option_instrument_
                               std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.option_type = v.option_type;
-    r.strike = v.strike;
+    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
@@ -88,9 +89,9 @@ equity_asian_option_instrument_mapper::map(const domain::equity_asian_option_ins
                      std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.option_type = v.option_type;
-    r.strike = v.strike;
+    r.strike = v.strike.to_string();
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;

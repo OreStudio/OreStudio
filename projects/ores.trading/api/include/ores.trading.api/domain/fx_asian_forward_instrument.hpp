@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -62,7 +63,7 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Notional in reference_currency (FxAverageForward).
      */
-    std::optional<double> reference_notional;
+    std::optional<ores::utility::decimal::decimal> reference_notional;
 
     /**
      * @brief Currency of the settlement payment (FxAverageForward).
@@ -72,7 +73,7 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Notional in settlement_currency (FxAverageForward).
      */
-    std::optional<double> settlement_notional;
+    std::optional<ores::utility::decimal::decimal> settlement_notional;
 
     /**
      * @brief Settlement payment date (ISO 8601 date string).
@@ -92,12 +93,12 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Per-fixing target amount (FxTaRF-specific). Absent for FxAverageForward.
      */
-    std::optional<double> fixing_amount;
+    std::optional<ores::utility::decimal::decimal> fixing_amount;
 
     /**
      * @brief Total target amount (FxTaRF-specific). Absent for FxAverageForward.
      */
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
 
     /**
      * @brief Target strike level (FxTaRF-specific). Absent for FxAverageForward.

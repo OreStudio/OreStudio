@@ -628,7 +628,7 @@ TEST_CASE("a_bonds_second_leg_survives_the_round_trip", tags) {
     const auto r = map_inline(xml);
     REQUIRE(r.bond_legs.size() == 2);
     CHECK(r.issue.currency == "EUR");
-    CHECK(r.issue.face_value == Approx(1000000.0));
+    CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() == Approx(1000000.0));
     CHECK(r.issue.coupon_rate == Approx(0.03));
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
@@ -737,7 +737,7 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     // leg either.
     CHECK(r.issue.coupon_frequency_code.empty());
     CHECK(r.issue.currency.empty());
-    CHECK(r.issue.face_value == 0.0);
+    CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() == 0.0);
 
     REQUIRE(r.repo);
     CHECK(r.repo->repo_type == "Fixed");
@@ -965,7 +965,7 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     REQUIRE(r.future);
     const auto& f = *r.future;
     CHECK(f.contract_name == "Euro-Bund-Future");
-    CHECK(f.contract_notional == Approx(100000.0));
+    CHECK(f.contract_notional.to_double() == Approx(100000.0));
     CHECK(f.long_short == "Long");
     CHECK(f.modified_by == "ores");
     CHECK(f.change_reason_code == "system.external_data_import");
@@ -1073,7 +1073,7 @@ TEST_CASE("bond_option_keeps_every_exercise_date", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondOption");
     REQUIRE(r.option);
     CHECK(r.option->option_type == "Call");
-    CHECK(r.option->option_strike == Approx(102.5));
+    CHECK(r.option->option_strike.to_double() == Approx(102.5));
     CHECK(r.option_exercise_dates ==
           std::vector<std::string>{"2026-01-15", "2027-01-15", "2028-01-15"});
 
@@ -1232,7 +1232,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     CHECK(r.option_price_type == "Dirty");
     REQUIRE(r.option_knocks_out);
     CHECK(*r.option_knocks_out == "false");
-    CHECK(r.option->option_strike == Approx(0.0));
+    CHECK(r.option->option_strike.to_double() == Approx(0.0));
 
     const auto rt = bond_instrument_mapper::reverse_bond_option(r);
     REQUIRE(rt.BondOptionData);
@@ -1557,7 +1557,7 @@ TEST_CASE("a_number_below_the_sixth_decimal_keeps_its_value", tags) {
     const auto r = map_inline(xml);
 
     REQUIRE(r.future);
-    CHECK(r.future->contract_notional == Approx(1e-7));
+    CHECK(r.future->contract_notional.to_double() == Approx(1e-7));
 
     const auto rt = bond_instrument_mapper::reverse_bond_future(r);
     REQUIRE(rt.BondFutureData);

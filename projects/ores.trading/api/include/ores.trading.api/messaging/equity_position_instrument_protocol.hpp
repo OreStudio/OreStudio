@@ -46,7 +46,7 @@ struct equity_position_instrument_write {
     std::string underlying_name;
     std::string currency;
     double quantity;
-    std::optional<double> price;
+    std::optional<ores::utility::decimal::decimal> price;
     std::string option_data_json;
     std::string description;
 };

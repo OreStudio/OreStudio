@@ -96,15 +96,14 @@ std::string("USD")
 ** face_value
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable:      true
-:default_value: 0.0
 :END:
 
 Face value per unit of the bond.
 
 #+begin_src cpp :name generator
-1000.0
+ores::utility::decimal::decimal::from_string("1000").value()
 #+end_src
 
 ** coupon_rate
@@ -273,6 +272,7 @@ now NULL, not an empty string.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

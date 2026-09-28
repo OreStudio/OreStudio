@@ -50,8 +50,8 @@ generate_synthetic_equity_accumulator_instrument(utility::generation::generation
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string(".STOXX50");
     r.currency = std::string("EUR");
-    r.strike = 4000.0;
-    r.fixing_amount = 30.0;
+    r.strike = ores::utility::decimal::decimal::from_string("4000").value();
+    r.fixing_amount = ores::utility::decimal::decimal::from_string("30").value();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2025} / 2 / 5};
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 2 / 5};
     r.fixing_frequency = std::string("Monthly");

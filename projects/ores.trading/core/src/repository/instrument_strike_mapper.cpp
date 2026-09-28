@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/instrument_strike_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/instrument_strike_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -40,11 +41,17 @@ domain::instrument_strike instrument_strike_mapper::map(const instrument_strike_
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
-    r.price_value = v.price_value;
+    r.price_value =
+        v.price_value.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.price_value).value()) :
+            std::nullopt;
     r.price_currency = v.price_currency;
     r.yield_value = v.yield_value;
     r.yield_compounding = v.yield_compounding;
-    r.bare_value = v.bare_value;
+    r.bare_value =
+        v.bare_value.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.bare_value).value()) :
+            std::nullopt;
     r.bare_currency = v.bare_currency;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -63,11 +70,13 @@ instrument_strike_entity instrument_strike_mapper::map(const domain::instrument_
     r.instrument_id = boost::uuids::to_string(v.instrument_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.price_value = v.price_value;
+    r.price_value =
+        v.price_value.has_value() ? std::optional(v.price_value->to_string()) : std::nullopt;
     r.price_currency = v.price_currency;
     r.yield_value = v.yield_value;
     r.yield_compounding = v.yield_compounding;
-    r.bare_value = v.bare_value;
+    r.bare_value =
+        v.bare_value.has_value() ? std::optional(v.bare_value->to_string()) : std::nullopt;
     r.bare_currency = v.bare_currency;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

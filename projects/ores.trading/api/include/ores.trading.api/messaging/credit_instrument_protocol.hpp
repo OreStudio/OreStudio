@@ -45,7 +45,7 @@ struct credit_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string reference_entity;
     std::string currency;
-    double notional;
+    ores::utility::decimal::decimal notional;
     double spread;
     double recovery_rate;
     std::string tenor;

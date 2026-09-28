@@ -46,7 +46,7 @@ generate_synthetic_instrument_option_premium(utility::generation::generation_con
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
     r.sequence_number = 0;
-    r.amount = 1000.0;
+    r.amount = ores::utility::decimal::decimal::from_string("1000").value();
     r.currency = std::string("USD");
     r.pay_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.has_settlement = true;

@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -51,14 +52,22 @@ equity_digital_option_instrument_mapper::map(const equity_digital_option_instrum
                               std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.option_type = v.option_type.value_or("");
-    r.strike = v.strike;
-    r.barrier_level = v.barrier_level;
+    r.strike = v.strike.has_value() ?
+                   std::optional(ores::utility::decimal::decimal::from_string(*v.strike).value()) :
+                   std::nullopt;
+    r.barrier_level =
+        v.barrier_level.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.barrier_level).value()) :
+            std::nullopt;
     r.barrier_type = v.barrier_type.value_or("");
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
-    r.payout_amount = v.payout_amount;
+    r.payout_amount =
+        v.payout_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.payout_amount).value()) :
+            std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -86,14 +95,16 @@ equity_digital_option_instrument_mapper::map(const domain::equity_digital_option
                      std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
-    r.strike = v.strike;
-    r.barrier_level = v.barrier_level;
+    r.strike = v.strike.has_value() ? std::optional(v.strike->to_string()) : std::nullopt;
+    r.barrier_level =
+        v.barrier_level.has_value() ? std::optional(v.barrier_level->to_string()) : std::nullopt;
     r.barrier_type = v.barrier_type.empty() ? std::nullopt : std::optional(v.barrier_type);
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
-    r.payout_amount = v.payout_amount;
+    r.payout_amount =
+        v.payout_amount.has_value() ? std::optional(v.payout_amount->to_string()) : std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

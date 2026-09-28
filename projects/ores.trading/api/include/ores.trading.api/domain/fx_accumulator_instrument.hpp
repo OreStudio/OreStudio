@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -52,7 +53,7 @@ struct fx_accumulator_instrument final {
     /**
      * @brief Per-fixing notional amount. Must be positive.
      */
-    double fixing_amount = 0.0;
+    ores::utility::decimal::decimal fixing_amount;
 
     /**
      * @brief Fixed strike rate. Must be positive.

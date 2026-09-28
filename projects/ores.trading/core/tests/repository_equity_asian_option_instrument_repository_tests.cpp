@@ -49,9 +49,9 @@ equity_asian_option_instrument make_instrument(database_helper& h) {
     r.identity.trade_type_code = "EquityAsianOption";
     r.underlying_name = "RIC:.SPX";
     r.currency = "USD";
-    r.notional = 1.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1").value();
     r.option_type = "Call";
-    r.strike = 3100.0;
+    r.strike = ores::utility::decimal::decimal::from_string("3100").value();
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2026-01-28");
     r.exercise_type = "European";
     r.long_short = "Long";
@@ -86,9 +86,9 @@ TEST_CASE("equity_asian_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].identity.trade_type_code == "EquityAsianOption");
     CHECK(read[0].underlying_name == "RIC:.SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 1.0);
+    CHECK(read[0].notional.to_double() == 1.0);
     CHECK(read[0].option_type == "Call");
-    CHECK(read[0].strike == 3100.0);
+    CHECK(read[0].strike.to_double() == 3100.0);
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-01-28"));
     CHECK(read[0].exercise_type == "European");
     CHECK(read[0].long_short == "Long");

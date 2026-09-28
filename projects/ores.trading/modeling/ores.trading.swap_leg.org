@@ -209,15 +209,14 @@ Null for a fixed leg.
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Notional amount of the leg. Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** currency
@@ -319,6 +318,7 @@ nest.
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

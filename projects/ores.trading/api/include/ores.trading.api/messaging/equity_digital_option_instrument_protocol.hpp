@@ -45,14 +45,14 @@ struct equity_digital_option_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string underlying_name;
     std::string currency;
-    double notional;
+    ores::utility::decimal::decimal notional;
     std::string option_type;
-    std::optional<double> strike;
-    std::optional<double> barrier_level;
+    std::optional<ores::utility::decimal::decimal> strike;
+    std::optional<ores::utility::decimal::decimal> barrier_level;
     std::string barrier_type;
     std::chrono::year_month_day expiry_date;
     std::string long_short;
-    std::optional<double> payout_amount;
+    std::optional<ores::utility::decimal::decimal> payout_amount;
     std::string description;
 };
 

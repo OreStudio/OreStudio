@@ -46,7 +46,7 @@ struct equity_swap_instrument_write {
     std::string underlying_name;
     std::string basket_json;
     std::string currency;
-    double notional;
+    ores::utility::decimal::decimal notional;
     std::string return_type;
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;

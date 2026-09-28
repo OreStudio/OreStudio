@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -52,7 +53,7 @@ equity_swap_instrument_mapper::map(const equity_swap_instrument_entity& v) {
     r.underlying_name = v.underlying_name.value_or("");
     r.basket_json = v.basket_json.value_or("");
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.return_type = v.return_type;
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
@@ -86,7 +87,7 @@ equity_swap_instrument_mapper::map(const domain::equity_swap_instrument& v) {
     r.underlying_name = v.underlying_name.empty() ? std::nullopt : std::optional(v.underlying_name);
     r.basket_json = v.basket_json.empty() ? std::nullopt : std::optional(v.basket_json);
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.return_type = v.return_type;
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);

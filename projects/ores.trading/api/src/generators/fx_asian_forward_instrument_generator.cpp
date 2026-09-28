@@ -50,9 +50,9 @@ generate_synthetic_fx_asian_forward_instrument(utility::generation::generation_c
     r.identity.party_id = ctx.generate_uuid();
     r.fx_index = std::string("FX-TR20H-EUR-USD");
     r.reference_currency = std::string("EUR");
-    r.reference_notional = 8614.0;
+    r.reference_notional = ores::utility::decimal::decimal::from_string("8614").value();
     r.settlement_currency = std::string("USD");
-    r.settlement_notional = 10000.0;
+    r.settlement_notional = ores::utility::decimal::decimal::from_string("10000").value();
     r.payment_date = std::chrono::year_month_day{std::chrono::year{2025} / 9 / 30};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;

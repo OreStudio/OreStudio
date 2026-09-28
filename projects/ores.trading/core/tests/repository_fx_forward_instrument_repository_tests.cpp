@@ -48,9 +48,9 @@ fx_forward_instrument make_instrument(database_helper& h) {
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "FxForward";
     r.bought_currency = "EUR";
-    r.bought_amount = 1000000.0;
+    r.bought_amount = ores::utility::decimal::decimal::from_string("1000000").value();
     r.sold_currency = "USD";
-    r.sold_amount = 1100000.0;
+    r.sold_amount = ores::utility::decimal::decimal::from_string("1100000").value();
     r.value_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.settlement = "Cash";
     r.audit.modified_by = h.db_user();
@@ -80,9 +80,9 @@ TEST_CASE("fx_forward_instrument_write_and_read_latest", tags) {
     REQUIRE(read.size() == 1);
     CHECK(read[0].identity.trade_type_code == "FxForward");
     CHECK(read[0].bought_currency == "EUR");
-    CHECK(read[0].bought_amount == 1000000.0);
+    CHECK(read[0].bought_amount.to_double() == 1000000.0);
     CHECK(read[0].sold_currency == "USD");
-    CHECK(read[0].sold_amount == 1100000.0);
+    CHECK(read[0].sold_amount.to_double() == 1100000.0);
     CHECK(read[0].value_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].settlement == "Cash");
     BOOST_LOG_SEV(lg, debug) << "Read FX forward instrument: " << read[0];

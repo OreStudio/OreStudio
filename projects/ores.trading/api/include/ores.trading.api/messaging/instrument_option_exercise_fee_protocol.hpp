@@ -43,7 +43,7 @@ struct instrument_option_exercise_fee_key {
 struct instrument_option_exercise_fee_write {
     boost::uuids::uuid instrument_id;
     int sequence_number;
-    double amount;
+    ores::utility::decimal::decimal amount;
     std::optional<std::string> type;
     std::optional<std::string> start_date;
     std::optional<std::string> currency;

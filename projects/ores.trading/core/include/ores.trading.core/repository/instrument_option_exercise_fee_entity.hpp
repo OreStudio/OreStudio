@@ -46,7 +46,7 @@ struct instrument_option_exercise_fee_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
-    double amount = 0.0;
+    std::string amount;
     std::optional<std::string> type;
     std::optional<std::string> start_date;
     std::optional<std::string> currency;

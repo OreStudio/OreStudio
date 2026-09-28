@@ -50,7 +50,7 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.identity.party_id = ctx.generate_uuid();
     r.reference_entity = std::string("ACME Corp");
     r.currency = std::string("USD");
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.spread = 100.0;
     r.recovery_rate = 0.4;
     r.tenor = std::string("5Y");

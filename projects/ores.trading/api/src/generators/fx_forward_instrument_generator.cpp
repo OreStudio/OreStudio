@@ -49,9 +49,9 @@ generate_synthetic_fx_forward_instrument(utility::generation::generation_context
     r.identity.trade_type_code = std::string("FxForward");
     r.identity.party_id = ctx.generate_uuid();
     r.bought_currency = std::string("EUR");
-    r.bought_amount = 1000000.0;
+    r.bought_amount = ores::utility::decimal::decimal::from_string("1000000").value();
     r.sold_currency = std::string("USD");
-    r.sold_amount = 1100000.0;
+    r.sold_amount = ores::utility::decimal::decimal::from_string("1100000").value();
     r.value_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

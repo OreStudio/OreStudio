@@ -147,7 +147,7 @@ std::optional<std::string>(std::string("Dirty"))
 ** initial_price
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -157,7 +157,7 @@ The schema states the member as a float and declares it optional, so
 an unengaged column means the document omitted it.
 
 #+begin_src cpp :name generator
-std::optional<double>(109.712)
+std::make_optional(ores::utility::decimal::decimal::from_string("109.712").value())
 #+end_src
 
 * SQL
@@ -196,6 +196,7 @@ std::optional<double>(109.712)
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

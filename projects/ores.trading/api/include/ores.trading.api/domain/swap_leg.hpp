@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/swap_leg_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
 #include <string_view>
@@ -117,7 +118,7 @@ struct swap_leg final {
     /**
      * @brief Notional amount of the leg. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief ISO 4217 currency code of the leg (e.g. USD).

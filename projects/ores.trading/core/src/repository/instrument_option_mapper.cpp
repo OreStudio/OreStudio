@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/instrument_option_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -67,7 +68,10 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
         v.exercise_date.has_value() ?
             std::optional(ores::platform::time::datetime::from_iso8601_date(*v.exercise_date)) :
             std::nullopt;
-    r.exercise_price = v.exercise_price;
+    r.exercise_price =
+        v.exercise_price.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.exercise_price).value()) :
+            std::nullopt;
     r.has_payment_data = v.has_payment_data;
     r.payment_lag = v.payment_lag;
     r.payment_calendar = v.payment_calendar;
@@ -119,7 +123,8 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
         v.exercise_date.has_value() ?
             std::optional(ores::platform::time::datetime::to_iso8601_date(*v.exercise_date)) :
             std::nullopt;
-    r.exercise_price = v.exercise_price;
+    r.exercise_price =
+        v.exercise_price.has_value() ? std::optional(v.exercise_price->to_string()) : std::nullopt;
     r.has_payment_data = v.has_payment_data;
     r.payment_lag = v.payment_lag;
     r.payment_calendar = v.payment_calendar;

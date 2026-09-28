@@ -43,7 +43,7 @@ struct instrument_option_premium_key {
 struct instrument_option_premium_write {
     boost::uuids::uuid instrument_id;
     int sequence_number;
-    double amount;
+    ores::utility::decimal::decimal amount;
     std::string currency;
     std::chrono::year_month_day pay_date;
     bool has_settlement;

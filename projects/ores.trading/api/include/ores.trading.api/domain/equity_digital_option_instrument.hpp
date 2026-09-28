@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -60,7 +61,7 @@ struct equity_digital_option_instrument final {
     /**
      * @brief Payoff notional / contract size. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Call or Put; empty for touch options.
@@ -70,12 +71,12 @@ struct equity_digital_option_instrument final {
     /**
      * @brief Digital only; absent for touch.
      */
-    std::optional<double> strike;
+    std::optional<ores::utility::decimal::decimal> strike;
 
     /**
      * @brief Touch only; absent for digital.
      */
-    std::optional<double> barrier_level;
+    std::optional<ores::utility::decimal::decimal> barrier_level;
 
     /**
      * @brief e.g. UpIn, DownOut; empty for digital.
@@ -95,7 +96,7 @@ struct equity_digital_option_instrument final {
     /**
      * @brief Digital payout; absent when not specified.
      */
-    std::optional<double> payout_amount;
+    std::optional<ores::utility::decimal::decimal> payout_amount;
 
     /**
      * @brief Optional free-text description.

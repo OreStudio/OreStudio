@@ -45,14 +45,14 @@ struct equity_accumulator_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string underlying_name;
     std::string currency;
-    double strike;
-    double fixing_amount;
+    ores::utility::decimal::decimal strike;
+    ores::utility::decimal::decimal fixing_amount;
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day expiry_date;
     std::string fixing_frequency;
     std::string long_short;
-    std::optional<double> knock_out_level;
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> knock_out_level;
+    std::optional<ores::utility::decimal::decimal> target_amount;
     std::string target_type;
     std::string payoff_type;
     std::string description;

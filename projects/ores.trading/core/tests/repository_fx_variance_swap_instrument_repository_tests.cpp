@@ -57,7 +57,7 @@ fx_variance_swap_instrument make_instrument(database_helper& h) {
     r.underlying_code = "TR20H-EUR-USD";
     r.long_short = "Long";
     r.strike = 0.02;
-    r.notional = 50000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("50000").value();
     r.moment_type = "Variance";
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
@@ -91,7 +91,7 @@ TEST_CASE("fx_variance_swap_instrument_write_and_read_latest", tags) {
     CHECK(read[0].underlying_code == "TR20H-EUR-USD");
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].strike == 0.02);
-    CHECK(read[0].notional == 50000.0);
+    CHECK(read[0].notional.to_double() == 50000.0);
     CHECK(read[0].moment_type == "Variance");
     BOOST_LOG_SEV(lg, debug) << "Read FX variance swap instrument: " << read[0];
 }

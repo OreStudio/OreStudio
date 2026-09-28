@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_forward_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_forward_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -44,9 +45,13 @@ domain::bond_forward bond_forward_mapper::map(const bond_forward_entity& v) {
     r.forward_maturity_date = v.forward_maturity_date;
     r.forward_settlement_date = v.forward_settlement_date;
     r.settlement = v.settlement;
-    r.amount = v.amount;
+    r.amount = v.amount.has_value() ?
+                   std::optional(ores::utility::decimal::decimal::from_string(*v.amount).value()) :
+                   std::nullopt;
     r.lock_rate = v.lock_rate;
-    r.dv01 = v.dv01;
+    r.dv01 = v.dv01.has_value() ?
+                 std::optional(ores::utility::decimal::decimal::from_string(*v.dv01).value()) :
+                 std::nullopt;
     r.lock_rate_day_counter = v.lock_rate_day_counter;
     r.settlement_dirty = v.settlement_dirty;
     r.premium_amount = v.premium_amount;
@@ -72,9 +77,9 @@ bond_forward_entity bond_forward_mapper::map(const domain::bond_forward& v) {
     r.forward_maturity_date = v.forward_maturity_date;
     r.forward_settlement_date = v.forward_settlement_date;
     r.settlement = v.settlement;
-    r.amount = v.amount;
+    r.amount = v.amount.has_value() ? std::optional(v.amount->to_string()) : std::nullopt;
     r.lock_rate = v.lock_rate;
-    r.dv01 = v.dv01;
+    r.dv01 = v.dv01.has_value() ? std::optional(v.dv01->to_string()) : std::nullopt;
     r.lock_rate_day_counter = v.lock_rate_day_counter;
     r.settlement_dirty = v.settlement_dirty;
     r.premium_amount = v.premium_amount;

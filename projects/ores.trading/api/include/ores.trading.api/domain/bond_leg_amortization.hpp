@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_LEG_AMORTIZATION_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_LEG_AMORTIZATION_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -88,7 +89,7 @@ struct bond_leg_amortization final {
     /**
      * @brief The amount the step amortizes by.
      */
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
 
     /**
      * @brief First date of the step's window (ISO 8601 date string).

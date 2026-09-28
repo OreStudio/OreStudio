@@ -94,7 +94,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     CHECK(instr.identity.trade_type_code == "FxBarrierOption");
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
-    CHECK(instr.bought_amount > 0.0);
+    CHECK(instr.bought_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
     CHECK(instr.lower_barrier > 0.0);
 
@@ -115,7 +115,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     CHECK(!instr.domestic_currency.empty());
     REQUIRE(instr.strike.has_value());
     CHECK(*instr.strike > 0.0);
-    CHECK(instr.payoff_amount > 0.0);
+    CHECK(instr.payoff_amount.to_double() > 0.0);
     CHECK(!instr.option_type.empty());
 
     const auto rt = fx_instrument_mapper::reverse_fx_digital_option(instr);
@@ -154,7 +154,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
 
     CHECK(instr.identity.trade_type_code == "FxTouchOption");
     CHECK(!instr.foreign_currency.empty());
-    CHECK(instr.payoff_amount > 0.0);
+    CHECK(instr.payoff_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
     REQUIRE(instr.lower_barrier.has_value());
     CHECK(*instr.lower_barrier > 0.0);
@@ -173,7 +173,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
 
     CHECK(instr.identity.trade_type_code == "FxDoubleTouchOption");
     CHECK(!instr.foreign_currency.empty());
-    CHECK(instr.payoff_amount > 0.0);
+    CHECK(instr.payoff_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
 
     const auto rt = fx_instrument_mapper::reverse_fx_touch_option(instr);
@@ -191,7 +191,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     CHECK(instr.identity.trade_type_code == "FxVarianceSwap");
     CHECK(!instr.underlying_code.empty());
     CHECK(instr.strike > 0.0);
-    CHECK(instr.notional > 0.0);
+    CHECK(instr.notional.to_double() > 0.0);
     CHECK(instr.start_date.ok());
     CHECK(instr.end_date.ok());
 
@@ -229,7 +229,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     CHECK(instr.identity.trade_type_code == "FxAccumulator");
     CHECK(!instr.underlying_code.empty());
     CHECK(!instr.currency.empty());
-    CHECK(instr.fixing_amount > 0.0);
+    CHECK(instr.fixing_amount.to_double() > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_accumulator(instr);
     const bool has_data = rt.FxAccumulatorData.operator bool();
@@ -248,11 +248,11 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     CHECK(!instr.currency.empty());
     CHECK(!instr.long_short.empty());
     REQUIRE(instr.fixing_amount.has_value());
-    CHECK(*instr.fixing_amount > 0.0);
+    CHECK(instr.fixing_amount->to_double() > 0.0);
     REQUIRE(instr.strike.has_value());
     CHECK(*instr.strike > 0.0);
     REQUIRE(instr.target_amount.has_value());
-    CHECK(*instr.target_amount > 0.0);
+    CHECK(instr.target_amount->to_double() > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_tarf(instr);
     const bool has_data = rt.FxTaRFData.operator bool();

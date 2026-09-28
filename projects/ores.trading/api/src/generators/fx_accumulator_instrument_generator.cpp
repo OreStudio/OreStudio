@@ -49,7 +49,7 @@ generate_synthetic_fx_accumulator_instrument(utility::generation::generation_con
     r.identity.trade_type_code = std::string("FxAccumulator");
     r.identity.party_id = ctx.generate_uuid();
     r.currency = std::string("USD");
-    r.fixing_amount = 100000.0;
+    r.fixing_amount = ores::utility::decimal::decimal::from_string("100000").value();
     r.strike = 1.10;
     r.underlying_code = std::string("TR20H-EUR-JPY");
     r.long_short = std::string("Long");

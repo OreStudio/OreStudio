@@ -51,7 +51,7 @@ struct credit_instrument_entity {
     std::optional<std::string> trade_id;
     std::string reference_entity;
     std::string currency;
-    double notional = 0.0;
+    std::string notional;
     double spread = 0.0;
     double recovery_rate = 0.0;
     std::string tenor;

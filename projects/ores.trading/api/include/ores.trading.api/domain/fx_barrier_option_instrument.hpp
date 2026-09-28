@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -52,7 +53,7 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Amount being bought. Must be positive.
      */
-    double bought_amount = 0.0;
+    ores::utility::decimal::decimal bought_amount;
 
     /**
      * @brief Currency being sold.
@@ -62,7 +63,7 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Amount being sold. Must be positive.
      */
-    double sold_amount = 0.0;
+    ores::utility::decimal::decimal sold_amount;
 
     /**
      * @brief Option type (e.g. Call or Put).

@@ -21,6 +21,7 @@
 #define ORES_SHELL_APP_COMMAND_TOKEN_HPP
 
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -110,6 +111,13 @@ T from_token(const std::string& token) {
         // An instant is stored as an ISO 8601 UTC string, which is also the
         // token a caller types.
         return ores::platform::time::datetime::from_iso8601_utc(token);
+    } else if constexpr (std::is_same_v<T, ores::utility::decimal::decimal>) {
+        // A decimal column is stored as its exact decimal text, which is also
+        // the token a caller types.
+        auto parsed = ores::utility::decimal::decimal::from_string(token);
+        if (!parsed)
+            throw std::invalid_argument(parsed.error());
+        return *parsed;
     } else if constexpr (detail::has_token_conversion_v<T>) {
         return boost::lexical_cast<T>(token);
     } else if constexpr (detail::has_parse_token<T>) {

@@ -49,9 +49,9 @@ generate_synthetic_fx_barrier_option_instrument(utility::generation::generation_
     r.identity.trade_type_code = std::string("FxBarrierOption");
     r.identity.party_id = ctx.generate_uuid();
     r.bought_currency = std::string("EUR");
-    r.bought_amount = 1000000.0;
+    r.bought_amount = ores::utility::decimal::decimal::from_string("1000000").value();
     r.sold_currency = std::string("USD");
-    r.sold_amount = 1100000.0;
+    r.sold_amount = ores::utility::decimal::decimal::from_string("1100000").value();
     r.option_type = std::string("Call");
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2033} / 2 / 20};
     r.barrier_type = std::string("UpAndIn");

@@ -45,11 +45,11 @@ struct instrument_strike_entity {
     sqlgen::PrimaryKey<std::string> instrument_id;
     std::string tenant_id;
     int version = 0;
-    std::optional<double> price_value;
+    std::optional<std::string> price_value;
     std::optional<std::string> price_currency;
     std::optional<double> yield_value;
     std::optional<std::string> yield_compounding;
-    std::optional<double> bare_value;
+    std::optional<std::string> bare_value;
     std::optional<std::string> bare_currency;
     std::string modified_by;
     std::string performed_by;

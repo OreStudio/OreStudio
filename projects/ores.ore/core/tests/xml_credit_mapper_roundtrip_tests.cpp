@@ -87,7 +87,7 @@ TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     CHECK(r.identity.trade_type_code == "CreditDefaultSwap");
     CHECK(!r.reference_entity.empty());
     CHECK(!r.currency.empty());
-    CHECK(r.notional > 0.0);
+    CHECK(r.notional.to_double() > 0.0);
     CHECK(r.spread > 0.0);
     CHECK(r.start_date.ok());
     CHECK(r.maturity_date.ok());
@@ -108,7 +108,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds", tags) {
     CHECK(!r.reference_entity.empty());
     CHECK(!r.index_name.empty());
     CHECK(!r.currency.empty());
-    CHECK(r.notional > 0.0);
+    CHECK(r.notional.to_double() > 0.0);
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_index_cds(r);

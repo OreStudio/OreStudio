@@ -52,7 +52,7 @@ fx_accumulator_instrument make_instrument(database_helper& h) {
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "FxAccumulator";
     r.currency = "JPY";
-    r.fixing_amount = 350000.0;
+    r.fixing_amount = ores::utility::decimal::decimal::from_string("350000").value();
     r.strike = 122.0;
     r.underlying_code = "TR20H-EUR-JPY";
     r.long_short = "Long";
@@ -85,7 +85,7 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", tags) {
     REQUIRE(read.size() == 1);
     CHECK(read[0].identity.trade_type_code == "FxAccumulator");
     CHECK(read[0].currency == "JPY");
-    CHECK(read[0].fixing_amount == 350000.0);
+    CHECK(read[0].fixing_amount.to_double() == 350000.0);
     CHECK(read[0].strike == 122.0);
     CHECK(read[0].underlying_code == "TR20H-EUR-JPY");
     CHECK(read[0].long_short == "Long");

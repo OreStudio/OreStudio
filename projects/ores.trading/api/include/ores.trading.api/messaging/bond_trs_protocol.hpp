@@ -47,7 +47,7 @@ struct bond_trs_write {
     std::string funding_index;
     std::optional<std::string> payer;
     std::optional<std::string> price_type;
-    std::optional<double> initial_price;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 };
 
 struct bond_trs_change {

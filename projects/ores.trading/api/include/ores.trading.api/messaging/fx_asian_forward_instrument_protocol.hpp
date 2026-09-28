@@ -45,14 +45,14 @@ struct fx_asian_forward_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string fx_index;
     std::string reference_currency;
-    std::optional<double> reference_notional;
+    std::optional<ores::utility::decimal::decimal> reference_notional;
     std::string settlement_currency;
-    std::optional<double> settlement_notional;
+    std::optional<ores::utility::decimal::decimal> settlement_notional;
     std::optional<std::chrono::year_month_day> payment_date;
     std::string long_short;
     std::string currency;
-    std::optional<double> fixing_amount;
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> fixing_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
     std::optional<double> strike;
     std::string description;
 };

@@ -43,18 +43,17 @@ render_equity_digital_option_instrument_fields(const domain::equity_digital_opti
                                                      std::string{}});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
+    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Option Type", .value = v.option_type});
-    fields.push_back(
-        {.name = "Strike", .value = v.strike ? std::to_string(*v.strike) : std::string{}});
+    fields.push_back({.name = "Strike", .value = v.strike ? v.strike->to_string() : std::string{}});
     fields.push_back({.name = "Barrier Level",
-                      .value = v.barrier_level ? std::to_string(*v.barrier_level) : std::string{}});
+                      .value = v.barrier_level ? v.barrier_level->to_string() : std::string{}});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
     fields.push_back({.name = "Expiry Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Payout Amount",
-                      .value = v.payout_amount ? std::to_string(*v.payout_amount) : std::string{}});
+                      .value = v.payout_amount ? v.payout_amount->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

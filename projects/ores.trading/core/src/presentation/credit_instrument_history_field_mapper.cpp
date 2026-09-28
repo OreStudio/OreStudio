@@ -43,7 +43,7 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
                                                      std::string{}});
     fields.push_back({.name = "Reference Entity", .value = v.reference_entity});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
+    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Spread", .value = std::to_string(v.spread)});
     fields.push_back({.name = "Recovery Rate", .value = std::to_string(v.recovery_rate)});
     fields.push_back({.name = "Tenor", .value = v.tenor});

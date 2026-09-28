@@ -172,7 +172,7 @@ std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 ** fixed_price
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -190,7 +190,7 @@ Call or Put; null for non-option products.
 ** strike_price
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -252,7 +252,7 @@ Second commodity code for spread options.
 ** spread_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -279,7 +279,7 @@ Strike variance for variance swap products.
 ** accumulation_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -288,7 +288,7 @@ Per-fixing accumulation amount for accumulator products.
 ** knock_out_barrier
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -306,7 +306,7 @@ UpAndIn, UpAndOut, DownAndIn, DownAndOut.
 ** lower_barrier
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -315,7 +315,7 @@ Lower barrier level.
 ** upper_barrier
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -444,6 +444,7 @@ repository profiles regenerate correctly.
 #include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

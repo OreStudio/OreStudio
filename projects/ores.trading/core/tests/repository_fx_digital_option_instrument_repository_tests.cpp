@@ -54,7 +54,7 @@ fx_digital_option_instrument make_instrument(database_helper& h) {
     r.foreign_currency = "EUR";
     r.domestic_currency = "USD";
     r.payoff_currency = "EUR";
-    r.payoff_amount = 100.0;
+    r.payoff_amount = ores::utility::decimal::decimal::from_string("100").value();
     r.option_type = "Call";
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.long_short = "Long";
@@ -88,7 +88,7 @@ TEST_CASE("fx_digital_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].foreign_currency == "EUR");
     CHECK(read[0].domestic_currency == "USD");
     CHECK(read[0].payoff_currency == "EUR");
-    CHECK(read[0].payoff_amount == 100.0);
+    CHECK(read[0].payoff_amount.to_double() == 100.0);
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].long_short == "Long");

@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -50,9 +51,9 @@ fx_vanilla_option_instrument_mapper::map(const fx_vanilla_option_instrument_enti
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
     r.bought_currency = v.bought_currency;
-    r.bought_amount = v.bought_amount;
+    r.bought_amount = ores::utility::decimal::decimal::from_string(v.bought_amount).value();
     r.sold_currency = v.sold_currency;
-    r.sold_amount = v.sold_amount;
+    r.sold_amount = ores::utility::decimal::decimal::from_string(v.sold_amount).value();
     r.option_type = v.option_type;
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_style = v.exercise_style;
@@ -83,9 +84,9 @@ fx_vanilla_option_instrument_mapper::map(const domain::fx_vanilla_option_instrum
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
     r.bought_currency = v.bought_currency;
-    r.bought_amount = v.bought_amount;
+    r.bought_amount = v.bought_amount.to_string();
     r.sold_currency = v.sold_currency;
-    r.sold_amount = v.sold_amount;
+    r.sold_amount = v.sold_amount.to_string();
     r.option_type = v.option_type;
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_style = v.exercise_style;

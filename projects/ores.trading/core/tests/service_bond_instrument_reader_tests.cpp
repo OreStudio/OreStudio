@@ -123,7 +123,7 @@ bond_issue make_issue(const stamps& s, const std::string& security_id) {
     r.security_id = security_id;
     r.issuer = "ACME";
     r.currency = "EUR";
-    r.face_value = 1000.0;
+    r.face_value = ores::utility::decimal::decimal::from_string("1000").value();
     r.coupon_rate = 5.0;
     r.coupon_frequency_code = "Annual";
     r.day_count_code = "ACT/365";
@@ -195,7 +195,7 @@ make_premium(const stamps& s, const boost::uuids::uuid& instrument_id, int seque
     stamp(r, s);
     r.instrument_id = instrument_id;
     r.sequence_number = sequence_number;
-    r.amount = 1000.0;
+    r.amount = ores::utility::decimal::decimal::from_string("1000").value();
     r.currency = "EUR";
     r.pay_date = ores::platform::time::datetime::from_iso8601_date("2024-01-20");
     return r;
@@ -207,7 +207,7 @@ make_exercise_fee(const stamps& s, const boost::uuids::uuid& instrument_id, int 
     stamp(r, s);
     r.instrument_id = instrument_id;
     r.sequence_number = sequence_number;
-    r.amount = 25.0;
+    r.amount = ores::utility::decimal::decimal::from_string("25").value();
     return r;
 }
 
@@ -227,7 +227,7 @@ instrument_strike make_strike(const stamps& s, const boost::uuids::uuid& instrum
     instrument_strike r;
     stamp(r, s);
     r.instrument_id = instrument_id;
-    r.price_value = 101.5;
+    r.price_value = ores::utility::decimal::decimal::from_string("101.5").value();
     r.price_currency = "EUR";
     return r;
 }
@@ -322,7 +322,7 @@ bond_leg_amortization make_amortization(const stamps& s,
     r.leg_number = leg_number;
     r.sequence_number = sequence_number;
     r.amortization_type = "FixedAmount";
-    r.value = 100.0;
+    r.value = ores::utility::decimal::decimal::from_string("100").value();
     return r;
 }
 
@@ -743,7 +743,7 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     block.automatic_exercise = "false";
     block.has_exercise_data = true;
     block.exercise_date = ores::platform::time::datetime::from_iso8601_date("2025-01-15");
-    block.exercise_price = 101.0;
+    block.exercise_price = ores::utility::decimal::decimal::from_string("101").value();
     block.has_payment_data = true;
     block.payment_lag = 2;
     block.payment_calendar = "TARGET";
@@ -853,9 +853,9 @@ TEST_CASE("read_instruments_rebuilds_a_strike_a_forward_and_a_delivery_basket", 
     forward.long_in_forward = "true";
     forward.forward_maturity_date = "2026-03-15";
     forward.settlement = "Cash";
-    forward.amount = 250000.0;
+    forward.amount = ores::utility::decimal::decimal::from_string("250000").value();
     forward.lock_rate = 2.5;
-    forward.dv01 = 12.75;
+    forward.dv01 = ores::utility::decimal::decimal::from_string("12.75").value();
     forward.premium_amount = "1500";
     forward.premium_date = "2024-03-15";
     bond_forward_repository().write(ctx, forward);
@@ -911,7 +911,7 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     auto trs = make_trs(s, instrument_id);
     trs.payer = "true";
     trs.price_type = "Price";
-    trs.initial_price = 99.25;
+    trs.initial_price = ores::utility::decimal::decimal::from_string("99.25").value();
     bond_trs_repository().write(ctx, trs);
 
     auto schedule = make_schedule(s, instrument_id, "trs", 1, "schedule", 1, "rules");

@@ -49,7 +49,7 @@ struct fra_instrument_write {
     std::string rate_index;
     std::string long_short;
     double strike;
-    double notional;
+    ores::utility::decimal::decimal notional;
     std::string description;
 };
 

@@ -118,14 +118,14 @@ std::string("EUR")
 ** reference_notional
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Notional in reference_currency (FxAverageForward).
 
 #+begin_src cpp :name generator
-8614.0
+ores::utility::decimal::decimal::from_string("8614").value()
 #+end_src
 
 ** settlement_currency
@@ -144,14 +144,14 @@ std::string("USD")
 ** settlement_notional
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Notional in settlement_currency (FxAverageForward).
 
 #+begin_src cpp :name generator
-10000.0
+ores::utility::decimal::decimal::from_string("10000").value()
 #+end_src
 
 ** payment_date
@@ -192,7 +192,7 @@ Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
 ** fixing_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -202,7 +202,7 @@ FxAverageForward.
 ** target_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -293,6 +293,7 @@ repository profiles regenerate correctly.
 #include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

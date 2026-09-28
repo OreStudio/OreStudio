@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_TRS_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_TRS_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -120,7 +121,7 @@ struct bond_trs final {
      * The schema states the member as a float and declares it optional, so an unengaged column
      * means the document omitted it.
      */
-    std::optional<double> initial_price;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 
     /**
      * @brief Username of the person who last modified this bond trs.

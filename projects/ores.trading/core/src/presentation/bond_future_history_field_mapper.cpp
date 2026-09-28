@@ -36,12 +36,12 @@ render_bond_future_fields(const domain::bond_future& v) {
 
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
     fields.push_back({.name = "Contract Name", .value = v.contract_name});
-    fields.push_back({.name = "Contract Notional", .value = std::to_string(v.contract_notional)});
+    fields.push_back({.name = "Contract Notional", .value = v.contract_notional.to_string()});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Contract Month", .value = v.contract_month});
     fields.push_back({.name = "Deliverable Grade", .value = v.deliverable_grade});
-    fields.push_back({.name = "Fair Price", .value = std::to_string(v.fair_price)});
+    fields.push_back({.name = "Fair Price", .value = v.fair_price.to_string()});
     fields.push_back({.name = "Settlement", .value = v.settlement});
     fields.push_back({.name = "Settlement Dirty", .value = v.settlement_dirty ? "true" : "false"});
     fields.push_back({.name = "Root Date",

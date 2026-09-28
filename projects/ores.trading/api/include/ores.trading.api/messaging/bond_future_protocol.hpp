@@ -42,12 +42,12 @@ struct bond_future_key {
 struct bond_future_write {
     boost::uuids::uuid instrument_id;
     std::string contract_name;
-    double contract_notional;
+    ores::utility::decimal::decimal contract_notional;
     std::string long_short;
     std::string currency;
     std::string contract_month;
     std::string deliverable_grade;
-    double fair_price;
+    ores::utility::decimal::decimal fair_price;
     std::string settlement;
     bool settlement_dirty;
     std::optional<std::chrono::year_month_day> root_date;

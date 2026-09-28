@@ -54,7 +54,7 @@ generate_synthetic_fra_instrument(utility::generation::generation_context& ctx) 
     r.rate_index = std::string("SOFR");
     r.long_short = std::string("Long");
     r.strike = 0.05;
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

@@ -45,7 +45,7 @@ domain::bond_option generate_synthetic_bond_option(utility::generation::generati
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
     r.option_type = std::string("Call");
-    r.option_strike = 2800.0;
+    r.option_strike = ores::utility::decimal::decimal::from_string("2800").value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_EXERCISE_FEE_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_EXERCISE_FEE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -71,7 +72,7 @@ struct instrument_option_exercise_fee final {
     /**
      * @brief Amount of the exercise fee.
      */
-    double amount = 0.0;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief Kind of exercise fee the document states.

@@ -46,7 +46,7 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back({.name = "Floating Index Code", .value = v.floating_index_code});
     fields.push_back({.name = "Fixed Rate", .value = std::to_string(v.fixed_rate)});
     fields.push_back({.name = "Spread", .value = std::to_string(v.spread)});
-    fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
+    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Currency", .value = v.currency});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

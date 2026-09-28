@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -77,7 +78,7 @@ struct fx_variance_swap_instrument final {
     /**
      * @brief Notional amount for PnL scaling. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Whether the product is a Variance or Volatility swap.

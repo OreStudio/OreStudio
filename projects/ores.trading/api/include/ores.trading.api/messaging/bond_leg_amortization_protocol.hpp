@@ -48,7 +48,7 @@ struct bond_leg_amortization_write {
     int leg_number;
     int sequence_number;
     std::string amortization_type;
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
     std::optional<std::string> start_date;
     std::optional<std::string> end_date;
     std::optional<std::string> frequency;

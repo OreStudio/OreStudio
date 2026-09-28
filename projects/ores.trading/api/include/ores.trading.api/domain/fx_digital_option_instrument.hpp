@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -65,7 +66,7 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Fixed payoff amount. Must be positive.
      */
-    double payoff_amount = 0.0;
+    ores::utility::decimal::decimal payoff_amount;
 
     /**
      * @brief Option type: Call or Put. Empty for touch options.

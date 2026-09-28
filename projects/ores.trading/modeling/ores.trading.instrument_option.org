@@ -285,7 +285,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 ** exercise_price
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -417,6 +417,7 @@ Date the settlement block fixes on, when the document states one.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

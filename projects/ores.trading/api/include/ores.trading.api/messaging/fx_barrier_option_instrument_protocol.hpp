@@ -44,9 +44,9 @@ struct fx_barrier_option_instrument_write {
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
     std::string bought_currency;
-    double bought_amount;
+    ores::utility::decimal::decimal bought_amount;
     std::string sold_currency;
-    double sold_amount;
+    ores::utility::decimal::decimal sold_amount;
     std::string option_type;
     std::chrono::year_month_day expiry_date;
     std::string settlement;

@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/swap_leg_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -51,7 +52,7 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.floating_index_code = v.floating_index_code.value_or("");
     r.fixed_rate = v.fixed_rate.value_or(0);
     r.spread = v.spread.value_or(0);
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.currency = v.currency;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -82,7 +83,7 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
         v.floating_index_code.empty() ? std::nullopt : std::optional(v.floating_index_code);
     r.fixed_rate = v.fixed_rate == 0 ? std::nullopt : std::optional(v.fixed_rate);
     r.spread = v.spread == 0 ? std::nullopt : std::optional(v.spread);
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.currency = v.currency;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

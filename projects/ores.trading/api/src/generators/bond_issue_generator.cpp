@@ -48,7 +48,7 @@ domain::bond_issue generate_synthetic_bond_issue(utility::generation::generation
     r.security_id = std::string("US9128283M42");
     r.issuer = std::string("US Treasury");
     r.currency = std::string("USD");
-    r.face_value = 1000.0;
+    r.face_value = ores::utility::decimal::decimal::from_string("1000").value();
     r.coupon_rate = 0.0425;
     r.coupon_frequency_code = std::string("SemiAnnual");
     r.day_count_code = std::string("30/360");

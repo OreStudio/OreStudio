@@ -49,7 +49,7 @@ struct bond_issue_entity {
     std::string security_id;
     std::optional<std::string> issuer;
     std::optional<std::string> currency;
-    std::optional<double> face_value;
+    std::optional<std::string> face_value;
     std::optional<double> coupon_rate;
     std::optional<std::string> coupon_frequency_code;
     std::optional<std::string> day_count_code;

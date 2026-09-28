@@ -49,7 +49,7 @@ equity_variance_swap_instrument make_instrument(database_helper& h) {
     r.identity.trade_type_code = "EquityVarianceSwap";
     r.underlying_name = ".SPX";
     r.currency = "USD";
-    r.notional = 50000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("50000").value();
     r.variance_strike = 0.20;
     r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-02-20");
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date("2025-05-20");
@@ -82,7 +82,7 @@ TEST_CASE("equity_variance_swap_instrument_write_and_read_latest", tags) {
     CHECK(read[0].identity.trade_type_code == "EquityVarianceSwap");
     CHECK(read[0].underlying_name == ".SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 50000.0);
+    CHECK(read[0].notional.to_double() == 50000.0);
     CHECK(read[0].variance_strike == 0.20);
     CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-02-20"));
     CHECK(read[0].maturity_date == ores::platform::time::datetime::from_iso8601_date("2025-05-20"));

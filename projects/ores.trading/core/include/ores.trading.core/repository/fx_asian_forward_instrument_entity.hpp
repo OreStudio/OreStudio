@@ -51,14 +51,14 @@ struct fx_asian_forward_instrument_entity {
     std::optional<std::string> trade_id;
     std::string fx_index;
     std::optional<std::string> reference_currency;
-    std::optional<double> reference_notional;
+    std::optional<std::string> reference_notional;
     std::optional<std::string> settlement_currency;
-    std::optional<double> settlement_notional;
+    std::optional<std::string> settlement_notional;
     std::optional<std::string> payment_date;
     std::optional<std::string> long_short;
     std::optional<std::string> currency;
-    std::optional<double> fixing_amount;
-    std::optional<double> target_amount;
+    std::optional<std::string> fixing_amount;
+    std::optional<std::string> target_amount;
     std::optional<double> strike;
     std::optional<std::string> description;
     std::string modified_by;

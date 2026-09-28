@@ -50,13 +50,13 @@ generate_synthetic_equity_barrier_option_instrument(utility::generation::generat
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string("RIC:.SPX");
     r.currency = std::string("USD");
-    r.notional = 1000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000").value();
     r.option_type = std::string("Call");
-    r.strike = 3200.0;
+    r.strike = ores::utility::decimal::decimal::from_string("3200").value();
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 8 / 15};
     r.exercise_type = std::string("European");
     r.long_short = std::string("Long");
-    r.lower_barrier = 3500.0;
+    r.lower_barrier = ores::utility::decimal::decimal::from_string("3500").value();
     r.lower_barrier_type = std::string("UpAndOut");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

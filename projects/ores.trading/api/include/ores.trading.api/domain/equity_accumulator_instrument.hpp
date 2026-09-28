@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -61,12 +62,12 @@ struct equity_accumulator_instrument final {
     /**
      * @brief Strike price.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike;
 
     /**
      * @brief Per-fixing accumulation amount. Must be positive.
      */
-    double fixing_amount = 0.0;
+    ores::utility::decimal::decimal fixing_amount;
 
     /**
      * @brief Start date (ISO 8601 date string).
@@ -91,12 +92,12 @@ struct equity_accumulator_instrument final {
     /**
      * @brief Knock-out barrier; absent when not specified.
      */
-    std::optional<double> knock_out_level;
+    std::optional<ores::utility::decimal::decimal> knock_out_level;
 
     /**
      * @brief TaRF only: target profit level.
      */
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
 
     /**
      * @brief TaRF: TargetFull or TargetExact; empty for accumulator.

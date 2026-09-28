@@ -46,7 +46,7 @@ struct instrument_option_premium_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
-    double amount = 0.0;
+    std::string amount;
     std::string currency;
     std::string pay_date;
     bool has_settlement = false;

@@ -64,6 +64,17 @@ std::optional<double> parse_optional_double(std::string_view value, std::string_
     }
 }
 
+std::optional<ores::utility::decimal::decimal> parse_optional_decimal(std::string_view value,
+                                                                      std::string_view name) {
+    if (value.empty() || value == "-")
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(value);
+    if (!parsed)
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
+    return *parsed;
+}
+
 } // namespace
 
 void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
@@ -302,14 +313,14 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     v.description = std::move(description);
 
     try {
-        v.fixed_price = parse_optional_double(fixed_price, "fixed_price");
-        v.strike_price = parse_optional_double(strike_price, "strike_price");
-        v.spread_amount = parse_optional_double(spread_amount, "spread_amount");
+        v.fixed_price = parse_optional_decimal(fixed_price, "fixed_price");
+        v.strike_price = parse_optional_decimal(strike_price, "strike_price");
+        v.spread_amount = parse_optional_decimal(spread_amount, "spread_amount");
         v.variance_strike = parse_optional_double(variance_strike, "variance_strike");
-        v.accumulation_amount = parse_optional_double(accumulation_amount, "accumulation_amount");
-        v.knock_out_barrier = parse_optional_double(knock_out_barrier, "knock_out_barrier");
-        v.lower_barrier = parse_optional_double(lower_barrier, "lower_barrier");
-        v.upper_barrier = parse_optional_double(upper_barrier, "upper_barrier");
+        v.accumulation_amount = parse_optional_decimal(accumulation_amount, "accumulation_amount");
+        v.knock_out_barrier = parse_optional_decimal(knock_out_barrier, "knock_out_barrier");
+        v.lower_barrier = parse_optional_decimal(lower_barrier, "lower_barrier");
+        v.upper_barrier = parse_optional_decimal(upper_barrier, "upper_barrier");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

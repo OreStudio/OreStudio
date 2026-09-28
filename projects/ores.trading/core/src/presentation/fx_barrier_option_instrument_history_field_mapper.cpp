@@ -42,9 +42,9 @@ render_fx_barrier_option_instrument_fields(const domain::fx_barrier_option_instr
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
     fields.push_back({.name = "Bought Currency", .value = v.bought_currency});
-    fields.push_back({.name = "Bought Amount", .value = std::to_string(v.bought_amount)});
+    fields.push_back({.name = "Bought Amount", .value = v.bought_amount.to_string()});
     fields.push_back({.name = "Sold Currency", .value = v.sold_currency});
-    fields.push_back({.name = "Sold Amount", .value = std::to_string(v.sold_amount)});
+    fields.push_back({.name = "Sold Amount", .value = v.sold_amount.to_string()});
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Expiry Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});

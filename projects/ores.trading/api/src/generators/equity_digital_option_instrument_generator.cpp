@@ -50,9 +50,9 @@ generate_synthetic_equity_digital_option_instrument(utility::generation::generat
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string("RIC:.SPX");
     r.currency = std::string("USD");
-    r.notional = 1000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000").value();
     r.option_type = std::string("Call");
-    r.strike = std::make_optional(3300.0);
+    r.strike = std::make_optional(ores::utility::decimal::decimal::from_string("3300").value());
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 7 / 17};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;

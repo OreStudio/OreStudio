@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include <string_view>
@@ -65,7 +66,7 @@ struct equity_position_instrument final {
     /**
      * @brief Entry price; absent for market-price positions.
      */
-    std::optional<double> price;
+    std::optional<ores::utility::decimal::decimal> price;
 
     /**
      * @brief EquityOptionPosition only: serialised option parameters; empty otherwise.

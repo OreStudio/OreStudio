@@ -330,8 +330,13 @@ domain::bond_leg_data build_leg(const instrument_rows& rows, const domain::bond_
     for (const auto& amortization : rows.amortizations) {
         if (amortization.leg_role != row.leg_role || amortization.leg_number != row.leg_number)
             continue;
+        // The stored amount is a decimal and the ORE-shaped block the reader
+        // rebuilds holds the float the ORE document carries, so the value
+        // crosses at that boundary.
         leg.amortizations.push_back({amortization.amortization_type,
-                                     amortization.value,
+                                     amortization.value ?
+                                         std::optional(amortization.value->to_double()) :
+                                         std::nullopt,
                                      amortization.start_date,
                                      amortization.end_date,
                                      amortization.frequency,
@@ -433,7 +438,7 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.premium_pay_date = row.premium_pay_date;
 
         for (const auto& premium : rows.option_premiums)
-            block.premiums.push_back({premium.amount,
+            block.premiums.push_back({premium.amount.to_double(),
                                       premium.currency,
                                       iso_or_empty(premium.pay_date),
                                       to_option_settlement(premium.has_settlement,
@@ -443,7 +448,8 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
 
         block.exercise_prices = row.exercise_prices;
         for (const auto& fee : rows.option_exercise_fees)
-            block.exercise_fees.push_back({fee.amount, fee.type, fee.start_date, fee.currency});
+            block.exercise_fees.push_back(
+                {fee.amount.to_double(), fee.type, fee.start_date, fee.currency});
 
         block.exercise_fee_settlement_period = row.exercise_fee_settlement_period;
         block.exercise_fee_settlement_calendar = row.exercise_fee_settlement_calendar;
@@ -451,8 +457,9 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.automatic_exercise = row.automatic_exercise;
 
         if (row.has_exercise_data)
-            block.exercise_data =
-                domain::bond_option_exercise{iso_or_empty(row.exercise_date), row.exercise_price};
+            block.exercise_data = domain::bond_option_exercise{
+                iso_or_empty(row.exercise_date),
+                row.exercise_price ? std::optional(row.exercise_price->to_double()) : std::nullopt};
 
         if (row.has_payment_data) {
             domain::bond_option_payment_data payment;
@@ -483,12 +490,13 @@ void apply_strike(domain::bond_instrument_data& data, const instrument_rows& row
     if (!rows.strike)
         return;
     const auto& row = *rows.strike;
-    data.strike_data = domain::bond_strike_data{row.price_value,
-                                                row.price_currency,
-                                                row.yield_value,
-                                                row.yield_compounding,
-                                                row.bare_value,
-                                                row.bare_currency};
+    data.strike_data = domain::bond_strike_data{
+        row.price_value ? std::optional(row.price_value->to_double()) : std::nullopt,
+        row.price_currency,
+        row.yield_value,
+        row.yield_compounding,
+        row.bare_value ? std::optional(row.bare_value->to_double()) : std::nullopt,
+        row.bare_currency};
 }
 
 void apply_forward(domain::bond_instrument_data& data, const instrument_rows& rows) {
@@ -501,9 +509,9 @@ void apply_forward(domain::bond_instrument_data& data, const instrument_rows& ro
     settlement.forward_maturity_date = row.forward_maturity_date.value_or("");
     settlement.forward_settlement_date = row.forward_settlement_date;
     settlement.settlement = row.settlement;
-    settlement.amount = row.amount;
+    settlement.amount = row.amount ? std::optional(row.amount->to_double()) : std::nullopt;
     settlement.lock_rate = row.lock_rate;
-    settlement.dv01 = row.dv01;
+    settlement.dv01 = row.dv01 ? std::optional(row.dv01->to_double()) : std::nullopt;
     settlement.lock_rate_day_counter = row.lock_rate_day_counter;
     settlement.settlement_dirty = row.settlement_dirty;
     data.forward_settlement = std::move(settlement);
@@ -529,7 +537,9 @@ void apply_delivery_basket(domain::bond_instrument_data& data, const instrument_
 void apply_trs_residue(domain::bond_instrument_data& data, const instrument_rows& rows) {
     if (data.trs) {
         data.trs_payer = data.trs->payer;
-        data.trs_initial_price = data.trs->initial_price;
+        data.trs_initial_price = data.trs->initial_price ?
+                                     std::optional(data.trs->initial_price->to_double()) :
+                                     std::nullopt;
         if (data.trs->price_type)
             data.trs_price_type = *data.trs->price_type;
     }

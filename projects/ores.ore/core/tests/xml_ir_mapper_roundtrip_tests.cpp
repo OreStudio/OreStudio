@@ -89,13 +89,13 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     REQUIRE(legs.size() == 2);
     CHECK(legs[0].leg_type_code == "Fixed");
     CHECK(legs[0].currency == "EUR");
-    CHECK(legs[0].notional == Approx(10000000.0).epsilon(0.001));
+    CHECK(legs[0].notional.to_double() == Approx(10000000.0).epsilon(0.001));
     CHECK(legs[0].fixed_rate == Approx(0.021).epsilon(0.0001));
 
     CHECK(legs[1].leg_type_code == "Floating");
     CHECK(legs[1].currency == "EUR");
     CHECK(legs[1].floating_index_code == "EUR-EURIBOR-6M");
-    CHECK(legs[1].notional == Approx(10000000.0).epsilon(0.001));
+    CHECK(legs[1].notional.to_double() == Approx(10000000.0).epsilon(0.001));
     BOOST_LOG_SEV(lg, info) << "Swap forward-mapper test passed";
 }
 
@@ -134,7 +134,7 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
     CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2026-10-19");
     CHECK(ores::platform::time::datetime::to_iso8601_date(instr.end_date) == "2027-04-20");
     CHECK(instr.currency == "EUR");
-    CHECK(instr.notional == Approx(100000000.0).epsilon(0.001));
+    CHECK(instr.notional.to_double() == Approx(100000000.0).epsilon(0.001));
 
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
@@ -179,7 +179,7 @@ TEST_CASE("mapper_roundtrip_capfloor_forward", tags) {
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].leg_type_code == "Floating");
     CHECK(legs[0].currency == "EUR");
-    CHECK(legs[0].notional == Approx(3000000.0).epsilon(0.001));
+    CHECK(legs[0].notional.to_double() == Approx(3000000.0).epsilon(0.001));
     CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
     BOOST_LOG_SEV(lg, info) << "CapFloor forward-mapper test passed";
 }

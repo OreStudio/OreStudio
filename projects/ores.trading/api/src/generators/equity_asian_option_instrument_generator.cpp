@@ -50,9 +50,9 @@ generate_synthetic_equity_asian_option_instrument(utility::generation::generatio
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string("RIC:.SPX");
     r.currency = std::string("USD");
-    r.notional = 1.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1").value();
     r.option_type = std::string("Call");
-    r.strike = 3100.0;
+    r.strike = ores::utility::decimal::decimal::from_string("3100").value();
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 28};
     r.exercise_type = std::string("European");
     r.long_short = std::string("Long");

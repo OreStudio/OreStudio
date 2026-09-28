@@ -93,7 +93,7 @@ TEST_CASE("equity_mapper_roundtrip_option", tags) {
     CHECK(inst.identity.trade_type_code == "EquityOption");
     CHECK(!inst.underlying_name.empty());
     CHECK(!inst.currency.empty());
-    CHECK(inst.notional > 0.0);
+    CHECK(inst.notional.to_double() > 0.0);
     CHECK(!inst.option_type.empty());
     CHECK(inst.expiry_date.ok());
 
@@ -165,7 +165,7 @@ TEST_CASE("equity_mapper_roundtrip_barrier_option", tags) {
     CHECK(inst.identity.trade_type_code == "EquityBarrierOption");
     CHECK(!inst.underlying_name.empty());
     CHECK(!inst.lower_barrier_type.empty());
-    CHECK(inst.lower_barrier > 0.0);
+    CHECK(inst.lower_barrier.to_double() > 0.0);
 
     const auto rt = equity_instrument_mapper::reverse_equity_barrier_option(inst);
     REQUIRE(rt.EquityBarrierOptionData);
@@ -181,7 +181,7 @@ TEST_CASE("equity_mapper_roundtrip_asian_option", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityAsianOption");
     CHECK(!inst.underlying_name.empty());
-    CHECK(inst.strike > 0.0);
+    CHECK(inst.strike.to_double() > 0.0);
     CHECK(inst.averaging_start_date.ok());
 
     const auto rt = equity_instrument_mapper::reverse_equity_asian_option(inst);
@@ -198,14 +198,14 @@ TEST_CASE("equity_mapper_roundtrip_digital_option", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityDigitalOption");
     CHECK(!inst.underlying_name.empty());
-    CHECK(inst.strike.value_or(0.0) > 0.0);
+    CHECK(inst.strike.value_or(ores::utility::decimal::decimal{}).to_double() > 0.0);
     CHECK(!inst.option_type.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_digital_option(inst);
     REQUIRE(rt.EquityDigitalOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityDigitalOption roundtrip passed. Strike: "
-                            << inst.strike.value_or(0.0);
+                            << inst.strike.value_or(ores::utility::decimal::decimal{}).to_double();
 }
 
 TEST_CASE("equity_mapper_roundtrip_touch_option", tags) {
@@ -215,13 +215,13 @@ TEST_CASE("equity_mapper_roundtrip_touch_option", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityTouchOption");
     CHECK(!inst.barrier_type.empty());
-    CHECK(inst.barrier_level.value_or(0.0) > 0.0);
+    CHECK(inst.barrier_level.value_or(ores::utility::decimal::decimal{}).to_double() > 0.0);
 
     const auto rt = equity_instrument_mapper::reverse_equity_touch_option(inst);
     REQUIRE(rt.EquityTouchOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityTouchOption roundtrip passed. Barrier: "
-                            << inst.barrier_level.value_or(0.0);
+                            << inst.barrier_level.value_or(ores::utility::decimal::decimal{}).to_double();
 }
 
 TEST_CASE("equity_mapper_roundtrip_outperformance_option", tags) {
@@ -231,7 +231,7 @@ TEST_CASE("equity_mapper_roundtrip_outperformance_option", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityOutperformanceOption");
     CHECK(!inst.currency.empty());
-    CHECK(inst.notional > 0.0);
+    CHECK(inst.notional.to_double() > 0.0);
     // Outperformance joins two underlyings as "n1/n2" in underlying_name
     // because the per-type option struct has no basket field.
     CHECK(inst.underlying_name.find('/') != std::string::npos);
@@ -254,8 +254,8 @@ TEST_CASE("equity_mapper_roundtrip_accumulator", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityAccumulator");
     CHECK(!inst.underlying_name.empty());
-    CHECK(inst.fixing_amount > 0.0);
-    CHECK(inst.knock_out_level.value_or(0.0) > 0.0);
+    CHECK(inst.fixing_amount.to_double() > 0.0);
+    CHECK(inst.knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double() > 0.0);
 
     const auto rt = equity_instrument_mapper::reverse_equity_accumulator(inst);
     REQUIRE(rt.EquityAccumulatorData);
@@ -270,7 +270,7 @@ TEST_CASE("equity_mapper_roundtrip_tarf", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityTaRF");
     CHECK(!inst.underlying_name.empty());
-    CHECK(inst.fixing_amount > 0.0);
+    CHECK(inst.fixing_amount.to_double() > 0.0);
 
     const auto rt = equity_instrument_mapper::reverse_equity_tarf(inst);
     REQUIRE(rt.EquityTaRFData);
@@ -285,7 +285,7 @@ TEST_CASE("equity_mapper_roundtrip_cliquet_option", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityCliquetOption");
     CHECK(!inst.underlying_name.empty());
-    CHECK(inst.notional > 0.0);
+    CHECK(inst.notional.to_double() > 0.0);
 
     const auto rt = equity_instrument_mapper::reverse_equity_cliquet_option(inst);
     REQUIRE(rt.EquityCliquetOptionData);
@@ -300,7 +300,7 @@ TEST_CASE("equity_mapper_roundtrip_worst_of_basket_swap", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityWorstOfBasketSwap");
     CHECK(!inst.currency.empty());
-    CHECK(inst.notional > 0.0);
+    CHECK(inst.notional.to_double() > 0.0);
     CHECK(!inst.basket_json.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_worst_of_basket_swap(inst);

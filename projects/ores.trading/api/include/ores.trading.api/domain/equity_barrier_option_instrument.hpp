@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -62,7 +63,7 @@ struct equity_barrier_option_instrument final {
     /**
      * @brief Contract quantity / notional. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Call or Put.
@@ -72,7 +73,7 @@ struct equity_barrier_option_instrument final {
     /**
      * @brief Strike price. Non-negative.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike;
 
     /**
      * @brief Expiry date (ISO 8601 date string).
@@ -92,7 +93,7 @@ struct equity_barrier_option_instrument final {
     /**
      * @brief Lower / single barrier level.
      */
-    double lower_barrier = 0.0;
+    ores::utility::decimal::decimal lower_barrier;
 
     /**
      * @brief UpIn, UpOut, DownIn, DownOut.
@@ -102,7 +103,7 @@ struct equity_barrier_option_instrument final {
     /**
      * @brief Double-barrier only: upper barrier level.
      */
-    std::optional<double> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
 
     /**
      * @brief Type for upper barrier; empty for single barrier.
@@ -112,7 +113,7 @@ struct equity_barrier_option_instrument final {
     /**
      * @brief Optional rebate paid when the barrier is breached.
      */
-    std::optional<double> rebate;
+    std::optional<ores::utility::decimal::decimal> rebate;
 
     /**
      * @brief Optional free-text description.

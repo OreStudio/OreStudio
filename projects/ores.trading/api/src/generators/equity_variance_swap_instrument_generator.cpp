@@ -50,7 +50,7 @@ generate_synthetic_equity_variance_swap_instrument(utility::generation::generati
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.variance_strike = 0.04;
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};

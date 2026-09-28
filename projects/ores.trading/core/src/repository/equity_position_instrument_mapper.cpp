@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/equity_position_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/equity_position_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -50,7 +51,9 @@ equity_position_instrument_mapper::map(const equity_position_instrument_entity& 
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.price = v.price;
+    r.price = v.price.has_value() ?
+                  std::optional(ores::utility::decimal::decimal::from_string(*v.price).value()) :
+                  std::nullopt;
     r.option_data_json = v.option_data_json.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -80,7 +83,7 @@ equity_position_instrument_mapper::map(const domain::equity_position_instrument&
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.price = v.price;
+    r.price = v.price.has_value() ? std::optional(v.price->to_string()) : std::nullopt;
     r.option_data_json =
         v.option_data_json.empty() ? std::nullopt : std::optional(v.option_data_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

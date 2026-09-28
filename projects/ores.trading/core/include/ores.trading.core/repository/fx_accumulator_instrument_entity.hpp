@@ -50,7 +50,7 @@ struct fx_accumulator_instrument_entity {
     std::string party_id;
     std::optional<std::string> trade_id;
     std::string currency;
-    double fixing_amount = 0.0;
+    std::string fixing_amount;
     double strike = 0.0;
     std::string underlying_code;
     std::string long_short;

@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_trs_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_trs_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -46,7 +47,10 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
     r.funding_index = v.funding_index.value_or("");
     r.payer = v.payer;
     r.price_type = v.price_type;
-    r.initial_price = v.initial_price;
+    r.initial_price =
+        v.initial_price.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.initial_price).value()) :
+            std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -70,7 +74,8 @@ bond_trs_entity bond_trs_mapper::map(const domain::bond_trs& v) {
     r.funding_index = v.funding_index.empty() ? std::nullopt : std::optional(v.funding_index);
     r.payer = v.payer;
     r.price_type = v.price_type;
-    r.initial_price = v.initial_price;
+    r.initial_price =
+        v.initial_price.has_value() ? std::optional(v.initial_price->to_string()) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -42,7 +42,7 @@ struct bond_option_key {
 struct bond_option_write {
     boost::uuids::uuid instrument_id;
     std::string option_type;
-    double option_strike;
+    ores::utility::decimal::decimal option_strike;
     std::optional<std::string> redemption;
     std::optional<std::string> price_type;
     std::optional<std::string> knocks_out;

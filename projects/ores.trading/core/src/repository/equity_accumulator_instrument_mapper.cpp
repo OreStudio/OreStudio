@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -51,14 +52,21 @@ equity_accumulator_instrument_mapper::map(const equity_accumulator_instrument_en
                               std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.strike = v.strike;
-    r.fixing_amount = v.fixing_amount;
+    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
+    r.fixing_amount = ores::utility::decimal::decimal::from_string(v.fixing_amount).value();
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.fixing_frequency = v.fixing_frequency;
     r.long_short = v.long_short;
-    r.knock_out_level = v.knock_out_level;
-    r.target_amount = v.target_amount;
+    r.knock_out_level =
+        v.knock_out_level.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.knock_out_level).value()) :
+            std::nullopt;
+    r.target_amount =
+        v.target_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.target_amount).value()) :
+            std::nullopt;
     r.target_type = v.target_type.value_or("");
     r.payoff_type = v.payoff_type;
     r.description = v.description.value_or("");
@@ -88,14 +96,17 @@ equity_accumulator_instrument_mapper::map(const domain::equity_accumulator_instr
                      std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.strike = v.strike;
-    r.fixing_amount = v.fixing_amount;
+    r.strike = v.strike.to_string();
+    r.fixing_amount = v.fixing_amount.to_string();
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.fixing_frequency = v.fixing_frequency;
     r.long_short = v.long_short;
-    r.knock_out_level = v.knock_out_level;
-    r.target_amount = v.target_amount;
+    r.knock_out_level = v.knock_out_level.has_value() ?
+                            std::optional(v.knock_out_level->to_string()) :
+                            std::nullopt;
+    r.target_amount =
+        v.target_amount.has_value() ? std::optional(v.target_amount->to_string()) : std::nullopt;
     r.target_type = v.target_type.empty() ? std::nullopt : std::optional(v.target_type);
     r.payoff_type = v.payoff_type;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

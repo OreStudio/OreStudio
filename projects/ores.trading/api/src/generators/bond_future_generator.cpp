@@ -45,12 +45,12 @@ domain::bond_future generate_synthetic_bond_future(utility::generation::generati
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
     r.contract_name = std::string("US 10YR T-NOTE");
-    r.contract_notional = 100000.0;
+    r.contract_notional = ores::utility::decimal::decimal::from_string("100000").value();
     r.long_short = std::string("Long");
     r.currency = std::string("USD");
     r.contract_month = std::string("2029-09");
     r.deliverable_grade = std::string("T 2.75 11/15/2042");
-    r.fair_price = 98.5;
+    r.fair_price = ores::utility::decimal::decimal::from_string("98.5").value();
     r.settlement = std::string("Cash");
     r.settlement_dirty = false;
     r.root_date = std::chrono::year_month_day{std::chrono::year{2029} / 3 / 1};

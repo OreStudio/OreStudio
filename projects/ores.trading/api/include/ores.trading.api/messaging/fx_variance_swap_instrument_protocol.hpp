@@ -49,7 +49,7 @@ struct fx_variance_swap_instrument_write {
     std::string underlying_code;
     std::string long_short;
     double strike;
-    double notional;
+    ores::utility::decimal::decimal notional;
     std::string moment_type;
     std::string description;
 };

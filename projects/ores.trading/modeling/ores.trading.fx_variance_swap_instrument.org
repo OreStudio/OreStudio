@@ -167,15 +167,14 @@ Fixed variance or volatility strike. Must be positive.
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Notional amount for PnL scaling. Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** moment_type
@@ -272,6 +271,7 @@ repository profiles regenerate correctly.
 #+begin_src cpp :name includes
 #include <chrono>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

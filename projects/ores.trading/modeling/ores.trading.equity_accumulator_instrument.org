@@ -117,29 +117,27 @@ std::string("EUR")
 ** strike
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Strike price.
 
 #+begin_src cpp :name generator
-4000.0
+ores::utility::decimal::decimal::from_string("4000").value()
 #+end_src
 
 ** fixing_amount
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Per-fixing accumulation amount. Must be positive.
 
 #+begin_src cpp :name generator
-30.0
+ores::utility::decimal::decimal::from_string("30").value()
 #+end_src
 
 ** start_date
@@ -197,7 +195,7 @@ std::string("Long")
 ** knock_out_level
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -206,7 +204,7 @@ Knock-out barrier; absent when not specified.
 ** target_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -314,6 +312,7 @@ repository profiles regenerate correctly.
 #include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

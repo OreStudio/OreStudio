@@ -35,7 +35,7 @@ render_instrument_option_premium_fields(const domain::instrument_option_premium&
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
-    fields.push_back({.name = "Amount", .value = std::to_string(v.amount)});
+    fields.push_back({.name = "Amount", .value = v.amount.to_string()});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back(
         {.name = "Pay Date", .value = ores::platform::time::datetime::to_iso8601_date(v.pay_date)});

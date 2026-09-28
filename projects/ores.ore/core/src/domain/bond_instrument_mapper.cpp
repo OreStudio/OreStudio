@@ -1100,7 +1100,9 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
         if (ld.Currency)
             issue.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
-            issue.face_value = static_cast<double>(ld.Notionals->Notional.front());
+            issue.face_value = ores::utility::decimal::decimal::from_double(
+                                   static_cast<double>(ld.Notionals->Notional.front()))
+                                   .value();
         if (ld.DayCounter)
             issue.day_count_code = to_string(*ld.DayCounter);
         issue.coupon_frequency_code = first_tenor(ld.ScheduleData);
@@ -1143,7 +1145,8 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     // columns that mirror the first hold a value: Currency and Notionals
     // are optional in the schema, so a leg the document carries with
     // neither still has to come back out.
-    if (!data.bond_legs.empty() || !issue.currency.empty() || issue.face_value != 0.0) {
+    if (!data.bond_legs.empty() || !issue.currency.empty() ||
+        (issue.face_value && !issue.face_value->is_zero())) {
         const std::size_t leg_count = data.bond_legs.empty() ? 1 : data.bond_legs.size();
         for (std::size_t i = 0; i < leg_count; ++i) {
             const bond_leg_data absent;
@@ -1162,10 +1165,10 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
                     ld.DayCounter =
                         parse_code(issue.day_count_code, day_counter_count, dayCounter::A360);
 
-                if (!ld.Notionals && issue.face_value != 0.0) {
+                if (!ld.Notionals && issue.face_value && !issue.face_value->is_zero()) {
                     legData_Notionals_t n;
                     legData_Notionals_t_Notional_t nv;
-                    static_cast<float&>(nv) = static_cast<float>(issue.face_value);
+                    static_cast<float&>(nv) = static_cast<float>(issue.face_value->to_double());
                     n.Notional.push_back(nv);
                     ld.Notionals = std::move(n);
                 }
@@ -1354,7 +1357,9 @@ bond_instrument_data bond_instrument_mapper::forward_bond_option(const trade& t,
     if (d.OptionData.OptionType)
         option.option_type = std::string(*d.OptionData.OptionType);
     if (d.strikeGroup.Strike)
-        option.option_strike = number_of(*d.strikeGroup.Strike, 0.0);
+        option.option_strike =
+            ores::utility::decimal::decimal::from_double(number_of(*d.strikeGroup.Strike, 0.0))
+                .value();
     stamp_audit(option);
     result.option = option;
 
@@ -1458,7 +1463,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond_future(const trade& t,
 
     bond_future future;
     future.contract_name = d.ContractName;
-    future.contract_notional = number_of(d.ContractNotional, 0.0);
+    future.contract_notional =
+        ores::utility::decimal::decimal::from_double(number_of(d.ContractNotional, 0.0)).value();
     future.long_short = d.LongShort;
     // v17 moved the contract's own terms out of the trade and into the
     // BondFutureReferenceData datum keyed by ContractName: currency,
@@ -1574,9 +1580,9 @@ trade bond_instrument_mapper::reverse_bond_option(const bond_instrument_data& da
             static_cast<std::string&>(ot) = data.option->option_type;
             d.OptionData.OptionType = std::move(ot);
         }
-        if (data.option->option_strike != 0.0 && !data.strike_data) {
+        if (!data.option->option_strike.is_zero() && !data.strike_data) {
             _Strike_t s;
-            static_cast<std::string&>(s) = format_number(data.option->option_strike);
+            static_cast<std::string&>(s) = format_number(data.option->option_strike.to_double());
             d.strikeGroup.Strike = std::move(s);
         }
     }
@@ -1678,7 +1684,7 @@ trade bond_instrument_mapper::reverse_bond_future(const bond_instrument_data& da
     if (data.future) {
         const auto& f = *data.future;
         set_text(d.ContractName, f.contract_name);
-        set_text(d.ContractNotional, format_number(f.contract_notional));
+        set_text(d.ContractNotional, format_number(f.contract_notional.to_double()));
         set_text(d.LongShort, f.long_short);
         // The contract's own terms belong to the BondFutureReferenceData
         // datum in v17, not to the trade, so there is nowhere here to

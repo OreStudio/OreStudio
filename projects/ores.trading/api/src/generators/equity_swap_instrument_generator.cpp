@@ -51,7 +51,7 @@ generate_synthetic_equity_swap_instrument(utility::generation::generation_contex
     r.underlying_name = std::string("ACME Corp");
     r.basket_json = std::string("");
     r.currency = std::string("USD");
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.return_type = std::string("TotalReturn");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};

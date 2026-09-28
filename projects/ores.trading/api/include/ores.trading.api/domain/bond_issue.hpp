@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_ISSUE_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_ISSUE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -98,7 +99,7 @@ struct bond_issue final {
     /**
      * @brief Face value per unit of the bond.
      */
-    double face_value = 0.0;
+    std::optional<ores::utility::decimal::decimal> face_value;
 
     /**
      * @brief Coupon rate of the bond, as a decimal.

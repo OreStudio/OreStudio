@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -52,7 +53,10 @@ equity_forward_instrument_mapper::map(const equity_forward_instrument_entity& v)
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.forward_price = v.forward_price;
+    r.forward_price =
+        v.forward_price.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.forward_price).value()) :
+            std::nullopt;
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
     r.settlement_type = v.settlement_type.value_or("");
@@ -84,7 +88,8 @@ equity_forward_instrument_mapper::map(const domain::equity_forward_instrument& v
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.forward_price = v.forward_price;
+    r.forward_price =
+        v.forward_price.has_value() ? std::optional(v.forward_price->to_string()) : std::nullopt;
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
     r.settlement_type = v.settlement_type.empty() ? std::nullopt : std::optional(v.settlement_type);

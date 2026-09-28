@@ -51,9 +51,9 @@ struct equity_option_instrument_entity {
     std::optional<std::string> trade_id;
     std::string underlying_name;
     std::string currency;
-    double notional = 0.0;
+    std::string notional;
     std::string option_type;
-    double strike = 0.0;
+    std::string strike;
     std::string expiry_date;
     std::string exercise_type;
     std::string long_short;

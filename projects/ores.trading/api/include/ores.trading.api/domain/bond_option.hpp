@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_OPTION_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_OPTION_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -79,7 +80,7 @@ struct bond_option final {
     /**
      * @brief Strike price of the option. Non-negative.
      */
-    double option_strike = 0.0;
+    ores::utility::decimal::decimal option_strike;
 
     /**
      * @brief The redemption code the document states.

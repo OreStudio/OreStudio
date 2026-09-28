@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -206,7 +207,7 @@ struct instrument_option final {
     /**
      * @brief Price the exercise block states, when it states one.
      */
-    std::optional<double> exercise_price;
+    std::optional<ores::utility::decimal::decimal> exercise_price;
 
     /**
      * @brief True when the document stated a payment-dates block.

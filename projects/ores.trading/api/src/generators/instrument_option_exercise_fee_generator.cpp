@@ -46,7 +46,7 @@ generate_synthetic_instrument_option_exercise_fee(utility::generation::generatio
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
     r.sequence_number = 0;
-    r.amount = 100.0;
+    r.amount = ores::utility::decimal::decimal::from_string("100").value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

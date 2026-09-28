@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/commodity_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -61,9 +62,15 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
         v.maturity_date.has_value() ?
             std::optional(ores::platform::time::datetime::from_iso8601_date(*v.maturity_date)) :
             std::nullopt;
-    r.fixed_price = v.fixed_price;
+    r.fixed_price =
+        v.fixed_price.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.fixed_price).value()) :
+            std::nullopt;
     r.option_type = v.option_type.value_or("");
-    r.strike_price = v.strike_price;
+    r.strike_price =
+        v.strike_price.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.strike_price).value()) :
+            std::nullopt;
     r.exercise_type = v.exercise_type.value_or("");
     r.average_type = v.average_type.value_or("");
     r.averaging_start_date = v.averaging_start_date.has_value() ?
@@ -75,14 +82,31 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
                                    *v.averaging_end_date)) :
                                std::nullopt;
     r.spread_commodity_code = v.spread_commodity_code.value_or("");
-    r.spread_amount = v.spread_amount;
+    r.spread_amount =
+        v.spread_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.spread_amount).value()) :
+            std::nullopt;
     r.strip_frequency_code = v.strip_frequency_code.value_or("");
     r.variance_strike = v.variance_strike;
-    r.accumulation_amount = v.accumulation_amount;
-    r.knock_out_barrier = v.knock_out_barrier;
+    r.accumulation_amount =
+        v.accumulation_amount.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.accumulation_amount).value()) :
+            std::nullopt;
+    r.knock_out_barrier =
+        v.knock_out_barrier.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.knock_out_barrier).value()) :
+            std::nullopt;
     r.barrier_type = v.barrier_type.value_or("");
-    r.lower_barrier = v.lower_barrier;
-    r.upper_barrier = v.upper_barrier;
+    r.lower_barrier =
+        v.lower_barrier.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.lower_barrier).value()) :
+            std::nullopt;
+    r.upper_barrier =
+        v.upper_barrier.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
+            std::nullopt;
     r.basket_json = v.basket_json.value_or("");
     r.day_count_code = v.day_count_code.value_or("");
     r.payment_frequency_code = v.payment_frequency_code.value_or("");
@@ -127,9 +151,11 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
         v.maturity_date.has_value() ?
             std::optional(ores::platform::time::datetime::to_iso8601_date(*v.maturity_date)) :
             std::nullopt;
-    r.fixed_price = v.fixed_price;
+    r.fixed_price =
+        v.fixed_price.has_value() ? std::optional(v.fixed_price->to_string()) : std::nullopt;
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
-    r.strike_price = v.strike_price;
+    r.strike_price =
+        v.strike_price.has_value() ? std::optional(v.strike_price->to_string()) : std::nullopt;
     r.exercise_type = v.exercise_type.empty() ? std::nullopt : std::optional(v.exercise_type);
     r.average_type = v.average_type.empty() ? std::nullopt : std::optional(v.average_type);
     r.averaging_start_date = v.averaging_start_date.has_value() ?
@@ -142,15 +168,22 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
             std::nullopt;
     r.spread_commodity_code =
         v.spread_commodity_code.empty() ? std::nullopt : std::optional(v.spread_commodity_code);
-    r.spread_amount = v.spread_amount;
+    r.spread_amount =
+        v.spread_amount.has_value() ? std::optional(v.spread_amount->to_string()) : std::nullopt;
     r.strip_frequency_code =
         v.strip_frequency_code.empty() ? std::nullopt : std::optional(v.strip_frequency_code);
     r.variance_strike = v.variance_strike;
-    r.accumulation_amount = v.accumulation_amount;
-    r.knock_out_barrier = v.knock_out_barrier;
+    r.accumulation_amount = v.accumulation_amount.has_value() ?
+                                std::optional(v.accumulation_amount->to_string()) :
+                                std::nullopt;
+    r.knock_out_barrier = v.knock_out_barrier.has_value() ?
+                              std::optional(v.knock_out_barrier->to_string()) :
+                              std::nullopt;
     r.barrier_type = v.barrier_type.empty() ? std::nullopt : std::optional(v.barrier_type);
-    r.lower_barrier = v.lower_barrier;
-    r.upper_barrier = v.upper_barrier;
+    r.lower_barrier =
+        v.lower_barrier.has_value() ? std::optional(v.lower_barrier->to_string()) : std::nullopt;
+    r.upper_barrier =
+        v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
     r.basket_json = v.basket_json.empty() ? std::nullopt : std::optional(v.basket_json);
     r.day_count_code = v.day_count_code.empty() ? std::nullopt : std::optional(v.day_count_code);
     r.payment_frequency_code =

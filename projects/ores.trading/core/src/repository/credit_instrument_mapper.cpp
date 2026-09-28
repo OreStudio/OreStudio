@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/credit_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -50,7 +51,7 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
                               std::nullopt;
     r.reference_entity = v.reference_entity;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.spread = v.spread;
     r.recovery_rate = v.recovery_rate;
     r.tenor = v.tenor;
@@ -97,7 +98,7 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
                      std::nullopt;
     r.reference_entity = v.reference_entity;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.spread = v.spread;
     r.recovery_rate = v.recovery_rate;
     r.tenor = v.tenor;

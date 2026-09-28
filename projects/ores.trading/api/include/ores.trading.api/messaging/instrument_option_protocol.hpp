@@ -63,7 +63,7 @@ struct instrument_option_write {
     std::optional<std::string> automatic_exercise;
     bool has_exercise_data;
     std::optional<std::chrono::year_month_day> exercise_date;
-    std::optional<double> exercise_price;
+    std::optional<ores::utility::decimal::decimal> exercise_price;
     bool has_payment_data;
     std::optional<std::int64_t> payment_lag;
     std::optional<std::string> payment_calendar;

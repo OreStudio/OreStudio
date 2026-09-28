@@ -422,7 +422,7 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(ld.ScheduleData));
 
     if (ld.Notionals)
-        tm.notional = static_cast<double>(first_notional(*ld.Notionals));
+        tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(first_notional(*ld.Notionals))).value();
 
     if (ld.legDataType) {
         const auto& ldt = *ld.legDataType;
@@ -545,7 +545,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     fi.start_date = to_domain_date(std::string(fra.StartDate));
     fi.end_date = to_domain_date(std::string(fra.EndDate));
     fi.currency = to_string(fra.Currency);
-    fi.notional = static_cast<double>(fra.Notional);
+    fi.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
     fi.rate_index = std::string(fra.Index);
     fi.strike = static_cast<double>(fra.Strike);
     fi.long_short = "Long";
@@ -557,7 +557,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     tm.currency = to_string(fra.Currency);
     tm.floating_index_code = std::string(fra.Index);
     tm.fixed_rate = static_cast<double>(fra.Strike);
-    tm.notional = static_cast<double>(fra.Notional);
+    tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
     auto& au = sl.audit;
     au.modified_by = "ores";
     au.performed_by = "ores";
@@ -604,7 +604,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(cf.LegData.ScheduleData));
 
     if (!cf.LegData.Notionals.Notional.empty())
-        tm.notional = static_cast<double>(cf.LegData.Notionals.Notional.front());
+        tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(cf.LegData.Notionals.Notional.front())).value();
 
     if (cf.LegData.legDataType.FloatingLegData) {
         tm.floating_index_code = std::string(cf.LegData.legDataType.FloatingLegData->Index);
@@ -642,8 +642,8 @@ swap_instrument_mapper::reverse_leg(const std::optional<std::chrono::year_month_
     ld.LegType = *leg_type;
     ld.Currency = tm.currency;
 
-    if (tm.notional != 0.0)
-        ld.Notionals = make_notionals(tm.notional);
+    if (!tm.notional.is_zero())
+        ld.Notionals = make_notionals(tm.notional.to_double());
 
     ld.ScheduleData = make_schedule(
         start_date, maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
@@ -714,7 +714,7 @@ trade swap_instrument_mapper::reverse_fra(const fra_instrument& instr,
     fra.StartDate = to_ore_date(instr.start_date);
     fra.EndDate = to_ore_date(instr.end_date);
     fra.Currency = parse_currency_code(instr.currency);
-    fra.Notional = static_cast<float>(instr.notional);
+    fra.Notional = static_cast<float>(instr.notional.to_double());
 
     if (!legs.empty()) {
         const auto& tm = legs.front();
@@ -754,9 +754,9 @@ trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr
             make_schedule(instr.start_date,
                           instr.maturity_date,
                           payment_frequency_to_tenor(tm.payment_frequency_code));
-        if (tm.notional != 0.0) {
+        if (!tm.notional.is_zero()) {
             legData_capfloor_Notionals_t_Notional_t nv;
-            static_cast<float&>(nv) = static_cast<float>(tm.notional);
+            static_cast<float&>(nv) = static_cast<float>(tm.notional.to_double());
             cf.LegData.Notionals.Notional.push_back(nv);
         }
 

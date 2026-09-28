@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -52,7 +53,7 @@ fx_digital_option_instrument_mapper::map(const fx_digital_option_instrument_enti
     r.foreign_currency = v.foreign_currency;
     r.domestic_currency = v.domestic_currency;
     r.payoff_currency = v.payoff_currency;
-    r.payoff_amount = v.payoff_amount;
+    r.payoff_amount = ores::utility::decimal::decimal::from_string(v.payoff_amount).value();
     r.option_type = v.option_type.value_or("");
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;
@@ -88,7 +89,7 @@ fx_digital_option_instrument_mapper::map(const domain::fx_digital_option_instrum
     r.foreign_currency = v.foreign_currency;
     r.domestic_currency = v.domestic_currency;
     r.payoff_currency = v.payoff_currency;
-    r.payoff_amount = v.payoff_amount;
+    r.payoff_amount = v.payoff_amount.to_string();
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.long_short = v.long_short;

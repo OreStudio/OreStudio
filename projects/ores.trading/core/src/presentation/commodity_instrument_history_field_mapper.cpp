@@ -54,10 +54,10 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                                                      *v.maturity_date) :
                                                  std::string{}});
     fields.push_back({.name = "Fixed Price",
-                      .value = v.fixed_price ? std::to_string(*v.fixed_price) : std::string{}});
+                      .value = v.fixed_price ? v.fixed_price->to_string() : std::string{}});
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Strike Price",
-                      .value = v.strike_price ? std::to_string(*v.strike_price) : std::string{}});
+                      .value = v.strike_price ? v.strike_price->to_string() : std::string{}});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});
     fields.push_back({.name = "Average Type", .value = v.average_type});
     fields.push_back(
@@ -72,22 +72,22 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                       std::string{}});
     fields.push_back({.name = "Spread Commodity Code", .value = v.spread_commodity_code});
     fields.push_back({.name = "Spread Amount",
-                      .value = v.spread_amount ? std::to_string(*v.spread_amount) : std::string{}});
+                      .value = v.spread_amount ? v.spread_amount->to_string() : std::string{}});
     fields.push_back({.name = "Strip Frequency Code", .value = v.strip_frequency_code});
     fields.push_back(
         {.name = "Variance Strike",
          .value = v.variance_strike ? std::to_string(*v.variance_strike) : std::string{}});
     fields.push_back(
         {.name = "Accumulation Amount",
-         .value = v.accumulation_amount ? std::to_string(*v.accumulation_amount) : std::string{}});
+         .value = v.accumulation_amount ? v.accumulation_amount->to_string() : std::string{}});
     fields.push_back(
         {.name = "Knock Out Barrier",
-         .value = v.knock_out_barrier ? std::to_string(*v.knock_out_barrier) : std::string{}});
+         .value = v.knock_out_barrier ? v.knock_out_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
     fields.push_back({.name = "Lower Barrier",
-                      .value = v.lower_barrier ? std::to_string(*v.lower_barrier) : std::string{}});
+                      .value = v.lower_barrier ? v.lower_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Upper Barrier",
-                      .value = v.upper_barrier ? std::to_string(*v.upper_barrier) : std::string{}});
+                      .value = v.upper_barrier ? v.upper_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Basket Json", .value = v.basket_json});
     fields.push_back({.name = "Day Count Code", .value = v.day_count_code});
     fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});

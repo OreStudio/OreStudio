@@ -89,7 +89,7 @@ TEST_CASE("commodity_mapper_roundtrip_forward", tags) {
     CHECK(!r.currency.empty());
     CHECK(r.quantity > 0.0);
     CHECK(r.fixed_price.has_value());
-    CHECK(*r.fixed_price > 0.0);
+    CHECK(r.fixed_price->to_double() > 0.0);
     CHECK(r.maturity_date.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_forward(r);

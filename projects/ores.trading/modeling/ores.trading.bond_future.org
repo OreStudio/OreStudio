@@ -60,15 +60,14 @@ std::string("US 10YR T-NOTE")
 ** contract_notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Notional of one contract.
 
 #+begin_src cpp :name generator
-100000.0
+ores::utility::decimal::decimal::from_string("100000").value()
 #+end_src
 
 ** long_short
@@ -126,15 +125,14 @@ std::string("T 2.75 11/15/2042")
 ** fair_price
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Fair price of the contract at trade time.
 
 #+begin_src cpp :name generator
-98.5
+ores::utility::decimal::decimal::from_string("98.5").value()
 #+end_src
 
 ** settlement
@@ -293,6 +291,7 @@ std::chrono::year_month_day{std::chrono::year{2029}/9/28}
 #include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

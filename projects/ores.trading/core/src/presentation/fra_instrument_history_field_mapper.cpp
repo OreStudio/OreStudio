@@ -49,7 +49,7 @@ render_fra_instrument_fields(const domain::fra_instrument& v) {
     fields.push_back({.name = "Rate Index", .value = v.rate_index});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
-    fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
+    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

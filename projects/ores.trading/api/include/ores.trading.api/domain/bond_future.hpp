@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FUTURE_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FUTURE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -71,7 +72,7 @@ struct bond_future final {
     /**
      * @brief Notional of one contract.
      */
-    double contract_notional = 0.0;
+    ores::utility::decimal::decimal contract_notional;
 
     /**
      * @brief Long or short position in the contract.
@@ -96,7 +97,7 @@ struct bond_future final {
     /**
      * @brief Fair price of the contract at trade time.
      */
-    double fair_price = 0.0;
+    ores::utility::decimal::decimal fair_price;
 
     /**
      * @brief Settlement type of the contract (Cash, Physical).

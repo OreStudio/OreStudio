@@ -26,6 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -55,7 +56,7 @@ fx_variance_swap_instrument_mapper::map(const fx_variance_swap_instrument_entity
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
     r.strike = v.strike;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.moment_type = v.moment_type;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -88,7 +89,7 @@ fx_variance_swap_instrument_mapper::map(const domain::fx_variance_swap_instrumen
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
     r.strike = v.strike;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.moment_type = v.moment_type;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

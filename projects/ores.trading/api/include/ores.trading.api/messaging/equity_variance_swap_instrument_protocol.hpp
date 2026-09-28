@@ -45,7 +45,7 @@ struct equity_variance_swap_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string underlying_name;
     std::string currency;
-    double notional;
+    ores::utility::decimal::decimal notional;
     double variance_strike;
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;

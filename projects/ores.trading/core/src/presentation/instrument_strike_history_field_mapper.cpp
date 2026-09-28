@@ -36,14 +36,14 @@ render_instrument_strike_fields(const domain::instrument_strike& v) {
 
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
     fields.push_back({.name = "Price Value",
-                      .value = v.price_value ? std::to_string(*v.price_value) : std::string{}});
+                      .value = v.price_value ? v.price_value->to_string() : std::string{}});
     fields.push_back({.name = "Price Currency", .value = v.price_currency.value_or(std::string{})});
     fields.push_back({.name = "Yield Value",
                       .value = v.yield_value ? std::to_string(*v.yield_value) : std::string{}});
     fields.push_back(
         {.name = "Yield Compounding", .value = v.yield_compounding.value_or(std::string{})});
-    fields.push_back({.name = "Bare Value",
-                      .value = v.bare_value ? std::to_string(*v.bare_value) : std::string{}});
+    fields.push_back(
+        {.name = "Bare Value", .value = v.bare_value ? v.bare_value->to_string() : std::string{}});
     fields.push_back({.name = "Bare Currency", .value = v.bare_currency.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

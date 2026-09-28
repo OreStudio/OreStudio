@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/instrument_option_exercise_fee_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -42,7 +43,7 @@ instrument_option_exercise_fee_mapper::map(const instrument_option_exercise_fee_
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
-    r.amount = v.amount;
+    r.amount = ores::utility::decimal::decimal::from_string(v.amount).value();
     r.type = v.type;
     r.start_date = v.start_date;
     r.currency = v.currency;
@@ -65,7 +66,7 @@ instrument_option_exercise_fee_mapper::map(const domain::instrument_option_exerc
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.amount = v.amount;
+    r.amount = v.amount.to_string();
     r.type = v.type;
     r.start_date = v.start_date;
     r.currency = v.currency;

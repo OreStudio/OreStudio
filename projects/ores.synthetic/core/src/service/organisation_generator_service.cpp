@@ -666,7 +666,7 @@ void generate_portfolios(const domain::organisation_generation_options& options,
                               std::optional<boost::uuids::uuid> owner_unit_id,
                               const std::string& purpose,
                               const std::string& ccy,
-                              int is_virtual) -> refdata::domain::portfolio {
+                              bool is_virtual) -> refdata::domain::portfolio {
         refdata::domain::portfolio p;
         p.version = 1;
         p.tenant_id = tenant_id;
@@ -700,7 +700,7 @@ void generate_portfolios(const domain::organisation_generation_options& options,
                                find_unit_id("Global"),
                                "Risk",
                                root_ccy,
-                               1);
+                               true);
     const auto root_id = root.id;
     result.portfolios.push_back(std::move(root));
 
@@ -718,7 +718,7 @@ void generate_portfolios(const domain::organisation_generation_options& options,
                                        find_unit_id(std::string(region)),
                                        "Risk",
                                        std::string(region_ccy),
-                                       1);
+                                       true);
         const auto regional_id = regional.id;
         result.portfolios.push_back(std::move(regional));
 
@@ -739,7 +739,7 @@ void generate_portfolios(const domain::organisation_generation_options& options,
                                                find_unit_id(std::string(asset_class)),
                                                "Risk",
                                                std::string(lc[ai]),
-                                               1);
+                                               true);
             const auto ac_id = ac_portfolio.id;
             result.portfolios.push_back(std::move(ac_portfolio));
 
@@ -751,7 +751,7 @@ void generate_portfolios(const domain::organisation_generation_options& options,
                                            find_unit_id(std::string(asset_class)),
                                            "Risk",
                                            std::string(lc[ai]),
-                                           0);
+                                           false);
                 result.portfolios.push_back(std::move(leaf));
             }
         }
@@ -781,7 +781,7 @@ void generate_books(const domain::organisation_generation_options& options,
 
     int book_seq = 0;
     for (const auto& portfolio : result.portfolios) {
-        if (portfolio.is_virtual != 0)
+        if (portfolio.is_virtual)
             continue;
 
         for (std::size_t bi = 0; bi < options.books_per_leaf_portfolio; ++bi) {

@@ -259,10 +259,10 @@ TEST_CASE("generate_books_reference_leaf_portfolios", tags) {
 
     auto result = svc.generate(opts);
 
-    // Collect leaf portfolio IDs (is_virtual == 0).
+    // Collect leaf portfolio IDs.
     std::set<boost::uuids::uuid> leaf_ids;
     for (const auto& p : result.portfolios) {
-        if (p.is_virtual == 0)
+        if (!p.is_virtual)
             leaf_ids.insert(p.id);
     }
 

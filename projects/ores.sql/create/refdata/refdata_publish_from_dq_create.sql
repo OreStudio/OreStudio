@@ -2979,7 +2979,7 @@ begin
         name text not null,
         purpose_type text,
         aggregation_ccy text,
-        is_virtual integer
+        is_virtual boolean
     ) on commit drop;
 
     insert into portfolio_publish_map (
@@ -3023,7 +3023,7 @@ begin
             m.new_id, 0, v_root_party_id, m.name,
             parent_m.new_id,
             bu_map.published_id,
-            m.purpose_type, m.aggregation_ccy, (m.is_virtual != 0),
+            m.purpose_type, m.aggregation_ccy, m.is_virtual,
             'Active',
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Published from organisation dataset'

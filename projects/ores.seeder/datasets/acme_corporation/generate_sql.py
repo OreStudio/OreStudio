@@ -411,7 +411,7 @@ def generate_portfolios_populate(company, portfolios, units):
     for p in portfolios:
         parent_id = portfolio_id_by_code.get(p.get("parent_portfolio_code"))
         owner_id = unit_id_by_code.get(p.get("owner_unit_code"))
-        is_virtual = 1 if p["is_virtual"] else 0
+        is_virtual = "true" if p["is_virtual"] else "false"
         # aggregation_ccy defaults to the company's own currency, but a
         # portfolio replicating a specific real-world desk (e.g. London's
         # exact Barclays-fixture replica, spanning GBP/EUR/USD/CAD/JPY) may

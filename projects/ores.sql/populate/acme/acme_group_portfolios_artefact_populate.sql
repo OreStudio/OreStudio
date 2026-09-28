@@ -56,5 +56,5 @@ begin
         parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 0, 'Group Treasury Portfolio', null, 'ef912421-d1fc-5fde-95d0-48c0567bfbe8', 'Risk', 'GBP', 1);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 0, 'Group Treasury Portfolio', null, 'ef912421-d1fc-5fde-95d0-48c0567bfbe8', 'Risk', 'GBP', true);
 end $$;

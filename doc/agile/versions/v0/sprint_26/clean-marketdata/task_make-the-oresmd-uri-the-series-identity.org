@@ -28,9 +28,9 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= and both import paths write it, from =from_ore_key()= and from =from_index_name()= -- the latter's first production call site. The =feed_binding= column is deferred, with its reason recorded below. The deletion's blast radius is counted. |
+| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; each lookup asks by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing.                               |
-| Next         | Sequence the deletion against the census: the models and the SQL they generate first, then the C++ consumers, then the docs. |
+| Next         | Move the curve snapshot handler's request onto the URI, the last reader on the triple alone, then delete the triple against the census. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -100,6 +100,14 @@ replaces =ore_key=, where the same code that supplies the key today supplies the
 until then the column would be null in every row, which is worse than absent. The
 natural key stays =ore_key= and =source_name= meanwhile.
 
+**The deletion needs no backfill, and the fallback is what says so.** The plan
+records a hard cutover with no backfill, which only works because this schema is
+applied by recreation rather than by migration: a database is built from the create
+scripts, so it holds no series written before the identity column. The triple
+fallback exists for a database that does have one, and it is the thing the deletion
+removes -- at which point a series with no identity is unreachable, which is why the
+create scripts and the writers have to agree before the columns go.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
@@ -114,6 +122,8 @@ plan itself stays — it is the historical record of what we did.)
 | Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
 | =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
 | Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
+| Production readers left on the triple alone | 1: the curve snapshot handler | grep for =read_latest_by_type= beyond the two fallbacks | =47327e935b= |
+| =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 

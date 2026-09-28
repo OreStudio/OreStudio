@@ -33,18 +33,48 @@ its own =target_link_libraries=. This pass hit it -- the workspace clean-up
 lost three parts' link lists to a part render and restored them from git --
 and =regenerate_cmake_component_files.py='s own docstring already names the
 hazard for the file lists, though not for the =CMakeLists.txt= files
-themselves. Two candidate fixes: teach the discovery to expand a composite's
-declared =#+parts:=, or extend =regenerate_cmake_component_files.py= to render
-the part roots with a component-declared link list.
+themselves.
+
+A later pass measured the gap rather than assuming it, on 2026-09-28, and it
+is narrower than it first looks:
+
+- The file lists are covered. =regenerate_cmake_component_files.py= walks a
+  composite's parts -- it rendered =projects/ores.shell.workspace=, a part
+  created that day, without being told it existed -- and =--all --check= is a
+  standing gate. What it writes is =src/component_files.cmake= and
+  =tests/component_files.cmake= only.
+- What no gate covers is the part's own =CMakeLists.txt=, =src/CMakeLists.txt=
+  and =tests/CMakeLists.txt=. These are scaffolded once from
+  =cmake_component_{root,src,tests}.mustache= and then hand-customised with the
+  component's link libraries, so a regenerate is destructive and a check that
+  renders them would fail for every composite in the tree at once.
+- =check_component_drift.py= renders a component's own =modeling_dir=, so a
+  part model that gains or loses something is invisible to it. The
+  workspace-cpp entry in =COMPONENTS_UNDER_TEST= does not change that.
+
+The two candidate fixes are therefore not equivalent. Teaching the discovery to
+expand =#+parts:= is a whole-tree change: it would fail on main for every
+composite whose part CMakeLists differ from the template -- which is all of
+them -- so it can only land with a way to declare a part's link list in its
+model. A narrower first step is a check that reads each composite's
+=#+parts:=, walks =<root>/<part>/modeling/component_overview.org=, and asserts
+the file exists together with the part's =CMakeLists.txt= and
+=src/CMakeLists.txt=, leaving their content alone. That catches a part that was
+declared and never scaffolded, or scaffolded and never added to the root, which
+is the failure this pass actually met. Which of the two is wanted is a
+maintainer's call, so the item stays in the inbox.
 
 * References
 
 - =projects/ores.codegen/src/codegen/manifest.py= — =discover_models()=.
 - =projects/ores.codegen/scripts/regenerate_cmake_component_files.py= — its
-  docstring names the clobbering hazard.
+  docstring names the clobbering hazard, and it does walk parts.
 - =projects/ores.codegen/library/templates/cmake_component_src.mustache= — the
   minimal link list a full facet regenerate would write.
+- =projects/ores.codegen/scripts/check_component_drift.py= — =_render_components()=
+  renders one =modeling_dir= per catalogue entry.
 
 * See also
 
 - [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][Bring ores.workspace to the clean standard]] — the pass that found it.
+- [[id:3AE56807-65BE-4965-9863-D2E6116C211F][Mop up the workspace clean-up leftovers]] — the pass that measured it and left it open.

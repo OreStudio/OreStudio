@@ -32,4 +32,5 @@ set(files
     "generators_account_party_generator_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
+    "workflow_provision_tenant_workflow_tests.cpp"
 )

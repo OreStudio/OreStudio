@@ -32,7 +32,10 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
+#include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/service/account_party_service.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_check.hpp"
@@ -53,6 +56,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
@@ -286,6 +290,33 @@ public:
                 return;
             }
 
+            // The profile's kinds are checked before the tenant exists. A run
+            // that cannot execute one of them must refuse without leaving a
+            // tenant behind in bootstrapping, and the workflow service's own
+            // check cannot do it because it runs after this handler created the
+            // row.
+            const auto declared_steps =
+                ores::iam::service::seed_profile_step_service(sys_ctx)
+                    .list_seed_profile_steps_by_seed_profile_id(profile_id, 0, 1000);
+            for (const auto& step : declared_steps) {
+                if (ores::iam::workflow::is_executed_step_kind(step.step_kind))
+                    continue;
+                // A kind the catalogue does not know and a kind this build does
+                // not execute are both refused, and the message says which:
+                // a typo in a profile's row reads differently to an operator
+                // than a kind that is real but unbuilt.
+                const auto reason = ores::iam::workflow::is_declared_step_kind(step.step_kind) ?
+                                        "', which this deployment does not execute." :
+                                        "', which this deployment does not know.";
+                reply(nats_,
+                      msg,
+                      provision_tenant_command_response{
+                          .success = false,
+                          .message = "The seed profile '" + profile->code +
+                                     "' orders the step kind '" + step.step_kind + reason});
+                return;
+            }
+
             const auto created = ores::iam::service::tenant_provisioning_service(sys_ctx).provision(
                 profile->tenant_type,
                 req->tenant_code,
@@ -296,14 +327,11 @@ public:
                 req->admin_email,
                 req->admin_password);
 
-            const auto declared_steps =
-                ores::iam::service::seed_profile_step_service(sys_ctx)
-                    .list_seed_profile_steps_by_seed_profile_id(profile_id, 0, 1000);
-
             ores::iam::workflow::provision_tenant_workflow_request run;
             run.profile_code = profile->code;
             run.tenant_code = req->tenant_code;
             run.tenant_hostname = req->tenant_hostname;
+            run.admin_account_id = created.account_id;
             for (const auto& value : checked.values)
                 run.parameters.push_back({value.name, value.value});
             for (const auto& step : declared_steps)
@@ -342,6 +370,58 @@ public:
             reply(nats_,
                   msg,
                   provision_tenant_command_response{.success = false, .message = e.what()});
+        }
+    }
+
+    /**
+     * @brief Serves one step of a provision tenant run.
+     *
+     * The engine dispatches every step of a run to one subject and has no
+     * caller token to forward, so this handler reads the step context from the
+     * message headers, replays a recorded outcome when the engine has already
+     * seen this step, and otherwise does the kind's work as the run's
+     * administrator. A message that is not a workflow command is left alone:
+     * somebody else's request on the shared subject is not this handler's to
+     * answer.
+     */
+    void provision_step(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
+
+        auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
+        if (!wf)
+            return;
+
+        try {
+            if (const auto cached = ores::service::messaging::check_step_idempotency(
+                    nats_, wf->step_id, wf->tenant_id)) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                    << "provision_step: replaying the recorded outcome of step " << wf->step_id;
+                ores::service::messaging::publish_step_completion(nats_,
+                                                                  wf->step_id,
+                                                                  wf->instance_id,
+                                                                  cached->outcome,
+                                                                  cached->result_json,
+                                                                  cached->error_message,
+                                                                  cached->log);
+                return;
+            }
+
+            const std::string_view payload(reinterpret_cast<const char*>(msg.data.data()),
+                                           msg.data.size());
+            auto parsed =
+                rfl::json::read<ores::iam::workflow::provision_tenant_step_command>(payload);
+            if (!parsed) {
+                wf->fail("The provisioning step command could not be read: " +
+                         std::string(parsed.error().what()));
+                return;
+            }
+
+            execute_step(*wf, *parsed);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << "provision_step failed: " << e.what();
+            wf->fail(e.what());
         }
     }
 
@@ -860,6 +940,250 @@ public:
     }
 
 private:
+    /// Who a provisioning step acts as. The engine sends a step without the
+    /// caller's token, so the handler mints one for the run's administrator.
+    struct step_actor {
+        boost::uuids::uuid account_id;
+        boost::uuids::uuid party_id;
+        std::string username;
+    };
+
+    /// The result a step reports, so the run's record says what it acted on.
+    struct provision_step_result {
+        std::string kind;
+        std::vector<std::string> bundles;
+        std::string root_lei;
+        std::vector<std::string> parties;
+        std::string tenant_id;
+    };
+
+    /// How long a nested publication may take before the step gives up. The
+    /// base bundle is the slowest the ACME path published, and it waited 1500s.
+    static constexpr std::chrono::seconds step_publish_timeout{1500};
+
+    /**
+     * @brief Resolves the administrator a step acts as.
+     *
+     * The command names the account; its username and its party go into the
+     * minted token, because a token's party is what scopes the visible set a
+     * request runs under. The provisioner links the administrator to the
+     * tenant's system party, so that link is the fallback when no default
+     * party is set yet.
+     */
+    step_actor
+    resolve_step_actor(const ores::iam::workflow::provision_tenant_step_command& command) {
+        boost::uuids::string_generator parse;
+        step_actor actor;
+        actor.account_id = parse(command.admin_account_id);
+
+        auto tenant_ctx = tenant_context::with_tenant(ctx_, command.tenant_id);
+        ores::iam::service::account_service accounts(tenant_ctx);
+        if (const auto account = accounts.get_account(actor.account_id)) {
+            actor.username = account->username;
+            if (account->default_party_id)
+                actor.party_id = *account->default_party_id;
+        }
+        if (actor.party_id.is_nil()) {
+            ores::iam::service::account_party_service links(tenant_ctx);
+            const auto parties = links.list_account_parties_by_account(actor.account_id);
+            if (!parties.empty())
+                actor.party_id = parties.front().party_id;
+        }
+        if (actor.username.empty())
+            actor.username = command.tenant_code;
+        return actor;
+    }
+
+    /// A client that drives the real request pipeline as the acting account,
+    /// re-minting the short-lived token when a wait outlives it.
+    internal_request_client make_step_client(const std::string& tenant_id,
+                                             const boost::uuids::uuid& account_id,
+                                             const boost::uuids::uuid& party_id,
+                                             const std::string& username) {
+        auto mint = [this, tenant_id, account_id, party_id, username] {
+            return impersonation_.mint_token(ctx_, tenant_id, account_id, party_id, username);
+        };
+        return internal_request_client(nats_, mint(), [mint] { return mint(); });
+    }
+
+    /// Dispatches a decoded step command to the action its kind names. Every
+    /// kind this build does not execute is refused by name, never half-done.
+    void execute_step(const ores::service::messaging::workflow_step_context& wf,
+                      const ores::iam::workflow::provision_tenant_step_command& command) {
+        switch (classify_step_kind(command.kind)) {
+            case provision_step_action::complete_provisioning:
+                complete_provisioning_step(wf, command);
+                return;
+            case provision_step_action::publish_bundle:
+                publish_bundle_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::import_lei_hierarchy:
+                import_lei_hierarchy_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::provision_party:
+                provision_party_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::refuse:
+                wf.fail("The step kind '" + command.kind +
+                        "' is not one this deployment executes.");
+                return;
+        }
+    }
+
+    /// Publishes one bundle, follows its nested run, and throws the reason the
+    /// publication was refused or the run did not finish.
+    void publish_bundle_or_throw(internal_request_client& client,
+                                 const std::string& bundle_code,
+                                 const std::string& username,
+                                 const std::string& params_json,
+                                 const std::string& label) {
+        std::string failure;
+        auto record = [&failure](std::string step, std::string action, std::uint64_t) {
+            if (step.ends_with(".failed"))
+                failure = std::move(action);
+        };
+        auto progress = [&label](const std::string& line) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "provision_step " << label << ": " << line;
+        };
+        if (!publish_bundle(client,
+                            bundle_code,
+                            username,
+                            params_json,
+                            record,
+                            progress,
+                            step_publish_timeout)) {
+            throw std::runtime_error(
+                failure.empty() ? "The bundle '" + bundle_code + "' did not publish." : failure);
+        }
+    }
+
+    /// Publishes each bundle the step names, one nested run each, and reports
+    /// only once every run has finished.
+    void publish_bundle_step(const ores::service::messaging::workflow_step_context& wf,
+                             const ores::iam::workflow::provision_tenant_step_command& command,
+                             const step_actor& actor) {
+        const auto bundles = parse_step_bundles(command.arguments_json);
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        dq::messaging::publish_bundle_params params;
+        const auto params_json = dq::messaging::build_params_json(params);
+        for (const auto& bundle_code : bundles)
+            publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
+
+        wf.complete(
+            rfl::json::write(provision_step_result{.kind = command.kind, .bundles = bundles}));
+    }
+
+    /// Publishes the bundles that carry the LEI hierarchy, each with the root
+    /// LEI the step's arguments or the run's parameters name.
+    void
+    import_lei_hierarchy_step(const ores::service::messaging::workflow_step_context& wf,
+                              const ores::iam::workflow::provision_tenant_step_command& command,
+                              const step_actor& actor) {
+        const auto arguments =
+            parse_lei_hierarchy_arguments(command.arguments_json, command.parameters);
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        dq::messaging::publish_bundle_params params;
+        params.lei_parties = dq::messaging::lei_parties_params{.root_lei = arguments.root_lei};
+        const auto params_json = dq::messaging::build_params_json(params);
+        for (const auto& bundle_code : arguments.bundles)
+            publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
+
+        wf.complete(rfl::json::write(provision_step_result{
+            .kind = command.kind, .bundles = arguments.bundles, .root_lei = arguments.root_lei}));
+    }
+
+    /// Publishes each party's bundles, once per party the tenant holds. Each
+    /// party's publication runs as that party and is followed to its end, so
+    /// the step completes only once every party's data is in place.
+    void provision_party_step(const ores::service::messaging::workflow_step_context& wf,
+                              const ores::iam::workflow::provision_tenant_step_command& command,
+                              const step_actor& actor) {
+        const auto bundles = parse_step_bundles(command.arguments_json);
+
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        std::vector<std::string> provisioned;
+        // Every party the tenant holds, one page at a time: a single page with
+        // a fixed limit would provision the first thousand and report success
+        // for the rest.
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 1000;
+        while (true) {
+            ores::refdata::messaging::list_parties_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            const auto page = discover.request(request).parties;
+            for (const auto& party : page) {
+                const auto party_id = boost::uuids::to_string(party.id);
+                auto client =
+                    make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
+                dq::messaging::publish_bundle_params params;
+                params.party_id = party_id;
+                const auto params_json = dq::messaging::build_params_json(params);
+                for (const auto& bundle_code : bundles)
+                    publish_bundle_or_throw(
+                        client, bundle_code, actor.username, params_json, party_id);
+                provisioned.push_back(party_id);
+            }
+            if (page.size() < page_size)
+                break;
+            offset += page_size;
+        }
+
+        wf.complete(rfl::json::write(provision_step_result{
+            .kind = command.kind, .bundles = bundles, .parties = provisioned}));
+    }
+
+    /// Marks the tenant active and clears bootstrap mode, the two operations
+    /// the completing step performs. The tenant is active once it holds its
+    /// data, so a flag that will not clear is a warning rather than a failure.
+    void
+    complete_provisioning_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command) {
+        const auto actor = resolve_step_actor(command);
+
+        auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+        execute_parameterized_command(sys_ctx,
+                                      "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
+                                      {command.tenant_id, actor.username},
+                                      tenant_provisioning_handler_lg(),
+                                      "complete_provisioning_step");
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "Tenant marked active: " << command.tenant_id;
+
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        const auto result = rfl::json::write(
+            provision_step_result{.kind = command.kind, .tenant_id = command.tenant_id});
+        const auto warn = [&](const std::string& message) {
+            wf.warn(result,
+                    {ores::workflow::messaging::step_log_entry{
+                        .level = ores::workflow::messaging::step_log_level::warn,
+                        .message = message,
+                        .context = command.tenant_id}});
+        };
+
+        try {
+            using namespace ores::variability::messaging;
+            const auto resp = client.request(clear_bootstrap_mode_request{});
+            if (resp.result.outcome == ores::utility::domain::outcome::ok) {
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                    << "Bootstrap mode cleared for tenant: " << command.tenant_id;
+                wf.complete(result);
+                return;
+            }
+            warn("The bootstrap mode flag was not cleared: " + resp.result.message);
+        } catch (const std::exception& e) {
+            warn(std::string("The bootstrap mode flag was not cleared: ") + e.what());
+        }
+    }
+
     static std::string lei_import_params() {
         dq::messaging::publish_bundle_params params;
         params.lei_parties = dq::messaging::lei_parties_params{.root_lei = "9695ACMEGROUP0000030"};

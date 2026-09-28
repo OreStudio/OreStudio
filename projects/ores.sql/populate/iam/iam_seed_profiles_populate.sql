@@ -102,10 +102,10 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
 from ores_iam_seed_profiles_tbl p
 cross join (values
     ('empty_operational', 'publish_bundle', 10, '{"bundles": ["base"]}'::jsonb),
-    ('empty_operational', 'import_lei_hierarchy', 20, '{}'::jsonb),
+    ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"]}'::jsonb),
-    ('acme_demo', 'import_lei_hierarchy', 20, '{"root_lei": "9695ACMEGROUP0000030"}'::jsonb),
+    ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{}'::jsonb),
     ('acme_demo', 'attach_photos', 50, '{}'::jsonb),

@@ -107,16 +107,16 @@ begin
         modified_by, change_reason_code, change_commentary
     ) values
         (v_state_draft, v_sys_tenant, 0,
-         v_machine_id, 'draft', 1, 0,
+         v_machine_id, 'draft', true, false,
          current_user, 'system.initial_load', 'Seed trade_status state: draft'),
         (v_state_live, v_sys_tenant, 0,
-         v_machine_id, 'live', 1, 0,
+         v_machine_id, 'live', true, false,
          current_user, 'system.initial_load', 'Seed trade_status state: live'),
         (v_state_expired, v_sys_tenant, 0,
-         v_machine_id, 'expired', 0, 0,
+         v_machine_id, 'expired', false, false,
          current_user, 'system.initial_load', 'Seed trade_status state: expired'),
         (v_state_cancelled, v_sys_tenant, 0,
-         v_machine_id, 'cancelled', 0, 0,
+         v_machine_id, 'cancelled', false, false,
          current_user, 'system.initial_load', 'Seed trade_status state: cancelled');
 
     raise debug 'Created 4 trade_status states.';

@@ -93,7 +93,7 @@ It is addressed at =dq.v1.fsm_states.put=.
 
 #+name: fsm_states-add
 #+begin_src ores-shell :tangle fsm_states-add.ores :exports none
-fsm_states add 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fsm_states add 00000000-0000-0000-0000-000000000000 __none__ false false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -114,7 +114,7 @@ It is addressed at =dq.v1.fsm_states.put=.
 
 #+name: fsm_states-set
 #+begin_src ores-shell :tangle fsm_states-set.ores :exports none
-fsm_states set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fsm_states set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -135,7 +135,7 @@ It is addressed at =dq.v1.fsm_states.put_many=.
 
 #+name: fsm_states-put-many
 #+begin_src ores-shell :tangle fsm_states-put-many.ores :exports none
-fsm_states put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fsm_states put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false false system.new_record generated_script
 #+end_src
 
 ** =delete=

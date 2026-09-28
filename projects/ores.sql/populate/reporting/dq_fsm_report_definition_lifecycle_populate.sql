@@ -89,16 +89,16 @@ begin
         modified_by, change_reason_code, change_commentary
     ) values
         (v_state_draft, v_sys_tenant, 0,
-         v_machine_id, 'draft', 1, 0,
+         v_machine_id, 'draft', true, false,
          current_user, 'system.initial_load', 'Seed report_definition_lifecycle state: draft'),
         (v_state_active, v_sys_tenant, 0,
-         v_machine_id, 'active', 0, 0,
+         v_machine_id, 'active', false, false,
          current_user, 'system.initial_load', 'Seed report_definition_lifecycle state: active'),
         (v_state_suspended, v_sys_tenant, 0,
-         v_machine_id, 'suspended', 0, 0,
+         v_machine_id, 'suspended', false, false,
          current_user, 'system.initial_load', 'Seed report_definition_lifecycle state: suspended'),
         (v_state_archived, v_sys_tenant, 0,
-         v_machine_id, 'archived', 0, 1,
+         v_machine_id, 'archived', false, true,
          current_user, 'system.initial_load', 'Seed report_definition_lifecycle state: archived');
 
     raise debug 'Created 4 report_definition_lifecycle states.';

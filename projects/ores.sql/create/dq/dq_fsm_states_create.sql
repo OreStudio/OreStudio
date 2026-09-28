@@ -38,8 +38,8 @@ create table if not exists "ores_dq_fsm_states_tbl" (
     "version" integer not null,
     "machine_id" uuid not null,
     "name" text not null,
-    "is_initial" integer not null default 0,
-    "is_terminal" integer not null default 0,
+    "is_initial" boolean not null default false,
+    "is_terminal" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -53,9 +53,7 @@ create table if not exists "ores_dq_fsm_states_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("is_initial" in (0, 1)),
-    check ("is_terminal" in (0, 1))
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Composite natural key: unique combination for active records

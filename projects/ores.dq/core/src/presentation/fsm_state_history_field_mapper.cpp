@@ -36,8 +36,8 @@ std::vector<ores::diff::domain::field_value> render_fsm_state_fields(const domai
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Machine ID", .value = boost::uuids::to_string(v.machine_id)});
     fields.push_back({.name = "Name", .value = v.name});
-    fields.push_back({.name = "Is Initial", .value = std::to_string(v.is_initial)});
-    fields.push_back({.name = "Is Terminal", .value = std::to_string(v.is_terminal)});
+    fields.push_back({.name = "Is Initial", .value = v.is_initial ? "true" : "false"});
+    fields.push_back({.name = "Is Terminal", .value = v.is_terminal ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

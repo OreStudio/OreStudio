@@ -50,8 +50,8 @@ struct fsm_state_entity {
 
     std::string name;
 
-    int is_initial = 0;
-    int is_terminal = 0;
+    bool is_initial = false;
+    bool is_terminal = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

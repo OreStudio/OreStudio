@@ -36,8 +36,8 @@ export interface FsmState {
     id: string;
     machine_id: string;
     name: string;
-    is_initial: number;
-    is_terminal: number;
+    is_initial: boolean;
+    is_terminal: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

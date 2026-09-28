@@ -72,12 +72,12 @@ struct fsm_state final {
     /**
      * @brief Whether this is the machine's initial state.
      */
-    int is_initial = 0;
+    bool is_initial = false;
 
     /**
      * @brief Whether this is a terminal state.
      */
-    int is_terminal = 0;
+    bool is_terminal = false;
 
     /**
      * @brief Username of the person who last modified this fsm state.

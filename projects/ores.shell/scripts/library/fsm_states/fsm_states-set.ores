@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/fsm_states/fsm_state.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-fsm_states set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fsm_states set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false false system.new_record generated_script

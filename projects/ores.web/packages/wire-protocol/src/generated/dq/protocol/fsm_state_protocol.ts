@@ -36,8 +36,8 @@ export interface FsmStateWrite {
     id: string;
     machine_id: string;
     name: string;
-    is_initial: number;
-    is_terminal: number;
+    is_initial: boolean;
+    is_terminal: boolean;
 }
 
 export interface FsmStateChange {

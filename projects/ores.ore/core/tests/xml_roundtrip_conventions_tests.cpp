@@ -23,21 +23,19 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <sstream>
 #include <string>
 
 /**
  * @file xml_roundtrip_conventions_tests.cpp
- * @brief The conventions kind: what the mapper models and what it drops.
+ * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * nine of them. Before the mapper counted what it skipped, none of the
- * seventy-two corpus files round tripped and nothing said which categories the
- * documents actually use, so the work of closing the gap could not be scoped.
- * The measurement below is that scoping: it reports, per category, how many
- * files carry it.
+ * nine. The files that use only those nine round trip. The rest do not, because
+ * a category the mapper does not model is content the export cannot write, and
+ * the measurement below says which categories those are and how many files each
+ * one costs.
  */
 
 namespace {
@@ -57,97 +55,40 @@ std::string read(const std::filesystem::path& path) {
     return buffer.str();
 }
 
-// The kind is built here rather than shared with the reference suite, because
-// the two suites answer different questions: that one registers the kinds that
-// round trip, this one measures the kind that does not yet.
+conventions load(const std::filesystem::path& path) {
+    conventions document;
+    load_data(read(path), document);
+    return document;
+}
+
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions, mapped_conventions>(
         "conventions", "conventions", &conventions_mapper::map, &conventions_mapper::reverse,
-        ores::ore::xml::parsed_text_difference<conventions>);
-}
-
-/**
- * @brief The distinct element names a document carries.
- *
- * The round-trip comparison says where two documents first disagree, which is
- * one field at a time. This says which fields the export dropped across a whole
- * corpus in one pass, which is the list the work needs. Comments are skipped so
- * that a tag written inside one is not read as an element.
- */
-std::map<std::string, int> element_counts(const std::string& xml) {
-    std::map<std::string, int> names;
-    std::size_t at = 0;
-    while ((at = xml.find('<', at)) != std::string::npos) {
-        if (xml.compare(at, 4, "<!--") == 0) {
-            const auto end = xml.find("-->", at);
-            at = end == std::string::npos ? xml.size() : end + 3;
-            continue;
-        }
-        if (at + 1 < xml.size() && (xml[at + 1] == '?' || xml[at + 1] == '!')) {
-            const auto end = xml.find('>', at);
-            at = end == std::string::npos ? xml.size() : end + 1;
-            continue;
-        }
-        std::size_t name_at = at + 1;
-        if (name_at < xml.size() && xml[name_at] == '/')
-            ++name_at;
-        const auto end = xml.find_first_of(" \t\r\n/>", name_at);
-        if (end == std::string::npos) {
-            at = xml.size();
-            continue;
-        }
-        if (end > name_at)
-            ++names[xml.substr(name_at, end - name_at)];
-        at = end;
-    }
-    return names;
+        conventions_difference);
 }
 
 }
 
-// Hidden by default, and run on demand:
-//   ores.ore.core.tests "[.][conventions]"
-// Nine of the seventy-two files carry only categories the mapper models. They
-// are the ones a field mapping can fix, so their first differences are the list
-// of fields the modelled categories are missing.
-TEST_CASE("conventions_modelled_only_files_measurement", "[.][conventions][measurement]") {
+TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
     const auto kind = conventions_kind();
-    std::map<std::string, int> missing_by_element;
-    int clean = 0;
-    int passing = 0;
+    int walked = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const std::string content = read(path);
-        conventions document;
-        load_data(content, document);
-
-        const auto mapped = conventions_mapper::map(document);
-        if (!mapped.unmodelled.empty())
+        // A file that carries a category the mapper does not model cannot round
+        // trip, and saying which those are is the measurement's job rather than
+        // this case's.
+        if (!conventions_mapper::map(load(path)).unmodelled.empty())
             continue;
 
-        ++clean;
+        ++walked;
         const auto outcome = kind.check(path);
-        if (outcome.passed)
-            ++passing;
-        else
-            std::cout << "\n" << outcome.detail << "\n";
-
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
-        const auto imported_counts = element_counts(content);
-        const auto exported_counts = element_counts(exported);
-        for (const auto& [name, count] : imported_counts) {
-            const auto found = exported_counts.find(name);
-            const int exported_count = found == exported_counts.end() ? 0 : found->second;
-            if (exported_count < count)
-                ++missing_by_element[name];
-        }
+        INFO(outcome.detail);
+        CHECK(outcome.passed);
     }
 
-    std::cout << "\nconventions files using only modelled categories=" << clean
-              << " passing=" << passing << "\n";
-    for (const auto& [element, count] : missing_by_element)
-        std::cout << "  fewer <" << element << "> in " << count << " file(s)\n";
-    CHECK(clean > 0);
+    // Nine of the seventy-two at the commit this was written at. The count is
+    // asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 9);
 }
 
 // Hidden by default, and run on demand:
@@ -161,10 +102,7 @@ TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][mea
     int files_with_unmodelled = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        conventions document;
-        load_data(read(path), document);
-
-        const auto mapped = conventions_mapper::map(document);
+        const auto mapped = conventions_mapper::map(load(path));
         ++files;
         if (!mapped.unmodelled.empty())
             ++files_with_unmodelled;

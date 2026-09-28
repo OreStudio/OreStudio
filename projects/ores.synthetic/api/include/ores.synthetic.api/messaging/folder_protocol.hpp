@@ -155,7 +155,7 @@ struct put_folder_request {
 
 struct put_folder_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::folder folder;
+    std::optional<ores::synthetic::domain::folder> folder;
 };
 
 struct put_many_folders_request {
@@ -251,7 +251,7 @@ struct get_folder_version_request {
 
 struct get_folder_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::folder version;
+    std::optional<ores::synthetic::domain::folder> version;
 };
 
 /**

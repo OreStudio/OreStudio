@@ -159,7 +159,7 @@ struct put_observation_lineage_request {
 
 struct put_observation_lineage_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::observation_lineage observation_lineage;
+    std::optional<ores::marketdata::domain::observation_lineage> observation_lineage;
 };
 
 struct put_many_observation_lineages_request {
@@ -258,7 +258,7 @@ struct get_observation_lineage_version_request {
 
 struct get_observation_lineage_version_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::observation_lineage version;
+    std::optional<ores::marketdata::domain::observation_lineage> version;
 };
 
 /**

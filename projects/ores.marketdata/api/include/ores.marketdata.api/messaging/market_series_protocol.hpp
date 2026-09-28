@@ -159,7 +159,7 @@ struct put_market_series_request {
 
 struct put_market_series_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::market_series market_series;
+    std::optional<ores::marketdata::domain::market_series> market_series;
 };
 
 struct put_many_market_series_request {
@@ -255,7 +255,7 @@ struct get_market_series_version_request {
 
 struct get_market_series_version_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::market_series version;
+    std::optional<ores::marketdata::domain::market_series> version;
 };
 
 /**

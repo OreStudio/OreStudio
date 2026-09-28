@@ -116,7 +116,7 @@ export interface PutMarketSeriesRequest {
 
 export interface PutMarketSeriesResponse {
     result: Result;
-    market_series: MarketSeries;
+    market_series: MarketSeries | null;
 }
 
 export interface PutManyMarketSeriesRequest {
@@ -167,7 +167,7 @@ export interface GetMarketSeriesVersionRequest {
 
 export interface GetMarketSeriesVersionResponse {
     result: Result;
-    version: MarketSeries;
+    version: MarketSeries | null;
 }
 
 export const subjects = {

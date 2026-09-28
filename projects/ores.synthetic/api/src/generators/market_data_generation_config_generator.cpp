@@ -37,13 +37,12 @@ using ores::utility::generation::generation_keys;
 domain::market_data_generation_config
 generate_synthetic_market_data_generation_config(utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
-    const auto tid_str =
-        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
+    const auto tid_str = ctx.env().get_or(std::string(generation_keys::tenant_id), std::string(""));
 
     domain::market_data_generation_config r;
     r.version = 0;
-    r.tenant_id =
-        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    if (!tid_str.empty())
+        r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.scope = // Always party-scoped in generated test data, matching the party_id

@@ -84,6 +84,7 @@ messaging::ir_curve_template_entry_key key_from(const domain::ir_curve_template_
 domain::ir_curve_template_entry to_domain(const messaging::ir_curve_template_entry_write& write) {
     domain::ir_curve_template_entry v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.ir_curve_config_id = write.ir_curve_config_id;
     v.sequence_index = write.sequence_index;
     v.start_tenor_code = write.start_tenor_code;

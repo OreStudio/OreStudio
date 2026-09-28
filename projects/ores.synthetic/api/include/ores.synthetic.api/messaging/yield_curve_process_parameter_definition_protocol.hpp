@@ -169,7 +169,7 @@ struct put_yield_curve_process_parameter_definition_request {
 
 struct put_yield_curve_process_parameter_definition_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::yield_curve_process_parameter_definition
+    std::optional<ores::synthetic::domain::yield_curve_process_parameter_definition>
         yield_curve_process_parameter_definition;
 };
 
@@ -272,7 +272,7 @@ struct get_yield_curve_process_parameter_definition_version_request {
 
 struct get_yield_curve_process_parameter_definition_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::yield_curve_process_parameter_definition version;
+    std::optional<ores::synthetic::domain::yield_curve_process_parameter_definition> version;
 };
 
 /**

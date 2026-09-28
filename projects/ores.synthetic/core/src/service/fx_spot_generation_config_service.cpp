@@ -85,6 +85,7 @@ domain::fx_spot_generation_config
 to_domain(const messaging::fx_spot_generation_config_write& write) {
     domain::fx_spot_generation_config v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.config_id = write.config_id;
     v.base_currency_code = write.base_currency_code;
     v.quote_currency_code = write.quote_currency_code;

@@ -21,6 +21,7 @@
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
 #include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
@@ -108,6 +109,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ore::workflow::register_ore_import_workflow(*registry);
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
+    ores::iam::workflow::register_provision_tenant_workflow(*registry);
     ores::workflow::workflow::register_identity_workflow(*registry);
 
     // ----------------------------------------------------------------

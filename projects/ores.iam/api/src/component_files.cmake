@@ -202,4 +202,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/tenant_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/ores.iam.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/service/auth_session_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/workflow/provision_tenant_workflow.hpp"
 )

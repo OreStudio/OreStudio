@@ -43,7 +43,7 @@ struct market_data_generation_config_entity {
     constexpr static const char* tablename = "ores_synthetic_market_data_generation_configs_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
-    std::string tenant_id;
+    std::optional<std::string> tenant_id;
     int version = 0;
     std::optional<std::string> party_id;
     std::string scope;

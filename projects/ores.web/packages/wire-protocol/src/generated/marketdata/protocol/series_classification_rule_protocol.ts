@@ -114,7 +114,7 @@ export interface PutSeriesClassificationRuleRequest {
 
 export interface PutSeriesClassificationRuleResponse {
     result: Result;
-    series_classification_rule: SeriesClassificationRule;
+    series_classification_rule: SeriesClassificationRule | null;
 }
 
 export interface PutManySeriesClassificationRulesRequest {
@@ -165,7 +165,7 @@ export interface GetSeriesClassificationRuleVersionRequest {
 
 export interface GetSeriesClassificationRuleVersionResponse {
     result: Result;
-    version: SeriesClassificationRule;
+    version: SeriesClassificationRule | null;
 }
 
 export const subjects = {

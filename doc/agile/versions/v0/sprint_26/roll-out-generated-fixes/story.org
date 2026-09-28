@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 5663FE34-8F23-40F6-B1BC-4E97B3290030
+:END:
+#+title: Story: Roll the generator fixes out to the components outside the test list
+#+description: Regenerate history, scheduler, storage, marketdata and synthetic against the four generator fixes the refdata clean-standard pass landed, so the tree carries one response shape and one recipe family rather than two of each.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:codegen:clean_standard:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every component outside =COMPONENTS_UNDER_TEST= carries the four generator
+fixes the refdata clean-standard pass landed: a put response and a
+single-version response carry their row in a =std::optional=; a batch removal
+of an empty key list answers instead of rendering an empty =IN (=; the
+protocol-dependency gate keeps the =ores.doc.shell-recipe= family alive, so
+each component's recipes regenerate; and each response shape's TypeScript twin
+matches its header. The work is captured in the next bucket as
+=shell-recipes-no-longer-run=.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Merged as =17fa9f47fd= through PR #2334, with 14 checks green. Five of the seven components are regenerated and the shell's scheduler command reads the optional definition the new shape carries. The merge tree is identical to the verified branch head. |
+| Waiting on    | Nothing. |
+| Next          | Nothing in this story. =trading= and =workspace-cpp= stay in =shell-recipes-no-longer-run= in the next bucket. |
+| Last touched  | 2026-09-28 |
+
+* Acceptance
+
+- =history=, =scheduler=, =storage=, =marketdata= and =synthetic= are regenerated
+  against the current templates, one commit per component, and
+  =check_component_drift.py --all= reports no drift.
+- Every hand-written caller the new response shapes break is migrated, with the
+  break named in the commit that fixes it.
+- A full =compass build= exits 0, =compass db recreate -y -k= exits 0, the
+  fleet comes up 25 of 25, and the full =ctest= suite passes.
+- The two components that stay outside — =trading= and =workspace-cpp= — are
+  recorded with the reason each is out, so the remainder is not assumed done.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:21B66CCB-379C-434B-821E-418CB5EC5867][Regenerate the five components and fix the callers the new shapes break]] | DONE | 2026-09-28 | 2026-09-28 | Regenerate history, scheduler, storage, marketdata and synthetic against the current templates, commit each component on its own, and migrate every hand-written caller the new response shapes break. |
+
+* Decisions
+
+- =trading= is deliberately not regenerated. Its model holds 64 entities, and
+  the regeneration rewrites the whole component rather than refreshing a stale
+  corner of it.
+- =workspace-cpp= is deferred rather than out. Its regeneration is structural:
+  it materialises 30 files, 10 of them new eventing, history-provider,
+  registrar, handler and presentation files the component does not carry.
+
+* Out of scope
+
+- =trading= and =workspace-cpp=, for the reasons above. Both stay in
+  =shell-recipes-no-longer-run= so the next pass picks them up.

@@ -116,7 +116,7 @@ export interface PutObservationLineageRequest {
 
 export interface PutObservationLineageResponse {
     result: Result;
-    observation_lineage: ObservationLineage;
+    observation_lineage: ObservationLineage | null;
 }
 
 export interface PutManyObservationLineagesRequest {
@@ -167,7 +167,7 @@ export interface GetObservationLineageVersionRequest {
 
 export interface GetObservationLineageVersionResponse {
     result: Result;
-    version: ObservationLineage;
+    version: ObservationLineage | null;
 }
 
 export const subjects = {

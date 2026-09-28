@@ -34,6 +34,7 @@
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/messaging/account_contact_information_registrar.hpp"
 #include "ores.iam.core/messaging/account_operations_handler.hpp"
@@ -341,6 +342,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
         provision_acme_tenant_command::nats_subject, qg, [tph](ores::nats::message msg) {
             tph->provision_acme(std::move(msg));
         }));
+    // Every step of a provision tenant run is dispatched here, whatever kind it
+    // is, because the payload names the kind. The engine sends a step with no
+    // caller token, so the handler mints its own from the run's administrator.
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::iam::workflow::provision_tenant_step_subject),
+        qg,
+        [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); }));
 
     // --- Tenants, tenant statuses and tenant types ---
     // The generated registrars own these subjects, so the component registrar

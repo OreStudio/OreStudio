@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_REPOSITORY_WORKSPACE_MAPPER_HPP
-#define ORES_WORKSPACE_REPOSITORY_WORKSPACE_MAPPER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKSPACE_CORE_REPOSITORY_WORKSPACE_MAPPER_HPP
+#define ORES_WORKSPACE_CORE_REPOSITORY_WORKSPACE_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.workspace.core/export.hpp"
 #include "ores.workspace.core/repository/workspace_entity.hpp"
 
 namespace ores::workspace::repository {
@@ -29,7 +35,7 @@ namespace ores::workspace::repository {
 /**
  * @brief Maps workspace domain entities to data storage layer and vice-versa.
  */
-class workspace_mapper {
+class ORES_WORKSPACE_CORE_EXPORT workspace_mapper {
 private:
     inline static std::string_view logger_name = "ores.workspace.repository.workspace_mapper";
 

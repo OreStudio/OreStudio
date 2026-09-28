@@ -85,6 +85,7 @@ domain::ir_curve_generation_config
 to_domain(const messaging::ir_curve_generation_config_write& write) {
     domain::ir_curve_generation_config v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.config_id = write.config_id;
     v.currency_code = write.currency_code;
     v.index_family = write.index_family;

@@ -58,7 +58,7 @@ struct market_data_generation_config final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    std::optional<utility::uuid::tenant_id> tenant_id;
 
     /**
      * @brief Surrogate UUID uniquely identifying this configuration.

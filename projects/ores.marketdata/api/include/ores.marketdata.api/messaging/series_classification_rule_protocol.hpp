@@ -161,7 +161,7 @@ struct put_series_classification_rule_request {
 
 struct put_series_classification_rule_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::series_classification_rule series_classification_rule;
+    std::optional<ores::marketdata::domain::series_classification_rule> series_classification_rule;
 };
 
 struct put_many_series_classification_rules_request {
@@ -262,7 +262,7 @@ struct get_series_classification_rule_version_request {
 
 struct get_series_classification_rule_version_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::series_classification_rule version;
+    std::optional<ores::marketdata::domain::series_classification_rule> version;
 };
 
 /**

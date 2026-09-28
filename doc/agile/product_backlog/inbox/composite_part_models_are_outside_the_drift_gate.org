@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: CE7B4C2A-AD37-4D0D-885C-179E1FFA15F3
+:END:
+#+title: A composite's part models are outside every drift gate
+#+description: A catalogue component's modeling_dir is its own modeling/, so the <part>/modeling/component_overview.org models of a composite are discovered by no entry: check_component_drift.py never renders them and their generated CMakeLists.txt and component_files.cmake have no gate. regenerate_cmake_component_files.py covers the file lists only, and the workspace clean-up had to render the three parts by hand.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:component:inbox:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A composite component's parts each carry a =modeling/component_overview.org=
+that is an =ores.codegen.component= model, and they generate that part's
+=CMakeLists.txt=, =component_files.cmake= and =modeling/CMakeLists.txt=. No
+catalogue entry names them: a component's =modeling_dir= is its own
+=modeling/=, so =discover_models()= never reaches
+=<component>/<part>/modeling/=, and neither =check_component_drift.py= nor its
+=--sweep= renders them. Rendering one directly does work:
+=codegen.generate._generate_single(<part>/modeling/component_overview.org,
+False, projects/ores.codegen, address="ores.cmake")= writes the whole part's
+CMake output.
+
+* Why
+
+The consequence is that a part's generated CMake files are hand-maintained in
+practice, and a full-facet regenerate clobbers them: the =cmake_component_src=
+template emits a minimal link list, while every real component's part carries
+its own =target_link_libraries=. This pass hit it -- the workspace clean-up
+lost three parts' link lists to a part render and restored them from git --
+and =regenerate_cmake_component_files.py='s own docstring already names the
+hazard for the file lists, though not for the =CMakeLists.txt= files
+themselves. Two candidate fixes: teach the discovery to expand a composite's
+declared =#+parts:=, or extend =regenerate_cmake_component_files.py= to render
+the part roots with a component-declared link list.
+
+* References
+
+- =projects/ores.codegen/src/codegen/manifest.py= — =discover_models()=.
+- =projects/ores.codegen/scripts/regenerate_cmake_component_files.py= — its
+  docstring names the clobbering hazard.
+- =projects/ores.codegen/library/templates/cmake_component_src.mustache= — the
+  minimal link list a full facet regenerate would write.
+
+* See also
+
+- [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][Bring ores.workspace to the clean standard]] — the pass that found it.

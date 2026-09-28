@@ -164,7 +164,8 @@ struct put_market_data_generation_config_request {
 
 struct put_market_data_generation_config_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::market_data_generation_config market_data_generation_config;
+    std::optional<ores::synthetic::domain::market_data_generation_config>
+        market_data_generation_config;
 };
 
 struct put_many_market_data_generation_configs_request {
@@ -266,7 +267,7 @@ struct get_market_data_generation_config_version_request {
 
 struct get_market_data_generation_config_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::market_data_generation_config version;
+    std::optional<ores::synthetic::domain::market_data_generation_config> version;
 };
 
 /**

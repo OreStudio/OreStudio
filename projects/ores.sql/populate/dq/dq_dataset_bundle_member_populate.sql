@@ -187,5 +187,27 @@ BEGIN
     -- --- CRM Cross-Rates Matrix Topology Bundle Members ---
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crm_topology', 'refdata.crm_topology_bundles', 10);
+
+    -- --- GLEIF LEI Hierarchy Import Bundle Members ---
+
+    -- One member: the publish trigger. Its entity/relationship siblings
+    -- (gleif.lei_entities.small, gleif.lei_relationships.small) are read by
+    -- ores_refdata_publish_lei_parties_from_dq_fn but carry no publish
+    -- target of their own, and the dependency graph declared in
+    -- lei_dataset_dependency_populate.sql already orders them; listing them
+    -- here would add members that never dispatch. Same shape as
+    -- acme_lei_import, which lists only acme.lei_parties.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'lei_hierarchy', 'gleif.lei_parties.small', 10);
+
+    -- --- Party Essentials Bundle Members ---
+
+    -- The two datasets every party gets, in the seed-profile contract's
+    -- order: its report definitions (ore.report_definitions), then its CRM
+    -- topology (refdata.crm_topology_bundles, the crm_topology bundle's
+    -- only member). Both are party-scoped: the report publish resolves the
+    -- party from params.party_id (or the tenant root), and the CRM publish
+    -- requires params.party_id.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.report_definitions', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.crm_topology_bundles', 20);
 END $$;
 

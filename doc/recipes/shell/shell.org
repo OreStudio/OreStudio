@@ -875,3 +875,23 @@ tangled into the runnable script library
 * Ir Curve Bootstrap Pillars
 
 - [[id:65943862-77B0-5588-A6B3-3F2CB49AC089][How do I run the ir_curve_bootstrap_pillars commands from the shell?]]
+
+* Market Series
+
+- [[id:434EA111-9922-5BAF-BEB2-13EBA07733DE][How do I run the market_series commands from the shell?]]
+
+* Objects
+
+- [[id:61DD9492-DF2D-5C21-878D-852640284689][How do I run the objects commands from the shell?]]
+
+* Observation Lineages
+
+- [[id:6908EF29-1263-578C-9E12-9575B80C9EDD][How do I run the observation_lineages commands from the shell?]]
+
+* Series Classification Rules
+
+- [[id:E62F4BEE-B2DA-5D94-91E8-6296964418E3][How do I run the series_classification_rules commands from the shell?]]
+
+* Workspaces
+
+- [[id:6B3B2660-726F-5EAC-961A-B845325D21D6][How do I run the workspaces commands from the shell?]]

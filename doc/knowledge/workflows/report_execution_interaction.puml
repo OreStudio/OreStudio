@@ -1,0 +1,88 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Report execution: from the trigger to the completed instance
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "the caller\n(the shell, or the scheduler)" as caller
+participant "ores.reporting\n(the trigger handler)" as reporting
+participant "ores.workflow\n(the engine)" as engine
+participant "ores.reporting\n(the step handlers)" as handlers
+participant "ores.ore\n(the package handler)" as ore
+participant "ores.compute\n(the submit handler)" as compute
+participant "the compute grid\n(the dispatcher and a wrapper)" as grid
+participant "storage\n(the HTTP server)" as storage
+
+caller -> reporting : reporting.v1.ops.trigger_report_instance
+activate reporting
+reporting -> reporting : create the instance, pending then running
+reporting -> engine : workflow.v1.start\n(report_execution_workflow, and the run configuration)
+deactivate reporting
+activate engine
+engine -> engine : build the chain from\npre_processing and post_processing
+
+alt pre-processing executes
+    engine -> handlers : reporting.v1.report.gather-trades
+    handlers --> engine : gather_trades_result
+    engine -> handlers : reporting.v1.report.gather-market-data
+    handlers --> engine : gather_market_data_result
+    engine -> handlers : reporting.v1.report.assemble-bundle
+    handlers --> engine : assemble_bundle_result
+    engine -> ore : ore.v1.report.prepare-package
+    ore -> storage : write the input archive
+    ore --> engine : prepare_ore_package_result
+else pre-processing is substituted
+    engine -> handlers : reporting.v1.report.resolve-prepared-input
+    handlers --> engine : prepare_ore_package_result\n(the named archive, unread)
+end
+
+engine -> compute : compute.v1.report.submit
+activate compute
+compute -> compute : create the batch and its workunits
+compute -> grid : workunit change event
+grid -> storage : fetch the engine package and the input
+grid -> grid : run the job
+grid -> storage : put the output archive
+grid -> compute : result submitted, batch closed
+compute --> engine : step completed
+deactivate compute
+
+alt post-processing executes
+    engine -> handlers : reporting.v1.report.collect-compute-results
+    handlers --> engine : collect_compute_results_result
+else post-processing is ignored
+    engine -> handlers : reporting.v1.report.ignore-compute-results
+    handlers --> engine : collect_compute_results_result\n(the batch named, unread)
+end
+
+engine -> handlers : reporting.v1.report.finalise
+handlers --> engine : finalise_report_result
+engine --> engine : instance completed
+deactivate engine
+
+note over engine, handlers
+  On a step failure the engine compensates the steps that completed, in reverse.
+  Every step of this workflow compensates through reporting.v1.report.fail, so
+  compensation marks the report instance failed rather than undoing a phase.
+end note
+
+@enduml

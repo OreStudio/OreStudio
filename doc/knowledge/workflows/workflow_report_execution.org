@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 28438C94-4AE6-4455-8786-4CF02286944B
+:END:
+#+title: Report execution
+#+description: Run one report definition end to end: prepare the engine's input, submit it to the compute grid, record the results, and finalise the report instance.
+#+type: workflow
+#+level: cross
+#+filetags: :workflow:reporting:compute:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+startup: inlineimages
+
+This page defines the [[id:902A5312-B3A2-4C66-8017-34F0F26658C6][workflow]]
+Report execution. It runs one report definition to completion: it prepares the
+engine's input, submits it to the compute grid, records what came back, and
+settles the report instance. A person starts it from the shell, or the scheduler
+starts it from a job, and either way it leaves a completed or failed report
+instance and the engine's output archive in storage. The chain is a function of
+the definition's run configuration, so a run either executes every phase or
+replaces pre-processing and post-processing with prepared substitutes. A failed
+step marks the instance failed; a person then reads the failure on the instance
+and decides whether to trigger another run.
+
+* Purpose
+
+Turns a report definition into a completed report instance. When it finishes, the
+instance has walked pending, running and completed, the engine's output archive
+is in storage, and the run's record says where it landed. The workflow is also
+what keeps reporting free of the grid's timing: submission is asynchronous, and
+the engine holds the run open until the compute batch closes.
+
+* Participants
+
+#+ATTR_HTML: :class hug-leading
+| Participant | Kind | Responsibility |
+|-------------+------+----------------|
+| The caller | Actor | A person on the shell, or the scheduler firing a job. Sends the trigger and reads the answer. |
+| [[id:C4F7114C-B454-4B07-A804-64442D989FD4][ores.reporting]] (trigger handler) | Service | Resolves the definition, creates the instance, and starts the run. The only publisher of the start message. |
+| [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][ores.workflow]] | Service | Owns the definition and the instance, rebuilds the chain from the start message, dispatches each step, and compensates on failure. |
+| ores.reporting (step handlers) | Service | Runs the reporting-owned phases: gathering, bundle assembly, input resolution, result collection and finalisation. |
+| ores.ore (package handler) | Service | Packages the gathered data into the archive the engine consumes. |
+| ores.compute (submit handler) | Service | Creates the compute batch and its workunits, and bridges the batch's completion back to the workflow. |
+| The compute grid | Service and workers | Dispatches a workunit to a wrapper, runs the engine, and writes the output archive. |
+| Storage | Service | Holds the input archive, the engine package and the output archive. |
+| The client | Actor | Reads the instance and the run to render progress. |
+
+* Messages
+
+#+ATTR_HTML: :class hug-leading
+| Message | Subject | Objective |
+|---------+---------+-----------|
+| Trigger a report instance | =reporting.v1.ops.trigger_report_instance= | Carry the definition and the tenant; the reply names the instance. |
+| Start the workflow | =workflow.v1.start= | Carry the type, the workflow instance id, and the run's request, including its run configuration. |
+| Gather trades | =reporting.v1.report.gather-trades= | Select the trades the definition's scope names and store them. |
+| Gather market data | =reporting.v1.report.gather-market-data= | Select the market data for the run's period and store it. |
+| Assemble the bundle | =reporting.v1.report.assemble-bundle= | Persist the input bundle row that names the two stored objects. |
+| Resolve the prepared input | =reporting.v1.report.resolve-prepared-input= | Answer in the packaging phase's result type with the archive the definition named. |
+| Prepare the ORE package | =ore.v1.report.prepare-package= | Build the tarball the engine consumes and store it. |
+| Submit to the grid | =compute.v1.report.submit= | Create the batch and its workunits from the tarball URIs. |
+| Collect the results | =reporting.v1.report.collect-compute-results= | Ingest the engine's output for the batch. |
+| Ignore the results | =reporting.v1.report.ignore-compute-results= | Record the batch and leave its output unread. |
+| Finalise | =reporting.v1.report.finalise= | Mark the instance completed and stamp its completion time. |
+| Fail the report | =reporting.v1.report.fail= | The compensation every step of this workflow shares: mark the instance failed with the step's error. |
+
+The fields of each message are declared in
+=projects/ores.reporting/api/include/ores.reporting.api/messaging/report_operations_protocol.hpp=.
+
+* Steps
+
+The chain is a function of the run configuration the definition carries, so
+there are two shapes. A run that executes pre-processing runs seven steps; a run
+that substitutes it runs four. Steps 1 to 4 below appear only in the executing
+shape, and step 6 appears in both shapes with two possible operations.
+
+#+ATTR_HTML: :class hug-leading
+| # | Operation | Produces | On failure |
+|---+-----------+----------+------------|
+| 1 | =gather_trades= | A stored trades object and its key. | Compensation: the instance is marked failed. |
+| 2 | =gather_market_data= | A stored market data object and its key. | Compensation: the instance is marked failed. |
+| 3 | =assemble_bundle= | A persisted input bundle row naming both objects. | Compensation: the instance is marked failed. |
+| 4 | =prepare_ore_package= | The tarball URI the engine consumes. | Compensation: the instance is marked failed. |
+| 4' | =resolve_prepared_input= | The archive the definition named, answered in the packaging phase's own result type. | Compensation: the instance is marked failed. |
+| 5 | =submit_compute= | A compute batch, its workunits, and a link row the bridge watches. | Compensation: the instance is marked failed. |
+| 6 | =collect_compute_results= | The engine's output, ingested. | Compensation: the instance is marked failed. |
+| 6' | =ignore_compute_results= | The batch named, and its output left unread. | Compensation: the instance is marked failed. |
+| 7 | =finalise= | The instance at completed, with its completion time. | Compensation: the instance is marked failed. |
+
+Each step's command is built from the run's request and from the earlier steps'
+results, which are addressed by the *name* of the step that produced them. A
+builder that cannot find or read what it consumes stops the run rather than
+handing the next phase an empty field.
+
+* Interaction
+
+#+caption: One run from the trigger to the completed instance, with both shapes of the chain.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/workflows/report_execution_interaction.png]]
+
+Source: =[[./report_execution_interaction.puml][report_execution_interaction.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/workflows/report_execution_interaction.puml=.
+
+* Failure and recovery
+
+This workflow declares no failure policy of its own: the engine compensates the
+steps that completed, in reverse. Every step compensates through
+=reporting.v1.report.fail=, so a compensation is not an undo. It marks the report
+instance failed with the failing step's message, and each further compensation
+leaves the first message in place. What a completed step produced, a stored
+object or a compute batch, stays where it is; nothing deletes it.
+
+A retry resumes from the run's persisted record of completed steps: a restart
+re-dispatches every step left in progress, under its original step id. The
+handlers do not yet check whether they have already run, so a re-dispatched
+phase does work twice. Until they do, two facts follow. Treat a run that was
+recovered as having acted more than once, and prefer triggering a fresh run over
+retrying a failed one.
+
+Two failure modes have no automatic recovery. A phase that never answers leaves
+the run in progress, because there is no acknowledgement and no deadline; the run
+then re-dispatches on every restart. And an unknown workflow type is logged and
+dropped while the trigger has already answered =triggered=, so a mistyped type
+looks like a successful trigger that produced nothing. Both are recorded on the
+story below.
+
+The engine's own failure rules are on
+[[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]].
+
+* Progress
+
+Two reads render progress, and they answer different questions.
+
+- The run: =workflow.v1.instances.list= and =workflow.v1.instances.steps=, over
+  the workflow instance and its steps. The workflow instance id is created by the
+  trigger and carried in the start message, so a client can follow the engine's
+  view before the first step answers.
+- The report: =reporting.v1.report_instances.list= and
+  =reporting.v1.report_instances.get=, over the report instance. One line shows
+  the definition, the instance's state, when it started, when it completed, and
+  the output message.
+
+The report instance is the read a business user follows, and it is the one that
+carries the failure text. Its states are pending, queued, running, completed,
+failed, skipped and cancelled, defined on
+[[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]].
+The engine's instance states are a separate vocabulary, and the two are not the
+same table.
+
+* Related
+
+- [[file:./workflows.org][Workflow pages]] — the inventory this page is listed in.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] — the phases this workflow sequences.
+- [[file:../architecture/report_execution_orchestration.org][Report execution orchestration]] — why the engine executes a run.
+- [[file:../architecture/report_execution_substitution.org][Report execution substitution]] — the two chain shapes and what each proves.
+- [[file:../architecture/report_processing_interfaces.org][Report processing interfaces]] — every message and storage key, with its publisher and consumer.
+- [[file:../reports/report_sample_bundle_smoke_test.org][Sample bundle smoke test]] — the report that exercises the substituted chain.
+- [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] — the story that owns the workflow.
+- [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] — the story that owns the known failure modes above.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] — the engine the submitted package runs.

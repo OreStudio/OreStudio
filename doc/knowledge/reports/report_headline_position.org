@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 500AC7E3-E87C-4EC8-88A2-B46FB310F865
+:END:
+#+title: Headline Position
+#+description: The headline Greeks for a book or portfolio: the first risk overview a trading desk and the market risk function read.
+#+type: report
+#+level: cross
+#+filetags: :report:market-risk:greeks:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+report_code: headline_position
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Headline Position. It shows the most important Greeks across a whole trade set,
+so a reader sees the current state of risk for a book or a portfolio without
+running a deep sensitivity. The trading desk reads it through the day and the
+market risk function reads it for sign-off. It runs on demand and on the
+schedule, belongs to no batch, and leaves the engine's output archive in
+storage. The result store that would ingest the archive is not built yet, so
+today the run records where the archive landed and nothing more.
+
+* Purpose
+
+Answers what a book's or a portfolio's headline Greeks are right now. It feeds
+two decisions: whether a desk's position is where the desk thinks it is, and
+whether the market risk function will sign off on the current state of risk. It
+is deliberately shallow and wide, the first report a reader opens, and the one
+that says which deeper report to open next.
+
+The Greek set is configurable, so the same report serves a desk that wants
+Delta and P&L and a risk function that wants the full set with the aggregation
+applied.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role          | What it takes from the report                                                          |
+|---------------+----------------------------------------------------------------------------------------|
+| trading-desk  | Intraday position monitoring: P&L and Delta for the book the desk runs.                 |
+| market-risk   | Sign-off visibility: the current state of risk across a book or a portfolio.            |
+
+* Frequency
+
+Cycle =intraday= and =eod=, frequency =on-demand= and =scheduled=. A desk asks
+for it during the day; the schedule produces it at the close. It is not a member
+of the ten-report [[file:../domain/risk_reporting.org][Market Risk EOD set]], so
+nothing orders it after the market data cut.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                        |
+|-----------+------------------------------|
+| Cycle     | intraday, eod                |
+| Frequency | on-demand, scheduled         |
+| Batch     | none                         |
+| Owner     | market-risk                  |
+
+* Inputs
+
+- Trades selected by scope. The scope is a =book= or a =portfolio=; the
+  taxonomy allows no wider scope and no single-trade scope.
+- Market data for the as-of date. A numeric-bump run needs the signed-off end
+  of day cut; an intraday run needs the current market data.
+- The analytics configuration the definition binds. The configuration
+  decides, among other things, which Greek set the run computes and whether
+  the Greeks are computed or read.
+- Stored Greeks for the =risk-predict= methodology. That path re-prices
+  nothing: it approximates the P&L from Greeks the platform already holds, so
+  it needs no market data of its own and no re-valuation.
+
+* Outputs
+
+The run produces the engine's own output archive, which holds the report's CSV
+artefacts, and it records where that archive landed against the report
+instance. The report rows a reader would query are a later phase: the result
+store is designed on
+[[file:../architecture/report_post_processing.org][Report post-processing]]
+and is not built yet.
+
+Aggregation is applied by the producing engine, not by the reader: the run
+aggregates by book, by portfolio, by currency pair, by Greek, and by unit
+hedge.
+
+* Measures
+
+The set is configurable. The values below are the ones the catalogue states
+this report typically carries; the definitions are the measures catalogue's,
+on [[file:../domain/risk_reporting.org][Risk reporting]], and are not repeated
+here.
+
+#+ATTR_HTML: :class hug-leading
+| Measure    | Meaning                                                       |
+|------------+---------------------------------------------------------------|
+| PV         | Present value: discounted future cash flows.                  |
+| Daily P&L  | The change in NPV since the previous business day.            |
+| MTD P&L    | NPV minus the previous month-end NPV.                         |
+| YTD P&L    | NPV minus the previous year-end NPV.                          |
+| Delta P&L  | The P&L the report attributes to directional (Delta) risk.    |
+
+* ORE configuration
+
+The =numeric-bump= methodology is ORE's =sensitivity= analytic. The fragment
+below is the shape of that analytic, trimmed from
+=external/ore/examples/MarketRisk/Input/ore_sensi_eq_credit_index_decomposition.xml=.
+
+#+begin_src xml
+<Analytic type="sensitivity">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="marketConfigFile">simulation.xml</Parameter>
+  <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+  <Parameter name="pricingEnginesFile">pricingengine.xml</Parameter>
+  <Parameter name="sensitivityOutputFile">sensitivity.csv</Parameter>
+  <Parameter name="outputSensitivityThreshold">0.000001</Parameter>
+  <Parameter name="recalibrateModels">Y</Parameter>
+  <Parameter name="parSensitivity">Y</Parameter>
+</Analytic>
+#+end_src
+
+The base valuation the P&L measures are taken against comes from a second
+analytic in the same document:
+
+#+begin_src xml
+<Analytic type="npv">
+  <Parameter name="active">Y</Parameter>
+  <Parameter name="baseCurrency">EUR</Parameter>
+  <Parameter name="outputFileName">npv.csv</Parameter>
+</Analytic>
+#+end_src
+
+The =risk-predict= methodology has no ORE configuration of its own. It is
+computed inside ORE Studio from stored Greeks, so a definition that selects it
+runs no valuation and needs no =Analytic= element.
+
+* Parameters
+
+A definition of this report states the rows below. No seed declares these
+parameter definitions yet, so the domains in the table are the ones the
+classification taxonomy and the engine fix, and the registry rows are still to
+be written. The mechanism is on
+[[proj:projects/ores.reporting/modeling/ores.reporting.parameter_definition.org][parameter definition]].
+
+#+ATTR_HTML: :class hug-leading
+| Parameter       | Domain                                    | Default     | Meaning                                                    |
+|-----------------+-------------------------------------------+-------------+--------------------------------------------------------------|
+| scope           | book or portfolio                          | none        | The trade set the run selects.                             |
+| as_of_date      | ISO date                                   | none        | The date the valuation is taken at.                        |
+| cycle           | intraday or eod                            | eod         | Which market data cut the run reads.                       |
+| methodology     | risk-predict or numeric-bump               | risk-predict | Whether Greeks are read or computed.                       |
+| greek_set       | the measures catalogue                     | PV, Delta   | The measures the report carries.                           |
+| base_currency   | ISO 4217 code                              | EUR         | The currency the P&L measures are expressed in.            |
+| aggregation     | book, portfolio, currency pair, greek, unit hedge | scope | How the engine groups the rows it writes.            |
+
+* Test coverage
+
+No substitute is defined for this report, so a test run of it executes every
+phase: it gathers trades and market data and assembles its own bundle. The
+report is therefore exercised by the full-pipeline proof, not by a smoke test.
+
+The smoke test that proves the machinery without gathering anything is
+[[file:./report_sample_bundle_smoke_test.org][Sample bundle smoke test]].
+
+* Related
+
+- [[file:./reports.org][Reports]] — the inventory this page is listed in.
+- [[file:../domain/risk_reporting.org][Risk reporting]] — the classification taxonomy and the measures catalogue.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] — the phases every run goes through.
+- [[file:../architecture/report_compute_handoff.org][Report compute handoff]] — how the run reaches the grid.
+- [[file:../workflows/workflow_report_execution.org][Report execution]] — the workflow that runs it.
+- [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]]
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] — the valuation engine this report's numeric-bump path runs on.

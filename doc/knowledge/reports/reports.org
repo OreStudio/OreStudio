@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 6E218159-C7FB-47AE-9779-B2645CE19B05
+:END:
+#+title: Report pages
+#+description: Index of report pages: one durable description per report, covering its purpose, its audience, its frequency and the ORE configuration that produces it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:report:index:reporting:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]] page describes one report in
+depth: what decision it feeds, who reads it, how often it runs, what it reads and
+produces, the measures it carries, the ORE XML that configures it, the
+parameters a definition of it states, and the test that exercises it. The page is
+written from the report's definition and its configuration, never from one run of
+it. A run is a report instance, and where a run stopped belongs on the task or
+the investigation that owns it.
+
+This folder holds the pages for individual reports, as =report_<slug>.org=. It
+sits beside [[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]] for
+the same reason: a report page is a durable statement about a report, and it
+outlives the sprint that wrote it.
+
+* What belongs here, and what does not
+
+- A page here owns *one report* — its purpose, audience, frequency, inputs,
+  outputs, measures, ORE configuration, parameters and test coverage.
+- The *pipeline* that runs a report is not this folder's subject. The phases, the
+  run configuration, the compute handoff and the substitution mechanism live in
+  [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]] under
+  [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]]. A report
+  page links that cluster; it never restates it.
+- The *business catalogue* of report families, their classification axes and
+  their measures lives on
+  [[file:../domain/risk_reporting.org][Risk reporting]]. A report page cites
+  the axes and the measure definitions rather than copying them.
+- A fact about one *run* — where it stopped, what it produced, what failed —
+  belongs on the task or the investigation that owns that run.
+
+* Reports
+
+This page is the inventory of the reports the platform documents. Each row names
+one report, the code its definitions and seeds refer to, and the page that
+describes it; a new report is a new page and a new row.
+
+#+ATTR_HTML: :class hug-leading
+| Report | Code | Cycle | Audience | What it produces |
+|--------+------+-------+----------+------------------|
+| [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] | =headline_position= | intraday, eod | trading-desk, market-risk | The headline Greeks for a book or portfolio. |
+| [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] | =sample_bundle_smoke_test= | intraday | engineer, release check | A completed run and the engine's output archive; no measures. |
+
+The pipeline that runs every row above is ordered by
+[[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]], and the compute
+half of it by
+[[file:../architecture/report_compute_handoff.org][Report compute handoff]].
+
+* Reports catalogued but not yet given a page
+
+Two catalogues name reports that have no page here yet. They are the migration
+queue, and they do not agree with each other.
+
+- The business catalogue on
+  [[file:../domain/risk_reporting.org][Risk reporting]] describes 22 market risk
+  reports, each with its purpose, its measures and its five classification axes.
+- The seed =projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql=
+  creates 31 operational report definitions, all of type =risk=.
+- The two *report types* the seed registers are =risk= and =grid=
+  (see [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]]).
+
+Migrating a report out of a catalogue and into this folder is the point at which
+it acquires a purpose, an audience and a worked ORE configuration in one place.
+Until then, the catalogues above are the only description, and they disagree
+about how many reports there are.
+
+* Adding a report
+
+#+begin_src sh :results verbatim
+compass add report \
+  --slug <slug> \
+  --title "<title>" \
+  --description "<one line>" \
+  --report-code <code> \
+  --tags "report,<topic>"
+#+end_src
+
+=--parent-dir= defaults to =doc/knowledge/reports=, so it can be omitted. The
+file is =report_<slug>.org=, and =--report-code= defaults to the slug. Fill in
+every section the scaffold leaves, then add a row to the table above. The full
+contract is on
+[[id:4498456E-71DE-4250-8080-727690FAEFE6][Document type: report]].
+
+* See also
+
+- [[id:645A06C7-D9D5-4ED1-969B-B6366D122BC9][Workflow pages]] — the same
+  pattern for server-side processes rather than reports.

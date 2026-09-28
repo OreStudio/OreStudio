@@ -8,7 +8,7 @@
 #+filetags: :hotfix:osx:cpp23:platform:ore:sprint_26:v0:macos-from-chars-hotfix:
 #+owner: marco
 #+branch: hotfix/macos-from-chars
-#+pr:
+#+pr: 2320
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -69,7 +69,7 @@ and the commit it was measured at.
 | Floating-point =from_chars= sites, after | 0 | same | this branch |
 | The shim's tests | 5 cases, 43 assertions, all pass | =ores.platform.tests "[floating_point]"= | this branch |
 | Credit mapper tests | 14 cases, 63 assertions, all pass | =ores.ore.core.tests "[credit]"= | this branch |
-| Full ore core suite | 551 cases, 550 passed, 1 failed | =ores.ore.core.tests= | this branch |
+| Full ore core suite | 551 cases, all passed (429832 assertions) | =ores.ore.core.tests= | this branch |
 
 * Notes
 
@@ -121,7 +121,9 @@ the credit simulation mapper reads its transition-matrix bounds through
 =std::from_chars= that libc++ deletes. The mapper's behaviour and its
 error message are unchanged.
 
-Verified: the shim's 5 cases and 43 assertions pass, including the round
-trip against the floating-point =to_chars= the estate formats with; the
-credit mapper's 14 cases and 63 assertions pass; and no floating-point
-=from_chars= remains in the estate.
+Verified: the full build is clean; the shim's 5 cases and 43 assertions
+pass, including the round trip against the floating-point =to_chars= the
+estate formats with; the credit mapper's 14 cases and 63 assertions pass;
+the full =ores.ore.core.tests= suite passes 551 of 551 on a freshly
+recreated database, which clears the one failure the stale database
+caused; and no floating-point =from_chars= remains in the estate.

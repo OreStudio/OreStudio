@@ -19,12 +19,16 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 import doc_generate  # noqa: E402
 
 TEMPLATE_DIR = REPO_ROOT / "projects" / "ores.codegen" / "library" / "templates"
+GLOSSARY = REPO_ROOT / "doc" / "meta" / "glossary.org"
+REPORT_INVENTORY = REPO_ROOT / "doc" / "knowledge" / "reports" / "reports.org"
 
 # The contract's required sections, in the order the contract states them,
 # taken from doc/meta/document_type_report.org. The blurb is deliberately not
@@ -44,8 +48,7 @@ REQUIRED_SECTIONS = [
 ]
 
 
-def _scaffold(parent, slug, extra=()):
-    """Scaffold one report and return the file it wrote."""
+def _run(parent, slug, extra=()):
     doc_generate.main([
         "--type", "report",
         "--slug", slug,
@@ -54,9 +57,25 @@ def _scaffold(parent, slug, extra=()):
         "--description", "A probe of the report scaffold.",
         *extra,
     ])
-    written = [f for f in parent.glob("*.org")]
-    assert len(written) == 1, written
-    return written[0]
+
+
+def _scaffold(parent, slug, extra=()):
+    """Scaffold one report and return it, asserting nothing else was written."""
+    _run(parent, slug, extra)
+    expected = parent / f"report_{slug}.org"
+    written = sorted(f.name for f in parent.glob("*.org"))
+    assert written == [expected.name], written
+    return expected
+
+
+def _glossary_report_id():
+    """The id of the glossary's report entry, which the template links."""
+    text = GLOSSARY.read_text(encoding="utf-8")
+    assert "\n* Report\n" in text, "the glossary has no * Report entry"
+    block = text.split("\n* Report\n", 1)[1]
+    found = re.search(r"^:ID:\s*([0-9A-Fa-f-]{36})\s*$", block, re.M)
+    assert found, "the glossary's * Report entry carries no :ID:"
+    return found.group(1)
 
 
 def test_the_report_template_is_registered():
@@ -65,13 +84,15 @@ def test_the_report_template_is_registered():
 
 
 def test_the_scaffold_is_named_for_its_type(tmp_path):
-    written = _scaffold(tmp_path, "probe_report")
-    assert written.name == "report_probe_report.org"
-
-
-def test_the_prefix_is_not_doubled(tmp_path):
-    written = _scaffold(tmp_path, "report_probe_report")
-    assert written.name == "report_probe_report.org"
+    # Discovered rather than predicted: the point here is the naming rule, so
+    # this case must not restate it through the helper.
+    _run(tmp_path, "probe_report")
+    written = [f.name for f in tmp_path.glob("*.org")]
+    assert written == ["report_probe_report.org"]
+    # A caller who passes the prefix must not get it twice.
+    _run(tmp_path, "report_second_probe")
+    written = sorted(f.name for f in tmp_path.glob("*.org"))
+    assert written == ["report_probe_report.org", "report_second_probe.org"]
 
 
 def test_the_frontmatter_states_the_type_and_the_code(tmp_path):
@@ -90,6 +111,14 @@ def test_an_explicit_code_overrides_the_slug(tmp_path):
     assert "#+report_code: probe" in text
 
 
+@pytest.mark.parametrize("code", ["Probe", "probe-report", "probe report", "_probe", "1probe"])
+def test_a_code_that_is_not_a_key_is_refused(tmp_path, code):
+    # The code goes into a seed and into a definition, so a malformed one must
+    # fail at scaffold time rather than becoming a lookup that never matches.
+    with pytest.raises(SystemExit):
+        _run(tmp_path, "probe_report", ("--report-code", code))
+
+
 def test_every_required_section_is_present_and_in_order(tmp_path):
     written = _scaffold(tmp_path, "probe_report")
     text = written.read_text(encoding="utf-8")
@@ -106,9 +135,13 @@ def test_the_blurb_precedes_the_first_heading(tmp_path):
     assert not blurb.lstrip().startswith("*")
 
 
-def test_the_page_links_its_inventory_and_the_glossary(tmp_path):
+def test_the_page_links_the_glossary_entry_and_the_inventory(tmp_path):
     written = _scaffold(tmp_path, "probe_report")
     text = written.read_text(encoding="utf-8")
-    # The report glossary entry, and the inventory the page must be listed in.
-    assert "[[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]" in text
+    # Read from the glossary rather than pinned, so a renamed or regenerated
+    # entry fails here as a template that needs updating rather than as a test
+    # that remembers an old id.
+    assert f"[[id:{_glossary_report_id()}][report]]" in text
+    # The inventory the page must be listed in, named relative to its folder.
     assert "[[file:./reports.org][Reports]]" in text
+    assert REPORT_INVENTORY.exists()

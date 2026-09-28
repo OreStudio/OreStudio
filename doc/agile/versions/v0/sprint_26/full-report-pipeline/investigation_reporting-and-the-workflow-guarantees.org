@@ -174,7 +174,8 @@ not exist.
    highest-value fix in this cluster, because it turns a class of silent
    double-work into a checked one. It belongs to
    [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]],
-   which owns the phase contract.
+   which owns the phase contract, and is tasked as
+   [[id:4171EE8C-47A0-4641-A26A-510B29689BAE][Use the engine's idempotency check in the reporting handlers]].
 2. *Decide the deadline question rather than leaving it implicit.* Either give a
    step a deadline, or state that a silent phase requires a person. Today the
    behaviour is the second, and no page said so.

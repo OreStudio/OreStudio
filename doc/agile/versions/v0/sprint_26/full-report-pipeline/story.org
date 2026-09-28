@@ -51,6 +51,7 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
 | [[id:8C2D973B-5D85-4FFC-8322-3603DD385E96][Prove the pipeline with both ends substituted]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:2FF71147-6F1C-42F3-8566-8A208598653C][Prove the full pipeline against live data]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:FCDE3910-A534-4598-A44D-4FC280DB04B5][Document the reports and the report workflow]] | DONE | 2026-09-28 | 2026-09-28 | Give individual reports their own document type and inventory, document the report execution workflow with the workflow document type, reconcile the reporting architecture pages with the run configuration and the engine guarantees, and record the analysis. |
+| [[id:4171EE8C-47A0-4641-A26A-510B29689BAE][Use the engine's idempotency check in the reporting handlers]] | BACKLOG | | | No reporting handler checks whether the step it is answering has already run, so a run recovered after a restart repeats the work of every phase it re-dispatches. |
 
 * Decisions
 
@@ -90,7 +91,9 @@ The target state is written as [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report
    offers the check a handler needs and reporting does not use it. The contract
    cannot be called enforced while a phase does not converge, so
    [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the
-   orchestration contract]] begins there rather than with the interface.
+   orchestration contract]] begins there rather than with the interface, and
+   [[id:4171EE8C-47A0-4641-A26A-510B29689BAE][Use the engine's idempotency
+   check in the reporting handlers]] carries the code fix.
 10. *A report page is where a report is described.* Each report gets a page
     carrying its purpose, audience, frequency, measures, ORE configuration,
     parameters and test coverage, and an inventory lists them. The tree holds

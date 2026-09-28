@@ -22,6 +22,7 @@ document is expected to follow.
 """
 
 import argparse
+import re
 import sys
 import uuid
 from datetime import date, timedelta
@@ -675,7 +676,16 @@ def main(argv=None):
         source_methodology = ""
 
     # report carries the stable code its definitions and seeds refer to.
-    report_code = args.report_code or args.slug if args.type == "report" else ""
+    if args.type == "report":
+        report_code = args.report_code or args.slug
+        # The code is a key: a seed writes it and a definition refers to it, so
+        # a malformed one is refused here rather than becoming a lookup that
+        # silently never matches.
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", report_code):
+            sys.exit(f"error: the report code must be lower_snake_case: "
+                     f"'{report_code}'")
+    else:
+        report_code = ""
 
     goal_default = {
         "task": "(Describe what user-visible-or-internal change this "

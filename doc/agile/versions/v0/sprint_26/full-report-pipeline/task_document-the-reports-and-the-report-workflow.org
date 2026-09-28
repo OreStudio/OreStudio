@@ -73,7 +73,7 @@ the framework's second use case untested.
 | Report pages | 2 | =ls doc/knowledge/reports/report_*.org | wc -l= | =d3325300d5= |
 | Workflow pages | 3, was 2 | =ls doc/knowledge/workflows/workflow_*.org | wc -l= | =d3325300d5= |
 | Pages corrected for contradicting the code | 3, plus 3 diagrams | the =Conclusions= table on [[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][the investigation]] | =d3325300d5= |
-| Generator tests | 8 added | =.audit/cgvenv/bin/python -m pytest projects/ores.codegen/tests/test_doc_report_type.py -q= | =d3325300d5= |
+| Generator tests | 12 added | =.audit/cgvenv/bin/python -m pytest projects/ores.codegen/tests/test_doc_report_type.py -q= | =d3325300d5= |
 
 The commit column names the tree the numbers describe, which is the tree the
 branch started from. The suite size in the final run is on the PR.
@@ -117,7 +117,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The report-code expression reads as if the conditional might bind differently | =doc_generate.py= | Accepted | Split into an if/else, so no reader has to parse the precedence. |
+| 2 | =--report-code= is not validated, and it is a stable key | =doc_generate.py= | Accepted | The resolved code must match =[a-z][a-z0-9_]*=; five parametrised cases cover rejection. |
+| 3 | The scaffold helper asserts one file but not which | =test_doc_report_type.py= | Accepted | The helper asserts the exact filename and that nothing else was written; the naming rule keeps a case that discovers the file instead of predicting it. |
+| 4 | The test pins the glossary id | =test_doc_report_type.py= | Accepted | The id is read from =glossary.org=, so a renamed entry fails here as a template that needs updating. |
+| 5 | The template's =GENERATED FILE= header names a source that has to hold the block | =doc_report.org.mustache= | Answered, no change | =projects/ores.codegen/library/templates/doc.org= does not exist, and all 144 =doc_*.org.mustache= templates carry the same boilerplate. Six are tangled from a literate =_org.org= sibling; the rest, the workflow type added earlier and this one among them, are maintained in place. =doc_generator.md= now says so, and the tangle job produces no diff for this file. |
+| 6 | The idempotency gap is only in an investigation, with no follow-up | =task_use-the-idempotency-check.org= | Accepted | A task now carries the code fix, linked from the story's decision 9 and from the investigation's first recommendation. |
 
 * Result
 
@@ -140,7 +145,7 @@ idempotency check.
 
 *The documents.* The =report= document type exists, with its contract page, its
 registration in codegen and compass, its place in the taxonomy, the glossary and
-the recipe, and eight generator cases. The report inventory and two report pages
+the recipe, and twelve generator cases. The report inventory and two report pages
 went in with it: Headline Position as a production report, and the sample bundle
 smoke test as the report the ACME story needs. The report execution workflow now
 has a page with every section its type requires, an interaction diagram, and a
@@ -158,3 +163,13 @@ Two findings were recorded rather than fixed, because both are code rather than
 documentation and neither is in this task's scope: the idempotency gap above, and
 that neither bulk read filters by the run's scope beyond the trades call's book
 list, so a report narrower than its tenant exports the tenant's data.
+
+*The review.* Six comments came back, all minor. Five were accepted and fixed:
+the report-code expression is split so its precedence is not something a reader
+has to parse, the code is now validated as a key, the scaffold helper asserts
+exactly which file it wrote, the test reads the glossary id instead of pinning
+it, and the idempotency gap now has a task of its own rather than living only on
+the investigation. The sixth, about the template's =GENERATED FILE= header, is
+answered rather than changed: no such source exists for any of the 144 templates,
+and =doc_generator.md= now states which of them are tangled and which are
+maintained in place. The table above records the decision on each.

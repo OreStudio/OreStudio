@@ -1,5 +1,13 @@
 # Round trip status of the shared reference kinds
 
+**Update.** Currencies were fixed after this measurement: the refdata currency
+now carries ORE's `CurrencyType` verbatim in its own column, so the kind round
+trips 13 of 13 and is registered as a test rather than measured. Only
+conventions remain, and the probe now measures that kind alone. The rest of this
+page is the measurement as it stood at `77c286dcce`, kept because it is the
+record of what the harness found and why each fix was needed. See
+`task_carry-ores-currency-type.org`.
+
 Measured on the branch that built the round-trip harness, at `77c286dcce`, with
 the harness's own probe:
 
@@ -15,7 +23,7 @@ failures are losses rather than comparisons that need stating.
 | Kind | Glob | Files | Round trip |
 |------|------|-------|------------|
 | calendar adjustments | `calendaradjustment*.xml` | 5 | 5, registered as a test |
-| currencies | `currencies*.xml` | 13 | 12 |
+| currencies | `currencies*.xml` | 13 | 12, fixed to 13 by the follow-up task |
 | conventions | `conventions*.xml` | 72 | 0 |
 
 ## Calendar adjustments round trip, with one stated normalisation

@@ -63,6 +63,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | BACKLOG | | | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
 | [[id:8A0973B9-A595-45D1-97EC-E83ECCCF5B27][Round trip the conventions configuration]] | DONE | 2026-09-28 | 2026-09-29 | conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Fourteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip. |
 | [[id:A436B63F-778C-4EE5-BD9C-9BAB5133316A][Model the convention categories the mapper skips]] | BACKLOG | | | Fourteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip. |
+| [[id:C12CE087-BB30-4169-8F73-543D2F91B9CE][Carry ORE's currency type on the refdata currency]] | DONE | 2026-09-28 | 2026-09-29 | The currency mapper translates ORE's free-text CurrencyType into the refdata monetary_nature, and Major and Minor both become fiat, so the export cannot recover which one the document held. Give the currency a column that carries ORE's own value. |
 
 * Decisions
 
@@ -179,6 +180,17 @@ A report definition's configuration is a set of strongly typed entities rather t
   The rule this story already holds to applies unchanged: what may be stated is
   a difference that carries the same information, and a dropped element carries
   less than the document did.
+- **A vendor's token gets its own column.** ORE's =CurrencyType= was translated
+  into the refdata =monetary_nature=, and the translation could not be undone:
+  =Major= and =Minor= both became =fiat=, so the export could never recover
+  which one the document held. The two are different axes, since a nature says
+  what a currency is and ORE's type says how important it is, and =market_tier=
+  was not a home for it either because its lookup holds =g10= and =emerging=.
+  The currency now carries ORE's token verbatim in =ore_currency_type=, which is
+  nullable because ORE declares the element as a free string and most documents
+  set none, and it derives the nature from it. The rule generalises: where a
+  document's field is the vendor's vocabulary and not ours, it is stored as the
+  vendor wrote it, and our classification of it is a separate derived column.
 
 * Out of scope
 

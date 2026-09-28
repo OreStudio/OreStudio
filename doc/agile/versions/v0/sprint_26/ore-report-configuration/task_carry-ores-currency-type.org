@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: C12CE087-BB30-4169-8F73-543D2F91B9CE
+:END:
+#+title: Task: Carry ORE's currency type on the refdata currency
+#+description: The currency mapper translates ORE's free-text CurrencyType into the refdata monetary_nature, and Major and Minor both become fiat, so the export cannot recover which one the document held. Give the currency a column that carries ORE's own value.
+#+type: task
+#+level: s1
+#+filetags: :refdata:ore:model:round-trip:ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/carry-ores-currency-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A currency carries the ORE currency type it was imported with, so the export writes back the same token and the currencies kind round trips over its whole corpus.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Implemented and passing; open for review. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge.                                 |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The refdata currency model has a column that carries ORE's CurrencyType verbatim, and the database has it after a recreate.
+- The mapper reads and writes that column one to one, and no longer translates ORE's type into monetary_nature.
+- The currencies kind is registered with the round-trip harness and all thirteen corpus files round trip.
+
+* Plan
+
+1. Add =ore_currency_type= to the currency model as a nullable text column,
+   because ORE declares the element as a free string and most documents set
+   none. A lookup would be wrong: the vocabulary is ORE's, not ours.
+2. Regenerate the refdata artefacts for the currency entity and apply the
+   column to the development database.
+3. Read the token into the new column on import and write it back on export.
+   Keep deriving =monetary_nature= from it, because that is our classification
+   of a currency rather than a substitute for ORE's token.
+4. Register the currencies kind with the harness and assert the whole corpus.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Currency files that round trip | 13 of 13, was 12 | =ores.ore.core.tests "[ore][xml][roundtrip][reference]"= | =dc1722feae= |
+| Refdata artefacts regenerated for the entity | 21 paths | =compass codegen regenerate --component refdata --address ores --entity currency= | =dc1722feae= |
+| Generator tests | 990 passed | =.audit/cgvenv/bin/python -m pytest projects/ores.codegen/tests -q= | =dc1722feae= |
+| =ores.ore.core.tests= | 429959 assertions in 566 cases | the binary | this branch |
+| =ores.refdata.core.tests= | 4029 assertions in 235 cases | the binary | this branch |
+| =ores.shell.refdata.tests= | 3516 assertions in 1246 cases | the binary | this branch |
+
+* Notes
+
+- Three tests encoded the old contract, where =monetary_nature= doubled as
+  ORE's token. They now set the token and assert it round trips, and one of
+  them asserts the derivation explicitly: a token of =Crypto= comes back as
+  =Crypto= with a nature of =synthetic=, which is the whole point of separating
+  the two.
+- The mapper can no longer round trip a currency that has a =monetary_nature=
+  but no token, because ORE's document cannot express a nature. That is the
+  contract now, and the tests say so rather than leaving it to be discovered.
+- The column is nullable, so a document that sets no =CurrencyType= exports
+  none. Twelve of the thirteen corpus files depend on that.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

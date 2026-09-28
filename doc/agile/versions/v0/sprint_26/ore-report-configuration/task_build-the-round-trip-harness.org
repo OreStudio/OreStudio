@@ -26,11 +26,11 @@ The harness turns round trip from a claim into a command. It is built once and e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Implemented and passing; open for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then register the remaining kinds as their mappers land. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -128,3 +128,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in [[https://github.com/OreStudio/OreStudio/pull/2347][PR #2347]].
+
+The harness exists, credit simulation is registered through it, and all 14
+files of that kind round trip. It owns the corpus walk, the count and the
+failure list; a kind owns its mapper pair and its comparison. A kind is a
+value, so the next one is a registration rather than a new rig.
+
+Two things the work changed against the plan:
+
+- The first implementation compared the two documents as text and failed every
+  credit simulation file. The differences were ORE's =t0="0.0"= against our
+  =t0="0"=, and the indentation inside a =Data= element. That is one document
+  held two ways, so the comparison now comes from the kind, and the credit
+  simulation comparison moved out of its test into =credit_simulation_diff.cpp=
+  so that the test and the harness share one implementation.
+- Measuring the reference kinds, which the harness made possible for the first
+  time, showed that none of them is one registration away. That measurement is
+  on [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference
+  configuration]] rather than here, because it is that task's subject.
+
+Evidence: =ores.ore.core.tests= whole binary 429951 assertions in 564 test
+cases; harness tags 17 assertions in 7 cases; credit simulation round-trip tags
+44 assertions in 15 cases.

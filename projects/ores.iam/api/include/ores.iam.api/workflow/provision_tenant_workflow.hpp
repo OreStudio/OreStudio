@@ -123,6 +123,11 @@ struct provision_tenant_parameter {
  */
 struct provision_tenant_workflow_request {
     std::string profile_code;
+    /// The tenant the run provisions. It is not the run's own tenant: a run
+    /// belongs to the tenant that asked for it, so that the tenant can follow
+    /// its own work, while the tenant this names is the one every step acts
+    /// on.
+    std::string tenant_id;
     std::string tenant_code;
     std::string tenant_hostname;
     /// The tenant administrator the run's steps act as. The engine sends a step
@@ -193,6 +198,7 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
 
     workflow_definition def;
     def.type_name = std::string(provision_tenant_workflow_type);
+    def.on_failure = failure_policy::stop;
     def.description =
         "Provisions a tenant from a seed profile: publishes the bundles the profile orders, "
         "imports its LEI hierarchy, provisions its parties, loads its staff, attaches its "
@@ -200,12 +206,18 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
         "step kind, in the profile's order, plus the step that completes it.";
 
     def.build_steps = [](const std::string& request_json,
-                         const std::string& tenant_id,
+                         const std::string& /*tenant_id*/,
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         auto parsed = rfl::json::read<provision_tenant_workflow_request>(request_json);
         if (!parsed)
             throw std::runtime_error(
                 "A provision tenant run was started with a request this deployment cannot read.");
+        // The run's own tenant scopes its rows; the tenant the run provisions
+        // is what every step acts on, and only the request names it.
+        if (parsed->tenant_id.empty())
+            throw std::runtime_error(
+                "A provision tenant run was started with a request that names no tenant to "
+                "provision.");
 
         std::vector<workflow_step_def> steps;
         steps.reserve(parsed->steps.size() + 1);
@@ -220,7 +232,7 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
 
             provision_tenant_step_command command;
             command.kind = kind;
-            command.tenant_id = tenant_id;
+            command.tenant_id = parsed->tenant_id;
             command.tenant_code = parsed->tenant_code;
             command.tenant_hostname = parsed->tenant_hostname;
             command.admin_account_id = parsed->admin_account_id;

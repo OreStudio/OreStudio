@@ -32,6 +32,10 @@ namespace {
 const std::string tags("[workflow]");
 
 const std::string tenant_id("11111111-1111-4111-8111-111111111111");
+// The tenant the run provisions, which is not the run's own: a run belongs to
+// the tenant that asked for it, so the two are stated apart and the steps are
+// asserted to act on this one.
+const std::string provisioned_tenant_id("44444444-4444-4444-8444-444444444444");
 const std::string admin_account_id("22222222-2222-4222-8222-222222222222");
 const std::string correlation_id("33333333-3333-4333-8333-333333333333");
 
@@ -60,6 +64,7 @@ provision_tenant_step declared(std::string kind, std::string arguments_json = "{
 std::string request_json(const std::vector<provision_tenant_step>& steps) {
     provision_tenant_workflow_request request;
     request.profile_code = "acme_demo";
+    request.tenant_id = provisioned_tenant_id;
     request.tenant_code = "acme";
     request.tenant_hostname = "acme.example";
     request.admin_account_id = admin_account_id;
@@ -152,7 +157,9 @@ TEST_CASE("a repeated kind yields a distinct step name", tags) {
     CHECK(steps[2].name == complete_provisioning_step_kind);
 }
 
-TEST_CASE("a step command carries the run's tenant, administrator and parameters", tags) {
+TEST_CASE("a step command carries the tenant it provisions, its administrator and the run's "
+          "parameters",
+          tags) {
     const auto def = definition();
     const auto steps = def.build_steps(
         request_json({declared("provision_party", R"({"party_bundle":"acme_group"})")}),
@@ -163,7 +170,10 @@ TEST_CASE("a step command carries the run's tenant, administrator and parameters
         rfl::json::read<provision_tenant_step_command>(steps[0].build_command("", {}));
     REQUIRE(command);
     CHECK(command->kind == "provision_party");
-    CHECK(command->tenant_id == tenant_id);
+    // The tenant the step acts on is the one the request names, not the
+    // engine's own tenant argument, which is the run's tenant.
+    CHECK(command->tenant_id == provisioned_tenant_id);
+    CHECK(command->tenant_id != tenant_id);
     CHECK(command->tenant_code == "acme");
     CHECK(command->tenant_hostname == "acme.example");
     CHECK(command->admin_account_id == admin_account_id);
@@ -248,4 +258,22 @@ TEST_CASE("a request this deployment cannot read is refused", tags) {
 
     CHECK_THROWS_AS(def.build_steps("not a request", tenant_id, correlation_id),
                     std::runtime_error);
+}
+
+TEST_CASE("a request that names no tenant to provision is refused", tags) {
+    const auto def = definition();
+
+    provision_tenant_workflow_request request;
+    request.profile_code = "acme_demo";
+    request.tenant_code = "acme";
+    request.tenant_hostname = "acme.example";
+    request.admin_account_id = admin_account_id;
+    request.steps = {declared("publish_bundle")};
+
+    try {
+        def.build_steps(rfl::json::write(request), tenant_id, correlation_id);
+        FAIL("the definition accepted a request that names no tenant to provision");
+    } catch (const std::runtime_error& e) {
+        CHECK(std::string(e.what()).find("names no tenant to provision") != std::string::npos);
+    }
 }

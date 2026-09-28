@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/market-series-uri-identity
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,9 +28,9 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Scoped, and the blocker the story's analysis recorded is cleared: =from_ore_key()= names 485,606 of 485,606 corpus instrument keys and =from_index_name()= names 156 of 156 fixing index names, so no identity-bearing row in the corpus lacks a way back. Both import write paths are read and measured. |
+| Now          | The column is on =market_series= and the import writes it from both key spaces: =from_ore_key()= for a market-data key and =from_index_name()= for a fixing's index name, which now has its first production call site. It is nullable and the registry triple still keys the row. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the column to =market_series= and =feed_binding= with the natural key on it, write it from both import paths, then delete the triple. |
+| Next         | Add the column to =feed_binding=, then the deletion of the triple and the natural key's move onto the URI. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -81,6 +81,8 @@ plan itself stays — it is the historical record of what we did.)
 | Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
 | =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
 | Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
+| =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
+| Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,

@@ -121,10 +121,10 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Step kinds the executor runs | 6 | =./compass.sh test run -- -R ores.iam.api.tests\|ores.iam.core.tests= (the workflow tests assert the executed list) | fff1e5b733 |
 | Argument-parser test cases added | 9 | =./compass.sh test run -- -R ores.iam.core.tests= (136 cases, all passing) | fff1e5b733 |
-| Steps the demo card's run took, and its duration | 7 steps, 30 s | =./compass.sh shell -l build/ores_provision_acme2.ores= followed by the workflow log | 76c4147e-9bd8-4959-abe2-bd6698635fc1 |
-| Staff accounts the tenant holds, of which photographed | 59, 58 photographed | =./compass.sh sql= over =ores_iam_accounts_tbl= for tenant =dc607c96-…= | dc607c96-ed4b-444d-90e4-ec86e075c128 |
-| Feed bindings the run created | 65, 13 for each of the tenant's five parties | =./compass.sh sql= over =ores_marketdata_feed_bindings_tbl= grouped by party | dc607c96-ed4b-444d-90e4-ec86e075c128 |
-| Market observations the running feeds materialised | 1639 across five parties | =./compass.sh sql= over =ores_marketdata_market_observations_tbl= grouped by party | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Steps the demo card's run took, and its duration | 7 steps, 30 s | =evidence/provision_acme_run_completed.txt= (the request, the workflow log and the reads) | 76c4147e-9bd8-4959-abe2-bd6698635fc1 |
+| Staff accounts the tenant holds, of which photographed | 59, 58 photographed | =evidence/provision_acme_run_completed.txt= (read over =ores_iam_accounts_tbl=) | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Feed bindings the run created | 65, 13 for each of the tenant's five parties | =evidence/provision_acme_run_completed.txt= (read over =ores_marketdata_feed_bindings_tbl= grouped by party) | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Market observations the running feeds materialised | 1639 across five parties | =evidence/provision_acme_run_completed.txt= (read over =ores_marketdata_market_observations_tbl= grouped by party) | dc607c96-ed4b-444d-90e4-ec86e075c128 |
 
 The raw output of the run is =evidence/provision_acme_run_completed.txt= beside this
 task.

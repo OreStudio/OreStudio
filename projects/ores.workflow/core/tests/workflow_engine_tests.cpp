@@ -589,6 +589,46 @@ TEST_CASE("a retry refuses a step the run does not hold", tags) {
     BOOST_LOG_SEV(lg, debug) << "Retry refused a step the run does not hold.";
 }
 
+TEST_CASE("a retry refuses a stopped run that has no failed step", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_no_failed_step_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_no_failed_step_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // A run can rest in failed with no failed step: a stop that left every
+    // step complete, which the engine reaches when the definition it
+    // materialised disagrees with the one it re-reads. The state is written
+    // here rather than provoked, because the engine has no product path to it,
+    // and what the case pins is the answer a person sees.
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    const auto instances_before = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instances_before.size() == 1);
+
+    auto stopped = instances_before.front();
+    stopped.state_id = f.instance_states.require("failed");
+    stopped.error = "The run stopped without failing a step.";
+    instances.write(f.h.context(), stopped);
+
+    auto finished = rows.front();
+    finished.state_id = f.step_states.require("completed");
+    steps.write(f.h.context(), finished);
+
+    const auto refused = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
+    CHECK_FALSE(refused.resumed);
+    CHECK(refused.reason == "The run holds no failed step to resume from.");
+    BOOST_LOG_SEV(lg, debug) << "Retry refused a stopped run with no failed step.";
+}
+
 TEST_CASE("a retry is confined to the caller's own tenant", tags) {
     auto lg(make_logger(test_suite));
 

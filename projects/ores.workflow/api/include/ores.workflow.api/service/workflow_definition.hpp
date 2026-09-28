@@ -137,12 +137,6 @@ struct ORES_WORKFLOW_API_EXPORT materialised_step {
 };
 
 /**
- * @brief Declarative definition of a complete named workflow.
- *
- * Registered once at startup in the workflow_registry. The engine calls
- * build_steps once per instance at start time to determine the step sequence.
- */
-/**
  * @brief What a definition asks the engine to do when one of its steps fails.
  *
  * The policy belongs to the definition because it follows from what a
@@ -159,6 +153,12 @@ enum class ORES_WORKFLOW_API_EXPORT failure_policy : std::uint8_t {
     stop = 1
 };
 
+/**
+ * @brief Declarative definition of a complete named workflow.
+ *
+ * Registered once at startup in the workflow_registry. The engine calls
+ * build_steps once per instance at start time to determine the step sequence.
+ */
 struct ORES_WORKFLOW_API_EXPORT workflow_definition {
     /**
      * @brief Unique type name matching workflow_instance.type.

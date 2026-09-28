@@ -763,12 +763,16 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
         return {.reason = "The run has not stopped, so there is nothing to resume."};
 
     // The run's own persisted steps, forward steps only: a retry resumes
-    // work, so a compensation step is never a target.
+    // work, so a compensation step is never a target. One page covers a run,
+    // because a definition bounds its own step count. The order is stated
+    // here rather than taken from the read, because the target is chosen by
+    // position: the first failed step, and every step before it.
     const auto raw_steps = step_repo_.read_latest_by_workflow_id(ctx_, instance_id_str, 0, 1000);
     std::vector<domain::workflow_step> forward;
     for (const auto& s : raw_steps)
         if (s.step_index >= 0)
             forward.push_back(s);
+    std::ranges::sort(forward, {}, &domain::workflow_step::step_index);
 
     const auto failed_id = step_states_.require("failed");
     const auto completed_id = step_states_.require("completed");

@@ -25,6 +25,9 @@
 #include "ores.marketdata.api/messaging/import_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.ore.core/market/fx_quote_convention_checker.hpp"
+#include <functional>
+#include <set>
 #include <string>
 
 namespace ores::marketdata::service {
@@ -61,18 +64,33 @@ public:
     static constexpr std::string_view fixing_series_type = "FIXING";
 
     /**
+     * @brief Supplies the currency pairs the reversed-key correction checks
+     *        against, when the caller wants to name them rather than have the
+     *        service read them from ores.refdata.
+     */
+    using known_pairs_provider = std::function<
+        std::set<ores::ore::market::fx_quote_convention_checker::currency_pair>()>;
+
+    /**
      * @param auth_nats Authenticated client used to fetch ores.refdata's
      *        currency_pair reference data (for fx_quote_convention_checker).
      *        If the fetch fails (refdata unreachable, etc.), the import
      *        proceeds with no reversed-key correction rather than failing.
+     * @param known_pairs When set, the pairs the correction checks against,
+     *        and auth_nats is not consulted for them. The reference data is a
+     *        live read of another component's state, so a test that supplies
+     *        its own pairs is deterministic instead of racing whatever
+     *        ores.refdata.service happens to answer.
      */
-    import_service(context ctx, ores::nats::service::nats_client& auth_nats);
+    import_service(context ctx, ores::nats::service::nats_client& auth_nats,
+                   known_pairs_provider known_pairs = {});
 
     messaging::import_market_data_response import(const messaging::import_market_data_request& req);
 
 private:
     context ctx_;
     ores::nats::service::nats_client& auth_nats_;
+    known_pairs_provider known_pairs_;
 };
 
 }

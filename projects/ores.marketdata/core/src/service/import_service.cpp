@@ -174,9 +174,11 @@ canonical_key(const std::string& key,
 
 } // namespace
 
-import_service::import_service(context ctx, ores::nats::service::nats_client& auth_nats)
+import_service::import_service(context ctx, ores::nats::service::nats_client& auth_nats,
+                               known_pairs_provider known_pairs)
     : ctx_(std::move(ctx))
-    , auth_nats_(auth_nats) {}
+    , auth_nats_(auth_nats)
+    , known_pairs_(std::move(known_pairs)) {}
 
 messaging::import_market_data_response
 import_service::import(const messaging::import_market_data_request& req) {
@@ -283,7 +285,8 @@ import_service::import(const messaging::import_market_data_request& req) {
         if (std::any_of(data.begin(), data.end(), [](const auto& d) {
                 return d.series_type == "FX" && d.metric == "RATE";
             }))
-            fx_checker.emplace(fetch_known_currency_pairs(auth_nats_));
+            fx_checker.emplace(known_pairs_ ? known_pairs_()
+                                            : fetch_known_currency_pairs(auth_nats_));
 
         // parse_market_data already de-duplicated repeated (date, key)
         // pairs (last-line-wins) — see duplicate_policy. In error mode,

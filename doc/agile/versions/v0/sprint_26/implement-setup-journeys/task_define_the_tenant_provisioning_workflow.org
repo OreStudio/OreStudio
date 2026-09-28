@@ -28,9 +28,9 @@ iam.v1.tenants.provision starts a real run. The provision_tenant_workflow defini
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The definition, the step-kind catalogue and the run's administrator plumbing are in. The run lifecycle is not: nothing registers the definition and no handler serves the step subject, so a start is refused by the engine. |
+| Now          | The reconnaissance and the target-state documentation this task produced are in pull request #2330, which carries documentation only. The definition and the run lifecycle are not written: nothing registers a provision tenant workflow and no handler serves a step subject. |
 | Waiting on   | Nothing.                               |
-| Next         | Register the definition in the workflow service, then add the iam step executor that serves the step subject for the kinds this task lands. |
+| Next         | Write the definition and its step-kind catalogue, the iam step executor that serves the step subject for the kinds this task lands, and the registration that makes a start run. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -178,3 +178,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Pull request #2330 delivers the reconnaissance and the target-state
+documentation this task produced, and nothing else. It carries the
+investigation that decided the provisioning architecture; the workflow
+engine cluster and the per-workflow pages, under the new workflow
+document type, including the tenant provisioning page this task's
+definition has to satisfy; the scheduler cluster, rewritten to document
+the scheduler itself; and the capture of the scheduler's fixed minute
+wake.
+
+The task's acceptance is untouched by it. No definition is registered
+and no handler serves a step subject, so a provision tenant request still
+starts no run. The definition with its step-kind catalogue, the iam step
+executor for the kinds this task lands, and the registration are the next
+unit of work, on their own branch.

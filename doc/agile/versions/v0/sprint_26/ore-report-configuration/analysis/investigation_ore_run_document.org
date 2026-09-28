@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 7CE34CFC-A04C-46E4-92D2-B1C09DEADE50
+:END:
+#+title: Investigation: the ORE run document
+#+description: The ORE run document in detail: the setup parameters, the named market bindings, and the analytic list with the thirty-five types and their parameter sets, measured from the shipped examples.
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+=ore.xml= is five parameter lists and the schema constrains nothing in them:
+=Parameter/@name= and =Analytic/@type= are free strings. The vocabulary exists
+only in the 416 run documents ORE ships, and there it is forty-three setup
+parameters, eight named market bindings, and thirty-five analytic types whose
+parameter sets barely overlap — around seventy parameters for =xva=, sixty for
+=simulation=, thirty for =sensitivity=.
+
+This is the document that decides how a run behaves, and it is the one the
+current model represents least: a flat row of switches can say "run NPV" and
+nothing else.
+
+* Detail
+
+** The shape
+
+#+begin_src xml
+<ORE>
+  <Setup>     <Parameter name="asofDate">…</Parameter> … </Setup>
+  <Logging>   … </Logging>
+  <Markets>   <Parameter name="pricing">…</Parameter> … </Markets>
+  <Analytics>
+    <Analytic type="npv">   <Parameter name="active">Y</Parameter> … </Analytic>
+    <Analytic type="xva">   … </Analytic>
+  </Analytics>
+  <Restore>   … </Restore>
+</ORE>
+#+end_src
+
+=Setup= is required, =Analytics= is required, and the other three are optional.
+Only =Markets= is a set of *named* bindings: each of its parameters names a
+configuration set built in =todaysmarket.xml=, which is market data and out of
+scope here.
+
+** Setup: 43 parameter names in use
+
+File bindings into other documents: =curveConfigFile=, =conventionsFile=,
+=marketConfigFile=, =pricingEnginesFile=, =pricingEnginesFileScenario=,
+=portfolioFile=, =marketDataFile=, =marketDataMappingFile=, =fixingDataFile=,
+=fixingDataMappingFile=, =calendarAdjustment=, =currencyConfiguration=,
+=referenceDataFile=, =counterpartyFile=, =scriptLibrary=, =iborFallbackConfig=,
+=additionalResults=.
+
+Run settings: =asofDate=, =accrualDate=, =inputPath=, =inputPathMarket=,
+=inputPathPortfolio=, =outputPath=, =logFile=, =logMask=, =nThreads=,
+=continueOnError=, =buildFailedTrades=, =observationModel=, =baseCurrency=,
+=dateCalendar=, =dateConvention=, =implyTodaysFixings=, =fixingCutoff=,
+=ignoreFixingLag=, =includeTodaysCashFlows=, =includeReferenceDateEvents=,
+=lazyMarketBuilding=, =enrichIndexFixings=, =useAnalytics=,
+=csvCommentReportHeader=, =defaultMappingToIdentity=,
+=portfolioRecurseIntoSubDirectories=.
+
+** Markets: 8 roles
+
+=pricing=, =simulation=, =sensitivity=, =lgmcalibration=, =fxcalibration=,
+=eqcalibration=, =infcalibration=, =bondpricing=.
+
+** Analytics: 35 types, and why they cannot share one table
+
+Ordered by how often the shipped examples use them, with the number of distinct
+parameters each takes:
+
+| Type | Uses | Parameters | Type | Uses | Parameters |
+|------+------+------------+------+------+------------|
+| =npv= | 370 | 6 | =scenarioGeneration= | 20 | 8 |
+| =cashflow= | 336 | 3 | =xvaExplain= | 15 | 8 |
+| =curves= | 331 | 6 | =zeroToParShift= | 14 | 5 |
+| =simulation= | 261 | ~60 | =additionalResults= | 14 | 2 |
+| =xva= | 253 | ~70 | =pfe= | 14 | 12 |
+| =initialMargin= | 118 | 2 | =bacva= | 13 | 4 |
+| =sensitivity= | 72 | ~30 | =portfolioDetails= | 12 | 3 |
+| =stress= | 23 | 12 | =crif= | 12 | 5 |
+| =simm= | 18 | 8 | =saccr= | 10 | 4 |
+| =creditcurves= | 15 | 4 | =correlation= | 10 | 10 |
+| =calibration= | 14 | ~22 | =sacva= | 9 | 3 |
+| =xvaStress= | 7 | 6 | =scenario= | 9 | 3 |
+| =xvaSensitivity= | 5 | 8 | =parStressConversion= | 8 | 8 |
+| =pnlExplain= | 5 | 8 | =imschedule= | 7 | 3 |
+| =historicalSimulationVar= | 5 | ~20 | =sensitivityStress= | 5 | 4 |
+| =pnl= | 3 | 8 | =smrc= | 4 | 1 |
+| =parametricVar= | 3 | 10 | =amc= | 3 | 3 |
+| =zeroToParSensiConversion= | 3 | 8 | | | |
+
+The parameters are not only numerous, they are different in kind: =xva= carries
+allocation methods, curves, MPOR and DIM regression settings; =simm= carries a
+version, a calculation currency and an MPOR in days; =smrc= carries one flag.
+They also reference the configuration libraries. =sensitivity= names a
+=sensitivityConfigFile= and a =stressConfigFile=; =xva= names a
+=simulationConfigFile= and a =sensitivityConfigFile=; =simm= names a
+=simmCalibration=; =crif= and =bacva= name a =simmVersion=. That is the shape of
+the entity model: one row per analytic, a typed parameter entity per analytic
+type, and references to the libraries several analytics share.
+
+** Why the current model cannot hold this
+
+=ores_reporting_risk_report_configs_tbl= has =base_currency=,
+=observation_model=, =n_threads=, =market_data_type=, =market_data_date=,
+twelve =*_enabled= booleans, four XVA columns, =var_quantiles=, =var_method=,
+=simm_version= and =simm_calculation_currency=. That is a fraction of =Setup=,
+none of =Markets=, and none of =Analytics=. It cannot express which analytics
+run, in what order, with which parameters, or against which library — and the
+twelve booleans are one row where ORE has a list of thirty-five types.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

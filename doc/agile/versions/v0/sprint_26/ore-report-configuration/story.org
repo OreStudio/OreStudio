@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B
+:END:
+#+title: Story: Model the ORE report configuration as entities
+#+description: Give the ORE report configuration vocabulary a typed entity model: the seventeen XML documents an ORE run is configured with, owned by or referenced from a report definition, so the engine's input is produced from entities rather than assembled by hand.
+#+type: story
+#+level: s2
+#+filetags: :reporting:ore:model:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report definition's configuration is a set of strongly typed entities rather than a flat row of switches, and every entity in the ORE configuration vocabulary is identified, owned, and reachable from the definition.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-27                               |
+
+* Acceptance
+
+- Every entity in the seventeen ORE configuration documents is identified and mapped to an owning component.
+- A report definition reaches its configuration through typed entities and foreign keys, never through a flat table of switches or an XML or JSON blob.
+- A new kind of report adds a workflow and a parameter block, not a column on the report definition.
+- Every report type is seeded with a stable code, and each one names the workflow it selects and the configuration types a run of that type requires. The report definition reaches its type by foreign key, not by a text code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ABCCD68D-D07A-4DA6-AF44-61B16F56D26E][Scaffold story: Model the ORE report configuration as entities]] | STARTED | 2026-09-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5ED86EEE-6090-4321-A8E4-BF80D418BA32][Design the ORE report configuration entity model]] | STARTED | 2026-09-27 | | Initial task for: Model the ORE report configuration as entities |
+| [[id:8F6B8D02-2951-4A7C-918F-F6F5D936B1E0][Model the run document and the analytic list]] | BACKLOG | | | Typed entities for the ORE run document: the setup block, the market bindings, and the ordered analytic list with a lookup of the analytic types. |
+| [[id:F17348AD-67DB-4844-94B3-F612C638488B][Model the analytics configuration libraries]] | BACKLOG | | | Entity models for the configuration the analytics in a run reference: simulation and cross-asset model, sensitivity, stress, SIMM calibration, historical return, Basel traffic light, and credit simulation. |
+| [[id:DB247C1C-038E-4C39-ACA2-09C687EB2244][Model the curve configuration entities]] | BACKLOG | | | The curve recipes ORE builds from, currently only partly held as ir_curve_bootstrap_config: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes. |
+| [[id:C1EEE20C-6B2D-488F-9256-0596C8C8D38E][Model the shared reference configuration]] | BACKLOG | | | The ORE configuration the reference and trading components own: conventions, calendars and adjustments, currencies, counterparties, netting set definitions and IBOR fallback, referenced by a run rather than copied into reporting. |
+| [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]] | BACKLOG | | | Replace the workflow-shaped columns on the report definition with a classification that selects the registered workflow and the parameter block it reads. |
+| [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]] | BACKLOG | | | Build the ORE run document and the configuration documents it names from the entities, replacing the current package step that emits trades.msgpack and market_data.msgpack. |
+| [[id:D7968725-7267-44B7-A423-7E3AD5BC06A5][Implement the report configuration registry]] | DONE | | 2026-09-28 | The reporting half as real tables: the definition, its slots, the configuration sets, the parameters and the value domains, with every discriminator a foreign key to a seeded lookup. |
+| [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]] | BACKLOG | | | The domain vocabularies every configuration file discriminates on: configuration and report kinds, analytic types, value domains, shift families, shift types and shift schemes, risk classes, and the ORE element each maps to. |
+| [[id:30240D14-4488-4BE8-A386-BAB3D4018C49][Build the round-trip harness]] | BACKLOG | | | One test rig that takes an ORE configuration file of a given type, imports it into the entities, exports it back, and reports the diff, so each file type can be proven as soon as its mapper lands. |
+| [[id:69EC520A-4DC8-4FCA-AB34-4EA2233E72CA][Round trip the ORE run document]] | BACKLOG | | | ore.xml end to end: the Setup parameters, the Markets bindings and the ordered analytic list as entities, with an import mapper, an export mapper and a round trip over every ore.xml in the corpus. |
+| [[id:C7D9DDD4-CE84-4D3E-8645-1B8DFFB02B76][Round trip the stress test configuration]] | BACKLOG | | | stresstest.xml end to end: the named stress library, its scenarios, and the shift families each scenario applies, with both mappers and a round trip over every file in the corpus. |
+| [[id:190620B4-2F86-44C0-B4B7-31EE2C07D3F9][Round trip the sensitivity configuration]] | BACKLOG | | | sensitivity.xml end to end: the twenty-six shift families, the par conversion conventions and the shift grids, with both mappers and a round trip over every file in the corpus. |
+| [[id:96A01259-5B24-4CDC-B8AD-D9E435C7FCB1][Round trip the simulation configuration]] | BACKLOG | | | simulation.xml end to end: the Monte Carlo settings, the cross-asset model, its calibrations and the correlation pairs, with both mappers and a round trip over every file in the corpus. |
+| [[id:6B09C09B-818E-40AF-BD36-78C3B52A4A11][Round trip the SIMM calibration configuration]] | BACKLOG | | | simmcalibration.xml end to end: risk weights, correlations, concentration thresholds and currency lists per risk class, with both mappers and a round trip over every file in the corpus. |
+| [[id:B626FA36-9088-42E7-B348-39F201D86B38][Round trip the credit simulation configuration]] | DONE | | 2026-09-28 | creditsimulation.xml end to end: the entities that migrate, the transition matrices and their cells, and the run settings, with both mappers and a round trip over every file in the corpus. |
+| [[id:1E32AD44-F4D6-4275-9630-4B41840EFE29][Round trip the historical return configuration]] | BACKLOG | | | historicalreturnconfig.xml end to end: the return convention per risk factor key and its displacement, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
+| [[id:4AC5DEB0-FCE5-485C-BECB-DEDA62C7913B][Round trip the Basel traffic light configuration]] | BACKLOG | | | baselTrafficLightconfig.xml end to end: the MPOR observation buckets and the amber and red limits that classify them, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
+| [[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]] | BACKLOG | | | curveconfig.xml end to end: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes, with both mappers and a round trip over every file in the corpus. |
+| [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | BACKLOG | | | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
+| [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | BACKLOG | | | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
+
+* Decisions
+
+- The plan of record is one task per ORE configuration document, each running
+  the whole path for that document: entities, an import mapper, an export
+  mapper, and a round trip over every file of that type in the vendored corpus.
+  Four earlier tasks were shaped by concern rather than by document and now roll
+  up into these, closing when their last file type lands: /Model the run
+  document and the analytic list/ into /Round trip the ORE run document/, /Model
+  the analytics configuration libraries/ into the seven analytics round trips,
+  /Model the curve configuration entities/ into /Round trip the curve
+  configuration/, and /Model the shared reference configuration/ into /Round
+  trip the shared reference configuration/. The concern-shaped tasks stay open
+  as the roll-up, so the story keeps a record of the design intent behind each
+  slice.
+- A file type is round tripped when the exported document equals the imported
+  one as a parsed document, and the test names the first difference when they
+  differ. The corpus is the evidence, not a hand-written fixture, except for the
+  two types the corpus does not contain.
+- The mappers follow the convention already in the tree: a class named
+  /<thing>_mapper/ with static /map/ for ORE XML to our type and /reverse/ for
+  the other direction, beside the generated bindings in /projects/ores.ore/.
+  There is no base class and no registry today, so the harness is what will
+  enforce the convention. The existing /xml::roundtrip/ directory walker covers
+  four document kinds; the harness extends it rather than replacing it.
+- /simmcalibration.xsd/ is included by /external/ore/xsd/input.xsd/ but
+  /SIMMCalibrationData/ appears zero times in the generated
+  /projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp/, so that
+  document cannot be read or written at all today. The SIMM slice generates the
+  binding first; the round trip proves it afterwards.
+- The classification task was written against columns that do not exist. The
+  report definition carries =fsm_state_id= and =scheduler_job_id=, and keeps
+  =schedule_expression= and =concurrency_policy=; =pre_processing=,
+  =prepared_input_key= and =post_processing= appear nowhere but an untracked web
+  build artifact. Classification replaces the type code with a foreign key and
+  the run columns with a classification, and it does not hunt for those three.
+- A reporting table declares a foreign key in a =* Foreign keys= section with
+  =:table:=, =:target_column:=, =:parent_entity:=, =:nullable:=, =:error_message:=
+  and =:list_by:=, which generates validation and indexes; it does not use the
+  =:references:= property that one compute model uses. See
+  =evidence/reporting_model_recon.md=.
+- A round trip covers a document /kind/, so the corpus is the set of files whose
+  root element is that kind, found by glob. Counting files named exactly
+  =<kind>.xml= undercounts: the run document is 416 files, not 82, and credit
+  simulation is 14, not 2, because the corpus holds variants such as
+  =ore_histvar.xml= and =simm_calibration.xml=. See
+  =evidence/round_trip_corpus.md=.
+- Three documents cannot be round tripped as they stand. =simmcalibration.xsd=
+  and =baselTrafficLightconfig.xsd= declare global elements that appear zero
+  times in the generated =domain.hpp=, so no binding exists for them;
+  =historicalreturnconfig.xsd= declares no global element at all and is a section
+  of the documents that reference it, not a file type. The two with a root
+  element generate their binding first.
+- The existing binding round trips do not prove the content of every document.
+  In `creditsimulation.xml` the transition matrix is carried as one `Data`
+  element whose text is a whitespace or comma separated grid, with optional
+  `t0` and `t1` attributes, and the existing
+  `xml_creditsimulation_roundtrip_tests.cpp` deliberately does not compare
+  `Data`. A test can therefore pass while the matrix is lost. Our round trip
+  compares the grid cell by cell and names the first difference.
+- A passing round trip can hide an axis it never measured. The credit
+  simulation label comparison ran over an empty vector on both sides,
+  because the binding does not hand the mapper the XML comment the labels
+  live in: `parse_credit_simulation_grid` returned 64 values and no labels,
+  and the loop that compared them executed zero times. Fourteen files
+  passed a check that never ran, and it was reported as proof. The scale is
+  fixed and is now in the type, so both directions take the ratings from
+  one ordered constant and the comparison has a real expected value. An
+  assertion over an empty vector is not an assertion, and a test that
+  cannot fail is worse than no test.
+
+- **Where a configuration's entities live.** ORE's own =Analytics= block decides
+  it. If ORE names the document in that block it belongs to =ores.analytics=;
+  if the run or an analytic merely references it, it belongs to the component
+  that owns the concept, which is =ores.refdata= for curves, conventions,
+  calendars, currencies and tenors, and =ores.reporting= for the run document
+  and the registry. =ores.ore= holds the mappers and no state. A configuration
+  is a header row in =reporting.configurations= and its content is in the
+  owning component, joined by =configuration_id=.
+
+* Out of scope
+
+-

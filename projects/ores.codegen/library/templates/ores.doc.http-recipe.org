@@ -60,7 +60,7 @@ run against any environment.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:F437A524-A1EE-4460-A7FF-88180347D010][ores.doc.http-recipe.recipe]] | One literate HTTP recipe per entity: a section per endpoint, each section exporting its own Hurl file into the gateway's library. |
+| [[id:F437A524-A1EE-4460-A7FF-88180347D010][ores.doc.http-recipe.recipe]] | One literate HTTP recipe per model that renders a route: a section per endpoint, each section exporting its own Hurl file into the gateway's library. |
 
 * See also
 

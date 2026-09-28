@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53
+:END:
+#+title: ores.reporting.configuration
+#+description: Codegen entity model for the reporting =configuration= table. A named, reusable configuration a report binds.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A named, reusable configuration a report can bind.
+#+entity_singular: configuration
+#+entity_plural: configurations
+#+entity_title: Configuration
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The name is ours; the detail lives with the component named by
+=owning_component=. A report binds a configuration through
+=report_configuration=, so several reports share one configuration without
+copying it, and the kind of configuration it is comes from
+=configuration_type= by foreign key rather than from a text code.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: reporting
+:has_tenant_id:    true
+:profile:   uuid-identified-lookup
+:tablename: ores_reporting_configurations_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the configuration.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name of the configuration. It is ours, not ORE's, and it is what a
+report refers to.
+
+** configuration_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The kind of configuration this is.
+
+** owning_component
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The component that owns the detail of this configuration, for example
+analytics or refdata. Reporting references it rather than copying it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_configurations_tbl
+:END:
+
+* Foreign keys
+
+** configuration_type_code
+:PROPERTIES:
+:table:         ores_reporting_configuration_types_tbl
+:target_column: code
+:parent_entity: configuration_type
+:nullable:      false
+:error_message: Invalid configuration_type_code: %. No active configuration type found with this code.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: configuration
+:entity_plural_short:   configurations
+:entity_singular_words: configuration
+:entity_plural_words:   configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cfg
+:END:
+
+** Table display
+
+| column                  | header       |
+|-------------------------+--------------|
+| name                    | Name         |
+| configuration_type_code | Kind         |
+| owning_component        | Owner        |
+| modified_by             | Modified By  |
+| version                 | Version      |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/configuration.hpp
+:domain_class:           reporting::domain::configuration
+:protocol_include:       ores.reporting.api/messaging/configuration_protocol.hpp
+:collection_name:        configurations
+:key_field:              name
+:get_request_class:      reporting::messaging::get_configurations_request
+:get_response_class:     reporting::messaging::get_configurations_response
+:get_message_type:       get_configurations_request
+:save_request_class:     reporting::messaging::save_configuration_request
+:save_response_class:    reporting::messaging::save_configuration_response
+:save_message_type:      save_configuration_request
+:delete_request_class:   reporting::messaging::delete_configuration_request
+:delete_response_class:  reporting::messaging::delete_configuration_response
+:delete_message_type:    delete_configuration_request
+:END:
+
+*** Detail fields
+
+| field                   | label | type      | is_key | is_required | placeholder |
+|-------------------------+-------+-----------+--------+-------------+-------------|
+| name                    | Name  | line_edit | true   | true        | Enter name  |
+| configuration_type_code | Kind  | line_edit |        | true        | Enter configuration type code |
+| owning_component        | Owner | line_edit |        | true        | Enter owning component |
+
+*** Columns
+
+| enum_name           | field                   | header | type   | width |
+|---------------------+-------------------------+--------+--------+-------|
+| Name                | name                    | Name   | string | 220   |
+| ConfigurationType   | configuration_type_code | Kind   | string | 180   |
+| OwningComponent     | owning_component        | Owner  | string | 140   |
+| Version             | version                 | Version | int   | 80    |
+| ModifiedBy          | modified_by             | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

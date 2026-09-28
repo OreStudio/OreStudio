@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: D7968725-7267-44B7-A423-7E3AD5BC06A5
+:END:
+#+title: Task: Implement the report configuration registry
+#+description: The reporting half as real tables: the definition, its slots, the configuration sets, the parameters and the value domains, with every discriminator a foreign key to a seeded lookup.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-report-configuration
+#+pr: 2307
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report definition reaches a named, reusable configuration through typed entities, so several reports share one configuration without copying it. This is the spine every per-file-type round trip hangs from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- report_definition, report_type, configuration_type, configuration, configuration_parameter, parameter_definition and value_domain exist as tables with the keys and cardinalities the model records.
+- Every discriminating column is a foreign key to a seeded lookup; no discriminator is a bare text code.
+- No configuration is stored as an XML, JSON or name/value blob.
+
+* Plan
+
+Five of the seven tables do not exist anywhere in the tree, so this is new
+modelling in =projects/ores.reporting/modeling/=, not an edit. =report_definition=
+and =report_type= already exist; the work on them is the report type foreign key,
+which belongs to /Bind the report types and their taxonomy/.
+
+The target shape, from the reporting half of the model
+(=analysis/configuration_model_reporting.puml=). Org mode is removed from this
+list on purpose: the mappers own the document structure, so a column here is a
+domain fact and never a representation of one.
+
+| Table | Key | Columns beyond the audit block | Foreign keys |
+|-------+-----+---------------------------------+--------------|
+| configuration_type | code | name, display_order | — |
+| configuration | id | name, configuration_type_code, owning_component | configuration_type_code → configuration_types |
+| parameter_definition | id | scope, subtype, name, position, value_domain_code, is_required | value_domain_code → value_domains |
+| configuration_parameter | id | configuration_id, value, position | configuration_id → configurations, parameter_definition_id → parameter_definitions |
+| value_domain | code | name, storage_kind, referenced_entity | — |
+| report_configuration | id | report_definition_id, configuration_type_code, configuration_id | all three |
+
+=scope= and =subtype= together name the block of the run document a parameter
+belongs to (for example =Setup= and =Markets=); =name= is the parameter name
+inside it, and =position= keeps the order the document wrote. A parameter row
+therefore holds one value and points at the definition that says what the value
+means, which is what lets 165 of the 218 observed names belong to exactly one
+analytic kind.
+
+Two rules that the table above encodes and a reviewer should check:
+
+- Every discriminator (=configuration_type_code=, =value_domain_code=,
+  =owning_component=) is a foreign key to a seeded lookup, never a text code.
+- A new kind of configuration adds a row to =configuration_types= and a workflow,
+  never a column on =report_definitions=.
+
+Reporting declares foreign keys in a =* Foreign keys= section, not with
+=:references:= — see =evidence/reporting_model_recon.md= for the block and the
+generated validation it produces. Generate with
+=./compass.sh codegen generate --model <file> --address ores --dry-run= first,
+then without =--dry-run=; apply a fresh schema with =./compass.sh db recreate
+--kill --yes=. The test target is =ores.reporting.api.tests=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2307][#2307]] | [reporting] Model the report configuration registry and round trip a credit simulation document |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The registry is modelled and live. Six tables exist in the development
+database and are aggregated on both the create and the drop side:
+=configuration_types=, =configurations=, =report_configurations=,
+=parameter_value_domains=, =parameter_definitions= and
+=configuration_parameters=. Every discriminator is foreign key to a seeded
+lookup, and a report definition reaches its configuration through
+=report_configurations= with three validated keys rather than through a
+column per kind.
+
+A configuration is a header row in =configurations= and its content lives
+in the component that owns the concept, joined by =configuration_id=; the
+credit simulation tables are the first content to use it.
+
+Verified with `select count(*)` over the six table names returning 6, and
+by the full suite passing at 551 cases.
+
+Two things the work found and did not settle: the table-display header row
+must be lowercase =| column | header |= or the generated table code has
+empty field names and will not compile, and adding an entity needs its
+permissions seeded and its recipe inventories regenerated, which three CI
+jobs catch.

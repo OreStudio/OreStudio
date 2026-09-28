@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 2F6A8C41-7D93-4B05-9E18-3C4A7B1D6502
+:END:
+#+title: ores.analytics.credit_simulation_netting_set_config
+#+description: Codegen entity model for the analytics =credit_simulation_netting_set_config= table. One netting set a credit simulation covers.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A netting set a credit simulation covers.
+#+entity_singular: credit_simulation_netting_set_config
+#+entity_plural: credit_simulation_netting_set_configs
+#+entity_title: Credit Simulation Netting Set Config
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+ORE writes the netting sets a credit simulation covers as a comma separated
+list of codes inside one =NettingSetIds= element, which is a list stored as
+text. A list is rows, so each code is a row here, keyed to the configuration
+and carrying its position so the order is reproduced on export.
+
+The codes name netting sets that the trading component owns; no netting set
+entity exists yet, so the code is held as text until one does.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: analytics
+:profile:   fk-scoped-child
+:tablename: ores_analytics_credit_simulation_netting_sets_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the row.
+
+** credit_simulation_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The configuration this netting set belongs to.
+
+** netting_set_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The netting set code as ORE writes it.
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the code appeared in the list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_simulation_netting_sets_tbl
+:END:
+
+* Foreign keys
+
+** credit_simulation_config_id
+:PROPERTIES:
+:table:         ores_analytics_credit_simulation_configs_tbl
+:target_column: id
+:parent_entity: credit_simulation_config
+:nullable:      false
+:error_message: Invalid credit_simulation_config_id: %. No active credit simulation configuration found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: netting_set
+:entity_plural_short:   netting_sets
+:entity_singular_words: netting set
+:entity_plural_words:   netting sets
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ns
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| netting_set_id | Netting Set |
+| position      | Position    |
+| version       | Version     |
+| modified_by   | Modified By |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.analytics.api/domain/credit_simulation_netting_set_config.hpp
+:domain_class:            analytics::domain::credit_simulation_netting_set_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_netting_set_config_protocol.hpp
+:collection_name:         credit_simulation_netting_set_configs
+:item_var:                credit_simulation_netting_set_config
+:key_field:               netting_set_id
+:get_request_class:       analytics::messaging::list_credit_simulation_netting_set_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_netting_set_configs_response
+:get_message_type:        list_credit_simulation_netting_set_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_netting_set_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_netting_set_config_response
+:save_message_type:       put_credit_simulation_netting_set_config_request
+:save_request_item_field: credit_simulation_netting_set_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_netting_set_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_netting_set_config_response
+:delete_message_type:     delete_credit_simulation_netting_set_config_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: false
+:has_explorer_api:        true
+:has_export_macro:        true
+:parent_entity_singular:  credit_simulation_config
+:settings_group:          Credit Simulation Netting Set ConfigListWindow
+:window_title:            Credit Simulation Netting Set Config
+:icon:                    Credit Simulation Netting Set Config
+:END:
+
+*** Detail fields
+
+| field          | label       | widget    | type    | is_key | is_required | placeholder      |
+|----------------+-------------+-----------+---------+--------+-------------+------------------|
+| netting_set_id | Netting Set | line_edit | string  | true   | true        | Enter netting set |
+| position       | Position    | spin_edit | integer |        | true        | Enter position   |
+
+*** Columns
+
+| enum_name     | field          | header      | type   | width |
+|---------------+----------------+-------------+--------+-------|
+| NettingSetId  | netting_set_id | Netting Set | string | 200   |
+| Position      | position       | Position    | int    | 90    |
+| Version       | version        | Version     | int    | 80    |
+| ModifiedBy    | modified_by    | Modified By | string | 120   |
+
+** Paste blocks
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

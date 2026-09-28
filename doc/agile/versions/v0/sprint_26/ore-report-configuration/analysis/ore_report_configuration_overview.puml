@@ -1,0 +1,163 @@
+@startuml
+title ORE report configuration: the entity taxonomy and where each entity belongs
+skinparam classAttributeIconSize 0
+skinparam nodesep 14
+skinparam ranksep 30
+left to right direction
+
+package "reporting (to be modelled)" #E8F4FF {
+  class report_definition {
+    id
+    name
+    party_id
+    report_type
+    schedule_expression
+    concurrency_policy
+  }
+
+  class report_run_setup {
+    asof_date
+    input_path
+    output_path
+    log_file
+    log_mask
+    n_threads
+    continue_on_error
+    build_failed_trades
+    observation_model
+    base_currency
+    imply_todays_fixings
+    fixing_cutoff
+    include_todays_cashflows
+    include_reference_date_events
+    lazy_market_building
+    use_analytics
+    csv_comment_report_header
+    enrich_index_fixings
+  }
+
+  class report_market_binding {
+    role (pricing | simulation | sensitivity |
+          lgmcalibration | fxcalibration |
+          eqcalibration | infcalibration | bondpricing)
+    market_config_name
+  }
+
+  class report_analytic {
+    analytic_type
+    ordinal
+    active
+  }
+
+  class analytic_type <<lookup>> {
+    35 codes: npv, cashflow, curves, simulation,
+    xva, initialMargin, sensitivity, stress,
+    simm, creditcurves, calibration, pnl,
+    parametricVar, ... (see note)
+  }
+
+  class analytic_parameters <<per analytic type>> {
+    one typed entity per type, e.g.
+    npv_analytic (extended_results,
+                  output_curves, ...)
+    xva_analytic (~70 columns)
+    simulation_analytic (~60)
+    sensitivity_analytic (~30)
+  }
+
+  class simulation_config {
+    calibration, model, scenarios
+  }
+  class sensitivity_config {
+    shifts, shift schemes, shift sizes
+  }
+  class stress_config {
+    scenarios, shocks
+  }
+  class simm_calibration {
+    risk weights, correlations, buckets
+  }
+  class historical_return_config {
+    return types, displacement
+  }
+  class basel_traffic_light_config {
+    mpor_days, multipliers
+  }
+  class credit_simulation_config {
+    entities, transition matrices
+  }
+}
+
+package "ores.refdata (exists)" #EAF7EA {
+  class convention
+  class calendar
+  class calendar_adjustment
+  class currency
+  class currency_pair
+  class counterparty
+  class ir_curve_bootstrap_config
+}
+
+package "ores.analytics (exists)" #EAF7EA {
+  class pricing_engine_type
+  class pricing_model_config
+  class pricing_model_product
+}
+
+package "ores.trading (exists)" #EAF7EA {
+  class portfolio
+  class book
+  class netting_set <<missing>>
+}
+
+package "ores.marketdata (exists)" #EAF7EA {
+  class market_series
+}
+
+report_definition "1" *-- "1" report_run_setup
+report_definition "1" *-- "0..*" report_market_binding
+report_definition "1" *-- "0..*" report_analytic
+report_definition "1" *-- "0..*" portfolio : scope
+report_analytic "0..*" *-- "1" analytic_type
+report_analytic "1" *-- "0..1" analytic_parameters
+
+report_analytic "0..*" ..> "0..1" simulation_config : simulationConfigFile
+report_analytic "0..*" ..> "0..1" sensitivity_config : sensitivityConfigFile
+report_analytic "0..*" ..> "0..1" stress_config : stressConfigFile
+report_analytic "0..*" ..> "0..1" simm_calibration : simmCalibration
+report_analytic "0..*" ..> "0..1" historical_return_config
+report_analytic "0..*" ..> "0..1" basel_traffic_light_config
+report_analytic "0..*" ..> "0..1" credit_simulation_config
+
+report_run_setup "0..*" ..> "0..*" convention : conventionsFile
+report_run_setup "0..*" ..> "0..*" calendar_adjustment : calendarAdjustment
+report_run_setup "0..*" ..> "0..*" currency : currencyConfiguration
+report_run_setup "0..*" ..> "0..*" ir_curve_bootstrap_config : curveConfigFile
+report_run_setup "0..*" ..> "0..*" pricing_engine_type : pricingEnginesFile
+report_run_setup "0..*" ..> "0..*" counterparty : counterpartyFile
+report_definition "0..*" ..> "0..1" netting_set
+report_analytic "0..*" ..> "0..*" market_series : quote ids
+
+note bottom of report_analytic
+  ORE's ore.xml holds a list of Analytics, each with a
+  free type and its own parameter list. The examples use
+  35 types. One row per analytic is the entity; the
+  parameters are typed columns of a per-type entity, not
+  a name/value table and not a JSON blob.
+end note
+
+note bottom of report_run_setup
+  A report definition should NOT grow a column per
+  parameter. These are the Setup and Markets sections of
+  ore.xml: one run-setup row per definition, plus one
+  market-binding row per named market configuration.
+end note
+
+note top of report_definition
+  What is missing today: report_definition carries
+  pre_processing / prepared_input_key / post_processing
+  (workflow shape), while risk_report_config flattens a
+  fraction of the run into ~25 columns and 12 booleans.
+  Neither is the taxonomy above.
+end note
+@enduml

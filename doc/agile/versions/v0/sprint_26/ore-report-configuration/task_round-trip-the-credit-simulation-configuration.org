@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: B626FA36-9088-42E7-B348-39F201D86B38
+:END:
+#+title: Task: Round trip the credit simulation configuration
+#+description: creditsimulation.xml end to end: the entities that migrate, the transition matrices and their cells, and the run settings, with both mappers and a round trip over every file in the corpus.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-report-configuration
+#+pr: 2307
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+This file carries the smallest complete example of a repeated value row, the transition matrix cell, so it is where that shape is settled for every other document.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Every creditsimulation.xml in the corpus imports, exports and matches.
+- A transition matrix has one row per cell, keyed to the matrix and the two states, so the matrix is reproducible.
+- An entity references its transition matrix by foreign key, not by name in a text column.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| corpus files of this kind | 14 | `find external/ore/examples -iname "creditsimulation*.xml" \| wc -l` | abff31c9f0 |
+| distinct documents behind them | 7, each appearing twice | `find external/ore/examples -iname "creditsimulation*.xml" \| sort \| xargs md5sum \| sort \| awk '{print $1}' \| uniq -c \| sort -rn` | abff31c9f0 |
+| matrix cells per document | 64, an 8x8 grid | `.audit/ore-taxonomy/grid_check $(find external/ore/examples -iname "creditsimulation*.xml")` | f8c9d3e538 |
+| state labels per matrix | 8, identical in every file | same command | f8c9d3e538 |
+| grids that survive parse, format, parse | 14 of 14 | same command | f8c9d3e538 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2307][#2307]] | [reporting] Model the registry and round trip a credit simulation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All fourteen credit simulation documents in the vendored corpus round trip
+in memory, and one of them now round trips through PostgreSQL as well:
+parsed, mapped into the analytics entities, written through the generated
+repositories, read back, and exported. Five tables hold the content,
+including one row per matrix cell and one row per netting set, so the lists
+ORE writes as text in an element are rows here.
+
+  All tests passed (429831 assertions in 551 test cases)
+
+Four defects were found by building and running rather than by reading.
+The generated repositories were never compiled because codegen does not add
+a new entity to the component file lists; the state comment was compared
+over an empty vector, so fourteen files passed a check that never ran, and
+an assertion about the comment was unsatisfiable because the binding strips
+comments on load; and the netting set ids were dropped on the database leg
+because no column stored them. Each is recorded in =evidence/= beside this
+task.
+
+The export deliberately does not write ORE's state comment back: the rating
+names are held by the type, and the difference is asserted rather than
+compared away. Whether ORE itself accepts the exported document is not
+tested.
+
+Note the mapping runs over a model that predates the row type: =map()=
+throws unless a matrix is eight by eight, which every corpus document is.

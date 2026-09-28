@@ -808,6 +808,50 @@ tangled into the runnable script library
 
 - [[id:924F7A20-A61E-52A4-B2CE-951A084C6216][How do I run the publications commands from the shell?]]
 
+* Configuration
+
+- [[id:B062B733-7682-5A34-B6FF-F390B7360353][How do I run the configuration commands from the shell?]]
+
+* Configuration Parameters
+
+- [[id:D5FBEC41-D629-54D7-AB2F-241678E42248][How do I run the configuration_parameters commands from the shell?]]
+
+* Configuration Types
+
+- [[id:3DBFE6C1-87FF-5133-BFFB-8897F47B458B][How do I run the configuration_types commands from the shell?]]
+
+* Configurations
+
+- [[id:AA04C9E7-94C8-5B7E-BFBA-C62AC4B9CD4D][How do I run the configurations commands from the shell?]]
+
+* Credit Simulation Configs
+
+- [[id:4B0153E7-C2DE-51D3-9C40-475DA178675D][How do I run the credit_simulation_configs commands from the shell?]]
+
+* Credit Simulation Entity Configs
+
+- [[id:25E2C1E5-B77A-50FF-9F7D-77317CD95342][How do I run the credit_simulation_entity_configs commands from the shell?]]
+
+* Credit Simulation Matrix Configs
+
+- [[id:B4730FC2-0169-511D-8CE2-AD4C31A7D726][How do I run the credit_simulation_matrix_configs commands from the shell?]]
+
+* Credit Simulation Matrix Row Configs
+
+- [[id:C10B8762-D5B0-575D-8CFB-17312188CEDA][How do I run the credit_simulation_matrix_row_configs commands from the shell?]]
+
+* Parameter Definitions
+
+- [[id:2D52A9D1-09EE-53B1-859E-2F8D64A5A2AA][How do I run the parameter_definitions commands from the shell?]]
+
+* Parameter Value Domains
+
+- [[id:A689D2D5-2E12-5661-B83B-4DBDC1561F0A][How do I run the parameter_value_domains commands from the shell?]]
+
+* Report Configurations
+
+- [[id:107EC378-86EB-52A7-90ED-62512A7BD785][How do I run the report_configurations commands from the shell?]]
+
 * Seed Profile Parameters
 
 - [[id:B582B99D-4CE8-5731-83E5-F8A3DA18BF95][How do I run the seed_profile_parameters commands from the shell?]]
@@ -819,3 +863,7 @@ tangled into the runnable script library
 * Seed Profiles
 
 - [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I run the seed_profiles commands from the shell?]]
+
+* Credit Simulation Netting Set Configs
+
+- [[id:D4E1D402-2A44-5430-8043-52C61522FAAD][How do I run the credit_simulation_netting_set_configs commands from the shell?]]

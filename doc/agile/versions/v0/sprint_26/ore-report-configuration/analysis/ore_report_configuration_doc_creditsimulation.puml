@@ -1,0 +1,33 @@
+@startuml
+title ORE creditsimulation entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "creditsimulation.xml" {
+  class "creditsimulation" as creditsimulation__creditsimulation {
+    NettingSetIds : string
+  }
+  class "entities" as creditsimulation__entities {
+  }
+  class "entity" as creditsimulation__entity {
+    Name : string
+    FactorLoadings : string
+    TransitionMatrix : string
+    InitialState : integer
+  }
+  class "transitionmatrices" as creditsimulation__transitionmatrices {
+  }
+  class "transitionmatrix" as creditsimulation__transitionmatrix {
+    Name : string
+  }
+}
+
+creditsimulation__creditsimulation *-- "1" creditsimulation__entities : Entities
+creditsimulation__creditsimulation *-- "1" creditsimulation__risk : Risk
+creditsimulation__creditsimulation *-- "1" creditsimulation__transitionmatrices : TransitionMatrices
+creditsimulation__entities *-- "1..*" creditsimulation__entity : Entity
+creditsimulation__transitionmatrices *-- "1..*" creditsimulation__transitionmatrix : TransitionMatrix
+creditsimulation__transitionmatrix *-- "1" creditsimulation__transitionmatrix_Data : Data
+@enduml

@@ -49,6 +49,21 @@ set(files
     "service/pricing_model_config_service.cpp"
     "service/pricing_model_product_parameter_service.cpp"
     "service/pricing_model_product_service.cpp"
+    "repository/credit_simulation_config_entity.cpp"
+    "repository/credit_simulation_config_mapper.cpp"
+    "repository/credit_simulation_config_repository.cpp"
+    "repository/credit_simulation_entity_config_entity.cpp"
+    "repository/credit_simulation_entity_config_mapper.cpp"
+    "repository/credit_simulation_entity_config_repository.cpp"
+    "repository/credit_simulation_matrix_config_entity.cpp"
+    "repository/credit_simulation_matrix_config_mapper.cpp"
+    "repository/credit_simulation_matrix_config_repository.cpp"
+    "repository/credit_simulation_matrix_row_config_entity.cpp"
+    "repository/credit_simulation_matrix_row_config_mapper.cpp"
+    "repository/credit_simulation_matrix_row_config_repository.cpp"
+    "repository/credit_simulation_netting_set_config_entity.cpp"
+    "repository/credit_simulation_netting_set_config_mapper.cpp"
+    "repository/credit_simulation_netting_set_config_repository.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

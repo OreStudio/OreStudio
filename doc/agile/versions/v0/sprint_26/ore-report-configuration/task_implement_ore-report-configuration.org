@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 5ED86EEE-6090-4321-A8E4-BF80D418BA32
+:END:
+#+title: Task: Design the ORE report configuration entity model
+#+description: Initial task for: Model the ORE report configuration as entities
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-report-configuration
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report definition's configuration is a set of strongly typed entities rather than a flat row of switches, and every entity in the ORE configuration vocabulary is identified, owned, and reachable from the definition.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | The cluster is written and the follow-on tasks are cut. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Every entity in the seventeen ORE configuration documents is identified and mapped to an owning component.
+- A report definition reaches its configuration through typed entities and foreign keys, never through a flat table of switches or an XML or JSON blob.
+- A new kind of report adds a workflow and a parameter block, not a column on the report definition.
+
+* Plan
+
+Read the schemas, not the examples. The vocabulary is 605 schema types in
+=external/ore/xsd=, and hand-counting them is how the earlier
+[[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]
+analysis went stale. So the first artefact is an extractor,
+=build/scripts/xsd_to_uml.py=, that reads the schemas and emits a JSON inventory,
+PlantUML class diagrams and the entity-to-owner mapping. Everything else is read
+off its output.
+
+Then, in order:
+
+1. *Scope the vocabulary.* Which documents configure a run, and which are market
+   data, trades or observed data. The brief excluded the last three; the one
+   exclusion that needs stating is that =simulation.xml= carries 116 classes of
+   market-data override inside an in-scope document.
+2. *Classify every class*, per document, as an entity, a value type or an
+   excluded container, and review it rather than trusting the rule: 265 entities
+   and 178 value types came out of that pass.
+3. *Establish ownership.* Which component holds each document today, including
+   the components that already model much of it — =ores.refdata= for conventions,
+   calendars, currencies and counterparties, =ores.analytics= for pricing
+   configurations. This is what stops the proposal from putting into reporting
+   what somebody else owns.
+4. *State the target*: the run document and the analytics libraries owned by the
+   definition, the reference configuration referenced, and a kind classification
+   that selects the workflow instead of three workflow-shaped columns.
+5. *Keep it where it belongs*: in the story, as investigation documents, because
+   it is analysis that decides an object model rather than target state. The
+   follow-on tasks, one per family of work, are cut from it.
+
+The plan changed twice, and both changes are worth keeping. The analysis was
+first built as seven flat notes in a working directory; it now lives in the story
+as investigation documents. And the earlier =ORE Model Configuration= page was
+found only afterwards: the two are reconciled rather than left side by side, with
+that page keeping the proposal and this investigation re-deriving its inventory.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Schema classes in the seventeen configuration documents | 605 | =python3 build/scripts/xsd_to_uml.py --format json --out-dir .audit/ore-taxonomy= (see =evidence/ore_report_configuration_entities.json=) | to follow |
+| Entities, value types and excluded classes | 265 / 178 / 162 | =evidence/ore_report_configuration_entities.json=, summed per document | to follow |
+| Modelled classes with owner and relation | 363 rows | =python3 build/scripts/xsd_to_uml.py --format mapping= (see =evidence/ore_report_configuration_mapping.md=) | to follow |
+| Analytic types, setup parameters and market roles in the shipped examples | 35 / 43 / 8 | =grep -o 'Analytic type="[^"]*"' external/ore/examples/**/ore*.xml \| sort -u= | to follow |
+| Sample run documents the vocabulary is measured from | 416 | =find external/ore/examples -name 'ore*.xml' \| wc -l= | to follow |
+| Diagrams committed with the cluster | 10 | =ls doc/knowledge/architecture/ore_report_configuration_*.png= | to follow |
+
+* Notes
+
+*An earlier page already owns this subject.*
+[[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] was written
+in 2024 from the example files and proposes the same thing: represent the ORE
+configuration as persisted domain entities, in =ores.analytics=. Two of its five
+layers landed there. It was not found until this task's cluster had been built,
+because the first search covered the agile tree only.
+
+The two are reconciled rather than left side by side: the investigation re-derives
+that page's by-hand inventory, and carries its component-home decision into
+[[id:061CE0DF-F9DE-4AC7-9536-B2EB6C547531][The target report configuration
+model]]. What stays only there is the five-layer proposal, the product taxonomies
+and the pricing configuration domain model.
+
+The analysis is
+[[id:91F2CF85-B743-4CAD-99B3-E635DA075499][the ORE report configuration
+investigation]] — an index and six parts under =analysis/= — with the diagrams
+beside it and the raw inventory in =evidence/=. It is deliberately not a
+knowledge page: knowledge is for target state, and the object model is not
+decided yet.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -11,6 +11,14 @@
 
 *Status: partly implemented. The analysis holds; the proposal is now work in progress.*
 
+*The inventory below is being re-derived.* It was taken from the example files by
+hand; [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][the ORE report configuration
+investigation]] does the same job from the schemas, counts every entity, and adds
+the ownership rule and the diagrams. That work is analysis inside a story, not
+knowledge, so this page stays the proposal and the investigation decides whether
+it still holds. Its finding that =ores.analytics= is the component home is being
+carried into that decision.
+
 Layers 1 and 5 landed in =ores.analytics.api=:
 =pricing_model_config=, =pricing_model_product=,
 =pricing_model_product_parameter=, and =pricing_engine_type=. Layers 2 (smile
@@ -578,5 +586,9 @@ and initial margin configurations.
 
 Counterparty risk weights extend =ores.refdata.counterparties=. Script libraries
 stay close to =ores.trading.scripted_instruments=.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][the ORE report configuration investigation]] — the analysis that re-derives this page's inventory from the schemas, and the object model it is deciding.
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

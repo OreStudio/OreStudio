@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: C10B8762-D5B0-575D-8CFB-17312188CEDA
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the credit_simulation_matrix_row_configs commands from the shell?
+#+description: Every command the credit_simulation_matrix_row_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:credit_simulation_matrix_row_configs:
+
+This file documents the credit_simulation_matrix_row_configs resource at the shell, one section per command. Every command is a subcommand of =credit_simulation_matrix_row_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2EE3A033-CB9F-5812-8D71-D3A730E317A8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.list=.
+
+#+name: credit_simulation_matrix_row_configs-list
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-list.ores :exports none
+credit_simulation_matrix_row_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F9642E18-E887-5AEB-82C0-EB8B118E2D3A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs get <from_rating>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.get=.
+
+#+name: credit_simulation_matrix_row_configs-get
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-get.ores :exports none
+credit_simulation_matrix_row_configs get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 29530453-4487-5776-BA6B-56E2677CDFA0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs get-many <from_rating>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.get_many=.
+
+#+name: credit_simulation_matrix_row_configs-get-many
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-get-many.ores :exports none
+credit_simulation_matrix_row_configs get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0BFA722F-A0E5-545C-B212-0E3E2593A9DC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs add <transition_matrix_id> <from_rating> <p_aaa> <p_aa> <p_a> <p_baa> <p_ba> <p_b> <p_c> <p_default> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.put=.
+
+#+name: credit_simulation_matrix_row_configs-add
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-add.ores :exports none
+credit_simulation_matrix_row_configs add 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 57C45C6E-914B-539C-9193-11A9FC466C9C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs set <id> <transition_matrix_id> <from_rating> <p_aaa> <p_aa> <p_a> <p_baa> <p_ba> <p_b> <p_c> <p_default> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.put=.
+
+#+name: credit_simulation_matrix_row_configs-set
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-set.ores :exports none
+credit_simulation_matrix_row_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4F4A56CD-E2F2-51CE-9054-EED92E82B344
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs put-many --count <n> <id> <transition_matrix_id> <from_rating> <p_aaa> <p_aa> <p_a> <p_baa> <p_ba> <p_b> <p_c> <p_default> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.put_many=.
+
+#+name: credit_simulation_matrix_row_configs-put-many
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-put-many.ores :exports none
+credit_simulation_matrix_row_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6BE0179F-02DD-5831-B310-17E623013404
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs delete <from_rating> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.delete=.
+
+#+name: credit_simulation_matrix_row_configs-delete
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-delete.ores :exports none
+credit_simulation_matrix_row_configs delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 05524539-286A-5F31-8F27-53C670C7202F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs delete-many <from_rating> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.delete_many=.
+
+#+name: credit_simulation_matrix_row_configs-delete-many
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-delete-many.ores :exports none
+credit_simulation_matrix_row_configs delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-transition-matrix-id=
+:PROPERTIES:
+:ID: D9E5A8E1-228B-504D-A47E-359A8459EC7D
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs by-transition-matrix-id <transition_matrix_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs.list_by_transition_matrix_id=.
+
+#+name: credit_simulation_matrix_row_configs-by-transition-matrix-id
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-by-transition-matrix-id.ores :exports none
+credit_simulation_matrix_row_configs by-transition-matrix-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6D2809ED-9BAD-5150-B1E7-358305B3EBE8
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs versions <from_rating> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs_versions.list=.
+
+#+name: credit_simulation_matrix_row_configs-versions
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-versions.ores :exports none
+credit_simulation_matrix_row_configs versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B2D63228-AD8F-579C-BB68-6A5E67AEEE80
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+credit_simulation_matrix_row_configs version <from_rating> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.credit_simulation_matrix_row_configs_versions.get=.
+
+#+name: credit_simulation_matrix_row_configs-version
+#+begin_src ores-shell :tangle credit_simulation_matrix_row_configs-version.ores :exports none
+credit_simulation_matrix_row_configs version __none__ --version 1
+#+end_src
+

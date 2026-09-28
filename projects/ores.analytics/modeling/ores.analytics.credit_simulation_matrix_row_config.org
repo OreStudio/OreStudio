@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: 4E2A7C95-1B68-4D03-9F27-8A5C1E6B3904
+:END:
+#+title: ores.analytics.credit_simulation_matrix_row_config
+#+description: Codegen entity model for the analytics =credit_simulation_matrix_row_config= table. One row of a credit migration matrix, with the ratings as columns.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One row of a credit migration transition matrix.
+#+entity_singular: credit_simulation_matrix_row_config
+#+entity_plural: credit_simulation_matrix_row_configs
+#+entity_title: Credit Simulation Matrix Row Config
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+ORE lays a transition matrix out on a fixed rating scale: every document in
+the corpus is 8x8 and names the same eight ratings in the same order. Because
+the scale is a property of the domain rather than data a user enters, it is
+encoded in the type rather than seeded as rows: one row per source rating,
+with one probability column per target rating. A matrix is therefore eight
+rows, and a row reads the way the matrix is written in the document.
+
+** Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: analytics
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   fk-scoped-child
+:tablename: ores_analytics_credit_simulation_matrix_rows_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the row.
+
+** transition_matrix_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The matrix this row belongs to.
+
+** from_rating
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The rating the row starts from, for example Aaa or Default. That the value
+is one of the eight is enforced by the type, not by a lookup.
+
+** p_aaa
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to aaa.
+
+** p_aa
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to aa.
+
+** p_a
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to a.
+
+** p_baa
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to baa.
+
+** p_ba
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to ba.
+
+** p_b
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to b.
+
+** p_c
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to c.
+
+** p_default
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The probability of moving from the row's rating to default.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_simulation_matrix_rows_tbl
+:END:
+
+* Foreign keys
+
+** transition_matrix_id
+:PROPERTIES:
+:table:         ores_analytics_credit_simulation_matrices_tbl
+:target_column: id
+:parent_entity: credit_simulation_matrix_config
+:nullable:      false
+:error_message: Invalid transition_matrix_id: %. No active transition matrix found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: row
+:entity_plural_short:   rows
+:entity_singular_words: matrix row
+:entity_plural_words:   matrix rows
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: row
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| from_rating | From        |
+| version     | Version     |
+| modified_by | Modified By |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp
+:domain_class:            analytics::domain::credit_simulation_matrix_row_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_matrix_row_config_protocol.hpp
+:collection_name:         credit_simulation_matrix_row_configs
+:item_var:                credit_simulation_matrix_row_config
+:key_field:               from_rating
+:get_request_class:       analytics::messaging::list_credit_simulation_matrix_row_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_matrix_row_configs_response
+:get_message_type:        list_credit_simulation_matrix_row_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_matrix_row_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_matrix_row_config_response
+:save_message_type:       put_credit_simulation_matrix_row_config_request
+:save_request_item_field: credit_simulation_matrix_row_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_matrix_row_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_matrix_row_config_response
+:delete_message_type:     delete_credit_simulation_matrix_row_config_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: false
+:has_explorer_api:        true
+:has_export_macro:        true
+:parent_entity_singular:  credit_simulation_matrix_config
+:settings_group:          Credit Simulation Matrix Row ConfigListWindow
+:window_title:            Credit Simulation Matrix Row Config
+:icon:                    Credit Simulation Matrix Row Config
+:END:
+
+*** Detail fields
+
+| field       | label | widget    | type    | is_key | is_required | placeholder |
+|-------------+-------+-----------+---------+--------+-------------+-------------|
+| from_rating | From  | line_edit | string  | true   | true        | Enter from rating |
+
+*** Columns
+
+| enum_name   | field       | header | type   | width |
+|-------------+-------------+--------+--------+-------|
+| FromRating  | from_rating | From   | string | 140   |
+| Version     | version     | Version | int   | 80    |
+| ModifiedBy  | modified_by | Modified By | string | 120 |
+
+** Paste blocks
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

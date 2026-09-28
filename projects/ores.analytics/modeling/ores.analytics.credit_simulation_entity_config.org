@@ -1,0 +1,212 @@
+:PROPERTIES:
+:ID: 1D6B4F82-7E35-49A0-B2C8-3F5A9D1E7063
+:END:
+#+title: ores.analytics.credit_simulation_entity_config
+#+description: Codegen entity model for the analytics =credit_simulation_entity_config= table. One entity that migrates within a credit simulation configuration.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: An entity that migrates in a credit simulation.
+#+entity_singular: credit_simulation_entity_config
+#+entity_plural: credit_simulation_entity_configs
+#+entity_title: Credit Simulation Entity Config
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+One entity in the credit portfolio model: its name, its factor loadings,
+the matrix it migrates on and the state it starts in. ORE refers to the
+matrix by name in a text attribute; here the reference is a foreign key, so
+renaming a matrix cannot silently orphan an entity.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: analytics
+:has_tenant_id:    true
+:has_workspace_id: true
+:profile:   fk-scoped-child
+:tablename: ores_analytics_credit_simulation_entities_tbl
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate key for the entity.
+
+** credit_simulation_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The configuration this entity belongs to.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The entity name, unique within its configuration.
+
+** transition_matrix_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The matrix this entity migrates on.
+
+** initial_state
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The state the entity starts in.
+
+** factor_loadings
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The factor loadings ORE writes as one text value for this entity.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_credit_simulation_entities_tbl
+:END:
+
+* Foreign keys
+
+** credit_simulation_config_id
+:PROPERTIES:
+:table:         ores_analytics_credit_simulation_configs_tbl
+:target_column: id
+:parent_entity: credit_simulation_config
+:nullable:      false
+:error_message: Invalid credit_simulation_config_id: %. No active credit simulation configuration found with this id.
+:list_by:       true
+:END:
+
+** transition_matrix_id
+:PROPERTIES:
+:table:         ores_analytics_credit_simulation_matrices_tbl
+:target_column: id
+:parent_entity: credit_simulation_matrix_config
+:nullable:      false
+:error_message: Invalid transition_matrix_id: %. No active transition matrix found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: entity
+:entity_plural_short:   entities
+:entity_singular_words: credit simulation entity
+:entity_plural_words:   credit simulation entities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ent
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| initial_state | Initial State |
+| version     | Version     |
+| modified_by | Modified By |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.analytics.api/domain/credit_simulation_entity_config.hpp
+:domain_class:            analytics::domain::credit_simulation_entity_config
+:protocol_include:        ores.analytics.api/messaging/credit_simulation_entity_config_protocol.hpp
+:collection_name:         credit_simulation_entity_configs
+:item_var:                credit_simulation_entity_config
+:key_field:               name
+:get_request_class:       analytics::messaging::list_credit_simulation_entity_configs_request
+:get_response_class:      analytics::messaging::list_credit_simulation_entity_configs_response
+:get_message_type:        list_credit_simulation_entity_configs_request
+:save_request_class:      analytics::messaging::put_credit_simulation_entity_config_request
+:save_response_class:     analytics::messaging::put_credit_simulation_entity_config_response
+:save_message_type:       put_credit_simulation_entity_config_request
+:save_request_item_field: credit_simulation_entity_config
+:delete_request_class:    analytics::messaging::delete_credit_simulation_entity_config_request
+:delete_response_class:   analytics::messaging::delete_credit_simulation_entity_config_response
+:delete_message_type:     delete_credit_simulation_entity_config_request
+:has_uuid_primary_key:    true
+:has_change_reason_cache: false
+:has_explorer_api:        true
+:has_export_macro:        true
+:parent_entity_singular:  credit_simulation_config
+:settings_group:          Credit Simulation Entity ConfigListWindow
+:window_title:            Credit Simulation Entity Config
+:icon:                    Credit Simulation Entity Config
+:END:
+
+*** Detail fields
+
+| field | label | widget    | type   | is_key | is_required | placeholder |
+|-------+-------+-----------+--------+--------+-------------+-------------|
+| name  | Name  | line_edit | string | true   | true        | Enter name  |
+
+*** Columns
+
+| enum_name  | field       | header      | type   | width |
+|------------+-------------+-------------+--------+-------|
+| Name       | name        | Name        | string | 220   |
+| Version    | version     | Version     | int    | 80    |
+| ModifiedBy | modified_by | Modified By | string | 120   |
+
+** Paste blocks
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

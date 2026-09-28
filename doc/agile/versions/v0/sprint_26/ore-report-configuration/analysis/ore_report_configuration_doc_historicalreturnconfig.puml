@@ -1,0 +1,21 @@
+@startuml
+title ORE historicalreturnconfig entities
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 24
+
+package "historicalreturnconfig.xml" {
+  class "ReturnType" as historicalreturnconfig__ReturnType {
+    Type : ReturnEnum
+    Displacement : decimal
+    key : string
+  }
+  enum "ReturnEnum" as historicalreturnconfig__ReturnEnum {
+    Log
+    Absolute
+    Relative
+  }
+}
+
+@enduml

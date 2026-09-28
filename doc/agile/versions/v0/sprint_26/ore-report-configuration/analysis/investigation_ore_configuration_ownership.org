@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 6DA5B753-73E1-4176-889F-7A95EFD5E644
+:END:
+#+title: Investigation: who owns the ORE configuration
+#+description: Which component owns each ORE configuration document today, which parts no component models, and the rule that decides whether a report definition owns an entity or references it.
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+Ten of the seventeen configuration documents belong to a component that already
+models them, wholly or partly. Seven belong to nobody: simulation, SIMM
+calibration, sensitivity, stress, historical return, Basel traffic light, credit
+simulation, and the run document itself.
+
+The rule this produces: a report definition *owns* the configuration of its own
+run, and *references* the configuration that is shared. Putting conventions,
+currencies or curves into reporting would duplicate them; leaving simulation and
+sensitivity unmodelled satisfies nobody.
+
+* Detail
+
+** Who owns what today
+
+| Document | Owning component today | State |
+|----------+------------------------+-------|
+| =conventions.xml= | =ores.refdata=: deposit, FRA, OIS, swap, zero, ibor, overnight, CDS and currency-pair conventions | modelled |
+| =calendaradjustment.xml= | =ores.refdata=: =calendar=, =calendar_adjustment=, =calendar_rule=, =calendar_exception= | modelled |
+| =currencyconfig.xml= | =ores.refdata=: =currency=, =currency_pair= | modelled |
+| =counterparty.xml= | =ores.refdata=: =counterparty=, =counterparty_identifier=, =crm_topology_config= | modelled |
+| =referencedata.xml= | =ores.refdata=, partially | modelled |
+| =iborfallbackconfig.xml= | =ores.refdata= index conventions, partially | gap |
+| =nettingsetdefinitions.xml= | =ores.trading= — no netting-set entity exists | gap |
+| =curveconfig.xml= | =ores.refdata=: =ir_curve_bootstrap_config= and =ir_curve_bootstrap_pillar=, bootstrap only | large gap |
+| =pricingengines.xml= | =ores.analytics=: =pricing_engine_type=, =pricing_model_config=, =pricing_model_product=, =pricing_model_product_parameter= | thin |
+| =simulation.xml= | none | gap |
+| =simmcalibration.xml= | none | gap |
+| =sensitivity.xml= | none | gap |
+| =stress.xml= | none | gap |
+| =historicalreturnconfig.xml= | none | gap |
+| =baselTrafficLightconfig.xml= | none | gap |
+| =creditsimulation.xml= | none | gap |
+| =ore.xml= | none | gap |
+
+The =ores.ore= component is not the owner of any of them, even though it holds
+the XML bindings for all of them. It is the translator: it reads and writes these
+documents. The entities belong to the components that own the concepts.
+
+** The rule
+
+- *Owned* — the reporting domain owns the entity and the report definition has it
+  as a child. This is everything in =ore.xml=, and every library that exists only
+  to configure an analytic: simulation, sensitivity, stress, SIMM calibration,
+  historical return, Basel traffic light, credit simulation.
+- *Referenced* — another component owns the entity and the run names it:
+  curves, pricing engines, conventions, calendars, currencies, counterparties,
+  netting sets, IBOR fallback.
+- *Shared* — =ore_types.xsd=, which carries value types and 54 enumerations and
+  has no entities of its own.
+
+The distinction is not cosmetic. An owned entity answers "what did this run
+run with"; a referenced one answers "what does this organisation use", and the
+two change at different rates and for different reasons. The consequence for the
+model is that a run must pin the versions of what it references, or its result
+is not reproducible.
+
+** Where the analytics configuration should live
+
+Reporting owns the run; =ores.analytics= owns pricing models today. Simulation,
+sensitivity, stress and SIMM calibration are analytics configuration rather than
+report configuration — a stress library is not a property of one report — so they
+could live in =ores.analytics= and be referenced by the run. That is one of the
+open decisions on
+[[id:061CE0DF-F9DE-4AC7-9536-B2EB6C547531][The target report configuration
+model]].
+
+** What the first slice settled, and what it did not
+
+The credit simulation slice was built in =ores.analytics=, which is one of the
+two options above, so the decision above is now load-bearing rather than
+theoretical. Three things came out of doing it.
+
+*** Evidence from ORE's own structure
+
+=ore.xml= partitions the documents for us. Its =Analytics= block names each
+analytic by type and gives it parameters that name the files it reads:
+
+#+begin_src xml
+<Analytics>
+  <Analytic type="zeroToParSensiConversion">
+    <Parameter name="active">Y</Parameter>
+    <Parameter name="marketConfigFile">simulation.xml</Parameter>
+    <Parameter name="sensitivityConfigFile">sensitivity.xml</Parameter>
+    <Parameter name="pricingEnginesFile">../../Input/pricingengine.xml</Parameter>
+#+end_src
+
+Two consequences. The parameter model is confirmed: scope is the block, subtype
+is the analytic type, name is the parameter name, value is text. And an analytic
+*names documents that are not analytics* — =pricingEnginesFile= points at
+=pricingengines.xml= — so an analytics configuration references other components
+rather than absorbing them. That is the =Referenced= half of the rule working as
+described.
+
+*** The gap that placement alone does not fix
+
+Nothing connects a =reporting.configuration= row to the content it names.
+=configurations= carries =configuration_type_code= and =owning_component= as
+text, and =credit_simulation_config= has its own uuid with no reference back, so
+"which rows are this configuration's content" is answered by convention and not
+by a key. That is the thing to settle before nine more documents are modelled,
+because the answer decides placement.
+
+The uniform shape that avoids a move later: =reporting.configuration= is the
+header, and the owning component's table carries a =configuration_id= foreign
+key to it. Then a configuration is one row in reporting plus its content in
+whichever component owns the concept, the binding from a report always points at
+=configurations.id=, and moving a concept between components changes the owner
+column and the table's component prefix, not the shape of the link.
+
+*** What moving costs, so the decision is made with the price known
+
+Every generated table name embeds its component
+(=ores_analytics_credit_simulation_configs_tbl=), each entity generates about
+38 files, and the component file lists are generated from the models. Moving one
+entity is therefore a table rename with foreign-key and grant updates, a
+regeneration in the new component, and the deletion of its artefacts in the old
+one. Cheap for one entity, expensive across twenty. Decide here.
+
+*** Recommendation
+
+- =ores.analytics= keeps the documents ORE's =Analytics= block names: simulation,
+  sensitivity, stress, SIMM calibration, historical return, Basel traffic light,
+  credit simulation, and the pricing engines it references. Credit simulation is
+  already there and does not move.
+- =ores.refdata= keeps what the run references: curves, conventions, calendars,
+  currencies, counterparties, portfolios, books, tenors, asset classes. This is
+  consistent with =ir_curve_bootstrap_config= already living there, and it means
+  the curve work reconciles with that table rather than starting a second curve
+  model in analytics.
+- =ores.reporting= keeps the run document and the registry: what was run, under
+  which setup, binding which configuration of which type. It owns no analytic's
+  content.
+- =ores.ore= keeps the mappers and no state.
+
+The test to apply to the next document: *does ORE name it in the Analytics
+block?* If yes it is analytics; if the run or an analytic merely references it,
+it belongs to the component that owns the concept.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

@@ -30,3 +30,20 @@
 
 \ir ./analytics_pricing_engine_types_notify_trigger_drop.sql
 \ir ./analytics_pricing_engine_types_drop.sql
+
+
+\ir ./analytics_credit_simulation_entity_configs_notify_trigger_drop.sql
+\ir ./analytics_credit_simulation_entity_configs_drop.sql
+
+
+\ir ./analytics_credit_simulation_matrix_row_configs_notify_trigger_drop.sql
+\ir ./analytics_credit_simulation_matrix_row_configs_drop.sql
+
+\ir ./analytics_credit_simulation_matrix_configs_notify_trigger_drop.sql
+\ir ./analytics_credit_simulation_matrix_configs_drop.sql
+
+\ir ./analytics_credit_simulation_configs_notify_trigger_drop.sql
+\ir ./analytics_credit_simulation_netting_set_configs_notify_trigger_drop.sql
+\ir ./analytics_credit_simulation_netting_set_configs_drop.sql
+
+\ir ./analytics_credit_simulation_configs_drop.sql

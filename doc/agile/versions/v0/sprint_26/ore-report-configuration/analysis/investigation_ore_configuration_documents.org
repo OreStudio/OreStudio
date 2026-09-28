@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09
+:END:
+#+title: Investigation: the ORE report configuration documents
+#+description: The seventeen XML documents an ORE report is configured by, what each holds, what is excluded and why, and how the inventory and the diagrams are regenerated.
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+* Summary
+
+Seventeen ORE XML documents configure a report run. They carry 605 schema types,
+which resolve to 265 entities, 178 embedded value types and 162 excluded
+classes. Ten of the seventeen belong to a component that already models them or
+should; seven have no model anywhere.
+
+The inventory is extracted from the schemas rather than read by hand, and the
+extractor is in the repository, so a schema change is a rerun.
+
+* Detail
+
+** The documents
+
+| Document | Root element | Entities | Value types | Excluded |
+|----------+--------------+----------+-------------+----------|
+| =ore.xml= | =ORE= | 4 | 1 | 0 |
+| =pricingengines.xml= | =PricingEngines= | 5 | 1 | 0 |
+| =curveconfig.xml= | =CurveConfiguration= | 55 | 28 | 43 |
+| =conventions.xml= | =Conventions= | 24 | 17 | 2 |
+| =calendaradjustment.xml= | =CalendarAdjustments= | 2 | 1 | 0 |
+| =currencyconfig.xml= | =CurrencyConfig=, =Currency= | 2 | 0 | 0 |
+| =referencedata.xml= | =ReferenceData= | 12 | 9 | 0 |
+| =nettingsetdefinitions.xml= | =NettingSetDefinitions= | 4 | 5 | 0 |
+| =counterparty.xml= | =CounterpartyInformation= | 4 | 1 | 0 |
+| =simulation.xml= | =Simulation=, =CrossAssetModel= | 18 | 53 | 116 |
+| =creditsimulation.xml= | =CreditSimulation= | 3 | 4 | 0 |
+| =simmcalibration.xml= | =SIMMCalibrationData= | 43 | 36 | 1 |
+| =sensitivity.xml= | =SensitivityAnalysis= | 58 | 8 | 0 |
+| =stress.xml= | =StressTesting= | 24 | 4 | 0 |
+| =historicalreturnconfig.xml= | =ReturnConfiguration= | 2 | 0 | 0 |
+| =iborfallbackconfig.xml= | =IborFallbackConfig= | 3 | 1 | 0 |
+| =baselTrafficLightconfig.xml= | =BaselTrafficLightConfig= | 2 | 1 | 0 |
+| =ore_types.xsd= | (shared, no root) | 0 | 8 | 0 |
+| *Total* | | *265* | *178* | *162* |
+
+The rule throughout: an entity is a root, a block that holds children, or a
+keyed configuration node; a value type is a leaf carrying one scalar payload
+with label attributes. Excluded means an anonymous container or inline companion
+(43 in =curveconfig.xsd=, 2 in =conventions.xsd=), the =xs:any= wildcard in
+=simmcalibration.xsd=, or the market-data subtree of =simulation.xsd=.
+265 + 178 + 162 = 605.
+
+** What is out of scope, and why
+
+Market data, trades and observed data are excluded by the brief: =todaysmarket.xml=,
+=portfolio.xml=, =instruments.xsd=, =scriptlibrary.xml=, =collateralbalance.xml=
+and =intradaypowerloaddata.xsd=. They account for 271 further schema types, which
+the extractor can render on request but which are not configuration.
+
+The exclusion that is easy to miss is inside an in-scope document:
+=simulation.xml= declares the market-data overrides the simulation market is
+built from, under =market= and =market_*=, plus the curve algebra that reshapes
+them. That is 116 classes — most of the document — and it is market data.
+
+** Regenerating the inventory and the diagrams
+
+#+begin_src sh
+# The complete inventory and the class diagram of everything in scope.
+python3 build/scripts/xsd_to_uml.py --format both --out-dir .audit/ore-taxonomy
+
+# The entity-to-owner mapping, one row per modelled class.
+python3 build/scripts/xsd_to_uml.py --format mapping --out-dir .audit/ore-taxonomy
+
+# One document on its own, entities and blocks only.
+python3 build/scripts/xsd_to_uml.py --entities-only --xsd sensitivity \
+    --out-dir .audit/ore-taxonomy --out-name sensitivity.puml
+#+end_src
+
+The diagrams committed beside this page were produced by those commands and
+rendered with =plantuml -tpng=. The extractor reads =external/ore/xsd= and needs
+nothing else.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][ORE report configuration]] — the index of this investigation, and where to read this page in it.

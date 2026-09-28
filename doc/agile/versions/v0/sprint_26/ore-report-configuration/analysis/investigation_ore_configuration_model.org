@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: D8996E23-B910-4A87-AED5-1133B956509C
+:END:
+#+title: Investigation: the ORE configuration object model
+#+description: The designed structs: named configurations and the ORE run parameter vocabulary in reporting, the configuration types themselves in analytics, and how a report binds to them by type.
+#+type: investigation
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+A point-in-time record, written on 2026-09-27, of the object model this story is
+deciding. It is data-oriented, so it carries structs and their members and
+nothing else. The analytics half is generated from the schemas by
+=build/scripts/ore_configuration_model.py=; the reporting half is written in that
+script, because it is a design and no schema states it.
+
+* The model carries no representation
+
+A decision, made explicit because it is easy to erode: the ORE XML structure is
+recreated by the mappers in =ores.ore=, from the bindings =xsdcpp= generates from
+the schemas. The data model holds domain entities and nothing about how they are
+written down — no element names, no paths, no ordering metadata, no node kinds.
+Where a document's spelling does not follow from our names, the mapper says so in
+code, which is what the four existing ORE mappers already do.
+
+Two consequences worth stating. The model cannot be asked to be lossless *as a
+document*; it is lossless as a domain, and the mapper is accountable for the
+document. And a value that exists only because ORE spells it a certain way — an
+element name, a section heading — is not a domain field until it means something
+on its own, which is why =scope= is stated in our vocabulary rather than as the
+element it lands in.
+
+* The two halves
+
+The split follows the components:
+
+| Half | Owner | What it holds |
+|------+-------+---------------|
+| The configuration registry | =ores.reporting= | a named configuration, its type, the binding from a report definition, and the parameter vocabulary that describes an ORE run document |
+| The configuration types | =ores.analytics= | what a stress test, a SIMM calibration, a sensitivity analysis, a simulation, a credit simulation, a historical return configuration or a Basel traffic light configuration is made of |
+
+The reason for the split is reuse. A stress library is not the property of one
+report; several reports bind to the same one, and nothing about it is
+report-specific. The registry, by contrast, exists so that a report can name it.
+
+* The reporting half
+
+#+caption: The registry, the binding, and the parameter vocabulary. One row per named configuration; the vocabulary says which names a type and subtype accept and what domain each value has.
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/configuration_model_reporting.png]]
+
+Source: =configuration_model_reporting.puml=.
+
+| Struct | Key | Holds |
+|--------+-----+-------|
+| =report_definition= | id | the report, its type, its schedule and its concurrency policy |
+| =report_type= | id | our own classification, since report types are outside ORE |
+| =report_configuration= | definition + type | the list a report carries: a configuration type and the configuration it binds to |
+| =configuration_type= | id | *Stress Testing*, *Simulation*, *Sensitivity*, … and which component owns the detail |
+| =configuration= | id | **the named configuration**: the name is ours, and one row is what a report binds to |
+| =configuration_parameter= | configuration + definition | one value |
+| =parameter_definition= | id | the vocabulary: for a section and subtype, the names it accepts, and the domain of each. =name= is the literal =Parameter/@name= value, used verbatim; =scope= says what the parameter configures — =execution=, =analysis=, =binding=, =logging=, =restore= — and =subtype= is the analytic kind where there is one |
+| =value_domain= | id | what the value is — currency, date, boolean, integer, tenor, document, list — and, for the ones that name something, the entity it refers to |
+| — | — | no representation metadata. The ORE XML structure is rebuilt by the mappers in =ores.ore= from the generated bindings; the data model holds domain entities only |
+
+The vocabulary is per type *and* subtype, because the measurement says so: of the
+218 parameter names the shipped run documents use, 165 are used by exactly one
+analytic type, and only =active= is used by all 35. A single global name list
+would accept nonsense.
+
+The domain is declared here rather than inferred from values, because the values
+lie: =mporCalendar= holds =EUR= and =US= — calendar names, not currencies —
+=asofDate= holds both ISO dates and integers, booleans appear as =Y/N= and as
+=true/false=, and =scenariodump= is sometimes a boolean and sometimes a path.
+
+* The analytics half
+
+#+caption: The analytics half: one package per configuration type, 85 structs. Structs that differ only in name are drawn once, and the variants are named in a note on the representative.
+[[proj:doc/agile/versions/v0/sprint_26/ore-report-configuration/analysis/configuration_model_analytics.png]]
+
+Source: =configuration_model_analytics.puml=.
+
+The seven documents describe 202 classes. They are normalised rather than drawn
+one per class, because two relations with the same shape are one relation:
+
+- *Shift families are one relation.* Sensitivity's twenty-six and stress's ten
+  become =sensitivity_shift_config= and =stress_shift_config=. The family is a
+  code column on the shift, and the valid codes are listed in a note on the
+  diagram rather than in a lookup table: a table whose only content is the names
+  of curve families is representation, and the mapper knows which ORE element
+  each one serialises to. The grids ORE writes as comma-separated
+  strings — =Shifts=, =ShiftTenors=, =ShiftExpiries=, =ShiftStrikes=, and the
+  =Shifts/Shift= values — are rows: =<doc>_shift_tenor= holds one row per tenor
+  and references the tenor entity, =<doc>_shift_strike= one row per strike, and
+  =<doc>_shift_point= the values keyed by expiry and term. The comma-separated
+  form is a serialisation detail and does not reach the model.
+- *Value rows reached by one element name are one relation.* SIMM's buckets and
+  labels merge: three historical volatility ratios become one relation, four
+  inter-bucket correlation rows become one, and so on.
+- *Groupings and repetition carriers are not relations.* A class with no members
+  is the parent's edge, and it passes through unless it has several children, in
+  which case the grouping element survives in the XML map.
+
+That is 86 relations, split as SIMM calibration 31, simulation 27, sensitivity 13,
+stress 10, credit simulation 3, and one each for historical return and Basel
+traffic light. SIMM and simulation are still the two large ones and further
+merges may exist in them; the exhaustive per-document entity diagrams produced by
+=build/scripts/xsd_to_uml.py= remain the reference when a relation's members
+matter.
+
+Each document yields one configuration, whose contents are the file's own
+structure:
+
+| Configuration type | Its composed children |
+|--------------------+-----------------------|
+| *Stress Testing* | =StressTest= by id (=eur_6m_up=), each with its par shifts and eleven shift families |
+| *SIMM Calibration* | =SIMMCalibration= by id, each with six risk classes of weights, correlations and thresholds |
+| *Sensitivity* | 26 shift families keyed by currency, index, name or equity |
+| *Simulation* | one parameters block, and the cross-asset model families keyed by currency or name |
+| *Credit Simulation* | transition matrices and entities by name, plus the risk settings |
+| *Historical Return* | the return type and displacement per key |
+| *Basel Traffic Light* | observation thresholds per MPOR bucket |
+
+* What this model does not settle
+
+1. *Repetition inside a parameterised type.* =ore.xml= never repeats a parameter
+   name, so =configuration_parameter= needs no more than =position=. A future
+   parameterised type that repeats would need an item row; none does today.
+2. *How much of SIMM and simulation can still merge.* Thirty-one and
+   twenty-seven relations remain; the same element-name and shape rules were
+   applied to both, so what is left is genuinely different shapes or shapes the
+   current rules cannot see.
+3. *Where the vocabulary is seeded.* Roughly 1,500 =(subtype, name)= pairs across
+   the documents. Seeded rows, generated from the schemas, or declared in code
+   beside the workflow that reads it.
+
+* See also
+
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][Investigation: the ORE report configuration vocabulary]] — the index of this investigation, and where to read this page in it.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the earlier proposal this model answers, and where two of its layers landed.

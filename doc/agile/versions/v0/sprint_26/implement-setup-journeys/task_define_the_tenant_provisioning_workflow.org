@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch: feature/define-the-tenant-provisioning-workflow
+#+branch: feature/complete-the-tenant-provisioning-run
 #+pr: 2332
 #+blocked_on:
 #+blocked_since:

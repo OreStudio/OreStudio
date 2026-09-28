@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/collapse-instrument-identity
-#+pr:
+#+pr: 2348
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -217,6 +217,7 @@ closure of defects 7, 9, 10 and 13.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2348][#2348]] | [trading] Key every instrument by the trade it belongs to |
 |    | Collapse the instrument identity into the trade and split the bond security |
 
 * Review

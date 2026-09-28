@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-09-28
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 | Now          | Complete, with no accepted exception left, and re-verified a second time on main. Every applicable item passes, V04 included: the shell sweep runs all 732 generated refdata commands with 0 aborts, and =ores.refdata= is listed in =COMPONENTS_UNDER_TEST= with =check_component_drift.py --all= reporting no drift. The second rebase (main had moved 292 commits) re-ran the whole gate on a store rebuilt from nothing; it found two main-side defects, both filed, and one stale environment variable. |
 | Waiting on   | Nothing. |
 | Next         | Nothing in this task. The response-shape and recipe fixes reach the components under test; the components outside that set pick them up when they are regenerated, which is captured in =shell-recipes-no-longer-run=. |
-| Last touched | 2026-09-27                               |
+| Last touched | 2026-09-28                               |
 
 * Acceptance
 
@@ -205,6 +205,7 @@ record each item's result in the table below.
 | Final 5 | Re-verified on the fourth rebase: =compass build= exits 0, the store rebuilds from nothing on env format 26, 8 of 8 targets pass, the codegen suite passes, =check_component_drift.py --all= reports no drift, the shell recipe inventory check passes and =validate_docs.sh= reports 40 of 40. V04 was not re-run for this pass because the rebase changed no refdata command or recipe — the regeneration touched reporting, analytics and the TypeScript twins only — so the 732-command sweep from the third rebase still describes this component's shell surface. The PR is #2318 and is mergeable. | =rebase4-tests.txt=, =rebase4-gates.txt=. |
 | Whole-tree check | Asked to prove the whole tree, not just this component: =compass build= exits 0; =compass db recreate -y -k= exits 0; the fleet starts with 25 of 25 units running; and a full =ctest= over all 87 targets reports *86 passed, 1 failed*. The failure is =ores.marketdata.core.tests=, at =service_import_service_tests.cpp:190= ("import_warns_when_refdata_says_an_fx_pair_is_reversed"): the test stands up a stub responder on =list_currency_pairs_request= and expects the import to warn, and when the fleet is running the real =ores.refdata.service= wins the reply race against the stub, so no pair comes back and no warning is raised. Stopping that one unit and re-running the target gives 100% pass, which is what identifies the interaction as the stub racing the real service rather than a code failure. =projects/ores.marketdata= is byte-identical to =origin/main= on this branch, so nothing here caused it. | =build/audit/refdata-clean/full-ctest.txt=; =marketdata-no-fleet.txt= (pass with the unit stopped); =compass services status= 25 of 25. |
 | CI | Two of this PR's check runs were red, both on =Codegen sweep=, for one line. The sweep renders every catalogue component into a temporary root and fails on any file the branch touched whose render differs, and it named =projects/ores.synthetic/api/include/ores.synthetic.api/domain/ir_curve_template_entry.hpp=: main's prose there names =ores::refdata::domain::resolve_window=, which this branch deleted as a test-only wrapper over =resolve_end_date= (B06), so the committed text and the render disagreed on that sentence. The branch's earlier fix had edited the generated header, which is why the next generation reverted it. The fix moved to the model that renders the sentence (=ores.synthetic.ir_curve_template_entry.org=), and the local sweep then reported no file this branch touched would change. All 16 checks pass, =sweep= among them. | CI run 3640090452 (=sweep=, fail) and the run after =9015ac00a3= (16 of 16 pass); =local-sweep.txt=. |
+| Merged | Merged to main as =f69b1e61b5= through PR #2318 on 2026-09-28. The merge brought 105 commits main had gained since the branch's last rebase, 33 of them inside =projects/ores.refdata= or =projects/ores.codegen=, so the merged tree was verified again rather than assumed: =check_component_drift.py --all= reports no drift, =compass build= exits 0, =compass db recreate -y -k= exits 0, the full =ctest= reports *87 of 87 targets passed* with none failed, and the fleet comes up with 25 of 25 units running. The merged tree is identical to the branch for refdata and codegen. | =build/audit/refdata-clean/postmerge-drift.txt=, =postmerge-ctest.txt=; =compass services status= 25 of 25. |
 
 * Notes
 

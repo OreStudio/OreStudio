@@ -11,7 +11,7 @@
 #+level: s2
 #+filetags: :codegen:oresmd:rating:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 
 * Quote types
 

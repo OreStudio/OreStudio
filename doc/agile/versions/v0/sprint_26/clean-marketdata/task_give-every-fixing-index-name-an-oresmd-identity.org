@@ -2,13 +2,13 @@
 :ID: AB2922AA-8208-442C-B39C-156877E83D64
 :END:
 #+title: Task: Give every fixing index name an oresmd identity
-#+description: Map the fixing key space to oresmd so the identity cutover can land: a fixing's key is an index name, not the series key grammar, and the corpus carries 158 distinct ones across six asset classes.
+#+description: Map the fixing key space to oresmd so the identity cutover can land: a fixing's key is an index name, not the series key grammar, and the corpus carries 158 distinct ones.
 #+type: task
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/power-fixing-identity
-#+pr: 2346
+#+branch: feature/remaining-fixing-identities
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -28,9 +28,9 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Four classes are closed: interest rates 57 of 57, FX 7 of 7, commodity 25 of 25 and intraday power 48 of 48, so 137 of the corpus's 158 names resolve. The power class and the =delivery= field are implemented and the core suite is green. |
-| Waiting on   | The remaining classes that need no new shape: inflation 7 names, equity 8, security 2 and the four =GENERIC= tokens. |
-| Next         | Run the codegen suite, the drift check and the review, then raise the PR. |
+| Now          | Five classes are closed: interest rates 57 of 57, FX 7 of 7, commodity 25 of 25, intraday power 48 of 48 and generic 2 of 2, so 139 of the corpus's 158 names resolve. The two market-data keys the corpus misfiles as fixings are counted as a class of their own and refused. |
+| Waiting on   | The three classes left: inflation 7 names, equity 8 and security 2. |
+| Next         | Raise the PR for the generic class, then take the three remaining classes. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -290,7 +290,7 @@ other nineteen names are named.
 | inflation | 7 | a known index-code list: the corpus's own header words are dash-less too, and ORE carries such a list in its parser |
 | equity | 8 | nothing new: =ccy_optional_for_fixing= already settles the currency, so the projection is =EQ-<ticker-or-ric>= |
 | security | 2 | =delivery= reused for the bond future's expiry month, the shape commodity's contract month already uses |
-| generic | 2 | the name carried as the entity and projected back as =GENERIC-<name>= |
+| generic | 2 | the name as the entity, with the case it arrived in as a spelling |
 
 The names are =AUCPI=, =EUHICP=, =EUHICPXT=, =FRHICP=, =UKRPI=, =USCPI= and =ZACPI=
 for inflation; =EQ-SP5= and seven =EQ-RIC:= or =EQ-FIGI:= tickers for equity;
@@ -301,6 +301,56 @@ One row stays unexplained and is not part of this: =GENERIC-JuniorNote= is value
 at 4000000 in =Legacy/Example_46/Input/fixings.txt=, alone after a blank line among
 ordinary index fixings. Four million is not a rate or a price, so it should be
 checked against Example_46's portfolio rather than assumed either way.
+
+* The generic index, and the two keys that are not index names
+
+=GENERIC-= is a prefix ORE resolves rather than a spelling of another class, so it
+gets a class of its own. ORE's parser asserts the prefix and builds a
+=GenericIndex= from the rest of the name, which makes that rest the whole of the
+index's identity: a generic index is whatever its producer called it, and there is
+no market-data key for one. The corpus carries two, =GENERIC-JuniorNote= in
+=Legacy/Example_46/Input/fixings.txt= and =GENERIC-PortfolioBasket#1= in
+=Products/Input/fixings.csv=, both on fixing rows. So =generic= joins =power= as a
+fixing-only class: it carries no quote type, and =quote_key_generic()= returns
+nothing.
+
+*** Worked example
+
+The three names, and the identifier each projects to:
+
+| ORE index name              | oresmd identifier                                                                    |
+|-----------------------------+--------------------------------------------------------------------------------------|
+| =GENERIC-JuniorNote=        | =oresmd://generic/juniornote?type=fixing&name_spelling=JuniorNote=                   |
+| =GENERIC-PortfolioBasket#1= | =oresmd://generic/portfoliobasket%231?type=fixing&name_spelling=PortfolioBasket%231= |
+| =GENERIC-SOMEINDEX=         | =oresmd://generic/someindex?type=fixing=                                             |
+
+=to_index_name()= renders =GENERIC-= and the name; =from_index_name()= strips the
+prefix and takes the tail whole. A tail that carries a slash is refused, because the
+slash is the market-data key grammar's separator and not an index name's: that is
+what keeps =GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C= and its
+3400 sibling out of the fixing space. The two are SPX call prices -- 2862.29 and
+2767.41, about 95 apart for a 100 strike step -- in a file whose header declares
+=fixingId= for the column they sit in, and the owner reads them as errors rather than
+as fixings to model.
+
+*** Why the name is a spelling, not the entity's own case
+
+The path segment is upper-cased, as it is for every other class, and the case the
+corpus wrote sits beside it in =name_spelling=. Both corpus names arrive in mixed
+case, so without the field neither would read back as ORE wrote it. That is the FX
+=source_spelling= precedent, and the same rule the interest-rate family spells
+under: the identifier holds the normalised token, and the name keeps the spelling it
+arrived under.
+
+Carrying the name verbatim as the entity is the alternative, and it is the only one
+that needs a special case: the parser's entity assignment and =to_uri()='s path
+segment are generated from the Fields table for every class alike, and both
+case-fold what they carry. The spelling reuses the machinery the FX source already
+has, so the class adds no template branch of its own.
+
+The character set is ORE's and not the URI's. =#= is a fragment delimiter, so it is
+percent-encoded in the path segment and in the spelling, and the parser decodes
+both. A case reads =GENERIC-PortfolioBasket#1= out to a URI and back to prove it.
 
 * Plan
 
@@ -360,6 +410,11 @@ task and name that file in the Command column.
 | Power index names ORE's grammar refuses | 0 of 48 | the same walk, reading the tail by token count as =parseIntradayPowerIndex()= does | =d3325300d5= |
 | Power windows that are one hour wide | 47 of 47, contiguous and half-open, 01:00 to 24:00 at the widest | the same walk | =d3325300d5= |
 | Commodity fixing rows whose period is not the observation month | 711 of 928 | a walk of =external/ore/examples/Products/Input/fixings.csv= | =d3325300d5= |
+| Generic names that name, after | 2 of 2, both round-tripped through a URI and back | =ores.marketdata.core.tests "[fixing]"= | =7b3918b6fe= |
+| Corpus names that name, after the generic work | 139 of 158 (interest rates 57, power 48, commodity 25, FX 7, generic 2) | same | =7b3918b6fe= |
+| =ores.marketdata.core= suite, after the generic work | 1641 assertions in 378 cases | =ores.marketdata.core.tests= | =7b3918b6fe= |
+| codegen suite, after the generic work | 992 passed | =pytest projects/ores.codegen/tests= | =7b3918b6fe= |
+| Declared oresmd test cases no template emitted, before | 22 of 198 (power 11, generic 11) | =pytest projects/ores.codegen/tests/test_oresmd_spec_test_cases.py=, run against the same generated files at =7b3918b6fe~1= | =9edae76203= |
 
 The test binaries are under
 =build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the
@@ -431,6 +486,17 @@ the correction then read the median of the absolute deviation as a product and s
 so the two agree to three decimal places and not more, and slightly below one. The
 decision not to canonicalise does not rest on the precision: two values still land
 on one date.
+
+**A test case a model declares is invisible until a template block emits it.** The
+two fixing-only classes each had eleven: power declared its Projections, Round-trip
+and Rejection rows in the identity change and no ={{#power_*}}= block existed to
+render them, and generic's rows were written beside them in the same state. Neither
+the C++ suite, the drift check nor the coverage gate said so, because nothing that
+runs reads a spec's =* Test cases= table; the table is input to mustache and to
+nothing else. =test_oresmd_spec_test_cases.py= now loads every model through the
+generator's own loader and requires each declared description to appear as a
+=TEST_CASE= in the generated sources. Run against the tree before the wiring it
+names all 22 rows.
 
 * Test Scenarios
 
@@ -554,5 +620,16 @@ and one class could not write both names back. Power is 48 of 48 and commodity 2
 of 25, all round-tripped, which takes the corpus total to 137 of 158. =delivery=
 joins the keys the other classes refuse, so no class accepts it and drops it.
 
-Still open, each its own decision: equity (8 names), inflation (7), security (2)
-and the four =GENERIC= tokens, of which two are not fixings at all.
+Still open, each its own decision: inflation (7 names), equity (8) and security (2).
+The two =GENERIC-MD/EQUITY_OPTION/...= rows the corpus puts in a fixing column are
+errors rather than fixings to model, so the target is 156 of 158 rather than 158,
+and the census counts them as =market-data-key= so that the population it walks
+stays whole.
+
+The generic class is closed with the next change. ORE states the prefix in a parser
+of its own, so =generic= joins =power= as a class the corpus's prefix names: the
+identifier carries the index name upper-cased and the case ORE wrote it in beside it
+in =name_spelling=, which is the FX =source_spelling= rule. Both names the corpus
+carries name and round-trip, the second of them through the =%23= its =#= becomes in
+a URI, and 2 of 2 takes the corpus total to 139 of 158. The class adds no template
+branch: the spelling reuses the field machinery the FX source already has.

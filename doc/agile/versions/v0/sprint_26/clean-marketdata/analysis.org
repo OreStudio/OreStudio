@@ -1381,6 +1381,20 @@ file rather than index names, and the reader reads them as fixings because that 
 the file they are in. Whether it should refuse a key that is not an index name is
 part of what remains.
 
+*Update, 2026-09-28 (task AB2922AA, commit 7b3918b6fe).* The generic class is
+closed, and the two market-data keys are settled. ORE resolves =GENERIC-= in a
+parser of its own and builds a =GenericIndex= from the rest of the name, so that
+rest is the whole of the identity: the identifier carries the name upper-cased and
+the case ORE wrote it in beside it in =name_spelling=, which is the FX
+=source_spelling= rule. Both names the corpus carries name and round-trip --
+=GENERIC-JuniorNote= and =GENERIC-PortfolioBasket#1=, the second through the =%23=
+its =#= becomes in a URI -- so the corpus total is **139 of 158**. The two
+=GENERIC-MD/EQUITY_OPTION/PRICE/...= rows are SPX call prices in a fixing column
+rather than index names; the index-name projection refuses any name that carries a
+slash, which keeps them out of the fixing space, so the target is **156 of 158**
+rather than 158. Three classes remain: inflation (7), equity (8) and security (2).
+The =FIXING= exemption in the oresmd coverage gate still stands, unchanged.
+
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 
 *Scope.* Add =marketdata= to =component_registry.py= and run every gate:

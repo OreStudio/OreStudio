@@ -24,13 +24,14 @@
  * Seeds the workflow_instance state machine with:
  * - 1 machine: workflow_instance
  * - 6 states: pending, in_progress, completed, failed, compensating, compensated
- * - 6 transitions:
+ * - 7 transitions:
  *     initial_start         (NULL          -> in_progress)
  *     complete              (in_progress   -> completed)
  *     fail                  (in_progress   -> failed)
  *     begin_compensation    (in_progress   -> compensating)
  *     finish_compensation   (compensating  -> compensated)
  *     fail_during_compensation (compensating -> failed)
+ *     retry                 (failed        -> in_progress)
  *
  * This script is idempotent: it skips insertion if the machine already exists.
  */
@@ -144,8 +145,13 @@ begin
         -- Compensation itself threw an exception
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_compensating, v_state_failed, 'fail_during_compensation', null,
-         current_user, 'system.initial_load', 'compensating -> failed');
+         current_user, 'system.initial_load', 'compensating -> failed'),
+        -- A retry resumes a run that stopped on its failed step: the run goes
+        -- back to running with every completed step untouched
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_failed, v_state_in_progress, 'retry', null,
+         current_user, 'system.initial_load', 'failed -> in_progress');
 
-    raise debug 'Created 6 workflow_instance transitions.';
+    raise debug 'Created 7 workflow_instance transitions.';
 end;
 $$;

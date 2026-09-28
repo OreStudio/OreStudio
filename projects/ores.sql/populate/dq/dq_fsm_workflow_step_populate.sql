@@ -25,12 +25,13 @@
  * - 1 machine: workflow_step
  * - 6 states: pending, in_progress, completed, completed_with_warnings,
  *             failed, compensated
- * - 5 transitions:
+ * - 6 transitions:
  *     initial_start          (NULL         -> in_progress)
  *     complete               (in_progress  -> completed)
  *     complete_with_warnings (in_progress  -> completed_with_warnings)
  *     fail                   (in_progress  -> failed)
  *     compensate             (failed       -> compensated)
+ *     retry                  (failed       -> in_progress)
  *
  * This script is idempotent: it skips insertion if the machine already exists.
  */
@@ -142,8 +143,13 @@ begin
         -- Step rolled back during saga compensation
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_failed, v_state_compensated, 'compensate', null,
-         current_user, 'system.initial_load', 'failed -> compensated');
+         current_user, 'system.initial_load', 'failed -> compensated'),
+        -- A retry resumes the step that failed, under the identity it already
+        -- holds, which is the idempotency key its service deduplicates on
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_failed, v_state_in_progress, 'retry', null,
+         current_user, 'system.initial_load', 'failed -> in_progress');
 
-    raise debug 'Created 5 workflow_step transitions.';
+    raise debug 'Created 6 workflow_step transitions.';
 end;
 $$;

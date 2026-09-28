@@ -26,6 +26,11 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.workflow.core/export.hpp"
+#include <memory>
+
+namespace ores::workflow::service {
+class workflow_engine;
+}
 
 namespace ores::workflow::messaging {
 
@@ -49,7 +54,8 @@ private:
 public:
     workflow_handler(ores::nats::service::client& nats,
                      ores::database::context ctx,
-                     ores::security::jwt::jwt_authenticator signer);
+                     ores::security::jwt::jwt_authenticator signer,
+                     std::shared_ptr<service::workflow_engine> engine);
 
     /**
      * @brief Handles workflow.v1.parties.provision requests.
@@ -60,10 +66,21 @@ public:
      */
     void provision_parties(ores::nats::message msg);
 
+    /**
+     * @brief Handles workflow.v1.instances.retry requests.
+     *
+     * Validates the JWT, checks the permission a write to a run needs,
+     * confines the request to the caller's own tenant, and asks the engine to
+     * resume the run. The answer names the step the engine re-dispatched, or
+     * why it refused.
+     */
+    void retry_instance(ores::nats::message msg);
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
+    std::shared_ptr<service::workflow_engine> engine_;
 };
 
 }

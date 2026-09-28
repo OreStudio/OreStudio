@@ -354,6 +354,21 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
     }
 }
 
+void workflow_engine::stop_on_failure(const domain::workflow_instance& instance,
+                                      const std::string& failure_msg) {
+
+    BOOST_LOG_SEV(lg(), warn) << "Workflow STOPPED on its failed step:" << " type="
+                              << instance.type
+                              << " workflow=" << boost::uuids::to_string(instance.id)
+                              << " error=" << failure_msg;
+
+    // The run stops where it is: the failed step keeps its error and log, the
+    // completed steps keep their results, and the run's error stands until a
+    // retry clears it.
+    set_instance_state(instance.id, instance_states_.require("failed"), "", failure_msg);
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
+}
+
 void workflow_engine::check_compensation_complete(const domain::workflow_instance& instance) {
 
     const auto steps =
@@ -474,7 +489,14 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         if (is_success) {
             dispatch_next_step(*instance, event.result_json);
         } else {
-            begin_compensation(*instance, event.error_message);
+            // The policy belongs to the definition. A run that declares stop
+            // keeps its completed work and waits for a retry; the default is
+            // to roll the work back.
+            const auto* def = registry_->find(instance->type);
+            if (def != nullptr && def->on_failure == failure_policy::stop)
+                stop_on_failure(*instance, event.error_message);
+            else
+                begin_compensation(*instance, event.error_message);
         }
     }
 }
@@ -719,6 +741,91 @@ void workflow_engine::recover_in_progress() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Workflow recovery pass complete.";
+}
+
+workflow_engine::retry_outcome
+workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
+                                const std::string& step_name,
+                                const utility::uuid::tenant_id& caller_tenant) {
+    const std::lock_guard<std::mutex> lock(mutex_);
+    const auto instance_id_str = boost::uuids::to_string(instance_id);
+
+    const auto found_instances = instance_repo_.read_latest(ctx_, instance_id_str);
+    if (found_instances.empty())
+        return {.reason = "Workflow instance not found."};
+
+    const auto instance = found_instances.front();
+    // The engine reaches every tenant's runs; the caller reaches only its own.
+    if (instance.tenant_id != caller_tenant)
+        return {.reason = "Workflow instance not found."};
+
+    if (instance.state_id != instance_states_.require("failed"))
+        return {.reason = "The run has not stopped, so there is nothing to resume."};
+
+    // The run's own persisted steps, forward steps only: a retry resumes
+    // work, so a compensation step is never a target.
+    const auto raw_steps = step_repo_.read_latest_by_workflow_id(ctx_, instance_id_str, 0, 1000);
+    std::vector<domain::workflow_step> forward;
+    for (const auto& s : raw_steps)
+        if (s.step_index >= 0)
+            forward.push_back(s);
+
+    const auto failed_id = step_states_.require("failed");
+    const auto completed_id = step_states_.require("completed");
+    const auto completed_with_warnings_id = step_states_.require("completed_with_warnings");
+    const auto in_progress_id = step_states_.require("in_progress");
+
+    const auto has_finished = [&](const domain::workflow_step& s) {
+        return s.state_id == completed_id || s.state_id == completed_with_warnings_id;
+    };
+
+    const domain::workflow_step* target = nullptr;
+    if (step_name.empty()) {
+        for (const auto& s : forward)
+            if (s.state_id == failed_id) {
+                target = &s;
+                break;
+            }
+        if (target == nullptr)
+            return {.reason = "The run holds no failed step to resume from."};
+    } else {
+        for (const auto& s : forward)
+            if (s.name == step_name) {
+                target = &s;
+                break;
+            }
+        if (target == nullptr)
+            return {.reason = "The run holds no step named '" + step_name + "'."};
+    }
+
+    // Every step before the target must have finished. A retry resumes the
+    // work a run still owes; it never resumes past work that did not land.
+    for (const auto& s : forward) {
+        if (s.step_index >= target->step_index)
+            break;
+        if (!has_finished(s))
+            return {.reason = "The step '" + s.name +
+                              "' has not completed, so the run cannot resume past it."};
+    }
+    if (has_finished(*target))
+        return {.reason = "The step '" + target->name +
+                          "' has completed, so there is nothing to resume."};
+
+    // The target goes back to running with its error and its failed
+    // attempt's log cleared, the instance loses its error, and the command
+    // goes out again under the step id the store already holds: that id is
+    // the step's idempotency key, so a service that answers twice is the
+    // engine's to catch rather than the retry's to prevent.
+    set_step_state(target->id, in_progress_id, "", "", "[]");
+    set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
+    set_step_progress(instance.id, target->step_index);
+    publish_command(*target, instance.id, instance.tenant_id.to_uuid());
+    publish_status_event(instance.id, instance.tenant_id.to_uuid());
+
+    BOOST_LOG_SEV(lg(), info) << "Retried step " << target->step_index << " (" << target->name
+                              << ") for instance " << instance_id_str;
+
+    return {.resumed = true, .step_index = target->step_index, .step_name = target->name};
 }
 
 }

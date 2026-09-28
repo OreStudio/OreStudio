@@ -65,6 +65,7 @@ export const SUBJECTS = {
     // them. A rename in C++ must be mirrored here or the boundary test fails.
     workflowInstanceSteps: 'workflow.v1.instances.steps',
     retryWorkflowInstance: 'workflow.v1.instances.retry',
+    passwordPolicy: 'iam.v1.auth.password-policy',
 } as const;
 
 /**
@@ -859,5 +860,51 @@ export function toRetryWorkflowInstanceResult(
         instanceId: reply.workflow_instance_id,
         stepIndex: reply.step_index,
         stepName: reply.step_name,
+    };
+}
+
+/**
+ * The rules a password must satisfy, as the server states them.
+ *
+ * A screen shows these rules before anybody has signed in, so the read needs
+ * no session. The rules live in the server's validator and nowhere else: a
+ * client that states them states the server's record rather than a copy of it.
+ */
+export const passwordPolicySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    minLength: z.number().int().default(0),
+    requireUppercase: z.boolean().default(false),
+    requireLowercase: z.boolean().default(false),
+    requireDigit: z.boolean().default(false),
+    requireSpecial: z.boolean().default(false),
+    specialChars: z.string().default(''),
+});
+
+export type PasswordPolicy = z.infer<typeof passwordPolicySchema>;
+
+/** The server's own answer, before it is read in the interface's terms. */
+export const passwordPolicyReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    min_length: z.number().int().default(0),
+    require_uppercase: z.boolean().default(false),
+    require_lowercase: z.boolean().default(false),
+    require_digit: z.boolean().default(false),
+    require_special: z.boolean().default(false),
+    special_chars: z.string().default(''),
+});
+
+/** The interface's record, read from the server's answer. */
+export function toPasswordPolicy(reply: z.infer<typeof passwordPolicyReplySchema>): PasswordPolicy {
+    return {
+        success: reply.success,
+        message: reply.message,
+        minLength: reply.min_length,
+        requireUppercase: reply.require_uppercase,
+        requireLowercase: reply.require_lowercase,
+        requireDigit: reply.require_digit,
+        requireSpecial: reply.require_special,
+        specialChars: reply.special_chars,
     };
 }

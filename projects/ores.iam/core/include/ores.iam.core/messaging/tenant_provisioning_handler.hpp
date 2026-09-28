@@ -325,7 +325,8 @@ public:
                 req->tenant_description,
                 req->admin_username,
                 req->admin_email,
-                req->admin_password);
+                req->admin_password,
+                profile->force_password_change);
 
             ores::iam::workflow::provision_tenant_workflow_request run;
             run.profile_code = profile->code;

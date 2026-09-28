@@ -34,7 +34,7 @@ render_instrument_option_exercise_fee_fields(const domain::instrument_option_exe
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Amount", .value = v.amount.to_string()});
     fields.push_back({.name = "Type", .value = v.type.value_or(std::string{})});
     fields.push_back({.name = "Start Date", .value = v.start_date.value_or(std::string{})});

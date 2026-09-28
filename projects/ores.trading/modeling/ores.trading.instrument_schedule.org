@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One schedule entry an instrument's owner states, either as a rule block or as a date list, keyed to the instrument, the owner, the schedule's role and the entry's ordinal.
+#+brief: One schedule entry an instrument's owner states, either as a rule block or as a date list, keyed to the trade, the owner, the schedule's role and the entry's ordinal.
 #+entity_singular: instrument_schedule
 #+entity_plural: instrument_schedules
 #+entity_title: Instrument Schedule
@@ -56,17 +56,18 @@ cannot hold stays distinguishable from one the document omits.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose owner states this schedule.
+The trade whose owner states this schedule.
 
-The instrument row carries the trade, the workspace and the party. The
-schedule rows are family-owned and ride the instrument's scope, so no
+The trade row carries the workspace and the party. The
+schedule rows are family-owned and ride the trade's scope, so no
 workspace column rides them.
 
 ** owner_role

@@ -33,7 +33,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Per-trade bond repo facts: one row per repo instrument, keyed by instrument_id.
+ * @brief Per-trade bond repo facts: one row per repo instrument, keyed by trade_id.
  *
  * One row per bond repurchase agreement trade, keyed by the instrument
  * row it extends. The repo row references the issue as its collateral
@@ -57,12 +57,12 @@ struct bond_repo final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the bond repo instrument this fact row extends.
+     * @brief The trade the bond repo fact row belongs to.
      *
-     * The instrument row carries the trade, workspace and party; the fact row only carries the repo
-     * terms. Per the ER, no workspace column rides the fact tables.
+     * The trade row carries the workspace and the party; the fact row only carries the repo terms.
+     * Per the ER, no workspace column rides the fact tables.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Leg type of the repo leg (Fixed, Floating).

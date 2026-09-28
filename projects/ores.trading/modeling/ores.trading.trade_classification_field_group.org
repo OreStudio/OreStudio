@@ -48,13 +48,6 @@ Trade type code (e.g. Swap, FRA, Option).
 
 Broad product classification enum.
 
-** instrument_id
-:PROPERTIES:
-:cpp_type: std::optional<boost::uuids::uuid>
-:END:
-
-Optional instrument (soft FK to ores_refdata_instruments_tbl).
-
 ** asset_class
 :PROPERTIES:
 :cpp_type: std::optional<std::string>

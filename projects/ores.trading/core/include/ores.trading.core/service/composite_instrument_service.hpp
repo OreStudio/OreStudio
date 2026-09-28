@@ -122,8 +122,7 @@ public:
      * @return The composite instrument at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::composite_instrument>
-    get_composite_instrument_at_version(const boost::uuids::uuid& instrument_id,
-                                        std::uint32_t version);
+    get_composite_instrument_at_version(const boost::uuids::uuid& trade_id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single composite instrument by its primary key.
@@ -134,13 +133,13 @@ public:
      * @return The composite instrument if found, std::nullopt otherwise.
      */
     std::optional<domain::composite_instrument>
-    get_composite_instrument(const boost::uuids::uuid& instrument_id);
+    get_composite_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of composite instruments by primary key.
      */
     std::vector<domain::composite_instrument>
-    get_composite_instruments(const std::vector<std::string>& instrument_ids);
+    get_composite_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a composite instrument (creates or updates).
@@ -164,12 +163,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_composite_instrument(const boost::uuids::uuid& instrument_id);
+    void delete_composite_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes composite instruments by their primary keys.
      */
-    void delete_composite_instruments(const std::vector<std::string>& instrument_ids);
+    void delete_composite_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a composite instrument.
@@ -177,12 +176,12 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::composite_instrument>
-    get_composite_instrument_history(const std::string& instrument_id);
+    get_composite_instrument_history(const std::string& trade_id);
 
     /**
      * @brief Reads the legs of one composite instrument, ordered by leg sequence.
      */
-    std::vector<domain::composite_leg> get_legs(const std::string& instrument_id);
+    std::vector<domain::composite_leg> get_legs(const std::string& trade_id);
 
     /**
      * @brief Writes the instrument and replaces its whole leg set.

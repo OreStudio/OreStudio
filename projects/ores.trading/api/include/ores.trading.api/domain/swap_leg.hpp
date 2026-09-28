@@ -48,9 +48,9 @@ namespace ores::trading::domain {
  * leg type does not state are null: fixed_rate is null for a floating leg and
  * floating_index_code is null for a fixed leg.
  *
- * The row keeps its own id surrogate and names the parent instrument through
- * instrument_id, which is a soft foreign key to the instrument family rather
- * than to one table.
+ * The row keeps its own id surrogate and names the parent through trade_id.
+ * The instrument is keyed by its trade, so all nine rates families name the one
+ * parent the trades table holds rather than a table per family.
  *
  * It binds :profile: trading-instrument, like the nine instrument sub-types
  * whose legs it holds. Three table features justify the bind: the table is

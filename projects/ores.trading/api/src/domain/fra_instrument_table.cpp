@@ -37,9 +37,9 @@ std::string convert_to_table(const std::vector<fra_instrument>& v) {
           << "Rate Index" << "Long/Short" << "Strike" << "Notional" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& fi : v) {
-        table << fi.identity.instrument_id << fi.identity.trade_type_code << fi.start_date
-              << fi.end_date << fi.currency << fi.rate_index << fi.long_short << fi.strike
-              << fi.notional << fi.audit.recorded_at << fort::endr;
+        table << fi.identity.trade_id << fi.identity.trade_type_code << fi.start_date << fi.end_date
+              << fi.currency << fi.rate_index << fi.long_short << fi.strike << fi.notional
+              << fi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

@@ -34,7 +34,7 @@ render_bond_future_fields(const domain::bond_future& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Contract Name", .value = v.contract_name});
     fields.push_back({.name = "Contract Notional", .value = v.contract_notional.to_string()});
     fields.push_back({.name = "Long Short", .value = v.long_short});

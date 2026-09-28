@@ -36,8 +36,7 @@ render_composite_leg_fields(const domain::composite_leg& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.identity.id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back(
-        {.name = "Instrument ID", .value = boost::uuids::to_string(v.identity.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Leg Sequence", .value = std::to_string(v.identity.leg_sequence)});
     fields.push_back({.name = "Constituent Trade ID", .value = v.constituent_trade_id});
     using ores::history::domain::provenance_fields;

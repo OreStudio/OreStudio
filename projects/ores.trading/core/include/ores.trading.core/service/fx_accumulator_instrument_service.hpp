@@ -124,7 +124,7 @@ public:
      * @return The FX accumulator instrument at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::fx_accumulator_instrument>
-    get_fx_accumulator_instrument_at_version(const boost::uuids::uuid& instrument_id,
+    get_fx_accumulator_instrument_at_version(const boost::uuids::uuid& trade_id,
                                              std::uint32_t version);
 
     /**
@@ -136,13 +136,13 @@ public:
      * @return The FX accumulator instrument if found, std::nullopt otherwise.
      */
     std::optional<domain::fx_accumulator_instrument>
-    get_fx_accumulator_instrument(const boost::uuids::uuid& instrument_id);
+    get_fx_accumulator_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of FX accumulator instruments by primary key.
      */
     std::vector<domain::fx_accumulator_instrument>
-    get_fx_accumulator_instruments(const std::vector<std::string>& instrument_ids);
+    get_fx_accumulator_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a FX accumulator instrument (creates or updates).
@@ -167,12 +167,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_fx_accumulator_instrument(const boost::uuids::uuid& instrument_id);
+    void delete_fx_accumulator_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes FX accumulator instruments by their primary keys.
      */
-    void delete_fx_accumulator_instruments(const std::vector<std::string>& instrument_ids);
+    void delete_fx_accumulator_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a FX accumulator instrument.
@@ -180,7 +180,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::fx_accumulator_instrument>
-    get_fx_accumulator_instrument_history(const std::string& instrument_id);
+    get_fx_accumulator_instrument_history(const std::string& trade_id);
 
 private:
     context ctx_;

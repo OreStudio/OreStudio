@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: Per-trade bond future facts: one row per future instrument, keyed by instrument_id.
+#+brief: Per-trade bond future facts: one row per future instrument, keyed by trade_id.
 #+entity_singular: bond_future
 #+entity_plural: bond_futures
 #+entity_title: Bond Future
@@ -31,16 +31,17 @@ lands in the shared instrument-keyed underlyings of the parent story
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the bond future instrument this fact row extends.
+The trade the bond future fact row belongs to.
 
-The instrument row carries the trade, workspace and party; the fact
+The trade row carries the workspace and the party; the fact
 row only carries the future terms. Per the ER, no workspace column
 rides the fact tables.
 

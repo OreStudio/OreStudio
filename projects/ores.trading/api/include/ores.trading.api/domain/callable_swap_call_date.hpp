@@ -33,8 +33,8 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One call date of a callable swap instrument's exercise schedule, keyed to the instrument
- * and the date's ordinal.
+ * @brief One call date of a callable swap instrument's exercise schedule, keyed to the trade and
+ * the date's ordinal.
  *
  * One row per date the callable swap's exercise schedule names, keyed to
  * the instrument and the date's ordinal within the schedule.
@@ -51,8 +51,8 @@ namespace ores::trading::domain {
  * readers must share, and a repeated date stays two rows because the
  * ordinal, not the date, is part of the key.
  *
- * The instrument row carries the trade, the workspace and the party. The
- * call date rows are family-owned and ride the instrument's scope, so no
+ * The trade row carries the workspace and the party. The
+ * call date rows are family-owned and ride the trade's scope, so no
  * workspace column rides them.
  */
 struct callable_swap_call_date final {
@@ -67,9 +67,9 @@ struct callable_swap_call_date final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the callable swap instrument whose schedule states this date.
+     * @brief The trade whose callable swap schedule states this date.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Ordinal of this date within the schedule's list, counting from one.

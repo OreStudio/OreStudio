@@ -67,7 +67,7 @@ public:
      */
     static void process_set_underlyings(std::ostream& out,
                                         ores::nats::service::nats_client& session,
-                                        std::string instrument_id,
+                                        std::string trade_id,
                                         std::string entries);
 };
 

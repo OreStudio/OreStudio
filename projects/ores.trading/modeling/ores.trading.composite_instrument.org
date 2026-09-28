@@ -17,7 +17,7 @@
 
 Represents the composite product types ORE states. =trade_type_code=
 discriminates the exact product, and the constituent trades live in the
-=composite_legs= child table keyed by this instrument's =instrument_id=.
+=composite_legs= child table keyed by this instrument's =trade_id=.
 
 The parent row carries only the basket identity and its optional free-text
 description: the basket's constituents are child rows, so there is no
@@ -35,19 +35,6 @@ model takes the ordinary audited shape and needs no shape flag.
 * Natural keys
 
 * Columns
-
-** instrument_id
-:PROPERTIES:
-:group:        identity
-:primary_key:  true
-:type:         uuid
-:cpp_type:     boost::uuids::uuid
-:nullable:     false
-:END:
-
-UUID uniquely identifying this composite instrument.
-
-Surrogate key for the instrument record.
 
 ** trade_type_code
 :PROPERTIES:
@@ -82,15 +69,18 @@ Set from session variable app.current_party_id.
 ** trade_id
 :PROPERTIES:
 :group:       identity
+:primary_key: true
+:supplied_by:  user
 :type:        uuid
-:cpp_type:    std::optional<boost::uuids::uuid>
-:nullable:    true
-:supplied_by: unset
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
-Optional soft FK to the parent trade.
+The trade this instrument belongs to, and the instrument's own key.
 
-Null for a standalone instrument.
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
 
 ** description
 :PROPERTIES:
@@ -104,6 +94,19 @@ Optional free-text description.
 #+begin_src cpp :name generator
 std::string(faker::lorem::sentence())
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
 
 * SQL
 
@@ -160,7 +163,7 @@ class does not already state.
     /**
      * @brief Reads the legs of one composite instrument, ordered by leg sequence.
      */
-    std::vector<domain::composite_leg> get_legs(const std::string& instrument_id);
+    std::vector<domain::composite_leg> get_legs(const std::string& trade_id);
 
     /**
      * @brief Writes the instrument and replaces its whole leg set.
@@ -177,21 +180,21 @@ class does not already state.
 ** Service implementations
 #+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
 std::vector<domain::composite_leg>
-composite_instrument_service::get_legs(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << instrument_id;
+composite_instrument_service::get_legs(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << trade_id;
     repository::composite_leg_repository leg_repo;
-    return leg_repo.read_latest(ctx_, std::vector<std::string>{instrument_id});
+    return leg_repo.read_latest(ctx_, std::vector<std::string>{trade_id});
 }
 
 void composite_instrument_service::save_composite_instrument(
     const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
     auto t = v;
-    if (t.identity.instrument_id.is_nil()) {
+    if (t.identity.trade_id.is_nil()) {
         static boost::uuids::random_generator gen;
-        t.identity.instrument_id = gen();
+        t.identity.trade_id = gen();
     }
-    const auto id_str = boost::uuids::to_string(t.identity.instrument_id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.instrument_id
+    const auto id_str = boost::uuids::to_string(t.identity.trade_id);
+    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.trade_id
                                << " with " << legs.size() << " legs";
     stamp(t.identity, ctx_);
     stamp(t.audit, ctx_);
@@ -204,11 +207,11 @@ void composite_instrument_service::save_composite_instrument(
         leg_repo.remove(ctx_, stale_leg_ids);
     instrument_repo.write(ctx_, t);
     for (auto leg : legs) {
-        leg.identity.instrument_id = t.identity.instrument_id;
+        leg.identity.trade_id = t.identity.trade_id;
         stamp(leg, ctx_);
         leg_repo.write(ctx_, leg);
     }
-    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.trade_id;
 }
 #+end_src
 
@@ -283,7 +286,7 @@ the methods sit on the handler's public surface.
         get_composite_instrument_legs_response resp;
         try {
             service::composite_instrument_service svc(req_ctx);
-            resp.legs = svc.get_legs(req->instrument_id);
+            resp.legs = svc.get_legs(req->trade_id);
             resp.result.outcome = ores::utility::domain::outcome::ok;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(composite_instrument_handler_lg(), error)
@@ -343,7 +346,7 @@ the derivation owns only the CRUD surface.
 
 | column                   | header       |
 |--------------------------+--------------|
-| identity.instrument_id   | ID           |
+| identity.trade_id   | ID           |
 | identity.trade_type_code | Type         |
 | description              | Description  |
 | audit.modified_by        | Modified By  |
@@ -407,7 +410,7 @@ them from this same model.
 :response: get_composite_instrument_legs_response
 :END:
 
-*** instrument_id
+*** trade_id
 :PROPERTIES:
 :cpp_type: std::string
 :END:

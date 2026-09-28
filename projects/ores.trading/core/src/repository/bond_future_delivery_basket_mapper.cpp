@@ -40,7 +40,7 @@ bond_future_delivery_basket_mapper::map(const bond_future_delivery_basket_entity
     domain::bond_future_delivery_basket r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.delivery_basket_id = v.delivery_basket_id;
     r.modified_by = v.modified_by;
@@ -58,7 +58,7 @@ bond_future_delivery_basket_mapper::map(const domain::bond_future_delivery_baske
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_future_delivery_basket_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;

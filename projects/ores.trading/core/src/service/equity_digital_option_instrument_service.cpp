@@ -59,7 +59,7 @@ std::vector<domain::equity_digital_option_instrument>
 read_one(repository::equity_digital_option_instrument_repository& repo,
          const ores::database::context& ctx,
          const messaging::equity_digital_option_instrument_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
 /**
@@ -71,7 +71,7 @@ read_one(repository::equity_digital_option_instrument_repository& repo,
 messaging::equity_digital_option_instrument_key
 key_from(const domain::equity_digital_option_instrument& v) {
     messaging::equity_digital_option_instrument_key key;
-    key.instrument_id = v.identity.instrument_id;
+    key.trade_id = v.identity.trade_id;
     return key;
 }
 
@@ -85,9 +85,8 @@ key_from(const domain::equity_digital_option_instrument& v) {
 domain::equity_digital_option_instrument
 to_domain(const messaging::equity_digital_option_instrument_write& write) {
     domain::equity_digital_option_instrument v;
-    v.identity.instrument_id = write.instrument_id;
-    v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_id = write.trade_id;
+    v.identity.trade_type_code = write.trade_type_code;
     v.underlying_name = write.underlying_name;
     v.currency = write.currency;
     v.notional = write.notional;
@@ -225,8 +224,7 @@ equity_digital_option_instrument_service::delete_equity_digital_option_instrumen
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
         case repository::equity_digital_option_instrument_repository::remove_status::removed:
             break;
         case repository::equity_digital_option_instrument_repository::remove_status::missing:
@@ -268,11 +266,11 @@ equity_digital_option_instrument_service::delete_many_equity_digital_option_inst
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    repo_.remove(ctx_, trade_id_keys);
     return response;
 }
 
@@ -293,7 +291,7 @@ equity_digital_option_instrument_service::list_equity_digital_option_instrument_
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -311,7 +309,7 @@ equity_digital_option_instrument_service::get_equity_digital_option_instrument_v
     messaging::get_equity_digital_option_instrument_version_response response;
     auto found = repo_.read_at_version(
         ctx_,
-        boost::uuids::to_string(request.key.equity_digital_option_instrument.instrument_id),
+        boost::uuids::to_string(request.key.equity_digital_option_instrument.trade_id),
         request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
@@ -386,18 +384,18 @@ std::uint32_t equity_digital_option_instrument_service::count_equity_digital_opt
 
 std::optional<domain::equity_digital_option_instrument>
 equity_digital_option_instrument_service::get_equity_digital_option_instrument_at_version(
-    const boost::uuids::uuid& instrument_id, std::uint32_t version) {
+    const boost::uuids::uuid& trade_id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting Equity Digital Option instrument at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+                               << "trade_id: " << trade_id << " version: " << version;
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::equity_digital_option_instrument>
 equity_digital_option_instrument_service::get_equity_digital_option_instrument(
-    const boost::uuids::uuid& instrument_id) {
+    const boost::uuids::uuid& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting Equity Digital Option instrument. "
-                               << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+                               << "trade_id: " << trade_id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -405,31 +403,30 @@ equity_digital_option_instrument_service::get_equity_digital_option_instrument(
 
 std::vector<domain::equity_digital_option_instrument>
 equity_digital_option_instrument_service::get_equity_digital_option_instruments(
-    const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+    const std::vector<std::string>& trade_ids) {
+    return repo_.read_latest(ctx_, trade_ids);
 }
 
 void equity_digital_option_instrument_service::save_equity_digital_option_instrument(
     const domain::equity_digital_option_instrument& v) {
-    if (v.identity.instrument_id.is_nil())
-        throw std::invalid_argument(
-            "Equity Digital Option Instrument instrument_id cannot be empty.");
+    if (v.identity.trade_id.is_nil())
+        throw std::invalid_argument("Equity Digital Option Instrument trade_id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving Equity Digital Option instrument. "
-                               << "instrument_id: " << v.identity.instrument_id;
+                               << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved Equity Digital Option instrument. "
-                              << "instrument_id: " << v.identity.instrument_id;
+                              << "trade_id: " << v.identity.trade_id;
 }
 
 void equity_digital_option_instrument_service::save_equity_digital_option_instruments(
     const std::vector<domain::equity_digital_option_instrument>&
         equity_digital_option_instruments) {
     for (const auto& e : equity_digital_option_instruments) {
-        if (e.identity.instrument_id.is_nil())
+        if (e.identity.trade_id.is_nil())
             throw std::invalid_argument(
-                "Equity Digital Option Instrument instrument_id cannot be empty.");
+                "Equity Digital Option Instrument trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_digital_option_instruments.size()
                                << " Equity Digital Option instruments";
@@ -441,25 +438,25 @@ void equity_digital_option_instrument_service::save_equity_digital_option_instru
 }
 
 void equity_digital_option_instrument_service::delete_equity_digital_option_instrument(
-    const boost::uuids::uuid& instrument_id) {
+    const boost::uuids::uuid& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing Equity Digital Option instrument. "
-                               << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
+                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
     BOOST_LOG_SEV(lg(), info) << "Removed Equity Digital Option instrument. "
-                              << "instrument_id: " << instrument_id;
+                              << "trade_id: " << trade_id;
 }
 
 void equity_digital_option_instrument_service::delete_equity_digital_option_instruments(
-    const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+    const std::vector<std::string>& trade_ids) {
+    repo_.remove(ctx_, trade_ids);
 }
 
 std::vector<domain::equity_digital_option_instrument>
 equity_digital_option_instrument_service::get_equity_digital_option_instrument_history(
-    const std::string& instrument_id) {
+    const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for Equity Digital Option instrument. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+                               << "trade_id: " << trade_id;
+    return repo_.read_all(ctx_, trade_id);
 }
 
 }

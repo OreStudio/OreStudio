@@ -33,7 +33,7 @@ std::vector<ores::diff::domain::field_value> render_bond_trs_fields(const domain
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Return Type", .value = v.return_type});
     fields.push_back({.name = "Funding Leg Type", .value = v.funding_leg_type});
     fields.push_back({.name = "Funding Rate", .value = std::to_string(v.funding_rate)});

@@ -60,7 +60,7 @@ read_one(repository::equity_position_option_underlying_repository& repo,
          const ores::database::context& ctx,
          const messaging::equity_position_option_underlying_key& key) {
     return repo.read_latest(
-        ctx, boost::uuids::to_string(key.instrument_id), std::to_string(key.sequence_number));
+        ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
 
 /**
@@ -72,7 +72,7 @@ read_one(repository::equity_position_option_underlying_repository& repo,
 messaging::equity_position_option_underlying_key
 key_from(const domain::equity_position_option_underlying& v) {
     messaging::equity_position_option_underlying_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
     return key;
 }
@@ -87,7 +87,7 @@ key_from(const domain::equity_position_option_underlying& v) {
 domain::equity_position_option_underlying
 to_domain(const messaging::equity_position_option_underlying_write& write) {
     domain::equity_position_option_underlying v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
     v.underlying_name = write.underlying_name;
     v.strike = write.strike;
@@ -223,7 +223,7 @@ equity_position_option_underlying_service::delete_equity_position_option_underly
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          std::to_string(request.removal.key.sequence_number),
                          expected)) {
         case repository::equity_position_option_underlying_repository::remove_status::removed:
@@ -267,15 +267,15 @@ equity_position_option_underlying_service::delete_many_equity_position_option_un
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> sequence_number_keys;
     sequence_number_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
-    repo_.remove(ctx_, instrument_id_keys, sequence_number_keys);
+    repo_.remove(ctx_, trade_id_keys, sequence_number_keys);
     return response;
 }
 
@@ -297,7 +297,7 @@ equity_position_option_underlying_service::list_equity_position_option_underlyin
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
@@ -316,7 +316,7 @@ equity_position_option_underlying_service::get_equity_position_option_underlying
     messaging::get_equity_position_option_underlying_version_response response;
     auto found = repo_.read_at_version(
         ctx_,
-        boost::uuids::to_string(request.key.equity_position_option_underlying.instrument_id),
+        boost::uuids::to_string(request.key.equity_position_option_underlying.trade_id),
         std::to_string(request.key.equity_position_option_underlying.sequence_number),
         request.key.version);
     if (!found) {
@@ -393,21 +393,21 @@ equity_position_option_underlying_service::count_equity_position_option_underlyi
 
 std::optional<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlying_at_version(
-    const std::string& instrument_id, const std::string& sequence_number, std::uint32_t version) {
+    const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting equity position option underlying at version. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, instrument_id, sequence_number, version);
+    return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlying(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting equity position option underlying. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    auto results = repo_.read_latest(ctx_, instrument_id, sequence_number);
+    auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -415,24 +415,22 @@ equity_position_option_underlying_service::get_equity_position_option_underlying
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlyings(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    return repo_.read_latest(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, sequence_numbers);
 }
 
 void equity_position_option_underlying_service::save_equity_position_option_underlying(
     const domain::equity_position_option_underlying& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument(
-            "Equity Position Option Underlying instrument_id cannot be empty.");
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Equity Position Option Underlying trade_id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving equity position option underlying. "
-                               << "instrument_id: " << v.instrument_id
+                               << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved equity position option underlying. "
-                              << "instrument_id: " << v.instrument_id
+                              << "trade_id: " << v.trade_id
                               << " sequence_number: " << v.sequence_number;
 }
 
@@ -440,9 +438,9 @@ void equity_position_option_underlying_service::save_equity_position_option_unde
     const std::vector<domain::equity_position_option_underlying>&
         equity_position_option_underlyings) {
     for (const auto& e : equity_position_option_underlyings) {
-        if (e.instrument_id.is_nil())
+        if (e.trade_id.is_nil())
             throw std::invalid_argument(
-                "Equity Position Option Underlying instrument_id cannot be empty.");
+                "Equity Position Option Underlying trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_position_option_underlyings.size()
                                << " equity position option underlyings";
@@ -454,29 +452,28 @@ void equity_position_option_underlying_service::save_equity_position_option_unde
 }
 
 void equity_position_option_underlying_service::delete_equity_position_option_underlying(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Removing equity position option underlying. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, sequence_number);
+    repo_.remove(ctx_, trade_id, sequence_number);
     BOOST_LOG_SEV(lg(), info) << "Removed equity position option underlying. "
-                              << "instrument_id: " << instrument_id
+                              << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
 }
 
 void equity_position_option_underlying_service::delete_equity_position_option_underlyings(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, trade_ids, sequence_numbers);
 }
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlying_history(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for equity position option underlying. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(ctx_, instrument_id, sequence_number);
+    return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 
 }

@@ -521,7 +521,7 @@ public:
         get_composite_instrument_legs_response resp;
         try {
             service::composite_instrument_service svc(req_ctx);
-            resp.legs = svc.get_legs(req->instrument_id);
+            resp.legs = svc.get_legs(req->trade_id);
             resp.result.outcome = ores::utility::domain::outcome::ok;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(composite_instrument_handler_lg(), error)

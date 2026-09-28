@@ -263,26 +263,20 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     INFO("Trade type: " << item.trade.classification.trade_type);
     REQUIRE(std::holds_alternative<swap_instrument_data>(item.instrument));
 
-    // Mint UUIDs as the planner would; tests verify the wiring is correct.
+    // Mint the id as the planner would; the trade id is the instrument's key,
+    // and the test verifies the wiring.
     boost::uuids::random_generator gen;
     item.trade.identity.id = gen();
-    const auto instr_uuid = gen();
-    ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.identity.id);
-    item.trade.classification.instrument_id = instr_uuid;
+    ores::trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
 
     const auto& r = std::get<swap_instrument_data>(item.instrument);
     const auto instr_id =
-        std::visit([](const auto& instr) { return instr.identity.instrument_id; }, r.instrument);
-    const auto trade_id_opt =
         std::visit([](const auto& instr) { return instr.identity.trade_id; }, r.instrument);
-    CHECK(instr_id != item.trade.identity.id);
-    REQUIRE(trade_id_opt.has_value());
-    CHECK(*trade_id_opt == item.trade.identity.id);
-    CHECK(item.trade.classification.instrument_id == instr_id);
+    CHECK(instr_id == item.trade.identity.id);
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::swap);
     CHECK(!r.legs.empty());
     for (const auto& leg : r.legs)
-        CHECK(leg.identity.instrument_id == instr_id);
+        CHECK(leg.identity.trade_id == instr_id);
 
     BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
 }
@@ -298,19 +292,15 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     INFO("Trade type: " << item.trade.classification.trade_type);
     REQUIRE(std::holds_alternative<fx_instrument_variant>(item.instrument));
 
-    // Mint UUIDs as the planner would; tests verify the wiring is correct.
+    // Mint the id as the planner would; the trade id is the instrument's key,
+    // and the test verifies the wiring.
     boost::uuids::random_generator gen;
     item.trade.identity.id = gen();
-    const auto instr_uuid = gen();
-    ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.identity.id);
-    item.trade.classification.instrument_id = instr_uuid;
+    ores::trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
 
     const auto& r = std::get<fx_instrument_variant>(item.instrument);
     const auto& instr = std::get<fx_forward_instrument>(r);
-    CHECK(instr.identity.instrument_id != item.trade.identity.id);
-    REQUIRE(instr.identity.trade_id.has_value());
-    CHECK(*instr.identity.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.instrument_id == instr.identity.instrument_id);
+    CHECK(instr.identity.trade_id == item.trade.identity.id);
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::fx);
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
@@ -331,17 +321,14 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     INFO("Trade type: " << item.trade.classification.trade_type);
     REQUIRE(std::holds_alternative<bond_instrument_data>(item.instrument));
 
-    // Mint UUIDs as the planner would; tests verify the wiring is correct.
+    // Mint the id as the planner would; the trade id is the instrument's key,
+    // and the test verifies the wiring.
     boost::uuids::random_generator gen;
     item.trade.identity.id = gen();
-    const auto instr_uuid = gen();
-    ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.identity.id);
-    item.trade.classification.instrument_id = instr_uuid;
+    ores::trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
 
     const auto& r = std::get<bond_instrument_data>(item.instrument);
-    CHECK(r.instrument.identity.instrument_id != item.trade.identity.id);
     CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.instrument_id == r.instrument.identity.instrument_id);
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::bond);
     CHECK(r.instrument.issue_id == r.issue.issue_id);
     CHECK(!r.issue.issuer.empty());

@@ -120,18 +120,17 @@ public:
      * @param version The version to fetch.
      * @return The bond leg rate at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_leg_rate>
-    get_bond_leg_rate_at_version(const std::string& instrument_id,
-                                 const std::string& leg_role,
-                                 const std::string& leg_number,
-                                 std::uint32_t version);
+    std::optional<domain::bond_leg_rate> get_bond_leg_rate_at_version(const std::string& trade_id,
+                                                                      const std::string& leg_role,
+                                                                      const std::string& leg_number,
+                                                                      std::uint32_t version);
 
     /**
      * @brief Retrieves a single bond leg rate by its primary key.
      *
      * @return The bond leg rate if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_leg_rate> get_bond_leg_rate(const std::string& instrument_id,
+    std::optional<domain::bond_leg_rate> get_bond_leg_rate(const std::string& trade_id,
                                                            const std::string& leg_role,
                                                            const std::string& leg_number);
 
@@ -139,7 +138,7 @@ public:
      * @brief Retrieves a batch of bond leg rates by primary key.
      */
     std::vector<domain::bond_leg_rate>
-    get_bond_leg_rates(const std::vector<std::string>& instrument_ids,
+    get_bond_leg_rates(const std::vector<std::string>& trade_ids,
                        const std::vector<std::string>& leg_roles,
                        const std::vector<std::string>& leg_numbers);
 
@@ -164,14 +163,14 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_bond_leg_rate(const std::string& instrument_id,
+    void delete_bond_leg_rate(const std::string& trade_id,
                               const std::string& leg_role,
                               const std::string& leg_number);
 
     /**
      * @brief Deletes bond leg rates by their primary keys.
      */
-    void delete_bond_leg_rates(const std::vector<std::string>& instrument_ids,
+    void delete_bond_leg_rates(const std::vector<std::string>& trade_ids,
                                const std::vector<std::string>& leg_roles,
                                const std::vector<std::string>& leg_numbers);
 
@@ -180,7 +179,7 @@ public:
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::bond_leg_rate> get_bond_leg_rate_history(const std::string& instrument_id,
+    std::vector<domain::bond_leg_rate> get_bond_leg_rate_history(const std::string& trade_id,
                                                                  const std::string& leg_role,
                                                                  const std::string& leg_number);
 

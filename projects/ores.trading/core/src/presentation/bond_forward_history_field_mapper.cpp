@@ -34,7 +34,7 @@ render_bond_forward_fields(const domain::bond_forward& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Long In Forward", .value = v.long_in_forward.value_or(std::string{})});
     fields.push_back({.name = "Forward Maturity Date",

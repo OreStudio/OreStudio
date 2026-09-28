@@ -36,13 +36,12 @@
 namespace ores::trading::messaging {
 
 struct vanilla_swap_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct vanilla_swap_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::optional<int> settlement_lag;

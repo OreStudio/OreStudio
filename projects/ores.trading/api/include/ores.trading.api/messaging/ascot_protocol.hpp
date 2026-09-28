@@ -36,11 +36,11 @@
 namespace ores::trading::messaging {
 
 struct ascot_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct ascot_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string ascot_option_type;
 };
 

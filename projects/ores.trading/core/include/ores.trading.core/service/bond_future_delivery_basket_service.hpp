@@ -125,10 +125,8 @@ public:
      * @return The bond future delivery basket identifier at that version if found, std::nullopt
      * otherwise.
      */
-    std::optional<domain::bond_future_delivery_basket>
-    get_delivery_basket_id_at_version(const std::string& instrument_id,
-                                      const std::string& sequence_number,
-                                      std::uint32_t version);
+    std::optional<domain::bond_future_delivery_basket> get_delivery_basket_id_at_version(
+        const std::string& trade_id, const std::string& sequence_number, std::uint32_t version);
 
     /**
      * @brief Retrieves a single bond future delivery basket identifier by its primary key.
@@ -136,13 +134,13 @@ public:
      * @return The bond future delivery basket identifier if found, std::nullopt otherwise.
      */
     std::optional<domain::bond_future_delivery_basket>
-    get_delivery_basket_id(const std::string& instrument_id, const std::string& sequence_number);
+    get_delivery_basket_id(const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Retrieves a batch of bond future delivery basket identifiers by primary key.
      */
     std::vector<domain::bond_future_delivery_basket>
-    get_delivery_basket_ids(const std::vector<std::string>& instrument_ids,
+    get_delivery_basket_ids(const std::vector<std::string>& trade_ids,
                             const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -167,13 +165,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_delivery_basket_id(const std::string& instrument_id,
-                                   const std::string& sequence_number);
+    void delete_delivery_basket_id(const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Deletes bond future delivery basket identifiers by their primary keys.
      */
-    void delete_delivery_basket_ids(const std::vector<std::string>& instrument_ids,
+    void delete_delivery_basket_ids(const std::vector<std::string>& trade_ids,
                                     const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -182,8 +179,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::bond_future_delivery_basket>
-    get_delivery_basket_id_history(const std::string& instrument_id,
-                                   const std::string& sequence_number);
+    get_delivery_basket_id_history(const std::string& trade_id, const std::string& sequence_number);
 
 private:
     context ctx_;

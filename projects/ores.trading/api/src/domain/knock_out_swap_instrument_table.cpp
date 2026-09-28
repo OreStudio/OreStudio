@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<knock_out_swap_instrument>& v) {
           << "Barrier Type" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& ko : v) {
-        table << ko.identity.instrument_id << ko.identity.trade_type_code << ko.start_date
+        table << ko.identity.trade_id << ko.identity.trade_type_code << ko.start_date
               << ko.maturity_date << ko.barrier_level << ko.barrier_type << ko.audit.recorded_at
               << fort::endr;
     }

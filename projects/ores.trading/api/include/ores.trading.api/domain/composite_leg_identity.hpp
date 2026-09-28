@@ -34,10 +34,10 @@ namespace ores::trading::domain {
  * @brief Identity fields shared by the composite leg and its future leg siblings.
  *
  * Extracted as a plain nested sub-struct to keep each rfl-reflected literal
- * under the MSVC C1202 ceiling. A leg carries its own surrogate key, the
- * instrument it belongs to and its ordinal within that basket, so the leg
- * identity is not the instrument identity: it is the instrument identity
- * plus the leg's own two members. See the decomposition section of
+ * under the MSVC C1202 ceiling. A leg carries its own surrogate key, the trade
+ * it belongs to and its ordinal within that basket, so the leg identity is not
+ * the instrument identity: it is the trade's key plus the leg's own two
+ * members. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  */
 struct composite_leg_identity {
@@ -67,9 +67,10 @@ struct composite_leg_identity {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief The composite instrument this leg belongs to.
+     * @brief The trade the leg belongs to. The trade id identifies both the trade and its
+instrument, so it is the parent key rather than a separate instrument key.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief 1-based ordinal of this leg within the parent instrument's basket.

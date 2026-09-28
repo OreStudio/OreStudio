@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<equity_option_instrument>& v) {
           << "Strike" << "Expiry Date" << "Exercise Type" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& eoi : v) {
-        table << eoi.identity.instrument_id << eoi.identity.trade_type_code << eoi.underlying_name
+        table << eoi.identity.trade_id << eoi.identity.trade_type_code << eoi.underlying_name
               << eoi.currency << eoi.notional << eoi.option_type << eoi.strike << eoi.expiry_date
               << eoi.exercise_type << eoi.audit.recorded_at << fort::endr;
     }

@@ -35,7 +35,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One underlying entry of an equity option position, keyed to the instrument and the entry's
+ * @brief One underlying entry of an equity option position, keyed to the trade and the entry's
  * ordinal.
  *
  * One row per underlying entry an equity option position names, keyed to
@@ -63,8 +63,8 @@ namespace ores::trading::domain {
  * a single date column would silently drop the rest of the list. That
  * shape belongs to defect 16, the observation schedule.
  *
- * The instrument row carries the trade, the workspace and the party. The
- * entry rows are family-owned and ride the instrument's scope, so no
+ * The trade row carries the workspace and the party. The
+ * entry rows are family-owned and ride the trade's scope, so no
  * workspace column rides them.
  */
 struct equity_position_option_underlying final {
@@ -79,9 +79,9 @@ struct equity_position_option_underlying final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the equity position instrument whose document states this entry.
+     * @brief The trade whose equity position document states this entry.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Ordinal of this entry within the document's list, counting from one.

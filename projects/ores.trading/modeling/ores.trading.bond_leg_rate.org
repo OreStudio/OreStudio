@@ -53,14 +53,15 @@ the block at most once at each end of the leg.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument this rate block belongs to.
+The trade this rate block belongs to.
 
 ** leg_role
 :PROPERTIES:

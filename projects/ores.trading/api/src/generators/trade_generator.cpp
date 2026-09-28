@@ -53,7 +53,6 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.classification.trade_type = std::string("Swap");
     r.parties.counterparty_id = std::nullopt;
     r.classification.product_type = domain::product_type::swap;
-    r.classification.instrument_id = std::nullopt;
     r.classification.asset_class = std::nullopt;
     r.classification.netting_set_id = std::string("NS-001");
     r.classification.activity_type_code = std::string("new_booking");

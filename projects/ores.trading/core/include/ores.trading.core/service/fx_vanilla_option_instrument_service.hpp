@@ -127,7 +127,7 @@ public:
      * @return The FX vanilla option instrument at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::fx_vanilla_option_instrument>
-    get_fx_vanilla_option_instrument_at_version(const boost::uuids::uuid& instrument_id,
+    get_fx_vanilla_option_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                 std::uint32_t version);
 
     /**
@@ -139,13 +139,13 @@ public:
      * @return The FX vanilla option instrument if found, std::nullopt otherwise.
      */
     std::optional<domain::fx_vanilla_option_instrument>
-    get_fx_vanilla_option_instrument(const boost::uuids::uuid& instrument_id);
+    get_fx_vanilla_option_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of FX vanilla option instruments by primary key.
      */
     std::vector<domain::fx_vanilla_option_instrument>
-    get_fx_vanilla_option_instruments(const std::vector<std::string>& instrument_ids);
+    get_fx_vanilla_option_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a FX vanilla option instrument (creates or updates).
@@ -170,12 +170,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_fx_vanilla_option_instrument(const boost::uuids::uuid& instrument_id);
+    void delete_fx_vanilla_option_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes FX vanilla option instruments by their primary keys.
      */
-    void delete_fx_vanilla_option_instruments(const std::vector<std::string>& instrument_ids);
+    void delete_fx_vanilla_option_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a FX vanilla option instrument.
@@ -183,7 +183,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::fx_vanilla_option_instrument>
-    get_fx_vanilla_option_instrument_history(const std::string& instrument_id);
+    get_fx_vanilla_option_instrument_history(const std::string& trade_id);
 
 private:
     context ctx_;

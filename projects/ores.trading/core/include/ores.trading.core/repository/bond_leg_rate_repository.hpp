@@ -101,11 +101,11 @@ public:
     /**@{*/
     std::vector<domain::bond_leg_rate> read_latest(context ctx);
     std::vector<domain::bond_leg_rate> read_latest(context ctx,
-                                                   const std::string& instrument_id,
+                                                   const std::string& trade_id,
                                                    const std::string& leg_role,
                                                    const std::string& leg_number);
     std::vector<domain::bond_leg_rate> read_latest(context ctx,
-                                                   const std::vector<std::string>& instrument_ids,
+                                                   const std::vector<std::string>& trade_ids,
                                                    const std::vector<std::string>& leg_roles,
                                                    const std::vector<std::string>& leg_numbers);
     /**@}*/
@@ -115,7 +115,7 @@ public:
      * @brief Reads all bond leg rates, possibly filtered by primary key.
      */
     std::vector<domain::bond_leg_rate> read_all(context ctx,
-                                                const std::string& instrument_id,
+                                                const std::string& trade_id,
                                                 const std::string& leg_role,
                                                 const std::string& leg_number);
 
@@ -129,7 +129,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::bond_leg_rate> read_at_version(context ctx,
-                                                         const std::string& instrument_id,
+                                                         const std::string& trade_id,
                                                          const std::string& leg_role,
                                                          const std::string& leg_number,
                                                          std::uint32_t version);
@@ -154,7 +154,7 @@ public:
      * @brief Deletes a bond leg rate by closing its temporal validity.
      */
     void remove(context ctx,
-                const std::string& instrument_id,
+                const std::string& trade_id,
                 const std::string& leg_role,
                 const std::string& leg_number);
 
@@ -179,7 +179,7 @@ public:
      * no version asked for.
      */
     remove_status remove(context ctx,
-                         const std::string& instrument_id,
+                         const std::string& trade_id,
                          const std::string& leg_role,
                          const std::string& leg_number,
                          std::optional<std::uint32_t> version);
@@ -188,7 +188,7 @@ public:
      * @brief Deletes bond leg rates by closing their temporal validity.
      */
     void remove(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& leg_roles,
                 const std::vector<std::string>& leg_numbers);
 

@@ -36,12 +36,12 @@
 namespace ores::trading::messaging {
 
 struct commodity_basket_constituent_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
 };
 
 struct commodity_basket_constituent_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
     std::string underlying_code;
     std::optional<ores::utility::decimal::decimal> weight;

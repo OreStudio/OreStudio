@@ -34,7 +34,7 @@ render_instrument_schedule_date_fields(const domain::instrument_schedule_date& v
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Schedule Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.schedule_date)});
     using ores::history::domain::provenance_fields;

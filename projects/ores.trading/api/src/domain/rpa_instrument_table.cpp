@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<rpa_instrument>& v) {
           << "Participation Rate" << "Protection Fee" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& rp : v) {
-        table << rp.identity.instrument_id << rp.start_date << rp.maturity_date
+        table << rp.identity.trade_id << rp.start_date << rp.maturity_date
               << rp.reference_counterparty << rp.participation_rate << opt_str(rp.protection_fee)
               << rp.audit.recorded_at << fort::endr;
     }

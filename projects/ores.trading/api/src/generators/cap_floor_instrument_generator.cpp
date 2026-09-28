@@ -45,7 +45,7 @@ generate_synthetic_cap_floor_instrument(utility::generation::generation_context&
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.identity.workspace_id = utility::uuid::live_workspace_id();
-    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("CapFloor");
     r.identity.party_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};

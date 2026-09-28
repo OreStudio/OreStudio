@@ -36,11 +36,11 @@
 namespace ores::trading::messaging {
 
 struct instrument_strike_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct instrument_strike_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::optional<ores::utility::decimal::decimal> price_value;
     std::optional<std::string> price_currency;
     std::optional<double> yield_value;

@@ -34,13 +34,9 @@ render_scripted_instrument_fields(const domain::scripted_instrument& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back(
-        {.name = "Instrument ID", .value = boost::uuids::to_string(v.identity.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Trade ID",
-                      .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
-                                                     std::string{}});
     fields.push_back({.name = "Script Name", .value = v.script_name});
     fields.push_back({.name = "Script Body", .value = v.script_body});
     fields.push_back({.name = "Events Json", .value = v.events_json});

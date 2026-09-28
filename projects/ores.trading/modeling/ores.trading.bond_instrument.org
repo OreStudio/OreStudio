@@ -7,7 +7,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: The reshaped bond instrument: one trade of the bond family, keyed by instrument_id with the ten-code trade_type_code check and the issue_id foreign key to the bond issue.
+#+brief: The reshaped bond instrument: one trade of the bond family, keyed by trade_id with the ten-code trade_type_code check and the issue_id foreign key to the bond issue.
 #+entity_singular: bond_instrument
 #+entity_plural: bond_instruments
 #+entity_title: Bond Instrument
@@ -17,9 +17,9 @@
 One row per bond trade, reshaped from the wide legacy table per the
 bond relational model deliverable
 (=doc/knowledge/architecture/trading_bond_relational_model.org=). The
-row carries the instrument's identity only: =instrument_id=,
-=trade_type_code= over the ten bond codes, =party_id=, the optional
-=trade_id= soft link, and =issue_id=, the NOT NULL foreign key to the
+row carries the instrument's identity only: =trade_id=, the trade that
+identifies both the trade and its instrument, =trade_type_code= over the
+ten bond codes, =party_id=, and =issue_id=, the NOT NULL foreign key to the
 bond issue row that holds every term of the bond. The economics
 moved to the issue (one row per ISIN, shared by every instrument of
 it), so an amendment to a term touches the issue row once, not every
@@ -50,21 +50,6 @@ product is written on (review answers 3 and 4).
 * Natural keys
 
 * Columns
-
-** instrument_id
-:PROPERTIES:
-:group:       identity
-:primary_key: true
-:type:        uuid
-:cpp_type:    boost::uuids::uuid
-:nullable:    false
-:END:
-
-UUID uniquely identifying this bond instrument.
-
-Surrogate key of the instrument row, renamed from the legacy =id=
-column. The per-product fact rows reference it
-(=ores_trading_bond_options_tbl= and the other four fact tables).
 
 ** trade_type_code
 :PROPERTIES:
@@ -98,15 +83,19 @@ Set from session variable app.current_party_id.
 
 ** trade_id
 :PROPERTIES:
-:group:    identity
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
+:group:       identity
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
-Optional soft FK to the parent trade.
+The trade this instrument belongs to, and the instrument's own key.
 
-Links the instrument to a trade if applicable.
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
 
 ** issue_id
 :PROPERTIES:
@@ -126,6 +115,19 @@ instrument row's own validity.
 #+begin_src cpp :name generator
 ctx.generate_uuid()
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
 
 * SQL
 
@@ -193,7 +195,7 @@ annotations; domain and repository profiles regenerate correctly.
 
 | column                  | header       |
 |-------------------------+--------------|
-| identity.instrument_id   | ID           |
+| identity.trade_id   | ID           |
 | identity.trade_type_code | Type         |
 | issue_id                 | Issue ID     |
 | identity.version         | Version      |

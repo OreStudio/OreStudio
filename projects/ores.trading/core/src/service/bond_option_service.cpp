@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::bond_option> read_one(repository::bond_option_repository& repo,
                                           const ores::database::context& ctx,
                                           const messaging::bond_option_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::bond_option> read_one(repository::bond_option_repository& re
  */
 messaging::bond_option_key key_from(const domain::bond_option& v) {
     messaging::bond_option_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     return key;
 }
 
@@ -82,7 +82,7 @@ messaging::bond_option_key key_from(const domain::bond_option& v) {
  */
 domain::bond_option to_domain(const messaging::bond_option_write& write) {
     domain::bond_option v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.option_type = write.option_type;
     v.option_strike = write.option_strike;
     v.redemption = write.redemption;
@@ -206,8 +206,7 @@ bond_option_service::delete_bond_option(const messaging::delete_bond_option_requ
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
         case repository::bond_option_repository::remove_status::removed:
             break;
         case repository::bond_option_repository::remove_status::missing:
@@ -248,11 +247,11 @@ messaging::delete_many_bond_options_response bond_option_service::delete_many_bo
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    repo_.remove(ctx_, trade_id_keys);
     return response;
 }
 
@@ -272,7 +271,7 @@ messaging::list_bond_option_versions_response bond_option_service::list_bond_opt
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -288,7 +287,7 @@ messaging::get_bond_option_version_response bond_option_service::get_bond_option
     const messaging::get_bond_option_version_request& request) {
     messaging::get_bond_option_version_response response;
     auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.bond_option.instrument_id), request.key.version);
+        ctx_, boost::uuids::to_string(request.key.bond_option.trade_id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -360,41 +359,41 @@ std::uint32_t bond_option_service::count_options() {
 
 
 std::optional<domain::bond_option>
-bond_option_service::get_option_at_version(const boost::uuids::uuid& instrument_id,
+bond_option_service::get_option_at_version(const boost::uuids::uuid& trade_id,
                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond option at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond option at version. " << "trade_id: " << trade_id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_option>
-bond_option_service::get_option(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond option. " << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+bond_option_service::get_option(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond option. " << "trade_id: " << trade_id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::bond_option>
-bond_option_service::get_options(const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+bond_option_service::get_options(const std::vector<std::string>& trade_ids) {
+    return repo_.read_latest(ctx_, trade_ids);
 }
 
 void bond_option_service::save_option(const domain::bond_option& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Bond Option instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond option. " << "instrument_id: " << v.instrument_id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Bond Option trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving bond option. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond option. " << "instrument_id: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved bond option. " << "trade_id: " << v.trade_id;
 }
 
 void bond_option_service::save_options(const std::vector<domain::bond_option>& options) {
     for (const auto& e : options) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Bond Option instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Bond Option trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << options.size() << " bond options";
     auto ts = options;
@@ -404,21 +403,20 @@ void bond_option_service::save_options(const std::vector<domain::bond_option>& o
     repo_.write(ctx_, ts);
 }
 
-void bond_option_service::delete_option(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond option. " << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond option. " << "instrument_id: " << instrument_id;
+void bond_option_service::delete_option(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing bond option. " << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    BOOST_LOG_SEV(lg(), info) << "Removed bond option. " << "trade_id: " << trade_id;
 }
 
-void bond_option_service::delete_options(const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+void bond_option_service::delete_options(const std::vector<std::string>& trade_ids) {
+    repo_.remove(ctx_, trade_ids);
 }
 
 std::vector<domain::bond_option>
-bond_option_service::get_option_history(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond option. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+bond_option_service::get_option_history(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond option. " << "trade_id: " << trade_id;
+    return repo_.read_all(ctx_, trade_id);
 }
 
 }

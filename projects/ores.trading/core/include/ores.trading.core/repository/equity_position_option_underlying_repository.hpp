@@ -102,10 +102,10 @@ public:
     /**@{*/
     std::vector<domain::equity_position_option_underlying> read_latest(context ctx);
     std::vector<domain::equity_position_option_underlying>
-    read_latest(context ctx, const std::string& instrument_id, const std::string& sequence_number);
+    read_latest(context ctx, const std::string& trade_id, const std::string& sequence_number);
     std::vector<domain::equity_position_option_underlying>
     read_latest(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
     /**@}*/
 
@@ -114,7 +114,7 @@ public:
      * @brief Reads all equity position option underlyings, possibly filtered by primary key.
      */
     std::vector<domain::equity_position_option_underlying>
-    read_all(context ctx, const std::string& instrument_id, const std::string& sequence_number);
+    read_all(context ctx, const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Reads a single equity position option underlying as it stood at a specific
@@ -127,7 +127,7 @@ public:
      */
     std::optional<domain::equity_position_option_underlying>
     read_at_version(context ctx,
-                    const std::string& instrument_id,
+                    const std::string& trade_id,
                     const std::string& sequence_number,
                     std::uint32_t version);
 
@@ -150,7 +150,7 @@ public:
     /**
      * @brief Deletes a equity position option underlying by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& instrument_id, const std::string& sequence_number);
+    void remove(context ctx, const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -173,7 +173,7 @@ public:
      * no version asked for.
      */
     remove_status remove(context ctx,
-                         const std::string& instrument_id,
+                         const std::string& trade_id,
                          const std::string& sequence_number,
                          std::optional<std::uint32_t> version);
 
@@ -181,11 +181,11 @@ public:
      * @brief Deletes equity position option underlyings by closing their temporal validity.
      */
     void remove(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
 
     std::vector<domain::equity_position_option_underlying>
-    read_by_instruments_batch(context ctx, const std::vector<std::string>& instrument_ids);
+    read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 
 private:
     /**

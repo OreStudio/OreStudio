@@ -34,13 +34,9 @@ render_fx_barrier_option_instrument_fields(const domain::fx_barrier_option_instr
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back(
-        {.name = "Instrument ID", .value = boost::uuids::to_string(v.identity.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Trade ID",
-                      .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
-                                                     std::string{}});
     fields.push_back({.name = "Bought Currency", .value = v.bought_currency});
     fields.push_back({.name = "Bought Amount", .value = v.bought_amount.to_string()});
     fields.push_back({.name = "Sold Currency", .value = v.sold_currency});

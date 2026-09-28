@@ -220,20 +220,18 @@ struct bond_instrument_data final {
     bond_leg_data ascot_swap_leg;
 };
 
-inline void stamp_ids(bond_instrument_data& data,
-                      boost::uuids::uuid instrument_id,
-                      boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, instrument_id, trade_id);
+inline void stamp_ids(bond_instrument_data& data, boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, trade_id);
     if (data.option)
-        data.option->instrument_id = instrument_id;
+        data.option->trade_id = trade_id;
     if (data.trs)
-        data.trs->instrument_id = instrument_id;
+        data.trs->trade_id = trade_id;
     if (data.repo)
-        data.repo->instrument_id = instrument_id;
+        data.repo->trade_id = trade_id;
     if (data.future)
-        data.future->instrument_id = instrument_id;
+        data.future->trade_id = trade_id;
     if (data.ascot_row)
-        data.ascot_row->instrument_id = instrument_id;
+        data.ascot_row->trade_id = trade_id;
 }
 
 }

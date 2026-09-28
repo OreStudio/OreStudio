@@ -44,7 +44,7 @@ std::string rpa_instrument_repository::sql() {
 
 ores::utility::domain::precondition
 rpa_instrument_repository::replace_claim(context ctx, const domain::rpa_instrument& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.instrument_id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -71,8 +71,7 @@ rpa_instrument_repository::apply_claim(context ctx,
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current =
-                read_latest(ctx, boost::uuids::to_string(v.identity.instrument_id));
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
             t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
         }
@@ -95,8 +94,7 @@ void rpa_instrument_repository::write(context ctx, const std::vector<domain::rpa
 void rpa_instrument_repository::write(context ctx,
                                       const domain::rpa_instrument& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing RPA instrument. "
-                               << "instrument_id: " << v.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing RPA instrument. " << "trade_id: " << v.identity.trade_id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
         ctx, rpa_instrument_mapper::map(t), lg(), "Writing RPA instrument to database.");
@@ -123,7 +121,7 @@ std::vector<domain::rpa_instrument> rpa_instrument_repository::read_latest(conte
         const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
                            where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
                                  "valid_to"_c == max.value()) |
-                           order_by("instrument_id"_c);
+                           order_by("trade_id"_c);
         return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
             ctx,
             query,
@@ -135,7 +133,7 @@ std::vector<domain::rpa_instrument> rpa_instrument_repository::read_latest(conte
     const auto query =
         sqlgen::read<std::vector<rpa_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c);
+        order_by("trade_id"_c);
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
         ctx,
@@ -146,53 +144,52 @@ std::vector<domain::rpa_instrument> rpa_instrument_repository::read_latest(conte
 }
 
 std::vector<domain::rpa_instrument>
-rpa_instrument_repository::read_latest(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest RPA instrument. "
-                               << "instrument_id: " << instrument_id;
+rpa_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest RPA instrument. " << "trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                             "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
         ctx,
         query,
         [](const auto& entities) { return rpa_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest RPA instrument by instrument_id.");
+        "Reading latest RPA instrument by trade_id.");
 }
 
 
 std::vector<domain::rpa_instrument>
-rpa_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
+rpa_instrument_repository::read_all(context ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all RPA instrument versions. "
-                               << "instrument_id: " << instrument_id;
+                               << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        sqlgen::read<std::vector<rpa_instrument_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id) |
+        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
         ctx,
         query,
         [](const auto& entities) { return rpa_instrument_mapper::map(entities); },
         lg(),
-        "Reading all RPA instrument versions by instrument_id.");
+        "Reading all RPA instrument versions by trade_id.");
 }
 
 std::optional<domain::rpa_instrument> rpa_instrument_repository::read_at_version(
-    context ctx, const std::string& instrument_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading RPA instrument at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
+    context ctx, const std::string& trade_id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading RPA instrument at version. " << "trade_id: " << trade_id
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "version"_c == version) |
+                             "trade_id"_c == trade_id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
@@ -207,10 +204,11 @@ std::optional<domain::rpa_instrument> rpa_instrument_repository::read_at_version
     return entities.front();
 }
 
+
 rpa_instrument_repository::remove_status rpa_instrument_repository::remove(
-    context ctx, const std::string& instrument_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing RPA instrument. " << "instrument_id: " << instrument_id;
-    const auto current = read_latest(ctx, instrument_id);
+    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing RPA instrument. " << "trade_id: " << trade_id;
+    const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -224,22 +222,22 @@ rpa_instrument_repository::remove_status rpa_instrument_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<rpa_instrument_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query =
+        sqlgen::delete_from<rpa_instrument_entity> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id &&
+              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing RPA instrument from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id).empty())
+    if (!read_latest(ctx, trade_id).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void rpa_instrument_repository::remove(context ctx, const std::string& instrument_id) {
-    static_cast<void>(remove(ctx, instrument_id, std::nullopt));
+void rpa_instrument_repository::remove(context ctx, const std::string& trade_id) {
+    static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::rpa_instrument>
@@ -252,7 +250,7 @@ rpa_instrument_repository::read_latest(context ctx, std::uint32_t offset, std::u
     const auto query =
         sqlgen::read<std::vector<rpa_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("trade_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
         ctx,
@@ -286,16 +284,15 @@ std::uint32_t rpa_instrument_repository::get_total_rpa_instrument_count(context 
 }
 
 std::vector<domain::rpa_instrument>
-rpa_instrument_repository::read_latest(context ctx,
-                                       const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+rpa_instrument_repository::read_latest(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
         ctx,
         query,
@@ -305,22 +302,21 @@ rpa_instrument_repository::read_latest(context ctx,
     return result;
 }
 
-void rpa_instrument_repository::remove(context ctx,
-                                       const std::vector<std::string>& instrument_ids) {
+void rpa_instrument_repository::remove(context ctx, const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
     // case the same way. The compound branch above is left alone: it loops, so
     // it already removes nothing, and its length check still refuses an
     // asymmetric pair.
-    if (instrument_ids.empty())
+    if (trade_ids.empty())
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<rpa_instrument_entity> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing RPA instruments.");
 }
 

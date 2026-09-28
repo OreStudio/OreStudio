@@ -121,10 +121,8 @@ public:
      * @param version The version to fetch.
      * @return The callable swap call date at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::callable_swap_call_date>
-    get_callable_swap_call_date_at_version(const std::string& instrument_id,
-                                           const std::string& sequence_number,
-                                           std::uint32_t version);
+    std::optional<domain::callable_swap_call_date> get_callable_swap_call_date_at_version(
+        const std::string& trade_id, const std::string& sequence_number, std::uint32_t version);
 
     /**
      * @brief Retrieves a single callable swap call date by its primary key.
@@ -132,14 +130,13 @@ public:
      * @return The callable swap call date if found, std::nullopt otherwise.
      */
     std::optional<domain::callable_swap_call_date>
-    get_callable_swap_call_date(const std::string& instrument_id,
-                                const std::string& sequence_number);
+    get_callable_swap_call_date(const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Retrieves a batch of callable swap call dates by primary key.
      */
     std::vector<domain::callable_swap_call_date>
-    get_callable_swap_call_dates(const std::vector<std::string>& instrument_ids,
+    get_callable_swap_call_dates(const std::vector<std::string>& trade_ids,
                                  const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -165,13 +162,13 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_callable_swap_call_date(const std::string& instrument_id,
+    void delete_callable_swap_call_date(const std::string& trade_id,
                                         const std::string& sequence_number);
 
     /**
      * @brief Deletes callable swap call dates by their primary keys.
      */
-    void delete_callable_swap_call_dates(const std::vector<std::string>& instrument_ids,
+    void delete_callable_swap_call_dates(const std::vector<std::string>& trade_ids,
                                          const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -180,7 +177,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::callable_swap_call_date>
-    get_callable_swap_call_date_history(const std::string& instrument_id,
+    get_callable_swap_call_date_history(const std::string& trade_id,
                                         const std::string& sequence_number);
 
 private:

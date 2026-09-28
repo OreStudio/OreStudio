@@ -36,12 +36,12 @@
 namespace ores::trading::messaging {
 
 struct callable_swap_call_date_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
 };
 
 struct callable_swap_call_date_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
     std::chrono::year_month_day call_date;
 };

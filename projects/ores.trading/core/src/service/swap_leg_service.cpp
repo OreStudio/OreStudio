@@ -83,7 +83,7 @@ messaging::swap_leg_key key_from(const domain::swap_leg& v) {
 domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     domain::swap_leg v;
     v.identity.id = write.id;
-    v.identity.instrument_id = write.instrument_id;
+    v.identity.trade_id = write.trade_id;
     v.identity.leg_number = write.leg_number;
     v.leg_type_code = write.leg_type_code;
     v.day_count_fraction_code = write.day_count_fraction_code;
@@ -120,10 +120,9 @@ swap_leg_service::list_swap_legs(const messaging::list_swap_legs_request& reques
     return response;
 }
 
-messaging::list_by_instrument_id_swap_legs_response
-swap_leg_service::list_by_instrument_id_swap_legs(
-    const messaging::list_by_instrument_id_swap_legs_request& request) {
-    messaging::list_by_instrument_id_swap_legs_response response;
+messaging::list_by_trade_id_swap_legs_response swap_leg_service::list_by_trade_id_swap_legs(
+    const messaging::list_by_trade_id_swap_legs_request& request) {
+    messaging::list_by_trade_id_swap_legs_response response;
     if (!request.order.field.empty() || request.order.descending) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
@@ -143,10 +142,10 @@ swap_leg_service::list_by_instrument_id_swap_legs(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    const auto relation = boost::uuids::to_string(request.instrument_id);
+    const auto relation = boost::uuids::to_string(request.trade_id);
     response.swap_legs =
-        repo_.read_latest_by_instrument_id(ctx_, relation, request.offset, request.limit);
-    response.total = repo_.get_total_swap_leg_count_by_instrument_id(ctx_, relation);
+        repo_.read_latest_by_trade_id(ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_swap_leg_count_by_trade_id(ctx_, relation);
     return response;
 }
 
@@ -400,16 +399,15 @@ std::uint32_t swap_leg_service::count_swap_legs() {
 }
 
 
-std::vector<domain::swap_leg> swap_leg_service::list_swap_legs_by_instrument_id(
-    const std::string& instrument_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing swap legs by instrument_id: " << instrument_id;
-    return repo_.read_latest_by_instrument_id(ctx_, instrument_id, offset, limit);
+std::vector<domain::swap_leg> swap_leg_service::list_swap_legs_by_trade_id(
+    const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing swap legs by trade_id: " << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
-std::uint32_t swap_leg_service::count_swap_legs_by_instrument_id(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap legs count by instrument_id: "
-                               << instrument_id;
-    return repo_.get_total_swap_leg_count_by_instrument_id(ctx_, instrument_id);
+std::uint32_t swap_leg_service::count_swap_legs_by_trade_id(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total swap legs count by trade_id: " << trade_id;
+    return repo_.get_total_swap_leg_count_by_trade_id(ctx_, trade_id);
 }
 
 

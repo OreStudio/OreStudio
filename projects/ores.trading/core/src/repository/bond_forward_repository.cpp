@@ -44,7 +44,7 @@ std::string bond_forward_repository::sql() {
 
 ores::utility::domain::precondition
 bond_forward_repository::replace_claim(context ctx, const domain::bond_forward& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.instrument_id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -69,7 +69,7 @@ domain::bond_forward bond_forward_repository::apply_claim(
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.instrument_id));
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
             t.version = current.empty() ? 0 : current.front().version;
             break;
         }
@@ -92,7 +92,7 @@ void bond_forward_repository::write(context ctx, const std::vector<domain::bond_
 void bond_forward_repository::write(context ctx,
                                     const domain::bond_forward& v,
                                     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond forward. " << "instrument_id: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing bond forward. " << "trade_id: " << v.trade_id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
         ctx, bond_forward_mapper::map(t), lg(), "Writing bond forward to database.");
@@ -116,7 +116,7 @@ std::vector<domain::bond_forward> bond_forward_repository::read_latest(context c
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c);
+                       order_by("trade_id"_c);
 
     return execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
@@ -127,31 +127,29 @@ std::vector<domain::bond_forward> bond_forward_repository::read_latest(context c
 }
 
 std::vector<domain::bond_forward>
-bond_forward_repository::read_latest(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond forward. "
-                               << "instrument_id: " << instrument_id;
+bond_forward_repository::read_latest(context ctx, const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond forward. " << "trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_forward_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
         query,
         [](const auto& entities) { return bond_forward_mapper::map(entities); },
         lg(),
-        "Reading latest bond forward by instrument_id.");
+        "Reading latest bond forward by trade_id.");
 }
 
 
-std::vector<domain::bond_forward>
-bond_forward_repository::read_all(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond forward versions. "
-                               << "instrument_id: " << instrument_id;
+std::vector<domain::bond_forward> bond_forward_repository::read_all(context ctx,
+                                                                    const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all bond forward versions. " << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<bond_forward_entity, domain::bond_forward>(
@@ -159,18 +157,18 @@ bond_forward_repository::read_all(context ctx, const std::string& instrument_id)
         query,
         [](const auto& entities) { return bond_forward_mapper::map(entities); },
         lg(),
-        "Reading all bond forward versions by instrument_id.");
+        "Reading all bond forward versions by trade_id.");
 }
 
 std::optional<domain::bond_forward> bond_forward_repository::read_at_version(
-    context ctx, const std::string& instrument_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond forward at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
+    context ctx, const std::string& trade_id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading bond forward at version. " << "trade_id: " << trade_id
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        sqlgen::read<std::vector<bond_forward_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "version"_c == version) |
+        sqlgen::limit(1);
 
     const auto entities = execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
@@ -185,9 +183,9 @@ std::optional<domain::bond_forward> bond_forward_repository::read_at_version(
 }
 
 bond_forward_repository::remove_status bond_forward_repository::remove(
-    context ctx, const std::string& instrument_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond forward. " << "instrument_id: " << instrument_id;
-    const auto current = read_latest(ctx, instrument_id);
+    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing bond forward. " << "trade_id: " << trade_id;
+    const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -201,20 +199,20 @@ bond_forward_repository::remove_status bond_forward_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<bond_forward_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing bond forward from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id).empty())
+    if (!read_latest(ctx, trade_id).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void bond_forward_repository::remove(context ctx, const std::string& instrument_id) {
-    static_cast<void>(remove(ctx, instrument_id, std::nullopt));
+void bond_forward_repository::remove(context ctx, const std::string& trade_id) {
+    static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::bond_forward>
@@ -225,7 +223,7 @@ bond_forward_repository::read_latest(context ctx, std::uint32_t offset, std::uin
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       order_by("trade_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
@@ -257,14 +255,14 @@ std::uint32_t bond_forward_repository::get_total_bond_forward_count(context ctx)
 }
 
 std::vector<domain::bond_forward>
-bond_forward_repository::read_latest(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+bond_forward_repository::read_latest(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_forward_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
         query,
@@ -274,20 +272,20 @@ bond_forward_repository::read_latest(context ctx, const std::vector<std::string>
     return result;
 }
 
-void bond_forward_repository::remove(context ctx, const std::vector<std::string>& instrument_ids) {
+void bond_forward_repository::remove(context ctx, const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
     // case the same way. The compound branch above is left alone: it loops, so
     // it already removes nothing, and its length check still refuses an
     // asymmetric pair.
-    if (instrument_ids.empty())
+    if (trade_ids.empty())
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<bond_forward_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<bond_forward_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing bond forwards.");
 }
 

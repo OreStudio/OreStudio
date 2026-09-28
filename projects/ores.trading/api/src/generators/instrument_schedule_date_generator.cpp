@@ -44,7 +44,7 @@ generate_synthetic_instrument_schedule_date(utility::generation::generation_cont
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.instrument_id = ctx.generate_uuid();
+    r.trade_id = ctx.generate_uuid();
     r.owner_role = std::string(faker::word::noun());
     r.owner_number = 0;
     r.schedule_role = std::string(faker::word::noun());

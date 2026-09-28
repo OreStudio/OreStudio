@@ -44,7 +44,7 @@ generate_synthetic_bond_leg_rate(utility::generation::generation_context& ctx) {
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.instrument_id = ctx.generate_uuid();
+    r.trade_id = ctx.generate_uuid();
     r.leg_role = std::string(faker::word::noun());
     r.leg_number = 0;
     r.rate_kind = std::string("floating");

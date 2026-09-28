@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<equity_position_instrument>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& epi : v) {
-        table << epi.identity.instrument_id << epi.identity.trade_type_code << epi.underlying_name
+        table << epi.identity.trade_id << epi.identity.trade_type_code << epi.underlying_name
               << epi.currency << epi.quantity << epi.audit.recorded_at << fort::endr;
     }
     return table.to_string();

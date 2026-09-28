@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: Per-trade bond option facts: one row per option instrument, keyed by instrument_id.
+#+brief: Per-trade bond option facts: one row per option instrument, keyed by trade_id.
 #+entity_singular: bond_option
 #+entity_plural: bond_options
 #+entity_title: Bond Option
@@ -39,16 +39,17 @@ schedule tables, under the owner role =option=.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the bond option instrument this fact row extends.
+The trade the bond option fact row belongs to.
 
-The instrument row carries the trade, workspace and party; the fact
+The trade row carries the workspace and the party; the fact
 row only carries the option terms. Per the ER, no workspace column
 rides the fact tables.
 
@@ -62,7 +63,6 @@ rides the fact tables.
 Call or Put.
 
 Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
-
 
 #+begin_src cpp :name generator
 std::string("Call")

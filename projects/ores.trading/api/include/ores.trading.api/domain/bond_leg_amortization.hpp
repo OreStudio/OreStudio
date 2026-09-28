@@ -61,9 +61,9 @@ struct bond_leg_amortization final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument this amortization belongs to.
+     * @brief The trade this amortization belongs to.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Which leg list of the instrument the leg holding this step belongs to: bond,

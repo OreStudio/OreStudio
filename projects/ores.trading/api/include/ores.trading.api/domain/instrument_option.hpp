@@ -37,7 +37,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief The option block a document states on an instrument, keyed to the instrument.
+ * @brief The option block a document states on an instrument, keyed to the trade.
  *
  * One row per instrument whose document stated an option block, keyed to
  * the instrument.
@@ -73,9 +73,9 @@ struct instrument_option final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose document stated this option block.
+     * @brief The trade whose document stated this option block.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Whether the holder is long or short the option.

@@ -167,19 +167,6 @@ builds the struct, not the row.
 domain::product_type::swap
 #+end_src
 
-** instrument_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
-:END:
-
-Optional instrument record for this trade.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 ** asset_class
 :PROPERTIES:
 :type:     text
@@ -499,9 +486,10 @@ so the status read here cannot race another writer.
 
 The six lookups the trade blotter and the risk feeds issue against the
 current slice. Each is partial on =valid_to=, so the index covers the
-live row only; =trades_instrument_idx= and =trades_asset_class_idx= add
-a not-null predicate because both columns are optional and a null entry
-would never be sought.
+live row only; =trades_asset_class_idx= adds a not-null predicate because
+the column is optional and a null entry would never be sought. The
+instrument lookup the blotter used is gone: an instrument is keyed by its
+trade, so the trade's own primary key serves that read.
 
 The =name= column carries the stem: the template renders it as
 =<index_name_prefix>_<name>_idx=, so =book= becomes =trades_book_idx=.
@@ -512,7 +500,6 @@ The =name= column carries the stem: the template renders it as
 | portfolio   | tenant_id, portfolio_id                | false  | true         |                           |
 | netting_set | tenant_id, netting_set_id              | false  | true         |                           |
 | trade_type  | tenant_id, trade_type                  | false  | true         |                           |
-| instrument  | tenant_id, product_type, instrument_id | false  | true         | instrument_id is not null |
 | asset_class | tenant_id, asset_class                 | false  | true         | asset_class is not null   |
 
 * C++
@@ -616,8 +603,6 @@ std::uint32_t count_trades_for_books(context ctx,
 }
 
 }
-
-
 
 std::vector<domain::trade>
 trade_repository::read_latest_for_node_id(context ctx,
@@ -742,10 +727,11 @@ type, then read each product's table in one batch.
 
         for (const auto& item : items) {
             const auto& t = item.trade;
-            if (!t.classification.instrument_id ||
-                t.classification.product_type == product_type::unknown)
+            if (t.classification.product_type == product_type::unknown)
                 continue;
-            const auto id = boost::uuids::to_string(*t.classification.instrument_id);
+            // The instrument is keyed by the trade it belongs to, so the
+            // trade's own id is the key the product tables are read by.
+            const auto id = boost::uuids::to_string(t.identity.id);
             const auto& ttc = t.classification.trade_type;
             switch (t.classification.product_type) {
                 case product_type::bond:
@@ -846,7 +832,7 @@ type, then read each product's table in one batch.
             if (!all_swap.empty()) {
                 repository::swap_leg_repository leg_repo;
                 for (auto& leg : leg_repo.read_by_instruments_batch(ctx, all_swap))
-                    legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
+                    legs_map[boost::uuids::to_string(leg.identity.trade_id)].push_back(
                         std::move(leg));
             }
         }
@@ -857,7 +843,7 @@ type, then read each product's table in one batch.
             const std::unordered_set<std::string> wanted(composite_ids.begin(),
                                                          composite_ids.end());
             for (auto& leg : comp_leg_repo.read_latest(ctx)) {
-                const auto key = boost::uuids::to_string(leg.identity.instrument_id);
+                const auto key = boost::uuids::to_string(leg.identity.trade_id);
                 if (wanted.contains(key))
                     comp_legs_map[key].push_back(std::move(leg));
             }
@@ -873,7 +859,7 @@ type, then read each product's table in one batch.
             repository::callable_swap_call_date_repository call_date_repo;
             for (auto& call_date :
                  call_date_repo.read_by_instruments_batch(ctx, callable_ids))
-                call_dates_map[boost::uuids::to_string(call_date.instrument_id)].push_back(
+                call_dates_map[boost::uuids::to_string(call_date.trade_id)].push_back(
                     std::move(call_date));
         }
 
@@ -903,7 +889,7 @@ type, then read each product's table in one batch.
             repository::commodity_basket_constituent_repository constituent_repo;
             for (auto& constituent :
                  constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
-                constituents_map[boost::uuids::to_string(constituent.instrument_id)].push_back(
+                constituents_map[boost::uuids::to_string(constituent.trade_id)].push_back(
                     std::move(constituent));
         }
 
@@ -917,7 +903,7 @@ type, then read each product's table in one batch.
         // Single-table types (credit, scripted).
         auto add_flat = [&](auto&& results) {
             for (auto& v : results)
-                imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
+                imap[boost::uuids::to_string(v.identity.trade_id)] = std::move(v);
         };
 
         if (!bond_ids.empty()) {
@@ -932,7 +918,7 @@ type, then read each product's table in one batch.
         if (!commodity_ids.empty()) {
             service::commodity_instrument_service svc(ctx);
             for (auto& v : svc.get_commodity_instruments(commodity_ids)) {
-                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                const auto id = boost::uuids::to_string(v.identity.trade_id);
                 commodity_instrument_data data;
                 data.instrument = std::move(v);
                 data.constituents = take_constituents(id);
@@ -946,7 +932,7 @@ type, then read each product's table in one batch.
         if (!composite_ids.empty()) {
             service::composite_instrument_service svc(ctx);
             for (auto& v : svc.get_composite_instruments(composite_ids)) {
-                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                const auto id = boost::uuids::to_string(v.identity.trade_id);
                 composite_instrument_data data;
                 data.instrument = std::move(v);
                 auto it = comp_legs_map.find(id);
@@ -959,7 +945,7 @@ type, then read each product's table in one batch.
         // Rates / swap types (9 sub-types, all share swap_legs table)
         auto add_swap = [&](auto&& results) {
             for (auto& v : results) {
-                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                const auto id = boost::uuids::to_string(v.identity.trade_id);
                 swap_instrument_data data;
                 data.instrument = std::move(v);
                 data.legs = take_legs(id);
@@ -1007,7 +993,7 @@ type, then read each product's table in one batch.
         // FX types
         auto add_fx = [&](auto&& results) {
             for (auto& v : results)
-                imap[boost::uuids::to_string(v.identity.instrument_id)] =
+                imap[boost::uuids::to_string(v.identity.trade_id)] =
                     ores::trading::domain::fx_instrument_variant{std::move(v)};
         };
         if (!fxfwd_ids.empty()) {
@@ -1048,7 +1034,7 @@ type, then read each product's table in one batch.
         if (!eq_pos_ids.empty()) {
             repository::equity_position_option_underlying_repository underlying_repo;
             for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
-                equity_underlyings_map[boost::uuids::to_string(underlying.instrument_id)]
+                equity_underlyings_map[boost::uuids::to_string(underlying.trade_id)]
                     .push_back(std::move(underlying));
         }
 
@@ -1061,7 +1047,7 @@ type, then read each product's table in one batch.
 
         auto add_eq = [&](auto&& results) {
             for (auto& v : results) {
-                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                const auto id = boost::uuids::to_string(v.identity.trade_id);
                 ores::trading::domain::equity_instrument_data data;
                 data.instrument = ores::trading::domain::equity_instrument_variant{std::move(v)};
                 data.underlyings = take_equity_underlyings(id);
@@ -1108,10 +1094,11 @@ type, then read each product's table in one batch.
         // Phase 4: fill items from lookup map (copy — multiple items may share an instrument)
         for (auto& item : items) {
             const auto& t = item.trade;
-            if (!t.classification.instrument_id ||
-                t.classification.product_type == product_type::unknown)
+            if (t.classification.product_type == product_type::unknown)
                 continue;
-            const auto id = boost::uuids::to_string(*t.classification.instrument_id);
+            // The instrument is keyed by the trade it belongs to, so the
+            // trade's own id is the key the product tables are read by.
+            const auto id = boost::uuids::to_string(t.identity.id);
             if (auto it = imap.find(id); it != imap.end())
                 item.instrument = encode_instrument(it->second);
         }
@@ -1340,7 +1327,6 @@ struct get_trade_instrument_response {
     ores::trading::domain::trade trade;
     ores::trading::domain::trade_instrument instrument;
 };
-
 
 /**
  * @brief Request to export all trades (and instruments) under a taxonomy node.

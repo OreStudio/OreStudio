@@ -83,7 +83,7 @@ messaging::composite_leg_key key_from(const domain::composite_leg& v) {
 domain::composite_leg to_domain(const messaging::composite_leg_write& write) {
     domain::composite_leg v;
     v.identity.id = write.id;
-    v.identity.instrument_id = write.instrument_id;
+    v.identity.trade_id = write.trade_id;
     v.identity.leg_sequence = write.leg_sequence;
     v.constituent_trade_id = write.constituent_trade_id;
     return v;
@@ -112,10 +112,10 @@ composite_leg_service::list_composite_legs(const messaging::list_composite_legs_
     return response;
 }
 
-messaging::list_by_instrument_id_composite_legs_response
-composite_leg_service::list_by_instrument_id_composite_legs(
-    const messaging::list_by_instrument_id_composite_legs_request& request) {
-    messaging::list_by_instrument_id_composite_legs_response response;
+messaging::list_by_trade_id_composite_legs_response
+composite_leg_service::list_by_trade_id_composite_legs(
+    const messaging::list_by_trade_id_composite_legs_request& request) {
+    messaging::list_by_trade_id_composite_legs_response response;
     if (!request.order.field.empty() || request.order.descending) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
@@ -135,10 +135,10 @@ composite_leg_service::list_by_instrument_id_composite_legs(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    const auto relation = boost::uuids::to_string(request.instrument_id);
+    const auto relation = boost::uuids::to_string(request.trade_id);
     response.composite_legs =
-        repo_.read_latest_by_instrument_id(ctx_, relation, request.offset, request.limit);
-    response.total = repo_.get_total_composite_leg_count_by_instrument_id(ctx_, relation);
+        repo_.read_latest_by_trade_id(ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_composite_leg_count_by_trade_id(ctx_, relation);
     return response;
 }
 
@@ -392,17 +392,15 @@ std::uint32_t composite_leg_service::count_composite_legs() {
 }
 
 
-std::vector<domain::composite_leg> composite_leg_service::list_composite_legs_by_instrument_id(
-    const std::string& instrument_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing composite legs by instrument_id: " << instrument_id;
-    return repo_.read_latest_by_instrument_id(ctx_, instrument_id, offset, limit);
+std::vector<domain::composite_leg> composite_leg_service::list_composite_legs_by_trade_id(
+    const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing composite legs by trade_id: " << trade_id;
+    return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
-std::uint32_t
-composite_leg_service::count_composite_legs_by_instrument_id(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total composite legs count by instrument_id: "
-                               << instrument_id;
-    return repo_.get_total_composite_leg_count_by_instrument_id(ctx_, instrument_id);
+std::uint32_t composite_leg_service::count_composite_legs_by_trade_id(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total composite legs count by trade_id: " << trade_id;
+    return repo_.get_total_composite_leg_count_by_trade_id(ctx_, trade_id);
 }
 
 

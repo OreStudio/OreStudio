@@ -56,7 +56,7 @@
  */
 
 create table if not exists "ores_trading_bond_leg_rates_tbl" (
-    "instrument_id" uuid not null,
+    "trade_id" uuid not null,
     "leg_role" text not null,
     "leg_number" integer not null,
     "tenant_id" uuid not null,
@@ -92,16 +92,16 @@ create table if not exists "ores_trading_bond_leg_rates_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, instrument_id, leg_role, leg_number, valid_from, valid_to),
+    primary key (tenant_id, trade_id, leg_role, leg_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        instrument_id WITH =,
+        trade_id WITH =,
         leg_role WITH =,
         leg_number WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_role" <> ''),
     check ("rate_kind" in ('fixed', 'floating', 'formula_based')),
     check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
@@ -110,11 +110,11 @@ create table if not exists "ores_trading_bond_leg_rates_tbl" (
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists bond_leg_rates_version_uniq_idx
-on "ores_trading_bond_leg_rates_tbl" (tenant_id, instrument_id, leg_role, leg_number, version)
+on "ores_trading_bond_leg_rates_tbl" (tenant_id, trade_id, leg_role, leg_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists bond_leg_rates_id_uniq_idx
-on "ores_trading_bond_leg_rates_tbl" (tenant_id, instrument_id, leg_role, leg_number)
+on "ores_trading_bond_leg_rates_tbl" (tenant_id, trade_id, leg_role, leg_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists bond_leg_rates_tenant_idx
@@ -136,7 +136,7 @@ begin
     select version into current_version
     from "ores_trading_bond_leg_rates_tbl"
     where tenant_id = NEW.tenant_id
-      and instrument_id = NEW.instrument_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number
+      and trade_id = NEW.trade_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -165,7 +165,7 @@ begin
         update "ores_trading_bond_leg_rates_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number
+          and trade_id = NEW.trade_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -190,6 +190,6 @@ on delete to "ores_trading_bond_leg_rates_tbl" do instead (
     update "ores_trading_bond_leg_rates_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and instrument_id = OLD.instrument_id and leg_role = OLD.leg_role and leg_number = OLD.leg_number
+      and trade_id = OLD.trade_id and leg_role = OLD.leg_role and leg_number = OLD.leg_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

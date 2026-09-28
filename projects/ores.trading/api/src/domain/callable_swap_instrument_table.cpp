@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<callable_swap_instrument>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& cs : v) {
-        table << cs.identity.instrument_id << cs.identity.trade_type_code << cs.start_date
+        table << cs.identity.trade_id << cs.identity.trade_type_code << cs.start_date
               << cs.maturity_date << cs.audit.recorded_at << fort::endr;
     }
     return table.to_string();

@@ -48,7 +48,7 @@ std::string bond_leg_rate_repository::sql() {
 ores::utility::domain::precondition
 bond_leg_rate_repository::replace_claim(context ctx, const domain::bond_leg_rate& v) {
     const auto current = read_latest(
-        ctx, boost::uuids::to_string(v.instrument_id), v.leg_role, std::to_string(v.leg_number));
+        ctx, boost::uuids::to_string(v.trade_id), v.leg_role, std::to_string(v.leg_number));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -73,10 +73,8 @@ domain::bond_leg_rate bond_leg_rate_repository::apply_claim(
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx,
-                                             boost::uuids::to_string(v.instrument_id),
-                                             v.leg_role,
-                                             std::to_string(v.leg_number));
+            const auto current = read_latest(
+                ctx, boost::uuids::to_string(v.trade_id), v.leg_role, std::to_string(v.leg_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
         }
@@ -99,7 +97,7 @@ void bond_leg_rate_repository::write(context ctx, const std::vector<domain::bond
 void bond_leg_rate_repository::write(context ctx,
                                      const domain::bond_leg_rate& v,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg rate. " << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg rate. " << "trade_id: " << v.trade_id
                                << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
@@ -124,7 +122,7 @@ std::vector<domain::bond_leg_rate> bond_leg_rate_repository::read_latest(context
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c);
+                       order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
 
     return execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
         ctx,
@@ -136,39 +134,37 @@ std::vector<domain::bond_leg_rate> bond_leg_rate_repository::read_latest(context
 
 std::vector<domain::bond_leg_rate>
 bond_leg_rate_repository::read_latest(context ctx,
-                                      const std::string& instrument_id,
+                                      const std::string& trade_id,
                                       const std::string& leg_role,
                                       const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg rate. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg rate. " << "trade_id: " << trade_id
+                               << " leg_role: " << leg_role << " leg_number: " << leg_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_rate_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
+              "leg_number"_c == leg_number && "valid_to"_c == max.value());
 
     return execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_rate_mapper::map(entities); },
         lg(),
-        "Reading latest bond leg rate by instrument_id.");
+        "Reading latest bond leg rate by trade_id.");
 }
 
 
 std::vector<domain::bond_leg_rate>
 bond_leg_rate_repository::read_all(context ctx,
-                                   const std::string& instrument_id,
+                                   const std::string& trade_id,
                                    const std::string& leg_role,
                                    const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond leg rate versions. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all bond leg rate versions. " << "trade_id: " << trade_id
+                               << " leg_role: " << leg_role << " leg_number: " << leg_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -177,23 +173,23 @@ bond_leg_rate_repository::read_all(context ctx,
         query,
         [](const auto& entities) { return bond_leg_rate_mapper::map(entities); },
         lg(),
-        "Reading all bond leg rate versions by instrument_id.");
+        "Reading all bond leg rate versions by trade_id.");
 }
 
 std::optional<domain::bond_leg_rate>
 bond_leg_rate_repository::read_at_version(context ctx,
-                                          const std::string& instrument_id,
+                                          const std::string& trade_id,
                                           const std::string& leg_role,
                                           const std::string& leg_number,
                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond leg rate at version. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading bond leg rate at version. " << "trade_id: " << trade_id
+                               << " leg_role: " << leg_role << " leg_number: " << leg_number
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<bond_leg_rate_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-              "leg_role"_c == leg_role && "leg_number"_c == leg_number && "version"_c == version) |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
+              "leg_number"_c == leg_number && "version"_c == version) |
         sqlgen::limit(1);
 
     const auto entities = execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
@@ -210,13 +206,13 @@ bond_leg_rate_repository::read_at_version(context ctx,
 
 bond_leg_rate_repository::remove_status
 bond_leg_rate_repository::remove(context ctx,
-                                 const std::string& instrument_id,
+                                 const std::string& trade_id,
                                  const std::string& leg_role,
                                  const std::string& leg_number,
                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg rate. " << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg rate. " << "trade_id: " << trade_id
                                << " leg_role: " << leg_role << " leg_number: " << leg_number;
-    const auto current = read_latest(ctx, instrument_id, leg_role, leg_number);
+    const auto current = read_latest(ctx, trade_id, leg_role, leg_number);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -230,7 +226,7 @@ bond_leg_rate_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<bond_leg_rate_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -238,16 +234,16 @@ bond_leg_rate_repository::remove(context ctx,
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id, leg_role, leg_number).empty())
+    if (!read_latest(ctx, trade_id, leg_role, leg_number).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
 void bond_leg_rate_repository::remove(context ctx,
-                                      const std::string& instrument_id,
+                                      const std::string& trade_id,
                                       const std::string& leg_role,
                                       const std::string& leg_number) {
-    static_cast<void>(remove(ctx, instrument_id, leg_role, leg_number, std::nullopt));
+    static_cast<void>(remove(ctx, trade_id, leg_role, leg_number, std::nullopt));
 }
 
 std::vector<domain::bond_leg_rate>
@@ -258,7 +254,7 @@ bond_leg_rate_repository::read_latest(context ctx, std::uint32_t offset, std::ui
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c) |
+                       order_by("trade_id"_c, "leg_role"_c, "leg_number"_c) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
@@ -292,17 +288,17 @@ std::uint32_t bond_leg_rate_repository::get_total_bond_leg_rate_count(context ct
 
 std::vector<domain::bond_leg_rate>
 bond_leg_rate_repository::read_latest(context ctx,
-                                      const std::vector<std::string>& instrument_ids,
+                                      const std::vector<std::string>& trade_ids,
                                       const std::vector<std::string>& leg_roles,
                                       const std::vector<std::string>& leg_numbers) {
-    if (instrument_ids.empty() || leg_roles.empty() || leg_numbers.empty())
+    if (trade_ids.empty() || leg_roles.empty() || leg_numbers.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "leg_role"_c.in(leg_roles) && "leg_number"_c.in(leg_numbers) &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_rate_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "leg_role"_c.in(leg_roles) &&
+              "leg_number"_c.in(leg_numbers) && "valid_to"_c == max.value());
     auto result = execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
         ctx,
         query,
@@ -312,16 +308,16 @@ bond_leg_rate_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
     // exact requested key-tuples here.
-    if (leg_roles.size() != instrument_ids.size() || leg_numbers.size() != instrument_ids.size())
+    if (leg_roles.size() != trade_ids.size() || leg_numbers.size() != trade_ids.size())
         throw std::invalid_argument(
             "bond_leg_rate_repository::read_latest: key column vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string>> requested;
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        requested.emplace(instrument_ids[i], leg_roles[i], leg_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(trade_ids[i], leg_roles[i], leg_numbers[i]);
     std::vector<domain::bond_leg_rate> filtered;
     filtered.reserve(result.size());
     for (auto& item : result) {
-        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.instrument_id),
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.trade_id),
                                                item.leg_role,
                                                std::to_string(item.leg_number))))
             filtered.push_back(std::move(item));
@@ -330,17 +326,17 @@ bond_leg_rate_repository::read_latest(context ctx,
 }
 
 void bond_leg_rate_repository::remove(context ctx,
-                                      const std::vector<std::string>& instrument_ids,
+                                      const std::vector<std::string>& trade_ids,
                                       const std::vector<std::string>& leg_roles,
                                       const std::vector<std::string>& leg_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
-    if (leg_roles.size() != instrument_ids.size() || leg_numbers.size() != instrument_ids.size())
+    if (leg_roles.size() != trade_ids.size() || leg_numbers.size() != trade_ids.size())
         throw std::invalid_argument(
             "bond_leg_rate_repository::remove: key column vectors must be the same length");
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        remove(ctx, instrument_ids[i], leg_roles[i], leg_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        remove(ctx, trade_ids[i], leg_roles[i], leg_numbers[i]);
 }
 
 

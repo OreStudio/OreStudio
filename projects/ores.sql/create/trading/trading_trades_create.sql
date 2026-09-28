@@ -46,7 +46,6 @@ create table if not exists "ores_trading_trades_tbl" (
     "trade_type" text not null,
     "counterparty_id" uuid null,
     "product_type" product_type_t null,
-    "instrument_id" uuid null,
     "asset_class" text null,
     "netting_set_id" text not null,
     "activity_type_code" text not null,
@@ -102,11 +101,6 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists trades_trade_type_idx
 on "ores_trading_trades_tbl" (tenant_id, trade_type)
 where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists trades_instrument_idx
-on "ores_trading_trades_tbl" (tenant_id, product_type, instrument_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and instrument_id is not null;
 
 create index if not exists trades_asset_class_idx
 on "ores_trading_trades_tbl" (tenant_id, asset_class)

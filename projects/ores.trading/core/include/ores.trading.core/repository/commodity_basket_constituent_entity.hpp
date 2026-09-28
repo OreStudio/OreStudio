@@ -42,7 +42,7 @@ struct commodity_basket_constituent_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_commodity_basket_constituents_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;

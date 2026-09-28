@@ -60,10 +60,6 @@ domain::trade trade_mapper::map(const trade_entity& v) {
                                         rfl::string_to_enum<domain::product_type>(*v.product_type)
                                             .value_or(domain::product_type{}) :
                                         domain::product_type{};
-    r.classification.instrument_id =
-        v.instrument_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.instrument_id)) :
-            std::nullopt;
     r.classification.asset_class = v.asset_class;
     r.classification.netting_set_id = v.netting_set_id;
     r.classification.activity_type_code = v.activity_type_code;
@@ -118,9 +114,6 @@ trade_entity trade_mapper::map(const domain::trade& v) {
         v.classification.product_type == domain::product_type{} ?
             std::nullopt :
             std::optional(std::string(rfl::enum_to_string(v.classification.product_type)));
-    r.instrument_id = v.classification.instrument_id.has_value() ?
-                          std::optional(boost::uuids::to_string(*v.classification.instrument_id)) :
-                          std::nullopt;
     r.asset_class = v.classification.asset_class;
     r.netting_set_id = v.classification.netting_set_id;
     r.activity_type_code = v.classification.activity_type_code;

@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::bond_future> read_one(repository::bond_future_repository& repo,
                                           const ores::database::context& ctx,
                                           const messaging::bond_future_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::bond_future> read_one(repository::bond_future_repository& re
  */
 messaging::bond_future_key key_from(const domain::bond_future& v) {
     messaging::bond_future_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     return key;
 }
 
@@ -82,7 +82,7 @@ messaging::bond_future_key key_from(const domain::bond_future& v) {
  */
 domain::bond_future to_domain(const messaging::bond_future_write& write) {
     domain::bond_future v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.contract_name = write.contract_name;
     v.contract_notional = write.contract_notional;
     v.long_short = write.long_short;
@@ -217,8 +217,7 @@ bond_future_service::delete_bond_future(const messaging::delete_bond_future_requ
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
         case repository::bond_future_repository::remove_status::removed:
             break;
         case repository::bond_future_repository::remove_status::missing:
@@ -259,11 +258,11 @@ messaging::delete_many_bond_futures_response bond_future_service::delete_many_bo
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    repo_.remove(ctx_, trade_id_keys);
     return response;
 }
 
@@ -283,7 +282,7 @@ messaging::list_bond_future_versions_response bond_future_service::list_bond_fut
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -299,7 +298,7 @@ messaging::get_bond_future_version_response bond_future_service::get_bond_future
     const messaging::get_bond_future_version_request& request) {
     messaging::get_bond_future_version_response response;
     auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.bond_future.instrument_id), request.key.version);
+        ctx_, boost::uuids::to_string(request.key.bond_future.trade_id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -371,41 +370,41 @@ std::uint32_t bond_future_service::count_futures() {
 
 
 std::optional<domain::bond_future>
-bond_future_service::get_future_at_version(const boost::uuids::uuid& instrument_id,
+bond_future_service::get_future_at_version(const boost::uuids::uuid& trade_id,
                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond future at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond future at version. " << "trade_id: " << trade_id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_future>
-bond_future_service::get_future(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond future. " << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+bond_future_service::get_future(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond future. " << "trade_id: " << trade_id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::bond_future>
-bond_future_service::get_futures(const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+bond_future_service::get_futures(const std::vector<std::string>& trade_ids) {
+    return repo_.read_latest(ctx_, trade_ids);
 }
 
 void bond_future_service::save_future(const domain::bond_future& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Bond Future instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond future. " << "instrument_id: " << v.instrument_id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Bond Future trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving bond future. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond future. " << "instrument_id: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved bond future. " << "trade_id: " << v.trade_id;
 }
 
 void bond_future_service::save_futures(const std::vector<domain::bond_future>& futures) {
     for (const auto& e : futures) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Bond Future instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Bond Future trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << futures.size() << " bond futures";
     auto ts = futures;
@@ -415,21 +414,20 @@ void bond_future_service::save_futures(const std::vector<domain::bond_future>& f
     repo_.write(ctx_, ts);
 }
 
-void bond_future_service::delete_future(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond future. " << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond future. " << "instrument_id: " << instrument_id;
+void bond_future_service::delete_future(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing bond future. " << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    BOOST_LOG_SEV(lg(), info) << "Removed bond future. " << "trade_id: " << trade_id;
 }
 
-void bond_future_service::delete_futures(const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+void bond_future_service::delete_futures(const std::vector<std::string>& trade_ids) {
+    repo_.remove(ctx_, trade_ids);
 }
 
 std::vector<domain::bond_future>
-bond_future_service::get_future_history(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond future. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+bond_future_service::get_future_history(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond future. " << "trade_id: " << trade_id;
+    return repo_.read_all(ctx_, trade_id);
 }
 
 }

@@ -43,7 +43,7 @@ domain::bond_repo generate_synthetic_bond_repo(utility::generation::generation_c
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.instrument_id = ctx.generate_uuid();
+    r.trade_id = ctx.generate_uuid();
     r.repo_type = std::string("Fixed");
     r.repo_rate = 0.045;
     r.repo_index = std::string("SOFR");

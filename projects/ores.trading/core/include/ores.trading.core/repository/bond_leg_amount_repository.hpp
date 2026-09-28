@@ -102,14 +102,14 @@ public:
     /**@{*/
     std::vector<domain::bond_leg_amount> read_latest(context ctx);
     std::vector<domain::bond_leg_amount> read_latest(context ctx,
-                                                     const std::string& instrument_id,
+                                                     const std::string& trade_id,
                                                      const std::string& leg_role,
                                                      const std::string& leg_number,
                                                      const std::string& amount_role,
                                                      const std::string& sequence_number);
     std::vector<domain::bond_leg_amount>
     read_latest(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& leg_roles,
                 const std::vector<std::string>& leg_numbers,
                 const std::vector<std::string>& amount_roles,
@@ -121,7 +121,7 @@ public:
      * @brief Reads all bond leg amounts, possibly filtered by primary key.
      */
     std::vector<domain::bond_leg_amount> read_all(context ctx,
-                                                  const std::string& instrument_id,
+                                                  const std::string& trade_id,
                                                   const std::string& leg_role,
                                                   const std::string& leg_number,
                                                   const std::string& amount_role,
@@ -137,7 +137,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::bond_leg_amount> read_at_version(context ctx,
-                                                           const std::string& instrument_id,
+                                                           const std::string& trade_id,
                                                            const std::string& leg_role,
                                                            const std::string& leg_number,
                                                            const std::string& amount_role,
@@ -164,7 +164,7 @@ public:
      * @brief Deletes a bond leg amount by closing its temporal validity.
      */
     void remove(context ctx,
-                const std::string& instrument_id,
+                const std::string& trade_id,
                 const std::string& leg_role,
                 const std::string& leg_number,
                 const std::string& amount_role,
@@ -191,7 +191,7 @@ public:
      * no version asked for.
      */
     remove_status remove(context ctx,
-                         const std::string& instrument_id,
+                         const std::string& trade_id,
                          const std::string& leg_role,
                          const std::string& leg_number,
                          const std::string& amount_role,
@@ -202,7 +202,7 @@ public:
      * @brief Deletes bond leg amounts by closing their temporal validity.
      */
     void remove(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& leg_roles,
                 const std::vector<std::string>& leg_numbers,
                 const std::vector<std::string>& amount_roles,

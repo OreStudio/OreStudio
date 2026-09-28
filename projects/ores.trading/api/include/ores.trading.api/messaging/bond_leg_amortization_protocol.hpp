@@ -36,14 +36,14 @@
 namespace ores::trading::messaging {
 
 struct bond_leg_amortization_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string leg_role;
     int leg_number;
     int sequence_number;
 };
 
 struct bond_leg_amortization_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string leg_role;
     int leg_number;
     int sequence_number;

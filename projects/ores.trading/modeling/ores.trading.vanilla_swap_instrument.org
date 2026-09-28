@@ -29,19 +29,6 @@ instrument linking two legs via the swap_legs table.
 
 * Columns
 
-** instrument_id
-:PROPERTIES:
-:group:       identity
-:primary_key: true
-:type:        uuid
-:cpp_type:    boost::uuids::uuid
-:nullable:    false
-:END:
-
-UUID uniquely identifying this vanilla swap instrument.
-
-Surrogate key for the instrument record.
-
 ** trade_type_code
 :PROPERTIES:
 :group:    identity
@@ -70,15 +57,19 @@ Set from session variable app.current_party_id.
 
 ** trade_id
 :PROPERTIES:
-:group:    identity
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
+:group:       identity
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
-Optional soft FK to the parent trade.
+The trade this instrument belongs to, and the instrument's own key.
 
-Links instrument to a trade if applicable.
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
 
 ** start_date
 :PROPERTIES:
@@ -142,6 +133,19 @@ Groups instruments for netting purposes.
 Optional free-text description.
 
 Human-readable notes about this instrument.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
 
 * SQL
 
@@ -212,7 +216,7 @@ repository profiles regenerate correctly.
 
 |  column                    |  header       |
 |--------------------------|-------------|
-|  identity.instrument_id    |  ID           |
+|  identity.trade_id    |  ID           |
 |  identity.trade_type_code  |  Type         |
 |  start_date                |  Start Date   |
 |  maturity_date             |  Maturity Date |

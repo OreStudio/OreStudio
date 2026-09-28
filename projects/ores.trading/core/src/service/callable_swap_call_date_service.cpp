@@ -60,7 +60,7 @@ read_one(repository::callable_swap_call_date_repository& repo,
          const ores::database::context& ctx,
          const messaging::callable_swap_call_date_key& key) {
     return repo.read_latest(
-        ctx, boost::uuids::to_string(key.instrument_id), std::to_string(key.sequence_number));
+        ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
 
 /**
@@ -71,7 +71,7 @@ read_one(repository::callable_swap_call_date_repository& repo,
  */
 messaging::callable_swap_call_date_key key_from(const domain::callable_swap_call_date& v) {
     messaging::callable_swap_call_date_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
     return key;
 }
@@ -85,7 +85,7 @@ messaging::callable_swap_call_date_key key_from(const domain::callable_swap_call
  */
 domain::callable_swap_call_date to_domain(const messaging::callable_swap_call_date_write& write) {
     domain::callable_swap_call_date v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
     v.call_date = write.call_date;
     return v;
@@ -214,7 +214,7 @@ callable_swap_call_date_service::delete_callable_swap_call_date(
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          std::to_string(request.removal.key.sequence_number),
                          expected)) {
         case repository::callable_swap_call_date_repository::remove_status::removed:
@@ -258,15 +258,15 @@ callable_swap_call_date_service::delete_many_callable_swap_call_dates(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> sequence_number_keys;
     sequence_number_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
-    repo_.remove(ctx_, instrument_id_keys, sequence_number_keys);
+    repo_.remove(ctx_, trade_id_keys, sequence_number_keys);
     return response;
 }
 
@@ -288,7 +288,7 @@ callable_swap_call_date_service::list_callable_swap_call_date_versions(
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
@@ -305,11 +305,11 @@ messaging::get_callable_swap_call_date_version_response
 callable_swap_call_date_service::get_callable_swap_call_date_version(
     const messaging::get_callable_swap_call_date_version_request& request) {
     messaging::get_callable_swap_call_date_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_,
-        boost::uuids::to_string(request.key.callable_swap_call_date.instrument_id),
-        std::to_string(request.key.callable_swap_call_date.sequence_number),
-        request.key.version);
+    auto found =
+        repo_.read_at_version(ctx_,
+                              boost::uuids::to_string(request.key.callable_swap_call_date.trade_id),
+                              std::to_string(request.key.callable_swap_call_date.sequence_number),
+                              request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -383,21 +383,20 @@ std::uint32_t callable_swap_call_date_service::count_callable_swap_call_dates() 
 
 std::optional<domain::callable_swap_call_date>
 callable_swap_call_date_service::get_callable_swap_call_date_at_version(
-    const std::string& instrument_id, const std::string& sequence_number, std::uint32_t version) {
+    const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting callable swap call date at version. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, instrument_id, sequence_number, version);
+    return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::callable_swap_call_date>
-callable_swap_call_date_service::get_callable_swap_call_date(const std::string& instrument_id,
+callable_swap_call_date_service::get_callable_swap_call_date(const std::string& trade_id,
                                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting callable swap call date. "
-                               << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Getting callable swap call date. " << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    auto results = repo_.read_latest(ctx_, instrument_id, sequence_number);
+    auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -405,31 +404,28 @@ callable_swap_call_date_service::get_callable_swap_call_date(const std::string& 
 
 std::vector<domain::callable_swap_call_date>
 callable_swap_call_date_service::get_callable_swap_call_dates(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    return repo_.read_latest(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, sequence_numbers);
 }
 
 void callable_swap_call_date_service::save_callable_swap_call_date(
     const domain::callable_swap_call_date& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Callable Swap Call Date instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving callable swap call date. "
-                               << "instrument_id: " << v.instrument_id
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Callable Swap Call Date trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving callable swap call date. " << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved callable swap call date. "
-                              << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), info) << "Saved callable swap call date. " << "trade_id: " << v.trade_id
                               << " sequence_number: " << v.sequence_number;
 }
 
 void callable_swap_call_date_service::save_callable_swap_call_dates(
     const std::vector<domain::callable_swap_call_date>& callable_swap_call_dates) {
     for (const auto& e : callable_swap_call_dates) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Callable Swap Call Date instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Callable Swap Call Date trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << callable_swap_call_dates.size()
                                << " callable swap call dates";
@@ -441,29 +437,26 @@ void callable_swap_call_date_service::save_callable_swap_call_dates(
 }
 
 void callable_swap_call_date_service::delete_callable_swap_call_date(
-    const std::string& instrument_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing callable swap call date. "
-                               << "instrument_id: " << instrument_id
+    const std::string& trade_id, const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing callable swap call date. " << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed callable swap call date. "
-                              << "instrument_id: " << instrument_id
+    repo_.remove(ctx_, trade_id, sequence_number);
+    BOOST_LOG_SEV(lg(), info) << "Removed callable swap call date. " << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
 }
 
 void callable_swap_call_date_service::delete_callable_swap_call_dates(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, trade_ids, sequence_numbers);
 }
 
 std::vector<domain::callable_swap_call_date>
 callable_swap_call_date_service::get_callable_swap_call_date_history(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for callable swap call date. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(ctx_, instrument_id, sequence_number);
+    return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 
 }

@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One call date of a callable swap instrument's exercise schedule, keyed to the instrument and the date's ordinal.
+#+brief: One call date of a callable swap instrument's exercise schedule, keyed to the trade and the date's ordinal.
 #+entity_singular: callable_swap_call_date
 #+entity_plural: callable_swap_call_dates
 #+entity_title: Callable Swap Call Date
@@ -28,8 +28,8 @@ date is refused by the column's type rather than by a convention the
 readers must share, and a repeated date stays two rows because the
 ordinal, not the date, is part of the key.
 
-The instrument row carries the trade, the workspace and the party. The
-call date rows are family-owned and ride the instrument's scope, so no
+The trade row carries the workspace and the party. The
+call date rows are family-owned and ride the trade's scope, so no
 workspace column rides them.
 
 * Flags
@@ -44,14 +44,15 @@ workspace column rides them.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the callable swap instrument whose schedule states this date.
+The trade whose callable swap schedule states this date.
 
 ** sequence_number
 :PROPERTIES:
@@ -151,21 +152,21 @@ instrument and ordinal, in one statement. An empty input reads nothing.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::callable_swap_call_date>
-read_by_instruments_batch(context ctx, const std::vector<std::string>& instrument_ids);
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::callable_swap_call_date>
 callable_swap_call_date_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<callable_swap_call_date_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
                              "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c);
+                       order_by("trade_id"_c, "sequence_number"_c);
     return execute_read_query<callable_swap_call_date_entity, domain::callable_swap_call_date>(
         ctx,
         query,

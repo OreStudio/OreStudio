@@ -126,10 +126,8 @@ public:
      * @param version The version to fetch.
      * @return The instrument option exercise fee at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::instrument_option_exercise_fee>
-    get_exercise_fee_at_version(const std::string& instrument_id,
-                                const std::string& sequence_number,
-                                std::uint32_t version);
+    std::optional<domain::instrument_option_exercise_fee> get_exercise_fee_at_version(
+        const std::string& trade_id, const std::string& sequence_number, std::uint32_t version);
 
     /**
      * @brief Retrieves a single instrument option exercise fee by its primary key.
@@ -137,13 +135,13 @@ public:
      * @return The instrument option exercise fee if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_option_exercise_fee>
-    get_exercise_fee(const std::string& instrument_id, const std::string& sequence_number);
+    get_exercise_fee(const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Retrieves a batch of instrument option exercise fees by primary key.
      */
     std::vector<domain::instrument_option_exercise_fee>
-    get_exercise_fees(const std::vector<std::string>& instrument_ids,
+    get_exercise_fees(const std::vector<std::string>& trade_ids,
                       const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -168,12 +166,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_exercise_fee(const std::string& instrument_id, const std::string& sequence_number);
+    void delete_exercise_fee(const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Deletes instrument option exercise fees by their primary keys.
      */
-    void delete_exercise_fees(const std::vector<std::string>& instrument_ids,
+    void delete_exercise_fees(const std::vector<std::string>& trade_ids,
                               const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -182,7 +180,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::instrument_option_exercise_fee>
-    get_exercise_fee_history(const std::string& instrument_id, const std::string& sequence_number);
+    get_exercise_fee_history(const std::string& trade_id, const std::string& sequence_number);
 
 private:
     context ctx_;

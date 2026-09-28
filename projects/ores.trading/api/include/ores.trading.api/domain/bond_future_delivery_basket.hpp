@@ -33,8 +33,8 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One deliverable identifier of a bond future's delivery basket, keyed to the instrument and
- * the identifier's ordinal.
+ * @brief One deliverable identifier of a bond future's delivery basket, keyed to the trade and the
+ * identifier's ordinal.
  *
  * One row per deliverable identifier a bond future's basket names, keyed
  * to the instrument and the identifier's ordinal.
@@ -58,9 +58,9 @@ struct bond_future_delivery_basket final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the bond future instrument whose basket named this identifier.
+     * @brief The trade whose bond future basket named this delivery identifier.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Ordinal of this identifier within the basket.

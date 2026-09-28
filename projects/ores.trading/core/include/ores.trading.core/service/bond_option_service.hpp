@@ -119,8 +119,8 @@ public:
      * @param version The version to fetch.
      * @return The bond option at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_option>
-    get_option_at_version(const boost::uuids::uuid& instrument_id, std::uint32_t version);
+    std::optional<domain::bond_option> get_option_at_version(const boost::uuids::uuid& trade_id,
+                                                             std::uint32_t version);
 
     /**
      * @brief Retrieves a single bond option by its primary key.
@@ -130,12 +130,12 @@ public:
      *
      * @return The bond option if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_option> get_option(const boost::uuids::uuid& instrument_id);
+    std::optional<domain::bond_option> get_option(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of bond options by primary key.
      */
-    std::vector<domain::bond_option> get_options(const std::vector<std::string>& instrument_ids);
+    std::vector<domain::bond_option> get_options(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a bond option (creates or updates).
@@ -158,19 +158,19 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_option(const boost::uuids::uuid& instrument_id);
+    void delete_option(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes bond options by their primary keys.
      */
-    void delete_options(const std::vector<std::string>& instrument_ids);
+    void delete_options(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a bond option.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::bond_option> get_option_history(const std::string& instrument_id);
+    std::vector<domain::bond_option> get_option_history(const std::string& trade_id);
 
 private:
     context ctx_;

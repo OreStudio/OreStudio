@@ -367,7 +367,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.swap_legs.list_by_instrument_id.
+     * @brief Serves trading.v1.swap_legs.list_by_trade_id.
      *
      * The adapter decides nothing: it proves the request, checks the
      * permission a write needs, decodes the canonical request, calls the
@@ -375,7 +375,7 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void list_by_instrument_id_swap_legs(ores::nats::message msg) {
+    void list_by_trade_id_swap_legs(ores::nats::message msg) {
         BOOST_LOG_SEV(swap_leg_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -383,7 +383,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        auto req = decode<list_by_instrument_id_swap_legs_request>(msg);
+        auto req = decode<list_by_trade_id_swap_legs_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(swap_leg_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
@@ -391,7 +391,7 @@ public:
         }
         service::swap_leg_service svc(req_ctx);
         try {
-            auto response = svc.list_by_instrument_id_swap_legs(*req);
+            auto response = svc.list_by_trade_id_swap_legs(*req);
             BOOST_LOG_SEV(swap_leg_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
@@ -399,7 +399,7 @@ public:
             // exception here is the store failing, which is a different
             // thing and is reported as such.
             BOOST_LOG_SEV(swap_leg_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            list_by_instrument_id_swap_legs_response failure;
+            list_by_trade_id_swap_legs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();

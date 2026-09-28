@@ -60,7 +60,7 @@ read_one(repository::commodity_basket_constituent_repository& repo,
          const ores::database::context& ctx,
          const messaging::commodity_basket_constituent_key& key) {
     return repo.read_latest(
-        ctx, boost::uuids::to_string(key.instrument_id), std::to_string(key.sequence_number));
+        ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
 
 /**
@@ -72,7 +72,7 @@ read_one(repository::commodity_basket_constituent_repository& repo,
 messaging::commodity_basket_constituent_key
 key_from(const domain::commodity_basket_constituent& v) {
     messaging::commodity_basket_constituent_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
     return key;
 }
@@ -87,7 +87,7 @@ key_from(const domain::commodity_basket_constituent& v) {
 domain::commodity_basket_constituent
 to_domain(const messaging::commodity_basket_constituent_write& write) {
     domain::commodity_basket_constituent v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
     v.underlying_code = write.underlying_code;
     v.weight = write.weight;
@@ -217,7 +217,7 @@ commodity_basket_constituent_service::delete_commodity_basket_constituent(
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          std::to_string(request.removal.key.sequence_number),
                          expected)) {
         case repository::commodity_basket_constituent_repository::remove_status::removed:
@@ -261,15 +261,15 @@ commodity_basket_constituent_service::delete_many_commodity_basket_constituents(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> sequence_number_keys;
     sequence_number_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
-    repo_.remove(ctx_, instrument_id_keys, sequence_number_keys);
+    repo_.remove(ctx_, trade_id_keys, sequence_number_keys);
     return response;
 }
 
@@ -291,7 +291,7 @@ commodity_basket_constituent_service::list_commodity_basket_constituent_versions
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
@@ -310,7 +310,7 @@ commodity_basket_constituent_service::get_commodity_basket_constituent_version(
     messaging::get_commodity_basket_constituent_version_response response;
     auto found = repo_.read_at_version(
         ctx_,
-        boost::uuids::to_string(request.key.commodity_basket_constituent.instrument_id),
+        boost::uuids::to_string(request.key.commodity_basket_constituent.trade_id),
         std::to_string(request.key.commodity_basket_constituent.sequence_number),
         request.key.version);
     if (!found) {
@@ -386,21 +386,21 @@ std::uint32_t commodity_basket_constituent_service::count_commodity_basket_const
 
 std::optional<domain::commodity_basket_constituent>
 commodity_basket_constituent_service::get_commodity_basket_constituent_at_version(
-    const std::string& instrument_id, const std::string& sequence_number, std::uint32_t version) {
+    const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting commodity basket constituent at version. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, instrument_id, sequence_number, version);
+    return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::commodity_basket_constituent>
 commodity_basket_constituent_service::get_commodity_basket_constituent(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting commodity basket constituent. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    auto results = repo_.read_latest(ctx_, instrument_id, sequence_number);
+    auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -408,32 +408,30 @@ commodity_basket_constituent_service::get_commodity_basket_constituent(
 
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_service::get_commodity_basket_constituents(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    return repo_.read_latest(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, sequence_numbers);
 }
 
 void commodity_basket_constituent_service::save_commodity_basket_constituent(
     const domain::commodity_basket_constituent& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Commodity Basket Constituent instrument_id cannot be empty.");
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Commodity Basket Constituent trade_id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving commodity basket constituent. "
-                               << "instrument_id: " << v.instrument_id
+                               << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved commodity basket constituent. "
-                              << "instrument_id: " << v.instrument_id
+                              << "trade_id: " << v.trade_id
                               << " sequence_number: " << v.sequence_number;
 }
 
 void commodity_basket_constituent_service::save_commodity_basket_constituents(
     const std::vector<domain::commodity_basket_constituent>& commodity_basket_constituents) {
     for (const auto& e : commodity_basket_constituents) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument(
-                "Commodity Basket Constituent instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Commodity Basket Constituent trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << commodity_basket_constituents.size()
                                << " commodity basket constituents";
@@ -445,29 +443,28 @@ void commodity_basket_constituent_service::save_commodity_basket_constituents(
 }
 
 void commodity_basket_constituent_service::delete_commodity_basket_constituent(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Removing commodity basket constituent. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, sequence_number);
+    repo_.remove(ctx_, trade_id, sequence_number);
     BOOST_LOG_SEV(lg(), info) << "Removed commodity basket constituent. "
-                              << "instrument_id: " << instrument_id
+                              << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
 }
 
 void commodity_basket_constituent_service::delete_commodity_basket_constituents(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, trade_ids, sequence_numbers);
 }
 
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_service::get_commodity_basket_constituent_history(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity basket constituent. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(ctx_, instrument_id, sequence_number);
+    return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 
 }

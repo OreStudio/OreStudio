@@ -60,7 +60,7 @@ read_one(repository::bond_future_delivery_basket_repository& repo,
          const ores::database::context& ctx,
          const messaging::bond_future_delivery_basket_key& key) {
     return repo.read_latest(
-        ctx, boost::uuids::to_string(key.instrument_id), std::to_string(key.sequence_number));
+        ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
 
 /**
@@ -71,7 +71,7 @@ read_one(repository::bond_future_delivery_basket_repository& repo,
  */
 messaging::bond_future_delivery_basket_key key_from(const domain::bond_future_delivery_basket& v) {
     messaging::bond_future_delivery_basket_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
     return key;
 }
@@ -86,7 +86,7 @@ messaging::bond_future_delivery_basket_key key_from(const domain::bond_future_de
 domain::bond_future_delivery_basket
 to_domain(const messaging::bond_future_delivery_basket_write& write) {
     domain::bond_future_delivery_basket v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
     v.delivery_basket_id = write.delivery_basket_id;
     return v;
@@ -215,7 +215,7 @@ bond_future_delivery_basket_service::delete_bond_future_delivery_basket(
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          std::to_string(request.removal.key.sequence_number),
                          expected)) {
         case repository::bond_future_delivery_basket_repository::remove_status::removed:
@@ -259,15 +259,15 @@ bond_future_delivery_basket_service::delete_many_bond_future_delivery_baskets(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> sequence_number_keys;
     sequence_number_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
-    repo_.remove(ctx_, instrument_id_keys, sequence_number_keys);
+    repo_.remove(ctx_, trade_id_keys, sequence_number_keys);
     return response;
 }
 
@@ -289,7 +289,7 @@ bond_future_delivery_basket_service::list_bond_future_delivery_basket_versions(
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
@@ -308,7 +308,7 @@ bond_future_delivery_basket_service::get_bond_future_delivery_basket_version(
     messaging::get_bond_future_delivery_basket_version_response response;
     auto found = repo_.read_at_version(
         ctx_,
-        boost::uuids::to_string(request.key.bond_future_delivery_basket.instrument_id),
+        boost::uuids::to_string(request.key.bond_future_delivery_basket.trade_id),
         std::to_string(request.key.bond_future_delivery_basket.sequence_number),
         request.key.version);
     if (!found) {
@@ -384,21 +384,21 @@ std::uint32_t bond_future_delivery_basket_service::count_delivery_basket_ids() {
 
 std::optional<domain::bond_future_delivery_basket>
 bond_future_delivery_basket_service::get_delivery_basket_id_at_version(
-    const std::string& instrument_id, const std::string& sequence_number, std::uint32_t version) {
+    const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting bond future delivery basket identifier at version. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, instrument_id, sequence_number, version);
+    return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::bond_future_delivery_basket>
-bond_future_delivery_basket_service::get_delivery_basket_id(const std::string& instrument_id,
+bond_future_delivery_basket_service::get_delivery_basket_id(const std::string& trade_id,
                                                             const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting bond future delivery basket identifier. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    auto results = repo_.read_latest(ctx_, instrument_id, sequence_number);
+    auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -406,32 +406,30 @@ bond_future_delivery_basket_service::get_delivery_basket_id(const std::string& i
 
 std::vector<domain::bond_future_delivery_basket>
 bond_future_delivery_basket_service::get_delivery_basket_ids(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    return repo_.read_latest(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, sequence_numbers);
 }
 
 void bond_future_delivery_basket_service::save_delivery_basket_id(
     const domain::bond_future_delivery_basket& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Bond Future Delivery Basket instrument_id cannot be empty.");
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Bond Future Delivery Basket trade_id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving bond future delivery basket identifier. "
-                               << "instrument_id: " << v.instrument_id
+                               << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved bond future delivery basket identifier. "
-                              << "instrument_id: " << v.instrument_id
+                              << "trade_id: " << v.trade_id
                               << " sequence_number: " << v.sequence_number;
 }
 
 void bond_future_delivery_basket_service::save_delivery_basket_ids(
     const std::vector<domain::bond_future_delivery_basket>& delivery_basket_ids) {
     for (const auto& e : delivery_basket_ids) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument(
-                "Bond Future Delivery Basket instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Bond Future Delivery Basket trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << delivery_basket_ids.size()
                                << " bond future delivery basket identifiers";
@@ -443,29 +441,28 @@ void bond_future_delivery_basket_service::save_delivery_basket_ids(
 }
 
 void bond_future_delivery_basket_service::delete_delivery_basket_id(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond future delivery basket identifier. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, sequence_number);
+    repo_.remove(ctx_, trade_id, sequence_number);
     BOOST_LOG_SEV(lg(), info) << "Removed bond future delivery basket identifier. "
-                              << "instrument_id: " << instrument_id
+                              << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
 }
 
 void bond_future_delivery_basket_service::delete_delivery_basket_ids(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, trade_ids, sequence_numbers);
 }
 
 std::vector<domain::bond_future_delivery_basket>
 bond_future_delivery_basket_service::get_delivery_basket_id_history(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for bond future delivery basket identifier. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(ctx_, instrument_id, sequence_number);
+    return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 
 }

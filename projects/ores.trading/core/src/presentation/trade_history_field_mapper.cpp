@@ -50,10 +50,6 @@ std::vector<ores::diff::domain::field_value> render_trade_fields(const domain::t
                                    std::string{}});
     fields.push_back(
         {.name = "Product Type", .value = rfl::enum_to_string(v.classification.product_type)});
-    fields.push_back({.name = "Instrument ID",
-                      .value = v.classification.instrument_id ?
-                                   boost::uuids::to_string(*v.classification.instrument_id) :
-                                   std::string{}});
     fields.push_back(
         {.name = "Asset Class", .value = v.classification.asset_class.value_or(std::string{})});
     fields.push_back({.name = "Netting Set ID", .value = v.classification.netting_set_id});

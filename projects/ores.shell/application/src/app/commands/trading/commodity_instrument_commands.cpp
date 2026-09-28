@@ -136,6 +136,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
     commodity_instruments_menu->Insert(
         "add",
         [&session](std::ostream& out,
+                   std::string trade_id,
                    std::string trade_type_code,
                    std::string commodity_code,
                    std::string currency,
@@ -168,6 +169,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                    std::string change_commentary) {
             process_add_commodity_instrument(std::ref(out),
                                              std::ref(session),
+                                             std::move(trade_id),
                                              std::move(trade_type_code),
                                              std::move(commodity_code),
                                              std::move(currency),
@@ -199,14 +201,14 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                                              std::move(change_reason_code),
                                              std::move(change_commentary));
         },
-        "Add an Commodity instrument (trade_type_code commodity_code currency quantity unit "
+        "Add an Commodity instrument (trade_id trade_type_code commodity_code currency quantity unit "
         "[fixed_price] [start_date] [maturity_date] [day_count_fraction_code] [payment_frequency_code] "
         "[option_type] [strike_price] [exercise_type] [swaption_expiry_date] [average_type] "
         "[averaging_start_date] [averaging_end_date] [spread_commodity_code] [spread_amount] "
         "[strip_frequency_code] [variance_strike] [accumulation_amount] [knock_out_barrier] "
         "[barrier_type] [lower_barrier] [upper_barrier] [basket] description "
         "change_reason_code \"change_commentary\")",
-        {"trade_type_code commodity_code currency quantity unit fixed_price start_date "
+        {"trade_id trade_type_code commodity_code currency quantity unit fixed_price start_date "
          "maturity_date day_count_fraction_code payment_frequency_code option_type strike_price "
          "exercise_type swaption_expiry_date average_type averaging_start_date averaging_end_date "
          "spread_commodity_code spread_amount strip_frequency_code variance_strike "
@@ -217,21 +219,21 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
 
     commodity_instruments_menu->Insert(
         "delete",
-        [&session](std::ostream& out, std::string instrument_id) {
+        [&session](std::ostream& out, std::string trade_id) {
             process_delete_commodity_instrument(
-                std::ref(out), std::ref(session), std::move(instrument_id));
+                std::ref(out), std::ref(session), std::move(trade_id));
         },
-        "Delete an Commodity instrument by instrument id",
-        {"instrument_id"});
+        "Delete an Commodity instrument by trade id",
+        {"trade_id"});
 
     commodity_instruments_menu->Insert(
         "history",
-        [&session](std::ostream& out, std::string instrument_id) {
+        [&session](std::ostream& out, std::string trade_id) {
             process_get_commodity_instrument_history(
-                std::ref(out), std::ref(session), std::move(instrument_id));
+                std::ref(out), std::ref(session), std::move(trade_id));
         },
         "Show an Commodity instrument's version history",
-        {"instrument_id"});
+        {"trade_id"});
 
     ores::shell::app::insert_menu(root_menu, std::move(commodity_instruments_menu));
 }
@@ -272,6 +274,7 @@ void commodity_instrument_commands::process_get_commodity_instruments(
 void commodity_instrument_commands::process_add_commodity_instrument(
     std::ostream& out,
     nats_client& session,
+    std::string trade_id,
     std::string trade_type_code,
     std::string commodity_code,
     std::string currency,
@@ -310,7 +313,12 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     }
 
     domain::commodity_instrument v;
-    v.identity.instrument_id = boost::uuids::random_generator()();
+    try {
+        v.identity.trade_id = boost::uuids::string_generator()(trade_id);
+    } catch (const std::exception&) {
+        fail(out) << "Invalid trade_id '" << trade_id << "'." << std::endl;
+        return;
+    }
     v.identity.trade_type_code = std::move(trade_type_code);
     try {
         v.identity.party_id = party_uuid_for(session);
@@ -379,9 +387,8 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     v.audit.change_commentary = std::move(change_commentary);
 
     auto req = trading::messaging::put_commodity_instrument_request{
-        .change = {.write = {.instrument_id = v.identity.instrument_id,
+        .change = {.write = {.trade_id = v.identity.trade_id,
                              .trade_type_code = v.identity.trade_type_code,
-                             .trade_id = v.identity.trade_id,
                              .commodity_code = v.commodity_code,
                              .currency = v.currency,
                              .quantity = v.quantity,
@@ -418,7 +425,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully added Commodity instrument.";
         for (auto& constituent : constituents) {
             trading::messaging::put_commodity_basket_constituent_request constituent_req;
-            constituent_req.change.write.instrument_id = req.change.write.instrument_id;
+            constituent_req.change.write.trade_id = req.change.write.trade_id;
             constituent_req.change.write.sequence_number = constituent.sequence_number;
             constituent_req.change.write.underlying_code = std::move(constituent.underlying_code);
             constituent_req.change.write.weight = constituent.weight;
@@ -440,8 +447,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
             }
         }
         out << "✓ Commodity instrument added successfully!" << std::endl;
-        out << "Instrument id: " << boost::uuids::to_string(req.change.write.instrument_id)
-            << std::endl;
+        out << "Trade id: " << boost::uuids::to_string(req.change.write.trade_id) << std::endl;
     } else {
         const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Commodity instrument: " << msg;
@@ -451,9 +457,9 @@ void commodity_instrument_commands::process_add_commodity_instrument(
 
 void commodity_instrument_commands::process_delete_commodity_instrument(std::ostream& out,
                                                                         nats_client& session,
-                                                                        std::string instrument_id) {
+                                                                        std::string trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Commodity instrument request for: "
-                               << instrument_id;
+                               << trade_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to delete an Commodity instrument." << std::endl;
@@ -462,9 +468,9 @@ void commodity_instrument_commands::process_delete_commodity_instrument(std::ost
 
     trading::messaging::delete_commodity_instrument_request req;
     try {
-        req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+        req.removal.key.trade_id = boost::uuids::string_generator()(trade_id);
     } catch (const std::exception&) {
-        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
+        fail(out) << "Invalid trade_id '" << trade_id << "'." << std::endl;
         return;
     }
 
@@ -485,9 +491,9 @@ void commodity_instrument_commands::process_delete_commodity_instrument(std::ost
 }
 
 void commodity_instrument_commands::process_get_commodity_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+    std::ostream& out, nats_client& session, std::string trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Commodity instrument history for: "
-                               << instrument_id;
+                               << trade_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to get Commodity instrument history." << std::endl;
@@ -496,9 +502,9 @@ void commodity_instrument_commands::process_get_commodity_instrument_history(
 
     trading::messaging::list_commodity_instrument_versions_request req;
     try {
-        req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+        req.key.trade_id = boost::uuids::string_generator()(trade_id);
     } catch (const std::exception&) {
-        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
+        fail(out) << "Invalid trade_id '" << trade_id << "'." << std::endl;
         return;
     }
 

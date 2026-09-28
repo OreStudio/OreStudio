@@ -142,9 +142,9 @@ void trade_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <external_id> <book_id> <portfolio_id> <successor_trade_id> <trade_type> "
-        "<counterparty_id> <product_type> <instrument_id> <asset_class> <netting_set_id> "
-        "<activity_type_code> <status_id> <trade_date> <execution_timestamp> <effective_date> "
-        "<termination_date> <reason> <commentary>");
+        "<counterparty_id> <product_type> <asset_class> <netting_set_id> <activity_type_code> "
+        "<status_id> <trade_date> <execution_timestamp> <effective_date> <termination_date> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,9 +152,9 @@ void trade_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <external_id> <book_id> <portfolio_id> <successor_trade_id> <trade_type> "
-        "<counterparty_id> <product_type> <instrument_id> <asset_class> <netting_set_id> "
-        "<activity_type_code> <status_id> <trade_date> <execution_timestamp> <effective_date> "
-        "<termination_date> <reason> <commentary> [--version <n>]");
+        "<counterparty_id> <product_type> <asset_class> <netting_set_id> <activity_type_code> "
+        "<status_id> <trade_date> <execution_timestamp> <effective_date> <termination_date> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,9 +162,9 @@ void trade_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <external_id> <book_id> <portfolio_id> <successor_trade_id> "
-        "<trade_type> <counterparty_id> <product_type> <instrument_id> <asset_class> "
-        "<netting_set_id> <activity_type_code> <status_id> <trade_date> <execution_timestamp> "
-        "<effective_date> <termination_date> <reason> <commentary>");
+        "<trade_type> <counterparty_id> <product_type> <asset_class> <netting_set_id> "
+        "<activity_type_code> <status_id> <trade_date> <execution_timestamp> <effective_date> "
+        "<termination_date> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,8 +359,8 @@ void trade_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -374,7 +374,6 @@ void trade_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.product_type, parsed->positionals[next++], "product_type");
-        read_token(req.change.write.instrument_id, parsed->positionals[next++], "instrument_id");
         read_token(req.change.write.asset_class, parsed->positionals[next++], "asset_class");
         read_token(req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
         read_token(
@@ -429,8 +428,8 @@ void trade_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -444,7 +443,6 @@ void trade_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.product_type, parsed->positionals[next++], "product_type");
-        read_token(req.change.write.instrument_id, parsed->positionals[next++], "instrument_id");
         read_token(req.change.write.asset_class, parsed->positionals[next++], "asset_class");
         read_token(req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
         read_token(
@@ -511,8 +509,8 @@ void trade_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 17 + 2) {
-            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 16 + 2) {
+            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -528,7 +526,6 @@ void trade_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
             read_token(change.write.product_type, parsed->positionals[next++], "product_type");
-            read_token(change.write.instrument_id, parsed->positionals[next++], "instrument_id");
             read_token(change.write.asset_class, parsed->positionals[next++], "asset_class");
             read_token(change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
             read_token(

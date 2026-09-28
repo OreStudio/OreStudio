@@ -121,8 +121,7 @@ public:
      * @return The swaption instrument at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::swaption_instrument>
-    get_swaption_instrument_at_version(const boost::uuids::uuid& instrument_id,
-                                       std::uint32_t version);
+    get_swaption_instrument_at_version(const boost::uuids::uuid& trade_id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single swaption instrument by its primary key.
@@ -133,13 +132,13 @@ public:
      * @return The swaption instrument if found, std::nullopt otherwise.
      */
     std::optional<domain::swaption_instrument>
-    get_swaption_instrument(const boost::uuids::uuid& instrument_id);
+    get_swaption_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of swaption instruments by primary key.
      */
     std::vector<domain::swaption_instrument>
-    get_swaption_instruments(const std::vector<std::string>& instrument_ids);
+    get_swaption_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a swaption instrument (creates or updates).
@@ -163,12 +162,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_swaption_instrument(const boost::uuids::uuid& instrument_id);
+    void delete_swaption_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes swaption instruments by their primary keys.
      */
-    void delete_swaption_instruments(const std::vector<std::string>& instrument_ids);
+    void delete_swaption_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a swaption instrument.
@@ -176,7 +175,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::swaption_instrument>
-    get_swaption_instrument_history(const std::string& instrument_id);
+    get_swaption_instrument_history(const std::string& trade_id);
 
 private:
     context ctx_;

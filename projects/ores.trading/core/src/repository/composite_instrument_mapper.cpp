@@ -41,12 +41,9 @@ composite_instrument_mapper::map(const composite_instrument_entity& v) {
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-    r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ?
-                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
-                              std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -63,15 +60,12 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     composite_instrument_entity r;
-    r.instrument_id = boost::uuids::to_string(v.identity.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
     r.tenant_id = v.identity.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ?
-                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
-                     std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

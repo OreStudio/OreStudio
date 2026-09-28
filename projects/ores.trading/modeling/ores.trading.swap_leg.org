@@ -26,9 +26,9 @@ one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
 leg type does not state are null: =fixed_rate= is null for a floating leg and
 =floating_index_code= is null for a fixed leg.
 
-The row keeps its own =id= surrogate and names the parent instrument through
-=instrument_id=, which is a soft foreign key to the instrument family rather
-than to one table.
+The row keeps its own =id= surrogate and names the parent through =trade_id=.
+The instrument is keyed by its trade, so all nine rates families name the one
+parent the trades table holds rather than a table per family.
 
 It binds =:profile: trading-instrument=, like the nine instrument sub-types
 whose legs it holds. Three table features justify the bind: the table is
@@ -85,7 +85,7 @@ Party that owns this leg record.
 
 Set from session variable app.current_party_id.
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :group:    identity
 :type:     uuid
@@ -93,7 +93,11 @@ Set from session variable app.current_party_id.
 :nullable: false
 :END:
 
-The rates instrument this leg belongs to.
+The trade this leg belongs to.
+
+The leg is one row of an instrument, and the trade id identifies both the
+trade and its instrument, so this column names the trade the leg is written
+beside.
 
 ** leg_number
 :PROPERTIES:
@@ -236,18 +240,20 @@ std::string("USD")
 
 * Foreign keys
 
-** instrument_id
+** trade_id
 :PROPERTIES:
-:list_by:    true
-:skip_check: true
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
 :END:
 
-The nine rates instrument families write this one shared legs table, so the
-parent column has no single target and the insert trigger carries no
-existence check. =skip_check= states that; =list_by= generates the
-instrument-scoped read the trade read path uses. The parent key is the
-boundary the shared table gives up; the model does not invent one table
-where the schema has nine.
+The nine rates instrument families write this one shared legs table. Before
+the identity collapse the parent column had no single instrument table to
+point at; now every instrument is its trade, so the trade is the one target
+all nine share and the insert trigger checks the leg against it. =list_by=
+generates the trade-scoped read the trade read path uses.
 
 * SQL
 
@@ -269,7 +275,7 @@ where the schema has nine.
 | name | columns | unique | current_only | where_extra |
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
-| instrument | tenant_id, instrument_id | false | true | |
+| trade_id | tenant_id, trade_id | false | true | |
 
 * Insert trigger
 
@@ -333,7 +339,7 @@ nest.
 | column                  | header      |
 |-------------------------+-------------|
 | identity.id             | ID          |
-| identity.instrument_id  | Instrument  |
+| identity.trade_id  | Instrument  |
 | identity.leg_number     | Leg         |
 | leg_type_code           | Type        |
 | currency                | Ccy         |
@@ -361,22 +367,22 @@ leg number, in one statement. An empty input reads nothing.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::swap_leg>
-read_by_instruments_batch(context ctx, const std::vector<std::string>& instrument_ids);
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::swap_leg>
 swap_leg_repository::read_by_instruments_batch(context ctx,
-                                               const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+                                               const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_number"_c);
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "leg_number"_c);
     return execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,

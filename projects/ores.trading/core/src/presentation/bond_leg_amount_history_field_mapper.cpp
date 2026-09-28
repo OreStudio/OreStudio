@@ -34,7 +34,7 @@ render_bond_leg_amount_fields(const domain::bond_leg_amount& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Value", .value = v.value.to_string()});
     fields.push_back({.name = "Start Date", .value = v.start_date.value_or(std::string{})});
     using ores::history::domain::provenance_fields;

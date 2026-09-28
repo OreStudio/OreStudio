@@ -45,7 +45,7 @@ using trading::domain::fx_instrument_variant;
 using trading::domain::bond_instrument_data;
 using trading::domain::credit_instrument;
 using trading::domain::equity_instrument_variant;
-using trading::domain::commodity_instrument;
+using trading::domain::commodity_instrument_data;
 using trading::domain::composite_instrument_data;
 using trading::domain::scripted_instrument;
 
@@ -362,21 +362,25 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for equity type: " << tt;
                         return;
                     }
-                } else if constexpr (std::is_same_v<T, commodity_instrument>) {
-                    if (tt == "CommodityForward")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_forward(r);
+                } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
+                    const auto& instr = r.instrument;
+                    if (tt == "CommodityBasketOption")
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_basket_option(
+                            instr, r.constituents);
+                    else if (tt == "CommodityForward")
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_forward(instr);
                     else if (tt == "CommodityOption")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_option(r);
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_option(instr);
                     else if (tt == "CommoditySwap")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_swap(r);
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_swap(instr);
                     else if (tt == "CommoditySwaption")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_swaption(r);
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_swaption(instr);
                     else if (tt == "CommodityVarianceSwap")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_variance_swap(r);
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_variance_swap(instr);
                     else if (tt == "CommodityAveragePriceOption")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_apo(r);
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_apo(instr);
                     else if (tt == "CommodityOptionStrip")
-                        xsd_t = commodity_instrument_mapper::reverse_commodity_option_strip(r);
+                        xsd_t = commodity_instrument_mapper::reverse_commodity_option_strip(instr);
                     else {
                         BOOST_LOG_SEV(lg(), debug)
                             << "No reverse mapper for commodity type: " << tt;

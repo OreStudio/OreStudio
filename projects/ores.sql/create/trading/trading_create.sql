@@ -220,6 +220,9 @@
 \ir ./trading_commodity_instruments_create.sql
 \ir ./trading_commodity_instruments_notify_trigger_create.sql
 
+\ir ./trading_commodity_basket_constituents_create.sql
+\ir ./trading_commodity_basket_constituents_notify_trigger_create.sql
+
 -- Composite instruments (depends on reference data above)
 \ir ./trading_composite_instruments_create.sql
 \ir ./trading_composite_instruments_notify_trigger_create.sql

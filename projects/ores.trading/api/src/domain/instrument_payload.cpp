@@ -200,6 +200,27 @@ std::optional<swap_instrument_data> decode_swap(const instrument_payload& payloa
     return found;
 }
 
+/**
+ * The wire shape of a commodity instrument with its basket: the instrument and
+ * the constituents it owns, so a basket survives the payload.
+ */
+struct commodity_leaf_payload {
+    commodity_instrument instrument;
+    std::vector<commodity_basket_constituent> constituents;
+};
+
+std::optional<commodity_instrument_data> decode_commodity(const instrument_payload& payload) {
+    if (payload.type != leaf_name<commodity_instrument>())
+        return std::nullopt;
+    if (auto r = read_as<commodity_leaf_payload>(payload))
+        return commodity_instrument_data{std::move(r->instrument), std::move(r->constituents)};
+    // A payload written before the basket became child rows carries the bare
+    // instrument, so read it and leave the collection empty.
+    if (auto r = read_as<commodity_instrument>(payload))
+        return commodity_instrument_data{std::move(*r), {}};
+    return std::nullopt;
+}
+
 template <typename Leaf>
 std::optional<Leaf> decode_single(const instrument_payload& payload) {
     if (payload.type != leaf_name<Leaf>())
@@ -218,6 +239,10 @@ instrument_payload encode_instrument(const trade_instrument& instrument) {
                 return;
             } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
                 encode_swap(leaf.instrument, leaf.legs, leaf.call_dates, out);
+            } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
+                out.type = std::string(leaf_name<commodity_instrument>());
+                out.body = rfl::json::write(
+                    commodity_leaf_payload{leaf.instrument, leaf.constituents});
             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 encode_leaf_with_legs(leaf.instrument, leaf.legs, out);
             } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
@@ -247,7 +272,7 @@ trade_instrument decode_instrument(const instrument_payload& payload) {
         return trade_instrument{std::move(*v)};
     if (auto v = decode_single<credit_instrument>(payload))
         return trade_instrument{std::move(*v)};
-    if (auto v = decode_single<commodity_instrument>(payload))
+    if (auto v = decode_commodity(payload))
         return trade_instrument{std::move(*v)};
     if (auto v = decode_single<scripted_instrument>(payload))
         return trade_instrument{std::move(*v)};

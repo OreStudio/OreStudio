@@ -211,24 +211,31 @@ trade_mapper::map_equity_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<trading::domain::commodity_instrument>
+std::optional<trading::domain::commodity_instrument_data>
 trade_mapper::map_commodity_instrument(const trade& v) {
+    using trading::domain::commodity_instrument_data;
     const std::string type = to_string(v.TradeType);
+    if (type == "CommodityBasketOption")
+        return commodity_instrument_mapper::forward_commodity_basket_option(v);
+
+    std::optional<trading::domain::commodity_instrument> instr;
     if (type == "CommodityForward")
-        return commodity_instrument_mapper::forward_commodity_forward(v);
-    if (type == "CommodityOption")
-        return commodity_instrument_mapper::forward_commodity_option(v);
-    if (type == "CommoditySwap")
-        return commodity_instrument_mapper::forward_commodity_swap(v);
-    if (type == "CommoditySwaption")
-        return commodity_instrument_mapper::forward_commodity_swaption(v);
-    if (type == "CommodityVarianceSwap")
-        return commodity_instrument_mapper::forward_commodity_variance_swap(v);
-    if (type == "CommodityAveragePriceOption")
-        return commodity_instrument_mapper::forward_commodity_apo(v);
-    if (type == "CommodityOptionStrip")
-        return commodity_instrument_mapper::forward_commodity_option_strip(v);
-    return std::nullopt;
+        instr = commodity_instrument_mapper::forward_commodity_forward(v);
+    else if (type == "CommodityOption")
+        instr = commodity_instrument_mapper::forward_commodity_option(v);
+    else if (type == "CommoditySwap")
+        instr = commodity_instrument_mapper::forward_commodity_swap(v);
+    else if (type == "CommoditySwaption")
+        instr = commodity_instrument_mapper::forward_commodity_swaption(v);
+    else if (type == "CommodityVarianceSwap")
+        instr = commodity_instrument_mapper::forward_commodity_variance_swap(v);
+    else if (type == "CommodityAveragePriceOption")
+        instr = commodity_instrument_mapper::forward_commodity_apo(v);
+    else if (type == "CommodityOptionStrip")
+        instr = commodity_instrument_mapper::forward_commodity_option_strip(v);
+    else
+        return std::nullopt;
+    return commodity_instrument_data{std::move(*instr), {}};
 }
 
 std::optional<trading::domain::scripted_instrument>

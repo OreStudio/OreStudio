@@ -30,6 +30,12 @@
  * products, the pricing block for average-price and spread products, and
  * the exotic block for variance, accumulator, barrier and basket
  * products.
+ *
+ * A basket product's constituents are not a column: each is a row of
+ * ores.trading.commodity_basket_constituent, keyed to this instrument and
+ * its ordinal in the document. A text column held the list as a JSON array
+ * and could not be typed, indexed or questioned, so the collection is a
+ * child table now.
  */
 
 create table if not exists "ores_trading_commodity_instruments_tbl" (
@@ -61,7 +67,6 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "barrier_type" text null,
     "lower_barrier" numeric(28, 10) null,
     "upper_barrier" numeric(28, 10) null,
-    "basket_json" text null,
     "day_count_code" text null,
     "payment_frequency_code" text null,
     "swaption_expiry_date" date null,

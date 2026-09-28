@@ -139,6 +139,8 @@
 -- Commodity instruments
 \ir ./trading_commodity_instruments_notify_trigger_drop.sql
 \ir ./trading_commodity_instruments_drop.sql
+\ir ./trading_commodity_basket_constituents_notify_trigger_drop.sql
+\ir ./trading_commodity_basket_constituents_drop.sql
 
 -- Composite instruments (drop legs before header)
 \ir ./trading_composite_legs_notify_trigger_drop.sql

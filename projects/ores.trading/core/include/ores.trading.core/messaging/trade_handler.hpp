@@ -39,6 +39,7 @@
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
+#include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
@@ -637,6 +638,7 @@ private:
         using ores::trading::domain::product_type;
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
 
         // Phase 1: bucket instrument IDs by (product_type, trade_type)
@@ -797,7 +799,27 @@ private:
                        std::vector<ores::trading::domain::callable_swap_call_date>{};
         };
 
-        // Single-table types (credit, commodity, scripted).
+        // A commodity basket's constituents are a collection of their own, so
+        // they are fetched beside the instrument and only for the instruments
+        // that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::commodity_basket_constituent>>
+            constituents_map;
+        if (!commodity_ids.empty()) {
+            repository::commodity_basket_constituent_repository constituent_repo;
+            for (auto& constituent : constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
+                constituents_map[boost::uuids::to_string(constituent.instrument_id)].push_back(
+                    std::move(constituent));
+        }
+
+        auto take_constituents = [&](const std::string& id) {
+            auto it = constituents_map.find(id);
+            return it != constituents_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::commodity_basket_constituent>{};
+        };
+
+        // Single-table types (credit, scripted).
         auto add_flat = [&](auto&& results) {
             for (auto& v : results)
                 imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
@@ -814,7 +836,13 @@ private:
         }
         if (!commodity_ids.empty()) {
             service::commodity_instrument_service svc(ctx);
-            add_flat(svc.get_commodity_instruments(commodity_ids));
+            for (auto& v : svc.get_commodity_instruments(commodity_ids)) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                commodity_instrument_data data;
+                data.instrument = std::move(v);
+                data.constituents = take_constituents(id);
+                imap[id] = std::move(data);
+            }
         }
         if (!scripted_ids.empty()) {
             service::scripted_instrument_service svc(ctx);

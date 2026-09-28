@@ -21,6 +21,8 @@
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
+#include "ores.trading.api/domain/commodity_basket_constituent.hpp"
+#include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/rates_instrument_variant.hpp"
@@ -66,6 +68,15 @@ struct swap_instrument_data {
 
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
 
+// A commodity basket states a constituent collection beside the instrument
+// that owns it, so the carrier holds the two together and each constituent
+// travels with its instrument. A commodity product that states no basket
+// leaves the collection empty.
+struct commodity_instrument_data {
+    commodity_instrument instrument;
+    std::vector<commodity_basket_constituent> constituents;
+};
+
 template <Instrument T>
 void stamp_ids(T& instr, boost::uuids::uuid instrument_id, boost::uuids::uuid trade_id) {
     instr.identity.instrument_id = instrument_id;
@@ -97,6 +108,14 @@ inline void stamp_ids(swap_instrument_data& data,
         leg.identity.instrument_id = instrument_id;
     for (auto& call_date : data.call_dates)
         call_date.instrument_id = instrument_id;
+}
+
+inline void stamp_ids(commodity_instrument_data& data,
+                      boost::uuids::uuid instrument_id,
+                      boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, instrument_id, trade_id);
+    for (auto& constituent : data.constituents)
+        constituent.instrument_id = instrument_id;
 }
 
 } // namespace ores::trading::domain

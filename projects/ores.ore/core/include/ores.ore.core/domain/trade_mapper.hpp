@@ -135,8 +135,11 @@ public:
 
     /**
      * @brief Dispatches a commodity-family trade to commodity_instrument_mapper.
+     *
+     * Returns the instrument with its basket constituents, empty for an
+     * unsupported type.
      */
-    static std::optional<trading::domain::commodity_instrument>
+    static std::optional<trading::domain::commodity_instrument_data>
     map_commodity_instrument(const trade& v);
 
     /**

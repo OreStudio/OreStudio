@@ -107,7 +107,6 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
         v.upper_barrier.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
             std::nullopt;
-    r.basket_json = v.basket_json.value_or("");
     r.day_count_code = v.day_count_code.value_or("");
     r.payment_frequency_code = v.payment_frequency_code.value_or("");
     r.swaption_expiry_date = v.swaption_expiry_date.has_value() ?
@@ -184,7 +183,6 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
         v.lower_barrier.has_value() ? std::optional(v.lower_barrier->to_string()) : std::nullopt;
     r.upper_barrier =
         v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
-    r.basket_json = v.basket_json.empty() ? std::nullopt : std::optional(v.basket_json);
     r.day_count_code = v.day_count_code.empty() ? std::nullopt : std::optional(v.day_count_code);
     r.payment_frequency_code =
         v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);

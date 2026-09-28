@@ -391,6 +391,53 @@ commodity_instrument_mapper::forward_commodity_option_strip(const trade& t) {
 }
 
 // ---------------------------------------------------------------------------
+// Forward: CommodityBasketOption
+// ---------------------------------------------------------------------------
+
+trading::domain::commodity_instrument_data
+commodity_instrument_mapper::forward_commodity_basket_option(const trade& t) {
+    using ores::trading::domain::commodity_basket_constituent;
+    using ores::trading::domain::commodity_instrument_data;
+
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityBasketOption: " << std::string(t.id);
+    commodity_instrument_data result;
+    result.instrument = make_base("CommodityBasketOption");
+    if (!t.CommodityBasketOptionData)
+        return result;
+    const auto& d = *t.CommodityBasketOptionData;
+
+    auto& instr = result.instrument;
+    if (!d.Underlyings.Underlying.empty())
+        instr.commodity_code = std::string(d.Underlyings.Underlying.front().Name);
+    instr.currency = to_string(d.Currency);
+    instr.quantity = static_cast<double>(d.Notional);
+    if (d.Strike)
+        instr.strike_price =
+            ores::utility::decimal::decimal::from_double(static_cast<double>(*d.Strike)).value();
+    instr.option_type = extract_option_type(d.OptionData);
+    instr.exercise_type = extract_exercise_style(d.OptionData);
+    instr.maturity_date = first_exercise_date(d.OptionData);
+
+    int sequence_number = 1;
+    for (const auto& u : d.Underlyings.Underlying) {
+        commodity_basket_constituent constituent;
+        constituent.sequence_number = sequence_number++;
+        constituent.underlying_code = std::string(u.Name);
+        if (u.Weight)
+            constituent.weight = ores::utility::decimal::decimal::from_double(
+                                     static_cast<double>(*u.Weight))
+                                     .value();
+        constituent.modified_by = "ores";
+        constituent.performed_by = "ores";
+        constituent.change_reason_code = "system.external_data_import";
+        constituent.change_commentary = "Imported from ORE XML";
+        result.constituents.push_back(std::move(constituent));
+    }
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
 // Reverse: CommodityForward
 // ---------------------------------------------------------------------------
 
@@ -609,6 +656,36 @@ trade commodity_instrument_mapper::reverse_commodity_option_strip(
     d.LegData = std::move(leg);
 
     t.CommodityOptionStripData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: CommodityBasketOption
+// ---------------------------------------------------------------------------
+
+trade commodity_instrument_mapper::reverse_commodity_basket_option(
+    const ores::trading::domain::commodity_instrument& instr,
+    const std::vector<ores::trading::domain::commodity_basket_constituent>& constituents) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommodityBasketOption";
+    trade t;
+    t.TradeType = oreTradeType::CommodityBasketOption;
+    basketOptionData d;
+    d.Currency = parse_currency_code(instr.currency);
+    d.Notional = static_cast<float>(instr.quantity);
+    if (instr.strike_price)
+        d.Strike = static_cast<float>(instr.strike_price->to_double());
+    d.OptionData = make_option_data(instr);
+
+    for (const auto& constituent : constituents) {
+        underlying u;
+        static_cast<std::string&>(u.Type) = "Commodity";
+        static_cast<std::string&>(u.Name) = constituent.underlying_code;
+        if (constituent.weight)
+            u.Weight = static_cast<float>(constituent.weight->to_double());
+        d.Underlyings.Underlying.push_back(std::move(u));
+    }
+
+    t.CommodityBasketOptionData = std::move(d);
     return t;
 }
 

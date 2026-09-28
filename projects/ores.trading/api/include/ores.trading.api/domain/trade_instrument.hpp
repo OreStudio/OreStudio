@@ -35,9 +35,10 @@ namespace ores::trading::domain {
  * @brief Unified instrument carrier used in both import and export paths.
  *
  * std::monostate — trade has no instrument (unsupported type or new trade).
- * Families with associated leg collections (swap, composite) use with_legs<>
- * wrappers. Families with multiple sub-types (FX, equity, rates) use their
- * inner variant directly. Single-type families carry the domain struct directly.
+ * Families with associated child collections (swap, composite, commodity)
+ * use their carrier structs. Families with multiple sub-types (FX, equity,
+ * rates) use their inner variant directly. Single-type families carry the
+ * domain struct directly.
  */
 using trade_instrument = std::variant<std::monostate,
                                       swap_instrument_data,
@@ -45,7 +46,7 @@ using trade_instrument = std::variant<std::monostate,
                                       bond_instrument_data,
                                       credit_instrument,
                                       equity_instrument_variant,
-                                      commodity_instrument,
+                                      commodity_instrument_data,
                                       composite_instrument_data,
                                       scripted_instrument>;
 

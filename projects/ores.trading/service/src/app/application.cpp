@@ -49,6 +49,7 @@
 #include "ores.trading.service/messaging/callable_swap_call_date_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/commodity_basket_constituent_event_registrar.hpp"
 #include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/composite_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
@@ -249,6 +250,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto commodity_instrument_sub =
         ores::trading::service::messaging::register_commodity_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto commodity_basket_constituent_sub =
+        ores::trading::service::messaging::register_commodity_basket_constituent_event_mapping(
             event_source, event_bus, nats);
     auto composite_instrument_sub =
         ores::trading::service::messaging::register_composite_instrument_event_mapping(

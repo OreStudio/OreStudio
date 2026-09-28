@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: 302465BC-152E-4334-907C-E0A83B05CA05
+:END:
+#+title: ores.trading.commodity_basket_constituent
+#+description: Codegen entity model for the trading =commodity_basket_constituent= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One constituent of a commodity basket instrument, keyed to the instrument and the constituent's ordinal.
+#+entity_singular: commodity_basket_constituent
+#+entity_plural: commodity_basket_constituents
+#+entity_title: Commodity Basket Constituent
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+One row per underlying a commodity basket product names, keyed to the
+instrument and the constituent's ordinal within the document.
+
+The ORE schema states a commodity basket's members as an unbounded list of
+=Underlying= elements, each carrying a =Name= and an optional =Weight=.
+The list order is the document's order and the ordinal preserves it, so
+export re-emits the constituents as the document held them.
+
+A constituent is a name and, when the document states one, a weight. The
+weight is money-role decimal, so the column holds an exact numeric and not
+a binary float. The document may state no weight, and then the column is
+null rather than a zero the document never wrote.
+
+The instrument row carries the trade, the workspace and the party. The
+constituent rows are family-owned and ride the instrument's scope, so no
+workspace column rides them.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the commodity basket instrument whose document states this
+constituent.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this constituent within the document's list, counting from one.
+
+The schema declares the list unbounded and a document's order is the order
+it stated, so the ordinal is what identifies a row and preserves that
+order.
+
+** underlying_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Code or name of the underlying this constituent names.
+
+The ORE document states it in the =Underlying/Name= element; the column
+refuses an empty name.
+
+** weight
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Relative weight of this constituent in the basket, when the document
+states one.
+
+The ORE =Weight= element is optional. A document that states no weight
+leaves this column null, and the reverse mapper then writes no =Weight=
+element back.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_commodity_basket_constituents_tbl
+:END:
+
+** Checks
+
+| expression             |
+|------------------------|
+| "sequence_number" > 0  |
+| "underlying_code" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_basket_constituent
+:entity_plural_short:   commodity_basket_constituents
+:entity_singular_words: commodity basket constituent
+:entity_plural_words:   commodity basket constituents
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: constituent
+:END:
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| sequence_number | Sequence     |
+| underlying_code | Underlying   |
+| weight          | Weight       |
+| modified_by     | Modified By  |
+| version         | Version      |
+
+** Custom repository methods
+
+The trade read path fetches the constituents of many commodity baskets at
+once when it assembles the export payload, and no generated read covers
+that: =read_latest(context, ids)= filters on the child's own key and
+=read_latest_by_instrument_id= reads one instrument at a time. The batch
+read below is one statement over the instrument set, which is what the
+generated stack cannot express.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 6E4C2A18-9B37-4D52-8F61-2C0A7E5D3B94
+:END:
+
+Reads every current constituent of the given instruments, ordered by
+instrument and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::commodity_basket_constituent>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& instrument_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::commodity_basket_constituent>
+commodity_basket_constituent_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<commodity_basket_constituent_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c, "sequence_number"_c);
+    return execute_read_query<commodity_basket_constituent_entity,
+                              domain::commodity_basket_constituent>(
+        ctx,
+        query,
+        [](const auto& entities) { return commodity_basket_constituent_mapper::map(entities); },
+        lg(),
+        "Reading commodity basket constituents for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:4E1B0C6A-7D2F-4B18-9E3A-5C6D8F0A1B27][ores.trading.commodity_instrument]] — the instrument whose document states these constituents.

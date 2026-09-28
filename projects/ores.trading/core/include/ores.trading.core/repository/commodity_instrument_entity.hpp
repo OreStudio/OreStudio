@@ -71,7 +71,6 @@ struct commodity_instrument_entity {
     std::optional<std::string> barrier_type;
     std::optional<std::string> lower_barrier;
     std::optional<std::string> upper_barrier;
-    std::optional<std::string> basket_json;
     std::optional<std::string> day_count_code;
     std::optional<std::string> payment_frequency_code;
     std::optional<std::string> swaption_expiry_date;

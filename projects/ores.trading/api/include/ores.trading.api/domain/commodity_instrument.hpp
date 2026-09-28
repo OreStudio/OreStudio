@@ -44,6 +44,12 @@ namespace ores::trading::domain {
  * products, the pricing block for average-price and spread products, and
  * the exotic block for variance, accumulator, barrier and basket
  * products.
+ *
+ * A basket product's constituents are not a column: each is a row of
+ * ores.trading.commodity_basket_constituent, keyed to this instrument and
+ * its ordinal in the document. A text column held the list as a JSON array
+ * and could not be typed, indexed or questioned, so the collection is a
+ * child table now.
  */
 struct commodity_instrument final {
     instrument_identity identity;
@@ -157,11 +163,6 @@ struct commodity_instrument final {
      * @brief Upper barrier level.
      */
     std::optional<ores::utility::decimal::decimal> upper_barrier;
-
-    /**
-     * @brief JSON array of {code, weight} constituents for basket products.
-     */
-    std::string basket_json;
 
     /**
      * @brief Day count fraction code for swap products.

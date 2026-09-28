@@ -99,7 +99,7 @@ public:
                                                  std::string barrier_type,
                                                  std::string lower_barrier,
                                                  std::string upper_barrier,
-                                                 std::string basket_json,
+                                                 std::string basket,
                                                  std::string description,
                                                  std::string change_reason_code,
                                                  std::string change_commentary);

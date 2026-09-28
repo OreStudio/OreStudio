@@ -22,6 +22,12 @@ products, the pricing block for average-price and spread products, and
 the exotic block for variance, accumulator, barrier and basket
 products.
 
+A basket product's constituents are not a column: each is a row of
+=ores.trading.commodity_basket_constituent=, keyed to this instrument and
+its ordinal in the document. A text column held the list as a JSON array
+and could not be typed, indexed or questioned, so the collection is a
+child table now.
+
 * Flags
 :PROPERTIES:
 :schema:           public
@@ -321,15 +327,6 @@ Lower barrier level.
 
 Upper barrier level.
 
-** basket_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-JSON array of {code, weight} constituents for basket products.
-
 ** day_count_code
 :PROPERTIES:
 :type:     text
@@ -470,3 +467,4 @@ repository profiles regenerate correctly.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:302465BC-152E-4334-907C-E0A83B05CA05][ores.trading.commodity_basket_constituent]] — the instrument's basket members, one row per constituent.

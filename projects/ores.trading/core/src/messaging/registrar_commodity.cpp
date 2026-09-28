@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/commodity_basket_constituent_registrar.hpp"
 #include "ores.trading.core/messaging/commodity_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
@@ -26,7 +27,12 @@ std::vector<ores::nats::service::subscription>
 register_commodity_handlers(ores::nats::service::client& nats,
                             ores::database::context ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
-    return register_commodity_instrument_handlers(nats, ctx, verifier);
+    auto subs = register_commodity_instrument_handlers(nats, ctx, verifier);
+    auto constituent_subs = register_commodity_basket_constituent_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(constituent_subs.begin()),
+                std::make_move_iterator(constituent_subs.end()));
+    return subs;
 }
 
 }

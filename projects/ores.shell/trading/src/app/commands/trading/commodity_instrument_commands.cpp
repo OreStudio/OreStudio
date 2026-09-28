@@ -144,9 +144,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<start_date> <maturity_date> <fixed_price> <option_type> <strike_price> <exercise_type> "
         "<average_type> <averaging_start_date> <averaging_end_date> <spread_commodity_code> "
         "<spread_amount> <strip_frequency_code> <variance_strike> <accumulation_amount> "
-        "<knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> <basket_json> "
-        "<day_count_code> <payment_frequency_code> <swaption_expiry_date> <description> <reason> "
-        "<commentary>");
+        "<knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> <day_count_code> "
+        "<payment_frequency_code> <swaption_expiry_date> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -158,8 +157,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
         "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
-        "<basket_json> <day_count_code> <payment_frequency_code> <swaption_expiry_date> "
-        "<description> <reason> <commentary> [--version <n>]");
+        "<day_count_code> <payment_frequency_code> <swaption_expiry_date> <description> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -171,8 +170,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<strike_price> <exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
         "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
-        "<basket_json> <day_count_code> <payment_frequency_code> <swaption_expiry_date> "
-        "<description> <reason> <commentary>");
+        "<day_count_code> <payment_frequency_code> <swaption_expiry_date> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -366,8 +365,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 29 + 2) {
-            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 28 + 2) {
+            fail(out) << "Expected " << (28 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -408,7 +407,6 @@ void commodity_instrument_commands::process_add(std::ostream& out,
         read_token(req.change.write.barrier_type, parsed->positionals[next++], "barrier_type");
         read_token(req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
         read_token(req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
-        read_token(req.change.write.basket_json, parsed->positionals[next++], "basket_json");
         read_token(req.change.write.day_count_code, parsed->positionals[next++], "day_count_code");
         read_token(req.change.write.payment_frequency_code,
                    parsed->positionals[next++],
@@ -459,8 +457,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 30 + 2) {
-            fail(out) << "Expected " << (30 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 29 + 2) {
+            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -501,7 +499,6 @@ void commodity_instrument_commands::process_set(std::ostream& out,
         read_token(req.change.write.barrier_type, parsed->positionals[next++], "barrier_type");
         read_token(req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
         read_token(req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
-        read_token(req.change.write.basket_json, parsed->positionals[next++], "basket_json");
         read_token(req.change.write.day_count_code, parsed->positionals[next++], "day_count_code");
         read_token(req.change.write.payment_frequency_code,
                    parsed->positionals[next++],
@@ -564,8 +561,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 30 + 2) {
-            fail(out) << "Expected " << (change_count * 30 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 29 + 2) {
+            fail(out) << "Expected " << (change_count * 29 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -608,7 +605,6 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.barrier_type, parsed->positionals[next++], "barrier_type");
             read_token(change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
             read_token(change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
-            read_token(change.write.basket_json, parsed->positionals[next++], "basket_json");
             read_token(change.write.day_count_code, parsed->positionals[next++], "day_count_code");
             read_token(change.write.payment_frequency_code,
                        parsed->positionals[next++],

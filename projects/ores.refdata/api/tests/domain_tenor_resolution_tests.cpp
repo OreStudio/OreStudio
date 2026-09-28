@@ -23,10 +23,10 @@
 namespace {
 
 using ores::refdata::domain::resolve_end_date;
-using ores::refdata::domain::resolve_window;
 using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention;
 using ores::refdata::domain::tenor_convention_resolution;
+using ores::refdata::domain::tenor_window;
 using ores::refdata::domain::windows_overlap;
 
 const std::string tags("[tenor_resolution]");
@@ -221,8 +221,10 @@ TEST_CASE("windows_overlap_detects_overlapping_windows", tags) {
     const year_month_day spot{year(2026), month(1), day(3)};
     const year_month_day laterSpot{year(2026), month(3), day(3)};
 
-    auto deposit = resolve_window(threeMonths, convention, resolution, horizon, spot);
-    auto overlapping = resolve_window(threeMonths, convention, resolution, laterHorizon, laterSpot);
+    auto deposit =
+        tenor_window{horizon, resolve_end_date(threeMonths, convention, resolution, horizon, spot)};
+    auto overlapping = tenor_window{
+        laterHorizon, resolve_end_date(threeMonths, convention, resolution, laterHorizon, laterSpot)};
 
     CHECK(windows_overlap(deposit, overlapping));
 }
@@ -237,10 +239,12 @@ TEST_CASE("windows_overlap_treats_windows_as_half_open", tags) {
     const year_month_day horizon{year(2026), month(1), day(1)};
     const year_month_day spot{year(2026), month(1), day(3)};
 
-    auto first = resolve_window(oneMonth, convention, resolution, horizon, spot);
+    auto first =
+        tenor_window{horizon, resolve_end_date(oneMonth, convention, resolution, horizon, spot)};
     // Second window starts exactly where the first ends: half-open windows must not count that
     // as an overlap.
-    auto second = resolve_window(oneMonth, convention, resolution, first.end, first.end);
+    auto second = tenor_window{
+        first.end, resolve_end_date(oneMonth, convention, resolution, first.end, first.end)};
 
     CHECK_FALSE(windows_overlap(first, second));
 }

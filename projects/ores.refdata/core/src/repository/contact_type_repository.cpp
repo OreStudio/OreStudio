@@ -181,7 +181,6 @@ std::optional<domain::contact_type> contact_type_repository::read_at_version(
     return entities.front();
 }
 
-
 contact_type_repository::remove_status contact_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing contact type. " << "code: " << code;
@@ -273,6 +272,14 @@ contact_type_repository::read_latest(context ctx, const std::vector<std::string>
 }
 
 void contact_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (codes.empty())
+        return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -154,7 +154,7 @@ struct put_monetary_nature_request {
 
 struct put_monetary_nature_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::monetary_nature monetary_nature;
+    std::optional<ores::refdata::domain::monetary_nature> monetary_nature;
 };
 
 struct put_many_monetary_natures_request {
@@ -250,7 +250,7 @@ struct get_monetary_nature_version_request {
 
 struct get_monetary_nature_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::monetary_nature version;
+    std::optional<ores::refdata::domain::monetary_nature> version;
 };
 
 /**

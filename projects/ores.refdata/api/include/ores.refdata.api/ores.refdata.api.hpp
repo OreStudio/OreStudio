@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,26 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_JSON_HPP
-#define ORES_REFDATA_API_DOMAIN_CURRENCY_JSON_HPP
-
-#include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.api/export.hpp"
-#include <string>
-#include <vector>
-
-namespace ores::refdata::domain {
+#ifndef ORES_REFDATA_API_HPP
+#define ORES_REFDATA_API_HPP
 
 /**
- * @brief Converts a single currency to JSON format string.
+ * @brief Public API types for the reference data component.
+ *
+ * Domain types, their JSON, CSV and table input/output, the generated NATS
+ * protocol schemas and eventing, and the synthetic generators the tests use.
+ * The types are exchanged between the reference data service and the
+ * components that consume it.
  */
-ORES_REFDATA_API_EXPORT std::string convert_to_json(const currency& c);
-
-/**
- * @brief Converts a vector of currencies to JSON format string.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_json(const std::vector<currency>& v);
-
-}
+namespace ores::refdata::api {}
 
 #endif

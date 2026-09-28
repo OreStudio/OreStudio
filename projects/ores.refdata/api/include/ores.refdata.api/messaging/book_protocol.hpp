@@ -36,11 +36,12 @@
 namespace ores::refdata::messaging {
 
 struct book_key {
-    boost::uuids::uuid id;
+    std::string name;
 };
 
 struct book_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string name;
     std::string description;
     boost::uuids::uuid parent_portfolio_id;
@@ -167,7 +168,7 @@ struct put_book_request {
 
 struct put_book_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::book book;
+    std::optional<ores::refdata::domain::book> book;
 };
 
 struct put_many_books_request {
@@ -287,7 +288,7 @@ struct get_book_version_request {
 
 struct get_book_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::book version;
+    std::optional<ores::refdata::domain::book> version;
 };
 
 /**

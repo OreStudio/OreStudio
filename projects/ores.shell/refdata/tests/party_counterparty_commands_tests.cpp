@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/refdata/party_counterparty_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -69,8 +70,23 @@ TEST_CASE("party_counterparty_commands_registers_every_derived_verb", tags) {
 
     party_counterparty_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so
+    // a verb that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("party_counterparties ");
+    for (const auto& verb : {
+             std::string{"party_counterparties list"},
+             std::string{"party_counterparties get"},
+             std::string{"party_counterparties get-many"},
+             std::string{"party_counterparties add"},
+             std::string{"party_counterparties set"},
+             std::string{"party_counterparties put-many"},
+             std::string{"party_counterparties delete"},
+             std::string{"party_counterparties delete-many"},
+             std::string{"party_counterparties by-party-id"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 9 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("party_counterparty_commands_process_list_requires_a_session", tags) {
@@ -112,6 +128,12 @@ TEST_CASE("party_counterparty_commands_process_get_reports_the_expected_count", 
     party_counterparty_commands::process_get(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -154,6 +176,12 @@ TEST_CASE("party_counterparty_commands_process_add_reports_the_expected_count", 
     party_counterparty_commands::process_add(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -182,6 +210,12 @@ TEST_CASE("party_counterparty_commands_process_set_reports_the_expected_count", 
     party_counterparty_commands::process_set(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -224,6 +258,12 @@ TEST_CASE("party_counterparty_commands_process_delete_reports_the_expected_count
     party_counterparty_commands::process_delete(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -266,5 +306,11 @@ TEST_CASE("party_counterparty_commands_process_by_party_id_reports_the_expected_
     party_counterparty_commands::process_by_party_id(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

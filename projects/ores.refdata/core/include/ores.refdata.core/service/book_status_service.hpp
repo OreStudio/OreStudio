@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a book status.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::book_status> get_status_history(const std::string& code);
 

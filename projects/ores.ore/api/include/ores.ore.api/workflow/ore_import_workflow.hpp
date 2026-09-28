@@ -94,8 +94,8 @@ inline void register_ore_import_workflow(ores::workflow::service::workflow_regis
                 }
                 if (res) {
                     rollback.saved_currency_iso_codes = res->saved_currency_iso_codes;
-                    rollback.saved_portfolio_ids = res->saved_portfolio_ids;
-                    rollback.saved_book_ids = res->saved_book_ids;
+                    rollback.saved_portfolio_names = res->saved_portfolio_names;
+                    rollback.saved_book_names = res->saved_book_names;
                     rollback.saved_trade_external_ids = res->saved_trade_external_ids;
                 }
                 return rfl::json::write(rollback);

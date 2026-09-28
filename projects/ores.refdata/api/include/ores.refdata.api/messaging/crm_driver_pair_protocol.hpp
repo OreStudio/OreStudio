@@ -41,6 +41,7 @@ struct crm_driver_pair_key {
 
 struct crm_driver_pair_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     std::string base_currency_code;
     std::string quote_currency_code;
@@ -155,7 +156,7 @@ struct put_crm_driver_pair_request {
 
 struct put_crm_driver_pair_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::crm_driver_pair crm_driver_pair;
+    std::optional<ores::refdata::domain::crm_driver_pair> crm_driver_pair;
 };
 
 struct put_many_crm_driver_pairs_request {
@@ -251,7 +252,7 @@ struct get_crm_driver_pair_version_request {
 
 struct get_crm_driver_pair_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::crm_driver_pair version;
+    std::optional<ores::refdata::domain::crm_driver_pair> version;
 };
 
 /**

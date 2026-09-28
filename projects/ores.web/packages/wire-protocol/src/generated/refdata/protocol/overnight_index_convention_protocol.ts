@@ -111,7 +111,7 @@ export interface PutOvernightIndexConventionRequest {
 
 export interface PutOvernightIndexConventionResponse {
     result: Result;
-    overnight_index_convention: OvernightIndexConvention;
+    overnight_index_convention: OvernightIndexConvention | null;
 }
 
 export interface PutManyOvernightIndexConventionsRequest {
@@ -162,7 +162,7 @@ export interface GetOvernightIndexConventionVersionRequest {
 
 export interface GetOvernightIndexConventionVersionResponse {
     result: Result;
-    version: OvernightIndexConvention;
+    version: OvernightIndexConvention | null;
 }
 
 export const subjects = {

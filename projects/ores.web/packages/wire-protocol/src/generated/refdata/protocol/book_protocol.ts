@@ -35,6 +35,7 @@ export interface BookKey {
 
 export interface BookWrite {
     id: string;
+    party_id: string;
     name: string;
     description: string;
     parent_portfolio_id: string;
@@ -125,7 +126,7 @@ export interface PutBookRequest {
 
 export interface PutBookResponse {
     result: Result;
-    book: Book;
+    book: Book | null;
 }
 
 export interface PutManyBooksRequest {
@@ -191,20 +192,20 @@ export interface GetBookVersionRequest {
 
 export interface GetBookVersionResponse {
     result: Result;
-    version: Book;
+    version: Book | null;
 }
 
 export const subjects = {
-    list_books_request: "refdata.v1.books.list",
-    get_book_request: "refdata.v1.books.get",
-    get_many_books_request: "refdata.v1.books.get_many",
-    put_book_request: "refdata.v1.books.put",
-    put_many_books_request: "refdata.v1.books.put_many",
-    delete_book_request: "refdata.v1.books.delete",
-    delete_many_books_request: "refdata.v1.books.delete_many",
-    list_by_parent_portfolio_id_books_request: "refdata.v1.books.list_by_parent_portfolio_id",
-    list_book_versions_request: "refdata.v1.books_versions.list",
-    get_book_version_request: "refdata.v1.books_versions.get",
+    list_books_request: 'refdata.v1.books.list',
+    get_book_request: 'refdata.v1.books.get',
+    get_many_books_request: 'refdata.v1.books.get_many',
+    put_book_request: 'refdata.v1.books.put',
+    put_many_books_request: 'refdata.v1.books.put_many',
+    delete_book_request: 'refdata.v1.books.delete',
+    delete_many_books_request: 'refdata.v1.books.delete_many',
+    list_by_parent_portfolio_id_books_request: 'refdata.v1.books.list_by_parent_portfolio_id',
+    list_book_versions_request: 'refdata.v1.books_versions.list',
+    get_book_version_request: 'refdata.v1.books_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -230,7 +231,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.books_events.created",
-    updated: "refdata.v1.books_events.updated",
-    deleted: "refdata.v1.books_events.deleted",
+    created: 'refdata.v1.books_events.created',
+    updated: 'refdata.v1.books_events.updated',
+    deleted: 'refdata.v1.books_events.deleted',
 } as const;

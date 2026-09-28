@@ -121,7 +121,7 @@ export interface PutTenorScheduleRequest {
 
 export interface PutTenorScheduleResponse {
     result: Result;
-    tenor_schedule: TenorSchedule;
+    tenor_schedule: TenorSchedule | null;
 }
 
 export interface PutManyTenorSchedulesRequest {
@@ -202,7 +202,7 @@ export interface GetTenorScheduleVersionRequest {
 
 export interface GetTenorScheduleVersionResponse {
     result: Result;
-    version: TenorSchedule;
+    version: TenorSchedule | null;
 }
 
 export const subjects = {

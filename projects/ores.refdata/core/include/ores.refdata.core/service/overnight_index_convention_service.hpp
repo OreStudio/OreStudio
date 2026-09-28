@@ -173,6 +173,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a overnight index convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::overnight_index_convention>
     get_overnight_index_convention_history(const std::string& id);

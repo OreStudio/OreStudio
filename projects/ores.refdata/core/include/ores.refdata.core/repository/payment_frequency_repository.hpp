@@ -124,7 +124,6 @@ public:
     std::optional<domain::payment_frequency>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
-
     /**
      * @brief Reads latest payment frequencies with pagination support.
      * @param ctx Repository context with database connection

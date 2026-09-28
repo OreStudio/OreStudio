@@ -115,7 +115,7 @@ export interface PutSwapConventionRequest {
 
 export interface PutSwapConventionResponse {
     result: Result;
-    swap_convention: SwapConvention;
+    swap_convention: SwapConvention | null;
 }
 
 export interface PutManySwapConventionsRequest {
@@ -166,7 +166,7 @@ export interface GetSwapConventionVersionRequest {
 
 export interface GetSwapConventionVersionResponse {
     result: Result;
-    version: SwapConvention;
+    version: SwapConvention | null;
 }
 
 export const subjects = {

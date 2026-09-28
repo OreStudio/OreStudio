@@ -29,6 +29,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -127,52 +128,54 @@ void party_contact_information_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <contact_type>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <contact_type>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> "
-        "<postal_code> <phone> <email> <web_page> <reason> <commentary>");
+        "add <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
+        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code> "
-        "<postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
+        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
-        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <contact_type> <street_line_1> <street_line_2> "
+        "<city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <contact_type> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
+        "delete-many <contact_type> <reason> <commentary>");
 
     menu->Insert(
         "by-party-id",
@@ -186,16 +189,16 @@ void party_contact_information_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <contact_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <contact_type> --version <n>");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void party_contact_information_commands::process_list(std::ostream& out,
@@ -275,6 +278,7 @@ void party_contact_information_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.contact_type, parsed->positionals[next++], "contact_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -319,7 +323,7 @@ void party_contact_information_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::party_contact_information_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.contact_type, parsed->positionals[i + 0], "contact_type");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -365,6 +369,7 @@ void party_contact_information_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
         read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
         read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
@@ -417,12 +422,13 @@ void party_contact_information_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
+        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
         read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
         read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
@@ -487,14 +493,15 @@ void party_contact_information_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::party_contact_information_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
+            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             read_token(change.write.contact_type, parsed->positionals[next++], "contact_type");
             read_token(change.write.street_line_1, parsed->positionals[next++], "street_line_1");
             read_token(change.write.street_line_2, parsed->positionals[next++], "street_line_2");
@@ -554,6 +561,7 @@ void party_contact_information_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.contact_type, parsed->positionals[next++], "contact_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -607,7 +615,7 @@ void party_contact_information_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::party_contact_information_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            read_token(key.contact_type, parsed->positionals[i * 1 + 0], "contact_type");
             req.removals.push_back(
                 messaging::party_contact_information_removal{.key = std::move(key)});
         }
@@ -715,6 +723,7 @@ void party_contact_information_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.contact_type, parsed->positionals[next++], "contact_type");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -760,6 +769,9 @@ void party_contact_information_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.party_contact_information.contact_type,
+                   parsed->positionals[next++],
+                   "contact_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

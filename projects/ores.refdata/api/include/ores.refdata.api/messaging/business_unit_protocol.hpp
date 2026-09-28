@@ -36,11 +36,12 @@
 namespace ores::refdata::messaging {
 
 struct business_unit_key {
-    boost::uuids::uuid id;
+    std::string unit_code;
 };
 
 struct business_unit_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string unit_name;
     std::optional<boost::uuids::uuid> parent_business_unit_id;
     std::string unit_code;
@@ -157,7 +158,7 @@ struct put_business_unit_request {
 
 struct put_business_unit_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_unit business_unit;
+    std::optional<ores::refdata::domain::business_unit> business_unit;
 };
 
 struct put_many_business_units_request {
@@ -253,7 +254,7 @@ struct get_business_unit_version_request {
 
 struct get_business_unit_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::business_unit version;
+    std::optional<ores::refdata::domain::business_unit> version;
 };
 
 /**

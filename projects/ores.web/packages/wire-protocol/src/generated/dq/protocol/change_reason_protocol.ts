@@ -115,7 +115,7 @@ export interface PutChangeReasonRequest {
 
 export interface PutChangeReasonResponse {
     result: Result;
-    change_reason: ChangeReason;
+    change_reason: ChangeReason | null;
 }
 
 export interface PutManyChangeReasonsRequest {
@@ -166,7 +166,7 @@ export interface GetChangeReasonVersionRequest {
 
 export interface GetChangeReasonVersionResponse {
     result: Result;
-    version: ChangeReason;
+    version: ChangeReason | null;
 }
 
 export const subjects = {

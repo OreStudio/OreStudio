@@ -156,7 +156,7 @@ struct put_party_id_scheme_request {
 
 struct put_party_id_scheme_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_id_scheme party_id_scheme;
+    std::optional<ores::refdata::domain::party_id_scheme> party_id_scheme;
 };
 
 struct put_many_party_id_schemes_request {
@@ -252,7 +252,7 @@ struct get_party_id_scheme_version_request {
 
 struct get_party_id_scheme_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_id_scheme version;
+    std::optional<ores::refdata::domain::party_id_scheme> version;
 };
 
 /**

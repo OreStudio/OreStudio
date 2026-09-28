@@ -111,7 +111,7 @@ export interface PutTenorUnitRequest {
 
 export interface PutTenorUnitResponse {
     result: Result;
-    tenor_unit: TenorUnit;
+    tenor_unit: TenorUnit | null;
 }
 
 export interface PutManyTenorUnitsRequest {
@@ -162,7 +162,7 @@ export interface GetTenorUnitVersionRequest {
 
 export interface GetTenorUnitVersionResponse {
     result: Result;
-    version: TenorUnit;
+    version: TenorUnit | null;
 }
 
 export const subjects = {

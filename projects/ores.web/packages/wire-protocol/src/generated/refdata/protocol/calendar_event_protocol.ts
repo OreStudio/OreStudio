@@ -121,7 +121,7 @@ export interface PutCalendarEventRequest {
 
 export interface PutCalendarEventResponse {
     result: Result;
-    calendar_event: CalendarEvent;
+    calendar_event: CalendarEvent | null;
 }
 
 export interface PutManyCalendarEventsRequest {
@@ -202,7 +202,7 @@ export interface GetCalendarEventVersionRequest {
 
 export interface GetCalendarEventVersionResponse {
     result: Result;
-    version: CalendarEvent;
+    version: CalendarEvent | null;
 }
 
 export const subjects = {

@@ -1283,11 +1283,11 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     failure);
             return;
         }
-        result.saved_portfolio_ids.push_back(pid);
+        result.saved_portfolio_names.push_back(name);
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 5 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_portfolio_ids.size();
+                              << " saved=" << result.saved_portfolio_names.size();
 
     // -------------------------------------------------------------------------
     // Step 6: save books
@@ -1319,11 +1319,11 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     failure);
             return;
         }
-        result.saved_book_ids.push_back(bid);
+        result.saved_book_names.push_back(name);
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 6 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_book_ids.size();
+                              << " saved=" << result.saved_book_names.size();
 
     // -------------------------------------------------------------------------
     // Step 7: save trades (failures collected; saga continues)
@@ -1967,8 +1967,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute complete | corr=" << req.correlation_id
                               << " currencies=" << result.saved_currency_iso_codes.size()
-                              << " portfolios=" << result.saved_portfolio_ids.size()
-                              << " books=" << result.saved_book_ids.size()
+                              << " portfolios=" << result.saved_portfolio_names.size()
+                              << " books=" << result.saved_book_names.size()
                               << " trades=" << result.saved_trade_external_ids.size()
                               << " item_errors=" << result.item_errors.size()
                               << " outcome=" << ores::workflow::messaging::to_string(outcome);
@@ -2038,16 +2038,15 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     }
 
     // ── Delete books ─────────────────────────────────────────────────────────
-    if (!req.saved_book_ids.empty()) {
+    if (!req.saved_book_names.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete books | corr="
-                                  << req.correlation_id << " count=" << req.saved_book_ids.size();
+                                  << req.correlation_id << " count=" << req.saved_book_names.size();
         ores::refdata::messaging::delete_many_books_request del_req{
             .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
                                                            .commentary =
                                                                "Rolling back a failed ORE import"}};
-        for (const auto& id : req.saved_book_ids)
-            del_req.removals.push_back(
-                {.key = {.id = boost::lexical_cast<boost::uuids::uuid>(id)}});
+        for (const auto& name : req.saved_book_names)
+            del_req.removals.push_back({.key = {.name = name}});
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
@@ -2059,17 +2058,18 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     }
 
     // ── Delete portfolios (reverse order — children before parents) ──────────
-    if (!req.saved_portfolio_ids.empty()) {
+    if (!req.saved_portfolio_names.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete portfolios | corr="
                                   << req.correlation_id
-                                  << " count=" << req.saved_portfolio_ids.size();
+                                  << " count=" << req.saved_portfolio_names.size();
         ores::refdata::messaging::delete_many_portfolios_request del_req{
             .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
                                                            .commentary =
                                                                "Rolling back a failed ORE import"}};
-        for (auto it = req.saved_portfolio_ids.rbegin(); it != req.saved_portfolio_ids.rend(); ++it)
-            del_req.removals.push_back(
-                {.key = {.id = boost::lexical_cast<boost::uuids::uuid>(*it)}});
+        for (auto it = req.saved_portfolio_names.rbegin();
+             it != req.saved_portfolio_names.rend();
+             ++it)
+            del_req.removals.push_back({.key = {.name = *it}});
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {

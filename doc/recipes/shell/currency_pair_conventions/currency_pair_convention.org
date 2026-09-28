@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: C06682A7-2F57-5CA1-91C7-D1A797405DFB
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the currency_pair_conventions commands from the shell?
 #+description: Every command the currency_pair_conventions submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -92,7 +93,7 @@ It is addressed at =refdata.v1.currency_pair_conventions.put=.
 
 #+name: currency_pair_conventions-add
 #+begin_src ores-shell :tangle currency_pair_conventions-add.ores :exports none
-currency_pair_conventions add __none__ 0 0 0 __none__ __none__ __none__ system.new_record generated_script
+currency_pair_conventions add __none__ 0 0 0 - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =refdata.v1.currency_pair_conventions.put=.
 
 #+name: currency_pair_conventions-set
 #+begin_src ores-shell :tangle currency_pair_conventions-set.ores :exports none
-currency_pair_conventions set __none__ 0 0 0 __none__ __none__ __none__ system.new_record generated_script
+currency_pair_conventions set __none__ 0 0 0 - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =refdata.v1.currency_pair_conventions.put_many=.
 
 #+name: currency_pair_conventions-put-many
 #+begin_src ores-shell :tangle currency_pair_conventions-put-many.ores :exports none
-currency_pair_conventions put-many --count 1 __none__ 0 0 0 __none__ __none__ __none__ system.new_record generated_script
+currency_pair_conventions put-many --count 1 __none__ 0 0 0 - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

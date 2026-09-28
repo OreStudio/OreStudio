@@ -155,7 +155,7 @@ struct put_image_request {
 
 struct put_image_response {
     ores::utility::domain::result result;
-    ores::assets::domain::image image;
+    std::optional<ores::assets::domain::image> image;
 };
 
 struct put_many_images_request {
@@ -251,7 +251,7 @@ struct get_image_version_request {
 
 struct get_image_version_response {
     ores::utility::domain::result result;
-    ores::assets::domain::image version;
+    std::optional<ores::assets::domain::image> version;
 };
 
 /**

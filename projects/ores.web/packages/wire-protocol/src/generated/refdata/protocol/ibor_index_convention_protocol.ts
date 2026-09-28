@@ -113,7 +113,7 @@ export interface PutIborIndexConventionRequest {
 
 export interface PutIborIndexConventionResponse {
     result: Result;
-    ibor_index_convention: IborIndexConvention;
+    ibor_index_convention: IborIndexConvention | null;
 }
 
 export interface PutManyIborIndexConventionsRequest {
@@ -164,7 +164,7 @@ export interface GetIborIndexConventionVersionRequest {
 
 export interface GetIborIndexConventionVersionResponse {
     result: Result;
-    version: IborIndexConvention;
+    version: IborIndexConvention | null;
 }
 
 export const subjects = {

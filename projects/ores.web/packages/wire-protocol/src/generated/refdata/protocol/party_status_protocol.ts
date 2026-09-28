@@ -111,7 +111,7 @@ export interface PutPartyStatusRequest {
 
 export interface PutPartyStatusResponse {
     result: Result;
-    party_status: PartyStatus;
+    party_status: PartyStatus | null;
 }
 
 export interface PutManyPartyStatusesRequest {
@@ -162,7 +162,7 @@ export interface GetPartyStatusVersionRequest {
 
 export interface GetPartyStatusVersionResponse {
     result: Result;
-    version: PartyStatus;
+    version: PartyStatus | null;
 }
 
 export const subjects = {

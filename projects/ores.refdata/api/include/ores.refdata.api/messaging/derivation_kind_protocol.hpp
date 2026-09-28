@@ -154,7 +154,7 @@ struct put_derivation_kind_request {
 
 struct put_derivation_kind_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::derivation_kind derivation_kind;
+    std::optional<ores::refdata::domain::derivation_kind> derivation_kind;
 };
 
 struct put_many_derivation_kinds_request {
@@ -250,7 +250,7 @@ struct get_derivation_kind_version_request {
 
 struct get_derivation_kind_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::derivation_kind version;
+    std::optional<ores::refdata::domain::derivation_kind> version;
 };
 
 /**

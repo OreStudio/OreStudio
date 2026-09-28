@@ -112,7 +112,7 @@ export interface PutPricingModelProductRequest {
 
 export interface PutPricingModelProductResponse {
     result: Result;
-    pricing_model_product: PricingModelProduct;
+    pricing_model_product: PricingModelProduct | null;
 }
 
 export interface PutManyPricingModelProductsRequest {
@@ -163,7 +163,7 @@ export interface GetPricingModelProductVersionRequest {
 
 export interface GetPricingModelProductVersionResponse {
     result: Result;
-    version: PricingModelProduct;
+    version: PricingModelProduct | null;
 }
 
 export const subjects = {

@@ -163,6 +163,8 @@ dataset_bundle_member_repository::read_latest(const std::string& bundle_code,
                                << dataset_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto bundle_code_str = bundle_code;
+    const auto dataset_code_str = dataset_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
                        where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
@@ -337,6 +339,8 @@ dataset_bundle_member_repository::remove(const std::string& bundle_code,
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto bundle_code_str = bundle_code;
+    const auto dataset_code_str = dataset_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<dataset_bundle_member_entity> |
                        where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&

@@ -158,7 +158,7 @@ struct put_swap_convention_request {
 
 struct put_swap_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::swap_convention swap_convention;
+    std::optional<ores::refdata::domain::swap_convention> swap_convention;
 };
 
 struct put_many_swap_conventions_request {
@@ -254,7 +254,7 @@ struct get_swap_convention_version_request {
 
 struct get_swap_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::swap_convention version;
+    std::optional<ores::refdata::domain::swap_convention> version;
 };
 
 /**

@@ -119,7 +119,7 @@ export interface PutConfigurationParameterRequest {
 
 export interface PutConfigurationParameterResponse {
     result: Result;
-    configuration_parameter: ConfigurationParameter;
+    configuration_parameter: ConfigurationParameter | null;
 }
 
 export interface PutManyConfigurationParametersRequest {
@@ -200,7 +200,7 @@ export interface GetConfigurationParameterVersionRequest {
 
 export interface GetConfigurationParameterVersionResponse {
     result: Result;
-    version: ConfigurationParameter;
+    version: ConfigurationParameter | null;
 }
 
 export const subjects = {

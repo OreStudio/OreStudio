@@ -87,8 +87,8 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset>
-     * <shift> <effective_from> <effective_to> <reason> <commentary>
+     * @brief add <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift>
+     * <effective_from> <effective_to> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,

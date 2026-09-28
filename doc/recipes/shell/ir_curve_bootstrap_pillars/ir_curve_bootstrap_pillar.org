@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 65943862-77B0-5588-A6B3-3F2CB49AC089
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the ir_curve_bootstrap_pillars commands from the shell?
+#+description: Every command the ir_curve_bootstrap_pillars submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ir_curve_bootstrap_pillars:
+
+This file documents the ir_curve_bootstrap_pillars resource at the shell, one section per command. Every command is a subcommand of =ir_curve_bootstrap_pillars=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D939B2DD-1C3F-5179-85C0-5866B0BF02A7
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.list=.
+
+#+name: ir_curve_bootstrap_pillars-list
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-list.ores :exports none
+ir_curve_bootstrap_pillars list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E0B4BF45-8F90-56B2-8827-6BA339989DAE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars get <id>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.get=.
+
+#+name: ir_curve_bootstrap_pillars-get
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-get.ores :exports none
+ir_curve_bootstrap_pillars get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5E3E09B6-4B95-57E1-BA14-7F072FE95AAC
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.get_many=.
+
+#+name: ir_curve_bootstrap_pillars-get-many
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-get-many.ores :exports none
+ir_curve_bootstrap_pillars get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 454542E2-2D0B-5264-BAD4-DF455DE0424E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars add <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <curve_role_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.put=.
+
+#+name: ir_curve_bootstrap_pillars-add
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-add.ores :exports none
+ir_curve_bootstrap_pillars add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FD1200CA-244E-53E0-B3F1-00132335F086
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars set <id> <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <curve_role_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.put=.
+
+#+name: ir_curve_bootstrap_pillars-set
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-set.ores :exports none
+ir_curve_bootstrap_pillars set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 34FDA9C9-26C4-5E1D-86E3-E33621B3EC24
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars put-many --count <n> <id> <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <curve_role_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.put_many=.
+
+#+name: ir_curve_bootstrap_pillars-put-many
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-put-many.ores :exports none
+ir_curve_bootstrap_pillars put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: AD65E269-4059-5088-BA49-AE620F3B9A6E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.delete=.
+
+#+name: ir_curve_bootstrap_pillars-delete
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-delete.ores :exports none
+ir_curve_bootstrap_pillars delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 36242CC5-89A3-5032-822A-16A5CF9BFDA8
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars.delete_many=.
+
+#+name: ir_curve_bootstrap_pillars-delete-many
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-delete-many.ores :exports none
+ir_curve_bootstrap_pillars delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9D03D849-BB5C-5622-9B72-0896D29E5FF1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars_versions.list=.
+
+#+name: ir_curve_bootstrap_pillars-versions
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-versions.ores :exports none
+ir_curve_bootstrap_pillars versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DAF9C76E-080A-5812-84CD-4248F65318C0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_pillars version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_pillars_versions.get=.
+
+#+name: ir_curve_bootstrap_pillars-version
+#+begin_src ores-shell :tangle ir_curve_bootstrap_pillars-version.ores :exports none
+ir_curve_bootstrap_pillars version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

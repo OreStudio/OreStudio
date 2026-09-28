@@ -157,7 +157,7 @@ struct put_coding_scheme_request {
 
 struct put_coding_scheme_response {
     ores::utility::domain::result result;
-    ores::dq::domain::coding_scheme coding_scheme;
+    std::optional<ores::dq::domain::coding_scheme> coding_scheme;
 };
 
 struct put_many_coding_schemes_request {
@@ -253,7 +253,7 @@ struct get_coding_scheme_version_request {
 
 struct get_coding_scheme_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::coding_scheme version;
+    std::optional<ores::dq::domain::coding_scheme> version;
 };
 
 /**

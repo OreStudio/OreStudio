@@ -161,7 +161,7 @@ struct put_report_definition_request {
 
 struct put_report_definition_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_definition report_definition;
+    std::optional<ores::reporting::domain::report_definition> report_definition;
 };
 
 struct put_many_report_definitions_request {
@@ -258,7 +258,7 @@ struct get_report_definition_version_request {
 
 struct get_report_definition_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_definition version;
+    std::optional<ores::reporting::domain::report_definition> version;
 };
 
 /**

@@ -111,7 +111,7 @@ export interface PutPartyTypeRequest {
 
 export interface PutPartyTypeResponse {
     result: Result;
-    party_type: PartyType;
+    party_type: PartyType | null;
 }
 
 export interface PutManyPartyTypesRequest {
@@ -162,7 +162,7 @@ export interface GetPartyTypeVersionRequest {
 
 export interface GetPartyTypeVersionResponse {
     result: Result;
-    version: PartyType;
+    version: PartyType | null;
 }
 
 export const subjects = {

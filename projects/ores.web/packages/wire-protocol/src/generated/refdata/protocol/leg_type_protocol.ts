@@ -109,7 +109,7 @@ export interface PutLegTypeRequest {
 
 export interface PutLegTypeResponse {
     result: Result;
-    leg_type: LegType;
+    leg_type: LegType | null;
 }
 
 export interface PutManyLegTypesRequest {
@@ -160,7 +160,7 @@ export interface GetLegTypeVersionRequest {
 
 export interface GetLegTypeVersionResponse {
     result: Result;
-    version: LegType;
+    version: LegType | null;
 }
 
 export const subjects = {

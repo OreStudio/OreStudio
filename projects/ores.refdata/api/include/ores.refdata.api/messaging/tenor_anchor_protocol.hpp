@@ -153,7 +153,7 @@ struct put_tenor_anchor_request {
 
 struct put_tenor_anchor_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_anchor tenor_anchor;
+    std::optional<ores::refdata::domain::tenor_anchor> tenor_anchor;
 };
 
 struct put_many_tenor_anchors_request {
@@ -249,7 +249,7 @@ struct get_tenor_anchor_version_request {
 
 struct get_tenor_anchor_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_anchor version;
+    std::optional<ores::refdata::domain::tenor_anchor> version;
 };
 
 /**

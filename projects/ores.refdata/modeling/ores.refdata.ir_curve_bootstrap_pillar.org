@@ -31,6 +31,7 @@ per-consumer DB-level FK.
 :schema:        public
 :product:       ores
 :component:     refdata
+:profile:       uuid-surrogate-lookup
 :has_tenant_id: true
 :END:
 

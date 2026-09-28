@@ -108,7 +108,7 @@ export interface PutSessionRequest {
 
 export interface PutSessionResponse {
     result: Result;
-    session: Session;
+    session: Session | null;
 }
 
 export interface PutManySessionsRequest {

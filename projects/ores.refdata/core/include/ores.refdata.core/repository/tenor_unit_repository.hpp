@@ -122,7 +122,6 @@ public:
     std::optional<domain::tenor_unit>
     read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
-
     /**
      * @brief Reads latest tenor units with pagination support.
      * @param ctx Repository context with database connection

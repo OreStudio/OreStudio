@@ -92,6 +92,11 @@ struct currency_country final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const currency_country&, const currency_country&) = default;
 };
 
 /**

@@ -9,33 +9,22 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_HPP
-#define ORES_REFDATA_HPP
+#ifndef ORES_REFDATA_CORE_HPP
+#define ORES_REFDATA_CORE_HPP
 
 /**
- * @brief Reference data domain model.
+ * @brief Reference data persistence and services.
  *
- * Implements the core reference data domain model. Key features:
- *
- * - Domain model: Currency entities with temporal versioning
- * - CSV export: Structured CSV output for currencies
- * - JSON I/O: Serialization using reflection (rfl library)
- * - Table I/O: Formatted table output using fort library
- * - Database persistence: ORM entities, mappers, and repositories with temporal support
- * - Message-based API: Request/response handlers for currency operations (0x3000-0x3FFF)
- * - Synthetic data: Test data generation using faker-cxx
- * - Version history: Track all changes to entities with valid_from/valid_to fields
- *
- * The module is organized into namespaces: domain (core entities), repository
- * (ORM and persistence), csv (CSV export), messaging (API handlers), and
- * generators (test data).
+ * Holds the ORM entities, mappers and repositories with their temporal
+ * versioning, the services that apply a change intent to them, and the NATS
+ * handlers, registrars and history providers that put them on the wire.
  */
 namespace ores::refdata {}
 

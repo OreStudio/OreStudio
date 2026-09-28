@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: B93E32EE-696F-51A7-B326-47E00BB69204
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the calendar_dates commands from the shell?
 #+description: Every command the calendar_dates submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -50,7 +51,7 @@ It is addressed at =refdata.v1.calendar_dates.get=.
 
 #+name: calendar_dates-get
 #+begin_src ores-shell :tangle calendar_dates-get.ores :exports none
-calendar_dates get __none__ __none__
+calendar_dates get __none__ 1970-01-01
 #+end_src
 
 ** =get-many=
@@ -71,7 +72,7 @@ It is addressed at =refdata.v1.calendar_dates.get_many=.
 
 #+name: calendar_dates-get-many
 #+begin_src ores-shell :tangle calendar_dates-get-many.ores :exports none
-calendar_dates get-many __none__ __none__
+calendar_dates get-many __none__ 1970-01-01
 #+end_src
 
 ** =by-calendar-code=

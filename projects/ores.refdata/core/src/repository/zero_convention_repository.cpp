@@ -202,7 +202,6 @@ std::optional<domain::zero_convention> zero_convention_repository::read_at_versi
     return entities.front();
 }
 
-
 zero_convention_repository::remove_status zero_convention_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing zero convention. " << "id: " << id;
@@ -300,6 +299,14 @@ zero_convention_repository::read_latest(context ctx, const std::vector<std::stri
 }
 
 void zero_convention_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (ids.empty())
+        return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();

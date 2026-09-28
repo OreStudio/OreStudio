@@ -158,7 +158,7 @@ struct put_platform_request {
 
 struct put_platform_response {
     ores::utility::domain::result result;
-    ores::compute::domain::platform platform;
+    std::optional<ores::compute::domain::platform> platform;
 };
 
 struct put_many_platforms_request {
@@ -254,7 +254,7 @@ struct get_platform_version_request {
 
 struct get_platform_version_response {
     ores::utility::domain::result result;
-    ores::compute::domain::platform version;
+    std::optional<ores::compute::domain::platform> version;
 };
 
 /**

@@ -105,7 +105,7 @@ export interface GetAccountVersionRequest {
 
 export interface GetAccountVersionResponse {
     result: Result;
-    version: Account;
+    version: Account | null;
 }
 
 export const subjects = {

@@ -64,15 +64,6 @@ struct party_counterparties_filter {
     std::optional<boost::uuids::uuid> party_id;
 };
 
-struct party_counterparty_event {
-    boost::uuids::uuid event_id;
-    party_counterparty_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
 struct list_party_counterparties_request {
     using response_type = struct list_party_counterparties_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_counterparties.list";
@@ -147,7 +138,7 @@ struct put_party_counterparty_request {
 
 struct put_party_counterparty_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_counterparty party_counterparty;
+    std::optional<ores::refdata::domain::party_counterparty> party_counterparty;
 };
 
 struct put_many_party_counterparties_request {

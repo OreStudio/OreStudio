@@ -119,15 +119,30 @@ public:
      * @param version The version to fetch.
      * @return The business unit type at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::business_unit_type> get_type_at_version(const std::string& id,
+    std::optional<domain::business_unit_type> get_type_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version);
 
     /**
      * @brief Retrieves a single business unit type by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The business unit type if found, std::nullopt otherwise.
      */
-    std::optional<domain::business_unit_type> get_type(const std::string& id);
+    std::optional<domain::business_unit_type> get_type(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single business unit type by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The business unit type if found, std::nullopt otherwise.
+     */
+    std::optional<domain::business_unit_type> get_type_by_code(const std::string& code);
 
     /**
      * @brief Retrieves a batch of business unit types by primary key.
@@ -155,7 +170,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_type(const std::string& id);
+    void delete_type(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes business unit types by their primary keys.
@@ -164,8 +179,12 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a business unit type.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::business_unit_type> get_type_history(const std::string& id);
+    std::vector<domain::business_unit_type> get_type_history(const std::string& key);
 
 private:
     context ctx_;

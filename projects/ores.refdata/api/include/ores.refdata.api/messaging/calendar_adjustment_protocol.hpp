@@ -22,8 +22,8 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REFDATA_MESSAGING_CALENDAR_ADJUSTMENT_PROTOCOL_HPP
-#define ORES_REFDATA_MESSAGING_CALENDAR_ADJUSTMENT_PROTOCOL_HPP
+#ifndef ORES_REFDATA_API_MESSAGING_CALENDAR_ADJUSTMENT_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_CALENDAR_ADJUSTMENT_PROTOCOL_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>

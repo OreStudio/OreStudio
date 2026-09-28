@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a regulatory book type.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::regulatory_book_type> get_type_history(const std::string& code);
 

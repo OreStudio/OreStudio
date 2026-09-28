@@ -115,7 +115,7 @@ export interface PutIrCurveBootstrapConfigRequest {
 
 export interface PutIrCurveBootstrapConfigResponse {
     result: Result;
-    ir_curve_bootstrap_config: IrCurveBootstrapConfig;
+    ir_curve_bootstrap_config: IrCurveBootstrapConfig | null;
 }
 
 export interface PutManyIrCurveBootstrapConfigsRequest {
@@ -166,7 +166,7 @@ export interface GetIrCurveBootstrapConfigVersionRequest {
 
 export interface GetIrCurveBootstrapConfigVersionResponse {
     result: Result;
-    version: IrCurveBootstrapConfig;
+    version: IrCurveBootstrapConfig | null;
 }
 
 export const subjects = {

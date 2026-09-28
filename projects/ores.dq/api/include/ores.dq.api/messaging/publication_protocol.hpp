@@ -150,7 +150,7 @@ struct put_publication_request {
 
 struct put_publication_response {
     ores::utility::domain::result result;
-    ores::dq::domain::publication publication;
+    std::optional<ores::dq::domain::publication> publication;
 };
 
 struct put_many_publications_request {

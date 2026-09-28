@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a party status.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::party_status> get_status_history(const std::string& code);
 

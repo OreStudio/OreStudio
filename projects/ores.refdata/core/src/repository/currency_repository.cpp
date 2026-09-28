@@ -181,42 +181,6 @@ std::optional<domain::currency> currency_repository::read_at_version(context ctx
     return entities.front();
 }
 
-std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
-                                                                     const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
-    const auto ts = make_timestamp(as_of, lg());
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<currency_entity>> |
-        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) |
-        order_by("iso_code"_c);
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading currencies at timepoint.");
-}
-
-std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
-                                                                     const std::string& as_of,
-                                                                     const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency at timepoint. " << iso_code;
-    const auto ts = make_timestamp(as_of, lg());
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("tenant_id"_c == tid && "iso_code"_c == iso_code &&
-                             "valid_from"_c <= ts.value() && "valid_to"_c > ts.value());
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading currency at timepoint.");
-}
-
 currency_repository::remove_status currency_repository::remove(
     context ctx, const std::string& iso_code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency. " << "iso_code: " << iso_code;
@@ -308,6 +272,14 @@ currency_repository::read_latest(context ctx, const std::vector<std::string>& is
 }
 
 void currency_repository::remove(context ctx, const std::vector<std::string>& iso_codes) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (iso_codes.empty())
+        return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

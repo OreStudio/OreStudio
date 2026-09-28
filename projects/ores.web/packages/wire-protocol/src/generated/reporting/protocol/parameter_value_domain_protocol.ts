@@ -111,7 +111,7 @@ export interface PutParameterValueDomainRequest {
 
 export interface PutParameterValueDomainResponse {
     result: Result;
-    parameter_value_domain: ParameterValueDomain;
+    parameter_value_domain: ParameterValueDomain | null;
 }
 
 export interface PutManyParameterValueDomainsRequest {
@@ -162,7 +162,7 @@ export interface GetParameterValueDomainVersionRequest {
 
 export interface GetParameterValueDomainVersionResponse {
     result: Result;
-    version: ParameterValueDomain;
+    version: ParameterValueDomain | null;
 }
 
 export const subjects = {

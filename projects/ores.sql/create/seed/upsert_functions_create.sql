@@ -86,6 +86,18 @@ create or replace function ores_dq_data_domains_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Data domain name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_data_domains_tbl
+        where tenant_id = p_tenant_id
+          and name = p_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Data quality data domain already exists: %', p_name;
+        return;
+    end if;
+
     insert into ores_dq_data_domains_tbl (
         tenant_id, name, version, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -94,14 +106,9 @@ begin
         p_tenant_id, p_name, 0, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - data quality data domain',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created data quality data domain: %', p_name;
-    else
-        raise debug 'Data quality data domain already exists: %', p_name;
-    end if;
+    raise debug 'Created data quality data domain: %', p_name;
 end;
 $$ language plpgsql;
 
@@ -122,6 +129,19 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Subject area name');
     perform ores_seed_validate_not_empty_fn(p_domain_name, 'Domain name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_subject_areas_tbl
+        where tenant_id = p_tenant_id
+          and name = p_name
+          and domain_name = p_domain_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Data quality subject area already exists: % in domain %', p_name, p_domain_name;
+        return;
+    end if;
+
     insert into ores_dq_subject_areas_tbl (
         tenant_id, name, version, domain_name, description,
         modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
@@ -130,14 +150,9 @@ begin
         p_tenant_id, p_name, 0, p_domain_name, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - data quality subject area',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, name, domain_name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created data quality subject area: % in domain %', p_name, p_domain_name;
-    else
-        raise debug 'Data quality subject area already exists: % in domain %', p_name, p_domain_name;
-    end if;
+    raise debug 'Created data quality subject area: % in domain %', p_name, p_domain_name;
 end;
 $$ language plpgsql;
 
@@ -353,6 +368,18 @@ create or replace function ores_dq_change_reason_categories_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Change reason category code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_change_reason_categories_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Change reason category already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_change_reason_categories_tbl (
         tenant_id, code, description, modified_by, performed_by, change_commentary,
         valid_from, valid_to
@@ -361,8 +388,9 @@ begin
         p_tenant_id, p_code, p_description, current_user, current_user,
         'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
+
+    raise debug 'Created change reason category: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -383,6 +411,18 @@ create or replace function ores_dq_change_reasons_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Change reason code');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_change_reasons_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Change reason already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_change_reasons_tbl (
         tenant_id, code, description, category_code,
         applies_to_new, applies_to_amend, applies_to_delete, requires_commentary, display_order,
@@ -393,8 +433,9 @@ begin
         p_applies_to_new, p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
         current_user, current_user, 'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
+
+    raise debug 'Created change reason: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -681,13 +722,25 @@ create or replace function ores_iam_roles_upsert_fn(
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Role name');
 
-    -- Insert role if it doesn't exist (uses partial unique index for atomicity)
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_iam_roles_tbl
+        where tenant_id = p_tenant_id
+          and name = p_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Role already exists: %', p_name;
+        return;
+    end if;
+
     insert into ores_iam_roles_tbl (tenant_id, id, version, name, description, modified_by,
         performed_by, change_reason_code, change_commentary, valid_from, valid_to)
     values (p_tenant_id, gen_random_uuid(), 1, p_name, p_description, current_user,
             current_user, 'system.new_record', 'System seed data',
-            current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+            current_timestamp, ores_utility_infinity_timestamp_fn());
+
+    raise debug 'Created role: %', p_name;
 end;
 $$ language plpgsql;
 
@@ -710,6 +763,18 @@ begin
     perform ores_seed_validate_not_empty_fn(p_username, 'Service account username');
     perform ores_seed_validate_not_empty_fn(p_email, 'Service account email');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_iam_accounts_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and username = p_username
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Service account already exists: %', p_username;
+        return;
+    end if;
+
     insert into ores_iam_accounts_tbl (
         id, tenant_id, version, account_type, username, password_hash, password_salt,
         totp_secret, email, modified_by, performed_by, change_reason_code, change_commentary,
@@ -731,14 +796,9 @@ begin
         p_description,
         current_timestamp,
         ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, username) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created service account: %', p_username;
-    else
-        raise debug 'Service account already exists: %', p_username;
-    end if;
+    raise debug 'Created service account: %', p_username;
 
     -- Store service_password_hash using SHA-256 (suitable for high-entropy
     -- machine credentials such as randomly generated DB passwords).
@@ -861,6 +921,19 @@ begin
     -- database does not mint it: the generated insert trigger manages the
     -- version of the row an id names, and an id the store invented would be
     -- one no client could ever address.
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_variability_system_settings_tbl
+        where tenant_id = p_tenant_id
+          and party_id = p_party_id
+          and name = p_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'System setting already exists: %', p_name;
+        return;
+    end if;
+
     insert into ores_variability_system_settings_tbl (
         id, tenant_id, party_id, name, value, data_type, description,
         modified_by, performed_by, change_reason_code, change_commentary,
@@ -868,14 +941,9 @@ begin
     values (
         gen_random_uuid(), p_tenant_id, p_party_id, p_name, p_value, p_data_type, p_description,
         current_user, current_user, 'system.new_record', 'System seed data',
-        current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (tenant_id, party_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+        current_timestamp, ores_utility_infinity_timestamp_fn());
 
-    if found then
-        raise debug 'Created system setting: % = % (%)', p_name, p_value, p_data_type;
-    else
-        raise debug 'System setting already exists: %', p_name;
-    end if;
+    raise debug 'Created system setting: % = % (%)', p_name, p_value, p_data_type;
 end;
 $$ language plpgsql;
 
@@ -999,6 +1067,19 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Dataset bundle code');
     perform ores_seed_validate_not_empty_fn(p_name, 'Dataset bundle name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_dataset_bundles_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and name = p_name
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Dataset bundle already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_dataset_bundles_tbl (
         tenant_id, id, version, code, name, description,
         modified_by, performed_by, change_reason_code, change_commentary,
@@ -1008,14 +1089,9 @@ begin
         p_tenant_id, gen_random_uuid(), 0, p_code, p_name, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - dataset bundle',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created dataset bundle: %', p_code;
-    else
-        raise debug 'Dataset bundle already exists: %', p_code;
-    end if;
+    raise debug 'Created dataset bundle: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -1072,6 +1148,18 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Badge severity code');
     perform ores_seed_validate_not_empty_fn(p_name, 'Badge severity name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_badge_severities_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Badge severity already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_badge_severities_tbl (
         tenant_id, code, version, name, description, display_order,
         modified_by, performed_by, change_reason_code, change_commentary,
@@ -1081,14 +1169,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_description, p_display_order,
         current_user, current_user, 'system.new_record', 'System seed data - badge severity',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created badge severity: %', p_code;
-    else
-        raise debug 'Badge severity already exists: %', p_code;
-    end if;
+    raise debug 'Created badge severity: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -1106,6 +1189,18 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Code domain code');
     perform ores_seed_validate_not_empty_fn(p_name, 'Code domain name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_code_domains_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Code domain already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_code_domains_tbl (
         tenant_id, code, version, name, description, display_order,
         modified_by, performed_by, change_reason_code, change_commentary,
@@ -1115,14 +1210,9 @@ begin
         p_tenant_id, p_code, 0, p_name, p_description, p_display_order,
         current_user, current_user, 'system.new_record', 'System seed data - badge code domain',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created code domain: %', p_code;
-    else
-        raise debug 'Code domain already exists: %', p_code;
-    end if;
+    raise debug 'Created code domain: %', p_code;
 end;
 $$ language plpgsql;
 
@@ -1144,6 +1234,18 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Badge definition code');
     perform ores_seed_validate_not_empty_fn(p_name, 'Badge definition name');
 
+    -- A create that collides with a live row is refused by the store, so a
+    -- seed asks first and leaves an existing row exactly as it is.
+    if exists (
+        select 1 from ores_dq_badge_definitions_tbl
+        where tenant_id = p_tenant_id
+          and code = p_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise debug 'Badge definition already exists: %', p_code;
+        return;
+    end if;
+
     insert into ores_dq_badge_definitions_tbl (
         tenant_id, code, version, name, description,
         background_colour, text_colour, severity_code, css_class, display_order,
@@ -1155,14 +1257,9 @@ begin
         p_background_colour, p_text_colour, p_severity_code, p_css_class, p_display_order,
         current_user, current_user, 'system.new_record', 'System seed data - badge definition',
         current_timestamp, ores_utility_infinity_timestamp_fn()
-    )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    );
 
-    if found then
-        raise debug 'Created badge definition: %', p_code;
-    else
-        raise debug 'Badge definition already exists: %', p_code;
-    end if;
+    raise debug 'Created badge definition: %', p_code;
 end;
 $$ language plpgsql;
 

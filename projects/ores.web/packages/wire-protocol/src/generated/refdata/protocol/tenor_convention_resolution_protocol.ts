@@ -41,15 +41,6 @@ export interface TenorConventionResolutionsFilter {
     convention_code: string | null;
 }
 
-export interface TenorConventionResolutionEvent {
-    event_id: string;
-    key: TenorConventionResolutionKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListTenorConventionResolutionsRequest {
     offset: number;
     limit: number;
@@ -97,10 +88,12 @@ export interface ListByConventionCodeTenorConventionResolutionsResponse {
 }
 
 export const subjects = {
-    list_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.list",
-    get_tenor_convention_resolution_request: "refdata.v1.tenor_convention_resolutions.get",
-    get_many_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.get_many",
-    list_by_convention_code_tenor_convention_resolutions_request: "refdata.v1.tenor_convention_resolutions.list_by_convention_code",
+    list_tenor_convention_resolutions_request: 'refdata.v1.tenor_convention_resolutions.list',
+    get_tenor_convention_resolution_request: 'refdata.v1.tenor_convention_resolutions.get',
+    get_many_tenor_convention_resolutions_request:
+        'refdata.v1.tenor_convention_resolutions.get_many',
+    list_by_convention_code_tenor_convention_resolutions_request:
+        'refdata.v1.tenor_convention_resolutions.list_by_convention_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

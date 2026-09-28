@@ -110,7 +110,7 @@ export interface PutCodingSchemeAuthorityTypeRequest {
 
 export interface PutCodingSchemeAuthorityTypeResponse {
     result: Result;
-    coding_scheme_authority_type: CodingSchemeAuthorityType;
+    coding_scheme_authority_type: CodingSchemeAuthorityType | null;
 }
 
 export interface PutManyCodingSchemeAuthorityTypesRequest {
@@ -161,7 +161,7 @@ export interface GetCodingSchemeAuthorityTypeVersionRequest {
 
 export interface GetCodingSchemeAuthorityTypeVersionResponse {
     result: Result;
-    version: CodingSchemeAuthorityType;
+    version: CodingSchemeAuthorityType | null;
 }
 
 export const subjects = {

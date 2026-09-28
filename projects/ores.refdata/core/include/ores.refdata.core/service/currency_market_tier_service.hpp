@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a currency market tier.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::currency_market_tier> get_type_history(const std::string& code);
 

@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/business_unit_types/business_unit_type.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-business_unit_types get-many 00000000-0000-0000-0000-000000000000
+business_unit_types get-many __none__

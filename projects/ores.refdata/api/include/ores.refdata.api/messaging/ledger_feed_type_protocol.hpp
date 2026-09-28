@@ -154,7 +154,7 @@ struct put_ledger_feed_type_request {
 
 struct put_ledger_feed_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::ledger_feed_type ledger_feed_type;
+    std::optional<ores::refdata::domain::ledger_feed_type> ledger_feed_type;
 };
 
 struct put_many_ledger_feed_types_request {
@@ -250,7 +250,7 @@ struct get_ledger_feed_type_version_request {
 
 struct get_ledger_feed_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::ledger_feed_type version;
+    std::optional<ores::refdata::domain::ledger_feed_type> version;
 };
 
 /**

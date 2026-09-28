@@ -38,7 +38,7 @@
 namespace ores::refdata::messaging {
 
 struct counterparty_key {
-    boost::uuids::uuid id;
+    std::string short_code;
 };
 
 struct counterparty_write {
@@ -161,7 +161,7 @@ struct put_counterparty_request {
 
 struct put_counterparty_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty counterparty;
+    std::optional<ores::refdata::domain::counterparty> counterparty;
 };
 
 struct put_many_counterparties_request {
@@ -257,7 +257,7 @@ struct get_counterparty_version_request {
 
 struct get_counterparty_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty version;
+    std::optional<ores::refdata::domain::counterparty> version;
 };
 
 /**
@@ -276,7 +276,7 @@ struct get_counterparty_composite_as_of_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string id;
+    boost::uuids::uuid id;
     int version = 0;
 };
 

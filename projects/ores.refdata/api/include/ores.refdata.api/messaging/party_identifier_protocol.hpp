@@ -36,11 +36,12 @@
 namespace ores::refdata::messaging {
 
 struct party_identifier_key {
-    boost::uuids::uuid id;
+    std::string id_value;
 };
 
 struct party_identifier_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     std::string id_scheme;
     std::string id_value;
     std::string description;
@@ -159,7 +160,7 @@ struct put_party_identifier_request {
 
 struct put_party_identifier_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_identifier party_identifier;
+    std::optional<ores::refdata::domain::party_identifier> party_identifier;
 };
 
 struct put_many_party_identifiers_request {
@@ -280,7 +281,7 @@ struct get_party_identifier_version_request {
 
 struct get_party_identifier_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_identifier version;
+    std::optional<ores::refdata::domain::party_identifier> version;
 };
 
 /**

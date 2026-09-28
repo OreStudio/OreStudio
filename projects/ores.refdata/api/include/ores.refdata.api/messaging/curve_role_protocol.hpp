@@ -154,7 +154,7 @@ struct put_curve_role_request {
 
 struct put_curve_role_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::curve_role curve_role;
+    std::optional<ores::refdata::domain::curve_role> curve_role;
 };
 
 struct put_many_curve_roles_request {
@@ -250,7 +250,7 @@ struct get_curve_role_version_request {
 
 struct get_curve_role_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::curve_role version;
+    std::optional<ores::refdata::domain::curve_role> version;
 };
 
 /**

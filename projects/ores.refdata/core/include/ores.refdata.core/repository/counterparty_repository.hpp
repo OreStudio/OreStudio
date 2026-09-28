@@ -113,6 +113,12 @@ public:
                                                           const std::string& short_code);
 
     /**
+     * @brief Reads latest counterparties filtered by short_code.
+     */
+    std::vector<domain::counterparty> read_latest_by_short_code(context ctx,
+                                                                const std::string& short_code);
+
+    /**
      * @brief Reads the newest counterparties filtered by short_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

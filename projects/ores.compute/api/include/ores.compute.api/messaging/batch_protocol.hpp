@@ -153,7 +153,7 @@ struct put_batch_request {
 
 struct put_batch_response {
     ores::utility::domain::result result;
-    ores::compute::domain::batch batch;
+    std::optional<ores::compute::domain::batch> batch;
 };
 
 struct put_many_batches_request {
@@ -249,7 +249,7 @@ struct get_batch_version_request {
 
 struct get_batch_version_response {
     ores::utility::domain::result result;
-    ores::compute::domain::batch version;
+    std::optional<ores::compute::domain::batch> version;
 };
 
 /**

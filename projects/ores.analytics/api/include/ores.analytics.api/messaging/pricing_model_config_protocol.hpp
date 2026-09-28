@@ -154,7 +154,7 @@ struct put_pricing_model_config_request {
 
 struct put_pricing_model_config_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::pricing_model_config pricing_model_config;
+    std::optional<ores::analytics::domain::pricing_model_config> pricing_model_config;
 };
 
 struct put_many_pricing_model_configs_request {
@@ -253,7 +253,7 @@ struct get_pricing_model_config_version_request {
 
 struct get_pricing_model_config_version_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::pricing_model_config version;
+    std::optional<ores::analytics::domain::pricing_model_config> version;
 };
 
 /**

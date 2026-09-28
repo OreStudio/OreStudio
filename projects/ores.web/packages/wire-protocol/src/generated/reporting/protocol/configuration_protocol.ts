@@ -117,7 +117,7 @@ export interface PutConfigurationRequest {
 
 export interface PutConfigurationResponse {
     result: Result;
-    configuration: Configuration;
+    configuration: Configuration | null;
 }
 
 export interface PutManyConfigurationsRequest {
@@ -183,7 +183,7 @@ export interface GetConfigurationVersionRequest {
 
 export interface GetConfigurationVersionResponse {
     result: Result;
-    version: Configuration;
+    version: Configuration | null;
 }
 
 export const subjects = {

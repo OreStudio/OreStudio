@@ -29,6 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -83,7 +84,12 @@ TEST_CASE("write_single_business_unit", tags) {
     BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
-    CHECK_NOTHROW(repo.write(party_ctx, bu));
+    repo.write(party_ctx, bu);
+
+    const auto id_str = boost::uuids::to_string(bu.id);
+    const auto rows = repo.read_latest(party_ctx, id_str);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].unit_name == bu.unit_name);
 }
 
 TEST_CASE("write_multiple_business_units", tags) {
@@ -100,7 +106,16 @@ TEST_CASE("write_multiple_business_units", tags) {
     BOOST_LOG_SEV(lg, debug) << "Business units: " << units;
 
     business_unit_repository repo;
-    CHECK_NOTHROW(repo.write(party_ctx, units));
+    repo.write(party_ctx, units);
+
+    const auto rows = repo.read_latest(party_ctx);
+    for (const auto& written : units) {
+        const auto it = std::ranges::find_if(rows, [&](const business_unit& b) {
+            return b.id == written.id;
+        });
+        REQUIRE(it != rows.end());
+        CHECK(it->unit_name == written.unit_name);
+    }
 }
 
 TEST_CASE("read_latest_business_units", tags) {
@@ -122,7 +137,13 @@ TEST_CASE("read_latest_business_units", tags) {
     auto read = repo.read_latest(party_ctx);
     BOOST_LOG_SEV(lg, debug) << "Read business units: " << read;
 
-    CHECK(read.size() >= written.size());
+    for (const auto& expected : written) {
+        const auto it = std::ranges::find_if(read, [&](const business_unit& b) {
+            return b.id == expected.id;
+        });
+        REQUIRE(it != read.end());
+        CHECK(it->unit_name == expected.unit_name);
+    }
 }
 
 TEST_CASE("read_latest_business_units_paginated", tags) {
@@ -143,7 +164,14 @@ TEST_CASE("read_latest_business_units_paginated", tags) {
     auto page = repo.read_latest(party_ctx, 0, 2);
     BOOST_LOG_SEV(lg, debug) << "Paginated business units: " << page;
 
-    CHECK(page.size() == 2);
+    REQUIRE(page.size() == 2);
+    for (const auto& row : page) {
+        const auto it = std::ranges::find_if(written, [&](const business_unit& b) {
+            return b.id == row.id;
+        });
+        REQUIRE(it != written.end());
+        CHECK(row.unit_name == it->unit_name);
+    }
 }
 
 TEST_CASE("get_total_business_unit_count", tags) {
@@ -203,6 +231,7 @@ TEST_CASE("read_all_business_unit_versions", tags) {
     auto bu = generate_synthetic_business_unit(ctx);
     bu.change_reason_code = "system.test";
     bu.party_id = *party_ctx.party_id();
+    const auto original_name = bu.unit_name;
     BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
@@ -215,7 +244,17 @@ TEST_CASE("read_all_business_unit_versions", tags) {
     auto all_versions = repo.read_all(party_ctx, id_str);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all_versions;
 
-    CHECK(all_versions.size() >= 2);
+    const auto v1 = std::ranges::find_if(all_versions, [](const business_unit& b) {
+        return b.version == 1;
+    });
+    REQUIRE(v1 != all_versions.end());
+    CHECK(v1->unit_name == original_name);
+
+    const auto v2 = std::ranges::find_if(all_versions, [](const business_unit& b) {
+        return b.version == 2;
+    });
+    REQUIRE(v2 != all_versions.end());
+    CHECK(v2->unit_name == original_name + " v2");
 }
 
 TEST_CASE("read_business_unit_at_version", tags) {
@@ -255,20 +294,34 @@ TEST_CASE("remove_business_unit", tags) {
     auto bu = generate_synthetic_business_unit(ctx);
     bu.change_reason_code = "system.test";
     bu.party_id = *party_ctx.party_id();
+    auto keeper = generate_synthetic_business_unit(ctx);
+    keeper.change_reason_code = "system.test";
+    keeper.party_id = *party_ctx.party_id();
     BOOST_LOG_SEV(lg, debug) << "Business unit: " << bu;
 
     business_unit_repository repo;
     repo.write(party_ctx, bu);
+    repo.write(party_ctx, keeper);
 
     const auto id_str = boost::uuids::to_string(bu.id);
     auto before_remove = repo.read_latest(party_ctx, id_str);
     REQUIRE(before_remove.size() == 1);
+    CHECK(before_remove[0].unit_name == bu.unit_name);
 
-    CHECK_NOTHROW(repo.remove(party_ctx, id_str));
+    repo.remove(party_ctx, id_str);
 
     auto after_remove = repo.read_latest(party_ctx, id_str);
     BOOST_LOG_SEV(lg, debug) << "After remove: " << after_remove;
-    CHECK(after_remove.empty());
+
+    // The removed row is gone from the read, and the same read still answers
+    // for the row that was not removed.
+    const auto removed_still_present = std::ranges::any_of(
+        after_remove, [&](const business_unit& b) { return b.id == bu.id; });
+    CHECK_FALSE(removed_still_present);
+
+    const auto keeper_rows = repo.read_latest(party_ctx, boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].unit_name == keeper.unit_name);
 }
 
 TEST_CASE("remove_multiple_business_units", tags) {
@@ -283,18 +336,33 @@ TEST_CASE("remove_multiple_business_units", tags) {
         bu.party_id = *party_ctx.party_id();
     }
 
+    auto keeper = generate_synthetic_business_unit(ctx);
+    keeper.change_reason_code = "system.test";
+    keeper.party_id = *party_ctx.party_id();
+
     business_unit_repository repo;
     repo.write(party_ctx, units);
+    repo.write(party_ctx, keeper);
 
     std::vector<std::string> ids;
     for (const auto& bu : units) {
         ids.push_back(boost::uuids::to_string(bu.id));
     }
 
-    CHECK_NOTHROW(repo.remove(party_ctx, ids));
+    repo.remove(party_ctx, ids);
 
+    // Each removed row is gone from the read.
     for (const auto& id_str : ids) {
         auto after_remove = repo.read_latest(party_ctx, id_str);
-        CHECK(after_remove.empty());
+        const auto removed_still_present = std::ranges::any_of(
+            after_remove, [&](const business_unit& b) {
+                return boost::uuids::to_string(b.id) == id_str;
+            });
+        CHECK_FALSE(removed_still_present);
     }
+
+    // The row that was not removed is still returned by the same read.
+    const auto keeper_rows = repo.read_latest(party_ctx, boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].unit_name == keeper.unit_name);
 }

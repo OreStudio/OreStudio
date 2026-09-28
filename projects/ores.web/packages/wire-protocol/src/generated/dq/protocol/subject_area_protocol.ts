@@ -111,7 +111,7 @@ export interface PutSubjectAreaRequest {
 
 export interface PutSubjectAreaResponse {
     result: Result;
-    subject_area: SubjectArea;
+    subject_area: SubjectArea | null;
 }
 
 export interface PutManySubjectAreasRequest {
@@ -162,7 +162,7 @@ export interface GetSubjectAreaVersionRequest {
 
 export interface GetSubjectAreaVersionResponse {
     result: Result;
-    version: SubjectArea;
+    version: SubjectArea | null;
 }
 
 export const subjects = {

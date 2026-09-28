@@ -29,6 +29,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -140,7 +141,7 @@ void calendar_event_commands::register_commands(cli::Menu& root_menu, nats_clien
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <calendar_code> <event_date> <diary_entry_type> <name> <description> <source> "
+        "add <calendar_code> <event_date> <diary_entry_type> <name> <description> <source> "
         "<reason> <commentary>");
 
     menu->Insert(
@@ -202,7 +203,7 @@ void calendar_event_commands::register_commands(cli::Menu& root_menu, nats_clien
         },
         "version <id> --version <n>");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void calendar_event_commands::process_list(std::ostream& out,
@@ -366,8 +367,8 @@ void calendar_event_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -426,7 +427,7 @@ void calendar_event_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.calendar_code, parsed->positionals[next++], "calendar_code");
         read_token(req.change.write.event_date, parsed->positionals[next++], "event_date");
         read_token(

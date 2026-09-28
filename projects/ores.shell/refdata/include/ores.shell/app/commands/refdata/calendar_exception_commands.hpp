@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <calendar_code> <exception_date> <is_business_day> <description> <reason>
+     * @brief add <calendar_code> <exception_date> <is_business_day> <description> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,

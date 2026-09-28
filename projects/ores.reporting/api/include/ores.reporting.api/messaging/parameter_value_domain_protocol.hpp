@@ -155,7 +155,7 @@ struct put_parameter_value_domain_request {
 
 struct put_parameter_value_domain_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::parameter_value_domain parameter_value_domain;
+    std::optional<ores::reporting::domain::parameter_value_domain> parameter_value_domain;
 };
 
 struct put_many_parameter_value_domains_request {
@@ -255,7 +255,7 @@ struct get_parameter_value_domain_version_request {
 
 struct get_parameter_value_domain_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::parameter_value_domain version;
+    std::optional<ores::reporting::domain::parameter_value_domain> version;
 };
 
 /**

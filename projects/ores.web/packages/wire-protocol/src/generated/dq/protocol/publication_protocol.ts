@@ -107,7 +107,7 @@ export interface PutPublicationRequest {
 
 export interface PutPublicationResponse {
     result: Result;
-    publication: Publication;
+    publication: Publication | null;
 }
 
 export interface PutManyPublicationsRequest {

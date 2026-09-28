@@ -114,7 +114,7 @@ export interface PutInstrumentCodeRequest {
 
 export interface PutInstrumentCodeResponse {
     result: Result;
-    instrument_code: InstrumentCode;
+    instrument_code: InstrumentCode | null;
 }
 
 export interface PutManyInstrumentCodesRequest {
@@ -165,7 +165,7 @@ export interface GetInstrumentCodeVersionRequest {
 
 export interface GetInstrumentCodeVersionResponse {
     result: Result;
-    version: InstrumentCode;
+    version: InstrumentCode | null;
 }
 
 export const subjects = {

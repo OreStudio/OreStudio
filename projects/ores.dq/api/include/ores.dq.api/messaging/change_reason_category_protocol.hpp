@@ -152,7 +152,7 @@ struct put_change_reason_category_request {
 
 struct put_change_reason_category_response {
     ores::utility::domain::result result;
-    ores::dq::domain::change_reason_category change_reason_category;
+    std::optional<ores::dq::domain::change_reason_category> change_reason_category;
 };
 
 struct put_many_change_reason_categories_request {
@@ -248,7 +248,7 @@ struct get_change_reason_category_version_request {
 
 struct get_change_reason_category_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::change_reason_category version;
+    std::optional<ores::dq::domain::change_reason_category> version;
 };
 
 /**

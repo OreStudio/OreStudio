@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 64C11727-78BE-5C81-A8AA-73F697FADB33
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the ir_curve_bootstrap_configs commands from the shell?
+#+description: Every command the ir_curve_bootstrap_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ir_curve_bootstrap_configs:
+
+This file documents the ir_curve_bootstrap_configs resource at the shell, one section per command. Every command is a subcommand of =ir_curve_bootstrap_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 510583FF-54FF-5F18-8A6C-F4046375D937
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.list=.
+
+#+name: ir_curve_bootstrap_configs-list
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-list.ores :exports none
+ir_curve_bootstrap_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: BC4CE579-2433-590D-B938-617B798DBA69
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.get=.
+
+#+name: ir_curve_bootstrap_configs-get
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-get.ores :exports none
+ir_curve_bootstrap_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FD3AF9BE-FC3C-5C80-A5D2-E24C7835AC6D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.get_many=.
+
+#+name: ir_curve_bootstrap_configs-get-many
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-get-many.ores :exports none
+ir_curve_bootstrap_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D10A6791-4680-5D57-B9A0-FC9897CCA036
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs add <output_series_id> <source_series_id> <curve_family_role> <discount_curve_config_id> <interpolation_method> <day_count_convention> <split_tenor_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.put=.
+
+#+name: ir_curve_bootstrap_configs-add
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-add.ores :exports none
+ir_curve_bootstrap_configs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2C691280-3304-560B-AC20-67DA871F2F93
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs set <id> <output_series_id> <source_series_id> <curve_family_role> <discount_curve_config_id> <interpolation_method> <day_count_convention> <split_tenor_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.put=.
+
+#+name: ir_curve_bootstrap_configs-set
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-set.ores :exports none
+ir_curve_bootstrap_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: F8CEF42C-FC5E-58D2-920B-668EC545983D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs put-many --count <n> <id> <output_series_id> <source_series_id> <curve_family_role> <discount_curve_config_id> <interpolation_method> <day_count_convention> <split_tenor_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.put_many=.
+
+#+name: ir_curve_bootstrap_configs-put-many
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-put-many.ores :exports none
+ir_curve_bootstrap_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: A1EFFD01-90AE-54A9-8E7B-C63BA227B7DD
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.delete=.
+
+#+name: ir_curve_bootstrap_configs-delete
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-delete.ores :exports none
+ir_curve_bootstrap_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7394F03B-20B7-50B0-A377-C59EF7CEB3DE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs.delete_many=.
+
+#+name: ir_curve_bootstrap_configs-delete-many
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-delete-many.ores :exports none
+ir_curve_bootstrap_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 97494968-66CD-54E4-B4F7-C96B04F094F3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs_versions.list=.
+
+#+name: ir_curve_bootstrap_configs-versions
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-versions.ores :exports none
+ir_curve_bootstrap_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E56DD944-1B2E-5D35-95D1-8F6C991B5BB2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ir_curve_bootstrap_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.ir_curve_bootstrap_configs_versions.get=.
+
+#+name: ir_curve_bootstrap_configs-version
+#+begin_src ores-shell :tangle ir_curve_bootstrap_configs-version.ores :exports none
+ir_curve_bootstrap_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

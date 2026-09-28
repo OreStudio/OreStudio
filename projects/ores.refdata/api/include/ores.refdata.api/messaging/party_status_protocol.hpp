@@ -154,7 +154,7 @@ struct put_party_status_request {
 
 struct put_party_status_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_status party_status;
+    std::optional<ores::refdata::domain::party_status> party_status;
 };
 
 struct put_many_party_statuses_request {
@@ -250,7 +250,7 @@ struct get_party_status_version_request {
 
 struct get_party_status_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_status version;
+    std::optional<ores::refdata::domain::party_status> version;
 };
 
 /**

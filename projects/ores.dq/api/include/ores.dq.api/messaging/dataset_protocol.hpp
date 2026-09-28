@@ -170,7 +170,7 @@ struct put_dataset_request {
 
 struct put_dataset_response {
     ores::utility::domain::result result;
-    ores::dq::domain::dataset dataset;
+    std::optional<ores::dq::domain::dataset> dataset;
 };
 
 struct put_many_datasets_request {
@@ -266,7 +266,7 @@ struct get_dataset_version_request {
 
 struct get_dataset_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::dataset version;
+    std::optional<ores::dq::domain::dataset> version;
 };
 
 /**

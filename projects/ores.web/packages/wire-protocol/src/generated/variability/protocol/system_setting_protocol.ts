@@ -113,7 +113,7 @@ export interface PutSystemSettingRequest {
 
 export interface PutSystemSettingResponse {
     result: Result;
-    system_setting: SystemSetting;
+    system_setting: SystemSetting | null;
 }
 
 export interface PutManySystemSettingsRequest {
@@ -164,7 +164,7 @@ export interface GetSystemSettingVersionRequest {
 
 export interface GetSystemSettingVersionResponse {
     result: Result;
-    version: SystemSetting;
+    version: SystemSetting | null;
 }
 
 export const subjects = {

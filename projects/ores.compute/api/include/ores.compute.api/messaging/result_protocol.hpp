@@ -164,7 +164,7 @@ struct put_result_request {
 
 struct put_result_response {
     ores::utility::domain::result result;
-    ores::compute::domain::result result_value;
+    std::optional<ores::compute::domain::result> result_value;
 };
 
 struct put_many_results_request {
@@ -284,7 +284,7 @@ struct get_result_version_request {
 
 struct get_result_version_response {
     ores::utility::domain::result result;
-    ores::compute::domain::result version;
+    std::optional<ores::compute::domain::result> version;
 };
 
 /**

@@ -111,7 +111,7 @@ export interface PutPricingModelConfigRequest {
 
 export interface PutPricingModelConfigResponse {
     result: Result;
-    pricing_model_config: PricingModelConfig;
+    pricing_model_config: PricingModelConfig | null;
 }
 
 export interface PutManyPricingModelConfigsRequest {
@@ -162,7 +162,7 @@ export interface GetPricingModelConfigVersionRequest {
 
 export interface GetPricingModelConfigVersionResponse {
     result: Result;
-    version: PricingModelConfig;
+    version: PricingModelConfig | null;
 }
 
 export const subjects = {

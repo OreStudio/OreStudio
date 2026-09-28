@@ -154,7 +154,7 @@ struct put_concurrency_policy_request {
 
 struct put_concurrency_policy_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::concurrency_policy concurrency_policy;
+    std::optional<ores::reporting::domain::concurrency_policy> concurrency_policy;
 };
 
 struct put_many_concurrency_policies_request {
@@ -253,7 +253,7 @@ struct get_concurrency_policy_version_request {
 
 struct get_concurrency_policy_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::concurrency_policy version;
+    std::optional<ores::reporting::domain::concurrency_policy> version;
 };
 
 /**

@@ -111,7 +111,7 @@ export interface PutCurveRoleRequest {
 
 export interface PutCurveRoleResponse {
     result: Result;
-    curve_role: CurveRole;
+    curve_role: CurveRole | null;
 }
 
 export interface PutManyCurveRolesRequest {
@@ -162,7 +162,7 @@ export interface GetCurveRoleVersionRequest {
 
 export interface GetCurveRoleVersionResponse {
     result: Result;
-    version: CurveRole;
+    version: CurveRole | null;
 }
 
 export const subjects = {

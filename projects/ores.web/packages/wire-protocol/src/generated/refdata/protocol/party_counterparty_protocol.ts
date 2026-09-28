@@ -58,15 +58,6 @@ export interface PartyCounterpartiesFilter {
     party_id: string | null;
 }
 
-export interface PartyCounterpartyEvent {
-    event_id: string;
-    key: PartyCounterpartyKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListPartyCounterpartiesRequest {
     offset: number;
     limit: number;
@@ -105,7 +96,7 @@ export interface PutPartyCounterpartyRequest {
 
 export interface PutPartyCounterpartyResponse {
     result: Result;
-    party_counterparty: PartyCounterparty;
+    party_counterparty: PartyCounterparty | null;
 }
 
 export interface PutManyPartyCounterpartiesRequest {
@@ -152,14 +143,15 @@ export interface ListByPartyIdPartyCounterpartiesResponse {
 }
 
 export const subjects = {
-    list_party_counterparties_request: "refdata.v1.party_counterparties.list",
-    get_party_counterparty_request: "refdata.v1.party_counterparties.get",
-    get_many_party_counterparties_request: "refdata.v1.party_counterparties.get_many",
-    put_party_counterparty_request: "refdata.v1.party_counterparties.put",
-    put_many_party_counterparties_request: "refdata.v1.party_counterparties.put_many",
-    delete_party_counterparty_request: "refdata.v1.party_counterparties.delete",
-    delete_many_party_counterparties_request: "refdata.v1.party_counterparties.delete_many",
-    list_by_party_id_party_counterparties_request: "refdata.v1.party_counterparties.list_by_party_id",
+    list_party_counterparties_request: 'refdata.v1.party_counterparties.list',
+    get_party_counterparty_request: 'refdata.v1.party_counterparties.get',
+    get_many_party_counterparties_request: 'refdata.v1.party_counterparties.get_many',
+    put_party_counterparty_request: 'refdata.v1.party_counterparties.put',
+    put_many_party_counterparties_request: 'refdata.v1.party_counterparties.put_many',
+    delete_party_counterparty_request: 'refdata.v1.party_counterparties.delete',
+    delete_many_party_counterparties_request: 'refdata.v1.party_counterparties.delete_many',
+    list_by_party_id_party_counterparties_request:
+        'refdata.v1.party_counterparties.list_by_party_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

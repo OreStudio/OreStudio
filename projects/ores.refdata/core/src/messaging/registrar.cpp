@@ -163,6 +163,20 @@
 #include "ores.refdata.core/messaging/tenor_schedule_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_unit_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_exception_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_rule_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_type_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_contact_information_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_identifier_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/derivation_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/instrument_code_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/ir_curve_bootstrap_config_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/ir_curve_bootstrap_pillar_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_contact_information_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_identifier_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_exception_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_rule_registrar.hpp"
+#include "ores.refdata.core/messaging/derivation_kind_registrar.hpp"
 #include <array>
 #include <iterator>
 #include <memory>
@@ -271,6 +285,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_tenor_resolution_algorithm_handlers(nats, ctx, verifier));
     append(register_tenor_schedule_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
+    append(register_calendar_exception_handlers(nats, ctx, verifier));
+    append(register_calendar_rule_handlers(nats, ctx, verifier));
+    append(register_derivation_kind_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
     // Asset classes (no codegen model; list-only).
@@ -392,6 +409,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_tenor_schedule_history_provider(hist_registry);
         register_tenor_unit_history_provider(hist_registry);
         register_zero_convention_history_provider(hist_registry);
+        register_calendar_exception_history_provider(hist_registry);
+        register_calendar_rule_history_provider(hist_registry);
+        register_calendar_type_history_provider(hist_registry);
+        register_counterparty_contact_information_history_provider(hist_registry);
+        register_counterparty_identifier_history_provider(hist_registry);
+        register_derivation_kind_history_provider(hist_registry);
+        register_instrument_code_history_provider(hist_registry);
+        register_ir_curve_bootstrap_config_history_provider(hist_registry);
+        register_ir_curve_bootstrap_pillar_history_provider(hist_registry);
+        register_party_contact_information_history_provider(hist_registry);
+        register_party_identifier_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", queue_group, ctx, verifier));

@@ -155,7 +155,7 @@ struct put_overnight_index_convention_request {
 
 struct put_overnight_index_convention_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::overnight_index_convention overnight_index_convention;
+    std::optional<ores::refdata::domain::overnight_index_convention> overnight_index_convention;
 };
 
 struct put_many_overnight_index_conventions_request {
@@ -256,7 +256,7 @@ struct get_overnight_index_convention_version_request {
 
 struct get_overnight_index_convention_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::overnight_index_convention version;
+    std::optional<ores::refdata::domain::overnight_index_convention> version;
 };
 
 /**

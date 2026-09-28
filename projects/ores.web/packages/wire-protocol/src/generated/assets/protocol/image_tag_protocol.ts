@@ -98,7 +98,7 @@ export interface PutImageTagRequest {
 
 export interface PutImageTagResponse {
     result: Result;
-    image_tag: ImageTag;
+    image_tag: ImageTag | null;
 }
 
 export interface PutManyImageTagsRequest {

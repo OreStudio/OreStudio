@@ -162,7 +162,8 @@ struct put_pricing_model_product_parameter_request {
 
 struct put_pricing_model_product_parameter_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::pricing_model_product_parameter pricing_model_product_parameter;
+    std::optional<ores::analytics::domain::pricing_model_product_parameter>
+        pricing_model_product_parameter;
 };
 
 struct put_many_pricing_model_product_parameters_request {
@@ -263,7 +264,7 @@ struct get_pricing_model_product_parameter_version_request {
 
 struct get_pricing_model_product_parameter_version_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::pricing_model_product_parameter version;
+    std::optional<ores::analytics::domain::pricing_model_product_parameter> version;
 };
 
 /**

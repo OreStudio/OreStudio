@@ -53,6 +53,10 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::currency> read_one(repository::currency_repository& repo,
                                        const ores::database::context& ctx,
@@ -109,14 +113,6 @@ currency_service::list_currencies(const messaging::list_currencies_request& requ
         response.result.code = "order_not_supported";
         response.result.message =
             "This store pages in key order and cannot order by a stated field.";
-        return response;
-    }
-    // A stated instant asks what the row meant then, which is the entity's own
-    // validity window rather than a page of its versions. The answer is the
-    // whole set at that instant, so the page bounds do not narrow it.
-    if (request.as_of) {
-        response.currencies = repo_.read_at_timepoint(ctx_, *request.as_of);
-        response.total = response.currencies.size();
         return response;
     }
     response.currencies = repo_.read_latest(ctx_, request.offset, request.limit);

@@ -111,7 +111,7 @@ export interface PutTenorResolutionAlgorithmRequest {
 
 export interface PutTenorResolutionAlgorithmResponse {
     result: Result;
-    tenor_resolution_algorithm: TenorResolutionAlgorithm;
+    tenor_resolution_algorithm: TenorResolutionAlgorithm | null;
 }
 
 export interface PutManyTenorResolutionAlgorithmsRequest {
@@ -162,7 +162,7 @@ export interface GetTenorResolutionAlgorithmVersionRequest {
 
 export interface GetTenorResolutionAlgorithmVersionResponse {
     result: Result;
-    version: TenorResolutionAlgorithm;
+    version: TenorResolutionAlgorithm | null;
 }
 
 export const subjects = {

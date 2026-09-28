@@ -37,6 +37,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <optional>
 
@@ -485,8 +486,9 @@ public:
                       msg,
                       get_counterparty_composite_as_of_response{
                           .success = false,
-                          .message = "No such counterparty version: " + req->id + " v" +
-                                     std::to_string(version)});
+                          .message =
+                              "No such counterparty version: " + boost::uuids::to_string(req->id) +
+                              " v" + std::to_string(version)});
                 return;
             }
 
@@ -500,12 +502,12 @@ public:
             service::counterparty_identifier_service identifier_svc(req_ctx);
             auto identifiers =
                 identifier_svc.list_counterparty_identifiers_by_counterparty_id_as_of(
-                    req->id, current->recorded_at, window_end);
+                    boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
             service::counterparty_contact_information_service contact_svc(req_ctx);
             auto contacts =
                 contact_svc.list_counterparty_contact_informations_by_counterparty_id_as_of(
-                    req->id, current->recorded_at, window_end);
+                    boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
             BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

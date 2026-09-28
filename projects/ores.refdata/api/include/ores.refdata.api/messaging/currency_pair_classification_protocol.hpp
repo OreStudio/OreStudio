@@ -156,7 +156,7 @@ struct put_currency_pair_classification_request {
 
 struct put_currency_pair_classification_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair_classification currency_pair_classification;
+    std::optional<ores::refdata::domain::currency_pair_classification> currency_pair_classification;
 };
 
 struct put_many_currency_pair_classifications_request {
@@ -257,7 +257,7 @@ struct get_currency_pair_classification_version_request {
 
 struct get_currency_pair_classification_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair_classification version;
+    std::optional<ores::refdata::domain::currency_pair_classification> version;
 };
 
 /**

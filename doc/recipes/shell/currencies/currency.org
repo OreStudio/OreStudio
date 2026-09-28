@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 1C8E834C-6C3E-5655-9887-6CB58081498C
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the currencies commands from the shell?
 #+description: Every command the currencies submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -92,7 +93,7 @@ It is addressed at =refdata.v1.currencies.put=.
 
 #+name: currencies-add
 #+begin_src ores-shell :tangle currencies-add.ores :exports none
-currencies add __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ __none__ 0 __none__ 0 system.new_record generated_script
+currencies add __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - 0 __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =refdata.v1.currencies.put=.
 
 #+name: currencies-set
 #+begin_src ores-shell :tangle currencies-set.ores :exports none
-currencies set __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ __none__ 0 __none__ 0 system.new_record generated_script
+currencies set __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - 0 __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =refdata.v1.currencies.put_many=.
 
 #+name: currencies-put-many
 #+begin_src ores-shell :tangle currencies-put-many.ores :exports none
-currencies put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ __none__ 0 __none__ 0 system.new_record generated_script
+currencies put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - 0 __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

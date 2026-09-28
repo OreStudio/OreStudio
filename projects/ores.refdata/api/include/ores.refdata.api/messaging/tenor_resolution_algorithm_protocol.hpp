@@ -155,7 +155,7 @@ struct put_tenor_resolution_algorithm_request {
 
 struct put_tenor_resolution_algorithm_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_resolution_algorithm tenor_resolution_algorithm;
+    std::optional<ores::refdata::domain::tenor_resolution_algorithm> tenor_resolution_algorithm;
 };
 
 struct put_many_tenor_resolution_algorithms_request {
@@ -256,7 +256,7 @@ struct get_tenor_resolution_algorithm_version_request {
 
 struct get_tenor_resolution_algorithm_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_resolution_algorithm version;
+    std::optional<ores::refdata::domain::tenor_resolution_algorithm> version;
 };
 
 /**

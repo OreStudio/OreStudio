@@ -229,6 +229,14 @@ login_info_repository::read_latest(context ctx, const std::vector<std::string>& 
 }
 
 void login_info_repository::remove(context ctx, const std::vector<std::string>& account_ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (account_ids.empty())
+        return;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<login_info_entity> |
                        where("tenant_id"_c == tid && "account_id"_c.in(account_ids));

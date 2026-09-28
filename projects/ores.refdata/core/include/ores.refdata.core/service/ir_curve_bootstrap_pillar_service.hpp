@@ -123,15 +123,18 @@ public:
      * @param version The version to fetch.
      * @return The IR curve bootstrap pillar at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::ir_curve_bootstrap_pillar> get_pillar_at_version(const std::string& id,
-                                                                           std::uint32_t version);
+    std::optional<domain::ir_curve_bootstrap_pillar>
+    get_pillar_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single IR curve bootstrap pillar by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The IR curve bootstrap pillar if found, std::nullopt otherwise.
      */
-    std::optional<domain::ir_curve_bootstrap_pillar> get_pillar(const std::string& id);
+    std::optional<domain::ir_curve_bootstrap_pillar> get_pillar(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of IR curve bootstrap pillars by primary key.
@@ -159,7 +162,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_pillar(const std::string& id);
+    void delete_pillar(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes IR curve bootstrap pillars by their primary keys.
@@ -168,6 +171,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a IR curve bootstrap pillar.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::ir_curve_bootstrap_pillar> get_pillar_history(const std::string& id);
 

@@ -111,7 +111,7 @@ export interface PutDayCountFractionTypeRequest {
 
 export interface PutDayCountFractionTypeResponse {
     result: Result;
-    day_count_fraction_type: DayCountFractionType;
+    day_count_fraction_type: DayCountFractionType | null;
 }
 
 export interface PutManyDayCountFractionTypesRequest {
@@ -162,7 +162,7 @@ export interface GetDayCountFractionTypeVersionRequest {
 
 export interface GetDayCountFractionTypeVersionResponse {
     result: Result;
-    version: DayCountFractionType;
+    version: DayCountFractionType | null;
 }
 
 export const subjects = {

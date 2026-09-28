@@ -113,7 +113,7 @@ export interface PutPartyIdSchemeRequest {
 
 export interface PutPartyIdSchemeResponse {
     result: Result;
-    party_id_scheme: PartyIdScheme;
+    party_id_scheme: PartyIdScheme | null;
 }
 
 export interface PutManyPartyIdSchemesRequest {
@@ -164,7 +164,7 @@ export interface GetPartyIdSchemeVersionRequest {
 
 export interface GetPartyIdSchemeVersionResponse {
     result: Result;
-    version: PartyIdScheme;
+    version: PartyIdScheme | null;
 }
 
 export const subjects = {

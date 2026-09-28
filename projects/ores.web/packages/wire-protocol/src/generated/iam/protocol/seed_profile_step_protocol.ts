@@ -118,7 +118,7 @@ export interface PutSeedProfileStepRequest {
 
 export interface PutSeedProfileStepResponse {
     result: Result;
-    seed_profile_step: SeedProfileStep;
+    seed_profile_step: SeedProfileStep | null;
 }
 
 export interface PutManySeedProfileStepsRequest {
@@ -184,7 +184,7 @@ export interface GetSeedProfileStepVersionRequest {
 
 export interface GetSeedProfileStepVersionResponse {
     result: Result;
-    version: SeedProfileStep;
+    version: SeedProfileStep | null;
 }
 
 export const subjects = {

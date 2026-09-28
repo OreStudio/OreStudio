@@ -183,7 +183,7 @@ TEST_CASE("write_portfolio_publishes_an_event", tags) {
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.id == v.id)
+                if (decoded && decoded->key.name == v.name)
                     received.push_back(msg);
             }
         }
@@ -226,15 +226,15 @@ TEST_CASE("write_portfolio_publishes_an_event", tags) {
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_portfolio_history(id_str);
+        auto versions = svc.get_portfolio_history(v.name);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_portfolio(id_str);
+        svc.delete_portfolio(v.id);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_portfolio(id_str).has_value());
-        REQUIRE(svc.get_portfolio_history(id_str).size() == versions.size());
+        REQUIRE_FALSE(svc.get_portfolio(v.id).has_value());
+        REQUIRE(svc.get_portfolio_history(v.name).size() == versions.size());
     }
 }

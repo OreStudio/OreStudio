@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a FRA convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::fra_convention> get_fra_convention_history(const std::string& id);
 

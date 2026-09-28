@@ -154,7 +154,7 @@ struct put_dataset_bundle_request {
 
 struct put_dataset_bundle_response {
     ores::utility::domain::result result;
-    ores::dq::domain::dataset_bundle dataset_bundle;
+    std::optional<ores::dq::domain::dataset_bundle> dataset_bundle;
 };
 
 struct put_many_dataset_bundles_request {
@@ -250,7 +250,7 @@ struct get_dataset_bundle_version_request {
 
 struct get_dataset_bundle_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::dataset_bundle version;
+    std::optional<ores::dq::domain::dataset_bundle> version;
 };
 
 /**

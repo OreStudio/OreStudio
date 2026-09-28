@@ -99,7 +99,7 @@ export interface PutPermissionRequest {
 
 export interface PutPermissionResponse {
     result: Result;
-    permission: Permission;
+    permission: Permission | null;
 }
 
 export interface PutManyPermissionsRequest {

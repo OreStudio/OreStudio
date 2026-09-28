@@ -155,12 +155,31 @@ messaging::{{response}}
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
+{{#leading_is_optional}}
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
+    if (!request.{{leading}}) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "relation_required";
+        response.result.message =
+            "This read is scoped by {{leading}}, and the request states none.";
+        return response;
+    }
+{{#leading_is_uuid}}
+    const auto relation = boost::uuids::to_string(*request.{{leading}});
+{{/leading_is_uuid}}
+{{^leading_is_uuid}}
+    const auto relation = *request.{{leading}};
+{{/leading_is_uuid}}
+{{/leading_is_optional}}
+{{^leading_is_optional}}
 {{#leading_is_uuid}}
     const auto relation = boost::uuids::to_string(request.{{leading}});
 {{/leading_is_uuid}}
 {{^leading_is_uuid}}
     const auto relation = request.{{leading}};
 {{/leading_is_uuid}}
+{{/leading_is_optional}}
     response.{{entity_plural_short}} = repo_.read_latest_by_{{leading}}(
         ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_{{entity_singular_short}}_count_by_{{leading}}(ctx_, relation);
@@ -1196,6 +1215,11 @@ ores::utility::domain::result
     // two come to disagree.
 {{#party_id_is_target}}
     stamp_{{name_singular}}(out, ctx_);
+    // The stamp states the owning party, not why the row changed; the caller's
+    // reason is the only source for that, and a branch that ignores it both
+    // loses the reason and leaves the parameter unused.
+    if (!intent.reason_code.empty())
+        out.change_reason_code = intent.reason_code;
 {{/party_id_is_target}}
 {{^party_id_is_target}}
     stamp(out, ctx_,

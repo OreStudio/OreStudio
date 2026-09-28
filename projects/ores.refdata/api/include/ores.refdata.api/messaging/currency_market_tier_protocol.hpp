@@ -154,7 +154,7 @@ struct put_currency_market_tier_request {
 
 struct put_currency_market_tier_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_market_tier currency_market_tier;
+    std::optional<ores::refdata::domain::currency_market_tier> currency_market_tier;
 };
 
 struct put_many_currency_market_tiers_request {
@@ -252,7 +252,7 @@ struct get_currency_market_tier_version_request {
 
 struct get_currency_market_tier_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_market_tier version;
+    std::optional<ores::refdata::domain::currency_market_tier> version;
 };
 
 /**

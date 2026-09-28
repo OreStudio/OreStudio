@@ -158,7 +158,7 @@ struct put_country_request {
 
 struct put_country_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::country country;
+    std::optional<ores::refdata::domain::country> country;
 };
 
 struct put_many_countries_request {
@@ -254,7 +254,7 @@ struct get_country_version_request {
 
 struct get_country_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::country version;
+    std::optional<ores::refdata::domain::country> version;
 };
 
 /**

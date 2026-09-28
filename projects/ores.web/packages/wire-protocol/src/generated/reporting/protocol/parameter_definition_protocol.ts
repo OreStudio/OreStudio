@@ -120,7 +120,7 @@ export interface PutParameterDefinitionRequest {
 
 export interface PutParameterDefinitionResponse {
     result: Result;
-    parameter_definition: ParameterDefinition;
+    parameter_definition: ParameterDefinition | null;
 }
 
 export interface PutManyParameterDefinitionsRequest {
@@ -186,7 +186,7 @@ export interface GetParameterDefinitionVersionRequest {
 
 export interface GetParameterDefinitionVersionResponse {
     result: Result;
-    version: ParameterDefinition;
+    version: ParameterDefinition | null;
 }
 
 export const subjects = {

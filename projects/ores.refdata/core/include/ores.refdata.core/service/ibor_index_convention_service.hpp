@@ -168,6 +168,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a IBOR index convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::ibor_index_convention>
     get_ibor_index_convention_history(const std::string& id);

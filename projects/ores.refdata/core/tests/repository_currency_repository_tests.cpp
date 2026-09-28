@@ -29,18 +29,12 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <thread>
 
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
-
-std::string now_as_of() {
-    return ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
-}
 
 }
 
@@ -59,7 +53,11 @@ TEST_CASE("write_single_currency", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), currency));
+    repo.write(h.context(), currency);
+
+    const auto read_currencies = repo.read_latest(h.context(), currency.iso_code);
+    REQUIRE(read_currencies.size() == 1);
+    CHECK(read_currencies[0].name == currency.name);
 }
 
 TEST_CASE("write_multiple_currencies", tags) {
@@ -71,7 +69,16 @@ TEST_CASE("write_multiple_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), currencies));
+    repo.write(h.context(), currencies);
+
+    const auto read_currencies = repo.read_latest(h.context());
+    for (const auto& written : currencies) {
+        const auto it = std::ranges::find_if(read_currencies, [&](const currency& c) {
+            return c.iso_code == written.iso_code;
+        });
+        REQUIRE(it != read_currencies.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_currencies", tags) {
@@ -89,12 +96,12 @@ TEST_CASE("read_latest_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     // Verify all written currencies can be found (other tests may have added more)
-    CHECK(read_currencies.size() >= written_currencies.size());
     for (const auto& written : written_currencies) {
-        auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
+        const auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
             return c.iso_code == written.iso_code;
         });
-        CHECK(it != read_currencies.end());
+        REQUIRE(it != read_currencies.end());
+        CHECK(it->name == written.name);
     }
 }
 
@@ -135,8 +142,13 @@ TEST_CASE("read_all_currencies", tags) {
     auto read_currencies = repo.read_all(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(!read_currencies.empty());
-    CHECK(read_currencies.size() >= written_currencies.size());
+    for (const auto& written : written_currencies) {
+        const auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
+            return c.iso_code == written.iso_code;
+        });
+        REQUIRE(it != read_currencies.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_all_currencies_multiple_versions", tags) {
@@ -191,7 +203,13 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     currency_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = generate_synthetic_currency(ctx);
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_iso = "XXX";
     BOOST_LOG_SEV(lg, debug) << "Non-existent ISO code: " << nonexistent_iso;
@@ -199,7 +217,14 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
     auto read_currencies = repo.read_latest(h.context(), nonexistent_iso);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(read_currencies.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_currencies, [&](const currency& c) { return c.iso_code == nonexistent_iso; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.iso_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
@@ -262,11 +287,8 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     CHECK(read_currencies[0].rounding_precision == 0);
 }
 
-TEST_CASE("read_currency_at_timepoint_before_creation_is_empty", tags) {
+TEST_CASE("read_currencies_versions_by_key", tags) {
     auto lg(make_logger(test_suite));
-
-    const auto as_of_before = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
@@ -276,13 +298,13 @@ TEST_CASE("read_currency_at_timepoint_before_creation_is_empty", tags) {
     currency_repository repo;
     repo.write(h.context(), currency);
 
-    auto read_currencies = repo.read_at_timepoint(h.context(), as_of_before, currency.iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies at timepoint before creation: " << read_currencies;
-
-    CHECK(read_currencies.size() == 0);
+    CHECK_FALSE(repo.read_at_version(h.context(), currency.iso_code, 99).has_value());
+    const auto versions = repo.read_all(h.context(), currency.iso_code);
+    REQUIRE(versions.size() == 1);
+    CHECK(versions[0].iso_code == currency.iso_code);
 }
 
-TEST_CASE("read_currency_at_timepoint_resolves_prior_version", tags) {
+TEST_CASE("read_currencies_versions_resolve_each_version", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -294,29 +316,25 @@ TEST_CASE("read_currency_at_timepoint_resolves_prior_version", tags) {
     currency_repository repo;
     repo.write(h.context(), currency);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_mid = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
     currency.name = original_name + " v2";
     BOOST_LOG_SEV(lg, debug) << "Currency v2: " << currency;
     repo.write(h.context(), currency);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_after = now_as_of();
+    const auto versions = repo.read_all(h.context(), currency.iso_code);
+    REQUIRE(versions.size() == 2);
+    CHECK(versions[0].name == original_name + " v2");
+    CHECK(versions[1].name == original_name);
 
-    auto read_at_mid = repo.read_at_timepoint(h.context(), as_of_mid, currency.iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency at mid timepoint: " << read_at_mid;
-    REQUIRE(read_at_mid.size() == 1);
-    CHECK(read_at_mid[0].name == original_name);
+    const auto at_v1 = repo.read_at_version(h.context(), currency.iso_code, 1);
+    REQUIRE(at_v1.has_value());
+    CHECK(at_v1->name == original_name);
 
-    auto read_at_after = repo.read_at_timepoint(h.context(), as_of_after, currency.iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency at after timepoint: " << read_at_after;
-    REQUIRE(read_at_after.size() == 1);
-    CHECK(read_at_after[0].name == original_name + " v2");
+    const auto at_v2 = repo.read_at_version(h.context(), currency.iso_code, 2);
+    REQUIRE(at_v2.has_value());
+    CHECK(at_v2->name == original_name + " v2");
 }
 
-TEST_CASE("read_currency_at_timepoint_without_iso_code_filter", tags) {
+TEST_CASE("read_latest_currencies_includes_the_written_row", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -327,12 +345,7 @@ TEST_CASE("read_currency_at_timepoint_without_iso_code_filter", tags) {
     currency_repository repo;
     repo.write(h.context(), currency);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of = now_as_of();
-
-    auto read_currencies = repo.read_at_timepoint(h.context(), as_of);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies at timepoint: " << read_currencies;
-
+    const auto read_currencies = repo.read_latest(h.context());
     const auto found = std::ranges::any_of(
         read_currencies, [&](const auto& v) { return v.iso_code == currency.iso_code; });
     CHECK(found);

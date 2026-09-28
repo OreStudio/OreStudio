@@ -111,7 +111,7 @@ export interface PutAssetClassCodeRequest {
 
 export interface PutAssetClassCodeResponse {
     result: Result;
-    asset_class_code: AssetClassCode;
+    asset_class_code: AssetClassCode | null;
 }
 
 export interface PutManyAssetClassCodesRequest {
@@ -162,7 +162,7 @@ export interface GetAssetClassCodeVersionRequest {
 
 export interface GetAssetClassCodeVersionResponse {
     result: Result;
-    version: AssetClassCode;
+    version: AssetClassCode | null;
 }
 
 export const subjects = {

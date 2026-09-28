@@ -111,7 +111,7 @@ export interface PutBusinessDayConventionTypeRequest {
 
 export interface PutBusinessDayConventionTypeResponse {
     result: Result;
-    business_day_convention_type: BusinessDayConventionType;
+    business_day_convention_type: BusinessDayConventionType | null;
 }
 
 export interface PutManyBusinessDayConventionTypesRequest {
@@ -162,7 +162,7 @@ export interface GetBusinessDayConventionTypeVersionRequest {
 
 export interface GetBusinessDayConventionTypeVersionResponse {
     result: Result;
-    version: BusinessDayConventionType;
+    version: BusinessDayConventionType | null;
 }
 
 export const subjects = {

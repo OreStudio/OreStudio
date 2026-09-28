@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a diary entry type.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::diary_entry_type> get_entry_type_history(const std::string& code);
 

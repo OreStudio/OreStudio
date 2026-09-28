@@ -125,7 +125,7 @@ export interface PutCreditSimulationConfigRequest {
 
 export interface PutCreditSimulationConfigResponse {
     result: Result;
-    credit_simulation_config: CreditSimulationConfig;
+    credit_simulation_config: CreditSimulationConfig | null;
 }
 
 export interface PutManyCreditSimulationConfigsRequest {
@@ -191,7 +191,7 @@ export interface GetCreditSimulationConfigVersionRequest {
 
 export interface GetCreditSimulationConfigVersionResponse {
     result: Result;
-    version: CreditSimulationConfig;
+    version: CreditSimulationConfig | null;
 }
 
 export const subjects = {

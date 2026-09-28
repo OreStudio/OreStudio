@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct counterparty_identifier_key {
-    boost::uuids::uuid id;
+    std::string id_value;
 };
 
 struct counterparty_identifier_write {
@@ -160,7 +160,7 @@ struct put_counterparty_identifier_request {
 
 struct put_counterparty_identifier_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty_identifier counterparty_identifier;
+    std::optional<ores::refdata::domain::counterparty_identifier> counterparty_identifier;
 };
 
 struct put_many_counterparty_identifiers_request {
@@ -284,7 +284,7 @@ struct get_counterparty_identifier_version_request {
 
 struct get_counterparty_identifier_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty_identifier version;
+    std::optional<ores::refdata::domain::counterparty_identifier> version;
 };
 
 /**

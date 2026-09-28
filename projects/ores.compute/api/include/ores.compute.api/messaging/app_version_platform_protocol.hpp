@@ -140,7 +140,7 @@ struct put_app_version_platform_request {
 
 struct put_app_version_platform_response {
     ores::utility::domain::result result;
-    ores::compute::domain::app_version_platform app_version_platform;
+    std::optional<ores::compute::domain::app_version_platform> app_version_platform;
 };
 
 struct put_many_app_version_platforms_request {

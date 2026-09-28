@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a tenor anchor.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::tenor_anchor> get_anchor_history(const std::string& code);
 

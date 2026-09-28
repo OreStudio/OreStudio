@@ -35,7 +35,6 @@
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_status_changed_event.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
-#include "ores.refdata.service/app/application_exception.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"

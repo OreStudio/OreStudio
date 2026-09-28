@@ -111,7 +111,7 @@ export interface PutCreditSimulationMatrixConfigRequest {
 
 export interface PutCreditSimulationMatrixConfigResponse {
     result: Result;
-    credit_simulation_matrix_config: CreditSimulationMatrixConfig;
+    credit_simulation_matrix_config: CreditSimulationMatrixConfig | null;
 }
 
 export interface PutManyCreditSimulationMatrixConfigsRequest {
@@ -162,7 +162,7 @@ export interface GetCreditSimulationMatrixConfigVersionRequest {
 
 export interface GetCreditSimulationMatrixConfigVersionResponse {
     result: Result;
-    version: CreditSimulationMatrixConfig;
+    version: CreditSimulationMatrixConfig | null;
 }
 
 export const subjects = {

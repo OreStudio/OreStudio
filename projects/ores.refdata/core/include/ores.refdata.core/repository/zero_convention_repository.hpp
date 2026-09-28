@@ -124,7 +124,6 @@ public:
     std::optional<domain::zero_convention>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
-
     /**
      * @brief Reads latest zero conventions with pagination support.
      * @param ctx Repository context with database connection

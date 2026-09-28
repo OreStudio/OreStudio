@@ -152,7 +152,7 @@ struct put_floating_index_type_request {
 
 struct put_floating_index_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::floating_index_type floating_index_type;
+    std::optional<ores::refdata::domain::floating_index_type> floating_index_type;
 };
 
 struct put_many_floating_index_types_request {
@@ -249,7 +249,7 @@ struct get_floating_index_type_version_request {
 
 struct get_floating_index_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::floating_index_type version;
+    std::optional<ores::refdata::domain::floating_index_type> version;
 };
 
 /**

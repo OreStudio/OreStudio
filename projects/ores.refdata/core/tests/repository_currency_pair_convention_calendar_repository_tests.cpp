@@ -161,7 +161,11 @@ TEST_CASE("write_single_currency_pair_convention_calendar", tags) {
 
     auto pcc = make_pair_convention_calendar(h, conventions[0].pair_code, calendars[0].code);
     BOOST_LOG_SEV(lg, debug) << "Currency pair convention calendar: " << pcc;
-    CHECK_NOTHROW(repo.write(pcc));
+    repo.write(pcc);
+
+    const auto read_pccs = repo.read_latest(pcc.pair_code, pcc.calendar_code);
+    REQUIRE(read_pccs.size() == 1);
+    CHECK(read_pccs[0].change_commentary == pcc.change_commentary);
 }
 
 TEST_CASE("write_multiple_currency_pair_convention_calendars", tags) {
@@ -188,7 +192,18 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars", tags) {
     }
 
     BOOST_LOG_SEV(lg, debug) << "Currency pair convention calendars: " << pccs;
-    CHECK_NOTHROW(repo.write(pccs));
+    repo.write(pccs);
+
+    const auto read_pccs = repo.read_latest();
+    for (const auto& written : pccs) {
+        const auto it =
+            std::ranges::find_if(read_pccs, [&](const currency_pair_convention_calendar& r) {
+                return r.pair_code == written.pair_code &&
+                       r.calendar_code == written.calendar_code;
+            });
+        REQUIRE(it != read_pccs.end());
+        CHECK(it->change_commentary == written.change_commentary);
+    }
 }
 
 TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", tags) {
@@ -310,15 +325,27 @@ TEST_CASE("remove_currency_pair_convention_calendar", tags) {
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[5].pair_code);
     conv_repo.write(h.context(), {conventions[5]});
-    cal_repo.write(h.context(), {calendars[5]});
+    cal_repo.write(h.context(), {calendars[5], calendars[9]});
 
     auto pcc = make_pair_convention_calendar(h, conventions[5].pair_code, calendars[5].code);
+    auto keeper = make_pair_convention_calendar(h, conventions[5].pair_code, calendars[9].code);
     repo.write(pcc);
+    repo.write(keeper);
 
-    CHECK_NOTHROW(repo.remove(conventions[5].pair_code, calendars[5].code));
+    repo.remove(conventions[5].pair_code, calendars[5].code);
 
-    auto read_pccs = repo.read_latest_by_calendar(calendars[5].code);
-    CHECK(read_pccs.empty());
+    const auto removed_rows = repo.read_latest_by_calendar(calendars[5].code);
+    const auto still_present = std::ranges::any_of(
+        removed_rows,
+        [&](const auto& r) { return r.calendar_code == calendars[5].code; });
+    CHECK_FALSE(still_present);
+
+    // The removal took only the row it named.
+    const auto keeper_rows = repo.read_latest_by_calendar(keeper.calendar_code);
+    const auto keeper_it = std::ranges::find_if(
+        keeper_rows, [&](const auto& r) { return r.pair_code == keeper.pair_code; });
+    REQUIRE(keeper_it != keeper_rows.end());
+    CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }
 
 TEST_CASE("remove_by_pair_currency_pair_convention_calendar", tags) {
@@ -335,24 +362,60 @@ TEST_CASE("remove_by_pair_currency_pair_convention_calendar", tags) {
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[6].pair_code);
-    conv_repo.write(h.context(), {conventions[6]});
-    cal_repo.write(h.context(), {calendars[6]});
+    write_synthetic_pair(h, gctx, conventions[9].pair_code);
+    conv_repo.write(h.context(), {conventions[6], conventions[9]});
+    cal_repo.write(h.context(), {calendars[6], calendars[9]});
 
     auto pcc = make_pair_convention_calendar(h, conventions[6].pair_code, calendars[6].code);
+    auto keeper = make_pair_convention_calendar(h, conventions[9].pair_code, calendars[9].code);
     repo.write(pcc);
+    repo.write(keeper);
 
-    CHECK_NOTHROW(repo.remove_by_pair(conventions[6].pair_code));
+    repo.remove_by_pair(conventions[6].pair_code);
 
     auto read_pccs = repo.read_latest_by_pair(conventions[6].pair_code);
     CHECK(read_pccs.empty());
+
+    // The removal is scoped to the pair it named.
+    const auto keeper_rows = repo.read_latest_by_pair(keeper.pair_code);
+    const auto keeper_it = std::ranges::find_if(
+        keeper_rows, [&](const auto& r) { return r.calendar_code == keeper.calendar_code; });
+    REQUIRE(keeper_it != keeper_rows.end());
+    CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }
 
 TEST_CASE("read_nonexistent_currency_pair_convention_calendar", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+
+    currency_pair_convention_repository conv_repo;
+    calendar_repository cal_repo;
     currency_pair_convention_calendar_repository repo(h.context());
 
+    auto gctx = ores::testing::make_generation_context(h);
+    write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[9].pair_code);
+    conv_repo.write(h.context(), {conventions[9]});
+    cal_repo.write(h.context(), {calendars[9]});
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper =
+        make_pair_convention_calendar(h, conventions[9].pair_code, calendars[9].code);
+    repo.write(keeper);
+
     auto read_pccs = repo.read_latest_by_pair("ZZZ/ZZZ");
-    CHECK(read_pccs.empty());
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_pccs, [&](const auto& r) { return r.pair_code == "ZZZ/ZZZ"; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the pair that was written.
+    const auto keeper_rows = repo.read_latest_by_pair(keeper.pair_code);
+    const auto keeper_it = std::ranges::find_if(
+        keeper_rows, [&](const auto& r) { return r.calendar_code == keeper.calendar_code; });
+    REQUIRE(keeper_it != keeper_rows.end());
+    CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }

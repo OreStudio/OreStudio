@@ -64,15 +64,6 @@ struct party_currencies_filter {
     std::optional<boost::uuids::uuid> party_id;
 };
 
-struct party_currency_event {
-    boost::uuids::uuid event_id;
-    party_currency_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
 struct list_party_currencies_request {
     using response_type = struct list_party_currencies_response;
     static constexpr std::string_view nats_subject = "refdata.v1.party_currencies.list";
@@ -147,7 +138,7 @@ struct put_party_currency_request {
 
 struct put_party_currency_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party_currency party_currency;
+    std::optional<ores::refdata::domain::party_currency> party_currency;
 };
 
 struct put_many_party_currencies_request {

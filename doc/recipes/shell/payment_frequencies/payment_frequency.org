@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 1283A57A-4E15-52ED-9C04-5C9D0D03A92D
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the payment_frequencies commands from the shell?
 #+description: Every command the payment_frequencies submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -92,7 +93,7 @@ It is addressed at =refdata.v1.payment_frequencies.put=.
 
 #+name: payment_frequencies-add
 #+begin_src ores-shell :tangle payment_frequencies-add.ores :exports none
-payment_frequencies add __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+payment_frequencies add __none__ __none__ __none__ __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =refdata.v1.payment_frequencies.put=.
 
 #+name: payment_frequencies-set
 #+begin_src ores-shell :tangle payment_frequencies-set.ores :exports none
-payment_frequencies set __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+payment_frequencies set __none__ __none__ __none__ __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =refdata.v1.payment_frequencies.put_many=.
 
 #+name: payment_frequencies-put-many
 #+begin_src ores-shell :tangle payment_frequencies-put-many.ores :exports none
-payment_frequencies put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+payment_frequencies put-many --count 1 __none__ __none__ __none__ __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

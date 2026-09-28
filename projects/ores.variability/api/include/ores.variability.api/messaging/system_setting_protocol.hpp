@@ -156,7 +156,7 @@ struct put_system_setting_request {
 
 struct put_system_setting_response {
     ores::utility::domain::result result;
-    ores::variability::domain::system_setting system_setting;
+    std::optional<ores::variability::domain::system_setting> system_setting;
 };
 
 struct put_many_system_settings_request {
@@ -252,7 +252,7 @@ struct get_system_setting_version_request {
 
 struct get_system_setting_version_response {
     ores::utility::domain::result result;
-    ores::variability::domain::system_setting version;
+    std::optional<ores::variability::domain::system_setting> version;
 };
 
 /**

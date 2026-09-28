@@ -111,7 +111,7 @@ export interface PutCurrencyMarketTierRequest {
 
 export interface PutCurrencyMarketTierResponse {
     result: Result;
-    currency_market_tier: CurrencyMarketTier;
+    currency_market_tier: CurrencyMarketTier | null;
 }
 
 export interface PutManyCurrencyMarketTiersRequest {
@@ -162,7 +162,7 @@ export interface GetCurrencyMarketTierVersionRequest {
 
 export interface GetCurrencyMarketTierVersionResponse {
     result: Result;
-    version: CurrencyMarketTier;
+    version: CurrencyMarketTier | null;
 }
 
 export const subjects = {

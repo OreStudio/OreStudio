@@ -154,7 +154,7 @@ struct put_tenant_status_request {
 
 struct put_tenant_status_response {
     ores::utility::domain::result result;
-    ores::iam::domain::tenant_status tenant_status;
+    std::optional<ores::iam::domain::tenant_status> tenant_status;
 };
 
 struct put_many_tenant_statuses_request {
@@ -250,7 +250,7 @@ struct get_tenant_status_version_request {
 
 struct get_tenant_status_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::tenant_status version;
+    std::optional<ores::iam::domain::tenant_status> version;
 };
 
 /**

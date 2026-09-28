@@ -156,7 +156,7 @@ struct put_fsm_transition_request {
 
 struct put_fsm_transition_response {
     ores::utility::domain::result result;
-    ores::dq::domain::fsm_transition fsm_transition;
+    std::optional<ores::dq::domain::fsm_transition> fsm_transition;
 };
 
 struct put_many_fsm_transitions_request {
@@ -252,7 +252,7 @@ struct get_fsm_transition_version_request {
 
 struct get_fsm_transition_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::fsm_transition version;
+    std::optional<ores::dq::domain::fsm_transition> version;
 };
 
 /**

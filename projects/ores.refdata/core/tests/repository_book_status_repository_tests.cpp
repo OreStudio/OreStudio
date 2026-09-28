@@ -53,7 +53,11 @@ TEST_CASE("write_single_book_status", tags) {
     BOOST_LOG_SEV(lg, debug) << "Book status: " << bs;
 
     book_status_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), bs));
+    repo.write(h.context(), bs);
+
+    const auto rows = repo.read_latest(h.context(), bs.code);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].name == bs.name);
 }
 
 TEST_CASE("write_multiple_book_statuses", tags) {
@@ -68,7 +72,16 @@ TEST_CASE("write_multiple_book_statuses", tags) {
     BOOST_LOG_SEV(lg, debug) << "Book statuses: " << book_statuses;
 
     book_status_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), book_statuses));
+    repo.write(h.context(), book_statuses);
+
+    const auto rows = repo.read_latest(h.context());
+    for (const auto& written : book_statuses) {
+        const auto it = std::ranges::find_if(rows, [&](const book_status& bs) {
+            return bs.code == written.code;
+        });
+        REQUIRE(it != rows.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_book_statuses", tags) {
@@ -88,7 +101,11 @@ TEST_CASE("read_latest_book_statuses", tags) {
     auto read_book_statuses = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
-    CHECK(read_book_statuses.size() >= written_book_statuses.size());
+    for (const auto& written : written_book_statuses) {
+        const auto found = std::ranges::any_of(
+            read_book_statuses, [&](const auto& v) { return v.code == written.code; });
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_book_status_by_code", tags) {
@@ -119,7 +136,13 @@ TEST_CASE("read_nonexistent_book_status_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     book_status_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = generate_synthetic_book_status(ctx);
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
@@ -127,7 +150,14 @@ TEST_CASE("read_nonexistent_book_status_code", tags) {
     auto read_book_statuses = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read book statuses: " << read_book_statuses;
 
-    CHECK(read_book_statuses.size() == 0);
+    const auto found = std::ranges::any_of(
+        read_book_statuses, [&](const auto& v) { return v.code == nonexistent_code; });
+    CHECK_FALSE(found);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
 TEST_CASE("read_book_status_versions_by_code", tags) {

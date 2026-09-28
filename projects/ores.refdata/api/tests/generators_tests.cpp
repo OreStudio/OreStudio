@@ -30,7 +30,9 @@
 #include "ores.refdata.api/generators/party_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -72,10 +74,14 @@ TEST_CASE("party_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_parties(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<boost::uuids::uuid> ids;
     for (const auto& item : items) {
+        ids.insert(item.id);
         CHECK(!item.id.is_nil());
         CHECK(!item.full_name.empty());
     }
+    CHECK(ids.size() == count);
 }
 
 // --- counterparty ---
@@ -106,10 +112,14 @@ TEST_CASE("counterparty_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_counterparties(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<boost::uuids::uuid> ids;
     for (const auto& item : items) {
+        ids.insert(item.id);
         CHECK(!item.id.is_nil());
         CHECK(!item.full_name.empty());
     }
+    CHECK(ids.size() == count);
 }
 
 // --- contact_type ---
@@ -137,9 +147,13 @@ TEST_CASE("contact_type_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_contact_types(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        codes.insert(item.code);
         CHECK(!item.code.empty());
     }
+    CHECK(codes.size() == count);
 }
 
 // --- party_type ---
@@ -167,9 +181,13 @@ TEST_CASE("party_type_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_party_types(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        codes.insert(item.code);
         CHECK(!item.code.empty());
     }
+    CHECK(codes.size() == count);
 }
 
 // --- party_status ---
@@ -197,9 +215,13 @@ TEST_CASE("party_status_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_party_statuses(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        codes.insert(item.code);
         CHECK(!item.code.empty());
     }
+    CHECK(codes.size() == count);
 }
 
 // --- party_id_scheme ---
@@ -228,9 +250,13 @@ TEST_CASE("party_id_scheme_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_party_id_schemes(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<std::string> codes;
     for (const auto& item : items) {
+        codes.insert(item.code);
         CHECK(!item.code.empty());
     }
+    CHECK(codes.size() == count);
 }
 
 // --- party_identifier ---
@@ -259,10 +285,14 @@ TEST_CASE("party_identifier_generator_produces_multiple_instances", tags) {
     auto items = generate_synthetic_party_identifiers(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<boost::uuids::uuid> ids;
     for (const auto& item : items) {
+        ids.insert(item.id);
         CHECK(!item.id.is_nil());
         CHECK(!item.id_value.empty());
     }
+    CHECK(ids.size() == count);
 }
 
 // --- counterparty_identifier ---
@@ -291,10 +321,14 @@ TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags)
     auto items = generate_synthetic_counterparty_identifiers(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<boost::uuids::uuid> ids;
     for (const auto& item : items) {
+        ids.insert(item.id);
         CHECK(!item.id.is_nil());
         CHECK(!item.id_value.empty());
     }
+    CHECK(ids.size() == count);
 }
 
 // --- party_contact_information ---
@@ -326,10 +360,14 @@ TEST_CASE("party_contact_information_generator_produces_multiple_instances", tag
     auto items = generate_synthetic_party_contact_informations(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<boost::uuids::uuid> ids;
     for (const auto& item : items) {
+        ids.insert(item.id);
         CHECK(!item.id.is_nil());
         CHECK(!item.city.empty());
     }
+    CHECK(ids.size() == count);
 }
 
 // --- counterparty_contact_information ---
@@ -361,8 +399,12 @@ TEST_CASE("counterparty_contact_information_generator_produces_multiple_instance
     auto items = generate_synthetic_counterparty_contact_informations(count, ctx);
 
     CHECK(items.size() == count);
+
+    std::set<boost::uuids::uuid> ids;
     for (const auto& item : items) {
+        ids.insert(item.id);
         CHECK(!item.id.is_nil());
         CHECK(!item.city.empty());
     }
+    CHECK(ids.size() == count);
 }

@@ -154,7 +154,7 @@ struct put_currency_pair_request {
 
 struct put_currency_pair_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair currency_pair;
+    std::optional<ores::refdata::domain::currency_pair> currency_pair;
 };
 
 struct put_many_currency_pairs_request {
@@ -250,7 +250,7 @@ struct get_currency_pair_version_request {
 
 struct get_currency_pair_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_pair version;
+    std::optional<ores::refdata::domain::currency_pair> version;
 };
 
 /**

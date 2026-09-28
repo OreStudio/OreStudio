@@ -111,7 +111,7 @@ export interface PutBookPurposeTypeRequest {
 
 export interface PutBookPurposeTypeResponse {
     result: Result;
-    book_purpose_type: BookPurposeType;
+    book_purpose_type: BookPurposeType | null;
 }
 
 export interface PutManyBookPurposeTypesRequest {
@@ -162,7 +162,7 @@ export interface GetBookPurposeTypeVersionRequest {
 
 export interface GetBookPurposeTypeVersionResponse {
     result: Result;
-    version: BookPurposeType;
+    version: BookPurposeType | null;
 }
 
 export const subjects = {

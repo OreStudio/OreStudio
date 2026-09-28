@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a asset class code.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::asset_class_code> get_asset_class_history(const std::string& code);
 

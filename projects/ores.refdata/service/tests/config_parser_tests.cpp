@@ -133,7 +133,8 @@ TEST_CASE("parse_help_returns_empty", tags) {
     const auto result = parser{}.parse(args, info, err);
 
     CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    CHECK(info.str().find("Reference data service") != std::string::npos);
+    CHECK(info.str().find("Usage: ores.refdata.service [options]") != std::string::npos);
 }
 
 TEST_CASE("parse_version_returns_empty", tags) {
@@ -144,7 +145,8 @@ TEST_CASE("parse_version_returns_empty", tags) {
     const auto result = parser{}.parse(args, info, err);
 
     CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    CHECK(info.str().find("ores.refdata.service v") != std::string::npos);
+    CHECK(info.str().find("License GPLv3") != std::string::npos);
 }
 
 TEST_CASE("parse_unknown_option_throws", tags) {

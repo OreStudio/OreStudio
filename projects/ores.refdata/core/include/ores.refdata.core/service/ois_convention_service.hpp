@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a OIS convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::ois_convention> get_ois_convention_history(const std::string& id);
 

@@ -51,11 +51,15 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::counterparty> read_one(repository::counterparty_repository& repo,
                                            const ores::database::context& ctx,
                                            const messaging::counterparty_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+    return repo.read_latest_by_short_code(ctx, key.short_code);
 }
 
 /**
@@ -66,7 +70,7 @@ std::vector<domain::counterparty> read_one(repository::counterparty_repository& 
  */
 messaging::counterparty_key key_from(const domain::counterparty& v) {
     messaging::counterparty_key key;
-    key.id = v.id;
+    key.short_code = v.short_code;
     return key;
 }
 
@@ -206,7 +210,14 @@ counterparty_service::delete_counterparty(const messaging::delete_counterparty_r
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+    const auto named = read_one(repo_, ctx_, request.removal.key);
+    if (named.empty()) {
+        response.result.outcome = outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    switch (repo_.remove(ctx_, boost::uuids::to_string(row.id), expected)) {
         case repository::counterparty_repository::remove_status::removed:
             break;
         case repository::counterparty_repository::remove_status::missing:
@@ -247,10 +258,22 @@ messaging::delete_many_counterparties_response counterparty_service::delete_many
     }
     if (request.removals.empty())
         return response;
+    // A removal names its row by the key a caller holds, and the repository
+    // takes the storage key, so the two are joined once here rather than at
+    // each column's conversion. A name that matches no row is skipped: the
+    // batch reports what it removed, and a row that is already gone is not a
+    // failure.
+    std::vector<domain::counterparty> resolved;
+    resolved.reserve(request.removals.size());
+    for (const auto& removal : request.removals) {
+        auto named = read_one(repo_, ctx_, removal.key);
+        if (!named.empty())
+            resolved.push_back(std::move(named.front()));
+    }
     std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
+    id_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        id_keys.push_back(boost::uuids::to_string(row.id));
     repo_.remove(ctx_, id_keys);
     return response;
 }
@@ -271,7 +294,16 @@ messaging::list_counterparty_versions_response counterparty_service::list_counte
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
+    // The versions of the row the caller's key names. The repository reads by
+    // the storage key, so the declared key is resolved once here.
+    const auto named = read_one(repo_, ctx_, request.key);
+    if (named.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(row.id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -286,8 +318,16 @@ messaging::list_counterparty_versions_response counterparty_service::list_counte
 messaging::get_counterparty_version_response counterparty_service::get_counterparty_version(
     const messaging::get_counterparty_version_request& request) {
     messaging::get_counterparty_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.counterparty.id), request.key.version);
+    // The version key nests the entity's own key, which is the declared one.
+    // The repository reads by the storage key, so it is resolved once here.
+    const auto named = read_one(repo_, ctx_, request.key.counterparty);
+    if (named.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        return response;
+    }
+    const auto& row = named.front();
+    auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -359,18 +399,31 @@ std::uint32_t counterparty_service::count_counterparties() {
 
 
 std::optional<domain::counterparty>
-counterparty_service::get_counterparty_at_version(const std::string& id, std::uint32_t version) {
+counterparty_service::get_counterparty_at_version(const boost::uuids::uuid& id,
+                                                  std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
-std::optional<domain::counterparty> counterparty_service::get_counterparty(const std::string& id) {
+std::optional<domain::counterparty>
+counterparty_service::get_counterparty(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
+}
+
+std::optional<domain::counterparty>
+counterparty_service::get_counterparty_by_short_code(const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty by short_code: " << short_code;
+    messaging::counterparty_key k;
+    k.short_code = short_code;
+    auto found = read_one(repo_, ctx_, k);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
 }
 
 std::optional<domain::counterparty>
@@ -420,9 +473,9 @@ void counterparty_service::save_counterparties(
     repo_.write(ctx_, ts);
 }
 
-void counterparty_service::delete_counterparty(const std::string& id) {
+void counterparty_service::delete_counterparty(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
@@ -437,9 +490,25 @@ void counterparty_service::delete_counterparties(const std::vector<std::string>&
 }
 
 std::vector<domain::counterparty>
-counterparty_service::get_counterparty_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. " << "id: " << id;
-    return repo_.read_all(ctx_, id);
+counterparty_service::get_counterparty_history(const std::string& key) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. key: " << key;
+    // The caller holds the key the model declares and this reads by the
+    // storage key, so the two are joined here exactly as they are for any
+    // other read. Without this step a provider looks the versions up under a
+    // value the storage key never holds, and reports an entity that has a
+    // history as having none.
+    messaging::counterparty_key k;
+    k.short_code = key;
+    // A delete here closes the transaction-time window and leaves every version
+    // in place, so resolving through a latest read would lose the history at
+    // exactly the moment it is wanted. This takes the newest row carrying the
+    // declared key whether or not it is still current, which for a record that
+    // still exists is the same row the latest read would have returned.
+    const auto found = repo_.read_any_by_short_code(ctx_, k.short_code);
+    if (found.empty())
+        return {};
+    const auto& row = found.front();
+    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
 }
 
 std::vector<domain::counterparty>

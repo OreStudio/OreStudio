@@ -154,7 +154,7 @@ struct put_tenor_kind_request {
 
 struct put_tenor_kind_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_kind tenor_kind;
+    std::optional<ores::refdata::domain::tenor_kind> tenor_kind;
 };
 
 struct put_many_tenor_kinds_request {
@@ -250,7 +250,7 @@ struct get_tenor_kind_version_request {
 
 struct get_tenor_kind_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::tenor_kind version;
+    std::optional<ores::refdata::domain::tenor_kind> version;
 };
 
 /**

@@ -26,6 +26,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -53,7 +54,11 @@ TEST_CASE("write_single_counterparty", tags) {
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
     counterparty_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), cp));
+    repo.write(h.context(), cp);
+
+    const auto read_counterparties = repo.read_latest(h.context(), boost::uuids::to_string(cp.id));
+    REQUIRE(read_counterparties.size() == 1);
+    CHECK(read_counterparties[0].full_name == cp.full_name);
 }
 
 TEST_CASE("write_multiple_counterparties", tags) {
@@ -68,7 +73,16 @@ TEST_CASE("write_multiple_counterparties", tags) {
     BOOST_LOG_SEV(lg, debug) << "Counterparties: " << counterparties;
 
     counterparty_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), counterparties));
+    repo.write(h.context(), counterparties);
+
+    const auto read_counterparties = repo.read_latest(h.context());
+    for (const auto& written : counterparties) {
+        const auto it = std::ranges::find_if(read_counterparties, [&](const counterparty& c) {
+            return c.id == written.id;
+        });
+        REQUIRE(it != read_counterparties.end());
+        CHECK(it->full_name == written.full_name);
+    }
 }
 
 TEST_CASE("read_latest_counterparties", tags) {
@@ -88,7 +102,13 @@ TEST_CASE("read_latest_counterparties", tags) {
     auto read_counterparties = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
-    CHECK(read_counterparties.size() >= written_counterparties.size());
+    for (const auto& written : written_counterparties) {
+        const auto it = std::ranges::find_if(read_counterparties, [&](const counterparty& c) {
+            return c.id == written.id;
+        });
+        REQUIRE(it != read_counterparties.end());
+        CHECK(it->full_name == written.full_name);
+    }
 }
 
 TEST_CASE("read_latest_counterparty_by_id", tags) {
@@ -119,7 +139,14 @@ TEST_CASE("read_nonexistent_counterparty_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     counterparty_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    auto keeper = generate_synthetic_counterparty(ctx);
+    keeper.change_reason_code = "system.test";
+    repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
@@ -128,5 +155,12 @@ TEST_CASE("read_nonexistent_counterparty_id", tags) {
         repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
-    CHECK(read_counterparties.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_counterparties, [&](const counterparty& c) { return c.id == nonexistent_id; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), boost::uuids::to_string(keeper.id));
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].full_name == keeper.full_name);
 }

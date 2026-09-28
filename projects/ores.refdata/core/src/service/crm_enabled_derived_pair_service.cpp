@@ -50,6 +50,10 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::crm_enabled_derived_pair>
 read_one(repository::crm_enabled_derived_pair_repository& repo,
@@ -80,6 +84,7 @@ messaging::crm_enabled_derived_pair_key key_from(const domain::crm_enabled_deriv
 domain::crm_enabled_derived_pair to_domain(const messaging::crm_enabled_derived_pair_write& write) {
     domain::crm_enabled_derived_pair v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.config_id = write.config_id;
     v.base_currency_code = write.base_currency_code;
     v.quote_currency_code = write.quote_currency_code;
@@ -368,17 +373,17 @@ std::uint32_t crm_enabled_derived_pair_service::count_crm_enabled_derived_pairs(
 
 
 std::optional<domain::crm_enabled_derived_pair>
-crm_enabled_derived_pair_service::get_crm_enabled_derived_pair_at_version(const std::string& id,
-                                                                          std::uint32_t version) {
+crm_enabled_derived_pair_service::get_crm_enabled_derived_pair_at_version(
+    const boost::uuids::uuid& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting CRM enabled derived pair at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::crm_enabled_derived_pair>
-crm_enabled_derived_pair_service::get_crm_enabled_derived_pair(const std::string& id) {
+crm_enabled_derived_pair_service::get_crm_enabled_derived_pair(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting CRM enabled derived pair. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -416,9 +421,10 @@ void crm_enabled_derived_pair_service::save_crm_enabled_derived_pairs(
     repo_.write(ctx_, ts);
 }
 
-void crm_enabled_derived_pair_service::delete_crm_enabled_derived_pair(const std::string& id) {
+void crm_enabled_derived_pair_service::delete_crm_enabled_derived_pair(
+    const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed CRM enabled derived pair. " << "id: " << id;
 }
 

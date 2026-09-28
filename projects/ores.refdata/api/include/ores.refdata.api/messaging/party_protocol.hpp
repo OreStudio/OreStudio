@@ -38,7 +38,7 @@
 namespace ores::refdata::messaging {
 
 struct party_key {
-    boost::uuids::uuid id;
+    std::string short_code;
 };
 
 struct party_write {
@@ -163,7 +163,7 @@ struct put_party_request {
 
 struct put_party_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party party;
+    std::optional<ores::refdata::domain::party> party;
 };
 
 struct put_many_parties_request {
@@ -259,7 +259,7 @@ struct get_party_version_request {
 
 struct get_party_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::party version;
+    std::optional<ores::refdata::domain::party> version;
 };
 
 /**
@@ -278,7 +278,7 @@ struct get_party_composite_as_of_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string id;
+    boost::uuids::uuid id;
     int version = 0;
 };
 

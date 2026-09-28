@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a curve role.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::curve_role> get_role_history(const std::string& code);
 

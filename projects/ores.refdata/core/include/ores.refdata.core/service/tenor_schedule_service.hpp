@@ -209,6 +209,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a tenor schedule.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::tenor_schedule> get_schedule_history(const std::string& code);
 

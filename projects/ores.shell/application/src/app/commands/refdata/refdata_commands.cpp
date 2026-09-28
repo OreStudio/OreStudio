@@ -41,6 +41,8 @@
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/ibor_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/instrument_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/ir_curve_bootstrap_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/ir_curve_bootstrap_pillar_commands.hpp"
 #include "ores.shell/app/commands/refdata/ledger_feed_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/leg_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/monetary_nature_commands.hpp"
@@ -118,6 +120,8 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     fra_convention_commands::register_commands(root_menu, session);
     ibor_index_convention_commands::register_commands(root_menu, session);
     instrument_code_commands::register_commands(root_menu, session);
+    ir_curve_bootstrap_config_commands::register_commands(root_menu, session);
+    ir_curve_bootstrap_pillar_commands::register_commands(root_menu, session);
     ledger_feed_type_commands::register_commands(root_menu, session);
     leg_type_commands::register_commands(root_menu, session);
     monetary_nature_commands::register_commands(root_menu, session);

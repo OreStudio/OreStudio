@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/counterparties/counterparty.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-counterparties version 00000000-0000-0000-0000-000000000000 --version 1
+counterparties version __none__ --version 1

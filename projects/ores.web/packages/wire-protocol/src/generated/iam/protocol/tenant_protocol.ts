@@ -114,7 +114,7 @@ export interface PutTenantRequest {
 
 export interface PutTenantResponse {
     result: Result;
-    tenant: Tenant;
+    tenant: Tenant | null;
 }
 
 export interface PutManyTenantsRequest {
@@ -165,7 +165,7 @@ export interface GetTenantVersionRequest {
 
 export interface GetTenantVersionResponse {
     result: Result;
-    version: Tenant;
+    version: Tenant | null;
 }
 
 export const subjects = {

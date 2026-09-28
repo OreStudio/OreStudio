@@ -29,17 +29,11 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
-#include <thread>
 
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
-
-std::string now_as_of() {
-    return ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
-}
 
 }
 
@@ -55,12 +49,16 @@ TEST_CASE("write_single_country", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto countries = generate_fictional_countries(1, ctx);
-    REQUIRE(!countries.empty());
+    REQUIRE(countries.size() == 1);
     auto cntry = countries[0];
     BOOST_LOG_SEV(lg, debug) << "Country: " << cntry;
 
     country_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), cntry));
+    repo.write(h.context(), cntry);
+
+    const auto read_countries = repo.read_latest(h.context(), cntry.alpha2_code);
+    REQUIRE(read_countries.size() == 1);
+    CHECK(read_countries[0].name == cntry.name);
 }
 
 TEST_CASE("write_multiple_countries", tags) {
@@ -72,7 +70,16 @@ TEST_CASE("write_multiple_countries", tags) {
     BOOST_LOG_SEV(lg, debug) << "Countries: " << countries;
 
     country_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), countries));
+    repo.write(h.context(), countries);
+
+    const auto read_countries = repo.read_latest(h.context());
+    for (const auto& written : countries) {
+        const auto it = std::ranges::find_if(read_countries, [&](const country& c) {
+            return c.alpha2_code == written.alpha2_code;
+        });
+        REQUIRE(it != read_countries.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_countries", tags) {
@@ -89,7 +96,13 @@ TEST_CASE("read_latest_countries", tags) {
     auto read_countries = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
-    CHECK(read_countries.size() >= written_countries.size());
+    for (const auto& written : written_countries) {
+        const auto it = std::ranges::find_if(read_countries, [&written](const country& c) {
+            return c.alpha2_code == written.alpha2_code;
+        });
+        REQUIRE(it != read_countries.end());
+        CHECK(it->name == written.name);
+    }
 }
 
 TEST_CASE("read_latest_country_by_alpha2_code", tags) {
@@ -121,7 +134,13 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     country_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = generate_synthetic_country(ctx);
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent alpha2 code: " << nonexistent_code;
@@ -129,14 +148,18 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     auto read_countries = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;
 
-    CHECK(read_countries.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_countries, [&](const country& c) { return c.alpha2_code == nonexistent_code; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.alpha2_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }
 
-TEST_CASE("read_country_at_timepoint_before_creation_is_empty", tags) {
+TEST_CASE("read_country_versions_by_code", tags) {
     auto lg(make_logger(test_suite));
-
-    const auto as_of_before = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
@@ -146,13 +169,13 @@ TEST_CASE("read_country_at_timepoint_before_creation_is_empty", tags) {
     country_repository repo;
     repo.write(h.context(), cntry);
 
-    auto read_countries = repo.read_at_timepoint(h.context(), as_of_before, cntry.alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Read countries at timepoint before creation: " << read_countries;
-
-    CHECK(read_countries.size() == 0);
+    CHECK_FALSE(repo.read_at_version(h.context(), cntry.alpha2_code, 99).has_value());
+    const auto versions = repo.read_all(h.context(), cntry.alpha2_code);
+    REQUIRE(versions.size() == 1);
+    CHECK(versions[0].alpha2_code == cntry.alpha2_code);
 }
 
-TEST_CASE("read_country_at_timepoint_resolves_prior_version", tags) {
+TEST_CASE("read_country_versions_resolve_each_version", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -164,29 +187,25 @@ TEST_CASE("read_country_at_timepoint_resolves_prior_version", tags) {
     country_repository repo;
     repo.write(h.context(), cntry);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_mid = now_as_of();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
     cntry.name = original_name + " v2";
     BOOST_LOG_SEV(lg, debug) << "Country v2: " << cntry;
     repo.write(h.context(), cntry);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of_after = now_as_of();
+    const auto versions = repo.read_all(h.context(), cntry.alpha2_code);
+    REQUIRE(versions.size() == 2);
+    CHECK(versions[0].name == original_name + " v2");
+    CHECK(versions[1].name == original_name);
 
-    auto read_at_mid = repo.read_at_timepoint(h.context(), as_of_mid, cntry.alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Read country at mid timepoint: " << read_at_mid;
-    REQUIRE(read_at_mid.size() == 1);
-    CHECK(read_at_mid[0].name == original_name);
+    const auto at_v1 = repo.read_at_version(h.context(), cntry.alpha2_code, 1);
+    REQUIRE(at_v1.has_value());
+    CHECK(at_v1->name == original_name);
 
-    auto read_at_after = repo.read_at_timepoint(h.context(), as_of_after, cntry.alpha2_code);
-    BOOST_LOG_SEV(lg, debug) << "Read country at after timepoint: " << read_at_after;
-    REQUIRE(read_at_after.size() == 1);
-    CHECK(read_at_after[0].name == original_name + " v2");
+    const auto at_v2 = repo.read_at_version(h.context(), cntry.alpha2_code, 2);
+    REQUIRE(at_v2.has_value());
+    CHECK(at_v2->name == original_name + " v2");
 }
 
-TEST_CASE("read_country_at_timepoint_without_alpha2_code_filter", tags) {
+TEST_CASE("read_latest_country_includes_the_written_row", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -197,12 +216,7 @@ TEST_CASE("read_country_at_timepoint_without_alpha2_code_filter", tags) {
     country_repository repo;
     repo.write(h.context(), cntry);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    const auto as_of = now_as_of();
-
-    auto read_countries = repo.read_at_timepoint(h.context(), as_of);
-    BOOST_LOG_SEV(lg, debug) << "Read countries at timepoint: " << read_countries;
-
+    const auto read_countries = repo.read_latest(h.context());
     const auto found = std::ranges::any_of(
         read_countries, [&](const auto& v) { return v.alpha2_code == cntry.alpha2_code; });
     CHECK(found);

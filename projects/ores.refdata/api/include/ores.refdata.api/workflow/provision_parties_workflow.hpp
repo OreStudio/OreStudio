@@ -79,8 +79,10 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "save_party";
             s.description = "Create party record in the reference data service.";
-            s.command_subject = "refdata.v1.parties.put";
-            s.compensation_subject = "refdata.v1.parties.delete";
+            s.command_subject =
+                std::string(ores::refdata::messaging::put_party_request::nats_subject);
+            s.compensation_subject =
+                std::string(ores::refdata::messaging::delete_party_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
                                  const workflow_step_results&) -> std::string {
@@ -116,7 +118,7 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
                 if (!cr)
                     return "{}";
                 return rfl::json::write(ores::refdata::messaging::delete_party_request{
-                    .removal = {.key = {.id = cr->change.write.id}},
+                    .removal = {.key = {.short_code = cr->change.write.short_code}},
                     .intent = {.reason_code = "workflow",
                                .commentary = "Compensating a failed provisioning"}});
             };

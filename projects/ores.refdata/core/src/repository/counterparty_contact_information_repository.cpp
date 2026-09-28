@@ -177,6 +177,25 @@ counterparty_contact_information_repository::read_latest_by_code(context ctx,
         lg(),
         "Reading latest counterparty contact information by contact_type.");
 }
+std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_repository::read_latest_by_contact_type(
+    context ctx, const std::string& contact_type) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest counterparty contact information by contact_type: " << contact_type;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "contact_type"_c == contact_type &&
+                             "valid_to"_c == max.value());
+
+    return execute_read_query<counterparty_contact_information_entity,
+                              domain::counterparty_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty contact information by contact_type.");
+}
 
 std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_any_by_contact_type(
@@ -239,7 +258,6 @@ counterparty_contact_information_repository::read_at_version(context ctx,
         return std::nullopt;
     return entities.front();
 }
-
 
 std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_latest_by_counterparty_id(
@@ -423,6 +441,14 @@ counterparty_contact_information_repository::read_latest(context ctx,
 
 void counterparty_contact_information_repository::remove(context ctx,
                                                          const std::vector<std::string>& ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (ids.empty())
+        return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<counterparty_contact_information_entity> |

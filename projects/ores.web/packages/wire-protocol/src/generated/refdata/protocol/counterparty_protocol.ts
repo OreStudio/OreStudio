@@ -118,7 +118,7 @@ export interface PutCounterpartyRequest {
 
 export interface PutCounterpartyResponse {
     result: Result;
-    counterparty: Counterparty;
+    counterparty: Counterparty | null;
 }
 
 export interface PutManyCounterpartiesRequest {
@@ -169,7 +169,7 @@ export interface GetCounterpartyVersionRequest {
 
 export interface GetCounterpartyVersionResponse {
     result: Result;
-    version: Counterparty;
+    version: Counterparty | null;
 }
 
 /**

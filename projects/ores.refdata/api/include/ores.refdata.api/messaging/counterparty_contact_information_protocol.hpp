@@ -36,7 +36,7 @@
 namespace ores::refdata::messaging {
 
 struct counterparty_contact_information_key {
-    boost::uuids::uuid id;
+    std::string contact_type;
 };
 
 struct counterparty_contact_information_write {
@@ -174,7 +174,8 @@ struct put_counterparty_contact_information_request {
 
 struct put_counterparty_contact_information_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty_contact_information counterparty_contact_information;
+    std::optional<ores::refdata::domain::counterparty_contact_information>
+        counterparty_contact_information;
 };
 
 struct put_many_counterparty_contact_informations_request {
@@ -302,7 +303,7 @@ struct get_counterparty_contact_information_version_request {
 
 struct get_counterparty_contact_information_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::counterparty_contact_information version;
+    std::optional<ores::refdata::domain::counterparty_contact_information> version;
 };
 
 /**

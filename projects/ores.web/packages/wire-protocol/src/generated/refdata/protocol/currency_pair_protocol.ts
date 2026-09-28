@@ -111,7 +111,7 @@ export interface PutCurrencyPairRequest {
 
 export interface PutCurrencyPairResponse {
     result: Result;
-    currency_pair: CurrencyPair;
+    currency_pair: CurrencyPair | null;
 }
 
 export interface PutManyCurrencyPairsRequest {
@@ -162,7 +162,7 @@ export interface GetCurrencyPairVersionRequest {
 
 export interface GetCurrencyPairVersionResponse {
     result: Result;
-    version: CurrencyPair;
+    version: CurrencyPair | null;
 }
 
 export const subjects = {

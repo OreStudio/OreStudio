@@ -34,6 +34,7 @@ export interface CrmDriverPairKey {
 
 export interface CrmDriverPairWrite {
     id: string;
+    party_id: string;
     config_id: string;
     base_currency_code: string;
     quote_currency_code: string;
@@ -112,7 +113,7 @@ export interface PutCrmDriverPairRequest {
 
 export interface PutCrmDriverPairResponse {
     result: Result;
-    crm_driver_pair: CrmDriverPair;
+    crm_driver_pair: CrmDriverPair | null;
 }
 
 export interface PutManyCrmDriverPairsRequest {
@@ -163,19 +164,19 @@ export interface GetCrmDriverPairVersionRequest {
 
 export interface GetCrmDriverPairVersionResponse {
     result: Result;
-    version: CrmDriverPair;
+    version: CrmDriverPair | null;
 }
 
 export const subjects = {
-    list_crm_driver_pairs_request: "refdata.v1.crm_driver_pairs.list",
-    get_crm_driver_pair_request: "refdata.v1.crm_driver_pairs.get",
-    get_many_crm_driver_pairs_request: "refdata.v1.crm_driver_pairs.get_many",
-    put_crm_driver_pair_request: "refdata.v1.crm_driver_pairs.put",
-    put_many_crm_driver_pairs_request: "refdata.v1.crm_driver_pairs.put_many",
-    delete_crm_driver_pair_request: "refdata.v1.crm_driver_pairs.delete",
-    delete_many_crm_driver_pairs_request: "refdata.v1.crm_driver_pairs.delete_many",
-    list_crm_driver_pair_versions_request: "refdata.v1.crm_driver_pairs_versions.list",
-    get_crm_driver_pair_version_request: "refdata.v1.crm_driver_pairs_versions.get",
+    list_crm_driver_pairs_request: 'refdata.v1.crm_driver_pairs.list',
+    get_crm_driver_pair_request: 'refdata.v1.crm_driver_pairs.get',
+    get_many_crm_driver_pairs_request: 'refdata.v1.crm_driver_pairs.get_many',
+    put_crm_driver_pair_request: 'refdata.v1.crm_driver_pairs.put',
+    put_many_crm_driver_pairs_request: 'refdata.v1.crm_driver_pairs.put_many',
+    delete_crm_driver_pair_request: 'refdata.v1.crm_driver_pairs.delete',
+    delete_many_crm_driver_pairs_request: 'refdata.v1.crm_driver_pairs.delete_many',
+    list_crm_driver_pair_versions_request: 'refdata.v1.crm_driver_pairs_versions.list',
+    get_crm_driver_pair_version_request: 'refdata.v1.crm_driver_pairs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +201,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.crm_driver_pairs_events.created",
-    updated: "refdata.v1.crm_driver_pairs_events.updated",
-    deleted: "refdata.v1.crm_driver_pairs_events.deleted",
+    created: 'refdata.v1.crm_driver_pairs_events.created',
+    updated: 'refdata.v1.crm_driver_pairs_events.updated',
+    deleted: 'refdata.v1.crm_driver_pairs_events.deleted',
 } as const;

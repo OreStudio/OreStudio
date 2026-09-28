@@ -35,6 +35,7 @@ export interface PartyContactInformationKey {
 
 export interface PartyContactInformationWrite {
     id: string;
+    party_id: string;
     contact_type: string;
     street_line_1: string;
     street_line_2: string;
@@ -124,7 +125,7 @@ export interface PutPartyContactInformationRequest {
 
 export interface PutPartyContactInformationResponse {
     result: Result;
-    party_contact_information: PartyContactInformation;
+    party_contact_information: PartyContactInformation | null;
 }
 
 export interface PutManyPartyContactInformationsRequest {
@@ -190,20 +191,24 @@ export interface GetPartyContactInformationVersionRequest {
 
 export interface GetPartyContactInformationVersionResponse {
     result: Result;
-    version: PartyContactInformation;
+    version: PartyContactInformation | null;
 }
 
 export const subjects = {
-    list_party_contact_informations_request: "refdata.v1.party_contact_informations.list",
-    get_party_contact_information_request: "refdata.v1.party_contact_informations.get",
-    get_many_party_contact_informations_request: "refdata.v1.party_contact_informations.get_many",
-    put_party_contact_information_request: "refdata.v1.party_contact_informations.put",
-    put_many_party_contact_informations_request: "refdata.v1.party_contact_informations.put_many",
-    delete_party_contact_information_request: "refdata.v1.party_contact_informations.delete",
-    delete_many_party_contact_informations_request: "refdata.v1.party_contact_informations.delete_many",
-    list_by_party_id_party_contact_informations_request: "refdata.v1.party_contact_informations.list_by_party_id",
-    list_party_contact_information_versions_request: "refdata.v1.party_contact_informations_versions.list",
-    get_party_contact_information_version_request: "refdata.v1.party_contact_informations_versions.get",
+    list_party_contact_informations_request: 'refdata.v1.party_contact_informations.list',
+    get_party_contact_information_request: 'refdata.v1.party_contact_informations.get',
+    get_many_party_contact_informations_request: 'refdata.v1.party_contact_informations.get_many',
+    put_party_contact_information_request: 'refdata.v1.party_contact_informations.put',
+    put_many_party_contact_informations_request: 'refdata.v1.party_contact_informations.put_many',
+    delete_party_contact_information_request: 'refdata.v1.party_contact_informations.delete',
+    delete_many_party_contact_informations_request:
+        'refdata.v1.party_contact_informations.delete_many',
+    list_by_party_id_party_contact_informations_request:
+        'refdata.v1.party_contact_informations.list_by_party_id',
+    list_party_contact_information_versions_request:
+        'refdata.v1.party_contact_informations_versions.list',
+    get_party_contact_information_version_request:
+        'refdata.v1.party_contact_informations_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -229,7 +234,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.party_contact_informations_events.created",
-    updated: "refdata.v1.party_contact_informations_events.updated",
-    deleted: "refdata.v1.party_contact_informations_events.deleted",
+    created: 'refdata.v1.party_contact_informations_events.created',
+    updated: 'refdata.v1.party_contact_informations_events.updated',
+    deleted: 'refdata.v1.party_contact_informations_events.deleted',
 } as const;

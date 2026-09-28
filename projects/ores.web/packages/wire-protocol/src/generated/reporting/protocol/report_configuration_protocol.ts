@@ -119,7 +119,7 @@ export interface PutReportConfigurationRequest {
 
 export interface PutReportConfigurationResponse {
     result: Result;
-    report_configuration: ReportConfiguration;
+    report_configuration: ReportConfiguration | null;
 }
 
 export interface PutManyReportConfigurationsRequest {
@@ -215,7 +215,7 @@ export interface GetReportConfigurationVersionRequest {
 
 export interface GetReportConfigurationVersionResponse {
     result: Result;
-    version: ReportConfiguration;
+    version: ReportConfiguration | null;
 }
 
 export const subjects = {

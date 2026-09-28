@@ -153,7 +153,7 @@ struct put_role_request {
 
 struct put_role_response {
     ores::utility::domain::result result;
-    ores::iam::domain::role role;
+    std::optional<ores::iam::domain::role> role;
 };
 
 struct put_many_roles_request {
@@ -249,7 +249,7 @@ struct get_role_version_request {
 
 struct get_role_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::role version;
+    std::optional<ores::iam::domain::role> version;
 };
 
 /**

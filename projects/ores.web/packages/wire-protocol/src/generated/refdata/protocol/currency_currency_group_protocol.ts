@@ -58,15 +58,6 @@ export interface CurrencyCurrencyGroupsFilter {
     currency_iso_code: string | null;
 }
 
-export interface CurrencyCurrencyGroupEvent {
-    event_id: string;
-    key: CurrencyCurrencyGroupKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListCurrencyCurrencyGroupsRequest {
     offset: number;
     limit: number;
@@ -105,7 +96,7 @@ export interface PutCurrencyCurrencyGroupRequest {
 
 export interface PutCurrencyCurrencyGroupResponse {
     result: Result;
-    currency_currency_group: CurrencyCurrencyGroup;
+    currency_currency_group: CurrencyCurrencyGroup | null;
 }
 
 export interface PutManyCurrencyCurrencyGroupsRequest {
@@ -152,14 +143,15 @@ export interface ListByCurrencyIsoCodeCurrencyCurrencyGroupsResponse {
 }
 
 export const subjects = {
-    list_currency_currency_groups_request: "refdata.v1.currency_currency_groups.list",
-    get_currency_currency_group_request: "refdata.v1.currency_currency_groups.get",
-    get_many_currency_currency_groups_request: "refdata.v1.currency_currency_groups.get_many",
-    put_currency_currency_group_request: "refdata.v1.currency_currency_groups.put",
-    put_many_currency_currency_groups_request: "refdata.v1.currency_currency_groups.put_many",
-    delete_currency_currency_group_request: "refdata.v1.currency_currency_groups.delete",
-    delete_many_currency_currency_groups_request: "refdata.v1.currency_currency_groups.delete_many",
-    list_by_currency_iso_code_currency_currency_groups_request: "refdata.v1.currency_currency_groups.list_by_currency_iso_code",
+    list_currency_currency_groups_request: 'refdata.v1.currency_currency_groups.list',
+    get_currency_currency_group_request: 'refdata.v1.currency_currency_groups.get',
+    get_many_currency_currency_groups_request: 'refdata.v1.currency_currency_groups.get_many',
+    put_currency_currency_group_request: 'refdata.v1.currency_currency_groups.put',
+    put_many_currency_currency_groups_request: 'refdata.v1.currency_currency_groups.put_many',
+    delete_currency_currency_group_request: 'refdata.v1.currency_currency_groups.delete',
+    delete_many_currency_currency_groups_request: 'refdata.v1.currency_currency_groups.delete_many',
+    list_by_currency_iso_code_currency_currency_groups_request:
+        'refdata.v1.currency_currency_groups.list_by_currency_iso_code',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

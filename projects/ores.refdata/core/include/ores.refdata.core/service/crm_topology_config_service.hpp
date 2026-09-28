@@ -121,14 +121,31 @@ public:
      * @return The CRM topology config at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_topology_config>
-    get_crm_topology_config_at_version(const std::string& id, std::uint32_t version);
+    get_crm_topology_config_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single CRM topology config by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The CRM topology config if found, std::nullopt otherwise.
      */
-    std::optional<domain::crm_topology_config> get_crm_topology_config(const std::string& id);
+    std::optional<domain::crm_topology_config>
+    get_crm_topology_config(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single CRM topology config by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The CRM topology config if found, std::nullopt otherwise.
+     */
+    std::optional<domain::crm_topology_config>
+    get_crm_topology_config_by_name(const std::string& name);
 
     /**
      * @brief Retrieves a batch of CRM topology configs by primary key.
@@ -158,7 +175,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_crm_topology_config(const std::string& id);
+    void delete_crm_topology_config(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes CRM topology configs by their primary keys.
@@ -167,8 +184,13 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a CRM topology config.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::crm_topology_config> get_crm_topology_config_history(const std::string& id);
+    std::vector<domain::crm_topology_config>
+    get_crm_topology_config_history(const std::string& key);
 
 private:
     context ctx_;

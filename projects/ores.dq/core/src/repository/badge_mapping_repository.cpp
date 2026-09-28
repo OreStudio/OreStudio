@@ -157,6 +157,8 @@ badge_mapping_repository::read_latest(const std::string& code_domain_code,
                                << entity_code;
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto code_domain_code_str = code_domain_code;
+    const auto entity_code_str = entity_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
@@ -329,6 +331,8 @@ badge_mapping_repository::remove(const std::string& code_domain_code,
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto code_domain_code_str = code_domain_code;
+    const auto entity_code_str = entity_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<badge_mapping_entity> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&

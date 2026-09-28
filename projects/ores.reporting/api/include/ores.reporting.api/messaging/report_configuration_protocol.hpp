@@ -161,7 +161,7 @@ struct put_report_configuration_request {
 
 struct put_report_configuration_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_configuration report_configuration;
+    std::optional<ores::reporting::domain::report_configuration> report_configuration;
 };
 
 struct put_many_report_configurations_request {
@@ -335,7 +335,7 @@ struct get_report_configuration_version_request {
 
 struct get_report_configuration_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::report_configuration version;
+    std::optional<ores::reporting::domain::report_configuration> version;
 };
 
 /**

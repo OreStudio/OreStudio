@@ -117,14 +117,30 @@ public:
      * @param version The version to fetch.
      * @return The party at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::party> get_party_at_version(const std::string& id, std::uint32_t version);
+    std::optional<domain::party> get_party_at_version(const boost::uuids::uuid& id,
+                                                      std::uint32_t version);
 
     /**
      * @brief Retrieves a single party by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The party if found, std::nullopt otherwise.
      */
-    std::optional<domain::party> get_party(const std::string& id);
+    std::optional<domain::party> get_party(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single party by the key the model
+     * declares -- the human-readable key a caller holds.
+     *
+     * This is the counterpart of the uuid overload above: the two keys an
+     * entity holds are different keys, and a call site has to say which one it
+     * means.
+     *
+     * @return The party if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party> get_party_by_short_code(const std::string& short_code);
 
     /**
      * @brief Retrieves a single party by its uuid primary key.
@@ -166,7 +182,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_party(const std::string& id);
+    void delete_party(const boost::uuids::uuid& id);
 
     /**
      * @brief Removes a party by its uuid primary key.
@@ -182,8 +198,12 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a party.
+     *
+     * Addressed by the key the model declares, which is the one a caller
+     * holds; the storage key is resolved from it here, the same step every
+     * other read makes.
      */
-    std::vector<domain::party> get_party_history(const std::string& id);
+    std::vector<domain::party> get_party_history(const std::string& key);
 
     /**
      * @brief Retrieves all historical versions of a party

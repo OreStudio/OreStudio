@@ -3294,7 +3294,11 @@ def entity_protocol_messages(
                             _ts_field("intent", _INTENT)]),
         _ts_message(f"put_{singular}_response", fields=[
             _ts_field("result", _RESULT),
-            _ts_field(payload_member, domain_type)]),
+            # A refused change writes no row, so the row is absent rather than
+            # default-constructed. Carrying it by value put a zero date and a
+            # zero timestamp on the wire for a date-bearing entity, and the
+            # client refused the response before it could read the refusal.
+            _ts_field(payload_member, f"std::optional<{domain_type}>")]),
         _ts_message(f"put_many_{plural}_request",
                     response_type=f"put_many_{plural}_response",
                     subject=request_subject(component, plural, "put_many"),
@@ -3350,7 +3354,12 @@ def entity_protocol_messages(
                         fields=[_ts_field("key", f"{facet_stem}_version_key")]),
             _ts_message(f"get_{facet_stem}_version_response", fields=[
                 _ts_field("result", _RESULT),
-                _ts_field("version", domain_type)]),
+                # A version that does not exist is not a failure, so the row is
+                # absent rather than default-constructed: a default row carries
+                # a zero date and a zero timestamp, and a client that parses the
+                # response refuses it before it can read the outcome. The plain
+                # get response states its row the same way for the same reason.
+                _ts_field("version", f"std::optional<{domain_type}>")]),
         ]
 
     # Messages the model declares itself, beside the derived set, so both twins

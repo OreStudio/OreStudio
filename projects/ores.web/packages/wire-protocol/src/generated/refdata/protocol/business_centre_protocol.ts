@@ -113,7 +113,7 @@ export interface PutBusinessCentreRequest {
 
 export interface PutBusinessCentreResponse {
     result: Result;
-    business_centre: BusinessCentre;
+    business_centre: BusinessCentre | null;
 }
 
 export interface PutManyBusinessCentresRequest {
@@ -164,7 +164,7 @@ export interface GetBusinessCentreVersionRequest {
 
 export interface GetBusinessCentreVersionResponse {
     result: Result;
-    version: BusinessCentre;
+    version: BusinessCentre | null;
 }
 
 export const subjects = {

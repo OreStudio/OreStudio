@@ -58,15 +58,6 @@ export interface PartyCurrenciesFilter {
     party_id: string | null;
 }
 
-export interface PartyCurrencyEvent {
-    event_id: string;
-    key: PartyCurrencyKey;
-    action: string;
-    version: number;
-    occurred_at: string;
-    correlation_id: string | null;
-}
-
 export interface ListPartyCurrenciesRequest {
     offset: number;
     limit: number;
@@ -105,7 +96,7 @@ export interface PutPartyCurrencyRequest {
 
 export interface PutPartyCurrencyResponse {
     result: Result;
-    party_currency: PartyCurrency;
+    party_currency: PartyCurrency | null;
 }
 
 export interface PutManyPartyCurrenciesRequest {
@@ -152,14 +143,14 @@ export interface ListByPartyIdPartyCurrenciesResponse {
 }
 
 export const subjects = {
-    list_party_currencies_request: "refdata.v1.party_currencies.list",
-    get_party_currency_request: "refdata.v1.party_currencies.get",
-    get_many_party_currencies_request: "refdata.v1.party_currencies.get_many",
-    put_party_currency_request: "refdata.v1.party_currencies.put",
-    put_many_party_currencies_request: "refdata.v1.party_currencies.put_many",
-    delete_party_currency_request: "refdata.v1.party_currencies.delete",
-    delete_many_party_currencies_request: "refdata.v1.party_currencies.delete_many",
-    list_by_party_id_party_currencies_request: "refdata.v1.party_currencies.list_by_party_id",
+    list_party_currencies_request: 'refdata.v1.party_currencies.list',
+    get_party_currency_request: 'refdata.v1.party_currencies.get',
+    get_many_party_currencies_request: 'refdata.v1.party_currencies.get_many',
+    put_party_currency_request: 'refdata.v1.party_currencies.put',
+    put_many_party_currencies_request: 'refdata.v1.party_currencies.put_many',
+    delete_party_currency_request: 'refdata.v1.party_currencies.delete',
+    delete_many_party_currencies_request: 'refdata.v1.party_currencies.delete_many',
+    list_by_party_id_party_currencies_request: 'refdata.v1.party_currencies.list_by_party_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

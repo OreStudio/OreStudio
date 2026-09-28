@@ -29,6 +29,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -126,23 +127,22 @@ void counterparty_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <short_code>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <short_code>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <short_code> <full_name> <transliterated_name> <party_type> "
-        "<parent_counterparty_id> <business_center_code> <status> <image_id> <reason> "
-        "<commentary>");
+        "add <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> "
+        "<business_center_code> <status> <image_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -167,30 +167,30 @@ void counterparty_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <short_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
+        "delete-many <short_code> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <short_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <short_code> --version <n>");
 
-    root_menu.Insert(std::move(menu));
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
 void counterparty_commands::process_list(std::ostream& out,
@@ -270,6 +270,7 @@ void counterparty_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.short_code, parsed->positionals[next++], "short_code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -314,7 +315,7 @@ void counterparty_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::counterparty_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.short_code, parsed->positionals[i + 0], "short_code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -354,8 +355,8 @@ void counterparty_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,7 +422,7 @@ void counterparty_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.short_code, parsed->positionals[next++], "short_code");
         read_token(req.change.write.full_name, parsed->positionals[next++], "full_name");
         read_token(req.change.write.transliterated_name,
@@ -561,6 +562,7 @@ void counterparty_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.short_code, parsed->positionals[next++], "short_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -614,7 +616,7 @@ void counterparty_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::counterparty_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            read_token(key.short_code, parsed->positionals[i * 1 + 0], "short_code");
             req.removals.push_back(messaging::counterparty_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -666,6 +668,7 @@ void counterparty_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.short_code, parsed->positionals[next++], "short_code");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -711,6 +714,7 @@ void counterparty_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.counterparty.short_code, parsed->positionals[next++], "short_code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

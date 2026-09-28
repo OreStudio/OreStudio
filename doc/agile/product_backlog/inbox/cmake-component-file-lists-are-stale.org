@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: AE35FDAC-3056-4DF2-9CDB-A0D451DFBFB4
+:END:
+#+title: Twenty-four component source lists are stale against the generator
+#+description: regenerate_cmake_component_files.py --all --check wants to change 24 committed component_files.cmake lists across analytics, assets, compute, workspace and others. Every flagged file is byte-identical to origin/main, so the drift is on main and no component's own clean pass has run the generator since its sources moved.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cmake:drift:component:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=
+reports that 24 committed =src/component_files.cmake= and
+=tests/component_files.cmake= lists disagree with what the
+=ores.cmake.component.files_{src,tests}= archetypes render from the live models.
+The components named so far are analytics (api, service), assets, compute and
+workspace, with the rest of the 24 to be read off a full run.
+
+* Why
+
+These lists are checked in and =CMakeLists.txt= includes them in place of a
+=file(GLOB_RECURSE ...)=, so a stale list is a source the build silently does not
+compile or a test the build silently does not run. The gate that would catch it
+is not wired into any per-PR job, so the drift accumulated across the
+components whose clean passes did not run the CMake generator.
+
+The drift is on =main=: each flagged file is byte-identical to =origin/main=, so
+this is not a consequence of any one branch. The fix is either to run the
+generator across the tree once, or to make the check part of the gate that
+already runs the other codegen checks.
+
+* References
+
+- The check and its modes:
+  =projects/ores.codegen/scripts/regenerate_cmake_component_files.py --help=.
+- The archetypes:
+  =projects/ores.codegen/library/templates/cmake_component_files_src.mustache=,
+  =.../cmake_component_files_tests.mustache=.
+- Precedent for wiring it in: the drift gate's =--sweep= mode in
+  =check_component_drift.py=.
+- Found while re-verifying =feature/clean-refdata= after a rebase onto main.
+
+* See also
+
+- [[id:1117D49B-5460-4A3A-AE4F-8263A3270251][Bring ores.refdata to the clean standard]]

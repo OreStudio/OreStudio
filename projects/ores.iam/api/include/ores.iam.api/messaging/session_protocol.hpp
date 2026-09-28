@@ -151,7 +151,7 @@ struct put_session_request {
 
 struct put_session_response {
     ores::utility::domain::result result;
-    ores::iam::domain::session session;
+    std::optional<ores::iam::domain::session> session;
 };
 
 struct put_many_sessions_request {

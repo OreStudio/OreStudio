@@ -170,6 +170,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a tenor resolution algorithm.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::tenor_resolution_algorithm> get_algorithm_history(const std::string& code);
 

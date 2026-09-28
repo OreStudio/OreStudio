@@ -110,7 +110,7 @@ export interface PutTreatmentDimensionRequest {
 
 export interface PutTreatmentDimensionResponse {
     result: Result;
-    treatment_dimension: TreatmentDimension;
+    treatment_dimension: TreatmentDimension | null;
 }
 
 export interface PutManyTreatmentDimensionsRequest {
@@ -161,7 +161,7 @@ export interface GetTreatmentDimensionVersionRequest {
 
 export interface GetTreatmentDimensionVersionResponse {
     result: Result;
-    version: TreatmentDimension;
+    version: TreatmentDimension | null;
 }
 
 export const subjects = {

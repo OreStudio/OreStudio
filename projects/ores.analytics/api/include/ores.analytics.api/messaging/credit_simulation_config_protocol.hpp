@@ -168,7 +168,7 @@ struct put_credit_simulation_config_request {
 
 struct put_credit_simulation_config_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::credit_simulation_config credit_simulation_config;
+    std::optional<ores::analytics::domain::credit_simulation_config> credit_simulation_config;
 };
 
 struct put_many_credit_simulation_configs_request {
@@ -294,7 +294,7 @@ struct get_credit_simulation_config_version_request {
 
 struct get_credit_simulation_config_version_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::credit_simulation_config version;
+    std::optional<ores::analytics::domain::credit_simulation_config> version;
 };
 
 /**

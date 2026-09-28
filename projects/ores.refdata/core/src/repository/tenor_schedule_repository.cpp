@@ -183,7 +183,6 @@ std::optional<domain::tenor_schedule> tenor_schedule_repository::read_at_version
     return entities.front();
 }
 
-
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_calendar_code(
     context ctx, const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. calendar_code: " << calendar_code
@@ -364,6 +363,14 @@ tenor_schedule_repository::read_latest(context ctx, const std::vector<std::strin
 }
 
 void tenor_schedule_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (codes.empty())
+        return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

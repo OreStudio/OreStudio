@@ -356,6 +356,9 @@ party_currency_service::prepare_change(const messaging::party_currency_change& c
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
     stamp_party_currency(out, ctx_);
+    // The stamp states the owning party, not why the row changed; the caller's
+    // reason is the only source for that, and a branch that ignores it both
+    // loses the reason and leaves the parameter unused.
     if (!intent.reason_code.empty())
         out.change_reason_code = intent.reason_code;
     return result;

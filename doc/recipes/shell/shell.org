@@ -867,3 +867,11 @@ tangled into the runnable script library
 * Credit Simulation Netting Set Configs
 
 - [[id:D4E1D402-2A44-5430-8043-52C61522FAAD][How do I run the credit_simulation_netting_set_configs commands from the shell?]]
+
+* Ir Curve Bootstrap Configs
+
+- [[id:64C11727-78BE-5C81-A8AA-73F697FADB33][How do I run the ir_curve_bootstrap_configs commands from the shell?]]
+
+* Ir Curve Bootstrap Pillars
+
+- [[id:65943862-77B0-5588-A6B3-3F2CB49AC089][How do I run the ir_curve_bootstrap_pillars commands from the shell?]]

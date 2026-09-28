@@ -125,7 +125,7 @@ export interface PutCounterpartyContactInformationRequest {
 
 export interface PutCounterpartyContactInformationResponse {
     result: Result;
-    counterparty_contact_information: CounterpartyContactInformation;
+    counterparty_contact_information: CounterpartyContactInformation | null;
 }
 
 export interface PutManyCounterpartyContactInformationsRequest {
@@ -191,7 +191,7 @@ export interface GetCounterpartyContactInformationVersionRequest {
 
 export interface GetCounterpartyContactInformationVersionResponse {
     result: Result;
-    version: CounterpartyContactInformation;
+    version: CounterpartyContactInformation | null;
 }
 
 export const subjects = {

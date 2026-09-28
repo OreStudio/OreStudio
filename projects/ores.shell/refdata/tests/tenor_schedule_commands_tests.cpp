@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/refdata/tenor_schedule_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -69,8 +70,26 @@ TEST_CASE("tenor_schedule_commands_registers_every_derived_verb", tags) {
 
     tenor_schedule_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so
+    // a verb that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("tenor_schedules ");
+    for (const auto& verb : {
+             std::string{"tenor_schedules list"},
+             std::string{"tenor_schedules get"},
+             std::string{"tenor_schedules get-many"},
+             std::string{"tenor_schedules add"},
+             std::string{"tenor_schedules set"},
+             std::string{"tenor_schedules put-many"},
+             std::string{"tenor_schedules delete"},
+             std::string{"tenor_schedules delete-many"},
+             std::string{"tenor_schedules by-calendar-code"},
+             std::string{"tenor_schedules by-diary-entry-type"},
+             std::string{"tenor_schedules versions"},
+             std::string{"tenor_schedules version"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 12 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("tenor_schedule_commands_process_list_requires_a_session", tags) {
@@ -112,6 +131,12 @@ TEST_CASE("tenor_schedule_commands_process_get_reports_the_expected_count", tags
     tenor_schedule_commands::process_get(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -154,6 +179,12 @@ TEST_CASE("tenor_schedule_commands_process_add_reports_the_expected_count", tags
     tenor_schedule_commands::process_add(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -182,6 +213,12 @@ TEST_CASE("tenor_schedule_commands_process_set_reports_the_expected_count", tags
     tenor_schedule_commands::process_set(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -224,6 +261,12 @@ TEST_CASE("tenor_schedule_commands_process_delete_reports_the_expected_count", t
     tenor_schedule_commands::process_delete(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -266,6 +309,12 @@ TEST_CASE("tenor_schedule_commands_process_by_calendar_code_reports_the_expected
     tenor_schedule_commands::process_by_calendar_code(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -294,6 +343,12 @@ TEST_CASE("tenor_schedule_commands_process_by_diary_entry_type_reports_the_expec
     tenor_schedule_commands::process_by_diary_entry_type(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -322,6 +377,12 @@ TEST_CASE("tenor_schedule_commands_process_versions_reports_the_expected_count",
     tenor_schedule_commands::process_versions(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -350,5 +411,11 @@ TEST_CASE("tenor_schedule_commands_process_version_reports_the_expected_count", 
     tenor_schedule_commands::process_version(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

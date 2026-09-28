@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 17563C50-1133-5AEE-8288-18CF02D4DF7B
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the calendar_rules commands from the shell?
 #+description: Every command the calendar_rules submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -85,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-calendar_rules add <id> <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> <effective_from> <effective_to> <reason> <commentary>
+calendar_rules add <calendar_code> <kind> <month> <day> <weekday> <occurrence> <day_offset> <shift> <effective_from> <effective_to> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.calendar_rules.put=.
 
 #+name: calendar_rules-add
 #+begin_src ores-shell :tangle calendar_rules-add.ores :exports none
-calendar_rules add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_rules add __none__ __none__ - - - - - __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =refdata.v1.calendar_rules.put=.
 
 #+name: calendar_rules-set
 #+begin_src ores-shell :tangle calendar_rules-set.ores :exports none
-calendar_rules set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_rules set 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =refdata.v1.calendar_rules.put_many=.
 
 #+name: calendar_rules-put-many
 #+begin_src ores-shell :tangle calendar_rules-put-many.ores :exports none
-calendar_rules put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+calendar_rules put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

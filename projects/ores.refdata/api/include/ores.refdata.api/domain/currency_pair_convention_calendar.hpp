@@ -103,6 +103,12 @@ collide on the same key (same convention as currency_country's own synthetic gen
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality, on the same terms as an entity's.
+     */
+    friend bool operator==(const currency_pair_convention_calendar&,
+                           const currency_pair_convention_calendar&) = default;
 };
 
 /**

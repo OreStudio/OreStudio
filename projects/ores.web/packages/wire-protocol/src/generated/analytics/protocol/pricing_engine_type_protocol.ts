@@ -110,7 +110,7 @@ export interface PutPricingEngineTypeRequest {
 
 export interface PutPricingEngineTypeResponse {
     result: Result;
-    pricing_engine_type: PricingEngineType;
+    pricing_engine_type: PricingEngineType | null;
 }
 
 export interface PutManyPricingEngineTypesRequest {
@@ -161,7 +161,7 @@ export interface GetPricingEngineTypeVersionRequest {
 
 export interface GetPricingEngineTypeVersionResponse {
     result: Result;
-    version: PricingEngineType;
+    version: PricingEngineType | null;
 }
 
 export const subjects = {

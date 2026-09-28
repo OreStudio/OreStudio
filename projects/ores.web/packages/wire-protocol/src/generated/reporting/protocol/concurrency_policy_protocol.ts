@@ -111,7 +111,7 @@ export interface PutConcurrencyPolicyRequest {
 
 export interface PutConcurrencyPolicyResponse {
     result: Result;
-    concurrency_policy: ConcurrencyPolicy;
+    concurrency_policy: ConcurrencyPolicy | null;
 }
 
 export interface PutManyConcurrencyPoliciesRequest {
@@ -162,7 +162,7 @@ export interface GetConcurrencyPolicyVersionRequest {
 
 export interface GetConcurrencyPolicyVersionResponse {
     result: Result;
-    version: ConcurrencyPolicy;
+    version: ConcurrencyPolicy | null;
 }
 
 export const subjects = {

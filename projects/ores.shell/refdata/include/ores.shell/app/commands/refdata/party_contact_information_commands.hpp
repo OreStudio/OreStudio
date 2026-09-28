@@ -73,52 +73,52 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <id>
+     * @brief get <contact_type>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <id>
+     * @brief get-many <contact_type>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code>
-     * <postal_code> <phone> <email> <web_page> <reason> <commentary>
+     * @brief add <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state>
+     * <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <contact_type> <street_line_1> <street_line_2> <city> <state> <country_code>
-     * <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
+     * @brief set <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state>
+     * <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <contact_type> <street_line_1> <street_line_2> <city>
-     * <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+     * @brief put-many --count <n> <id> <party_id> <contact_type> <street_line_1> <street_line_2>
+     * <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <id> <reason> <commentary> [--version <n>]
+     * @brief delete <contact_type> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <id> <reason> <commentary>
+     * @brief delete-many <contact_type> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
@@ -132,14 +132,14 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <contact_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <id> --version <n>
+     * @brief version <contact_type> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

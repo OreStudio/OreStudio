@@ -152,7 +152,7 @@ struct put_data_domain_request {
 
 struct put_data_domain_response {
     ores::utility::domain::result result;
-    ores::dq::domain::data_domain data_domain;
+    std::optional<ores::dq::domain::data_domain> data_domain;
 };
 
 struct put_many_data_domains_request {
@@ -248,7 +248,7 @@ struct get_data_domain_version_request {
 
 struct get_data_domain_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::data_domain version;
+    std::optional<ores::dq::domain::data_domain> version;
 };
 
 /**

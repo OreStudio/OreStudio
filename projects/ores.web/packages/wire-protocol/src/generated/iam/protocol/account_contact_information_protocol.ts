@@ -124,7 +124,7 @@ export interface PutAccountContactInformationRequest {
 
 export interface PutAccountContactInformationResponse {
     result: Result;
-    account_contact_information: AccountContactInformation;
+    account_contact_information: AccountContactInformation | null;
 }
 
 export interface PutManyAccountContactInformationsRequest {
@@ -190,7 +190,7 @@ export interface GetAccountContactInformationVersionRequest {
 
 export interface GetAccountContactInformationVersionResponse {
     result: Result;
-    version: AccountContactInformation;
+    version: AccountContactInformation | null;
 }
 
 /**

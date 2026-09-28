@@ -154,7 +154,7 @@ struct put_day_count_fraction_type_request {
 
 struct put_day_count_fraction_type_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::day_count_fraction_type day_count_fraction_type;
+    std::optional<ores::refdata::domain::day_count_fraction_type> day_count_fraction_type;
 };
 
 struct put_many_day_count_fraction_types_request {
@@ -253,7 +253,7 @@ struct get_day_count_fraction_type_version_request {
 
 struct get_day_count_fraction_type_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::day_count_fraction_type version;
+    std::optional<ores::refdata::domain::day_count_fraction_type> version;
 };
 
 /**

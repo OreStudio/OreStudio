@@ -153,7 +153,7 @@ struct put_configuration_type_request {
 
 struct put_configuration_type_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::configuration_type configuration_type;
+    std::optional<ores::reporting::domain::configuration_type> configuration_type;
 };
 
 struct put_many_configuration_types_request {
@@ -251,7 +251,7 @@ struct get_configuration_type_version_request {
 
 struct get_configuration_type_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::configuration_type version;
+    std::optional<ores::reporting::domain::configuration_type> version;
 };
 
 /**

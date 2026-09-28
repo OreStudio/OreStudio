@@ -165,7 +165,7 @@ struct put_seed_profile_request {
 
 struct put_seed_profile_response {
     ores::utility::domain::result result;
-    ores::iam::domain::seed_profile seed_profile;
+    std::optional<ores::iam::domain::seed_profile> seed_profile;
 };
 
 struct put_many_seed_profiles_request {
@@ -261,7 +261,7 @@ struct get_seed_profile_version_request {
 
 struct get_seed_profile_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::seed_profile version;
+    std::optional<ores::iam::domain::seed_profile> version;
 };
 
 /**

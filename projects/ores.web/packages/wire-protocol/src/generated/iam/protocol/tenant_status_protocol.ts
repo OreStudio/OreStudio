@@ -111,7 +111,7 @@ export interface PutTenantStatusRequest {
 
 export interface PutTenantStatusResponse {
     result: Result;
-    tenant_status: TenantStatus;
+    tenant_status: TenantStatus | null;
 }
 
 export interface PutManyTenantStatusesRequest {
@@ -162,7 +162,7 @@ export interface GetTenantStatusVersionRequest {
 
 export interface GetTenantStatusVersionResponse {
     result: Result;
-    version: TenantStatus;
+    version: TenantStatus | null;
 }
 
 export const subjects = {

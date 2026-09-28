@@ -29,6 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
@@ -84,7 +85,12 @@ TEST_CASE("write_single_currency_country", tags) {
 
     auto cc = make_currency_country(h, currencies[0].iso_code, countries[0].alpha2_code);
     BOOST_LOG_SEV(lg, debug) << "Currency country: " << cc;
-    CHECK_NOTHROW(repo.write(cc));
+    repo.write(cc);
+
+    const auto read_ccs = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
+    REQUIRE(read_ccs.size() == 1);
+    CHECK(read_ccs[0].currency_iso_code == cc.currency_iso_code);
+    CHECK(read_ccs[0].change_commentary == cc.change_commentary);
 }
 
 TEST_CASE("write_multiple_currency_countries", tags) {
@@ -109,7 +115,17 @@ TEST_CASE("write_multiple_currency_countries", tags) {
     }
 
     BOOST_LOG_SEV(lg, debug) << "Currency countries: " << ccs;
-    CHECK_NOTHROW(repo.write(ccs));
+    repo.write(ccs);
+
+    const auto read_ccs = repo.read_latest();
+    for (const auto& written : ccs) {
+        const auto it = std::ranges::find_if(read_ccs, [&](const currency_country& r) {
+            return r.currency_iso_code == written.currency_iso_code &&
+                   r.country_alpha2_code == written.country_alpha2_code;
+        });
+        REQUIRE(it != read_ccs.end());
+        CHECK(it->change_commentary == written.change_commentary);
+    }
 }
 
 TEST_CASE("read_latest_currency_countries_by_currency", tags) {
@@ -182,15 +198,28 @@ TEST_CASE("remove_currency_country", tags) {
     auto currencies = generate_fictional_currencies(total_slots, gctx);
     auto countries = generate_fictional_countries(total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[5]});
-    cty_repo.write(h.context(), {countries[5]});
+    cty_repo.write(h.context(), {countries[5], countries[7]});
 
     auto cc = make_currency_country(h, currencies[5].iso_code, countries[5].alpha2_code);
     repo.write(cc);
 
-    CHECK_NOTHROW(repo.remove(currencies[5].iso_code, countries[5].alpha2_code));
+    // A second link stays behind, so the removal is proven and not a read that
+    // answers nothing.
+    auto keeper = make_currency_country(h, currencies[5].iso_code, countries[7].alpha2_code);
+    repo.write(keeper);
 
-    auto read_ccs = repo.read_latest_by_country(countries[5].alpha2_code);
-    CHECK(read_ccs.empty());
+    repo.remove(currencies[5].iso_code, countries[5].alpha2_code);
+
+    const auto removed_rows = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
+    const auto answered_with_removed_key = std::ranges::any_of(
+        removed_rows, [&](const currency_country& r) {
+            return r.country_alpha2_code == cc.country_alpha2_code;
+        });
+    CHECK_FALSE(answered_with_removed_key);
+
+    const auto keeper_rows = repo.read_latest(keeper.currency_iso_code, keeper.country_alpha2_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
 }
 
 TEST_CASE("remove_by_currency_currency_country", tags) {
@@ -205,24 +234,60 @@ TEST_CASE("remove_by_currency_currency_country", tags) {
     auto gctx = ores::testing::make_generation_context(h);
     auto currencies = generate_fictional_currencies(total_slots, gctx);
     auto countries = generate_fictional_countries(total_slots, gctx);
-    ccy_repo.write(h.context(), {currencies[6]});
-    cty_repo.write(h.context(), {countries[6]});
+    ccy_repo.write(h.context(), {currencies[6], currencies[7]});
+    cty_repo.write(h.context(), {countries[6], countries[8]});
 
     auto cc = make_currency_country(h, currencies[6].iso_code, countries[6].alpha2_code);
     repo.write(cc);
 
-    CHECK_NOTHROW(repo.remove_by_currency(currencies[6].iso_code));
+    // A second currency's link stays behind, so the removal is proven and not
+    // a read that answers nothing.
+    auto keeper = make_currency_country(h, currencies[7].iso_code, countries[8].alpha2_code);
+    repo.write(keeper);
 
-    auto read_ccs = repo.read_latest_by_currency(currencies[6].iso_code);
-    CHECK(read_ccs.empty());
+    repo.remove_by_currency(currencies[6].iso_code);
+
+    const auto remaining = repo.read_latest_by_currency(currencies[6].iso_code);
+    const auto answered_with_removed_currency = std::ranges::any_of(
+        remaining, [&](const currency_country& r) {
+            return r.currency_iso_code == currencies[6].iso_code;
+        });
+    CHECK_FALSE(answered_with_removed_currency);
+
+    const auto keeper_rows = repo.read_latest_by_currency(keeper.currency_iso_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
 }
 
 TEST_CASE("read_nonexistent_currency_country", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+
+    currency_repository ccy_repo;
+    country_repository cty_repo;
     currency_country_repository repo(h.context());
 
+    auto gctx = ores::testing::make_generation_context(h);
+    auto currencies = generate_fictional_currencies(total_slots, gctx);
+    auto countries = generate_fictional_countries(total_slots, gctx);
+    ccy_repo.write(h.context(), {currencies[8]});
+    cty_repo.write(h.context(), {countries[9]});
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    const auto keeper = make_currency_country(h, currencies[8].iso_code, countries[9].alpha2_code);
+    repo.write(keeper);
+
     auto read_ccs = repo.read_latest_by_currency("ZZZ");
-    CHECK(read_ccs.empty());
+    BOOST_LOG_SEV(lg, debug) << "Read currency countries: " << read_ccs;
+
+    const auto answered_with_nonexistent_key = std::ranges::any_of(
+        read_ccs, [&](const currency_country& r) { return r.currency_iso_code == "ZZZ"; });
+    CHECK_FALSE(answered_with_nonexistent_key);
+
+    // The same read does answer for the currency that was written.
+    const auto keeper_rows = repo.read_latest_by_currency(keeper.currency_iso_code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
 }

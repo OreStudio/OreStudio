@@ -39,6 +39,7 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <optional>
 
@@ -550,10 +551,10 @@ public:
             if (!current) {
                 reply(nats_,
                       msg,
-                      get_party_composite_as_of_response{.success = false,
-                                                         .message =
-                                                             "No such party version: " + req->id +
-                                                             " v" + std::to_string(version)});
+                      get_party_composite_as_of_response{
+                          .success = false,
+                          .message = "No such party version: " + boost::uuids::to_string(req->id) +
+                                     " v" + std::to_string(version)});
                 return;
             }
 
@@ -570,11 +571,11 @@ public:
 
             service::party_identifier_service identifier_svc(ctx);
             auto identifiers = identifier_svc.list_party_identifiers_by_party_id_as_of(
-                req->id, current->recorded_at, window_end);
+                boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
             service::party_contact_information_service contact_svc(ctx);
             auto contacts = contact_svc.list_party_contact_informations_by_party_id_as_of(
-                req->id, current->recorded_at, window_end);
+                boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
             BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

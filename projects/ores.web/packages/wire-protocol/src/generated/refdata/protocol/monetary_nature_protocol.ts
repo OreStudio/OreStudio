@@ -111,7 +111,7 @@ export interface PutMonetaryNatureRequest {
 
 export interface PutMonetaryNatureResponse {
     result: Result;
-    monetary_nature: MonetaryNature;
+    monetary_nature: MonetaryNature | null;
 }
 
 export interface PutManyMonetaryNaturesRequest {
@@ -162,7 +162,7 @@ export interface GetMonetaryNatureVersionRequest {
 
 export interface GetMonetaryNatureVersionResponse {
     result: Result;
-    version: MonetaryNature;
+    version: MonetaryNature | null;
 }
 
 export const subjects = {

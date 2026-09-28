@@ -34,6 +34,7 @@ export interface CrmEnabledDerivedPairKey {
 
 export interface CrmEnabledDerivedPairWrite {
     id: string;
+    party_id: string;
     config_id: string;
     base_currency_code: string;
     quote_currency_code: string;
@@ -112,7 +113,7 @@ export interface PutCrmEnabledDerivedPairRequest {
 
 export interface PutCrmEnabledDerivedPairResponse {
     result: Result;
-    crm_enabled_derived_pair: CrmEnabledDerivedPair;
+    crm_enabled_derived_pair: CrmEnabledDerivedPair | null;
 }
 
 export interface PutManyCrmEnabledDerivedPairsRequest {
@@ -163,19 +164,22 @@ export interface GetCrmEnabledDerivedPairVersionRequest {
 
 export interface GetCrmEnabledDerivedPairVersionResponse {
     result: Result;
-    version: CrmEnabledDerivedPair;
+    version: CrmEnabledDerivedPair | null;
 }
 
 export const subjects = {
-    list_crm_enabled_derived_pairs_request: "refdata.v1.crm_enabled_derived_pairs.list",
-    get_crm_enabled_derived_pair_request: "refdata.v1.crm_enabled_derived_pairs.get",
-    get_many_crm_enabled_derived_pairs_request: "refdata.v1.crm_enabled_derived_pairs.get_many",
-    put_crm_enabled_derived_pair_request: "refdata.v1.crm_enabled_derived_pairs.put",
-    put_many_crm_enabled_derived_pairs_request: "refdata.v1.crm_enabled_derived_pairs.put_many",
-    delete_crm_enabled_derived_pair_request: "refdata.v1.crm_enabled_derived_pairs.delete",
-    delete_many_crm_enabled_derived_pairs_request: "refdata.v1.crm_enabled_derived_pairs.delete_many",
-    list_crm_enabled_derived_pair_versions_request: "refdata.v1.crm_enabled_derived_pairs_versions.list",
-    get_crm_enabled_derived_pair_version_request: "refdata.v1.crm_enabled_derived_pairs_versions.get",
+    list_crm_enabled_derived_pairs_request: 'refdata.v1.crm_enabled_derived_pairs.list',
+    get_crm_enabled_derived_pair_request: 'refdata.v1.crm_enabled_derived_pairs.get',
+    get_many_crm_enabled_derived_pairs_request: 'refdata.v1.crm_enabled_derived_pairs.get_many',
+    put_crm_enabled_derived_pair_request: 'refdata.v1.crm_enabled_derived_pairs.put',
+    put_many_crm_enabled_derived_pairs_request: 'refdata.v1.crm_enabled_derived_pairs.put_many',
+    delete_crm_enabled_derived_pair_request: 'refdata.v1.crm_enabled_derived_pairs.delete',
+    delete_many_crm_enabled_derived_pairs_request:
+        'refdata.v1.crm_enabled_derived_pairs.delete_many',
+    list_crm_enabled_derived_pair_versions_request:
+        'refdata.v1.crm_enabled_derived_pairs_versions.list',
+    get_crm_enabled_derived_pair_version_request:
+        'refdata.v1.crm_enabled_derived_pairs_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: "refdata.v1.crm_enabled_derived_pairs_events.created",
-    updated: "refdata.v1.crm_enabled_derived_pairs_events.updated",
-    deleted: "refdata.v1.crm_enabled_derived_pairs_events.deleted",
+    created: 'refdata.v1.crm_enabled_derived_pairs_events.created',
+    updated: 'refdata.v1.crm_enabled_derived_pairs_events.updated',
+    deleted: 'refdata.v1.crm_enabled_derived_pairs_events.deleted',
 } as const;

@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a currency group.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::currency_group> get_group_history(const std::string& code);
 

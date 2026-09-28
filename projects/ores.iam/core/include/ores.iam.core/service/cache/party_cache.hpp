@@ -147,16 +147,8 @@ public:
                     return msg;
                 }
                 const auto page_count = resp->parties.size();
+                // The read spans tenants, so file only this partition's rows.
                 for (auto& v : resp->parties) {
-                    /*
-                     * The read is widened to the system tenant so this service
-                     * can resolve a party's name during authentication, and a
-                     * party row belongs to the tenant that created it. Every
-                     * tenant's rows therefore arrive here, and only this
-                     * partition's may enter it: filing another tenant's rows
-                     * under this key would answer a lookup with a party the
-                     * caller's tenant never had.
-                     */
                     if (v.tenant_id.to_string() != tenant_id)
                         continue;
                     entries_t.set(v.id, std::move(v));

@@ -246,6 +246,14 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
 
 void lei_relationship_repository::remove(
     context ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (relationship_start_node_node_ids.empty())
+        return;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<lei_relationship_entity> |
                        where("tenant_id"_c == tid && "relationship_start_node_node_id"_c.in(

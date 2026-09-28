@@ -138,7 +138,7 @@ struct put_account_party_request {
 
 struct put_account_party_response {
     ores::utility::domain::result result;
-    ores::iam::domain::account_party account_party;
+    std::optional<ores::iam::domain::account_party> account_party;
 };
 
 struct put_many_account_parties_request {

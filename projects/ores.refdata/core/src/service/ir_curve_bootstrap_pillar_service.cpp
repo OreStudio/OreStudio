@@ -50,6 +50,10 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::ir_curve_bootstrap_pillar>
 read_one(repository::ir_curve_bootstrap_pillar_repository& repo,
@@ -81,6 +85,7 @@ domain::ir_curve_bootstrap_pillar
 to_domain(const messaging::ir_curve_bootstrap_pillar_write& write) {
     domain::ir_curve_bootstrap_pillar v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.bootstrap_config_id = write.bootstrap_config_id;
     v.sequence_index = write.sequence_index;
     v.start_tenor_code = write.start_tenor_code;
@@ -368,17 +373,17 @@ std::uint32_t ir_curve_bootstrap_pillar_service::count_pillars() {
 
 
 std::optional<domain::ir_curve_bootstrap_pillar>
-ir_curve_bootstrap_pillar_service::get_pillar_at_version(const std::string& id,
+ir_curve_bootstrap_pillar_service::get_pillar_at_version(const boost::uuids::uuid& id,
                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting IR curve bootstrap pillar at version. " << "id: " << id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::ir_curve_bootstrap_pillar>
-ir_curve_bootstrap_pillar_service::get_pillar(const std::string& id) {
+ir_curve_bootstrap_pillar_service::get_pillar(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting IR curve bootstrap pillar. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -413,9 +418,9 @@ void ir_curve_bootstrap_pillar_service::save_pillars(
     repo_.write(ctx_, ts);
 }
 
-void ir_curve_bootstrap_pillar_service::delete_pillar(const std::string& id) {
+void ir_curve_bootstrap_pillar_service::delete_pillar(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing IR curve bootstrap pillar. " << "id: " << id;
-    repo_.remove(ctx_, id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed IR curve bootstrap pillar. " << "id: " << id;
 }
 

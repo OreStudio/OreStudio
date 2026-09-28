@@ -50,6 +50,10 @@ namespace {
  * A key record carries each column with the column's own type, and the
  * repository takes the text form every one of its key parameters shares, so
  * the conversion lives here rather than at every call site.
+ *
+ * The key record carries the key the model declares, which is the one a caller
+ * holds. When that is not the storage key the row is found by it and the
+ * repository's storage-key read is not used at all.
  */
 std::vector<domain::tenor_schedule> read_one(repository::tenor_schedule_repository& repo,
                                              const ores::database::context& ctx,
@@ -134,8 +138,8 @@ tenor_schedule_service::list_by_calendar_code_tenor_schedules(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    // A read scoped by a relation that the request leaves unstated has no
-    // scope, so it is refused rather than answered with every unset row.
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
     if (!request.calendar_code) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "relation_required";
@@ -173,8 +177,8 @@ tenor_schedule_service::list_by_diary_entry_type_tenor_schedules(
         response.result.message = "This resource reads its direct members; it has no subtree.";
         return response;
     }
-    // A read scoped by a relation that the request leaves unstated has no
-    // scope, so it is refused rather than answered with every unset row.
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
     if (!request.diary_entry_type) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "relation_required";

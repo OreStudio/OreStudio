@@ -154,7 +154,7 @@ struct put_account_type_request {
 
 struct put_account_type_response {
     ores::utility::domain::result result;
-    ores::iam::domain::account_type account_type;
+    std::optional<ores::iam::domain::account_type> account_type;
 };
 
 struct put_many_account_types_request {
@@ -250,7 +250,7 @@ struct get_account_type_version_request {
 
 struct get_account_type_version_response {
     ores::utility::domain::result result;
-    ores::iam::domain::account_type version;
+    std::optional<ores::iam::domain::account_type> version;
 };
 
 /**

@@ -111,6 +111,12 @@ public:
     std::vector<domain::party> read_latest_by_code(context ctx, const std::string& short_code);
 
     /**
+     * @brief Reads latest parties filtered by short_code.
+     */
+    std::vector<domain::party> read_latest_by_short_code(context ctx,
+                                                         const std::string& short_code);
+
+    /**
      * @brief Reads the newest parties filtered by short_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable

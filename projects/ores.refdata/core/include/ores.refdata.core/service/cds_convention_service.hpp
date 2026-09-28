@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a CDS convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::cds_convention> get_cds_convention_history(const std::string& id);
 

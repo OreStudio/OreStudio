@@ -111,7 +111,7 @@ export interface PutCurrencyGroupRequest {
 
 export interface PutCurrencyGroupResponse {
     result: Result;
-    currency_group: CurrencyGroup;
+    currency_group: CurrencyGroup | null;
 }
 
 export interface PutManyCurrencyGroupsRequest {
@@ -162,7 +162,7 @@ export interface GetCurrencyGroupVersionRequest {
 
 export interface GetCurrencyGroupVersionResponse {
     result: Result;
-    version: CurrencyGroup;
+    version: CurrencyGroup | null;
 }
 
 export const subjects = {

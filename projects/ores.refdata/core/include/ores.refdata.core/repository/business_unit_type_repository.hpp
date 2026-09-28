@@ -140,7 +140,6 @@ public:
     std::optional<domain::business_unit_type>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
-
     /**
      * @brief Reads latest business unit types with pagination support.
      * @param ctx Repository context with database connection

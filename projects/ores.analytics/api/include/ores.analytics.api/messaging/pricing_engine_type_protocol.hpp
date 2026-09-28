@@ -153,7 +153,7 @@ struct put_pricing_engine_type_request {
 
 struct put_pricing_engine_type_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::pricing_engine_type pricing_engine_type;
+    std::optional<ores::analytics::domain::pricing_engine_type> pricing_engine_type;
 };
 
 struct put_many_pricing_engine_types_request {
@@ -252,7 +252,7 @@ struct get_pricing_engine_type_version_request {
 
 struct get_pricing_engine_type_version_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::pricing_engine_type version;
+    std::optional<ores::analytics::domain::pricing_engine_type> version;
 };
 
 /**

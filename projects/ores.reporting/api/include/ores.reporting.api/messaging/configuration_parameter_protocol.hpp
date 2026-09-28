@@ -162,7 +162,7 @@ struct put_configuration_parameter_request {
 
 struct put_configuration_parameter_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::configuration_parameter configuration_parameter;
+    std::optional<ores::reporting::domain::configuration_parameter> configuration_parameter;
 };
 
 struct put_many_configuration_parameters_request {
@@ -312,7 +312,7 @@ struct get_configuration_parameter_version_request {
 
 struct get_configuration_parameter_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::configuration_parameter version;
+    std::optional<ores::reporting::domain::configuration_parameter> version;
 };
 
 /**

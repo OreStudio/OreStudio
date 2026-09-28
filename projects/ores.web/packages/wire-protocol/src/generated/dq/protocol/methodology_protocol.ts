@@ -112,7 +112,7 @@ export interface PutMethodologyRequest {
 
 export interface PutMethodologyResponse {
     result: Result;
-    methodology: Methodology;
+    methodology: Methodology | null;
 }
 
 export interface PutManyMethodologiesRequest {
@@ -163,7 +163,7 @@ export interface GetMethodologyVersionRequest {
 
 export interface GetMethodologyVersionResponse {
     result: Result;
-    version: Methodology;
+    version: Methodology | null;
 }
 
 export const subjects = {

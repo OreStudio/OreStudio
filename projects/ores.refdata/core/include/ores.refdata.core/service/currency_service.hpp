@@ -164,6 +164,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a currency.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::currency> get_currency_history(const std::string& iso_code);
 

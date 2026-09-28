@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CLIENT_EXPORT_HPP
-#define ORES_REFDATA_CLIENT_EXPORT_HPP
+#ifndef ORES_REFDATA_CLIENT_HPP
+#define ORES_REFDATA_CLIENT_HPP
 
-#include <boost/config.hpp>
-
-#ifdef ORES_REFDATA_CLIENT_LIBRARY
-#    define ORES_REFDATA_CLIENT_EXPORT BOOST_SYMBOL_EXPORT
-#else
-#    define ORES_REFDATA_CLIENT_EXPORT BOOST_SYMBOL_IMPORT
-#endif
+/**
+ * @brief Consumer-side reference data helpers.
+ *
+ * Convention-aware formatting of currency pair rates, and the tenant-scoped
+ * cache of currency pair conventions a client keeps between calls.
+ */
+namespace ores::refdata::client {}
 
 #endif

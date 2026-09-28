@@ -64,15 +64,6 @@ struct currency_calendars_filter {
     std::optional<std::string> currency_iso_code;
 };
 
-struct currency_calendar_event {
-    boost::uuids::uuid event_id;
-    currency_calendar_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
 struct list_currency_calendars_request {
     using response_type = struct list_currency_calendars_response;
     static constexpr std::string_view nats_subject = "refdata.v1.currency_calendars.list";
@@ -147,7 +138,7 @@ struct put_currency_calendar_request {
 
 struct put_currency_calendar_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::currency_calendar currency_calendar;
+    std::optional<ores::refdata::domain::currency_calendar> currency_calendar;
 };
 
 struct put_many_currency_calendars_request {

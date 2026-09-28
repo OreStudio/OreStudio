@@ -26,6 +26,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <set>
@@ -53,20 +54,36 @@ TEST_CASE("write_single_rounding_type", tags) {
     BOOST_LOG_SEV(lg, debug) << "Rounding type: " << rt;
 
     rounding_type_repository repo;
-    CHECK_NOTHROW(repo.write(h.context(), rt));
+    repo.write(h.context(), rt);
+
+    const auto read_rounding_types = repo.read_latest(h.context(), rt.code);
+    REQUIRE(read_rounding_types.size() == 1);
+    CHECK(read_rounding_types[0].name == rt.name);
 }
 
 TEST_CASE("read_latest_rounding_types_no_duplicate_codes", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     rounding_type_repository repo;
+
+    auto written = generate_synthetic_rounding_type(ctx);
+    written.code = written.code + "_" + std::string(faker::string::alphanumeric(8));
+    written.change_reason_code = "system.test";
+    repo.write(h.context(), written);
 
     // Regression: reads must be tenant-filtered. Without the filter the
     // system-tenant seed rows appear alongside the tenant's provisioned
     // copies, duplicating every code in the UI.
     auto read_rounding_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
+
+    const auto it = std::ranges::find_if(read_rounding_types, [&](const auto& rt) {
+        return rt.code == written.code;
+    });
+    REQUIRE(it != read_rounding_types.end());
+    CHECK(it->name == written.name);
 
     std::set<std::string> codes;
     for (const auto& rt : read_rounding_types)
@@ -103,7 +120,15 @@ TEST_CASE("read_nonexistent_rounding_type_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     rounding_type_repository repo;
+
+    // Write a row the read can answer with, so that an empty answer is the key
+    // at work rather than a read that does nothing.
+    auto keeper = generate_synthetic_rounding_type(ctx);
+    keeper.code = keeper.code + "_" + std::string(faker::string::alphanumeric(8));
+    keeper.change_reason_code = "system.test";
+    repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
@@ -111,5 +136,12 @@ TEST_CASE("read_nonexistent_rounding_type_code", tags) {
     auto read_rounding_types = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
 
-    CHECK(read_rounding_types.size() == 0);
+    const auto answered_with_another_key = std::ranges::any_of(
+        read_rounding_types, [&](const auto& rt) { return rt.code == nonexistent_code; });
+    CHECK_FALSE(answered_with_another_key);
+
+    // The same read does answer for the key that was written.
+    const auto keeper_rows = repo.read_latest(h.context(), keeper.code);
+    REQUIRE(keeper_rows.size() == 1);
+    CHECK(keeper_rows[0].name == keeper.name);
 }

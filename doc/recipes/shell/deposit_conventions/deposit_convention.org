@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: E83160B8-F626-584D-84B2-085B07AC6038
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the deposit_conventions commands from the shell?
 #+description: Every command the deposit_conventions submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -92,7 +93,7 @@ It is addressed at =refdata.v1.deposit_conventions.put=.
 
 #+name: deposit_conventions-add
 #+begin_src ores-shell :tangle deposit_conventions-add.ores :exports none
-deposit_conventions add __none__ false __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+deposit_conventions add __none__ false - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =refdata.v1.deposit_conventions.put=.
 
 #+name: deposit_conventions-set
 #+begin_src ores-shell :tangle deposit_conventions-set.ores :exports none
-deposit_conventions set __none__ false __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+deposit_conventions set __none__ false - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =refdata.v1.deposit_conventions.put_many=.
 
 #+name: deposit_conventions-put-many
 #+begin_src ores-shell :tangle deposit_conventions-put-many.ores :exports none
-deposit_conventions put-many --count 1 __none__ false __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+deposit_conventions put-many --count 1 __none__ false - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -165,7 +165,7 @@ struct put_credit_simulation_netting_set_config_request {
 
 struct put_credit_simulation_netting_set_config_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::credit_simulation_netting_set_config
+    std::optional<ores::analytics::domain::credit_simulation_netting_set_config>
         credit_simulation_netting_set_config;
 };
 
@@ -293,7 +293,7 @@ struct get_credit_simulation_netting_set_config_version_request {
 
 struct get_credit_simulation_netting_set_config_version_response {
     ores::utility::domain::result result;
-    ores::analytics::domain::credit_simulation_netting_set_config version;
+    std::optional<ores::analytics::domain::credit_simulation_netting_set_config> version;
 };
 
 /**

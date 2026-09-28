@@ -153,7 +153,7 @@ struct put_treatment_dimension_request {
 
 struct put_treatment_dimension_response {
     ores::utility::domain::result result;
-    ores::dq::domain::treatment_dimension treatment_dimension;
+    std::optional<ores::dq::domain::treatment_dimension> treatment_dimension;
 };
 
 struct put_many_treatment_dimensions_request {
@@ -249,7 +249,7 @@ struct get_treatment_dimension_version_request {
 
 struct get_treatment_dimension_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::treatment_dimension version;
+    std::optional<ores::dq::domain::treatment_dimension> version;
 };
 
 /**

@@ -114,7 +114,7 @@ export interface PutCurrencyPairConventionRequest {
 
 export interface PutCurrencyPairConventionResponse {
     result: Result;
-    currency_pair_convention: CurrencyPairConvention;
+    currency_pair_convention: CurrencyPairConvention | null;
 }
 
 export interface PutManyCurrencyPairConventionsRequest {
@@ -165,7 +165,7 @@ export interface GetCurrencyPairConventionVersionRequest {
 
 export interface GetCurrencyPairConventionVersionResponse {
     result: Result;
-    version: CurrencyPairConvention;
+    version: CurrencyPairConvention | null;
 }
 
 export const subjects = {

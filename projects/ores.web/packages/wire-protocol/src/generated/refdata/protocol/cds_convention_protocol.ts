@@ -118,7 +118,7 @@ export interface PutCdsConventionRequest {
 
 export interface PutCdsConventionResponse {
     result: Result;
-    cds_convention: CdsConvention;
+    cds_convention: CdsConvention | null;
 }
 
 export interface PutManyCdsConventionsRequest {
@@ -169,7 +169,7 @@ export interface GetCdsConventionVersionRequest {
 
 export interface GetCdsConventionVersionResponse {
     result: Result;
-    version: CdsConvention;
+    version: CdsConvention | null;
 }
 
 export const subjects = {

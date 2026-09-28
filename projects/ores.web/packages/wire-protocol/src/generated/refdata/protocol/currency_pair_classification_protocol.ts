@@ -111,7 +111,7 @@ export interface PutCurrencyPairClassificationRequest {
 
 export interface PutCurrencyPairClassificationResponse {
     result: Result;
-    currency_pair_classification: CurrencyPairClassification;
+    currency_pair_classification: CurrencyPairClassification | null;
 }
 
 export interface PutManyCurrencyPairClassificationsRequest {
@@ -162,7 +162,7 @@ export interface GetCurrencyPairClassificationVersionRequest {
 
 export interface GetCurrencyPairClassificationVersionResponse {
     result: Result;
-    version: CurrencyPairClassification;
+    version: CurrencyPairClassification | null;
 }
 
 export const subjects = {

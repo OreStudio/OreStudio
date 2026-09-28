@@ -154,7 +154,7 @@ struct put_asset_class_code_request {
 
 struct put_asset_class_code_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::asset_class_code asset_class_code;
+    std::optional<ores::refdata::domain::asset_class_code> asset_class_code;
 };
 
 struct put_many_asset_class_codes_request {
@@ -250,7 +250,7 @@ struct get_asset_class_code_version_request {
 
 struct get_asset_class_code_version_response {
     ores::utility::domain::result result;
-    ores::refdata::domain::asset_class_code version;
+    std::optional<ores::refdata::domain::asset_class_code> version;
 };
 
 /**

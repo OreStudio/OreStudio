@@ -162,6 +162,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a leg type.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::leg_type> get_type_history(const std::string& code);
 

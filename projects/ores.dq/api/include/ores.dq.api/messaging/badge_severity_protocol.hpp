@@ -154,7 +154,7 @@ struct put_badge_severity_request {
 
 struct put_badge_severity_response {
     ores::utility::domain::result result;
-    ores::dq::domain::badge_severity badge_severity;
+    std::optional<ores::dq::domain::badge_severity> badge_severity;
 };
 
 struct put_many_badge_severities_request {
@@ -250,7 +250,7 @@ struct get_badge_severity_version_request {
 
 struct get_badge_severity_version_response {
     ores::utility::domain::result result;
-    ores::dq::domain::badge_severity version;
+    std::optional<ores::dq::domain::badge_severity> version;
 };
 
 /**

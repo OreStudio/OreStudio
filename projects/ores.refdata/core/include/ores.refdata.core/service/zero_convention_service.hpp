@@ -165,6 +165,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a zero convention.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::zero_convention> get_zero_convention_history(const std::string& id);
 

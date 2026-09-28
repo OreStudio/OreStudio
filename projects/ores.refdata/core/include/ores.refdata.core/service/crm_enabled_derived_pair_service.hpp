@@ -123,15 +123,18 @@ public:
      * @return The CRM enabled derived pair at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_enabled_derived_pair>
-    get_crm_enabled_derived_pair_at_version(const std::string& id, std::uint32_t version);
+    get_crm_enabled_derived_pair_at_version(const boost::uuids::uuid& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single CRM enabled derived pair by its primary key.
      *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
      * @return The CRM enabled derived pair if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_enabled_derived_pair>
-    get_crm_enabled_derived_pair(const std::string& id);
+    get_crm_enabled_derived_pair(const boost::uuids::uuid& id);
 
     /**
      * @brief Retrieves a batch of CRM enabled derived pairs by primary key.
@@ -162,7 +165,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_crm_enabled_derived_pair(const std::string& id);
+    void delete_crm_enabled_derived_pair(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes CRM enabled derived pairs by their primary keys.
@@ -171,6 +174,8 @@ public:
 
     /**
      * @brief Retrieves all historical versions of a CRM enabled derived pair.
+     *
+     * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::crm_enabled_derived_pair>
     get_crm_enabled_derived_pair_history(const std::string& id);

@@ -98,7 +98,7 @@ export interface PutAppVersionPlatformRequest {
 
 export interface PutAppVersionPlatformResponse {
     result: Result;
-    app_version_platform: AppVersionPlatform;
+    app_version_platform: AppVersionPlatform | null;
 }
 
 export interface PutManyAppVersionPlatformsRequest {

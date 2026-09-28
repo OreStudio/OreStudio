@@ -160,6 +160,22 @@ counterparty_repository::read_latest_by_code(context ctx, const std::string& sho
         lg(),
         "Reading latest counterparty by short_code.");
 }
+std::vector<domain::counterparty>
+counterparty_repository::read_latest_by_short_code(context ctx, const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty by short_code: " << short_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<counterparty_entity>> |
+        where("tenant_id"_c == tid && "short_code"_c == short_code && "valid_to"_c == max.value());
+
+    return execute_read_query<counterparty_entity, domain::counterparty>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty by short_code.");
+}
 
 std::vector<domain::counterparty>
 counterparty_repository::read_any_by_short_code(context ctx, const std::string& short_code) {
@@ -306,6 +322,14 @@ counterparty_repository::read_latest(context ctx, const std::vector<std::string>
 }
 
 void counterparty_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (ids.empty())
+        return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<counterparty_entity> |

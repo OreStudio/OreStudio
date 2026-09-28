@@ -21,30 +21,22 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_CONSTANTS_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_CONSTANTS_HPP
 
-#include <array>
 #include <string_view>
 
 namespace ores::refdata::domain::book_status_constants {
 
 /**
- * @brief Book status codes used throughout the system.
+ * @brief The book status code the code compares.
  *
- * These codes must match entries in the ores_refdata_book_statuses_tbl
- * table (see refdata_book_statuses_populate.sql).
+ * The full vocabulary lives in the ores_refdata_book_statuses_tbl table,
+ * which refdata_book_statuses_populate.sql seeds. This holds only the code a
+ * caller has to name.
  */
 namespace codes {
 
 constexpr std::string_view active = "Active";
-constexpr std::string_view closed = "Closed";
-constexpr std::string_view frozen = "Frozen";
 
 } // namespace codes
-
-constexpr std::array<std::string_view, 3> all = {
-    codes::active,
-    codes::closed,
-    codes::frozen,
-};
 
 } // namespace ores::refdata::domain::book_status_constants
 

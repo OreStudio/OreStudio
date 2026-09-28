@@ -155,7 +155,7 @@ struct put_trade_envelope_portfolio_id_request {
 
 struct put_trade_envelope_portfolio_id_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_envelope_portfolio_id trade_envelope_portfolio_id;
+    std::optional<ores::trading::domain::trade_envelope_portfolio_id> trade_envelope_portfolio_id;
 };
 
 struct put_many_trade_envelope_portfolio_ids_request {
@@ -256,7 +256,7 @@ struct get_trade_envelope_portfolio_id_version_request {
 
 struct get_trade_envelope_portfolio_id_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_envelope_portfolio_id version;
+    std::optional<ores::trading::domain::trade_envelope_portfolio_id> version;
 };
 
 /**

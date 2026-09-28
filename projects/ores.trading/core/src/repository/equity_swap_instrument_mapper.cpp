@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/equity_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -50,12 +53,12 @@ equity_swap_instrument_mapper::map(const equity_swap_instrument_entity& v) {
     r.underlying_name = v.underlying_name.value_or("");
     r.basket_json = v.basket_json.value_or("");
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.return_type = v.return_type;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
-    r.payment_frequency = v.payment_frequency;
+    r.payment_frequency_code = v.payment_frequency_code;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -84,12 +87,12 @@ equity_swap_instrument_mapper::map(const domain::equity_swap_instrument& v) {
     r.underlying_name = v.underlying_name.empty() ? std::nullopt : std::optional(v.underlying_name);
     r.basket_json = v.basket_json.empty() ? std::nullopt : std::optional(v.basket_json);
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.return_type = v.return_type;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
-    r.payment_frequency = v.payment_frequency;
+    r.payment_frequency_code = v.payment_frequency_code;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

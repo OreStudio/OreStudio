@@ -17,16 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_COMPOSITE_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_COMPOSITE_INSTRUMENT_SERVICE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_SERVICE_COMPOSITE_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_COMPOSITE_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -35,6 +41,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing composite instruments.
+ *
+ * Provides a higher-level interface for composite instrument operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT composite_instrument_service {
 private:
@@ -50,37 +59,163 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a composite_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit composite_instrument_service(context ctx);
 
-    std::vector<domain::composite_instrument> list_composite_instruments();
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_composite_instruments_response
+    list_composite_instruments(const messaging::list_composite_instruments_request& request);
+    messaging::get_composite_instrument_response
+    get_composite_instrument(const messaging::get_composite_instrument_request& request);
+    messaging::get_many_composite_instruments_response get_many_composite_instruments(
+        const messaging::get_many_composite_instruments_request& request);
+    messaging::put_composite_instrument_response
+    put_composite_instrument(const messaging::put_composite_instrument_request& request);
+    messaging::put_many_composite_instruments_response put_many_composite_instruments(
+        const messaging::put_many_composite_instruments_request& request);
+    messaging::delete_composite_instrument_response
+    delete_composite_instrument(const messaging::delete_composite_instrument_request& request);
+    messaging::delete_many_composite_instruments_response delete_many_composite_instruments(
+        const messaging::delete_many_composite_instruments_request& request);
+    messaging::list_composite_instrument_versions_response list_composite_instrument_versions(
+        const messaging::list_composite_instrument_versions_request& request);
+    messaging::get_composite_instrument_version_response get_composite_instrument_version(
+        const messaging::get_composite_instrument_version_request& request);
+    /**@}*/
 
+    /**
+     * @brief Lists composite instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of composite instruments for the requested page.
+     */
     std::vector<domain::composite_instrument> list_composite_instruments(std::uint32_t offset,
                                                                          std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active composite instruments.
+     *
+     * @return Total number of active composite instruments.
+     */
     std::uint32_t count_composite_instruments();
 
-    std::optional<domain::composite_instrument> get_composite_instrument(const std::string& id);
 
+    /**
+     * @brief Retrieves a single composite instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The composite instrument at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::composite_instrument>
+    get_composite_instrument_at_version(const boost::uuids::uuid& instrument_id,
+                                        std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single composite instrument by its primary key.
+     *
+     * The storage key is a uuid, so the signature says which key is meant and
+     * the human-readable key cannot be passed here by mistake.
+     *
+     * @return The composite instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::composite_instrument>
+    get_composite_instrument(const boost::uuids::uuid& instrument_id);
+
+    /**
+     * @brief Retrieves a batch of composite instruments by primary key.
+     */
+    std::vector<domain::composite_instrument>
+    get_composite_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Saves a composite instrument (creates or updates).
+     *
+     * @param composite_instrument The composite instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_composite_instrument(const domain::composite_instrument& composite_instrument);
+
+    /**
+     * @brief Saves a batch of composite instruments.
+     *
+     * @param composite_instruments The composite instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_composite_instruments(
+        const std::vector<domain::composite_instrument>& composite_instruments);
+
+    /**
+     * @brief Deletes a composite instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_composite_instrument(const boost::uuids::uuid& instrument_id);
+
+    /**
+     * @brief Deletes composite instruments by their primary keys.
+     */
+    void delete_composite_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a composite instrument.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::composite_instrument>
+    get_composite_instrument_history(const std::string& instrument_id);
+
+    /**
+     * @brief Reads the legs of one composite instrument, ordered by leg sequence.
+     */
     std::vector<domain::composite_leg> get_legs(const std::string& instrument_id);
 
-    std::vector<domain::composite_leg>
-    get_legs_batch(const std::vector<std::string>& instrument_ids);
-
+    /**
+     * @brief Writes the instrument and replaces its whole leg set.
+     *
+     * One transaction from the caller's view: the instrument row is written
+     * first, then every leg the request states. The legs the instrument
+     * carried before are removed first, so a save states the whole basket
+     * rather than appending to it.
+     */
     void save_composite_instrument(const domain::composite_instrument& v,
                                    const std::vector<domain::composite_leg>& legs);
-
-    void remove_composite_instrument(const std::string& id);
-
-    std::vector<domain::composite_instrument>
-    get_composite_instrument_history(const std::string& id);
-
-    std::vector<domain::composite_instrument>
-    get_composite_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;
     repository::composite_instrument_repository repo_;
-    repository::composite_leg_repository leg_repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::composite_instrument_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::composite_instrument& out);
 };
 
 }

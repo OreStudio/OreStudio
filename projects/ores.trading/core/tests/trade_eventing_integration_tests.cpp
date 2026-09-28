@@ -79,6 +79,10 @@
 // component, so its own component names the headers.
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
+// Soft-FK parent seeding (ores_dq_fsm_states_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.dq.api/generators/fsm_state_generator.hpp"
+#include "ores.dq.core/repository/fsm_state_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -258,6 +262,18 @@ TEST_CASE("write_trade_publishes_an_event", tags) {
     ores::refdata::repository::portfolio_repository portfolio_id_repo;
     portfolio_id_repo.write(party_ctx, portfolio_id_parent);
     v.parties.portfolio_id = portfolio_id_parent.id;
+    // fsm_state is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::dq::repository::fsm_state_repository status_id_catalogue_repo;
+        const auto status_id_catalogue = status_id_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(status_id_catalogue.empty());
+        v.classification.status_id = status_id_catalogue.front().id;
+    }
     const auto id_str = boost::uuids::to_string(v.identity.id);
     BOOST_LOG_SEV(lg, debug) << "Trade: " << v;
 

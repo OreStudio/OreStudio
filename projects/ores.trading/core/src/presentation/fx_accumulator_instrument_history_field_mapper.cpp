@@ -42,11 +42,12 @@ render_fx_accumulator_instrument_fields(const domain::fx_accumulator_instrument&
                       .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
                                                      std::string{}});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Fixing Amount", .value = std::to_string(v.fixing_amount)});
+    fields.push_back({.name = "Fixing Amount", .value = v.fixing_amount.to_string()});
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
     fields.push_back({.name = "Underlying Code", .value = v.underlying_code});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back(
         {.name = "Knock Out Barrier",
          .value = v.knock_out_barrier ? std::to_string(*v.knock_out_barrier) : std::string{}});

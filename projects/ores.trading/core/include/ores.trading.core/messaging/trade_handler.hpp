@@ -38,8 +38,11 @@
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
+#include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
-#include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
@@ -78,6 +81,7 @@
 #include <optional>
 #include <rfl/msgpack.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace ores::trading::messaging {
 
@@ -493,28 +497,6 @@ public:
         }
     }
 
-    void list_activity_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        // Activity types are system-level configuration; look them up under
-        // the system tenant so all tenants see the same standard set.
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::activity_type_service svc(sys_ctx);
-        get_activity_types_response resp;
-        try {
-            resp.activity_types = svc.list_types();
-        } catch (...) {
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
     void instrument(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -657,6 +639,7 @@ private:
         using ores::trading::domain::product_type;
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
 
         // Phase 1: bucket instrument IDs by (product_type, trade_type)
@@ -779,10 +762,26 @@ private:
         std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
             comp_legs_map;
         if (!composite_ids.empty()) {
-            service::composite_instrument_service comp_svc(ctx);
-            for (auto& leg : comp_svc.get_legs_batch(composite_ids))
-                comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
-                    std::move(leg));
+            repository::composite_leg_repository comp_leg_repo;
+            const std::unordered_set<std::string> wanted(composite_ids.begin(),
+                                                         composite_ids.end());
+            for (auto& leg : comp_leg_repo.read_latest(ctx)) {
+                const auto key = boost::uuids::to_string(leg.identity.instrument_id);
+                if (wanted.contains(key))
+                    comp_legs_map[key].push_back(std::move(leg));
+            }
+        }
+
+        // The callable swap's exercise schedule is a collection of its own,
+        // so it is fetched beside the legs and only for the instruments
+        // that state one.
+        std::unordered_map<std::string, std::vector<ores::trading::domain::callable_swap_call_date>>
+            call_dates_map;
+        if (!callable_ids.empty()) {
+            repository::callable_swap_call_date_repository call_date_repo;
+            for (auto& call_date : call_date_repo.read_by_instruments_batch(ctx, callable_ids))
+                call_dates_map[boost::uuids::to_string(call_date.instrument_id)].push_back(
+                    std::move(call_date));
         }
 
         // Phase 3: batch-fetch instruments, build lookup map
@@ -794,7 +793,34 @@ private:
                                           std::vector<ores::trading::domain::swap_leg>{};
         };
 
-        // Single-table types (credit, commodity, scripted).
+        auto take_call_dates = [&](const std::string& id) {
+            auto it = call_dates_map.find(id);
+            return it != call_dates_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::callable_swap_call_date>{};
+        };
+
+        // A commodity basket's constituents are a collection of their own, so
+        // they are fetched beside the instrument and only for the instruments
+        // that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::commodity_basket_constituent>>
+            constituents_map;
+        if (!commodity_ids.empty()) {
+            repository::commodity_basket_constituent_repository constituent_repo;
+            for (auto& constituent : constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
+                constituents_map[boost::uuids::to_string(constituent.instrument_id)].push_back(
+                    std::move(constituent));
+        }
+
+        auto take_constituents = [&](const std::string& id) {
+            auto it = constituents_map.find(id);
+            return it != constituents_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::commodity_basket_constituent>{};
+        };
+
+        // Single-table types (credit, scripted).
         auto add_flat = [&](auto&& results) {
             for (auto& v : results)
                 imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
@@ -811,7 +837,13 @@ private:
         }
         if (!commodity_ids.empty()) {
             service::commodity_instrument_service svc(ctx);
-            add_flat(svc.get_commodity_instruments(commodity_ids));
+            for (auto& v : svc.get_commodity_instruments(commodity_ids)) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                commodity_instrument_data data;
+                data.instrument = std::move(v);
+                data.constituents = take_constituents(id);
+                imap[id] = std::move(data);
+            }
         }
         if (!scripted_ids.empty()) {
             service::scripted_instrument_service svc(ctx);
@@ -837,6 +869,7 @@ private:
                 swap_instrument_data data;
                 data.instrument = std::move(v);
                 data.legs = take_legs(id);
+                data.call_dates = take_call_dates(id);
                 imap[id] = std::move(data);
             }
         };
@@ -912,11 +945,34 @@ private:
             add_fx(svc.get_fx_variance_swap_instruments(fxvar_ids));
         }
 
-        // Equity types
+        // Equity types. An equity option position states its entries as rows
+        // of their own, so they are fetched beside the instrument and only
+        // for the positions that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::equity_position_option_underlying>>
+            equity_underlyings_map;
+        if (!eq_pos_ids.empty()) {
+            repository::equity_position_option_underlying_repository underlying_repo;
+            for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
+                equity_underlyings_map[boost::uuids::to_string(underlying.instrument_id)].push_back(
+                    std::move(underlying));
+        }
+
+        auto take_equity_underlyings = [&](const std::string& id) {
+            auto it = equity_underlyings_map.find(id);
+            return it != equity_underlyings_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::equity_position_option_underlying>{};
+        };
+
         auto add_eq = [&](auto&& results) {
-            for (auto& v : results)
-                imap[boost::uuids::to_string(v.identity.instrument_id)] =
-                    ores::trading::domain::equity_instrument_variant{std::move(v)};
+            for (auto& v : results) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                ores::trading::domain::equity_instrument_data data;
+                data.instrument = ores::trading::domain::equity_instrument_variant{std::move(v)};
+                data.underlyings = take_equity_underlyings(id);
+                imap[id] = std::move(data);
+            }
         };
         if (!eq_opt_ids.empty()) {
             service::equity_option_instrument_service svc(ctx);

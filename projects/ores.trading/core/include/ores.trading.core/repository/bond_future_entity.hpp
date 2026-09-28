@@ -46,12 +46,12 @@ struct bond_future_entity {
     std::string tenant_id;
     int version = 0;
     std::string contract_name;
-    double contract_notional = 0.0;
+    std::string contract_notional;
     std::string long_short;
     std::string currency;
     std::string contract_month;
     std::optional<std::string> deliverable_grade;
-    double fair_price = 0.0;
+    std::string fair_price;
     std::string settlement;
     bool settlement_dirty = false;
     std::optional<std::string> root_date;

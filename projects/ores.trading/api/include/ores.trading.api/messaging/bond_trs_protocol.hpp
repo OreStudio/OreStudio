@@ -47,7 +47,7 @@ struct bond_trs_write {
     std::string funding_index;
     std::optional<std::string> payer;
     std::optional<std::string> price_type;
-    std::optional<double> initial_price;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 };
 
 struct bond_trs_change {
@@ -158,7 +158,7 @@ struct put_bond_trs_request {
 
 struct put_bond_trs_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_trs bond_trs;
+    std::optional<ores::trading::domain::bond_trs> bond_trs;
 };
 
 struct put_many_bond_trs_request {
@@ -254,7 +254,7 @@ struct get_bond_trs_version_request {
 
 struct get_bond_trs_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_trs version;
+    std::optional<ores::trading::domain::bond_trs> version;
 };
 
 /**

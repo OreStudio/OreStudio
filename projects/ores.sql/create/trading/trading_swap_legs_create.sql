@@ -17,26 +17,50 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Swap Legs Table
---
--- Shared legs table for all rates instrument types. Each row is one leg of a
--- rates instrument (Swap, CrossCurrencySwap, CapFloor, Swaption).
--- A plain IRS has two rows (fixed + floating). A cross-currency swap also
--- has two rows with different currencies.
---
--- Fields not applicable to a leg type are NULL (e.g. fixed_rate is NULL
--- for floating legs; floating_index_code is NULL for fixed legs).
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Swap Leg Table
+ *
+ * The shared legs table of the nine rates instrument families. Each row is one
+ * leg of an FRA, vanilla swap, cap/floor, swaption, balance-guaranteed swap,
+ * callable swap, knock-out swap, inflation swap or RPA instrument. A plain
+ * interest rate swap has two rows, one fixed and one floating; a cross-currency
+ * swap has two rows with different currencies.
+ *
+ * leg_type_code is the discriminator and the leg type is data, not a table, so
+ * one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
+ * leg type does not state are null: fixed_rate is null for a floating leg and
+ * floating_index_code is null for a fixed leg.
+ *
+ * The row keeps its own id surrogate and names the parent instrument through
+ * instrument_id, which is a soft foreign key to the instrument family rather
+ * than to one table.
+ *
+ * It binds :profile: trading-instrument, like the nine instrument sub-types
+ * whose legs it holds. Three table features justify the bind: the table is
+ * tenant-scoped through tenant_id and the tenant isolation policy, it is
+ * workspace-scoped through workspace_id, and its insert trigger stamps
+ * party_id from the session variable app.current_party_id rather than taking
+ * it from the client. The bind leaves the table with no UI surface -- the
+ * per-instrument forms were hand-crafted in the removed desktop client and
+ * consumed the generated messaging protocol. The identity and audit field
+ * groups and the generator facet are the model's own flags, stated under C++
+ * below, not profile assignments.
+ *
+ * The table is bi-temporal and audited, so the model takes the ordinary audited
+ * shape and needs no shape flag.
+ */
 
 create table if not exists "ores_trading_swap_legs_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "instrument_id" uuid not null,
-    "leg_number" integer not null,
+    "leg_number" integer not null default 1,
     "leg_type_code" text not null,
     "day_count_fraction_code" text not null,
     "business_day_convention_code" text not null,
@@ -71,22 +95,18 @@ create unique index if not exists swap_legs_version_uniq_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists swap_legs_id_uniq_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists swap_legs_tenant_idx
 on "ores_trading_swap_legs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists swap_legs_party_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Instrument index for leg lookups
 create index if not exists swap_legs_instrument_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -103,28 +123,27 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate leg_type_code (moved to ores.refdata)
+    -- Validate leg_type_code
     NEW.leg_type_code := ores_refdata_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
 
-    -- Validate day_count_fraction_code (moved to ores.refdata)
-    NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(
-        NEW.tenant_id, NEW.day_count_fraction_code);
+    -- Validate day_count_fraction_code
+    NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(NEW.tenant_id, NEW.day_count_fraction_code);
 
-    -- Validate business_day_convention_code (moved to ores.refdata)
-    NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(
-        NEW.tenant_id, NEW.business_day_convention_code);
+    -- Validate business_day_convention_code
+    NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention_code);
 
     -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(
-        NEW.tenant_id, NEW.payment_frequency_code);
+    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
 
-    -- Validate floating_index_code (optional, required for floating legs; moved to ores.refdata)
+    -- Validate floating_index_code (optional field -- skip validation when null)
     if NEW.floating_index_code is not null then
-        NEW.floating_index_code := ores_refdata_validate_floating_index_type_fn(
-            NEW.tenant_id, NEW.floating_index_code);
+        NEW.floating_index_code := ores_refdata_validate_floating_index_type_fn(NEW.tenant_id, NEW.floating_index_code);
     end if;
 
     -- Validate change_reason_code
@@ -139,40 +158,55 @@ begin
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_swap_legs_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_swap_legs_insert_trg
 before insert on "ores_trading_swap_legs_tbl"
 for each row execute function ores_trading_swap_legs_insert_fn();
 
 create or replace rule ores_trading_swap_legs_delete_rule as
-on delete to "ores_trading_swap_legs_tbl" do instead
+on delete to "ores_trading_swap_legs_tbl" do instead (
     update "ores_trading_swap_legs_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

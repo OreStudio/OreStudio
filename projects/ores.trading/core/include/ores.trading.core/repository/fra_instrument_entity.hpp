@@ -55,7 +55,7 @@ struct fra_instrument_entity {
     std::string rate_index;
     std::string long_short;
     double strike = 0.0;
-    double notional = 0.0;
+    std::string notional;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

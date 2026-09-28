@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -54,28 +56,32 @@ struct equity_accumulator_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Strike price.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike;
 
     /**
      * @brief Per-fixing accumulation amount. Must be positive.
      */
-    double fixing_amount = 0.0;
+    ores::utility::decimal::decimal fixing_amount;
 
     /**
      * @brief Start date (ISO 8601 date string).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief e.g. Daily, Weekly, Monthly.
@@ -90,20 +96,30 @@ struct equity_accumulator_instrument final {
     /**
      * @brief Knock-out barrier; absent when not specified.
      */
-    std::optional<double> knock_out_level;
+    std::optional<ores::utility::decimal::decimal> knock_out_level;
 
     /**
      * @brief TaRF only: target profit level.
      */
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
 
     /**
-     * @brief TaRF: TargetFull or TargetExact; empty for accumulator.
+     * @brief TaRF: TargetFull or TargetExact, the ORE optionData.PayoffType values the target
+     * variant states; null for an accumulator.
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: TargetFull and TargetExact are two of the ORE
+     * optionData.PayoffType values, not a separate ORE set, so the column points at that table. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string target_type;
 
     /**
-     * @brief Accumulator, Decumulator, or TaRF.
+     * @brief One of the ORE optionData.PayoffType values; an accumulator or TaRF states Accumulator
+     * or Decumulator, and a TaRF's target variant states TargetFull or TargetExact as well.
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: the values are the ORE optionData.PayoffType set
+     * the corpus uses (Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull,
+     * Vanilla). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string payoff_type;
 

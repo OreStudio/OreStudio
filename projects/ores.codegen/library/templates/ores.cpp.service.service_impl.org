@@ -120,8 +120,20 @@ domain::{{entity_singular}} to_domain(const messaging::{{entity_singular}}_write
         v.{{domain_member}} = parsed.value_or({{{enum_default}}});
     }
 {{/enum_from_string}}
+{{#date_from_string}}
+    if (!write.{{name}}.empty())
+        v.{{domain_member}} = ores::platform::time::datetime::from_iso8601_date(write.{{name}});
+{{/date_from_string}}
+{{#timestamp_from_string}}
+    if (!write.{{name}}.empty())
+        v.{{domain_member}} = ores::platform::time::datetime::from_iso8601_utc(write.{{name}});
+{{/timestamp_from_string}}
 {{^enum_from_string}}
+{{^date_from_string}}
+{{^timestamp_from_string}}
     v.{{domain_member}} = write.{{name}};
+{{/timestamp_from_string}}
+{{/date_from_string}}
 {{/enum_from_string}}
 {{/write_fields}}
     return v;

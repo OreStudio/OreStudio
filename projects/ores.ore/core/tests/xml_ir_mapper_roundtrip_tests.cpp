@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -82,19 +83,19 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     const auto& instr = std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument);
     const auto& legs = result.legs;
 
-    CHECK(instr.start_date == "2023-02-21");
-    CHECK(instr.maturity_date == "2043-02-21");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2023-02-21");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.maturity_date) == "2043-02-21");
 
     REQUIRE(legs.size() == 2);
-    CHECK(legs[0].terms.leg_type_code == "Fixed");
-    CHECK(legs[0].terms.currency == "EUR");
-    CHECK(legs[0].terms.notional == Approx(10000000.0).epsilon(0.001));
-    CHECK(legs[0].terms.fixed_rate == Approx(0.021).epsilon(0.0001));
+    CHECK(legs[0].leg_type_code == "Fixed");
+    CHECK(legs[0].currency == "EUR");
+    CHECK(legs[0].notional.to_double() == Approx(10000000.0).epsilon(0.001));
+    CHECK(legs[0].fixed_rate == Approx(0.021).epsilon(0.0001));
 
-    CHECK(legs[1].terms.leg_type_code == "Floating");
-    CHECK(legs[1].terms.currency == "EUR");
-    CHECK(legs[1].terms.floating_index_code == "EUR-EURIBOR-6M");
-    CHECK(legs[1].terms.notional == Approx(10000000.0).epsilon(0.001));
+    CHECK(legs[1].leg_type_code == "Floating");
+    CHECK(legs[1].currency == "EUR");
+    CHECK(legs[1].floating_index_code == "EUR-EURIBOR-6M");
+    CHECK(legs[1].notional.to_double() == Approx(10000000.0).epsilon(0.001));
     BOOST_LOG_SEV(lg, info) << "Swap forward-mapper test passed";
 }
 
@@ -130,15 +131,15 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
     const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.instrument);
     const auto& legs = result.legs;
 
-    CHECK(instr.start_date == "2026-10-19");
-    CHECK(instr.end_date == "2027-04-20");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2026-10-19");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.end_date) == "2027-04-20");
     CHECK(instr.currency == "EUR");
-    CHECK(instr.notional == Approx(100000000.0).epsilon(0.001));
+    CHECK(instr.notional.to_double() == Approx(100000000.0).epsilon(0.001));
 
     REQUIRE(legs.size() == 1);
-    CHECK(legs[0].terms.floating_index_code == "EUR-EURIBOR-6M");
-    CHECK(legs[0].terms.fixed_rate == Approx(0.005).epsilon(0.00001));
-    CHECK(legs[0].terms.currency == "EUR");
+    CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
+    CHECK(legs[0].fixed_rate == Approx(0.005).epsilon(0.00001));
+    CHECK(legs[0].currency == "EUR");
     BOOST_LOG_SEV(lg, info) << "FRA forward-mapper test passed";
 }
 
@@ -172,14 +173,14 @@ TEST_CASE("mapper_roundtrip_capfloor_forward", tags) {
     const auto& instr = std::get<ores::trading::domain::cap_floor_instrument>(result.instrument);
     const auto& legs = result.legs;
 
-    CHECK(instr.start_date == "2023-10-11");
-    CHECK(instr.maturity_date == "2038-10-10");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2023-10-11");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.maturity_date) == "2038-10-10");
 
     REQUIRE(legs.size() == 1);
-    CHECK(legs[0].terms.leg_type_code == "Floating");
-    CHECK(legs[0].terms.currency == "EUR");
-    CHECK(legs[0].terms.notional == Approx(3000000.0).epsilon(0.001));
-    CHECK(legs[0].terms.floating_index_code == "EUR-EURIBOR-6M");
+    CHECK(legs[0].leg_type_code == "Floating");
+    CHECK(legs[0].currency == "EUR");
+    CHECK(legs[0].notional.to_double() == Approx(3000000.0).epsilon(0.001));
+    CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
     BOOST_LOG_SEV(lg, info) << "CapFloor forward-mapper test passed";
 }
 

@@ -42,21 +42,21 @@ struct bond_future_key {
 struct bond_future_write {
     boost::uuids::uuid instrument_id;
     std::string contract_name;
-    double contract_notional;
+    ores::utility::decimal::decimal contract_notional;
     std::string long_short;
     std::string currency;
     std::string contract_month;
     std::string deliverable_grade;
-    double fair_price;
+    ores::utility::decimal::decimal fair_price;
     std::string settlement;
     bool settlement_dirty;
-    std::string root_date;
+    std::optional<std::chrono::year_month_day> root_date;
     std::string expiry_basis;
     std::string settlement_basis;
     int expiry_lag;
     int settlement_lag;
-    std::string last_trading_date;
-    std::string last_delivery_date;
+    std::chrono::year_month_day last_trading_date;
+    std::chrono::year_month_day last_delivery_date;
 };
 
 struct bond_future_change {
@@ -167,7 +167,7 @@ struct put_bond_future_request {
 
 struct put_bond_future_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_future bond_future;
+    std::optional<ores::trading::domain::bond_future> bond_future;
 };
 
 struct put_many_bond_futures_request {
@@ -263,7 +263,7 @@ struct get_bond_future_version_request {
 
 struct get_bond_future_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_future version;
+    std::optional<ores::trading::domain::bond_future> version;
 };
 
 /**

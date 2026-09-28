@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_COMPOSITE_LEG_TABLE_IO_HPP
-#define ORES_TRADING_DOMAIN_COMPOSITE_LEG_TABLE_IO_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_TABLE_IO_HPP
+#define ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_TABLE_IO_HPP
 
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/export.hpp"
@@ -28,7 +33,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Dumps composite_legs to a stream in table format.
+ * @brief Dumps the composite_leg objects to a stream in table format.
  */
 ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
                                                  const std::vector<composite_leg>& v);

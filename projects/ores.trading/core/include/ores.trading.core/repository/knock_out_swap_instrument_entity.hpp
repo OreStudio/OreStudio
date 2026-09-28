@@ -53,7 +53,6 @@ struct knock_out_swap_instrument_entity {
     std::string maturity_date;
     double barrier_level = 0.0;
     std::string barrier_type;
-    std::optional<std::string> knock_out_dates_json;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/instrument_option_premium_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/instrument_option_premium_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -42,9 +45,9 @@ instrument_option_premium_mapper::map(const instrument_option_premium_entity& v)
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
-    r.amount = v.amount;
+    r.amount = ores::utility::decimal::decimal::from_string(v.amount).value();
     r.currency = v.currency;
-    r.pay_date = v.pay_date;
+    r.pay_date = ores::platform::time::datetime::from_iso8601_date(v.pay_date);
     r.has_settlement = v.has_settlement;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
@@ -68,9 +71,9 @@ instrument_option_premium_mapper::map(const domain::instrument_option_premium& v
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.amount = v.amount;
+    r.amount = v.amount.to_string();
     r.currency = v.currency;
-    r.pay_date = v.pay_date;
+    r.pay_date = ores::platform::time::datetime::to_iso8601_date(v.pay_date);
     r.has_settlement = v.has_settlement;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;

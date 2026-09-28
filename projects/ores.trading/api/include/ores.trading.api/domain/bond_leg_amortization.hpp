@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_LEG_AMORTIZATION_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_LEG_AMORTIZATION_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -82,13 +83,16 @@ struct bond_leg_amortization final {
 
     /**
      * @brief How the step amortizes, as the document spells it.
+     *
+     * Soft FK to ores_trading_amortization_types_tbl: the values are the closed ORE
+     * amortizationType set. PR 4 tightens the soft reference into a real foreign key.
      */
     std::string amortization_type;
 
     /**
      * @brief The amount the step amortizes by.
      */
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
 
     /**
      * @brief First date of the step's window (ISO 8601 date string).

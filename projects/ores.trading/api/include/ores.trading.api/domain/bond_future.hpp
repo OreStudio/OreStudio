@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FUTURE_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FUTURE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -70,15 +72,23 @@ struct bond_future final {
     /**
      * @brief Notional of one contract.
      */
-    double contract_notional = 0.0;
+    ores::utility::decimal::decimal contract_notional;
 
     /**
      * @brief Long or short position in the contract.
+     *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string long_short;
 
     /**
      * @brief ISO 4217 currency code of the contract.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -95,7 +105,7 @@ struct bond_future final {
     /**
      * @brief Fair price of the contract at trade time.
      */
-    double fair_price = 0.0;
+    ores::utility::decimal::decimal fair_price;
 
     /**
      * @brief Settlement type of the contract (Cash, Physical).
@@ -110,7 +120,7 @@ struct bond_future final {
     /**
      * @brief Root date of the contract's expiry basis (ISO 8601 date string).
      */
-    std::string root_date;
+    std::optional<std::chrono::year_month_day> root_date;
 
     /**
      * @brief Expiry basis of the contract, when the contract names one.
@@ -135,13 +145,13 @@ struct bond_future final {
     /**
      * @brief Last trading date of the contract (ISO 8601 date string).
      */
-    std::string last_trading_date;
+    std::chrono::year_month_day last_trading_date;
 
     /**
      * @brief Last delivery date of the contract (ISO 8601 date string). The ER names this the
      * delivery date of the fact row.
      */
-    std::string last_delivery_date;
+    std::chrono::year_month_day last_delivery_date;
 
     /**
      * @brief Username of the person who last modified this bond future.

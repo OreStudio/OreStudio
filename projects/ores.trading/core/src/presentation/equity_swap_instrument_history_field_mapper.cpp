@@ -44,12 +44,14 @@ render_equity_swap_instrument_fields(const domain::equity_swap_instrument& v) {
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Basket Json", .value = v.basket_json});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
+    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Return Type", .value = v.return_type});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Maturity Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back({.name = "Payment Frequency", .value = v.payment_frequency});
+    fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

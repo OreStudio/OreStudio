@@ -104,6 +104,8 @@ std::string("ACME Corp")
 
 ISO 4217 currency code.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -125,7 +127,7 @@ Number of shares / contracts. Must be positive.
 ** forward_price
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -134,14 +136,14 @@ Fixed delivery price; absent for at-market forwards.
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date string.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** long_short
@@ -165,6 +167,9 @@ std::string("Long")
 :END:
 
 Cash or Physical; empty when not specified.
+
+Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
+
 
 ** description
 :PROPERTIES:
@@ -190,6 +195,7 @@ Optional free-text description.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "trade_type_code" in ('EquityForward') |
+| "settlement_type" is null or "settlement_type" in ('Physical', 'Cash') |
 
 ** Indexes
 
@@ -198,15 +204,6 @@ Optional free-text description.
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | trade_type | tenant_id, trade_type_code | false | true | |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -242,8 +239,10 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

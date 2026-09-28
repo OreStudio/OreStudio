@@ -17,12 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
@@ -30,10 +38,15 @@ domain::fpml_event_type
 generate_synthetic_fpml_event_type(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::fpml_event_type r;
-    r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_fpml_" + std::to_string(++counter);
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "_event" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

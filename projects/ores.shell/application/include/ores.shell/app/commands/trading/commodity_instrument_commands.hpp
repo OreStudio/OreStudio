@@ -81,7 +81,7 @@ public:
                                                  std::string fixed_price,
                                                  std::string start_date,
                                                  std::string maturity_date,
-                                                 std::string day_count_code,
+                                                 std::string day_count_fraction_code,
                                                  std::string payment_frequency_code,
                                                  std::string option_type,
                                                  std::string strike_price,
@@ -99,7 +99,7 @@ public:
                                                  std::string barrier_type,
                                                  std::string lower_barrier,
                                                  std::string upper_barrier,
-                                                 std::string basket_json,
+                                                 std::string basket,
                                                  std::string description,
                                                  std::string change_reason_code,
                                                  std::string change_commentary);

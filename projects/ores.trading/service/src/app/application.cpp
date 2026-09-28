@@ -29,6 +29,7 @@
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
+#include "ores.trading.service/messaging/activity_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/ascot_event_registrar.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_forward_event_registrar.hpp"
@@ -45,8 +46,10 @@
 #include "ores.trading.service/messaging/bond_option_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_repo_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_trs_event_registrar.hpp"
+#include "ores.trading.service/messaging/callable_swap_call_date_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/commodity_basket_constituent_event_registrar.hpp"
 #include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/composite_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
@@ -57,8 +60,10 @@
 #include "ores.trading.service/messaging/equity_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_position_option_underlying_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fpml_event_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/fra_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_asian_forward_instrument_event_registrar.hpp"
@@ -80,6 +85,8 @@
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/swap_leg_event_registrar.hpp"
+#include "ores.trading.service/messaging/composite_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_envelope_additional_field_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_envelope_event_registrar.hpp"
@@ -142,6 +149,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto equity_position_instrument_sub =
         ores::trading::service::messaging::register_equity_position_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto equity_position_option_underlying_sub =
+        ores::trading::service::messaging::register_equity_position_option_underlying_event_mapping(
+            event_source, event_bus, nats);
     auto equity_variance_swap_instrument_sub =
         ores::trading::service::messaging::register_equity_variance_swap_instrument_event_mapping(
             event_source, event_bus, nats);
@@ -187,6 +197,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto fx_variance_swap_instrument_sub =
         ores::trading::service::messaging::register_fx_variance_swap_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto activity_type_sub =
+        ores::trading::service::messaging::register_activity_type_event_mapping(
+            event_source, event_bus, nats);
+    auto fpml_event_type_sub =
+        ores::trading::service::messaging::register_fpml_event_type_event_mapping(
+            event_source, event_bus, nats);
     auto party_role_type_sub =
         ores::trading::service::messaging::register_party_role_type_event_mapping(
             event_source, event_bus, nats);
@@ -208,6 +224,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         register_balance_guaranteed_swap_instrument_event_mapping(event_source, event_bus, nats);
     auto callable_swap_instrument_sub =
         ores::trading::service::messaging::register_callable_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto callable_swap_call_date_sub =
+        ores::trading::service::messaging::register_callable_swap_call_date_event_mapping(
             event_source, event_bus, nats);
     auto cap_floor_instrument_sub =
         ores::trading::service::messaging::register_cap_floor_instrument_event_mapping(
@@ -236,6 +255,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto commodity_instrument_sub =
         ores::trading::service::messaging::register_commodity_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto commodity_basket_constituent_sub =
+        ores::trading::service::messaging::register_commodity_basket_constituent_event_mapping(
+            event_source, event_bus, nats);
     auto composite_instrument_sub =
         ores::trading::service::messaging::register_composite_instrument_event_mapping(
             event_source, event_bus, nats);
@@ -244,6 +266,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto scripted_instrument_sub =
         ores::trading::service::messaging::register_scripted_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto swap_leg_sub = ores::trading::service::messaging::register_swap_leg_event_mapping(
+        event_source, event_bus, nats);
+    auto composite_leg_sub =
+        ores::trading::service::messaging::register_composite_leg_event_mapping(
             event_source, event_bus, nats);
 
     auto ascot_sub = ores::trading::service::messaging::register_ascot_event_mapping(

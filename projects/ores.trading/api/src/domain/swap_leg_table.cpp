@@ -17,25 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/swap_leg_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<swap_leg>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Leg#" << "Type" << "Index" << "Fixed Rate" << "Spread"
-          << "Notional" << "CCY" << fort::endr;
+    table << fort::header << "ID" << "Instrument" << "Leg" << "Type" << "Ccy" << "Notional"
+          << "Fixed Rate" << "Index" << "Recorded At" << fort::endr;
 
-    for (const auto& t : v) {
-        const auto& id = t.identity;
-        const auto& tm = t.terms;
-        table << boost::uuids::to_string(id.id) << id.leg_number << tm.leg_type_code
-              << tm.floating_index_code << tm.fixed_rate << tm.spread << tm.notional << tm.currency
-              << fort::endr;
+    for ([[maybe_unused]] const auto& sl : v) {
+        table << sl.identity.id << sl.identity.instrument_id << sl.identity.leg_number
+              << sl.leg_type_code << sl.currency << sl.notional << sl.fixed_rate
+              << sl.floating_index_code << sl.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

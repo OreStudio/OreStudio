@@ -45,9 +45,9 @@ struct bond_forward_write {
     std::optional<std::string> forward_maturity_date;
     std::optional<std::string> forward_settlement_date;
     std::optional<std::string> settlement;
-    std::optional<double> amount;
+    std::optional<ores::utility::decimal::decimal> amount;
     std::optional<double> lock_rate;
-    std::optional<double> dv01;
+    std::optional<ores::utility::decimal::decimal> dv01;
     std::optional<std::string> lock_rate_day_counter;
     std::optional<std::string> settlement_dirty;
     std::optional<std::string> premium_amount;
@@ -162,7 +162,7 @@ struct put_bond_forward_request {
 
 struct put_bond_forward_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_forward bond_forward;
+    std::optional<ores::trading::domain::bond_forward> bond_forward;
 };
 
 struct put_many_bond_forwards_request {
@@ -258,7 +258,7 @@ struct get_bond_forward_version_request {
 
 struct get_bond_forward_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_forward version;
+    std::optional<ores::trading::domain::bond_forward> version;
 };
 
 /**

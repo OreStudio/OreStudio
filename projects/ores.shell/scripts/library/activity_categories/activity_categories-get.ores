@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/activity_categories/activity_category.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+activity_categories get __none__

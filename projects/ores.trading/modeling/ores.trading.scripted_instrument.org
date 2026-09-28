@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: B3FBDD1A-8FC6-4702-9600-B75581FC6494
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.scripted_instrument
+#+description: Codegen entity model for the trading =scripted_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: scripted_instrument
+#+entity_plural: scripted_instruments
+#+entity_title: Scripted Instrument
+#+brief: Scripted instrument.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Represents the AMC script-based product types ORE states:
+=ScriptedTrade= with its inline or library script, =Autocallable_01=,
+=DoubleDigitalOption= and =PerformanceOption_01=. =trade_type_code=
+discriminates the exact product and =script_name= names the payoff
+script, while the optional JSON fields carry the script's events, its
+underlyings and its parameters. The table stays flat by design: it holds
+no nested sub-struct, because the script definition is embedded text and
+not a set of typed columns.
+
+The table is a flat instrument sub-type, so it binds
+=:profile: trading-instrument=. Three table features justify that binding:
+the table is tenant-scoped through =tenant_id= and the tenant isolation
+policy, it is workspace-scoped through =workspace_id=, and its insert
+trigger stamps =party_id= from the session variable =app.current_party_id=
+rather than taking it from the client. The profile also fixes the identity
+and audit field groups, the batch read and the generator facet, and leaves
+the table with no UI surface -- the per-instrument forms were hand-crafted
+in the removed desktop client and consumed the generated messaging
+protocol.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this scripted instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes the ORE AMC scripted products: ScriptedTrade, Autocallable_01,
+DoubleDigitalOption and PerformanceOption_01.
+
+#+begin_src cpp :name generator
+std::string("ScriptedTrade")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:supplied_by: session_party
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    std::optional<boost::uuids::uuid>
+:nullable:    true
+:supplied_by: unset
+:END:
+
+Optional soft FK to the parent trade.
+
+Null for a standalone instrument.
+
+** script_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the ORE script that defines the payoff.
+
+Names a library script, or the named product a scripted trade carries.
+
+#+begin_src cpp :name generator
+std::string("Autocallable")
+#+end_src
+
+** script_body
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional embedded ORE script body. Empty when the trade names a library
+script instead.
+
+** events_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional JSON array of event schedule entries. Empty when not applicable.
+
+** underlyings_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional JSON array of underlying asset codes. Empty when not applicable.
+
+** parameters_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional JSON object of script parameters. Empty when not applicable.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_scripted_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "script_name" <> '' |
+| "trade_type_code" in ('ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'PerformanceOption_01') |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+| trade_type | tenant_id, trade_type_code | false | true | |
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: scripted_instrument
+:entity_plural_short:   scripted_instruments
+:entity_singular_words: scripted instrument
+:entity_plural_words:   scripted instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: si
+:END:
+
+** Table display
+
+| column                   | header       |
+|--------------------------+--------------|
+| identity.instrument_id   | ID           |
+| identity.trade_type_code | Type         |
+| script_name              | Script       |
+| description              | Description  |
+| audit.recorded_at        | Recorded At  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

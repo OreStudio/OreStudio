@@ -48,10 +48,12 @@ generate_synthetic_swaption_instrument(utility::generation::generation_context& 
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("EuropeanSwaption");
     r.identity.party_id = ctx.generate_uuid();
-    r.expiry_date = std::string("2025-06-15");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 6 / 15};
     r.exercise_type = std::string("European");
     r.settlement_type = std::string("Physical");
     r.long_short = std::string("Long");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

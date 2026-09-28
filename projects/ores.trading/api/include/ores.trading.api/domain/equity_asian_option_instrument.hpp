@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -53,31 +55,41 @@ struct equity_asian_option_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Notional amount. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Call or Put.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
     /**
      * @brief Strike price. Must be non-negative.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike;
 
     /**
      * @brief Expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief European or American.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 
@@ -88,18 +100,22 @@ struct equity_asian_option_instrument final {
 
     /**
      * @brief Arithmetic or Geometric.
+     *
+     * Soft FK to ores_trading_average_types_tbl: ORE states no averaging set for
+     * singleUnderlyingAsianOptionData, so this is a trading-local closed set by decision. PR 4
+     * tightens the soft reference into a real foreign key.
      */
     std::string average_type;
 
     /**
      * @brief Averaging period start (ISO 8601 date string).
      */
-    std::string averaging_start_date;
+    std::chrono::year_month_day averaging_start_date;
 
     /**
      * @brief Averaging period end (ISO 8601 date string).
      */
-    std::string averaging_end_date;
+    std::chrono::year_month_day averaging_end_date;
 
     /**
      * @brief Optional free-text description.

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 47E5091F-CC76-437F-8680-0E07AE416641
+:END:
+#+title: ores.trading.swap_leg_identity
+#+description: Codegen field-group model for ores::trading::domain::swap_leg_identity.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: swap_leg_identity
+#+namespace: ores::trading::domain
+#+brief: Identity fields of a rates swap leg.
+#+filetags: :model:field_group:trading:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Extracted as a plain nested sub-struct to keep each rfl-reflected literal
+under the MSVC C1202 ceiling. A leg carries its own surrogate key, the
+instrument it belongs to and its ordinal within that instrument, so the leg
+identity is not the instrument identity: it is the instrument identity plus
+the leg's own two members. The terms stay flat on the entity. See the
+decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+The group is the swap-leg sibling of ores.trading.composite_leg_identity:
+the shared =swap_legs= table carries one key and one parent column, and its
+ordinal is =leg_number= rather than the basket's =leg_sequence=.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+* Fields
+
+** version
+:PROPERTIES:
+:cpp_type: int
+:default_value: 0
+:END:
+
+Version number for optimistic locking and change tracking.
+
+** tenant_id
+:PROPERTIES:
+:cpp_type: utility::uuid::tenant_id
+:default_value: utility::uuid::tenant_id::system()
+:END:
+
+Tenant identifier for multi-tenancy isolation.
+
+** workspace_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:default_value: utility::uuid::live_workspace_id()
+:END:
+
+Workspace this record belongs to; defaults to the Live workspace sentinel.
+
+** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this leg row.
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this leg record.
+
+** instrument_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The rates instrument this leg belongs to.
+
+** leg_number
+:PROPERTIES:
+:cpp_type: int
+:default_value: 1
+:END:
+
+1-based ordinal of this leg within the parent instrument.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

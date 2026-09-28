@@ -17,55 +17,59 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/generators/swap_leg_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/uuid_generators.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::swap_leg generate_synthetic_swap_leg(const boost::uuids::uuid& instrument_id,
-                                             int leg_number,
-                                             utility::generation::generation_context& ctx) {
+domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::swap_leg r;
-    auto& id = r.identity;
-    auto& tm = r.terms;
-    auto& au = r.audit;
-    id.version = 1;
-    id.id = boost::uuids::random_generator()();
-    id.instrument_id = instrument_id;
-    id.leg_number = leg_number;
-    tm.notional = 1000000.0;
-    tm.currency = "USD";
-    tm.day_count_fraction_code = "A365F";
-    tm.business_day_convention_code = "MODFOLLOWING";
-    tm.payment_frequency_code = "Annual";
-    au.modified_by = modified_by;
-    au.performed_by = modified_by;
-    au.change_reason_code = "system.test";
-    au.change_commentary = "Synthetic test data";
-    au.recorded_at = ctx.past_timepoint();
-
-    if (leg_number == 1) {
-        tm.leg_type_code = "Fixed";
-        tm.fixed_rate = 0.05;
-    } else {
-        tm.leg_type_code = "Floating";
-        tm.floating_index_code = "EURIBOR6M";
-        tm.spread = 0.0;
-    }
+    r.identity.version = 0;
+    r.identity.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
+    r.identity.id = ctx.generate_uuid();
+    r.identity.party_id = ctx.generate_uuid();
+    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.leg_number = faker::number::integer(1, 2);
+    r.leg_type_code = std::string("Fixed");
+    r.day_count_fraction_code = std::string("A365F");
+    r.business_day_convention_code = std::string("ModifiedFollowing");
+    r.payment_frequency_code = std::string("Annual");
+    r.fixed_rate = 0.05;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
+    r.currency = std::string("USD");
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::swap_leg>
-generate_synthetic_swap_legs(const boost::uuids::uuid& instrument_id,
-                             utility::generation::generation_context& ctx) {
+generate_synthetic_swap_legs(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::swap_leg> r;
-    r.push_back(generate_synthetic_swap_leg(instrument_id, 1, ctx));
-    r.push_back(generate_synthetic_swap_leg(instrument_id, 2, ctx));
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_swap_leg(ctx));
     return r;
 }
 

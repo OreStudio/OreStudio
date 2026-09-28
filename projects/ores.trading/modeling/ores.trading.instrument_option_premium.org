@@ -58,15 +58,14 @@ Ordinal of this premium within the option block's list.
 ** amount
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Amount of the premium.
 
 #+begin_src cpp :name generator
-1000.0
+ores::utility::decimal::decimal::from_string("1000").value()
 #+end_src
 
 ** currency
@@ -78,6 +77,8 @@ Amount of the premium.
 
 Currency the premium pays in.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -85,7 +86,7 @@ std::string("USD")
 ** pay_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -96,7 +97,7 @@ already parsed it and the writer re-emits a canonical form. A date
 column therefore carries the member whole.
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 ** has_settlement
@@ -157,7 +158,7 @@ Date the premium's settlement block fixes on.
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -171,9 +172,11 @@ Date the premium's settlement block fixes on.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

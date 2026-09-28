@@ -83,7 +83,7 @@ Links instrument to a trade if applicable.
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -92,13 +92,13 @@ FRA start date.
 ISO 8601 date string (YYYY-MM-DD).
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** end_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -107,7 +107,7 @@ FRA end date.
 Must be after start_date.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** currency
@@ -118,6 +118,8 @@ std::string("2025-01-15")
 :END:
 
 ISO 4217 currency code.
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
 
 e.g., USD, EUR, GBP.
 
@@ -149,6 +151,8 @@ std::string("SOFR")
 
 Position direction: Long or Short.
 
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+
 Indicates whether the party is a buyer (Long) or seller (Short).
 
 #+begin_src cpp :name generator
@@ -174,9 +178,8 @@ Expressed as a decimal fraction.
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Notional principal amount.
@@ -184,7 +187,7 @@ Notional principal amount.
 Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** description
@@ -214,6 +217,7 @@ Human-readable notes about this instrument.
 | "currency" <> '' |
 | "rate_index" <> '' |
 | "long_short" in ('Long', 'Short') |
+| "trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
 
 ** Indexes
 
@@ -221,15 +225,6 @@ Human-readable notes about this instrument.
 |----------+----------------------+--------+--------------+----------------------|
 | party    | tenant_id, party_id  | false  | true         |                      |
 | trade_id | tenant_id, trade_id  | true   | true         | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column          | validation_function                   |
-|-----------------+----------------------------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn    |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -267,6 +262,7 @@ repository profiles regenerate correctly.
 #+begin_src cpp :name includes
 #include <chrono>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

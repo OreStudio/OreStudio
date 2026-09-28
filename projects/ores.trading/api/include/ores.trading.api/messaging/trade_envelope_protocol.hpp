@@ -155,7 +155,7 @@ struct put_trade_envelope_request {
 
 struct put_trade_envelope_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_envelope trade_envelope;
+    std::optional<ores::trading::domain::trade_envelope> trade_envelope;
 };
 
 struct put_many_trade_envelopes_request {
@@ -251,7 +251,7 @@ struct get_trade_envelope_version_request {
 
 struct get_trade_envelope_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::trade_envelope version;
+    std::optional<ores::trading::domain::trade_envelope> version;
 };
 
 /**

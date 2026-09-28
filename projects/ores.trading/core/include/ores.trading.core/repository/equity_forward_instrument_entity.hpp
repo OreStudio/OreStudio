@@ -52,7 +52,7 @@ struct equity_forward_instrument_entity {
     std::string underlying_name;
     std::string currency;
     double quantity = 0.0;
-    std::optional<double> forward_price;
+    std::optional<std::string> forward_price;
     std::string expiry_date;
     std::string long_short;
     std::optional<std::string> settlement_type;

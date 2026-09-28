@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.core/repository/bond_forward_repository.hpp"
 #include "ores.trading.core/repository/bond_future_delivery_basket_repository.hpp"
@@ -38,6 +39,7 @@
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -121,11 +123,11 @@ bond_issue make_issue(const stamps& s, const std::string& security_id) {
     r.security_id = security_id;
     r.issuer = "ACME";
     r.currency = "EUR";
-    r.face_value = 1000.0;
+    r.face_value = ores::utility::decimal::decimal::from_string("1000").value();
     r.coupon_rate = 5.0;
     r.coupon_frequency_code = "Annual";
-    r.day_count_code = "ACT/365";
-    r.issue_date = "2024-01-15";
+    r.day_count_fraction_code = "ACT/365";
+    r.issue_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     r.settlement_days = 2;
     return r;
 }
@@ -154,7 +156,7 @@ bond_issue_call_date make_call_date(const stamps& s,
     stamp(r, s);
     r.issue_id = issue_id;
     r.sequence_number = sequence_number;
-    r.call_date = call_date;
+    r.call_date = ores::platform::time::datetime::from_iso8601_date(call_date);
     return r;
 }
 
@@ -193,9 +195,9 @@ make_premium(const stamps& s, const boost::uuids::uuid& instrument_id, int seque
     stamp(r, s);
     r.instrument_id = instrument_id;
     r.sequence_number = sequence_number;
-    r.amount = 1000.0;
+    r.amount = ores::utility::decimal::decimal::from_string("1000").value();
     r.currency = "EUR";
-    r.pay_date = "2024-01-20";
+    r.pay_date = ores::platform::time::datetime::from_iso8601_date("2024-01-20");
     return r;
 }
 
@@ -205,7 +207,7 @@ make_exercise_fee(const stamps& s, const boost::uuids::uuid& instrument_id, int 
     stamp(r, s);
     r.instrument_id = instrument_id;
     r.sequence_number = sequence_number;
-    r.amount = 25.0;
+    r.amount = ores::utility::decimal::decimal::from_string("25").value();
     return r;
 }
 
@@ -217,7 +219,7 @@ instrument_option_payment_date make_payment_date(const stamps& s,
     stamp(r, s);
     r.instrument_id = instrument_id;
     r.sequence_number = sequence_number;
-    r.payment_date = payment_date;
+    r.payment_date = ores::platform::time::datetime::from_iso8601_date(payment_date);
     return r;
 }
 
@@ -225,7 +227,7 @@ instrument_strike make_strike(const stamps& s, const boost::uuids::uuid& instrum
     instrument_strike r;
     stamp(r, s);
     r.instrument_id = instrument_id;
-    r.price_value = 101.5;
+    r.price_value = ores::utility::decimal::decimal::from_string("101.5").value();
     r.price_currency = "EUR";
     return r;
 }
@@ -253,7 +255,7 @@ bond_trs make_trs(const stamps& s, const boost::uuids::uuid& instrument_id) {
     bond_trs r;
     stamp(r, s);
     r.instrument_id = instrument_id;
-    r.return_type = "TotalReturn";
+    r.return_type = "Total";
     r.funding_leg_type = "Fixed";
     r.funding_rate = 3.0;
     r.funding_index = "EURIBOR-6M";
@@ -282,7 +284,7 @@ bond_leg_amount make_amount(const stamps& s,
                             int leg_number,
                             const std::string& amount_role,
                             int sequence_number,
-                            double value) {
+                            const char* value) {
     bond_leg_amount r;
     stamp(r, s);
     r.instrument_id = instrument_id;
@@ -290,7 +292,7 @@ bond_leg_amount make_amount(const stamps& s,
     r.leg_number = leg_number;
     r.amount_role = amount_role;
     r.sequence_number = sequence_number;
-    r.value = value;
+    r.value = ores::utility::decimal::decimal::from_string(value).value();
     return r;
 }
 
@@ -320,7 +322,7 @@ bond_leg_amortization make_amortization(const stamps& s,
     r.leg_number = leg_number;
     r.sequence_number = sequence_number;
     r.amortization_type = "FixedAmount";
-    r.value = 100.0;
+    r.value = ores::utility::decimal::decimal::from_string("100").value();
     return r;
 }
 
@@ -358,7 +360,7 @@ instrument_schedule_date make_schedule_date(const stamps& s,
     r.schedule_role = schedule_role;
     r.schedule_sequence_number = schedule_sequence_number;
     r.sequence_number = sequence_number;
-    r.schedule_date = schedule_date;
+    r.schedule_date = ores::platform::time::datetime::from_iso8601_date(schedule_date);
     return r;
 }
 
@@ -394,9 +396,12 @@ TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", tags) {
     CHECK(data.issue.issue_id == issue.issue_id);
 
     REQUIRE(data.call_dates.size() == 3);
-    CHECK(data.call_dates[0].call_date == "2028-01-15");
-    CHECK(data.call_dates[1].call_date == "2029-01-15");
-    CHECK(data.call_dates[2].call_date == "2030-01-15");
+    CHECK(data.call_dates[0].call_date ==
+          ores::platform::time::datetime::from_iso8601_date("2028-01-15"));
+    CHECK(data.call_dates[1].call_date ==
+          ores::platform::time::datetime::from_iso8601_date("2029-01-15"));
+    CHECK(data.call_dates[2].call_date ==
+          ores::platform::time::datetime::from_iso8601_date("2030-01-15"));
 
     REQUIRE(data.conversion_targets.size() == 2);
     CHECK(data.conversion_targets[0].underlying_id == "UND-1");
@@ -471,13 +476,13 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     bond_leg_repository().write(ctx, leg);
 
     bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, 1000.0));
+        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, "1000"));
     // Written in reverse ordinal order, so the order read back is the
     // query's doing rather than the insert order's.
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "rate", 2, 5.0));
+                                       make_amount(s, instrument_id, "bond", 1, "rate", 2, "5"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "rate", 1, 4.0));
+                                       make_amount(s, instrument_id, "bond", 1, "rate", 1, "4"));
 
     bond_leg_rate_repository().write(ctx, make_rate(s, instrument_id, "bond", 1, "fixed"));
 
@@ -486,7 +491,7 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     bond_leg_amortization_repository().write(ctx, amortization);
 
     auto rules = make_schedule(s, instrument_id, "bond", 1, "schedule", 1, "rules");
-    rules.start_date = "2024-01-15";
+    rules.start_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     rules.tenor = "1Y";
     rules.calendar = "TARGET";
     rules.convention = "ModifiedFollowing";
@@ -568,17 +573,17 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     bond_leg_rate_repository().write(ctx, rate);
 
     bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, 1000000.0));
+        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, "1000000"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "spread", 2, 0.75));
+                                       make_amount(s, instrument_id, "bond", 1, "spread", 2, "0.75"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "spread", 1, 0.5));
+                                       make_amount(s, instrument_id, "bond", 1, "spread", 1, "0.5"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "cap", 1, 6.0));
+                                       make_amount(s, instrument_id, "bond", 1, "cap", 1, "6"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "floor", 1, 1.0));
+                                       make_amount(s, instrument_id, "bond", 1, "floor", 1, "1"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "gearing", 1, 1.5));
+                                       make_amount(s, instrument_id, "bond", 1, "gearing", 1, "1.5"));
 
     auto fixing = make_schedule(s, instrument_id, "bond", 1, "fixing_schedule", 1, "dates");
     fixing.convention = "Following";
@@ -695,7 +700,7 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
     bond_instrument_repository().write(ctx, plain);
     auto fact = make_option(s, option.identity.instrument_id);
     fact.redemption = "Bullet";
-    fact.price_type = "Price";
+    fact.price_type = "Clean";
     fact.knocks_out = "Up";
     bond_option_repository().write(ctx, fact);
 
@@ -716,7 +721,7 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
     // Three members of the option block sit beside it rather than inside
     // it, so they ride on the fact row and not the shared option table.
     CHECK(with_option.option_redemption == "Bullet");
-    CHECK(with_option.option_price_type == "Price");
+    CHECK(with_option.option_price_type == "Clean");
     CHECK(with_option.option_knocks_out == "Up");
 }
 
@@ -737,8 +742,8 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     block.notice_period = "5D";
     block.automatic_exercise = "false";
     block.has_exercise_data = true;
-    block.exercise_date = "2025-01-15";
-    block.exercise_price = 101.0;
+    block.exercise_date = ores::platform::time::datetime::from_iso8601_date("2025-01-15");
+    block.exercise_price = ores::utility::decimal::decimal::from_string("101").value();
     block.has_payment_data = true;
     block.payment_lag = 2;
     block.payment_calendar = "TARGET";
@@ -848,9 +853,9 @@ TEST_CASE("read_instruments_rebuilds_a_strike_a_forward_and_a_delivery_basket", 
     forward.long_in_forward = "true";
     forward.forward_maturity_date = "2026-03-15";
     forward.settlement = "Cash";
-    forward.amount = 250000.0;
+    forward.amount = ores::utility::decimal::decimal::from_string("250000").value();
     forward.lock_rate = 2.5;
-    forward.dv01 = 12.75;
+    forward.dv01 = ores::utility::decimal::decimal::from_string("12.75").value();
     forward.premium_amount = "1500";
     forward.premium_date = "2024-03-15";
     bond_forward_repository().write(ctx, forward);
@@ -905,8 +910,8 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
 
     auto trs = make_trs(s, instrument_id);
     trs.payer = "true";
-    trs.price_type = "Price";
-    trs.initial_price = 99.25;
+    trs.price_type = "Clean";
+    trs.initial_price = ores::utility::decimal::decimal::from_string("99.25").value();
     bond_trs_repository().write(ctx, trs);
 
     auto schedule = make_schedule(s, instrument_id, "trs", 1, "schedule", 1, "rules");
@@ -921,14 +926,14 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     REQUIRE(instruments.size() == 1);
     const auto& rebuilt = instruments.at(id);
     REQUIRE(rebuilt.trs.has_value());
-    CHECK(rebuilt.trs->return_type == "TotalReturn");
+    CHECK(rebuilt.trs->return_type == "Total");
 
     // The three members ride on the fact row because no other row holds
     // them, and the schedule rides on the shared schedule tables under the
     // return side's own owner role.
     REQUIRE(rebuilt.trs_payer.has_value());
     CHECK(*rebuilt.trs_payer == "true");
-    CHECK(rebuilt.trs_price_type == "Price");
+    CHECK(rebuilt.trs_price_type == "Clean");
     REQUIRE(rebuilt.trs_initial_price.has_value());
     CHECK(*rebuilt.trs_initial_price == 99.25);
 

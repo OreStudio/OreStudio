@@ -44,10 +44,10 @@ struct fx_forward_instrument_write {
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
     std::string bought_currency;
-    double bought_amount;
+    ores::utility::decimal::decimal bought_amount;
     std::string sold_currency;
-    double sold_amount;
-    std::string value_date;
+    ores::utility::decimal::decimal sold_amount;
+    std::chrono::year_month_day value_date;
     std::string settlement;
     std::string description;
 };
@@ -160,7 +160,7 @@ struct put_fx_forward_instrument_request {
 
 struct put_fx_forward_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_forward_instrument fx_forward_instrument;
+    std::optional<ores::trading::domain::fx_forward_instrument> fx_forward_instrument;
 };
 
 struct put_many_fx_forward_instruments_request {
@@ -259,7 +259,7 @@ struct get_fx_forward_instrument_version_request {
 
 struct get_fx_forward_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_forward_instrument version;
+    std::optional<ores::trading::domain::fx_forward_instrument> version;
 };
 
 /**

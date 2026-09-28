@@ -36,6 +36,8 @@ target_link_libraries(${tests_target_name}
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.nats.lib
+        ores.dq.api.lib
+        ores.dq.core.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
         Catch2::Catch2

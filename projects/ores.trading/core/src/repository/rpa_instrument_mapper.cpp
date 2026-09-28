@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/rpa_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/rpa_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -45,8 +47,8 @@ domain::rpa_instrument rpa_instrument_mapper::map(const rpa_instrument_entity& v
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.reference_counterparty = v.reference_counterparty;
     r.participation_rate = v.participation_rate;
     r.protection_fee = v.protection_fee;
@@ -73,8 +75,8 @@ rpa_instrument_entity rpa_instrument_mapper::map(const domain::rpa_instrument& v
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.reference_counterparty = v.reference_counterparty;
     r.participation_rate = v.participation_rate;
     r.protection_fee = v.protection_fee;

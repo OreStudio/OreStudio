@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FORWARD_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FORWARD_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -99,7 +100,7 @@ struct bond_forward final {
     /**
      * @brief Amount the forward settles for.
      */
-    std::optional<double> amount;
+    std::optional<ores::utility::decimal::decimal> amount;
 
     /**
      * @brief Rate the forward's value is locked at.
@@ -109,7 +110,7 @@ struct bond_forward final {
     /**
      * @brief Sensitivity the document states alongside the lock rate.
      */
-    std::optional<double> dv01;
+    std::optional<ores::utility::decimal::decimal> dv01;
 
     /**
      * @brief Day counter the lock rate accrues under.

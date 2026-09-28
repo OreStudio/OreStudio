@@ -46,12 +46,12 @@ struct equity_swap_instrument_write {
     std::string underlying_name;
     std::string basket_json;
     std::string currency;
-    double notional;
+    ores::utility::decimal::decimal notional;
     std::string return_type;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string long_short;
-    std::string payment_frequency;
+    std::string payment_frequency_code;
     std::string description;
 };
 
@@ -163,7 +163,7 @@ struct put_equity_swap_instrument_request {
 
 struct put_equity_swap_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_swap_instrument equity_swap_instrument;
+    std::optional<ores::trading::domain::equity_swap_instrument> equity_swap_instrument;
 };
 
 struct put_many_equity_swap_instruments_request {
@@ -262,7 +262,7 @@ struct get_equity_swap_instrument_version_request {
 
 struct get_equity_swap_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_swap_instrument version;
+    std::optional<ores::trading::domain::equity_swap_instrument> version;
 };
 
 /**

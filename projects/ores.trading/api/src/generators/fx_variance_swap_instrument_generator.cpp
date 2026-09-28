@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/fx_variance_swap_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -48,13 +49,13 @@ generate_synthetic_fx_variance_swap_instrument(utility::generation::generation_c
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxVarianceSwap");
     r.identity.party_id = ctx.generate_uuid();
-    r.start_date = std::string("2024-01-15");
-    r.end_date = std::string("2025-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.end_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.currency = std::string("USD");
     r.underlying_code = std::string("TR20H-EUR-USD");
     r.long_short = std::string("Long");
     r.strike = 0.04;
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.moment_type = std::string("Variance");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

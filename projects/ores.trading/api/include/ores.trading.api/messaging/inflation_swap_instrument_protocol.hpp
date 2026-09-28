@@ -43,8 +43,8 @@ struct inflation_swap_instrument_write {
     boost::uuids::uuid instrument_id;
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string inflation_index_code;
     std::optional<double> base_cpi;
     std::string lag_convention;
@@ -160,7 +160,7 @@ struct put_inflation_swap_instrument_request {
 
 struct put_inflation_swap_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::inflation_swap_instrument inflation_swap_instrument;
+    std::optional<ores::trading::domain::inflation_swap_instrument> inflation_swap_instrument;
 };
 
 struct put_many_inflation_swap_instruments_request {
@@ -260,7 +260,7 @@ struct get_inflation_swap_instrument_version_request {
 
 struct get_inflation_swap_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::inflation_swap_instrument version;
+    std::optional<ores::trading::domain::inflation_swap_instrument> version;
 };
 
 /**

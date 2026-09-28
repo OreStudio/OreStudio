@@ -128,15 +128,21 @@ public:
      * EquityVarianceSwap, EquityBarrierOption, EquityAsianOption,
      * EquityDigitalOption, EquityTouchOption, EquityOutperformanceOption,
      * EquityAccumulator, EquityTaRF, EquityCliquetOption,
-     * and EquityWorstOfBasketSwap. Returns empty for all other types.
+     * EquityWorstOfBasketSwap, EquityPosition and EquityOptionPosition.
+     * A total return swap whose underlying sub-trade is an equity position
+     * is dispatched here too, so the position keeps its entry rows. Returns
+     * empty for all other types.
      */
-    static std::optional<trading::domain::equity_instrument_variant>
+    static std::optional<trading::domain::equity_instrument_data>
     map_equity_instrument(const trade& v);
 
     /**
      * @brief Dispatches a commodity-family trade to commodity_instrument_mapper.
+     *
+     * Returns the instrument with its basket constituents, empty for an
+     * unsupported type.
      */
-    static std::optional<trading::domain::commodity_instrument>
+    static std::optional<trading::domain::commodity_instrument_data>
     map_commodity_instrument(const trade& v);
 
     /**

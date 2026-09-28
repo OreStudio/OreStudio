@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_CREDIT_INSTRUMENT_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_CREDIT_INSTRUMENT_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -37,41 +42,40 @@ struct credit_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_credit_instruments_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> instrument_id;
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string trade_type_code;
     std::string party_id;
     std::optional<std::string> trade_id;
-    std::string trade_type_code;
     std::string reference_entity;
     std::string currency;
-    double notional = 0.0;
+    std::string notional;
     double spread = 0.0;
     double recovery_rate = 0.0;
     std::string tenor;
     std::string start_date;
     std::string maturity_date;
-    std::string day_count_code;
+    std::string day_count_fraction_code;
     std::string payment_frequency_code;
     std::optional<std::string> index_name;
     std::optional<int> index_series;
     std::optional<std::string> seniority;
     std::optional<std::string> restructuring;
     std::optional<std::string> description;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
-    // Phase 7 extensions
     std::optional<std::string> option_type;
     std::optional<std::string> option_expiry_date;
     std::optional<double> option_strike;
     std::optional<std::string> linked_asset_code;
     std::optional<double> tranche_attachment;
     std::optional<double> tranche_detachment;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const credit_instrument_entity& v);

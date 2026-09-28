@@ -76,7 +76,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option", tags) {
     CHECK(r.instrument.issue_id == r.issue.issue_id);
     REQUIRE(r.option.has_value());
     CHECK(r.option->option_type == "Call");
-    CHECK(r.option->option_strike == Approx(1.0).epsilon(0.0001));
+    CHECK(r.option->option_strike.to_double() == Approx(1.0).epsilon(0.0001));
     CHECK(r.option_exercise_dates == std::vector<std::string>{"2025-04-16"});
 
     // Reverse roundtrip
@@ -103,7 +103,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option_strike", tags) {
     CHECK(r.option_exercise_dates == std::vector<std::string>{"2028-02-02"});
     // This fixture prices by StrikePrice/StrikeYield, which the mapper does
     // not read; the strike row value stays zero until that coverage lands.
-    CHECK(r.option->option_strike == Approx(0.0).epsilon(0.0001));
+    CHECK(r.option->option_strike.to_double() == Approx(0.0).epsilon(0.0001));
 
     // Reverse roundtrip
     const auto rt = bond_instrument_mapper::reverse_bond_option(r);
@@ -119,7 +119,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondTRS");
     CHECK(!r.issue.security_id.empty());
     REQUIRE(r.trs.has_value());
-    CHECK(r.trs->return_type == "TotalReturn");
+    CHECK(r.trs->return_type == "Total");
     CHECK(r.trs->funding_leg_type == "Fixed");
     CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
 

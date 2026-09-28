@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -51,7 +53,7 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Amount being bought. Must be positive.
      */
-    double bought_amount = 0.0;
+    ores::utility::decimal::decimal bought_amount;
 
     /**
      * @brief Currency being sold.
@@ -61,17 +63,20 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Amount being sold. Must be positive.
      */
-    double sold_amount = 0.0;
+    ores::utility::decimal::decimal sold_amount;
 
     /**
      * @brief Option type (e.g. Call or Put).
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
     /**
      * @brief Option expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Optional settlement instructions.
@@ -80,6 +85,9 @@ struct fx_barrier_option_instrument final {
 
     /**
      * @brief Barrier style (e.g. UpAndIn, DownAndOut).
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
 

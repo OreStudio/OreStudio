@@ -52,12 +52,12 @@ struct equity_swap_instrument_entity {
     std::optional<std::string> underlying_name;
     std::optional<std::string> basket_json;
     std::string currency;
-    double notional = 0.0;
+    std::string notional;
     std::string return_type;
     std::string start_date;
     std::string maturity_date;
     std::string long_short;
-    std::string payment_frequency;
+    std::string payment_frequency_code;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

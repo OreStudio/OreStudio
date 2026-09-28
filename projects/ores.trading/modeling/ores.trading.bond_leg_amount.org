@@ -94,14 +94,26 @@ order.
 ** value
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: double
+:cpp_type: ores::utility::decimal::decimal
 :nullable: false
 :END:
 
 The amount, as a decimal.
 
+This is the first money column of decision D11 to adopt the decimal
+domain type. The database column is already =numeric=, so the schema
+does not change; what changes is the C++ type the value travels in, so
+a notional such as =0.1= and a rate such as =1e-10= are stored and read
+back exactly rather than through a binary float.
+
+The column carries all six amount roles, so a =rate= row moves with
+it. D11 keeps a rate column =double= because a rate is not money; this
+table states the money and the rate in one column, which is a modelling
+question for the normalisation the story's D12 and D13 describe, not
+one this unit answers.
+
 #+begin_src cpp :name generator
-0.0425
+ores::utility::decimal::decimal::from_string("0.0425").value()
 #+end_src
 
 ** start_date
@@ -134,7 +146,7 @@ states one.
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -151,6 +163,7 @@ states one.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

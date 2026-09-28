@@ -61,16 +61,16 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
-Optional external trade identifier.
+External trade identifier.
 
 e.g., UTI prefix or legacy system ID.
 
-The model declares this column as the trade's key, so a fixture needs a
-value here: an empty key cannot be looked up, and the mapper writes an
-empty domain string as NULL, which no equality filter matches.
+The model declares this column as the trade's key, so every writer
+supplies a value here: an empty key cannot be looked up, and the mapper
+writes an empty domain string as NULL, which no equality filter matches.
 
 #+begin_src cpp :name generator
 std::string("TRD-") + std::string(faker::string::alphanumeric(12))
@@ -189,6 +189,10 @@ std::nullopt
 
 Asset class code for the trade.
 
+Soft FK to ores_refdata_asset_classes_tbl: asset classes belong to ores.refdata,
+so the dependency is recorded rather than copied. PR 4 tightens the soft
+reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
@@ -251,7 +255,7 @@ Date the trade was agreed.
 ISO 8601 date: YYYY-MM-DD.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** execution_timestamp
@@ -266,7 +270,7 @@ Timestamp when the trade was executed (with timezone).
 ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15 10:00:00")
+ctx.past_timepoint()
 #+end_src
 
 ** effective_date
@@ -281,7 +285,7 @@ Date from which the trade is effective.
 ISO 8601 date: YYYY-MM-DD.
 
 #+begin_src cpp :name generator
-std::string("2025-01-16")
+std::chrono::year_month_day{std::chrono::year{2025}/1/16}
 #+end_src
 
 ** termination_date
@@ -296,7 +300,7 @@ Date on which the trade matures or terminates.
 ISO 8601 date: YYYY-MM-DD.
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 * Foreign keys
@@ -374,8 +378,6 @@ optional, and the generated guard skips the call when it is null.
 | column             | validation_function                    |
 |--------------------+----------------------------------------|
 | asset_class        | ores_refdata_validate_asset_class_fn   |
-| trade_type         | ores_trading_validate_trade_type_fn    |
-| activity_type_code | ores_trading_validate_activity_type_fn |
 
 * SQL
 
@@ -383,6 +385,13 @@ optional, and the generated guard skips the call when it is null.
 :PROPERTIES:
 :tablename: ores_trading_trades_tbl
 :END:
+
+** Checks
+
+| expression |
+|---|
+| "trade_type" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
+| "activity_type_code" in ('new_booking', 'new_internal_transfer', 'draft_capture', 'execution', 'amendment', 'confirmation', 'novation', 'partial_termination', 'full_termination', 'maturity', 'exercise', 'assignment', 'increase', 'decrease', 'roll', 'compression', 'clearing', 'netting', 'rate_reset', 'fx_reset', 'accrual', 'cashflow', 'correction', 'rebook', 'maturity_reversal', 'cancellation_reversal', 'transfer', 'split', 'merge', 'cancel', 'cancel_confirmed', 'void') |
 
 ** Party id from book id
 :PROPERTIES:
@@ -655,7 +664,7 @@ std::uint32_t trade_repository::count_latest_for_node_id(context ctx,
 
 ** Handler includes
 
-The instrument services the export path resolves through, and the storage
+The instrument services the export path resolves through, the storage
 and msgpack headers the storage export needs.
 
 #+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
@@ -664,8 +673,11 @@ and msgpack headers the storage export needs.
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
+#include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
-#include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
@@ -702,6 +714,7 @@ and msgpack headers the storage export needs.
 #include <chrono>
 #include <rfl/msgpack.hpp>
 #include <unordered_map>
+#include <unordered_set>
 #+end_src
 
 ** Handler private members
@@ -717,6 +730,7 @@ type, then read each product's table in one batch.
         using ores::trading::domain::product_type;
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
 
         // Phase 1: bucket instrument IDs by (product_type, trade_type)
@@ -839,10 +853,28 @@ type, then read each product's table in one batch.
         std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
             comp_legs_map;
         if (!composite_ids.empty()) {
-            service::composite_instrument_service comp_svc(ctx);
-            for (auto& leg : comp_svc.get_legs_batch(composite_ids))
-                comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
-                    std::move(leg));
+            repository::composite_leg_repository comp_leg_repo;
+            const std::unordered_set<std::string> wanted(composite_ids.begin(),
+                                                         composite_ids.end());
+            for (auto& leg : comp_leg_repo.read_latest(ctx)) {
+                const auto key = boost::uuids::to_string(leg.identity.instrument_id);
+                if (wanted.contains(key))
+                    comp_legs_map[key].push_back(std::move(leg));
+            }
+        }
+
+        // The callable swap's exercise schedule is a collection of its own,
+        // so it is fetched beside the legs and only for the instruments
+        // that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::callable_swap_call_date>>
+            call_dates_map;
+        if (!callable_ids.empty()) {
+            repository::callable_swap_call_date_repository call_date_repo;
+            for (auto& call_date :
+                 call_date_repo.read_by_instruments_batch(ctx, callable_ids))
+                call_dates_map[boost::uuids::to_string(call_date.instrument_id)].push_back(
+                    std::move(call_date));
         }
 
         // Phase 3: batch-fetch instruments, build lookup map
@@ -854,7 +886,35 @@ type, then read each product's table in one batch.
                                           std::vector<ores::trading::domain::swap_leg>{};
         };
 
-        // Single-table types (credit, commodity, scripted).
+        auto take_call_dates = [&](const std::string& id) {
+            auto it = call_dates_map.find(id);
+            return it != call_dates_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::callable_swap_call_date>{};
+        };
+
+        // A commodity basket's constituents are a collection of their own, so
+        // they are fetched beside the instrument and only for the instruments
+        // that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::commodity_basket_constituent>>
+            constituents_map;
+        if (!commodity_ids.empty()) {
+            repository::commodity_basket_constituent_repository constituent_repo;
+            for (auto& constituent :
+                 constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
+                constituents_map[boost::uuids::to_string(constituent.instrument_id)].push_back(
+                    std::move(constituent));
+        }
+
+        auto take_constituents = [&](const std::string& id) {
+            auto it = constituents_map.find(id);
+            return it != constituents_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::commodity_basket_constituent>{};
+        };
+
+        // Single-table types (credit, scripted).
         auto add_flat = [&](auto&& results) {
             for (auto& v : results)
                 imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
@@ -871,7 +931,13 @@ type, then read each product's table in one batch.
         }
         if (!commodity_ids.empty()) {
             service::commodity_instrument_service svc(ctx);
-            add_flat(svc.get_commodity_instruments(commodity_ids));
+            for (auto& v : svc.get_commodity_instruments(commodity_ids)) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                commodity_instrument_data data;
+                data.instrument = std::move(v);
+                data.constituents = take_constituents(id);
+                imap[id] = std::move(data);
+            }
         }
         if (!scripted_ids.empty()) {
             service::scripted_instrument_service svc(ctx);
@@ -897,6 +963,7 @@ type, then read each product's table in one batch.
                 swap_instrument_data data;
                 data.instrument = std::move(v);
                 data.legs = take_legs(id);
+                data.call_dates = take_call_dates(id);
                 imap[id] = std::move(data);
             }
         };
@@ -972,11 +1039,34 @@ type, then read each product's table in one batch.
             add_fx(svc.get_fx_variance_swap_instruments(fxvar_ids));
         }
 
-        // Equity types
+        // Equity types. An equity option position states its entries as rows
+        // of their own, so they are fetched beside the instrument and only
+        // for the positions that state one.
+        std::unordered_map<std::string,
+                           std::vector<ores::trading::domain::equity_position_option_underlying>>
+            equity_underlyings_map;
+        if (!eq_pos_ids.empty()) {
+            repository::equity_position_option_underlying_repository underlying_repo;
+            for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
+                equity_underlyings_map[boost::uuids::to_string(underlying.instrument_id)]
+                    .push_back(std::move(underlying));
+        }
+
+        auto take_equity_underlyings = [&](const std::string& id) {
+            auto it = equity_underlyings_map.find(id);
+            return it != equity_underlyings_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::equity_position_option_underlying>{};
+        };
+
         auto add_eq = [&](auto&& results) {
-            for (auto& v : results)
-                imap[boost::uuids::to_string(v.identity.instrument_id)] =
-                    ores::trading::domain::equity_instrument_variant{std::move(v)};
+            for (auto& v : results) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                ores::trading::domain::equity_instrument_data data;
+                data.instrument = ores::trading::domain::equity_instrument_variant{std::move(v)};
+                data.underlyings = take_equity_underlyings(id);
+                imap[id] = std::move(data);
+            }
         };
         if (!eq_opt_ids.empty()) {
             service::equity_option_instrument_service svc(ctx);
@@ -1059,33 +1149,10 @@ type, then read each product's table in one batch.
 
 ** Handler methods
 
-The subjects the generated set does not cover: the activity type
-catalogue, a trade's history, its instrument, and the two portfolio
-export paths.
+The subjects the generated set does not cover: a trade's history, its
+instrument, and the two portfolio export paths.
 
 #+begin_src cpp :name handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
-    void list_activity_types(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        // Activity types are system-level configuration; look them up under
-        // the system tenant so all tenants see the same standard set.
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::activity_type_service svc(sys_ctx);
-        get_activity_types_response resp;
-        try {
-            resp.activity_types = svc.list_types();
-        } catch (...) {
-        }
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
     void instrument(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -1226,7 +1293,6 @@ and envelope types belong to the export item; the activity type and the
 instrument variant to their own messages.
 
 #+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
-#include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
@@ -1236,21 +1302,12 @@ instrument variant to their own messages.
 
 ** Protocol messages
 
-The messages the generated set does not cover: the activity type
-catalogue, the instrument lookup for one trade, and the two portfolio
-export paths. A trade's export item carries the instrument as a payload
-rather than a variant, for the reflect-cpp reason its comment states.
+The messages the generated set does not cover: the instrument lookup for
+one trade, and the two portfolio export paths. A trade's export item
+carries the instrument as a payload rather than a variant, for the
+reflect-cpp reason its comment states.
 
 #+begin_src cpp :name protocol_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
-struct get_activity_types_request {
-    using response_type = struct get_activity_types_response;
-    static constexpr std::string_view nats_subject = "trading.v1.activity_types.list";
-};
-
-struct get_activity_types_response {
-    std::vector<ores::trading::domain::activity_type> activity_types;
-};
-
 /**
  * @brief One trade plus its resolved instrument data.
  *
@@ -1384,16 +1441,7 @@ below is the order the wire carries.
 :key_field:               external_id
 :has_uuid_primary_key:    true
 :has_pagination:          true
-:get_request_class:       trading::messaging::get_trades_request
-:get_response_class:      trading::messaging::get_trades_response
-:get_message_type:        get_trades_request
-:save_request_class:      trading::messaging::save_trade_request
-:save_response_class:     trading::messaging::save_trade_response
-:save_message_type:       save_trade_request
 :save_request_item_field: trade
-:delete_request_class:    trading::messaging::delete_trade_request
-:delete_response_class:   trading::messaging::delete_trade_response
-:delete_message_type:     delete_trade_request
 :END:
 
 *** Detail fields

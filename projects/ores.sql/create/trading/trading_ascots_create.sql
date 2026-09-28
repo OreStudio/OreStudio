@@ -54,7 +54,8 @@ create table if not exists "ores_trading_ascots_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> ores_utility_nil_uuid_fn())
+    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
+    check ("ascot_option_type" in ('Call', 'Put'))
 );
 
 -- Version uniqueness for optimistic concurrency

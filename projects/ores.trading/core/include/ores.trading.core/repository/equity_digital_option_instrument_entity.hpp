@@ -51,14 +51,14 @@ struct equity_digital_option_instrument_entity {
     std::optional<std::string> trade_id;
     std::string underlying_name;
     std::string currency;
-    double notional = 0.0;
+    std::string notional;
     std::optional<std::string> option_type;
-    std::optional<double> strike;
-    std::optional<double> barrier_level;
+    std::optional<std::string> strike;
+    std::optional<std::string> barrier_level;
     std::optional<std::string> barrier_type;
     std::string expiry_date;
     std::string long_short;
-    std::optional<double> payout_amount;
+    std::optional<std::string> payout_amount;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

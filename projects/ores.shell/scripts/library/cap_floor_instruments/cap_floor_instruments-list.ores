@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/cap_floor_instruments/cap_floor_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cap_floor_instruments list --limit 1

@@ -17,25 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/generators/scripted_instrument_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/uuid_generators.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::scripted_instrument
 generate_synthetic_scripted_instrument(utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::scripted_instrument r;
-    r.identity.version = 1;
-    r.identity.instrument_id = boost::uuids::random_generator()();
-    r.identity.trade_type_code = "ScriptedTrade";
-    r.script_name = "Autocallable";
-    r.description = std::string(faker::lorem::sentence());
+    r.identity.version = 0;
+    r.identity.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
+    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_type_code = std::string("ScriptedTrade");
+    r.identity.party_id = ctx.generate_uuid();
+    r.script_name = std::string("Autocallable");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

@@ -35,7 +35,8 @@ render_instrument_option_payment_date_fields(const domain::instrument_option_pay
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
-    fields.push_back({.name = "Payment Date", .value = v.payment_date});
+    fields.push_back({.name = "Payment Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.payment_date)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

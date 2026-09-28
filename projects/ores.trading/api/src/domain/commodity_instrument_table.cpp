@@ -17,24 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/commodity_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
+
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<commodity_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Commodity" << "Currency" << "Quantity" << "Unit"
-          << "Maturity" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ID" << "Type" << "Commodity" << "Ccy" << "Quantity" << "Unit"
+          << "Maturity" << "Recorded At" << fort::endr;
 
-    for (const auto& t : v) {
-        table << boost::uuids::to_string(t.identity.instrument_id) << t.identity.trade_type_code
-              << t.terms.commodity_code << t.terms.currency << std::to_string(t.terms.quantity)
-              << t.terms.unit << t.terms.maturity_date << t.audit.modified_by << t.identity.version
-              << fort::endr;
+    for ([[maybe_unused]] const auto& ci : v) {
+        table << ci.identity.instrument_id << ci.identity.trade_type_code << ci.commodity_code
+              << ci.currency << ci.quantity << ci.unit << opt_str(ci.maturity_date)
+              << ci.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

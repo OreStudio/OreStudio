@@ -1,0 +1,456 @@
+:PROPERTIES:
+:ID: 0143968F-0BAF-44A0-A38B-C32146BD46F6
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.credit_instrument
+#+description: Codegen entity model for the trading =credit_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: credit_instrument
+#+entity_plural: credit_instruments
+#+entity_title: Credit Instrument
+#+brief: Credit instrument.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+Represents the credit product types ORE states. =trade_type_code=
+discriminates the exact product, and the optional field blocks are null
+when the sub-type does not state them: the index block for CDSIndex
+products, the option block for CDS option products, the tranche block for
+CBO and SyntheticCDO products, and the linked-asset code for
+CreditLinkedSwap.
+
+The table is a flat instrument sub-type, so it binds
+=:profile: trading-instrument=. Three table features justify that binding:
+the table is tenant-scoped through =tenant_id= and the tenant isolation
+policy, it is workspace-scoped through =workspace_id=, and its insert
+trigger stamps =party_id= from the session variable =app.current_party_id=
+rather than taking it from the client. The profile also fixes the identity
+and audit field groups, the batch read and the generator facet, and leaves
+the table with no UI surface -- the per-instrument forms were hand-crafted
+in the removed desktop client and consumed the generated messaging
+protocol.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this credit instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes the ORE credit products: CreditDefaultSwap, IndexCreditDefaultSwap,
+IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO and
+RiskParticipationAgreement.
+
+#+begin_src cpp :name generator
+std::string("CreditDefaultSwap")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:supplied_by: session_party
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    std::optional<boost::uuids::uuid>
+:nullable:    true
+:supplied_by: unset
+:END:
+
+Optional soft FK to the parent trade.
+
+Null for a standalone instrument.
+
+** reference_entity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name or identifier of the reference entity.
+
+#+begin_src cpp :name generator
+std::string("ACME Corp")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code (e.g. USD).
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** notional
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      ores::utility::decimal::decimal
+:nullable:      false
+:END:
+
+Notional amount of the credit instrument. Must be positive.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+** spread
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Credit spread in basis points (e.g. 100.0 for 100 bps).
+
+#+begin_src cpp :name generator
+100.0
+#+end_src
+
+** recovery_rate
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Recovery rate as a decimal (e.g. 0.4 for 40%).
+
+#+begin_src cpp :name generator
+0.4
+#+end_src
+
+** tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tenor of the instrument (e.g. "5Y", "3Y").
+
+#+begin_src cpp :name generator
+std::string("5Y")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+Start date (ISO 8601 date string, e.g. 2026-01-15).
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+Maturity date (ISO 8601 date string, e.g. 2031-01-15).
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2031}/1/15}
+#+end_src
+
+** day_count_fraction_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count convention code (e.g. Actual365Fixed, Thirty360).
+
+Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to ores.refdata, so the dependency is recorded rather than copied. CreditInstrument stores ORE dayCounter spellings (Actual365Fixed, Thirty360) while the reference table keys on ISDA short codes (A365F, 30/360), so PR 4 needs a conversion helper in the shape of payment_frequency_conversion.hpp. PR 4 tightens the soft reference into a real foreign key.
+
+#+begin_src cpp :name generator
+std::string("Actual365Fixed")
+#+end_src
+
+** payment_frequency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Payment frequency code (e.g. Quarterly, SemiAnnual).
+
+Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+#+begin_src cpp :name generator
+std::string("Quarterly")
+#+end_src
+
+** index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional index name for CDSIndex trades (e.g. "CDX.NA.IG").
+
+Empty for non-index products.
+
+** index_series
+:PROPERTIES:
+:type:          integer
+:cpp_type:      std::optional<int>
+:nullable:      true
+:default_value: std::nullopt
+:END:
+
+Optional index series number for CDSIndex trades.
+
+Null when the trade states no series.
+
+** seniority
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional seniority (e.g. "Senior", "Subordinated").
+
+Empty when not applicable.
+
+** restructuring
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional restructuring clause (e.g. "MM", "MR", "CR", "XR").
+
+Empty when not applicable.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Call or Put for CreditDefaultSwapOption; empty otherwise.
+
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
+** option_expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+Option expiry date (ISO 8601) for CDS options. Empty otherwise.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
+
+** option_strike
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Option strike spread in bps for CDS options. Null when not set.
+
+** linked_asset_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Reference asset code for CreditLinkedSwap. Empty otherwise.
+
+** tranche_attachment
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+CBO tranche attachment point as decimal. Null when not set.
+
+** tranche_detachment
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+CBO tranche detachment point as decimal. Null when not set.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_credit_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "notional" > 0 |
+| "spread" >= 0 |
+| "recovery_rate" >= 0 AND "recovery_rate" <= 1 |
+| "reference_entity" <> '' |
+| "tenor" <> '' |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+| trade_type | tenant_id, trade_type_code | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: credit_instrument
+:entity_plural_short:   credit_instruments
+:entity_singular_words: credit instrument
+:entity_plural_words:   credit instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ci
+:END:
+
+** Table display
+
+| column                   | header       |
+|--------------------------+--------------|
+| identity.instrument_id   | ID           |
+| identity.trade_type_code | Type         |
+| reference_entity         | Reference    |
+| currency                 | Ccy          |
+| notional                 | Notional     |
+| spread                   | Spread       |
+| maturity_date            | Maturity     |
+| audit.recorded_at        | Recorded At  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -65,24 +66,38 @@ credit_instrument load_and_map(const std::string& filename) {
 
 } // namespace
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Credit_Default_Swap.xml");
 
     CHECK(r.identity.trade_type_code == "CreditDefaultSwap");
-    CHECK(!r.terms.reference_entity.empty());
-    CHECK(!r.terms.currency.empty());
-    CHECK(r.terms.notional > 0.0);
-    CHECK(r.terms.spread > 0.0);
-    CHECK(!r.schedule.start_date.empty());
-    CHECK(!r.schedule.maturity_date.empty());
+    CHECK(!r.reference_entity.empty());
+    CHECK(!r.currency.empty());
+    CHECK(r.notional.to_double() > 0.0);
+    CHECK(r.spread > 0.0);
+    CHECK(r.start_date.ok());
+    CHECK(r.maturity_date.ok());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_cds(r);
     REQUIRE(rt.CreditDefaultSwapData);
     CHECK(rt.CreditDefaultSwapData->creditCurveIdType.CreditCurveId);
 
-    BOOST_LOG_SEV(lg, info) << "CDS roundtrip passed. Reference: " << r.terms.reference_entity;
+    BOOST_LOG_SEV(lg, info) << "CDS roundtrip passed. Reference: " << r.reference_entity;
 }
 
 TEST_CASE("credit_mapper_roundtrip_index_cds", tags) {
@@ -90,16 +105,16 @@ TEST_CASE("credit_mapper_roundtrip_index_cds", tags) {
     const auto r = load_and_map("Credit_Index_Credit_Default_Swap.xml");
 
     CHECK(r.identity.trade_type_code == "IndexCreditDefaultSwap");
-    CHECK(!r.terms.reference_entity.empty());
-    CHECK(!r.index.index_name.empty());
-    CHECK(!r.terms.currency.empty());
-    CHECK(r.terms.notional > 0.0);
+    CHECK(!r.reference_entity.empty());
+    CHECK(!r.index_name.empty());
+    CHECK(!r.currency.empty());
+    CHECK(r.notional.to_double() > 0.0);
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_index_cds(r);
     REQUIRE(rt.IndexCreditDefaultSwapData);
 
-    BOOST_LOG_SEV(lg, info) << "IndexCDS roundtrip passed. Index: " << r.index.index_name;
+    BOOST_LOG_SEV(lg, info) << "IndexCDS roundtrip passed. Index: " << r.index_name;
 }
 
 TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
@@ -107,9 +122,9 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
     const auto r = load_and_map("Credit_Index_CDS_Option.xml");
 
     CHECK(r.identity.trade_type_code == "IndexCreditDefaultSwapOption");
-    CHECK(!r.terms.reference_entity.empty());
-    CHECK(!r.option.option_expiry_date.empty());
-    CHECK(r.option.option_strike.has_value());
+    CHECK(!r.reference_entity.empty());
+    CHECK(r.option_expiry_date.has_value());
+    CHECK(r.option_strike.has_value());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_index_cds_option(r);
@@ -117,7 +132,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
     CHECK(rt.IndexCreditDefaultSwapOptionData->Strike);
 
     BOOST_LOG_SEV(lg, info) << "IndexCDSOption roundtrip passed. Expiry: "
-                            << r.option.option_expiry_date;
+                            << ore_iso(r.option_expiry_date);
 }
 
 TEST_CASE("credit_mapper_roundtrip_credit_linked_swap", tags) {
@@ -125,15 +140,15 @@ TEST_CASE("credit_mapper_roundtrip_credit_linked_swap", tags) {
     const auto r = load_and_map("Credit_CreditLinkedSwap.xml");
 
     CHECK(r.identity.trade_type_code == "CreditLinkedSwap");
-    CHECK(!r.terms.reference_entity.empty());
-    CHECK(!r.terms.linked_asset_code.empty());
+    CHECK(!r.reference_entity.empty());
+    CHECK(!r.linked_asset_code.empty());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_credit_linked_swap(r);
     REQUIRE(rt.CreditLinkedSwapData);
 
     BOOST_LOG_SEV(lg, info) << "CreditLinkedSwap roundtrip passed. Reference: "
-                            << r.terms.reference_entity;
+                            << r.reference_entity;
 }
 
 TEST_CASE("credit_mapper_roundtrip_synthetic_cdo", tags) {
@@ -141,8 +156,8 @@ TEST_CASE("credit_mapper_roundtrip_synthetic_cdo", tags) {
     const auto r = load_and_map("Credit_Synthetic_CDO_refdata.xml");
 
     CHECK(r.identity.trade_type_code == "SyntheticCDO");
-    CHECK(r.tranche.tranche_attachment.has_value());
-    CHECK(r.tranche.tranche_detachment.has_value());
+    CHECK(r.tranche_attachment.has_value());
+    CHECK(r.tranche_detachment.has_value());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_synthetic_cdo(r);
@@ -152,7 +167,7 @@ TEST_CASE("credit_mapper_roundtrip_synthetic_cdo", tags) {
     CHECK(has_tranche);
 
     BOOST_LOG_SEV(lg, info) << "SyntheticCDO roundtrip passed. Attachment: "
-                            << *r.tranche.tranche_attachment;
+                            << *r.tranche_attachment;
 }
 
 TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
@@ -160,13 +175,41 @@ TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
     const auto r = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
 
     CHECK(r.identity.trade_type_code == "RiskParticipationAgreement");
-    CHECK(!r.terms.reference_entity.empty());
-    CHECK(!r.schedule.start_date.empty());
-    CHECK(!r.schedule.maturity_date.empty());
+    CHECK(!r.reference_entity.empty());
+    CHECK(r.start_date.ok());
+    CHECK(r.maturity_date.ok());
 
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_rpa(r);
     REQUIRE(rt.RiskParticipationAgreementData);
 
-    BOOST_LOG_SEV(lg, info) << "RPA roundtrip passed. Reference: " << r.terms.reference_entity;
+    BOOST_LOG_SEV(lg, info) << "RPA roundtrip passed. Reference: " << r.reference_entity;
+}
+
+TEST_CASE("credit_mapper_leaves_expiry_unset_without_exercise_dates", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The XSD makes exerciseDatesGroup optional, so an option with no
+    // ExerciseDates is legal. The expiry must stay unset rather than carry an
+    // invalid date that exports as a spurious empty ExerciseDate element.
+    using ores::platform::filesystem::file;
+    std::string content = file::read_content(example_path("Credit_Index_CDS_Option.xml"));
+    const std::string open_tag = "<ExerciseDates>";
+    const std::string close_tag = "</ExerciseDates>";
+    const auto begin = content.find(open_tag);
+    REQUIRE(begin != std::string::npos);
+    const auto end = content.find(close_tag, begin);
+    REQUIRE(end != std::string::npos);
+    content.erase(begin, end + close_tag.size() - begin);
+
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(!p.Trade.empty());
+    const auto r = ores::ore::domain::trade_mapper::map_credit_instrument(p.Trade.front());
+    REQUIRE(r.has_value());
+    CHECK(!r->option_expiry_date.has_value());
+
+    const auto rt = credit_instrument_mapper::reverse_index_cds_option(*r);
+    REQUIRE(rt.IndexCreditDefaultSwapOptionData);
+    CHECK(!rt.IndexCreditDefaultSwapOptionData->OptionData.exerciseDatesGroup);
 }

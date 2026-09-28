@@ -84,7 +84,7 @@ Links instrument to a trade if applicable.
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -93,7 +93,7 @@ Option expiry date.
 ISO 8601 date string (YYYY-MM-DD).
 
 #+begin_src cpp :name generator
-std::string("2025-06-15")
+std::chrono::year_month_day{std::chrono::year{2025}/6/15}
 #+end_src
 
 ** exercise_type
@@ -106,6 +106,9 @@ std::string("2025-06-15")
 Exercise type: European, Bermudan, or American.
 
 Determines when the option may be exercised.
+
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -122,6 +125,9 @@ Settlement type: Cash or Physical.
 
 Determines how the swaption is settled upon exercise.
 
+Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Physical")
 #+end_src
@@ -135,6 +141,8 @@ std::string("Physical")
 
 Position direction: Long or Short.
 
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+
 Indicates whether the party holds or writes the option.
 
 #+begin_src cpp :name generator
@@ -144,7 +152,7 @@ std::string("Long")
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
@@ -152,16 +160,24 @@ Optional underlying swap start date.
 
 ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
 
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
+#+end_src
+
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Optional underlying swap maturity date.
 
 ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2029}/1/15}
+#+end_src
 
 ** description
 :PROPERTIES:
@@ -189,6 +205,7 @@ Human-readable notes about this instrument.
 | "settlement_type" in ('Cash', 'Physical') |
 | "long_short" in ('Long', 'Short') |
 | "maturity_date" is null or "start_date" is null or "maturity_date" > "start_date" |
+| "trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
 
 ** Indexes
 
@@ -196,15 +213,6 @@ Human-readable notes about this instrument.
 |----------+----------------------+--------+--------------+----------------------|
 | party    | tenant_id, party_id  | false  | true         |                      |
 | trade_id | tenant_id, trade_id  | true   | true         | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column          | validation_function                   |
-|-----------------+----------------------------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn    |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

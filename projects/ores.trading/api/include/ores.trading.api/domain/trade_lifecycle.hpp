@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_LIFECYCLE_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_LIFECYCLE_HPP
 
+#include <chrono>
 #include <optional>
 #include <string>
 
@@ -46,22 +47,22 @@ struct trade_lifecycle {
     /**
      * @brief Date on which the trade was agreed (ISO-8601 date string).
      */
-    std::optional<std::string> trade_date;
+    std::optional<std::chrono::year_month_day> trade_date;
 
     /**
      * @brief Date from which the trade becomes effective (ISO-8601 date string).
      */
-    std::optional<std::string> effective_date;
+    std::optional<std::chrono::year_month_day> effective_date;
 
     /**
      * @brief Scheduled end date of the trade (ISO-8601 date string).
      */
-    std::optional<std::string> termination_date;
+    std::optional<std::chrono::year_month_day> termination_date;
 
     /**
      * @brief Exact moment the trade was executed (ISO-8601 timestamp string).
      */
-    std::optional<std::string> execution_timestamp;
+    std::optional<std::chrono::system_clock::time_point> execution_timestamp;
 
     /**
      * @brief Value equality.

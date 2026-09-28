@@ -16,7 +16,7 @@
 One row per bond issue (ISIN), the stable row every instrument of the
 family references. The columns map one to one from =bondData=
 (instruments.xsd lines 382-403): security_id, issuer, currency,
-face_value, coupon_rate, coupon_frequency_code, day_count_code,
+face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
 issue_date and settlement_days. Only =SecurityId= is required by that
 schema; every other element is optional, so every other column is
 nullable and an absent element is stored as NULL rather than as an
@@ -89,6 +89,8 @@ std::string("US Treasury")
 
 ISO 4217 currency code of the bond.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -96,15 +98,14 @@ std::string("USD")
 ** face_value
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :nullable:      true
-:default_value: 0.0
 :END:
 
 Face value per unit of the bond.
 
 #+begin_src cpp :name generator
-1000.0
+ores::utility::decimal::decimal::from_string("1000").value()
 #+end_src
 
 ** coupon_rate
@@ -130,11 +131,13 @@ Coupon rate of the bond, as a decimal.
 
 Coupon payment frequency (Annual, SemiAnnual, Quarterly).
 
+Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. The stored spelling is SemiAnnual; the reference table keys on Semiannual, so PR 4 needs the same conversion helper payment_frequency_conversion.hpp provides. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("SemiAnnual")
 #+end_src
 
-** day_count_code
+** day_count_fraction_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -143,6 +146,11 @@ std::string("SemiAnnual")
 
 Day count convention of the bond (30/360, Actual/360, Actual/Actual).
 
+Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions
+belong to ores.refdata, so the dependency is recorded rather than copied. The
+values are ORE's dayCounter spellings. PR 4 tightens the soft reference into a
+real foreign key.
+
 #+begin_src cpp :name generator
 std::string("30/360")
 #+end_src
@@ -150,14 +158,14 @@ std::string("30/360")
 ** issue_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Issue date of the bond (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** settlement_days
@@ -255,7 +263,7 @@ now NULL, not an empty string.
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -269,9 +277,11 @@ now NULL, not an empty string.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

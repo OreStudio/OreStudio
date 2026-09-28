@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/configuration_parameters/configuration_parameter.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+configuration_parameters list --limit 1

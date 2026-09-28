@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -53,31 +55,41 @@ struct equity_option_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Contract quantity / notional. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Call or Put.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
     /**
      * @brief Strike price. Non-negative.
      */
-    double strike = 0.0;
+    ores::utility::decimal::decimal strike;
 
     /**
      * @brief Expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief European, American, or Bermudan.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 
@@ -88,11 +100,18 @@ struct equity_option_instrument final {
 
     /**
      * @brief Cash or Physical; empty when not specified.
+     *
+     * Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType
+     * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
 
     /**
      * @brief Cliquet only: e.g. Annual, Quarterly; empty for EquityOption.
+     *
+     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
+     * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
+     * real foreign key.
      */
     std::string cliquet_frequency;
 

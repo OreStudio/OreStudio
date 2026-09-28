@@ -45,14 +45,14 @@ struct fx_asian_forward_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string fx_index;
     std::string reference_currency;
-    std::optional<double> reference_notional;
+    std::optional<ores::utility::decimal::decimal> reference_notional;
     std::string settlement_currency;
-    std::optional<double> settlement_notional;
-    std::string payment_date;
+    std::optional<ores::utility::decimal::decimal> settlement_notional;
+    std::optional<std::chrono::year_month_day> payment_date;
     std::string long_short;
     std::string currency;
-    std::optional<double> fixing_amount;
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> fixing_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
     std::optional<double> strike;
     std::string description;
 };
@@ -166,7 +166,7 @@ struct put_fx_asian_forward_instrument_request {
 
 struct put_fx_asian_forward_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_asian_forward_instrument fx_asian_forward_instrument;
+    std::optional<ores::trading::domain::fx_asian_forward_instrument> fx_asian_forward_instrument;
 };
 
 struct put_many_fx_asian_forward_instruments_request {
@@ -267,7 +267,7 @@ struct get_fx_asian_forward_instrument_version_request {
 
 struct get_fx_asian_forward_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::fx_asian_forward_instrument version;
+    std::optional<ores::trading::domain::fx_asian_forward_instrument> version;
 };
 
 /**

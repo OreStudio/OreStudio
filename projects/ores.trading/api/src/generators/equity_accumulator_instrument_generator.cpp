@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_accumulator_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -50,12 +51,16 @@ generate_synthetic_equity_accumulator_instrument(utility::generation::generation
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string(".STOXX50");
     r.currency = std::string("EUR");
-    r.strike = 4000.0;
-    r.fixing_amount = 30.0;
-    r.start_date = std::string("2025-02-05");
-    r.expiry_date = std::string("2026-02-05");
+    r.strike = ores::utility::decimal::decimal::from_string("4000").value();
+    r.fixing_amount = ores::utility::decimal::decimal::from_string("30").value();
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2025} / 2 / 5};
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 2 / 5};
     r.fixing_frequency = std::string("Monthly");
     r.long_short = std::string("Long");
+    r.knock_out_level = ores::utility::decimal::decimal::from_string(
+                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                            .value();
+    r.target_amount = std::nullopt;
     r.payoff_type = std::string("Decumulator");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

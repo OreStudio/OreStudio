@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/rpa_instruments/rpa_instrument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+rpa_instruments add - 1970-01-01 1970-01-01 __none__ 0 - __none__ system.new_record generated_script

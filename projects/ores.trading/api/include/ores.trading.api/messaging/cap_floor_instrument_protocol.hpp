@@ -43,8 +43,8 @@ struct cap_floor_instrument_write {
     boost::uuids::uuid instrument_id;
     std::string trade_type_code;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string description;
 };
 
@@ -156,7 +156,7 @@ struct put_cap_floor_instrument_request {
 
 struct put_cap_floor_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::cap_floor_instrument cap_floor_instrument;
+    std::optional<ores::trading::domain::cap_floor_instrument> cap_floor_instrument;
 };
 
 struct put_many_cap_floor_instruments_request {
@@ -254,7 +254,7 @@ struct get_cap_floor_instrument_version_request {
 
 struct get_cap_floor_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::cap_floor_instrument version;
+    std::optional<ores::trading::domain::cap_floor_instrument> version;
 };
 
 /**

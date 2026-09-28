@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -85,6 +86,20 @@ bond_instrument_data map_inline(const std::string& xml) {
 // The coupon leg keeps its own schedule
 // =============================================================================
 
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
+
 TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags) {
     auto lg(make_logger(test_suite));
 
@@ -133,7 +148,7 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    CHECK(r.issue.issue_date == "2025-02-01");
+    CHECK(ore_iso(r.issue.issue_date) == "2025-02-01");
     CHECK(r.issue.coupon_frequency_code == "1Y");
 
     REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
@@ -613,7 +628,7 @@ TEST_CASE("a_bonds_second_leg_survives_the_round_trip", tags) {
     const auto r = map_inline(xml);
     REQUIRE(r.bond_legs.size() == 2);
     CHECK(r.issue.currency == "EUR");
-    CHECK(r.issue.face_value == Approx(1000000.0));
+    CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() == Approx(1000000.0));
     CHECK(r.issue.coupon_rate == Approx(0.03));
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
@@ -691,7 +706,7 @@ TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {
 )";
     const auto r = map_inline(xml);
     CHECK(r.instrument.identity.trade_type_code == "ForwardBond");
-    CHECK(r.issue.issue_date == "2025-02-01");
+    CHECK(ore_iso(r.issue.issue_date) == "2025-02-01");
 
     const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
     REQUIRE(rt.ForwardBondData);
@@ -722,7 +737,7 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     // leg either.
     CHECK(r.issue.coupon_frequency_code.empty());
     CHECK(r.issue.currency.empty());
-    CHECK(r.issue.face_value == 0.0);
+    CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() == 0.0);
 
     REQUIRE(r.repo);
     CHECK(r.repo->repo_type == "Fixed");
@@ -786,10 +801,10 @@ TEST_CASE("bond_trs_carries_the_price_type_and_the_funding_schedule", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondTRS");
     REQUIRE(r.trs);
 
-    // No schema field selects a return type, so TotalReturn is the model
+    // No schema field selects a return type, so Total is the model
     // default the column check admits rather than a value read from the
     // document.
-    CHECK(r.trs->return_type == "TotalReturn");
+    CHECK(r.trs->return_type == "Total");
     CHECK(r.trs->funding_leg_type == "Fixed");
     CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
 
@@ -950,7 +965,7 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     REQUIRE(r.future);
     const auto& f = *r.future;
     CHECK(f.contract_name == "Euro-Bund-Future");
-    CHECK(f.contract_notional == Approx(100000.0));
+    CHECK(f.contract_notional.to_double() == Approx(100000.0));
     CHECK(f.long_short == "Long");
     CHECK(f.modified_by == "ores");
     CHECK(f.change_reason_code == "system.external_data_import");
@@ -1058,7 +1073,7 @@ TEST_CASE("bond_option_keeps_every_exercise_date", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondOption");
     REQUIRE(r.option);
     CHECK(r.option->option_type == "Call");
-    CHECK(r.option->option_strike == Approx(102.5));
+    CHECK(r.option->option_strike.to_double() == Approx(102.5));
     CHECK(r.option_exercise_dates ==
           std::vector<std::string>{"2026-01-15", "2027-01-15", "2028-01-15"});
 
@@ -1217,7 +1232,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     CHECK(r.option_price_type == "Dirty");
     REQUIRE(r.option_knocks_out);
     CHECK(*r.option_knocks_out == "false");
-    CHECK(r.option->option_strike == Approx(0.0));
+    CHECK(r.option->option_strike.to_double() == Approx(0.0));
 
     const auto rt = bond_instrument_mapper::reverse_bond_option(r);
     REQUIRE(rt.BondOptionData);
@@ -1542,7 +1557,7 @@ TEST_CASE("a_number_below_the_sixth_decimal_keeps_its_value", tags) {
     const auto r = map_inline(xml);
 
     REQUIRE(r.future);
-    CHECK(r.future->contract_notional == Approx(1e-7));
+    CHECK(r.future->contract_notional.to_double() == Approx(1e-7));
 
     const auto rt = bond_instrument_mapper::reverse_bond_future(r);
     REQUIRE(rt.BondFutureData);
@@ -1603,9 +1618,9 @@ TEST_CASE("callable_bond_call_dates_become_rows", tags) {
     CHECK(r.instrument.identity.trade_type_code == "CallableBond");
     REQUIRE(r.call_dates.size() == 2);
     CHECK(r.call_dates[0].sequence_number == 1);
-    CHECK(r.call_dates[0].call_date == "2024-05-01");
+    CHECK(ore_iso(r.call_dates[0].call_date) == "2024-05-01");
     CHECK(r.call_dates[1].sequence_number == 2);
-    CHECK(r.call_dates[1].call_date == "2027-04-01");
+    CHECK(ore_iso(r.call_dates[1].call_date) == "2027-04-01");
     CHECK(r.call_dates[0].issue_id == r.issue.issue_id);
     CHECK(r.call_dates[1].issue_id == r.issue.issue_id);
     CHECK(r.call_dates[0].modified_by == "ores");

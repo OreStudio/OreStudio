@@ -67,9 +67,10 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     check ("sold_amount" > 0),
     check ("bought_currency" <> ''),
     check ("sold_currency" <> ''),
-    check ("barrier_type" <> ''),
+    check ("barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
     check ("lower_barrier" > 0),
-    check ("trade_type_code" in ('FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxKIKOBarrierOption', 'FxGenericBarrierOption'))
+    check ("trade_type_code" in ('FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxKIKOBarrierOption', 'FxGenericBarrierOption')),
+    check ("option_type" is null or "option_type" in ('Call', 'Put'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -111,9 +112,6 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

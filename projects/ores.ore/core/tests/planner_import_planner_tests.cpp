@@ -27,6 +27,7 @@
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -110,6 +111,20 @@ using namespace ores::logging;
 // =============================================================================
 // Currency tests
 // =============================================================================
+
+
+namespace {
+
+// The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
+[[maybe_unused]] std::string ore_iso(const std::chrono::year_month_day& d) {
+    return ores::platform::time::datetime::to_iso8601_date(d);
+}
+
+[[maybe_unused]] std::string ore_iso(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
+
+} // namespace
 
 TEST_CASE("plan_includes_all_currencies_when_mode_is_all", tags) {
     auto lg(make_logger(test_suite));
@@ -369,8 +384,9 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
             [&](const auto& r) {
                 using ores::trading::domain::swap_instrument_data;
                 using ores::trading::domain::fx_instrument_variant;
-                using ores::trading::domain::equity_instrument_variant;
+                using ores::trading::domain::equity_instrument_data;
                 using ores::trading::domain::composite_instrument_data;
+                using ores::trading::domain::commodity_instrument_data;
                 using ores::trading::domain::bond_instrument_data;
                 using T = std::decay_t<decltype(r)>;
                 if constexpr (std::is_same_v<T, std::monostate>) {
@@ -384,8 +400,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                             ++checked;
                         },
                         r.instrument);
-                } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
-                                     std::is_same_v<T, equity_instrument_variant>) {
+                } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
@@ -394,7 +409,20 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                             ++checked;
                         },
                         r);
+                } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
+                    std::visit(
+                        [&](const auto& instr) {
+                            INFO("Instrument variant index checked");
+                            REQUIRE(instr.identity.trade_id.has_value());
+                            CHECK(*instr.identity.trade_id == item.trade.identity.id);
+                            ++checked;
+                        },
+                        r.instrument);
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
+                    REQUIRE(r.instrument.identity.trade_id.has_value());
+                    CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
+                    ++checked;
+                } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                     REQUIRE(r.instrument.identity.trade_id.has_value());
                     CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
                     ++checked;
@@ -443,7 +471,7 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
 
     for (const auto& item : plan.trades) {
         INFO("Trade: " << item.trade.identity.external_id);
-        CHECK(item.trade.lifecycle.trade_date == "2026-01-01");
+        CHECK(ore_iso(item.trade.lifecycle.trade_date) == "2026-01-01");
         CHECK(item.trade.classification.activity_type_code == "novation");
     }
 }

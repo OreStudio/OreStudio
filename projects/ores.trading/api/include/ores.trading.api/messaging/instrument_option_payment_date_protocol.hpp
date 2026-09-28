@@ -43,7 +43,7 @@ struct instrument_option_payment_date_key {
 struct instrument_option_payment_date_write {
     boost::uuids::uuid instrument_id;
     int sequence_number;
-    std::string payment_date;
+    std::chrono::year_month_day payment_date;
 };
 
 struct instrument_option_payment_date_change {
@@ -160,7 +160,8 @@ struct put_instrument_option_payment_date_request {
 
 struct put_instrument_option_payment_date_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option_payment_date instrument_option_payment_date;
+    std::optional<ores::trading::domain::instrument_option_payment_date>
+        instrument_option_payment_date;
 };
 
 struct put_many_instrument_option_payment_dates_request {
@@ -261,7 +262,7 @@ struct get_instrument_option_payment_date_version_request {
 
 struct get_instrument_option_payment_date_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option_payment_date version;
+    std::optional<ores::trading::domain::instrument_option_payment_date> version;
 };
 
 /**

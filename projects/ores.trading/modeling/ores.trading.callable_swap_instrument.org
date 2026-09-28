@@ -17,6 +17,19 @@
 Represents a callable interest rate swap where one party has the right
 to terminate the swap early on specified call dates.
 
+The call dates are not a column: each is a row of
+=ores.trading.callable_swap_call_date=, keyed to this instrument and its
+ordinal in the schedule. A text column held the list as a JSON array and
+could not be typed, indexed or questioned, so the collection is a child
+table.
+
+=call_type= was deleted. ORE's only =CallType= element is on
+=nettingSetDetails= (=external/ore/xsd/instruments.xsd=, line 225), a
+netting-agreement field, and no =<CallType>= element appears under
+=external/ore/examples/=. Nothing produced the trading column: the only
+writer was the import handler copying a domain member no producer ever
+set.
+
 * Flags
 :PROPERTIES:
 :schema:           public
@@ -83,7 +96,7 @@ Links instrument to a trade if applicable.
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -92,13 +105,13 @@ Swap effective start date.
 ISO 8601 date string (YYYY-MM-DD).
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -107,30 +120,8 @@ Swap maturity date.
 Must be after start_date.
 
 #+begin_src cpp :name generator
-std::string("2029-01-15")
+std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 #+end_src
-
-** call_dates_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Optional JSON array of call dates.
-
-ISO 8601 date strings when the party may exercise the call option.
-
-** call_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Optional call type: Bermudan or One-Time.
-
-Bermudan allows multiple call dates; One-Time allows exactly one.
 
 ** description
 :PROPERTIES:
@@ -155,7 +146,7 @@ Human-readable notes about this instrument.
 | expression |
 |------------|
 | "maturity_date" > "start_date" |
-| "call_type" is null or "call_type" in ('Bermudan', 'One-Time') |
+| "trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
 
 ** Indexes
 
@@ -163,15 +154,6 @@ Human-readable notes about this instrument.
 |----------+----------------------+--------+--------------+----------------------|
 | party    | tenant_id, party_id  | false  | true         |                      |
 | trade_id | tenant_id, trade_id  | true   | true         | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column          | validation_function                   |
-|-----------------+----------------------------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn    |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -224,7 +206,6 @@ repository profiles regenerate correctly.
 |  identity.trade_type_code  |  Type         |
 |  start_date                |  Start Date   |
 |  maturity_date             |  Maturity Date |
-|  call_type                 |  Call Type    |
 |  audit.recorded_at         |  Recorded At  |
 
 ** Custom repository methods
@@ -232,3 +213,4 @@ repository profiles regenerate correctly.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:323AB81A-5B70-4905-AE8F-F1B3AFC2EC72][ores.trading.callable_swap_call_date]] — the instrument's exercise schedule, one row per call date.

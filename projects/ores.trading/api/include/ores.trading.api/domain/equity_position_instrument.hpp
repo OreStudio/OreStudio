@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include <string_view>
@@ -37,10 +38,14 @@ namespace ores::trading::domain {
  * @brief Equity Position instrument.
  *
  * Represents EquityPosition and EquityOptionPosition trades: a plain
- * equity holding or an equity option position. For option positions,
- * option_data_json holds the serialised option parameters; for plain
- * equity positions, price captures the reference price and
- * option_data_json is null.
+ * equity holding or an equity option position. quantity is the number of
+ * shares or contracts and stays on this row, because it belongs to the
+ * position and not to one underlying. An option position's members are not
+ * a column: each is a row of
+ * ores.trading.equity_position_option_underlying, keyed to this
+ * instrument and its ordinal in the document. A text column held the list
+ * as JSON and could not be typed, indexed or questioned, so the collection
+ * is a child table now.
  */
 struct equity_position_instrument final {
     instrument_identity identity;
@@ -52,6 +57,10 @@ struct equity_position_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      *
      * e.g., USD, EUR, GBP.
      */
@@ -65,12 +74,7 @@ struct equity_position_instrument final {
     /**
      * @brief Entry price; absent for market-price positions.
      */
-    std::optional<double> price;
-
-    /**
-     * @brief EquityOptionPosition only: serialised option parameters; empty otherwise.
-     */
-    std::string option_data_json;
+    std::optional<ores::utility::decimal::decimal> price;
 
     /**
      * @brief Optional free-text description.

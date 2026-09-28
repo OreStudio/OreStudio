@@ -1,0 +1,483 @@
+:PROPERTIES:
+:ID: 4E1B0C6A-7D2F-4B18-9E3A-5C6D8F0A1B27
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.trading.commodity_instrument
+#+description: Codegen entity model for the trading =commodity_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: commodity_instrument
+#+entity_plural: commodity_instruments
+#+entity_title: Commodity Instrument
+#+brief: Commodity instrument.
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+Represents every commodity product type ORE states. =trade_type_code=
+discriminates the exact product, and each optional field block is null
+when the sub-type does not state it: the option block for option
+products, the pricing block for average-price and spread products, and
+the exotic block for variance, accumulator, barrier and basket
+products.
+
+A basket product's constituents are not a column: each is a row of
+=ores.trading.commodity_basket_constituent=, keyed to this instrument and
+its ordinal in the document. A text column held the list as a JSON array
+and could not be typed, indexed or questioned, so the collection is a
+child table now.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this commodity instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes the ORE commodity products: CommodityForward, CommodityOption,
+CommoditySwap, CommoditySwaption and the exotic commodity variants.
+
+#+begin_src cpp :name generator
+std::string("CommodityForward")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:supplied_by: session_party
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    std::optional<boost::uuids::uuid>
+:nullable:    true
+:supplied_by: unset
+:END:
+
+Optional soft FK to the parent trade.
+
+Null for a standalone instrument.
+
+** commodity_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Commodity identifier code (e.g. NGAS, WTI, GOLD).
+
+#+begin_src cpp :name generator
+std::string("NGAS")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code.
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** quantity
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Contract quantity. Must be positive.
+
+#+begin_src cpp :name generator
+1000.0
+#+end_src
+
+** unit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Unit of measure for the commodity (e.g. BBL, MMBTU, MT).
+
+#+begin_src cpp :name generator
+std::string("MMBTU")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+Start date for swaps, forwards, and strips.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+Maturity or expiry date.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2029}/1/15}
+#+end_src
+
+** fixed_price
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Fixed price for forwards and fixed-leg swaps.
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Call or Put; null for non-option products.
+
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
+** strike_price
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Option strike price.
+
+** exercise_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+European or American exercise.
+
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+
+
+** average_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Arithmetic or Geometric averaging for Asian options.
+
+Soft FK to ores_trading_average_types_tbl: ORE states no averaging set for
+commodityAveragePriceOptionData, so this is a trading-local closed set by
+decision. PR 4 tightens the soft reference into a real foreign key.
+
+** averaging_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+Start of the averaging window for Asian options.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2024}/6/15}
+#+end_src
+
+** averaging_end_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+End of the averaging window for Asian options.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/6/15}
+#+end_src
+
+** spread_commodity_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Second commodity code for spread options.
+
+** spread_amount
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Spread amount for spread options.
+
+** strip_frequency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Strip frequency code for option strips (e.g. Monthly, Quarterly).
+
+Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+** variance_strike
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Strike variance for variance swap products.
+
+** accumulation_amount
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Per-fixing accumulation amount for accumulator products.
+
+** knock_out_barrier
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Knock-out barrier level for accumulator products.
+
+** barrier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+UpAndIn, UpAndOut, DownAndIn, DownAndOut.
+
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+
+
+** lower_barrier
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Lower barrier level.
+
+** upper_barrier
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+Upper barrier level.
+
+** day_count_fraction_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Day count fraction code for swap products.
+
+Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+** payment_frequency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Payment frequency code for swap products.
+
+Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+** swaption_expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+Swaption expiry date for CommoditySwaption.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_commodity_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "quantity" > 0 |
+| "commodity_code" <> '' |
+| "currency" <> '' |
+| "unit" <> '' |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "exercise_type" is null or "exercise_type" in ('European', 'American') |
+| "average_type" is null or "average_type" in ('Arithmetic', 'Geometric') |
+| "barrier_type" is null or "barrier_type" in ('UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut') |
+| "payment_frequency_code" is null or "payment_frequency_code" in ('Once', 'Annual', 'Semiannual', 'Quarterly', 'Bimonthly', 'Monthly', 'Lunarmonth', 'Weekly', 'Daily') |
+| "trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+| trade_type | tenant_id, trade_type_code | false | true | |
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_instrument
+:entity_plural_short:   commodity_instruments
+:entity_singular_words: commodity instrument
+:entity_plural_words:   commodity instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ci
+:END:
+
+** Table display
+
+| column                    | header       |
+|--------------------------+--------------|
+| identity.instrument_id    | ID           |
+| identity.trade_type_code  | Type         |
+| commodity_code            | Commodity    |
+| currency                  | Ccy          |
+| quantity                  | Quantity     |
+| unit                      | Unit         |
+| maturity_date             | Maturity     |
+| audit.recorded_at         | Recorded At  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:302465BC-152E-4334-907C-E0A83B05CA05][ores.trading.commodity_basket_constituent]] — the instrument's basket members, one row per constituent.

@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/equity_asian_option_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -49,15 +52,16 @@ equity_asian_option_instrument_mapper::map(const equity_asian_option_instrument_
                               std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.option_type = v.option_type;
-    r.strike = v.strike;
-    r.expiry_date = v.expiry_date;
+    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
     r.average_type = v.average_type;
-    r.averaging_start_date = v.averaging_start_date;
-    r.averaging_end_date = v.averaging_end_date;
+    r.averaging_start_date =
+        ores::platform::time::datetime::from_iso8601_date(v.averaging_start_date);
+    r.averaging_end_date = ores::platform::time::datetime::from_iso8601_date(v.averaging_end_date);
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -85,15 +89,16 @@ equity_asian_option_instrument_mapper::map(const domain::equity_asian_option_ins
                      std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.option_type = v.option_type;
-    r.strike = v.strike;
-    r.expiry_date = v.expiry_date;
+    r.strike = v.strike.to_string();
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
     r.average_type = v.average_type;
-    r.averaging_start_date = v.averaging_start_date;
-    r.averaging_end_date = v.averaging_end_date;
+    r.averaging_start_date =
+        ores::platform::time::datetime::to_iso8601_date(v.averaging_start_date);
+    r.averaging_end_date = ores::platform::time::datetime::to_iso8601_date(v.averaging_end_date);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

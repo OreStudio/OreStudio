@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/fx_accumulator_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -48,11 +51,11 @@ fx_accumulator_instrument_mapper::map(const fx_accumulator_instrument_entity& v)
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
     r.currency = v.currency;
-    r.fixing_amount = v.fixing_amount;
+    r.fixing_amount = ores::utility::decimal::decimal::from_string(v.fixing_amount).value();
     r.strike = v.strike;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
-    r.start_date = v.start_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.knock_out_barrier = v.knock_out_barrier;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -80,11 +83,11 @@ fx_accumulator_instrument_mapper::map(const domain::fx_accumulator_instrument& v
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
     r.currency = v.currency;
-    r.fixing_amount = v.fixing_amount;
+    r.fixing_amount = v.fixing_amount.to_string();
     r.strike = v.strike;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
-    r.start_date = v.start_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.knock_out_barrier = v.knock_out_barrier;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

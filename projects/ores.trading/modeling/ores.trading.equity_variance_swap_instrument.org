@@ -104,6 +104,8 @@ std::string("ACME Corp")
 
 ISO 4217 currency code.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -111,15 +113,14 @@ std::string("USD")
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Vega notional. Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** variance_strike
@@ -139,27 +140,27 @@ Strike variance.
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date string (YYYY-MM-DD).
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date string (YYYY-MM-DD).
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** long_short
@@ -208,15 +209,6 @@ Optional free-text description.
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | trade_type | tenant_id, trade_type_code | false | true | |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -252,7 +244,9 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

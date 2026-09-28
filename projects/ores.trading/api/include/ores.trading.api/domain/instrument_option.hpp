@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -78,6 +80,10 @@ struct instrument_option final {
     /**
      * @brief Whether the holder is long or short the option.
      *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
+     *
      * The schema declares the member required, so a row here always states it. The type is the
      * schema's own enumeration of two values.
      */
@@ -85,16 +91,27 @@ struct instrument_option final {
 
     /**
      * @brief The option's type, as the document spelled it.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> option_type;
 
     /**
-     * @brief The payoff the option settles to.
+     * @brief The payoff the option settles to (ORE optionData.PayoffType).
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: the values are the ORE optionData.PayoffType set
+     * the corpus uses (Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull,
+     * Vanilla). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> payoff_type;
 
     /**
-     * @brief The second payoff, for the products that state two.
+     * @brief The second payoff, for the products that state two (ORE optionData.PayoffType2).
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: the values are the ORE optionData.PayoffType set
+     * the corpus uses (Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull,
+     * Vanilla). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> payoff_type_2;
 
@@ -200,12 +217,12 @@ struct instrument_option final {
      * The schema types this member as a date, so the generated reader has already parsed it and the
      * writer re-emits a canonical form. A date column therefore carries the member whole.
      */
-    std::optional<std::string> exercise_date;
+    std::optional<std::chrono::year_month_day> exercise_date;
 
     /**
      * @brief Price the exercise block states, when it states one.
      */
-    std::optional<double> exercise_price;
+    std::optional<ores::utility::decimal::decimal> exercise_price;
 
     /**
      * @brief True when the document stated a payment-dates block.

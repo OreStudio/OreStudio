@@ -43,17 +43,18 @@ render_equity_accumulator_instrument_fields(const domain::equity_accumulator_ins
                                                      std::string{}});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
-    fields.push_back({.name = "Fixing Amount", .value = std::to_string(v.fixing_amount)});
-    fields.push_back({.name = "Start Date", .value = v.start_date});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Strike", .value = v.strike.to_string()});
+    fields.push_back({.name = "Fixing Amount", .value = v.fixing_amount.to_string()});
+    fields.push_back({.name = "Start Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Fixing Frequency", .value = v.fixing_frequency});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back(
-        {.name = "Knock Out Level",
-         .value = v.knock_out_level ? std::to_string(*v.knock_out_level) : std::string{}});
+    fields.push_back({.name = "Knock Out Level",
+                      .value = v.knock_out_level ? v.knock_out_level->to_string() : std::string{}});
     fields.push_back({.name = "Target Amount",
-                      .value = v.target_amount ? std::to_string(*v.target_amount) : std::string{}});
+                      .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
     fields.push_back({.name = "Target Type", .value = v.target_type});
     fields.push_back({.name = "Payoff Type", .value = v.payoff_type});
     fields.push_back({.name = "Description", .value = v.description});

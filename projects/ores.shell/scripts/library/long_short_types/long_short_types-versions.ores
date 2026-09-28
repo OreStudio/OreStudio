@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/long_short_types/long_short_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+long_short_types versions __none__ --limit 1

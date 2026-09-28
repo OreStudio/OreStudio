@@ -18,7 +18,9 @@
  *
  */
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <chrono>
 #include <charconv>
 #include <optional>
 #include <stdexcept>
@@ -62,6 +64,29 @@ using ores::trading::domain::bond_stub_interpolation;
 using ores::trading::domain::bond_trs;
 
 namespace {
+
+// The trading domain holds a date as std::chrono::year_month_day; the ORE XML
+// holds its ISO-8601 spelling. An absent ORE date maps to an invalid calendar
+// date (or no date), which renders back to an empty string.
+std::chrono::year_month_day to_domain_date(const std::string& s) {
+    if (s.empty())
+        return {};
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::optional<std::chrono::year_month_day> to_optional_domain_date(const std::string& s) {
+    if (s.empty())
+        return std::nullopt;
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::string to_ore_date(const std::chrono::year_month_day& d) {
+    return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
+}
+
+std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
 
 std::string first_tenor(const xsd::optional<scheduleData>& sd) {
     if (!sd || sd->Rules.empty())
@@ -1048,7 +1073,7 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
     if (bd.IssuerId)
         issue.issuer = std::string(*bd.IssuerId);
     if (bd.IssueDate)
-        issue.issue_date = std::string(*bd.IssueDate);
+        issue.issue_date = to_optional_domain_date(std::string(*bd.IssueDate));
     if (bd.SettlementDays)
         issue.settlement_days = count_of(*bd.SettlementDays, 0);
 
@@ -1075,9 +1100,11 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
         if (ld.Currency)
             issue.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
-            issue.face_value = static_cast<double>(ld.Notionals->Notional.front());
+            issue.face_value = ores::utility::decimal::decimal::from_double(
+                                   static_cast<double>(ld.Notionals->Notional.front()))
+                                   .value();
         if (ld.DayCounter)
-            issue.day_count_code = to_string(*ld.DayCounter);
+            issue.day_count_fraction_code = to_string(*ld.DayCounter);
         issue.coupon_frequency_code = first_tenor(ld.ScheduleData);
 
         if (ld.legDataType && ld.legDataType->FixedLegData &&
@@ -1097,9 +1124,9 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
         static_cast<std::string&>(id) = issue.issuer;
         bd.IssuerId = std::move(id);
     }
-    if (!issue.issue_date.empty()) {
+    if (issue.issue_date) {
         bondData_IssueDate_t d;
-        static_cast<std::string&>(d) = issue.issue_date;
+        static_cast<std::string&>(d) = to_ore_date(issue.issue_date);
         bd.IssueDate = std::move(d);
     }
     if (issue.settlement_days != 0) {
@@ -1118,7 +1145,8 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     // columns that mirror the first hold a value: Currency and Notionals
     // are optional in the schema, so a leg the document carries with
     // neither still has to come back out.
-    if (!data.bond_legs.empty() || !issue.currency.empty() || issue.face_value != 0.0) {
+    if (!data.bond_legs.empty() || !issue.currency.empty() ||
+        (issue.face_value && !issue.face_value->is_zero())) {
         const std::size_t leg_count = data.bond_legs.empty() ? 1 : data.bond_legs.size();
         for (std::size_t i = 0; i < leg_count; ++i) {
             const bond_leg_data absent;
@@ -1133,14 +1161,14 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
             if (i == 0) {
                 if (!ld.Currency && !issue.currency.empty())
                     ld.Currency = issue.currency;
-                if (!ld.DayCounter && !issue.day_count_code.empty())
+                if (!ld.DayCounter && !issue.day_count_fraction_code.empty())
                     ld.DayCounter =
-                        parse_code(issue.day_count_code, day_counter_count, dayCounter::A360);
+                        parse_code(issue.day_count_fraction_code, day_counter_count, dayCounter::A360);
 
-                if (!ld.Notionals && issue.face_value != 0.0) {
+                if (!ld.Notionals && issue.face_value && !issue.face_value->is_zero()) {
                     legData_Notionals_t n;
                     legData_Notionals_t_Notional_t nv;
-                    static_cast<float&>(nv) = static_cast<float>(issue.face_value);
+                    static_cast<float&>(nv) = static_cast<float>(issue.face_value->to_double());
                     n.Notional.push_back(nv);
                     ld.Notionals = std::move(n);
                 }
@@ -1154,8 +1182,8 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
                 if (!ld.ScheduleData && !issue.coupon_frequency_code.empty()) {
                     scheduleData_Rules_t rule;
                     static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
-                    if (!issue.issue_date.empty())
-                        rule.StartDate = issue.issue_date;
+                    if (issue.issue_date)
+                        rule.StartDate = to_ore_date(issue.issue_date);
                     scheduleData sched;
                     sched.Rules.push_back(std::move(rule));
                     ld.ScheduleData = std::move(sched);
@@ -1193,7 +1221,7 @@ void bond_instrument_mapper::map_call_dates(const callableBondCallData& call_dat
             bond_issue_call_date row;
             row.issue_id = issue_id;
             row.sequence_number = ++sequence;
-            row.call_date = static_cast<const std::string&>(d);
+            row.call_date = to_domain_date(static_cast<const std::string&>(d));
             stamp_audit(row);
             dates.push_back(std::move(row));
         }
@@ -1206,7 +1234,7 @@ void bond_instrument_mapper::reverse_call_dates(const std::vector<bond_issue_cal
     scheduleData_Dates_t block;
     for (const auto& row : dates) {
         domain::date d;
-        static_cast<std::string&>(d) = row.call_date;
+        static_cast<std::string&>(d) = to_ore_date(row.call_date);
         block.Dates.Date.push_back(std::move(d));
     }
     call_data.ScheduleData.Dates.push_back(std::move(block));
@@ -1329,7 +1357,9 @@ bond_instrument_data bond_instrument_mapper::forward_bond_option(const trade& t,
     if (d.OptionData.OptionType)
         option.option_type = std::string(*d.OptionData.OptionType);
     if (d.strikeGroup.Strike)
-        option.option_strike = number_of(*d.strikeGroup.Strike, 0.0);
+        option.option_strike =
+            ores::utility::decimal::decimal::from_double(number_of(*d.strikeGroup.Strike, 0.0))
+                .value();
     stamp_audit(option);
     result.option = option;
 
@@ -1364,10 +1394,10 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     bond_trs trs;
     // An ORE BondTRS is a total return swap by construction: no field of
     // the schema selects a return type, and PriceType names a
-    // price-quoting convention rather than a return type. TotalReturn is
-    // the model default the column check admits, with the ORE User Guide
-    // as the evidence.
-    trs.return_type = "TotalReturn";
+    // price-quoting convention rather than a return type. "Total" is the
+    // value ORE's own EquityLegData.ReturnType uses, and the set the
+    // example corpus writes is Total or Price.
+    trs.return_type = "Total";
     const auto& ld = d.FundingData.LegData;
     if (ld.legDataType) {
         if (ld.legDataType->FloatingLegData) {
@@ -1433,7 +1463,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond_future(const trade& t,
 
     bond_future future;
     future.contract_name = d.ContractName;
-    future.contract_notional = number_of(d.ContractNotional, 0.0);
+    future.contract_notional =
+        ores::utility::decimal::decimal::from_double(number_of(d.ContractNotional, 0.0)).value();
     future.long_short = d.LongShort;
     // v17 moved the contract's own terms out of the trade and into the
     // BondFutureReferenceData datum keyed by ContractName: currency,
@@ -1549,9 +1580,9 @@ trade bond_instrument_mapper::reverse_bond_option(const bond_instrument_data& da
             static_cast<std::string&>(ot) = data.option->option_type;
             d.OptionData.OptionType = std::move(ot);
         }
-        if (data.option->option_strike != 0.0 && !data.strike_data) {
+        if (!data.option->option_strike.is_zero() && !data.strike_data) {
             _Strike_t s;
-            static_cast<std::string&>(s) = format_number(data.option->option_strike);
+            static_cast<std::string&>(s) = format_number(data.option->option_strike.to_double());
             d.strikeGroup.Strike = std::move(s);
         }
     }
@@ -1653,7 +1684,7 @@ trade bond_instrument_mapper::reverse_bond_future(const bond_instrument_data& da
     if (data.future) {
         const auto& f = *data.future;
         set_text(d.ContractName, f.contract_name);
-        set_text(d.ContractNotional, format_number(f.contract_notional));
+        set_text(d.ContractNotional, format_number(f.contract_notional.to_double()));
         set_text(d.LongShort, f.long_short);
         // The contract's own terms belong to the BondFutureReferenceData
         // datum in v17, not to the trade, so there is nowhere here to

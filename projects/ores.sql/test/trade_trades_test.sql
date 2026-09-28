@@ -84,7 +84,7 @@ end $$;
 -- =============================================================================
 
 insert into ores_trading_trades_tbl (
-    id, tenant_id, version,
+    id, tenant_id, version, external_id,
     book_id, portfolio_id,
     trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
@@ -92,6 +92,7 @@ insert into ores_trading_trades_tbl (
 ) select
     'c1000000-0000-0000-0000-000000000001'::uuid,
     ores_utility_system_tenant_id_fn(), 0,
+    'TRD-TEST-0001',
     'c0000000-0000-0000-0000-000000000001'::uuid,
     'c0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-TEST-001', 'new_booking', s.id,
@@ -132,7 +133,7 @@ select is(
 
 select throws_ok(
     format($$insert into ores_trading_trades_tbl (
-        id, tenant_id, version,
+        id, tenant_id, version, external_id,
         book_id, portfolio_id,
         trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
@@ -140,6 +141,7 @@ select throws_ok(
     ) values (
         'c1000000-0000-0000-0000-000000000099'::uuid,
         ores_utility_system_tenant_id_fn(), 0,
+        'TRD-TEST-0099',
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
         'Swap', 'NS-BAD', 'new_booking', %L::uuid,
@@ -162,7 +164,7 @@ select throws_ok(
 
 select throws_ok(
     format($$insert into ores_trading_trades_tbl (
-        id, tenant_id, version,
+        id, tenant_id, version, external_id,
         book_id, portfolio_id,
         trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
@@ -170,6 +172,7 @@ select throws_ok(
     ) values (
         'c1000000-0000-0000-0000-000000000098'::uuid,
         ores_utility_system_tenant_id_fn(), 0,
+        'TRD-TEST-0098',
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'Swap', 'NS-BAD', 'new_booking', %L::uuid,
@@ -192,7 +195,7 @@ select throws_ok(
 
 select throws_ok(
     format($$insert into ores_trading_trades_tbl (
-        id, tenant_id, version,
+        id, tenant_id, version, external_id,
         book_id, portfolio_id,
         trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
@@ -200,6 +203,7 @@ select throws_ok(
     ) values (
         'c1000000-0000-0000-0000-000000000097'::uuid,
         ores_utility_system_tenant_id_fn(), 0,
+        'TRD-TEST-0097',
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
         'INVALID_TYPE', 'NS-BAD', 'new_booking', %L::uuid,
@@ -222,7 +226,7 @@ select throws_ok(
 
 select throws_ok(
     format($$insert into ores_trading_trades_tbl (
-        id, tenant_id, version,
+        id, tenant_id, version, external_id,
         book_id, portfolio_id,
         trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
@@ -230,6 +234,7 @@ select throws_ok(
     ) values (
         'c1000000-0000-0000-0000-000000000096'::uuid,
         ores_utility_system_tenant_id_fn(), 0,
+        'TRD-TEST-0096',
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
         'Swap', 'NS-BAD', 'INVALID_ACTIVITY', %L::uuid,
@@ -252,7 +257,7 @@ select throws_ok(
 
 -- Insert amendment (same id, version 0 = accept current); status stays 'new'
 insert into ores_trading_trades_tbl (
-    id, tenant_id, version,
+    id, tenant_id, version, external_id,
     book_id, portfolio_id,
     trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
@@ -260,6 +265,7 @@ insert into ores_trading_trades_tbl (
 ) select
     'c1000000-0000-0000-0000-000000000001'::uuid,
     ores_utility_system_tenant_id_fn(), 0,
+    'TRD-TEST-0001',
     'c0000000-0000-0000-0000-000000000001'::uuid,
     'c0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-TEST-001', 'amendment', s.id,

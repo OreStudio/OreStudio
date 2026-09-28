@@ -65,7 +65,8 @@ create table if not exists "ores_trading_bond_options_tbl" (
     check ("valid_from" < "valid_to"),
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("option_type" in ('Call', 'Put')),
-    check ("option_strike" >= 0)
+    check ("option_strike" >= 0),
+    check ("price_type" is null or "price_type" in ('Clean', 'Dirty'))
 );
 
 -- Version uniqueness for optimistic concurrency

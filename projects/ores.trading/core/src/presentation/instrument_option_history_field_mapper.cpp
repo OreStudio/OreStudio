@@ -69,10 +69,12 @@ render_instrument_option_fields(const domain::instrument_option& v) {
         {.name = "Automatic Exercise", .value = v.automatic_exercise.value_or(std::string{})});
     fields.push_back(
         {.name = "Has Exercise Data", .value = v.has_exercise_data ? "true" : "false"});
-    fields.push_back({.name = "Exercise Date", .value = v.exercise_date.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Exercise Price",
-         .value = v.exercise_price ? std::to_string(*v.exercise_price) : std::string{}});
+    fields.push_back({.name = "Exercise Date",
+                      .value = v.exercise_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                     *v.exercise_date) :
+                                                 std::string{}});
+    fields.push_back({.name = "Exercise Price",
+                      .value = v.exercise_price ? v.exercise_price->to_string() : std::string{}});
     fields.push_back({.name = "Has Payment Data", .value = v.has_payment_data ? "true" : "false"});
     fields.push_back(
         {.name = "Payment Calendar", .value = v.payment_calendar.value_or(std::string{})});

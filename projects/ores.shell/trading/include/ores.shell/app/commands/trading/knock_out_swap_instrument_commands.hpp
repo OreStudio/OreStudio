@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <trade_type_code> <trade_id> <start_date> <maturity_date> <barrier_level>
-     * <barrier_type> <knock_out_dates_json> <description> <reason> <commentary>
+     * <barrier_type> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,8 +96,7 @@ public:
 
     /**
      * @brief set <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date>
-     * <barrier_level> <barrier_type> <knock_out_dates_json> <description> <reason> <commentary>
-     * [--version <n>]
+     * <barrier_level> <barrier_type> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -105,8 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <start_date>
-     * <maturity_date> <barrier_level> <barrier_type> <knock_out_dates_json> <description> <reason>
-     * <commentary>
+     * <maturity_date> <barrier_level> <barrier_type> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

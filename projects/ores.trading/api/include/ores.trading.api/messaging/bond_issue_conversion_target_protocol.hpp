@@ -157,7 +157,7 @@ struct put_bond_issue_conversion_target_request {
 
 struct put_bond_issue_conversion_target_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue_conversion_target bond_issue_conversion_target;
+    std::optional<ores::trading::domain::bond_issue_conversion_target> bond_issue_conversion_target;
 };
 
 struct put_many_bond_issue_conversion_targets_request {
@@ -258,7 +258,7 @@ struct get_bond_issue_conversion_target_version_request {
 
 struct get_bond_issue_conversion_target_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue_conversion_target version;
+    std::optional<ores::trading::domain::bond_issue_conversion_target> version;
 };
 
 /**

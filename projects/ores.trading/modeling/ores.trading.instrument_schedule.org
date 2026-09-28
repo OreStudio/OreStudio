@@ -150,7 +150,7 @@ std::string("rules")
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
@@ -160,14 +160,22 @@ The schema requires this member on a rule block and states no
 equivalent on a date list, so the column is nullable and a =dates= row
 leaves it unset.
 
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
+#+end_src
+
 ** end_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Last date of the rule block, when the document states one.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
 
 ** adjust_end_date_to_previous_month_end
 :PROPERTIES:
@@ -262,20 +270,28 @@ Business day convention applied when the end-of-month flag is on.
 ** first_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 First date of the rule block, stated outright.
 
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
+#+end_src
+
 ** last_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Last date of the rule block, stated outright.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
 
 ** remove_first_date
 :PROPERTIES:
@@ -332,7 +348,7 @@ spelling.
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -346,6 +362,7 @@ spelling.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

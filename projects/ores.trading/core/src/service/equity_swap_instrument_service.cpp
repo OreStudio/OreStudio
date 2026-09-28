@@ -94,7 +94,7 @@ domain::equity_swap_instrument to_domain(const messaging::equity_swap_instrument
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
     v.long_short = write.long_short;
-    v.payment_frequency = write.payment_frequency;
+    v.payment_frequency_code = write.payment_frequency_code;
     v.description = write.description;
     return v;
 }

@@ -1,0 +1,6 @@
+# =delete=
+#
+# GENERATED from doc/recipes/shell/parameter_definitions/parameter_definition.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+parameter_definitions delete __none__ system.new_record generated_script

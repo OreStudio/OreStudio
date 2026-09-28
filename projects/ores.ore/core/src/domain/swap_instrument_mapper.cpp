@@ -19,7 +19,10 @@
  */
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <chrono>
 #include <map>
+#include <optional>
 
 namespace ores::ore::domain {
 
@@ -40,6 +43,23 @@ using ores::trading::domain::swap_leg;
 // ---------------------------------------------------------------------------
 
 namespace {
+
+// The trading domain holds a date as std::chrono::year_month_day; the ORE XML
+// holds its ISO-8601 spelling. An absent ORE date maps to a default
+// (invalid) calendar date, which renders back to an empty string.
+std::chrono::year_month_day to_domain_date(const std::string& s) {
+    if (s.empty())
+        return {};
+    return ores::platform::time::datetime::from_iso8601_date(s);
+}
+
+std::string to_ore_date(const std::chrono::year_month_day& d) {
+    return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
+}
+
+std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
+    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
+}
 
 std::string day_counter_string(const xsd::optional<dayCounter>& dc) {
     if (!dc)
@@ -67,32 +87,42 @@ std::string first_tenor(const xsd::optional<scheduleData>& sd) {
     return {};
 }
 
-std::string start_date_from_schedule(const xsd::optional<scheduleData>& sd) {
+std::chrono::year_month_day start_date_from_schedule(const xsd::optional<scheduleData>& sd) {
     if (!sd)
         return {};
     if (!sd->Rules.empty())
-        return std::string(sd->Rules.front().StartDate);
+        return to_domain_date(std::string(sd->Rules.front().StartDate));
+    // A schedule may carry an explicit date list instead of a rule. Its first
+    // entry is the effective date, and a date-typed start_date cannot hold
+    // the empty string the rule-only path leaves behind.
+    if (!sd->Dates.empty() && !sd->Dates.front().Dates.Date.empty())
+        return to_domain_date(std::string(sd->Dates.front().Dates.Date.front()));
     return {};
 }
 
-std::string end_date_from_schedule(const xsd::optional<scheduleData>& sd) {
+std::chrono::year_month_day end_date_from_schedule(const xsd::optional<scheduleData>& sd) {
     if (!sd)
         return {};
     if (!sd->Rules.empty() && sd->Rules.front().EndDate)
-        return std::string(*sd->Rules.front().EndDate);
+        return to_domain_date(std::string(*sd->Rules.front().EndDate));
+    // Symmetric with start_date_from_schedule: an explicit date list carries
+    // the maturity as its last entry, and a date-typed maturity_date cannot
+    // hold the empty string the rule-only path leaves behind.
+    if (!sd->Dates.empty() && !sd->Dates.front().Dates.Date.empty())
+        return to_domain_date(std::string(sd->Dates.front().Dates.Date.back()));
     return {};
 }
 
 // CapFloor leg uses non-optional scheduleData
-std::string start_date_from_schedule(const scheduleData& sd) {
+std::chrono::year_month_day start_date_from_schedule(const scheduleData& sd) {
     if (!sd.Rules.empty())
-        return std::string(sd.Rules.front().StartDate);
+        return to_domain_date(std::string(sd.Rules.front().StartDate));
     return {};
 }
 
-std::string end_date_from_schedule(const scheduleData& sd) {
+std::chrono::year_month_day end_date_from_schedule(const scheduleData& sd) {
     if (!sd.Rules.empty() && sd.Rules.front().EndDate)
-        return std::string(*sd.Rules.front().EndDate);
+        return to_domain_date(std::string(*sd.Rules.front().EndDate));
     return {};
 }
 
@@ -106,14 +136,15 @@ std::string first_tenor(const scheduleData& sd) {
 // Helpers: reverse direction (string → ORE XSD)
 // ---------------------------------------------------------------------------
 
-scheduleData
-make_schedule(const std::string& start, const std::string& end, const std::string& tenor) {
+scheduleData make_schedule(const std::optional<std::chrono::year_month_day>& start,
+                           const std::optional<std::chrono::year_month_day>& end,
+                           const std::string& tenor) {
     scheduleData sd;
     scheduleData_Rules_t r;
-    r.StartDate = start;
-    if (!end.empty()) {
+    r.StartDate = to_ore_date(start);
+    if (end) {
         domain::date d;
-        static_cast<std::string&>(d) = end;
+        static_cast<std::string&>(d) = to_ore_date(end);
         r.EndDate = xsd::optional<domain::date>(d);
     }
     static_cast<std::string&>(r.Tenor) = tenor;
@@ -379,7 +410,7 @@ currencyCode parse_currency_code(const std::string& s) {
 swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     swap_leg sl;
     auto& id = sl.identity;
-    auto& tm = sl.terms;
+    auto& tm = sl;
     auto& au = sl.audit;
     id.leg_number = leg_number;
     tm.leg_type_code = to_string(ld.LegType);
@@ -391,7 +422,7 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(ld.ScheduleData));
 
     if (ld.Notionals)
-        tm.notional = static_cast<double>(first_notional(*ld.Notionals));
+        tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(first_notional(*ld.Notionals))).value();
 
     if (ld.legDataType) {
         const auto& ldt = *ld.legDataType;
@@ -511,22 +542,22 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     const auto& fra = *t.ForwardRateAgreementData;
     auto& fi = std::get<fra_instrument>(result.instrument);
 
-    fi.start_date = std::string(fra.StartDate);
-    fi.end_date = std::string(fra.EndDate);
+    fi.start_date = to_domain_date(std::string(fra.StartDate));
+    fi.end_date = to_domain_date(std::string(fra.EndDate));
     fi.currency = to_string(fra.Currency);
-    fi.notional = static_cast<double>(fra.Notional);
+    fi.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
     fi.rate_index = std::string(fra.Index);
     fi.strike = static_cast<double>(fra.Strike);
     fi.long_short = "Long";
 
     swap_leg sl;
     sl.identity.leg_number = 1;
-    auto& tm = sl.terms;
+    auto& tm = sl;
     tm.leg_type_code = "Fixed";
     tm.currency = to_string(fra.Currency);
     tm.floating_index_code = std::string(fra.Index);
     tm.fixed_rate = static_cast<double>(fra.Strike);
-    tm.notional = static_cast<double>(fra.Notional);
+    tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
     auto& au = sl.audit;
     au.modified_by = "ores";
     au.performed_by = "ores";
@@ -565,7 +596,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
 
     swap_leg sl;
     sl.identity.leg_number = 1;
-    auto& tm = sl.terms;
+    auto& tm = sl;
     tm.leg_type_code = to_string(cf.LegData.LegType);
     tm.currency = to_string(cf.LegData.Currency);
     tm.day_count_fraction_code = to_string(cf.LegData.DayCounter);
@@ -573,7 +604,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(cf.LegData.ScheduleData));
 
     if (!cf.LegData.Notionals.Notional.empty())
-        tm.notional = static_cast<double>(cf.LegData.Notionals.Notional.front());
+        tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(cf.LegData.Notionals.Notional.front())).value();
 
     if (cf.LegData.legDataType.FloatingLegData) {
         tm.floating_index_code = std::string(cf.LegData.legDataType.FloatingLegData->Index);
@@ -597,12 +628,13 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
 // Reverse: swap_leg → legData
 // ---------------------------------------------------------------------------
 
-legData swap_instrument_mapper::reverse_leg(const std::string& start_date,
-                                            const std::string& maturity_date,
-                                            const swap_leg& sl) {
+legData
+swap_instrument_mapper::reverse_leg(const std::optional<std::chrono::year_month_day>& start_date,
+                                    const std::optional<std::chrono::year_month_day>& maturity_date,
+                                    const swap_leg& sl) {
     legData ld;
 
-    const auto& tm = sl.terms;
+    const auto& tm = sl;
     const auto leg_type = leg_type_from_string(tm.leg_type_code);
     if (!leg_type)
         throw std::runtime_error("reverse_leg: unrecognised leg type '" + tm.leg_type_code +
@@ -610,8 +642,8 @@ legData swap_instrument_mapper::reverse_leg(const std::string& start_date,
     ld.LegType = *leg_type;
     ld.Currency = tm.currency;
 
-    if (tm.notional != 0.0)
-        ld.Notionals = make_notionals(tm.notional);
+    if (!tm.notional.is_zero())
+        ld.Notionals = make_notionals(tm.notional.to_double());
 
     ld.ScheduleData = make_schedule(
         start_date, maturity_date, payment_frequency_to_tenor(tm.payment_frequency_code));
@@ -679,13 +711,13 @@ trade swap_instrument_mapper::reverse_fra(const fra_instrument& instr,
     t.TradeType = oreTradeType::ForwardRateAgreement;
 
     forwardRateAgreementData fra;
-    fra.StartDate = instr.start_date;
-    fra.EndDate = instr.end_date;
+    fra.StartDate = to_ore_date(instr.start_date);
+    fra.EndDate = to_ore_date(instr.end_date);
     fra.Currency = parse_currency_code(instr.currency);
-    fra.Notional = static_cast<float>(instr.notional);
+    fra.Notional = static_cast<float>(instr.notional.to_double());
 
     if (!legs.empty()) {
-        const auto& tm = legs.front().terms;
+        const auto& tm = legs.front();
         static_cast<std::string&>(fra.Index) = tm.floating_index_code;
         fra.Strike = static_cast<float>(tm.fixed_rate);
         fra.LongShort = longShort::Long;
@@ -712,7 +744,7 @@ trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr
     if (!legs.empty()) {
         const auto& sl = legs.front();
 
-        const auto& tm = sl.terms;
+        const auto& tm = sl;
         cf.LegData.LegType = leg_type_from_string(tm.leg_type_code).value_or(legType::Floating);
 
         cf.LegData.Currency = parse_currency_code(tm.currency);
@@ -722,9 +754,9 @@ trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr
             make_schedule(instr.start_date,
                           instr.maturity_date,
                           payment_frequency_to_tenor(tm.payment_frequency_code));
-        if (tm.notional != 0.0) {
+        if (!tm.notional.is_zero()) {
             legData_capfloor_Notionals_t_Notional_t nv;
-            static_cast<float&>(nv) = static_cast<float>(tm.notional);
+            static_cast<float&>(nv) = static_cast<float>(tm.notional.to_double());
             cf.LegData.Notionals.Notional.push_back(nv);
         }
 
@@ -775,8 +807,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
             si.exercise_type = std::string(*od.Style);
         if (od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates &&
             !od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-            si.expiry_date =
-                std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+            si.expiry_date = to_domain_date(
+                std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()));
     }
 
     int leg_num = 1;
@@ -784,10 +816,16 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
         result.legs.push_back(map_leg(ld, leg_num++));
 
     if (!result.legs.empty()) {
-        if (si.maturity_date.empty())
-            si.maturity_date = end_date_from_schedule(sd.LegData.front().ScheduleData);
-        if (si.start_date.empty())
-            si.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
+        if (!si.maturity_date) {
+            const auto maturity = end_date_from_schedule(sd.LegData.front().ScheduleData);
+            if (maturity.ok())
+                si.maturity_date = maturity;
+        }
+        if (!si.start_date) {
+            const auto start = start_date_from_schedule(sd.LegData.front().ScheduleData);
+            if (start.ok())
+                si.start_date = start;
+        }
     }
 
     return result;
@@ -813,10 +851,11 @@ trade swap_instrument_mapper::reverse_swaption(const swaption_instrument& instr,
         static_cast<std::string&>(style) = instr.exercise_type;
         od.Style = std::move(style);
     }
-    if (!instr.expiry_date.empty()) {
+    if (instr.expiry_date.ok()) {
         _ExerciseDates_t ed;
         domain::date d;
-        static_cast<std::string&>(d) = instr.expiry_date;
+        static_cast<std::string&>(d) =
+            ores::platform::time::datetime::to_iso8601_date(instr.expiry_date);
         ed.ExerciseDate.push_back(d);
         exerciseDatesGroup_group_t edg;
         edg.ExerciseDates = std::move(ed);
@@ -857,20 +896,17 @@ swap_instrument_mapper::forward_callable_swap(const trade& t) {
 
     if (cd.OptionData && cd.OptionData->exerciseDatesGroup &&
         cd.OptionData->exerciseDatesGroup->ExerciseDates) {
-        // Manual JSON array construction is intentional: exercise dates are
-        // ISO-8601 strings (YYYY-MM-DD) containing only ASCII alphanumerics
-        // and hyphens, so no escaping is ever needed. Adding a JSON library
-        // dependency to ores.ore purely for this would be disproportionate.
-        std::string json = "[";
-        bool first = true;
+        int sequence_number = 1;
         for (const auto& d : cd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate) {
-            if (!first)
-                json += ",";
-            json += "\"" + std::string(d) + "\"";
-            first = false;
+            trading::domain::callable_swap_call_date call_date;
+            call_date.sequence_number = sequence_number++;
+            call_date.call_date = to_domain_date(std::string(d));
+            call_date.modified_by = "ores";
+            call_date.performed_by = "ores";
+            call_date.change_reason_code = "system.external_data_import";
+            call_date.change_commentary = "Imported from ORE XML";
+            result.call_dates.push_back(std::move(call_date));
         }
-        json += "]";
-        ci.call_dates_json = std::move(json);
     }
 
     int leg_num = 1;
@@ -889,8 +925,10 @@ swap_instrument_mapper::forward_callable_swap(const trade& t) {
 // Reverse: CallableSwap
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_callable_swap(const callable_swap_instrument& instr,
-                                                    const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_callable_swap(
+    const callable_swap_instrument& instr,
+    const std::vector<swap_leg>& legs,
+    const std::vector<trading::domain::callable_swap_call_date>& call_dates) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CallableSwap";
 
     trade t;
@@ -898,11 +936,19 @@ trade swap_instrument_mapper::reverse_callable_swap(const callable_swap_instrume
 
     callableSwapData cd;
 
-    if (!instr.call_dates_json.empty()) {
-        // Minimal reconstruction: set an empty OptionData to mark the presence
-        // of the option. Full exercise dates parsing from JSON is a gap.
+    if (!call_dates.empty()) {
         optionData od;
         static_cast<std::string&>(od.LongShort) = "Long";
+        _ExerciseDates_t ed;
+        for (const auto& call_date : call_dates) {
+            domain::date d;
+            static_cast<std::string&>(d) =
+                ores::platform::time::datetime::to_iso8601_date(call_date.call_date);
+            ed.ExerciseDate.push_back(d);
+        }
+        exerciseDatesGroup_group_t edg;
+        edg.ExerciseDates = std::move(ed);
+        od.exerciseDatesGroup = std::move(edg);
         cd.OptionData = std::move(od);
     }
 

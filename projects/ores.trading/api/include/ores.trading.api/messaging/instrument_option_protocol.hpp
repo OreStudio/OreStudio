@@ -62,8 +62,8 @@ struct instrument_option_write {
     std::optional<std::string> exercise_fee_settlement_convention;
     std::optional<std::string> automatic_exercise;
     bool has_exercise_data;
-    std::optional<std::string> exercise_date;
-    std::optional<double> exercise_price;
+    std::optional<std::chrono::year_month_day> exercise_date;
+    std::optional<ores::utility::decimal::decimal> exercise_price;
     bool has_payment_data;
     std::optional<std::int64_t> payment_lag;
     std::optional<std::string> payment_calendar;
@@ -183,7 +183,7 @@ struct put_instrument_option_request {
 
 struct put_instrument_option_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option instrument_option;
+    std::optional<ores::trading::domain::instrument_option> instrument_option;
 };
 
 struct put_many_instrument_options_request {
@@ -279,7 +279,7 @@ struct get_instrument_option_version_request {
 
 struct get_instrument_option_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_option version;
+    std::optional<ores::trading::domain::instrument_option> version;
 };
 
 /**

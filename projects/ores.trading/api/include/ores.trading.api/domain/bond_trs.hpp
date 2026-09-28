@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_TRS_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_TRS_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -75,15 +76,24 @@ struct bond_trs final {
     boost::uuids::uuid instrument_id;
 
     /**
-     * @brief Return type of the total return side (TotalReturn, PriceReturn).
+     * @brief Return type of the total return side (Total, Price).
      *
-     * The flattening mapper hardcodes this value today; the reworked mapper must read it from
-     * TotalReturnData.PriceType.
+     * Soft FK to ores_trading_return_types_tbl: ORE states EquityLegData.ReturnType as a bare
+     * xs:string, so the set is the one the ORE example corpus uses (Total, Price). PR 4 tightens
+     * the soft reference into a real foreign key.
+     *
+     * The mapper hardcodes Total: an ORE BondTRS is a total return swap by construction, and ORE's
+     * own EquityLegData.ReturnType set is Total or Price. TotalReturnData.PriceType names a
+     * price-quoting convention (Clean or Dirty), not a return type, so it is not the source.
      */
     std::string return_type;
 
     /**
      * @brief Leg type of the funding leg (Fixed, Floating).
+     *
+     * Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating,
+     * OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string funding_leg_type;
 
@@ -109,6 +119,9 @@ struct bond_trs final {
     /**
      * @brief Price type the total return is struck on (Dirty, Clean).
      *
+     * Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set
+     * (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
+     *
      * The schema declares the member required. It is not the return_type column beside it: that one
      * names the return side of the swap, and this one names how the price is quoted.
      */
@@ -120,7 +133,7 @@ struct bond_trs final {
      * The schema states the member as a float and declares it optional, so an unengaged column
      * means the document omitted it.
      */
-    std::optional<double> initial_price;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 
     /**
      * @brief Username of the person who last modified this bond trs.

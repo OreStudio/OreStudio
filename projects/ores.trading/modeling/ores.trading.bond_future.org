@@ -60,15 +60,14 @@ std::string("US 10YR T-NOTE")
 ** contract_notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Notional of one contract.
 
 #+begin_src cpp :name generator
-100000.0
+ores::utility::decimal::decimal::from_string("100000").value()
 #+end_src
 
 ** long_short
@@ -79,6 +78,8 @@ Notional of one contract.
 :END:
 
 Long or short position in the contract.
+
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("Long")
@@ -92,6 +93,8 @@ std::string("Long")
 :END:
 
 ISO 4217 currency code of the contract.
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -126,15 +129,14 @@ std::string("T 2.75 11/15/2042")
 ** fair_price
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Fair price of the contract at trade time.
 
 #+begin_src cpp :name generator
-98.5
+ores::utility::decimal::decimal::from_string("98.5").value()
 #+end_src
 
 ** settlement
@@ -166,14 +168,14 @@ false
 ** root_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Root date of the contract's expiry basis (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2029-03-01")
+std::chrono::year_month_day{std::chrono::year{2029}/3/1}
 #+end_src
 
 ** expiry_basis
@@ -233,20 +235,20 @@ Lag in days between the expiry basis and the settlement basis.
 ** last_trading_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Last trading date of the contract (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2029-09-27")
+std::chrono::year_month_day{std::chrono::year{2029}/9/27}
 #+end_src
 
 ** last_delivery_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -254,7 +256,7 @@ Last delivery date of the contract (ISO 8601 date string). The ER
 names this the delivery date of the fact row.
 
 #+begin_src cpp :name generator
-std::string("2029-09-28")
+std::chrono::year_month_day{std::chrono::year{2029}/9/28}
 #+end_src
 
 * SQL
@@ -276,7 +278,7 @@ std::string("2029-09-28")
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name: generator
+:generator_facet_name: generators
 :END:
 
 ** Repository
@@ -290,8 +292,10 @@ std::string("2029-09-28")
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

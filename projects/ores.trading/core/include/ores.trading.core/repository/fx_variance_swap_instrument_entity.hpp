@@ -55,7 +55,7 @@ struct fx_variance_swap_instrument_entity {
     std::string underlying_code;
     std::string long_short;
     double strike = 0.0;
-    double notional = 0.0;
+    std::string notional;
     std::string moment_type;
     std::optional<std::string> description;
     std::string modified_by;

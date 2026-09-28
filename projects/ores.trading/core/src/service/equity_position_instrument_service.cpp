@@ -91,7 +91,6 @@ to_domain(const messaging::equity_position_instrument_write& write) {
     v.currency = write.currency;
     v.quantity = write.quantity;
     v.price = write.price;
-    v.option_data_json = write.option_data_json;
     v.description = write.description;
     return v;
 }

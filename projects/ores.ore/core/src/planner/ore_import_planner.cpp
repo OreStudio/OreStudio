@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.refdata.api/domain/book_status_constants.hpp"
@@ -108,11 +109,15 @@ ore_import_plan ore_import_planner::plan() {
                     item.trade.parties.portfolio_id = target_portfolio_id;
                     item.trade.identity.party_id = choices_.party_id;
                     if (!defs.trade_date.empty())
-                        item.trade.lifecycle.trade_date = defs.trade_date;
+                        item.trade.lifecycle.trade_date =
+                            ores::platform::time::datetime::from_iso8601_date(defs.trade_date);
                     if (!defs.effective_date.empty())
-                        item.trade.lifecycle.effective_date = defs.effective_date;
+                        item.trade.lifecycle.effective_date =
+                            ores::platform::time::datetime::from_iso8601_date(defs.effective_date);
                     if (!defs.termination_date.empty())
-                        item.trade.lifecycle.termination_date = defs.termination_date;
+                        item.trade.lifecycle.termination_date =
+                            ores::platform::time::datetime::from_iso8601_date(
+                                defs.termination_date);
                     if (!defs.activity_type_code.empty())
                         item.trade.classification.activity_type_code = defs.activity_type_code;
                     if (defs.default_counterparty_id)
@@ -237,11 +242,14 @@ ore_import_plan ore_import_planner::plan() {
                 item.trade.identity.party_id = choices_.party_id;
 
                 if (!defs.trade_date.empty())
-                    item.trade.lifecycle.trade_date = defs.trade_date;
+                    item.trade.lifecycle.trade_date =
+                        ores::platform::time::datetime::from_iso8601_date(defs.trade_date);
                 if (!defs.effective_date.empty())
-                    item.trade.lifecycle.effective_date = defs.effective_date;
+                    item.trade.lifecycle.effective_date =
+                        ores::platform::time::datetime::from_iso8601_date(defs.effective_date);
                 if (!defs.termination_date.empty())
-                    item.trade.lifecycle.termination_date = defs.termination_date;
+                    item.trade.lifecycle.termination_date =
+                        ores::platform::time::datetime::from_iso8601_date(defs.termination_date);
                 if (!defs.activity_type_code.empty())
                     item.trade.classification.activity_type_code = defs.activity_type_code;
                 if (defs.default_counterparty_id)

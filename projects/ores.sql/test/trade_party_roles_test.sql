@@ -64,7 +64,7 @@ insert into ores_refdata_portfolios_tbl (
 );
 
 insert into ores_trading_trades_tbl (
-    id, tenant_id, version,
+    id, tenant_id, version, external_id,
     book_id, portfolio_id,
     trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
@@ -72,6 +72,7 @@ insert into ores_trading_trades_tbl (
 ) select
     'e1000000-0000-0000-0000-000000000001'::uuid,
     ores_utility_system_tenant_id_fn(), 0,
+    'TRD-ROLES-0001',
     'e0000000-0000-0000-0000-000000000001'::uuid,
     'e0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-ROLES-001', 'new_booking', s.id,

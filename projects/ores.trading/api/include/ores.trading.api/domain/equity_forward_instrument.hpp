@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -48,6 +50,10 @@ struct equity_forward_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -59,12 +65,12 @@ struct equity_forward_instrument final {
     /**
      * @brief Fixed delivery price; absent for at-market forwards.
      */
-    std::optional<double> forward_price;
+    std::optional<ores::utility::decimal::decimal> forward_price;
 
     /**
      * @brief ISO 8601 date string.
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Long or Short.
@@ -73,6 +79,9 @@ struct equity_forward_instrument final {
 
     /**
      * @brief Cash or Physical; empty when not specified.
+     *
+     * Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType
+     * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
 

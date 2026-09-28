@@ -44,7 +44,7 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     "start_date" date not null,
     "maturity_date" date not null,
     "long_short" text not null,
-    "payment_frequency" text not null,
+    "payment_frequency_code" text not null,
     "description" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -64,7 +64,8 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     check (("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null)),
     check ("notional" > 0),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap'))
+    check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap')),
+    check ("return_type" in ('Total', 'Price'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -111,11 +112,8 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
-
-    -- Validate payment_frequency
-    NEW.payment_frequency := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency);
+    -- Validate payment_frequency_code
+    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

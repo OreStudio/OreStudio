@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
@@ -48,13 +49,13 @@ equity_accumulator_instrument make_instrument(database_helper& h) {
     r.identity.trade_type_code = "EquityAccumulator";
     r.underlying_name = ".STOXX50";
     r.currency = "EUR";
-    r.strike = 4000.0;
-    r.fixing_amount = 30.0;
-    r.start_date = "2025-02-05";
-    r.expiry_date = "2026-02-05";
+    r.strike = ores::utility::decimal::decimal::from_string("4000").value();
+    r.fixing_amount = ores::utility::decimal::decimal::from_string("30").value();
+    r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-02-05");
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2026-02-05");
     r.fixing_frequency = "Monthly";
     r.long_short = "Long";
-    r.knock_out_level = 3500.0;
+    r.knock_out_level = ores::utility::decimal::decimal::from_string("3500").value();
     r.target_type = "";
     r.payoff_type = "Decumulator";
     r.audit.modified_by = h.db_user();
@@ -85,13 +86,13 @@ TEST_CASE("equity_accumulator_instrument_write_and_read_latest", tags) {
     CHECK(read[0].identity.trade_type_code == "EquityAccumulator");
     CHECK(read[0].underlying_name == ".STOXX50");
     CHECK(read[0].currency == "EUR");
-    CHECK(read[0].strike == 4000.0);
-    CHECK(read[0].fixing_amount == 30.0);
-    CHECK(read[0].start_date == "2025-02-05");
-    CHECK(read[0].expiry_date == "2026-02-05");
+    CHECK(read[0].strike.to_double() == 4000.0);
+    CHECK(read[0].fixing_amount.to_double() == 30.0);
+    CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-02-05"));
+    CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-02-05"));
     CHECK(read[0].fixing_frequency == "Monthly");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].knock_out_level == 3500.0);
+    CHECK(read[0].knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double() == 3500.0);
     CHECK(read[0].payoff_type == "Decumulator");
     BOOST_LOG_SEV(lg, debug) << "Read equity accumulator instrument: " << read[0];
 }

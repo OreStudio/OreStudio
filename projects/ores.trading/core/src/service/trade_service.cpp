@@ -98,10 +98,18 @@ domain::trade to_domain(const messaging::trade_write& write) {
     v.classification.netting_set_id = write.netting_set_id;
     v.classification.activity_type_code = write.activity_type_code;
     v.classification.status_id = write.status_id;
-    v.lifecycle.trade_date = write.trade_date;
-    v.lifecycle.execution_timestamp = write.execution_timestamp;
-    v.lifecycle.effective_date = write.effective_date;
-    v.lifecycle.termination_date = write.termination_date;
+    if (!write.trade_date.empty())
+        v.lifecycle.trade_date =
+            ores::platform::time::datetime::from_iso8601_date(write.trade_date);
+    if (!write.execution_timestamp.empty())
+        v.lifecycle.execution_timestamp =
+            ores::platform::time::datetime::from_iso8601_utc(write.execution_timestamp);
+    if (!write.effective_date.empty())
+        v.lifecycle.effective_date =
+            ores::platform::time::datetime::from_iso8601_date(write.effective_date);
+    if (!write.termination_date.empty())
+        v.lifecycle.termination_date =
+            ores::platform::time::datetime::from_iso8601_date(write.termination_date);
     return v;
 }
 

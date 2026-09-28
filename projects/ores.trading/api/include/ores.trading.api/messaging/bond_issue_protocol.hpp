@@ -44,11 +44,11 @@ struct bond_issue_write {
     std::string security_id;
     std::string issuer;
     std::string currency;
-    double face_value;
+    std::optional<ores::utility::decimal::decimal> face_value;
     double coupon_rate;
     std::string coupon_frequency_code;
-    std::string day_count_code;
-    std::string issue_date;
+    std::string day_count_fraction_code;
+    std::optional<std::chrono::year_month_day> issue_date;
     int settlement_days;
     std::optional<std::string> calendar;
     std::optional<std::string> credit_curve_id;
@@ -165,7 +165,7 @@ struct put_bond_issue_request {
 
 struct put_bond_issue_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue bond_issue;
+    std::optional<ores::trading::domain::bond_issue> bond_issue;
 };
 
 struct put_many_bond_issues_request {
@@ -261,7 +261,7 @@ struct get_bond_issue_version_request {
 
 struct get_bond_issue_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue version;
+    std::optional<ores::trading::domain::bond_issue> version;
 };
 
 /**

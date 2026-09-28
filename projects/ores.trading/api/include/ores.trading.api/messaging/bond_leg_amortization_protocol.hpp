@@ -48,7 +48,7 @@ struct bond_leg_amortization_write {
     int leg_number;
     int sequence_number;
     std::string amortization_type;
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
     std::optional<std::string> start_date;
     std::optional<std::string> end_date;
     std::optional<std::string> frequency;
@@ -163,7 +163,7 @@ struct put_bond_leg_amortization_request {
 
 struct put_bond_leg_amortization_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_leg_amortization bond_leg_amortization;
+    std::optional<ores::trading::domain::bond_leg_amortization> bond_leg_amortization;
 };
 
 struct put_many_bond_leg_amortizations_request {
@@ -262,7 +262,7 @@ struct get_bond_leg_amortization_version_request {
 
 struct get_bond_leg_amortization_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_leg_amortization version;
+    std::optional<ores::trading::domain::bond_leg_amortization> version;
 };
 
 /**

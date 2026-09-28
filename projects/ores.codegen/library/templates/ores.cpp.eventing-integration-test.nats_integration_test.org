@@ -413,7 +413,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{/parent_seed_currency}}
     ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{column}}_repo;
     {{column}}_repo.write(party_ctx, {{column}}_parent);
-    v.{{{group_prefix}}}{{column}} = {{column}}_parent.{{target_column}};
+    v.{{{group_prefix}}}{{column}} = {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}{{target_column}};
 {{/use_system_tenant}}
 {{/parent_entity_singular}}
 {{#parent_seed_snippet}}

@@ -33,6 +33,26 @@ namespace ores::ore::domain {
 
 using namespace ores::logging;
 
+namespace {
+
+// A total return swap states its product as an underlying sub-trade rather
+// than as a top-level trade. Only an equity position selects the equity
+// family here; every other sub-trade stays with the composite mapper.
+std::string underlying_sub_trade_type(const trade& v) {
+    if (!v.TotalReturnSwapData)
+        return {};
+    const auto& ud = v.TotalReturnSwapData->UnderlyingData;
+    for (const auto& group : ud.subTradeGroup)
+        if (group.SubTrade)
+            return to_string(group.SubTrade->SubTradeType);
+    for (const auto& derivative : ud.Derivative)
+        if (derivative.subTradeGroup.SubTrade)
+            return to_string(derivative.subTradeGroup.SubTrade->SubTradeType);
+    return {};
+}
+
+} // namespace
+
 trading::domain::trade trade_mapper::map(const trade& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML trade: " << std::string(v.id);
 
@@ -175,60 +195,84 @@ trade_mapper::map_credit_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<trading::domain::equity_instrument_variant>
+std::optional<trading::domain::equity_instrument_data>
 trade_mapper::map_equity_instrument(const trade& v) {
+    using trading::domain::equity_instrument_data;
     const std::string type = to_string(v.TradeType);
+    const auto wrap = [](trading::domain::equity_instrument_variant instr) {
+        return equity_instrument_data{std::move(instr), {}};
+    };
+
+    if (type == "EquityPosition")
+        return equity_instrument_mapper::forward_equity_position(v);
+    if (type == "EquityOptionPosition")
+        return equity_instrument_mapper::forward_equity_option_position(v);
+    if (type == "TotalReturnSwap") {
+        const auto sub_type = underlying_sub_trade_type(v);
+        if (sub_type == "EquityPosition")
+            return equity_instrument_mapper::forward_equity_position(v);
+        if (sub_type == "EquityOptionPosition")
+            return equity_instrument_mapper::forward_equity_option_position(v);
+        return std::nullopt;
+    }
     if (type == "EquityOption")
-        return equity_instrument_mapper::forward_equity_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_option(v));
     if (type == "EquityForward")
-        return equity_instrument_mapper::forward_equity_forward(v);
+        return wrap(equity_instrument_mapper::forward_equity_forward(v));
     if (type == "EquitySwap")
-        return equity_instrument_mapper::forward_equity_swap(v);
+        return wrap(equity_instrument_mapper::forward_equity_swap(v));
     if (type == "EquityVarianceSwap")
-        return equity_instrument_mapper::forward_equity_variance_swap(v);
+        return wrap(equity_instrument_mapper::forward_equity_variance_swap(v));
     if (type == "EquityBarrierOption")
-        return equity_instrument_mapper::forward_equity_barrier_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_barrier_option(v));
     if (type == "EquityAsianOption")
-        return equity_instrument_mapper::forward_equity_asian_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_asian_option(v));
     if (type == "EquityDigitalOption")
-        return equity_instrument_mapper::forward_equity_digital_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_digital_option(v));
     if (type == "EquityTouchOption")
-        return equity_instrument_mapper::forward_equity_touch_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_touch_option(v));
     if (type == "EquityOutperformanceOption")
-        return equity_instrument_mapper::forward_equity_outperformance_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_outperformance_option(v));
     if (type == "EquityAccumulator")
-        return equity_instrument_mapper::forward_equity_accumulator(v);
+        return wrap(equity_instrument_mapper::forward_equity_accumulator(v));
     if (type == "EquityTaRF")
-        return equity_instrument_mapper::forward_equity_tarf(v);
+        return wrap(equity_instrument_mapper::forward_equity_tarf(v));
     if (type == "EquityCliquetOption")
-        return equity_instrument_mapper::forward_equity_cliquet_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_cliquet_option(v));
     if (type == "EquityWorstOfBasketSwap")
-        return equity_instrument_mapper::forward_equity_worst_of_basket_swap(v);
+        return wrap(equity_instrument_mapper::forward_equity_worst_of_basket_swap(v));
     if (type == "EquityDoubleBarrierOption")
-        return equity_instrument_mapper::forward_equity_double_barrier_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_double_barrier_option(v));
     if (type == "EquityEuropeanBarrierOption")
-        return equity_instrument_mapper::forward_equity_european_barrier_option(v);
+        return wrap(equity_instrument_mapper::forward_equity_european_barrier_option(v));
     return std::nullopt;
 }
 
-std::optional<trading::domain::commodity_instrument>
+std::optional<trading::domain::commodity_instrument_data>
 trade_mapper::map_commodity_instrument(const trade& v) {
+    using trading::domain::commodity_instrument_data;
     const std::string type = to_string(v.TradeType);
+    if (type == "CommodityBasketOption")
+        return commodity_instrument_mapper::forward_commodity_basket_option(v);
+
+    std::optional<trading::domain::commodity_instrument> instr;
     if (type == "CommodityForward")
-        return commodity_instrument_mapper::forward_commodity_forward(v);
-    if (type == "CommodityOption")
-        return commodity_instrument_mapper::forward_commodity_option(v);
-    if (type == "CommoditySwap")
-        return commodity_instrument_mapper::forward_commodity_swap(v);
-    if (type == "CommoditySwaption")
-        return commodity_instrument_mapper::forward_commodity_swaption(v);
-    if (type == "CommodityVarianceSwap")
-        return commodity_instrument_mapper::forward_commodity_variance_swap(v);
-    if (type == "CommodityAveragePriceOption")
-        return commodity_instrument_mapper::forward_commodity_apo(v);
-    if (type == "CommodityOptionStrip")
-        return commodity_instrument_mapper::forward_commodity_option_strip(v);
-    return std::nullopt;
+        instr = commodity_instrument_mapper::forward_commodity_forward(v);
+    else if (type == "CommodityOption")
+        instr = commodity_instrument_mapper::forward_commodity_option(v);
+    else if (type == "CommoditySwap")
+        instr = commodity_instrument_mapper::forward_commodity_swap(v);
+    else if (type == "CommoditySwaption")
+        instr = commodity_instrument_mapper::forward_commodity_swaption(v);
+    else if (type == "CommodityVarianceSwap")
+        instr = commodity_instrument_mapper::forward_commodity_variance_swap(v);
+    else if (type == "CommodityAveragePriceOption")
+        instr = commodity_instrument_mapper::forward_commodity_apo(v);
+    else if (type == "CommodityOptionStrip")
+        instr = commodity_instrument_mapper::forward_commodity_option_strip(v);
+    else
+        return std::nullopt;
+    return commodity_instrument_data{std::move(*instr), {}};
 }
 
 std::optional<trading::domain::scripted_instrument>

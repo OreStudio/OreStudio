@@ -68,6 +68,18 @@ struct {{entity_singular}}_entity {
 {{#is_required_timestamp}}
     std::string {{name}};
 {{/is_required_timestamp}}
+{{#is_optional_date}}
+    std::optional<std::string> {{name}};
+{{/is_optional_date}}
+{{#is_required_date}}
+    std::string {{name}};
+{{/is_required_date}}
+{{#is_optional_decimal}}
+    std::optional<std::string> {{name}};
+{{/is_optional_decimal}}
+{{#is_required_decimal}}
+    std::string {{name}};
+{{/is_required_decimal}}
 {{#is_required_inet}}
     std::string {{name}};
 {{/is_required_inet}}

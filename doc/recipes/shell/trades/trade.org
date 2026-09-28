@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6C5A66CC-E129-5ED2-B4E2-87399C7EE885
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the trades commands from the shell?
+#+description: Every command the trades submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trades:
+
+This file documents the trades resource at the shell, one section per command. Every command is a subcommand of =trades=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F99D8EAE-E6AE-5C6B-8FD3-13EFF1F56A29
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trades.list=.
+
+#+name: trades-list
+#+begin_src ores-shell :tangle trades-list.ores :exports none
+trades list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E5425D95-1AEB-5C79-B577-7A08344A46F2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades get <external_id>
+#+end_example
+
+It is addressed at =trading.v1.trades.get=.
+
+#+name: trades-get
+#+begin_src ores-shell :tangle trades-get.ores :exports none
+trades get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F1CEC666-86EC-5212-A321-CE48547275DF
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades get-many <external_id>
+#+end_example
+
+It is addressed at =trading.v1.trades.get_many=.
+
+#+name: trades-get-many
+#+begin_src ores-shell :tangle trades-get-many.ores :exports none
+trades get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 89347082-C901-51B8-822C-1BD88DFDBCC4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades add <external_id> <book_id> <portfolio_id> <successor_trade_id> <trade_type> <counterparty_id> <product_type> <instrument_id> <asset_class> <netting_set_id> <activity_type_code> <status_id> <trade_date> <execution_timestamp> <effective_date> <termination_date> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trades.put=.
+
+#+name: trades-add
+#+begin_src ores-shell :tangle trades-add.ores :exports none
+trades add __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ - __none__ - - __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A73790D8-762A-56D5-BC8D-C973DE61B78F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades set <id> <external_id> <book_id> <portfolio_id> <successor_trade_id> <trade_type> <counterparty_id> <product_type> <instrument_id> <asset_class> <netting_set_id> <activity_type_code> <status_id> <trade_date> <execution_timestamp> <effective_date> <termination_date> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trades.put=.
+
+#+name: trades-set
+#+begin_src ores-shell :tangle trades-set.ores :exports none
+trades set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ - __none__ - - __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D929CF6B-0B5F-53F4-95FE-53ED2DD889BD
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades put-many --count <n> <id> <external_id> <book_id> <portfolio_id> <successor_trade_id> <trade_type> <counterparty_id> <product_type> <instrument_id> <asset_class> <netting_set_id> <activity_type_code> <status_id> <trade_date> <execution_timestamp> <effective_date> <termination_date> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trades.put_many=.
+
+#+name: trades-put-many
+#+begin_src ores-shell :tangle trades-put-many.ores :exports none
+trades put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ - __none__ - - __none__ __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4D3013FC-F4DA-5504-820D-37DC6B4CFC69
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades delete <external_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trades.delete=.
+
+#+name: trades-delete
+#+begin_src ores-shell :tangle trades-delete.ores :exports none
+trades delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 676DB0C9-02E4-5FAB-8143-2C119E065FFD
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades delete-many <external_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trades.delete_many=.
+
+#+name: trades-delete-many
+#+begin_src ores-shell :tangle trades-delete-many.ores :exports none
+trades delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C7ADA0BA-CA9B-5586-8B1F-8D846BD17C6B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades versions <external_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trades_versions.list=.
+
+#+name: trades-versions
+#+begin_src ores-shell :tangle trades-versions.ores :exports none
+trades versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E0FB75C8-35A0-5657-8656-274029A7664A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trades version <external_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.trades_versions.get=.
+
+#+name: trades-version
+#+begin_src ores-shell :tangle trades-version.ores :exports none
+trades version __none__ --version 1
+#+end_src
+

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/fx_accumulator_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -49,11 +50,11 @@ generate_synthetic_fx_accumulator_instrument(utility::generation::generation_con
     r.identity.trade_type_code = std::string("FxAccumulator");
     r.identity.party_id = ctx.generate_uuid();
     r.currency = std::string("USD");
-    r.fixing_amount = 100000.0;
+    r.fixing_amount = ores::utility::decimal::decimal::from_string("100000").value();
     r.strike = 1.10;
     r.underlying_code = std::string("TR20H-EUR-JPY");
     r.long_short = std::string("Long");
-    r.start_date = std::string("2024-06-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

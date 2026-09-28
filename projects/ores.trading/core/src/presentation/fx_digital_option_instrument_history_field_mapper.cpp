@@ -44,9 +44,10 @@ render_fx_digital_option_instrument_fields(const domain::fx_digital_option_instr
     fields.push_back({.name = "Foreign Currency", .value = v.foreign_currency});
     fields.push_back({.name = "Domestic Currency", .value = v.domestic_currency});
     fields.push_back({.name = "Payoff Currency", .value = v.payoff_currency});
-    fields.push_back({.name = "Payoff Amount", .value = std::to_string(v.payoff_amount)});
+    fields.push_back({.name = "Payoff Amount", .value = v.payoff_amount.to_string()});
     fields.push_back({.name = "Option Type", .value = v.option_type});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back(
         {.name = "Strike", .value = v.strike ? std::to_string(*v.strike) : std::string{}});

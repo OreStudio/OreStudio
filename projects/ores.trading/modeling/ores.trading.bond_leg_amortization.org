@@ -81,6 +81,8 @@ Ordinal of this step within the leg's amortization list.
 
 How the step amortizes, as the document spells it.
 
+Soft FK to ores_trading_amortization_types_tbl: the values are the closed ORE amortizationType set. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("FixedAmount")
 #+end_src
@@ -88,7 +90,7 @@ std::string("FixedAmount")
 ** value
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -144,13 +146,14 @@ True when the step allows the notional to fall below zero.
 | "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
 | "leg_number" > 0                                            |
 | "sequence_number" > 0                                       |
+| "amortization_type" in ('FixedAmount', 'RelativeToInitialNotional', 'RelativeToPreviousNotional', 'Annuity', 'LinearToMaturity') |
 
 * C++
 
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -167,6 +170,7 @@ True when the step allows the notional to fall below zero.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

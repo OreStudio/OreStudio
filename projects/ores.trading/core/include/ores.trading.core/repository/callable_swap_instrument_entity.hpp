@@ -51,8 +51,6 @@ struct callable_swap_instrument_entity {
     std::optional<std::string> trade_id;
     std::string start_date;
     std::string maturity_date;
-    std::optional<std::string> call_dates_json;
-    std::optional<std::string> call_type;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

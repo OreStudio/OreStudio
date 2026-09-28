@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -47,17 +48,21 @@ struct fra_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief FRA end date.
      *
      * Must be after start_date.
      */
-    std::string end_date;
+    std::chrono::year_month_day end_date;
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      *
      * e.g., USD, EUR, GBP.
      */
@@ -72,6 +77,10 @@ struct fra_instrument final {
 
     /**
      * @brief Position direction: Long or Short.
+     *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
      *
      * Indicates whether the party is a buyer (Long) or seller (Short).
      */
@@ -89,7 +98,7 @@ struct fra_instrument final {
      *
      * Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Optional free-text description.

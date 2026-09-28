@@ -26,6 +26,7 @@ at creation time.
 * Includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #+end_src
@@ -34,28 +35,28 @@ at creation time.
 
 ** trade_date
 :PROPERTIES:
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :END:
 
 Date on which the trade was agreed (ISO-8601 date string).
 
 ** effective_date
 :PROPERTIES:
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :END:
 
 Date from which the trade becomes effective (ISO-8601 date string).
 
 ** termination_date
 :PROPERTIES:
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :END:
 
 Scheduled end date of the trade (ISO-8601 date string).
 
 ** execution_timestamp
 :PROPERTIES:
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
 
 Exact moment the trade was executed (ISO-8601 timestamp string).

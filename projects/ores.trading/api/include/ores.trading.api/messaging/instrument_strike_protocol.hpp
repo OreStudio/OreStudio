@@ -41,11 +41,11 @@ struct instrument_strike_key {
 
 struct instrument_strike_write {
     boost::uuids::uuid instrument_id;
-    std::optional<double> price_value;
+    std::optional<ores::utility::decimal::decimal> price_value;
     std::optional<std::string> price_currency;
     std::optional<double> yield_value;
     std::optional<std::string> yield_compounding;
-    std::optional<double> bare_value;
+    std::optional<ores::utility::decimal::decimal> bare_value;
     std::optional<std::string> bare_currency;
 };
 
@@ -157,7 +157,7 @@ struct put_instrument_strike_request {
 
 struct put_instrument_strike_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_strike instrument_strike;
+    std::optional<ores::trading::domain::instrument_strike> instrument_strike;
 };
 
 struct put_many_instrument_strikes_request {
@@ -253,7 +253,7 @@ struct get_instrument_strike_version_request {
 
 struct get_instrument_strike_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_strike version;
+    std::optional<ores::trading::domain::instrument_strike> version;
 };
 
 /**

@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -64,20 +66,27 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Fixed payoff amount. Must be positive.
      */
-    double payoff_amount = 0.0;
+    ores::utility::decimal::decimal payoff_amount;
 
     /**
      * @brief Option type: Call or Put. Empty for touch options.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
     /**
      * @brief Option expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Position direction: Long or Short.
+     *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string long_short;
 
@@ -89,6 +98,9 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent for plain digital
      * options.
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
 

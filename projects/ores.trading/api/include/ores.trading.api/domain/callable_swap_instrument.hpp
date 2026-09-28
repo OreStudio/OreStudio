@@ -38,6 +38,19 @@ namespace ores::trading::domain {
  *
  * Represents a callable interest rate swap where one party has the right
  * to terminate the swap early on specified call dates.
+ *
+ * The call dates are not a column: each is a row of
+ * ores.trading.callable_swap_call_date, keyed to this instrument and its
+ * ordinal in the schedule. A text column held the list as a JSON array and
+ * could not be typed, indexed or questioned, so the collection is a child
+ * table.
+ *
+ * call_type was deleted. ORE's only CallType element is on
+ * nettingSetDetails (external/ore/xsd/instruments.xsd, line 225), a
+ * netting-agreement field, and no <CallType> element appears under
+ * external/ore/examples/. Nothing produced the trading column: the only
+ * writer was the import handler copying a domain member no producer ever
+ * set.
  */
 struct callable_swap_instrument final {
     instrument_identity identity;
@@ -47,28 +60,14 @@ struct callable_swap_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Swap maturity date.
      *
      * Must be after start_date.
      */
-    std::string maturity_date;
-
-    /**
-     * @brief Optional JSON array of call dates.
-     *
-     * ISO 8601 date strings when the party may exercise the call option.
-     */
-    std::string call_dates_json;
-
-    /**
-     * @brief Optional call type: Bermudan or One-Time.
-     *
-     * Bermudan allows multiple call dates; One-Time allows exactly one.
-     */
-    std::string call_type;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Optional free-text description.

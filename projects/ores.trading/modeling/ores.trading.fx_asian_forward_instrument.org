@@ -118,14 +118,14 @@ std::string("EUR")
 ** reference_notional
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Notional in reference_currency (FxAverageForward).
 
 #+begin_src cpp :name generator
-8614.0
+ores::utility::decimal::decimal::from_string("8614").value()
 #+end_src
 
 ** settlement_currency
@@ -144,27 +144,27 @@ std::string("USD")
 ** settlement_notional
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Notional in settlement_currency (FxAverageForward).
 
 #+begin_src cpp :name generator
-10000.0
+ores::utility::decimal::decimal::from_string("10000").value()
 #+end_src
 
 ** payment_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Settlement payment date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2025-09-30")
+std::chrono::year_month_day{std::chrono::year{2025}/9/30}
 #+end_src
 
 ** long_short
@@ -189,10 +189,12 @@ std::string("Long")
 
 Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 ** fixing_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -202,7 +204,7 @@ FxAverageForward.
 ** target_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -246,15 +248,6 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -290,8 +283,10 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

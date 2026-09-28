@@ -45,7 +45,7 @@ UUID of the instrument whose document stated this strike.
 ** price_value
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -81,7 +81,7 @@ Compounding the yield strike is stated under.
 ** bare_value
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -109,7 +109,7 @@ Currency the bare strike is stated in.
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -126,6 +126,7 @@ Currency the bare strike is stated in.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

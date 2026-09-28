@@ -36,8 +36,14 @@ render_instrument_schedule_fields(const domain::instrument_schedule& v) {
 
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
     fields.push_back({.name = "Schedule Kind", .value = v.schedule_kind});
-    fields.push_back({.name = "Start Date", .value = v.start_date.value_or(std::string{})});
-    fields.push_back({.name = "End Date", .value = v.end_date.value_or(std::string{})});
+    fields.push_back({.name = "Start Date",
+                      .value = v.start_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.start_date) :
+                                   std::string{}});
+    fields.push_back({.name = "End Date",
+                      .value = v.end_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.end_date) :
+                                   std::string{}});
     fields.push_back({.name = "Adjust End Date To Previous Month End",
                       .value = v.adjust_end_date_to_previous_month_end.value_or(std::string{})});
     fields.push_back({.name = "Tenor", .value = v.tenor.value_or(std::string{})});
@@ -49,8 +55,14 @@ render_instrument_schedule_fields(const domain::instrument_schedule& v) {
     fields.push_back({.name = "End Of Month", .value = v.end_of_month.value_or(std::string{})});
     fields.push_back({.name = "End Of Month Convention",
                       .value = v.end_of_month_convention.value_or(std::string{})});
-    fields.push_back({.name = "First Date", .value = v.first_date.value_or(std::string{})});
-    fields.push_back({.name = "Last Date", .value = v.last_date.value_or(std::string{})});
+    fields.push_back({.name = "First Date",
+                      .value = v.first_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.first_date) :
+                                   std::string{}});
+    fields.push_back({.name = "Last Date",
+                      .value = v.last_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.last_date) :
+                                   std::string{}});
     fields.push_back(
         {.name = "Remove First Date",
          .value = v.remove_first_date ? (*v.remove_first_date ? "true" : "false") : std::string{}});

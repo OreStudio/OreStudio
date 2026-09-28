@@ -61,6 +61,9 @@ rides the fact tables.
 
 Call or Put.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -68,15 +71,14 @@ std::string("Call")
 ** option_strike
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Strike price of the option. Non-negative.
 
 #+begin_src cpp :name generator
-2800.0
+ores::utility::decimal::decimal::from_string("2800").value()
 #+end_src
 
 ** redemption
@@ -96,6 +98,8 @@ The redemption code the document states.
 :END:
 
 The price type the document states.
+
+Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
 
 ** knocks_out
 :PROPERTIES:
@@ -125,13 +129,14 @@ would lose the spelling on every document that carries one.
 |---|
 | "option_type" in ('Call', 'Put') |
 | "option_strike" >= 0 |
+| "price_type" is null or "price_type" in ('Clean', 'Dirty') |
 
 * C++
 
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name: generator
+:generator_facet_name: generators
 :END:
 
 ** Repository
@@ -148,6 +153,7 @@ would lose the spelling on every document that carries one.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

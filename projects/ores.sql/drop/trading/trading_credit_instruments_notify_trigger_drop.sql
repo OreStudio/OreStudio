@@ -18,5 +18,5 @@
  *
  */
 
-drop trigger if exists ores_trading_credit_instruments_notify_trg on ores_trading_credit_instruments_tbl;
+drop trigger if exists ores_trading_credit_instruments_notify_trg on "ores_trading_credit_instruments_tbl";
 drop function if exists ores_trading_credit_instruments_notify_fn;

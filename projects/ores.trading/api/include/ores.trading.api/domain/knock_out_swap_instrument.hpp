@@ -47,14 +47,14 @@ struct knock_out_swap_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Swap maturity date.
      *
      * Must be after start_date.
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Barrier level that triggers knock-out.
@@ -67,15 +67,11 @@ struct knock_out_swap_instrument final {
      * @brief Barrier type: UpAndOut or DownAndOut.
      *
      * UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls below.
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
-
-    /**
-     * @brief Optional JSON array of knock-out observation dates.
-     *
-     * ISO 8601 date strings for discrete barrier observation.
-     */
-    std::string knock_out_dates_json;
 
     /**
      * @brief Optional free-text description.

@@ -48,12 +48,15 @@ struct swaption_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Exercise type: European, Bermudan, or American.
      *
      * Determines when the option may be exercised.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_type;
 
@@ -61,11 +64,18 @@ struct swaption_instrument final {
      * @brief Settlement type: Cash or Physical.
      *
      * Determines how the swaption is settled upon exercise.
+     *
+     * Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType
+     * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
 
     /**
      * @brief Position direction: Long or Short.
+     *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
      *
      * Indicates whether the party holds or writes the option.
      */
@@ -76,14 +86,14 @@ struct swaption_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
      */
-    std::string start_date;
+    std::optional<std::chrono::year_month_day> start_date;
 
     /**
      * @brief Optional underlying swap maturity date.
      *
      * ISO 8601 date string (YYYY-MM-DD). Null if not yet determined.
      */
-    std::string maturity_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
 
     /**
      * @brief Optional free-text description.

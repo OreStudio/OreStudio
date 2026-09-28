@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -50,7 +52,7 @@ struct fx_forward_instrument final {
     /**
      * @brief Amount bought in bought_currency. Must be positive.
      */
-    double bought_amount = 0.0;
+    ores::utility::decimal::decimal bought_amount;
 
     /**
      * @brief ISO 4217 currency code of the sold leg (e.g. USD).
@@ -60,14 +62,14 @@ struct fx_forward_instrument final {
     /**
      * @brief Amount sold in sold_currency. Must be positive.
      */
-    double sold_amount = 0.0;
+    ores::utility::decimal::decimal sold_amount;
 
     /**
      * @brief Settlement / value date (ISO 8601 date string).
      *
      * For FxSwap this is the near leg date only.
      */
-    std::string value_date;
+    std::chrono::year_month_day value_date;
 
     /**
      * @brief Optional settlement method (e.g. Cash, Physical).

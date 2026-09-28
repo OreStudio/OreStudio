@@ -46,7 +46,7 @@ struct bond_option_entity {
     std::string tenant_id;
     int version = 0;
     std::string option_type;
-    double option_strike = 0.0;
+    std::string option_strike;
     std::optional<std::string> redemption;
     std::optional<std::string> price_type;
     std::optional<std::string> knocks_out;

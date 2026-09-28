@@ -22,6 +22,22 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][ores.trading.trade_id_type]] | Trade identifier type code (e.g. UTI, USI, Internal). |
 | [[id:D18832B9-0D51-4617-A789-AB33E14AA41A][ores.trading.party_role_type]] | FpML-aligned party role code (e.g. Counterparty, CalculationAgent, ExecutingBroker). |
 | [[id:06F0B798-F261-4BBC-974E-52A41C4AA1F0][ores.trading.lifecycle_event]] | Trade lifecycle event type (e.g. New, Amendment, Novation, PartialTermination). |
+| [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][ores.trading.activity_type]] | Internal trade activity classification (e.g. new_booking, amendment, novation). |
+| [[id:F0F5580D-B2BD-48BE-9ADA-1F21A311326C][ores.trading.fpml_event_type]] | Standard FpML lc_EventType_Type coding scheme (New, Amendment, Novation, PartialTermination, FullTermination). |
+| [[id:BAC3E39A-8EE6-4114-A69D-E83487939887][ores.trading.long_short_type]] | Position direction code (Long or Short). |
+| [[id:1C68526F-83B7-4371-B17C-FE0621618FA7][ores.trading.payoff_type]] | Option payoff type from the ORE optionData PayoffType. |
+| [[id:A09F91EA-DF8C-41EE-853E-3F62274B3ED9][ores.trading.return_type]] | Equity leg return type (Total or Price). |
+| [[id:8818F9D5-C62F-40A4-9053-755C2674039B][ores.trading.option_type]] | Option exercise right (Call or Put). |
+| [[id:025B0A54-9622-4966-9B1D-C5CD074DD31C][ores.trading.exercise_type]] | Exercise style (European, Bermudan or American). |
+| [[id:AAB9DE66-3641-4EDE-980F-621D83DACB6D][ores.trading.settlement_type]] | Option settlement form (Cash or Physical). |
+| [[id:C27D2069-274B-476B-8D83-0195A5180E80][ores.trading.barrier_type]] | Barrier style (UpAndIn, DownAndOut, KnockIn, ...). |
+| [[id:A2D4CD46-E8E0-450B-A3AE-8FBF83C5113B][ores.trading.activity_category]] | High-level grouping of an internal trade activity type. |
+| [[id:8EF6EE2A-FC4D-48FC-A684-8B8610BA21BD][ores.trading.moment_type]] | Variance or volatility swap moment code. |
+| [[id:91A363AF-2603-47A0-9F56-2EDF6C961ABF][ores.trading.price_type]] | Bond price quotation type (Clean or Dirty). |
+| [[id:7AF13836-60A8-4072-B2F6-A6A06D0FBB36][ores.trading.amortization_type]] | Notional amortization schedule kind. |
+| [[id:EADFEF66-F4AE-4271-B92E-25145818C1CF][ores.trading.average_type]] | Averaging method for an Asian-style option (Arithmetic or Geometric). |
+| [[id:0143968F-0BAF-44A0-A38B-C32146BD46F6][ores.trading.credit_instrument]] | Credit instrument economics for CreditDefaultSwap, CDSIndex, SyntheticCDO and their variants. |
+| [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] | Scripted instrument economics for the AMC script-based product types. |
 | [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] | Vanilla interest rate swap or cross-currency swap instrument. |
 | [[id:A7A25644-CBF0-4E4A-A768-4636CCF91E05][ores.trading.callable_swap_instrument]] | Callable interest rate swap instrument. |
 | [[id:7297F657-B695-46B5-BBCA-89A9DA3D1191][ores.trading.inflation_swap_instrument]] | Inflation-linked interest rate swap instrument. |

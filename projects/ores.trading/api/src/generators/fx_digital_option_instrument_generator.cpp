@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/fx_digital_option_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -51,9 +52,9 @@ generate_synthetic_fx_digital_option_instrument(utility::generation::generation_
     r.foreign_currency = std::string("EUR");
     r.domestic_currency = std::string("USD");
     r.payoff_currency = std::string("EUR");
-    r.payoff_amount = 100.0;
+    r.payoff_amount = ores::utility::decimal::decimal::from_string("100").value();
     r.option_type = std::string("Call");
-    r.expiry_date = std::string("2033-02-20");
+    r.expiry_date = std::chrono::year_month_day{std::chrono::year{2033} / 2 / 20};
     r.long_short = std::string("Long");
     r.strike = 1.1;
     r.audit.modified_by = modified_by;

@@ -17,14 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/composite_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/composite_leg_entity.hpp"
 #include "ores.trading.core/repository/composite_leg_mapper.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
@@ -38,24 +42,96 @@ std::string composite_leg_repository::sql() {
     return generate_create_table_sql<composite_leg_entity>(lg());
 }
 
+ores::utility::domain::precondition
+composite_leg_repository::replace_claim(context ctx, const domain::composite_leg& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().identity.version)};
+}
+
+domain::composite_leg composite_leg_repository::apply_claim(
+    context ctx, const domain::composite_leg& v, const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.identity.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+            t.identity.version = current.empty() ? 0 : current.front().identity.version;
+            break;
+        }
+    }
+    return t;
+}
+
 void composite_leg_repository::write(context ctx, const domain::composite_leg& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing composite leg: " << v.identity.id;
-    execute_write_query(
-        ctx, composite_leg_mapper::map(v), lg(), "Writing composite leg to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void composite_leg_repository::write(context ctx, const std::vector<domain::composite_leg>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing composite legs. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void composite_leg_repository::write(context ctx,
+                                     const domain::composite_leg& v,
+                                     const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing composite leg. " << "id: " << v.identity.id;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
-        ctx, composite_leg_mapper::map(v), lg(), "Writing composite legs to database.");
+        ctx, composite_leg_mapper::map(t), lg(), "Writing composite leg to database.");
+}
+
+void composite_leg_repository::write(
+    context ctx,
+    const std::vector<domain::composite_leg>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing composite legs. Count: " << v.size();
+    std::vector<domain::composite_leg> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(
+        ctx, composite_leg_mapper::map(batch), lg(), "Writing composite legs to database.");
 }
 
 std::vector<domain::composite_leg> composite_leg_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_sequence"_c);
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("id"_c);
+        return execute_read_query<composite_leg_entity, domain::composite_leg>(
+            ctx,
+            query,
+            [](const auto& entities) { return composite_leg_mapper::map(entities); },
+            lg(),
+            "Reading latest composite legs (workspace resolution chain).");
+    }
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<composite_leg_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
@@ -65,31 +141,33 @@ std::vector<domain::composite_leg> composite_leg_repository::read_latest(context
         "Reading latest composite legs");
 }
 
-std::vector<domain::composite_leg>
-composite_leg_repository::read_by_instrument(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading composite legs by instrument. instrument_id: "
-                               << instrument_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::composite_leg> composite_leg_repository::read_latest(context ctx,
+                                                                         const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest composite leg. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value()) |
-                       order_by("leg_sequence"_c);
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
         query,
         [](const auto& entities) { return composite_leg_mapper::map(entities); },
         lg(),
-        "Reading composite legs by instrument.");
+        "Reading latest composite leg by id.");
 }
+
 
 std::vector<domain::composite_leg> composite_leg_repository::read_all(context ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all composite leg versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all composite leg versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
@@ -99,18 +177,143 @@ std::vector<domain::composite_leg> composite_leg_repository::read_all(context ct
         "Reading all composite leg versions by id.");
 }
 
-std::uint32_t composite_leg_repository::count_latest(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting latest composite legs";
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::optional<domain::composite_leg> composite_leg_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading composite leg at version. " << "id: " << id
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<composite_leg_entity, domain::composite_leg>(
+        ctx,
+        query,
+        [](const auto& entities) { return composite_leg_mapper::map(entities); },
+        lg(),
+        "Reading composite leg at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+std::vector<domain::composite_leg> composite_leg_repository::read_latest_by_instrument_id(
+    context ctx, const std::string& instrument_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest composite legs. instrument_id: " << instrument_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<composite_leg_entity, domain::composite_leg>(
+        ctx,
+        query,
+        [](const auto& entities) { return composite_leg_mapper::map(entities); },
+        lg(),
+        "Reading latest composite legs by instrument_id.");
+}
+
+std::uint32_t composite_leg_repository::get_total_composite_leg_count_by_instrument_id(
+    context ctx, const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active composite legs count. instrument_id: "
+                               << instrument_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<composite_leg_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value()) |
                        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active composite legs count by instrument_id: " << count;
+    return count;
+}
+
+
+composite_leg_repository::remove_status composite_leg_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing composite leg. " << "id: " << id;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().identity.version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<composite_leg_entity> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing composite leg from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void composite_leg_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
+}
+
+std::vector<domain::composite_leg>
+composite_leg_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest composite legs with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<composite_leg_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<composite_leg_entity, domain::composite_leg>(
+        ctx,
+        query,
+        [](const auto& entities) { return composite_leg_mapper::map(entities); },
+        lg(),
+        "Reading latest composite legs with pagination.");
+}
+
+std::uint32_t composite_leg_repository::get_total_composite_leg_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active composite leg count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<composite_leg_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -120,44 +323,42 @@ std::uint32_t composite_leg_repository::count_latest(context ctx) {
     return count;
 }
 
-void composite_leg_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing composite leg: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<composite_leg_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing composite leg from database.");
-}
-
-void composite_leg_repository::remove_by_instrument(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing composite legs for instrument: " << instrument_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<composite_leg_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing composite legs for instrument from database.");
-}
-
-
-std::vector<domain::composite_leg> composite_leg_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+std::vector<domain::composite_leg>
+composite_leg_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
         return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_sequence"_c);
-    return execute_read_query<composite_leg_entity, domain::composite_leg>(
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
+    auto result = execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
         query,
         [](const auto& entities) { return composite_leg_mapper::map(entities); },
         lg(),
-        "Reading composite legs for multiple instruments.");
+        "Reading latest composite legs by ids.");
+    return result;
 }
+
+void composite_leg_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (ids.empty())
+        return;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<composite_leg_entity> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing composite legs.");
+}
+
 
 }

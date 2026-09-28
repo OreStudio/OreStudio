@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -47,8 +49,8 @@ balance_guaranteed_swap_instrument_mapper::map(const balance_guaranteed_swap_ins
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.lockout_days = v.lockout_days;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -75,8 +77,8 @@ balance_guaranteed_swap_instrument_entity balance_guaranteed_swap_instrument_map
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.lockout_days = v.lockout_days;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

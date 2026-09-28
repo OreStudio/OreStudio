@@ -159,8 +159,18 @@ TEST_CASE("from_iso8601_date_to_iso8601_date_round_trip", tags) {
     CHECK(datetime::from_iso8601_date(datetime::to_iso8601_date(original)) == original);
 }
 
+TEST_CASE("from_iso8601_date_parses_the_basic_format", tags) {
+    const std::chrono::year_month_day expected{
+        std::chrono::year{2024}, std::chrono::month{9}, std::chrono::day{20}};
+    CHECK(datetime::from_iso8601_date("20240920") == expected);
+}
+
 TEST_CASE("from_iso8601_date_rejects_impossible_calendar_date", tags) {
     CHECK_THROWS_AS(datetime::from_iso8601_date("2024-02-30"), std::invalid_argument);
+}
+
+TEST_CASE("from_iso8601_date_rejects_an_impossible_basic_date", tags) {
+    CHECK_THROWS_AS(datetime::from_iso8601_date("20240230"), std::invalid_argument);
 }
 
 TEST_CASE("from_iso8601_date_rejects_non_date_string", tags) {

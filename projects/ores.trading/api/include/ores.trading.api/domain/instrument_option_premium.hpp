@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_PREMIUM_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_PREMIUM_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -75,10 +77,14 @@ struct instrument_option_premium final {
     /**
      * @brief Amount of the premium.
      */
-    double amount = 0.0;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief Currency the premium pays in.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -88,7 +94,7 @@ struct instrument_option_premium final {
      * The schema types this member as a date, so the generated reader has already parsed it and the
      * writer re-emits a canonical form. A date column therefore carries the member whole.
      */
-    std::string pay_date;
+    std::chrono::year_month_day pay_date;
 
     /**
      * @brief True when the premium states a settlement block.

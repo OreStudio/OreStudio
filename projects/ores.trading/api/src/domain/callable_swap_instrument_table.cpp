@@ -33,12 +33,12 @@ std::string convert_to_table(const std::vector<callable_swap_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Call Type"
-          << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Recorded At"
+          << fort::endr;
 
     for ([[maybe_unused]] const auto& cs : v) {
         table << cs.identity.instrument_id << cs.identity.trade_type_code << cs.start_date
-              << cs.maturity_date << cs.call_type << cs.audit.recorded_at << fort::endr;
+              << cs.maturity_date << cs.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

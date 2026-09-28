@@ -58,10 +58,10 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.classification.netting_set_id = std::string("NS-001");
     r.classification.activity_type_code = std::string("new_booking");
     r.classification.status_id = boost::uuids::uuid{};
-    r.lifecycle.trade_date = std::string("2025-01-15");
-    r.lifecycle.execution_timestamp = std::string("2025-01-15 10:00:00");
-    r.lifecycle.effective_date = std::string("2025-01-16");
-    r.lifecycle.termination_date = std::string("2026-01-15");
+    r.lifecycle.trade_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
+    r.lifecycle.execution_timestamp = ctx.past_timepoint();
+    r.lifecycle.effective_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 16};
+    r.lifecycle.termination_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

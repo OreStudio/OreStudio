@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -61,7 +63,7 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Notional in reference_currency (FxAverageForward).
      */
-    std::optional<double> reference_notional;
+    std::optional<ores::utility::decimal::decimal> reference_notional;
 
     /**
      * @brief Currency of the settlement payment (FxAverageForward).
@@ -71,12 +73,12 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Notional in settlement_currency (FxAverageForward).
      */
-    std::optional<double> settlement_notional;
+    std::optional<ores::utility::decimal::decimal> settlement_notional;
 
     /**
      * @brief Settlement payment date (ISO 8601 date string).
      */
-    std::string payment_date;
+    std::optional<std::chrono::year_month_day> payment_date;
 
     /**
      * @brief Position direction: Long or Short. Hardcoded to Long by the mapper.
@@ -85,18 +87,22 @@ struct fx_asian_forward_instrument final {
 
     /**
      * @brief Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Per-fixing target amount (FxTaRF-specific). Absent for FxAverageForward.
      */
-    std::optional<double> fixing_amount;
+    std::optional<ores::utility::decimal::decimal> fixing_amount;
 
     /**
      * @brief Total target amount (FxTaRF-specific). Absent for FxAverageForward.
      */
-    std::optional<double> target_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
 
     /**
      * @brief Target strike level (FxTaRF-specific). Absent for FxAverageForward.

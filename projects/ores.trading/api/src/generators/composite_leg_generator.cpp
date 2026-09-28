@@ -17,27 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_generator.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/generators/composite_leg_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::composite_leg
-generate_synthetic_composite_leg(const boost::uuids::uuid& instrument_id,
-                                 int leg_sequence,
-                                 utility::generation::generation_context& ctx) {
+generate_synthetic_composite_leg(utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::composite_leg r;
-    r.identity.version = 1;
-    r.identity.id = boost::uuids::random_generator()();
-    r.identity.instrument_id = instrument_id;
-    r.identity.leg_sequence = leg_sequence;
-    r.constituent_trade_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    r.identity.version = 0;
+    r.identity.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
+    r.identity.id = ctx.generate_uuid();
+    r.identity.party_id = ctx.generate_uuid();
+    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.leg_sequence = faker::number::integer(1, 5);
+    r.constituent_trade_id = std::string(faker::word::noun());
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";
@@ -47,11 +59,11 @@ generate_synthetic_composite_leg(const boost::uuids::uuid& instrument_id,
 }
 
 std::vector<domain::composite_leg>
-generate_synthetic_composite_legs(const boost::uuids::uuid& instrument_id,
-                                  utility::generation::generation_context& ctx) {
+generate_synthetic_composite_legs(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::composite_leg> r;
-    r.push_back(generate_synthetic_composite_leg(instrument_id, 1, ctx));
-    r.push_back(generate_synthetic_composite_leg(instrument_id, 2, ctx));
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_composite_leg(ctx));
     return r;
 }
 

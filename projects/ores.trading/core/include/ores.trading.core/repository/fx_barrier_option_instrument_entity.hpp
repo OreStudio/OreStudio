@@ -50,9 +50,9 @@ struct fx_barrier_option_instrument_entity {
     std::string party_id;
     std::optional<std::string> trade_id;
     std::string bought_currency;
-    double bought_amount = 0.0;
+    std::string bought_amount;
     std::string sold_currency;
-    double sold_amount = 0.0;
+    std::string sold_amount;
     std::optional<std::string> option_type;
     std::string expiry_date;
     std::optional<std::string> settlement;

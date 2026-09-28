@@ -19,19 +19,24 @@
  */
 #include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.trading.api/domain/commodity_instrument_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/commodity_basket_constituent_protocol.hpp"
+#include "ores.trading.api/messaging/commodity_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
+#include <string>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
@@ -60,6 +65,51 @@ std::optional<double> parse_optional_double(std::string_view value, std::string_
         throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
                                  ".");
     }
+}
+
+std::optional<ores::utility::decimal::decimal> parse_optional_decimal(std::string_view value,
+                                                                      std::string_view name) {
+    if (value.empty() || value == "-")
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(value);
+    if (!parsed)
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
+    return *parsed;
+}
+
+/**
+ * Splits the basket's comma-separated constituent list. Each token states an
+ * underlying code and, after a colon, an optional weight. A dash states no
+ * basket, which is the same statement as an empty list.
+ */
+std::vector<domain::commodity_basket_constituent> parse_basket(const std::string& text) {
+    std::vector<domain::commodity_basket_constituent> constituents;
+    if (text.empty() || text == "-")
+        return constituents;
+    std::size_t begin = 0;
+    while (begin <= text.size()) {
+        const auto end = text.find(',', begin);
+        const auto token = text.substr(begin, end == std::string::npos ? end : end - begin);
+        if (!token.empty()) {
+            const auto colon = token.find(':');
+            domain::commodity_basket_constituent constituent;
+            constituent.sequence_number = static_cast<int>(constituents.size()) + 1;
+            if (colon == std::string::npos) {
+                constituent.underlying_code = token;
+            } else {
+                constituent.underlying_code = token.substr(0, colon);
+                const auto weight = token.substr(colon + 1);
+                if (!weight.empty())
+                    constituent.weight = parse_optional_decimal(weight, "basket weight");
+            }
+            constituents.push_back(std::move(constituent));
+        }
+        if (end == std::string::npos)
+            break;
+        begin = end + 1;
+    }
+    return constituents;
 }
 
 } // namespace
@@ -94,7 +144,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                    std::string fixed_price,
                    std::string start_date,
                    std::string maturity_date,
-                   std::string day_count_code,
+                   std::string day_count_fraction_code,
                    std::string payment_frequency_code,
                    std::string option_type,
                    std::string strike_price,
@@ -112,7 +162,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                    std::string barrier_type,
                    std::string lower_barrier,
                    std::string upper_barrier,
-                   std::string basket_json,
+                   std::string basket,
                    std::string description,
                    std::string change_reason_code,
                    std::string change_commentary) {
@@ -126,7 +176,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                                              std::move(fixed_price),
                                              std::move(start_date),
                                              std::move(maturity_date),
-                                             std::move(day_count_code),
+                                             std::move(day_count_fraction_code),
                                              std::move(payment_frequency_code),
                                              std::move(option_type),
                                              std::move(strike_price),
@@ -144,24 +194,26 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                                              std::move(barrier_type),
                                              std::move(lower_barrier),
                                              std::move(upper_barrier),
-                                             std::move(basket_json),
+                                             std::move(basket),
                                              std::move(description),
                                              std::move(change_reason_code),
                                              std::move(change_commentary));
         },
         "Add an Commodity instrument (trade_type_code commodity_code currency quantity unit "
-        "[fixed_price] [start_date] [maturity_date] [day_count_code] [payment_frequency_code] "
+        "[fixed_price] [start_date] [maturity_date] [day_count_fraction_code] [payment_frequency_code] "
         "[option_type] [strike_price] [exercise_type] [swaption_expiry_date] [average_type] "
         "[averaging_start_date] [averaging_end_date] [spread_commodity_code] [spread_amount] "
         "[strip_frequency_code] [variance_strike] [accumulation_amount] [knock_out_barrier] "
-        "[barrier_type] [lower_barrier] [upper_barrier] [basket_json] description "
+        "[barrier_type] [lower_barrier] [upper_barrier] [basket] description "
         "change_reason_code \"change_commentary\")",
         {"trade_type_code commodity_code currency quantity unit fixed_price start_date "
-         "maturity_date day_count_code payment_frequency_code option_type strike_price "
+         "maturity_date day_count_fraction_code payment_frequency_code option_type strike_price "
          "exercise_type swaption_expiry_date average_type averaging_start_date averaging_end_date "
          "spread_commodity_code spread_amount strip_frequency_code variance_strike "
          "accumulation_amount knock_out_barrier barrier_type lower_barrier upper_barrier "
-         "basket_json description change_reason_code change_commentary"});
+         "basket description change_reason_code change_commentary"});
+    // The basket is a comma-separated constituent list, each entry a code and,
+    // after a colon, an optional weight (e.g. "NYMEX:CL:0.6,NYMEX:NG:0.4").
 
     commodity_instruments_menu->Insert(
         "delete",
@@ -190,21 +242,21 @@ void commodity_instrument_commands::process_get_commodity_instruments(
 
     auto& state = pagination.state_for("commodity_instruments");
 
-    trading::messaging::get_commodity_instruments_request req;
+    trading::messaging::list_commodity_instruments_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_commodity_instruments_response>(
-        out, session, "trading.v1.commodity_instruments.list", req);
+    auto result = do_auth_request<trading::messaging::list_commodity_instruments_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    state.total_count = result->total_available_count;
+    state.total_count = result->total;
     pagination.set_last_entity("commodity_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->commodity_instruments.size()
                               << " Commodity instruments.";
-    out << result->instruments << std::endl;
+    out << result->commodity_instruments << std::endl;
 
     // Display pagination info
     const auto page = (state.current_offset / pagination.page_size()) + 1;
@@ -212,8 +264,9 @@ void commodity_instrument_commands::process_get_commodity_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " ("
+        << result->commodity_instruments.size() << " of " << state.total_count << " total)"
+        << std::endl;
 }
 
 void commodity_instrument_commands::process_add_commodity_instrument(
@@ -227,7 +280,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     std::string fixed_price,
     std::string start_date,
     std::string maturity_date,
-    std::string day_count_code,
+    std::string day_count_fraction_code,
     std::string payment_frequency_code,
     std::string option_type,
     std::string strike_price,
@@ -245,7 +298,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     std::string barrier_type,
     std::string lower_barrier,
     std::string upper_barrier,
-    std::string basket_json,
+    std::string basket,
     std::string description,
     std::string change_reason_code,
     std::string change_commentary) {
@@ -269,41 +322,51 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     if (auto tid = utility::uuid::tenant_id::from_string(tenant); tid)
         v.identity.tenant_id = *tid;
 
-    v.terms.commodity_code = std::move(commodity_code);
-    v.terms.currency = std::move(currency);
-    v.terms.quantity = quantity;
-    v.terms.unit = std::move(unit);
-    v.terms.start_date = (start_date == "-") ? "" : std::move(start_date);
-    v.terms.maturity_date = (maturity_date == "-") ? "" : std::move(maturity_date);
-    v.terms.day_count_code = (day_count_code == "-") ? "" : std::move(day_count_code);
-    v.terms.payment_frequency_code =
+    v.commodity_code = std::move(commodity_code);
+    v.currency = std::move(currency);
+    v.quantity = quantity;
+    v.unit = std::move(unit);
+    v.start_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(start_date);
+    v.maturity_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(maturity_date);
+    v.day_count_fraction_code = (day_count_fraction_code == "-") ? "" : std::move(day_count_fraction_code);
+    v.payment_frequency_code =
         (payment_frequency_code == "-") ? "" : std::move(payment_frequency_code);
-    v.option.option_type = (option_type == "-") ? "" : std::move(option_type);
-    v.option.exercise_type = (exercise_type == "-") ? "" : std::move(exercise_type);
-    v.option.swaption_expiry_date =
-        (swaption_expiry_date == "-") ? "" : std::move(swaption_expiry_date);
-    v.pricing.average_type = (average_type == "-") ? "" : std::move(average_type);
-    v.pricing.averaging_start_date =
-        (averaging_start_date == "-") ? "" : std::move(averaging_start_date);
-    v.pricing.averaging_end_date = (averaging_end_date == "-") ? "" : std::move(averaging_end_date);
-    v.pricing.spread_commodity_code =
+    v.option_type = (option_type == "-") ? "" : std::move(option_type);
+    v.exercise_type = (exercise_type == "-") ? "" : std::move(exercise_type);
+    v.swaption_expiry_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(
+            swaption_expiry_date);
+    v.average_type = (average_type == "-") ? "" : std::move(average_type);
+    v.averaging_start_date =
+        ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(
+            averaging_start_date);
+    v.averaging_end_date = ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(
+        averaging_end_date);
+    v.spread_commodity_code =
         (spread_commodity_code == "-") ? "" : std::move(spread_commodity_code);
-    v.pricing.strip_frequency_code =
-        (strip_frequency_code == "-") ? "" : std::move(strip_frequency_code);
-    v.exotic.barrier_type = (barrier_type == "-") ? "" : std::move(barrier_type);
-    v.exotic.basket_json = (basket_json == "-") ? "" : std::move(basket_json);
+    v.strip_frequency_code = (strip_frequency_code == "-") ? "" : std::move(strip_frequency_code);
+    v.barrier_type = (barrier_type == "-") ? "" : std::move(barrier_type);
     v.description = std::move(description);
 
+    std::vector<domain::commodity_basket_constituent> constituents;
     try {
-        v.terms.fixed_price = parse_optional_double(fixed_price, "fixed_price");
-        v.option.strike_price = parse_optional_double(strike_price, "strike_price");
-        v.pricing.spread_amount = parse_optional_double(spread_amount, "spread_amount");
-        v.exotic.variance_strike = parse_optional_double(variance_strike, "variance_strike");
-        v.exotic.accumulation_amount =
-            parse_optional_double(accumulation_amount, "accumulation_amount");
-        v.exotic.knock_out_barrier = parse_optional_double(knock_out_barrier, "knock_out_barrier");
-        v.exotic.lower_barrier = parse_optional_double(lower_barrier, "lower_barrier");
-        v.exotic.upper_barrier = parse_optional_double(upper_barrier, "upper_barrier");
+        constituents = parse_basket(basket);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    try {
+        v.fixed_price = parse_optional_decimal(fixed_price, "fixed_price");
+        v.strike_price = parse_optional_decimal(strike_price, "strike_price");
+        v.spread_amount = parse_optional_decimal(spread_amount, "spread_amount");
+        v.variance_strike = parse_optional_double(variance_strike, "variance_strike");
+        v.accumulation_amount = parse_optional_decimal(accumulation_amount, "accumulation_amount");
+        v.knock_out_barrier = parse_optional_decimal(knock_out_barrier, "knock_out_barrier");
+        v.lower_barrier = parse_optional_decimal(lower_barrier, "lower_barrier");
+        v.upper_barrier = parse_optional_decimal(upper_barrier, "upper_barrier");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -315,20 +378,72 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     v.audit.change_reason_code = std::move(change_reason_code);
     v.audit.change_commentary = std::move(change_commentary);
 
-    auto req = trading::messaging::save_commodity_instrument_request{.data = std::move(v)};
+    auto req = trading::messaging::put_commodity_instrument_request{
+        .change = {.write = {.instrument_id = v.identity.instrument_id,
+                             .trade_type_code = v.identity.trade_type_code,
+                             .trade_id = v.identity.trade_id,
+                             .commodity_code = v.commodity_code,
+                             .currency = v.currency,
+                             .quantity = v.quantity,
+                             .unit = v.unit,
+                             .start_date = v.start_date,
+                             .maturity_date = v.maturity_date,
+                             .fixed_price = v.fixed_price,
+                             .option_type = v.option_type,
+                             .strike_price = v.strike_price,
+                             .exercise_type = v.exercise_type,
+                             .average_type = v.average_type,
+                             .averaging_start_date = v.averaging_start_date,
+                             .averaging_end_date = v.averaging_end_date,
+                             .spread_commodity_code = v.spread_commodity_code,
+                             .spread_amount = v.spread_amount,
+                             .strip_frequency_code = v.strip_frequency_code,
+                             .variance_strike = v.variance_strike,
+                             .accumulation_amount = v.accumulation_amount,
+                             .knock_out_barrier = v.knock_out_barrier,
+                             .barrier_type = v.barrier_type,
+                             .lower_barrier = v.lower_barrier,
+                             .upper_barrier = v.upper_barrier,
+                             .day_count_fraction_code = v.day_count_fraction_code,
+                             .payment_frequency_code = v.payment_frequency_code,
+                             .swaption_expiry_date = v.swaption_expiry_date,
+                             .description = v.description}}};
 
-    auto result = do_auth_request<trading::messaging::save_commodity_instrument_response>(
-        out, session, "trading.v1.commodity_instruments.save", req);
+    auto result = do_auth_request<trading::messaging::put_commodity_instrument_response>(
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Commodity instrument.";
+        for (auto& constituent : constituents) {
+            trading::messaging::put_commodity_basket_constituent_request constituent_req;
+            constituent_req.change.write.instrument_id = req.change.write.instrument_id;
+            constituent_req.change.write.sequence_number = constituent.sequence_number;
+            constituent_req.change.write.underlying_code = std::move(constituent.underlying_code);
+            constituent_req.change.write.weight = constituent.weight;
+            auto constituent_result =
+                do_auth_request<trading::messaging::put_commodity_basket_constituent_response>(
+                    out,
+                    session,
+                    std::string(constituent_req.nats_subject),
+                    constituent_req);
+            if (!constituent_result ||
+                constituent_result->result.outcome != ores::utility::domain::outcome::ok) {
+                const auto& msg = constituent_result ?
+                                      constituent_result->result.message :
+                                      std::string("no response");
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to add Commodity basket constituent: " << msg;
+                fail(out) << "Failed to add Commodity basket constituent: " << msg << std::endl;
+                return;
+            }
+        }
         out << "✓ Commodity instrument added successfully!" << std::endl;
-        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+        out << "Instrument id: " << boost::uuids::to_string(req.change.write.instrument_id)
             << std::endl;
     } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+        const auto& msg = result->result.message.empty() ? "Unknown error" : result->result.message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Commodity instrument: " << msg;
         fail(out) << "Failed to add Commodity instrument: " << msg << std::endl;
     }
@@ -346,19 +461,26 @@ void commodity_instrument_commands::process_delete_commodity_instrument(std::ost
     }
 
     trading::messaging::delete_commodity_instrument_request req;
-    req.ids = {std::move(instrument_id)};
+    try {
+        req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+    } catch (const std::exception&) {
+        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
+        return;
+    }
 
     auto result = do_auth_request<trading::messaging::delete_commodity_instrument_response>(
-        out, session, "trading.v1.commodity_instruments.delete", req);
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
-    if (result->success) {
+    if (result->result.outcome == ores::utility::domain::outcome::ok) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Commodity instrument.";
         out << "✓ Commodity instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Commodity instrument: " << result->message;
-        fail(out) << "Failed to delete Commodity instrument: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Commodity instrument: "
+                                  << result->result.message;
+        fail(out) << "Failed to delete Commodity instrument: " << result->result.message
+                  << std::endl;
     }
 }
 
@@ -372,27 +494,32 @@ void commodity_instrument_commands::process_get_commodity_instrument_history(
         return;
     }
 
-    trading::messaging::get_commodity_instrument_history_request req;
-    req.id = std::move(instrument_id);
-
-    auto result = do_auth_request<trading::messaging::get_commodity_instrument_history_response>(
-        out, session, "trading.v1.commodity_instruments.history", req);
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get Commodity instrument history: "
-                                  << result->message;
-        fail(out) << result->message << std::endl;
+    trading::messaging::list_commodity_instrument_versions_request req;
+    try {
+        req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+    } catch (const std::exception&) {
+        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
         return;
     }
 
-    if (result->history.empty()) {
+    auto result = do_auth_request<trading::messaging::list_commodity_instrument_versions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    if (result->result.outcome != ores::utility::domain::outcome::ok) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get Commodity instrument history: "
+                                  << result->result.message;
+        fail(out) << result->result.message << std::endl;
+        return;
+    }
+
+    if (result->versions.empty()) {
         out << "No history found for this Commodity instrument." << std::endl;
         return;
     }
 
-    out << result->history << std::endl;
+    out << result->versions << std::endl;
 }
 
 }

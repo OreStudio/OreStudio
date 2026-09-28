@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
@@ -51,10 +52,10 @@ fx_asian_forward_instrument make_instrument(database_helper& h) {
     r.identity.trade_type_code = "FxAverageForward";
     r.fx_index = "FX-TR20H-EUR-USD";
     r.reference_currency = "EUR";
-    r.reference_notional = 8614.0;
+    r.reference_notional = ores::utility::decimal::decimal::from_string("8614").value();
     r.settlement_currency = "USD";
-    r.settlement_notional = 10000.0;
-    r.payment_date = "2025-09-30";
+    r.settlement_notional = ores::utility::decimal::decimal::from_string("10000").value();
+    r.payment_date = ores::platform::time::datetime::from_iso8601_date("2025-09-30");
     r.long_short = "Long";
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
@@ -85,11 +86,11 @@ TEST_CASE("fx_asian_forward_instrument_write_and_read_latest", tags) {
     CHECK(read[0].fx_index == "FX-TR20H-EUR-USD");
     CHECK(read[0].reference_currency == "EUR");
     REQUIRE(read[0].reference_notional.has_value());
-    CHECK(*read[0].reference_notional == 8614.0);
+    CHECK(read[0].reference_notional->to_double() == 8614.0);
     CHECK(read[0].settlement_currency == "USD");
     REQUIRE(read[0].settlement_notional.has_value());
-    CHECK(*read[0].settlement_notional == 10000.0);
-    CHECK(read[0].payment_date == "2025-09-30");
+    CHECK(read[0].settlement_notional->to_double() == 10000.0);
+    CHECK(read[0].payment_date == ores::platform::time::datetime::from_iso8601_date("2025-09-30"));
     CHECK(read[0].long_short == "Long");
     BOOST_LOG_SEV(lg, debug) << "Read FX asian forward instrument: " << read[0];
 }

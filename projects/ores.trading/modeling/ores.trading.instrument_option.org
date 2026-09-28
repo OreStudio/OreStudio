@@ -63,6 +63,8 @@ UUID of the instrument whose document stated this option block.
 
 Whether the holder is long or short the option.
 
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+
 The schema declares the member required, so a row here always states
 it. The type is the schema's own enumeration of two values.
 
@@ -79,6 +81,9 @@ std::string("Long")
 
 The option's type, as the document spelled it.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 ** payoff_type
 :PROPERTIES:
 :type:     text
@@ -86,7 +91,12 @@ The option's type, as the document spelled it.
 :nullable: true
 :END:
 
-The payoff the option settles to.
+The payoff the option settles to (ORE =optionData.PayoffType=).
+
+Soft FK to ores_trading_payoff_types_tbl: the values are the ORE
+=optionData.PayoffType= set the corpus uses (Accumulator, Asian,
+AverageStrike, Decumulator, TargetExact, TargetFull, Vanilla). PR 4
+tightens the soft reference into a real foreign key.
 
 ** payoff_type_2
 :PROPERTIES:
@@ -95,7 +105,12 @@ The payoff the option settles to.
 :nullable: true
 :END:
 
-The second payoff, for the products that state two.
+The second payoff, for the products that state two (ORE =optionData.PayoffType2=).
+
+Soft FK to ores_trading_payoff_types_tbl: the values are the ORE
+=optionData.PayoffType= set the corpus uses (Accumulator, Asian,
+AverageStrike, Decumulator, TargetExact, TargetFull, Vanilla). PR 4
+tightens the soft reference into a real foreign key.
 
 ** style
 :PROPERTIES:
@@ -268,7 +283,7 @@ true
 ** exercise_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
@@ -278,10 +293,14 @@ The schema types this member as a date, so the generated reader has
 already parsed it and the writer re-emits a canonical form. A date
 column therefore carries the member whole.
 
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
+
 ** exercise_price
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -388,13 +407,16 @@ Date the settlement block fixes on, when the document states one.
 | expression                        |
 |-----------------------------------|
 | "long_short" in ('Long', 'Short') |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "payoff_type" is null or "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
+| "payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
 
 * C++
 
 ** Flags
 :PROPERTIES:
 :subcomponent:           api
-:generator_facet_name:   generator
+:generator_facet_name:   generators
 :END:
 
 ** Repository
@@ -408,10 +430,12 @@ Date the settlement block fixes on, when the document states one.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

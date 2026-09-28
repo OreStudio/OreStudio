@@ -49,7 +49,7 @@ struct bond_leg_amortization_entity {
     std::string tenant_id;
     int version = 0;
     std::string amortization_type;
-    std::optional<double> value;
+    std::optional<std::string> value;
     std::optional<std::string> start_date;
     std::optional<std::string> end_date;
     std::optional<std::string> frequency;

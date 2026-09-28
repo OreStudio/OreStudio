@@ -19,6 +19,8 @@
  */
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/messaging/activity_type_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/activity_type_registrar.hpp"
 #include "ores.trading.core/messaging/ascot_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_forward_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_future_delivery_basket_history_provider_registrar.hpp"
@@ -33,6 +35,11 @@
 #include "ores.trading.core/messaging/bond_option_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_repo_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_trs_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/callable_swap_call_date_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/commodity_basket_constituent_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/fpml_event_type_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/fpml_event_type_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_exercise_fee_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_payment_date_history_provider_registrar.hpp"
@@ -100,6 +107,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(detail::register_commodity_handlers(nats, ctx, verifier));
     append(detail::register_composite_handlers(nats, ctx, verifier));
     append(detail::register_scripted_handlers(nats, ctx, verifier));
+    append(register_activity_type_handlers(nats, ctx, verifier));
+    append(register_fpml_event_type_handlers(nats, ctx, verifier));
     append(register_party_role_type_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));
     append(register_lifecycle_event_handlers(nats, ctx, verifier));
@@ -110,6 +119,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_envelope_additional_field_handlers(nats, ctx, verifier));
 
     auto& hist_registry = history_registry();
+    register_activity_type_history_provider(hist_registry);
+    register_fpml_event_type_history_provider(hist_registry);
     register_party_role_type_history_provider(hist_registry);
     register_trade_id_type_history_provider(hist_registry);
     register_lifecycle_event_history_provider(hist_registry);
@@ -132,6 +143,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_bond_option_history_provider(hist_registry);
     register_bond_repo_history_provider(hist_registry);
     register_bond_trs_history_provider(hist_registry);
+    register_callable_swap_call_date_history_provider(hist_registry);
+    register_commodity_basket_constituent_history_provider(hist_registry);
+    register_equity_position_option_underlying_history_provider(hist_registry);
     register_instrument_option_exercise_fee_history_provider(hist_registry);
     register_instrument_option_history_provider(hist_registry);
     register_instrument_option_payment_date_history_provider(hist_registry);

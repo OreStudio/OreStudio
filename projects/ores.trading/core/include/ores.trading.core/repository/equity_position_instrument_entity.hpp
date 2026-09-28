@@ -52,8 +52,7 @@ struct equity_position_instrument_entity {
     std::string underlying_name;
     std::string currency;
     double quantity = 0.0;
-    std::optional<double> price;
-    std::optional<std::string> option_data_json;
+    std::optional<std::string> price;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/generator/trade_identifier_generator.hpp"
+#include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/activity_type_generator.hpp"
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
 #include "ores.trading.api/generators/lifecycle_event_generator.hpp"
@@ -38,7 +38,6 @@ const std::string tags("[generators]");
 
 }
 
-using namespace ores::trading::generator;
 using namespace ores::trading::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
@@ -82,7 +81,7 @@ TEST_CASE("activity_type_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated activity_type code: " << sut.code;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
@@ -97,7 +96,7 @@ TEST_CASE("activity_type_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 
@@ -110,7 +109,7 @@ TEST_CASE("fpml_event_type_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated fpml_event_type code: " << sut.code;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
@@ -126,7 +125,7 @@ TEST_CASE("fpml_event_type_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 

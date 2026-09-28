@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -53,38 +55,48 @@ struct equity_digital_option_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Payoff notional / contract size. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Call or Put; empty for touch options.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
     /**
      * @brief Digital only; absent for touch.
      */
-    std::optional<double> strike;
+    std::optional<ores::utility::decimal::decimal> strike;
 
     /**
      * @brief Touch only; absent for digital.
      */
-    std::optional<double> barrier_level;
+    std::optional<ores::utility::decimal::decimal> barrier_level;
 
     /**
      * @brief e.g. UpIn, DownOut; empty for digital.
+     *
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string barrier_type;
 
     /**
      * @brief ISO 8601 date string.
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Long or Short.
@@ -94,7 +106,7 @@ struct equity_digital_option_instrument final {
     /**
      * @brief Digital payout; absent when not specified.
      */
-    std::optional<double> payout_amount;
+    std::optional<ores::utility::decimal::decimal> payout_amount;
 
     /**
      * @brief Optional free-text description.

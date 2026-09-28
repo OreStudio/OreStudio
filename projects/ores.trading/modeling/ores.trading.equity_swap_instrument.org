@@ -124,6 +124,8 @@ std::string("")
 
 ISO 4217 currency code.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -131,15 +133,14 @@ std::string("USD")
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** return_type
@@ -149,36 +150,40 @@ Must be positive.
 :nullable: false
 :END:
 
-TotalReturn or PriceReturn.
+Total or Price.
+
+Soft FK to ores_trading_return_types_tbl: ORE states =EquityLegData.ReturnType=
+as a bare =xs:string=, so the set is the one the ORE example corpus uses
+(Total, Price). PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
-std::string("TotalReturn")
+std::string("Total")
 #+end_src
 
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date.
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** maturity_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date.
 
 #+begin_src cpp :name generator
-std::string("2026-01-15")
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
 
 ** long_short
@@ -194,7 +199,7 @@ Long or Short.
 std::string("Long")
 #+end_src
 
-** payment_frequency
+** payment_frequency_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -202,6 +207,8 @@ std::string("Long")
 :END:
 
 e.g. 3M, 6M, 1Y.
+
+Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("Quarterly")
@@ -231,6 +238,7 @@ Optional free-text description.
 | "notional" > 0 |
 | "currency" <> '' |
 | "trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap') |
+| "return_type" in ('Total', 'Price') |
 
 ** Indexes
 
@@ -246,8 +254,7 @@ Optional free-text description.
 
 | column | validation_function |
 |--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-| payment_frequency | ores_refdata_validate_payment_frequency_fn |
+| payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
 
 * C++
 
@@ -284,7 +291,9 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

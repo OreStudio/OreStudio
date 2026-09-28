@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -49,7 +51,7 @@ struct fx_vanilla_option_instrument final {
     /**
      * @brief Amount bought in bought_currency. Must be positive.
      */
-    double bought_amount = 0.0;
+    ores::utility::decimal::decimal bought_amount;
 
     /**
      * @brief ISO 4217 currency code of the sold leg.
@@ -59,20 +61,26 @@ struct fx_vanilla_option_instrument final {
     /**
      * @brief Amount sold in sold_currency. Must be positive.
      */
-    double sold_amount = 0.0;
+    ores::utility::decimal::decimal sold_amount;
 
     /**
      * @brief Option type: Call or Put.
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string option_type;
 
     /**
      * @brief Option expiry date (ISO 8601 date string).
      */
-    std::string expiry_date;
+    std::chrono::year_month_day expiry_date;
 
     /**
      * @brief Exercise style: European or American.
+     *
+     * Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set
+     * (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string exercise_style;
 

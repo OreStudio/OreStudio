@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -31,10 +31,10 @@ that bound each one.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | PR 1 is complete: the analysis, the evidence and the seven decisions. |
+| Now           | PR 1 is complete, PR 2 is raised as #2204, and PR 3's model work is complete on =feature/model-missing-trading-families=. The nine missing families are ported, the closed sets are modelled, the defect 6 duplicates are renamed, the M04 sweep is clean, the local =average_type= exists with its producer fixed, and =call_type= is deleted. Defects 14 to 16 are carried to PR 4 by the owner's ruling. Every gate PR 3 owns is green; see the delivery table |
 | Waiting on    | Nothing. |
-| Next          | Raise and merge PR 1, then start PR 2. |
-| Last touched  | 2026-09-26                               |
+| Next          | Raise PR 3, then start PR 4, the identity collapse and the bond security split. |
+| Last touched  | 2026-09-28                               |
 
 * Acceptance
 
@@ -270,9 +270,9 @@ belong to this story:
 | 11 | Staged reference data is never published | Out of scope, dq work |
 | 12 | The publish guard collapses every office onto one party | Out of scope, dq work |
 | 13 | Two names for an instrument's identity | PR 4 |
-| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 3 |
-| 15 | An underlying is an unqualified name | PR 3 |
-| 16 | No observation schedule | PR 3 |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 4, by the owner's ruling |
+| 15 | An underlying is an unqualified name | PR 4, by the owner's ruling |
+| 16 | No observation schedule | PR 4, by the owner's ruling |
 | 17 | The trade's declared key is nullable, and its fixture left it empty | PR 3 |
 
 Defect 17 surfaced in PR 2, not in PR 3, because the regenerated trade
@@ -306,6 +306,28 @@ corrected to the path that exists; neither component is under the drift
 gate, which is why the wrong path sat unnoticed. The marketdata half is
 left to that component's own clean-up.
 
+* Environment blockers
+
+Measured 2026-09-26 and 2026-09-27. The database would not rebuild from
+main's tree, and the default build would not compile, for eight defects.
+None of them is trading's. Six stopped the rebuild, and each repair
+revealed the next: five dq population-function scripts that never close
+their header comment; the storage service missing from =SERVICE_NAMES=,
+from the service account seed and from the service registry; a missing
+unique constraint on =ores_dq_tags_artefact_tbl=; a catalogue upsert that
+relied on an =ON CONFLICT= the versioning trigger pre-empts, which this
+programme's PR #2232 fixed; and a publish function that states version 0.
+Two stopped the default build, which had been red since PR #2216: the FSM
+remodelling deleted =fsm_protocol.hpp= and the machine filter with it, and
+the dataset remodelling replaced =get_datasets_request=, while the
+workflow, reporting and iam consumers stayed behind. Main's PR #2240
+migrated those consumers and cleared the SQL. On that base the rebuild
+needs no workaround, the build exits zero, and the fleet reaches
+twenty-four units in two seconds.
+
+=task_model-missing-trading-families.org= §2d holds the defect table, with
+each symptom and its state.
+
 * Target shape
 
 - One trade identity, one instrument identity and one security issue
@@ -329,9 +351,10 @@ left to that component's own clean-up.
 One row per item of the
 [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]],
 with the result measured on 2026-09-26 and the task that owns it. The
+rows PR 3 owns were re-measured on 2026-09-28. The
 row is updated as each PR lands.
 
-| Id | Applies | State 2026-09-26 | Owner |
+| Id | Applies | State (PR 3 rows 2026-09-28) | Owner |
 |----+---------+------------------+-------|
 | B01 | All | Met: =evidence/b01_component_drift_dry_run.txt= and =b01_model_drift.txt= | PR 1 |
 | B02 | All | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
@@ -340,14 +363,14 @@ row is updated as each PR lands.
 | B05 | All | Met in PR 1 | PR 1 |
 | B06 | All | Not met; census in PR 6 | PR 6 |
 | M01 | Entity | Met: no legacy JSON model, no =lookup_entity= | - |
-| M02 | Entity | Not met: 26 of 57 entities bind no profile | PR 3 |
+| M02 | Entity | Met: 51 of the 80 entity models bind a profile at 2026-09-28 (32 trading-instrument, 17 simple-lookup, 1 workspace-scoped-lookup, 1 trading-record); the survey measured 31 of the 65 org files on 2026-09-26. The other 29 entity models bind none, and every one is recorded as a no-match with its key shape, its feature values and its reason. The 8 field groups, the module and the component overview are not =domain_entity= models. Survey in the task's §1 | PR 3 |
 | M03 | Entity | Met: no model drift, one known exception elsewhere | - |
-| M04 | Entity | Cannot tell; verify each model in PR 3 | PR 3 |
-| M05 | Entity | Not met in places: joined shapes and two products in one table | PR 3, PR 4 |
+| M04 | Entity | Met: 80 entity models checked against =org_loader.py='s =_FEATURE_NAMESPACE=. Every stated feature sits in the drawer the loader reads (=has_tenant_id= and =has_workspace_id= at the entity root; =party_id_from_session=, =system_scope=, =nullable_tenant_id= and =extra_checks= under =* SQL=; =has_change_reason_cache=, =has_pagination= and =has_uuid_primary_key= in the Presentation drawer), and each bind is proven by the generated output. Zero inert assignments. =has_parent_id=, =read_only=, =client_read_only=, =party_id_is_target= and =current_state= are stated by no trading model. Task §5h | PR 3 |
+| M05 | Entity | Met: the 24 hand-written domain types with no model are classified -- 5 are field groups, 9 are models to author (8 authored here, =product_type= waits for PR 4), 10 are messages (the instrument variants, the polymorphic container and the three =*_data= shapes), and none is infrastructure. No joined or denormalised shape is left as an entity. The five equity tables that hold two products are defect 9 and stay with PR 4. Task §3 | PR 3 |
 | M06 | Protocol | Not met: 48 hand-written protocol headers, 0 TypeScript twins | PR 2, PR 6 |
 | M07 | Entity | Not applicable: no junction metatype exists | Recorded in PR 1 |
-| M08 | Entity | Mostly met; defects 2, 3, 4 and 6 are this item | PR 3 |
-| M09 | All | Not met: 5 presentation drawers, 25 singular generator facet names | PR 3 |
+| M08 | Entity | Met: defects 2, 3, 4 and 6 are closed -- every date column is typed, 57 money columns are decimals and 30 non-money columns stay double, every closed set has a reference entity (the last, =average_type=, trading-local by decision), and the day count and payment frequency now have one name each. SQL spellings are canonical and flags are booleans. Task §5g, §5i | PR 3 |
+| M09 | All | Met: the 25 singular =generator_facet_name= values are plural, so the second generator tree is deleted and its 50 files are replaced under =generators/=; and the 5 presentation drawers that named Qt-era properties are gone. =grep= over the modeling directory finds no retired keyword. Task §0, §4 | PR 3 |
 | M10 | All | Met: composite overview with three parts; validate_docs passes | - |
 | P01 | Protocol | Met in PR 2: every modelled family has its generated protocol, and the consolidated rates header is deleted | PR 2 |
 | P02 | Protocol | Partly in PR 2: the migrated consumers name =req.nats_subject=; 20 literals remain in the four shell units whose families have no model | PR 3 |
@@ -449,6 +472,43 @@ row is updated as each PR lands.
   moves exhaustiveness from the compiler to a switch. Recommendation:
   take it up when the ore import workflow is next revised, not inside
   PR 2. Recorded as a capture on the product backlog.
+- *D10, the swap legs shape.* One model over the shared table, not one
+  per family. =ores_trading_swap_legs_tbl= is one table with one
+  surrogate key, one parent column (=instrument_id=) and a
+  =leg_type_code= discriminator; the leg type is data, not a table. The
+  generator holds one entity per table, so several models would each
+  claim the same DDL and drift against each other. The model is
+  =swap_leg=, child-shaped: uuid key, tenant and workspace scope, a
+  parent foreign key to the instrument. PR 3 authors it.
+- *D11, monetary amounts.* An amount is a decimal, built on
+  =boost::multiprecision=, never a =double=. The database already stores
+  these columns as =numeric=, so the SQL does not change: the C++ domain
+  type, the JSON and table I/O, the mapper and the generator's type
+  separation move to it. The 87 =double= columns that carry a price,
+  strike, premium, payout or notional adopt it; rates, volatilities and
+  correlations stay =double=, because they are not money. The type lands
+  before the columns move, and the generator must first separate an
+  entity's type from its domain type, which is the same seam the plain
+  date column needs. The wire carries a decimal as its exact text, read
+  and written by a custom =rfl::Reflector= with =ReflType = std::string=,
+  the way dates and uuids already travel. The repository entity keeps a
+  string member, because sqlgen binds a fixed set of types and
+  =boost::multiprecision= is not one of them; the mapper parses and
+  formats at that boundary.
+- *D12, collections.* The trading domain model carries no JSON
+  collection. A collection is a child table with a foreign key to its
+  parent. The four columns that still hold JSON -- =call_dates_json= on
+  =callable_swap_instrument=, =basket_json= on =commodity_instrument=
+  and =equity_swap_instrument=, and =option_data_json= on
+  =equity_position_instrument= -- become child entities, and any other
+  serialised collection the census finds goes the same way. The model
+  states the shape and the database enforces it.
+- *D13, enumerations.* A closed set of values gets a reference table and
+  a foreign key, and its check leaves the PL/pgSQL functions for the
+  schema. The missing reference tables are populated from the standard,
+  FpML or ORE, never invented; where the data belongs to another
+  component the dependency is recorded instead of a local copy. This
+  closes defects 4, 5 and 8 as one thread.
 
 * Delivery plan
 
@@ -456,7 +516,7 @@ row is updated as each PR lands.
 |----+------+-------+------|
 | 1 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | The analysis, the B01 to B06 evidence and the decisions | =compass lint=, =validate_docs.sh=, drift unchanged |
 | [[https://github.com/OreStudio/OreStudio/pull/2204][#2204]] | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
-| 3 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | The missing orgs, the profile bindings, the type repairs | Drift stays empty with the new entities, model drift clean |
+| 3 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] — [[https://github.com/OreStudio/OreStudio/pull/2333][PR #2333]] | The missing orgs and their ports, the profile bindings and no-matches, the closed sets (defects 4, 5 and 8), the defect 6 renames, the M04 sweep, the local =average_type= with its producer fix, the =call_type= deletion, and defects 14 to 16 carried to PR 4 | =compass db recreate -y -k= exit 0; the whole-tree build exits 0 with zero =error:=; the full =ctest= suite 87 of 87 on a fresh database with the fleet up; =pytest projects/ores.codegen/tests -q= 971 passed; =check_component_drift.py --component trading-cpp --dry-run= twice and =--all --dry-run= once, all no drift; =validate_docs.sh= 40 components; the fleet at 25 running. Measured 2026-09-28 |
 | 4 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | One identity, real foreign keys, the security split | Drift empty, round trip at zero loss, suites green |
 | 5 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | The v17 bond future, the missing child table and constraints, the delete and add paths, the corpus sweep | The corpus-wide round trip, drift empty |
 | 6 | [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | Shell units and recipes, permissions, audits, surveys, the registry entry | Every gate green with the component listed, =--all= passes |

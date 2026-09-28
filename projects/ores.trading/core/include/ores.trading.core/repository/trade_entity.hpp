@@ -47,7 +47,7 @@ struct trade_entity {
     std::string workspace_id;
     int version = 0;
     std::string party_id;
-    std::optional<std::string> external_id;
+    std::string external_id;
     std::string book_id;
     std::string portfolio_id;
     std::optional<std::string> successor_trade_id;

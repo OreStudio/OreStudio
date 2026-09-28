@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/fx_asian_forward_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -49,14 +52,31 @@ fx_asian_forward_instrument_mapper::map(const fx_asian_forward_instrument_entity
                               std::nullopt;
     r.fx_index = v.fx_index;
     r.reference_currency = v.reference_currency.value_or("");
-    r.reference_notional = v.reference_notional;
+    r.reference_notional =
+        v.reference_notional.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.reference_notional).value()) :
+            std::nullopt;
     r.settlement_currency = v.settlement_currency.value_or("");
-    r.settlement_notional = v.settlement_notional;
-    r.payment_date = v.payment_date.value_or("");
+    r.settlement_notional =
+        v.settlement_notional.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.settlement_notional).value()) :
+            std::nullopt;
+    r.payment_date =
+        v.payment_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.payment_date)) :
+            std::nullopt;
     r.long_short = v.long_short.value_or("");
     r.currency = v.currency.value_or("");
-    r.fixing_amount = v.fixing_amount;
-    r.target_amount = v.target_amount;
+    r.fixing_amount =
+        v.fixing_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.fixing_amount).value()) :
+            std::nullopt;
+    r.target_amount =
+        v.target_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.target_amount).value()) :
+            std::nullopt;
     r.strike = v.strike;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -86,15 +106,24 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
     r.fx_index = v.fx_index;
     r.reference_currency =
         v.reference_currency.empty() ? std::nullopt : std::optional(v.reference_currency);
-    r.reference_notional = v.reference_notional;
+    r.reference_notional = v.reference_notional.has_value() ?
+                               std::optional(v.reference_notional->to_string()) :
+                               std::nullopt;
     r.settlement_currency =
         v.settlement_currency.empty() ? std::nullopt : std::optional(v.settlement_currency);
-    r.settlement_notional = v.settlement_notional;
-    r.payment_date = v.payment_date.empty() ? std::nullopt : std::optional(v.payment_date);
+    r.settlement_notional = v.settlement_notional.has_value() ?
+                                std::optional(v.settlement_notional->to_string()) :
+                                std::nullopt;
+    r.payment_date =
+        v.payment_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.payment_date)) :
+            std::nullopt;
     r.long_short = v.long_short.empty() ? std::nullopt : std::optional(v.long_short);
     r.currency = v.currency.empty() ? std::nullopt : std::optional(v.currency);
-    r.fixing_amount = v.fixing_amount;
-    r.target_amount = v.target_amount;
+    r.fixing_amount =
+        v.fixing_amount.has_value() ? std::optional(v.fixing_amount->to_string()) : std::nullopt;
+    r.target_amount =
+        v.target_amount.has_value() ? std::optional(v.target_amount->to_string()) : std::nullopt;
     r.strike = v.strike;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

@@ -109,6 +109,8 @@ std::string("RIC:.SPX")
 
 ISO 4217 currency code.
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -116,15 +118,14 @@ std::string("USD")
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Payoff notional / contract size. Must be positive.
 
 #+begin_src cpp :name generator
-1000.0
+ores::utility::decimal::decimal::from_string("1000").value()
 #+end_src
 
 ** option_type
@@ -136,6 +137,9 @@ Payoff notional / contract size. Must be positive.
 
 Call or Put; empty for touch options.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -143,24 +147,28 @@ std::string("Call")
 ** strike
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Digital only; absent for touch.
 
 #+begin_src cpp :name generator
-std::make_optional(3300.0)
+std::make_optional(ores::utility::decimal::decimal::from_string("3300").value())
 #+end_src
 
 ** barrier_level
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
 Touch only; absent for digital.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
 
 ** barrier_type
 :PROPERTIES:
@@ -171,17 +179,20 @@ Touch only; absent for digital.
 
 e.g. UpIn, DownOut; empty for digital.
 
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+
+
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 ISO 8601 date string.
 
 #+begin_src cpp :name generator
-std::string("2026-07-17")
+std::chrono::year_month_day{std::chrono::year{2026}/7/17}
 #+end_src
 
 ** long_short
@@ -200,7 +211,7 @@ std::string("Long")
 ** payout_amount
 :PROPERTIES:
 :type:     numeric(28, 10)
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
@@ -231,6 +242,8 @@ Optional free-text description.
 | "currency" <> '' |
 | "trade_type_code" in ('EquityDigitalOption', 'EquityTouchOption') |
 | ("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" = 'EquityTouchOption' and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null) |
+| "option_type" is null or "option_type" in ('Call', 'Put') |
+| "barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 
 ** Indexes
 
@@ -238,15 +251,6 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -282,8 +286,10 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

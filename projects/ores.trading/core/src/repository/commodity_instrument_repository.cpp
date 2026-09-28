@@ -17,14 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/commodity_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/commodity_instrument_entity.hpp"
 #include "ores.trading.core/repository/commodity_instrument_mapper.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/domain/protocol.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
@@ -38,134 +42,295 @@ std::string commodity_instrument_repository::sql() {
     return generate_create_table_sql<commodity_instrument_entity>(lg());
 }
 
+ores::utility::domain::precondition
+commodity_instrument_repository::replace_claim(context ctx, const domain::commodity_instrument& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.instrument_id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().identity.version)};
+}
+
+domain::commodity_instrument
+commodity_instrument_repository::apply_claim(context ctx,
+                                             const domain::commodity_instrument& v,
+                                             const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.identity.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current =
+                read_latest(ctx, boost::uuids::to_string(v.identity.instrument_id));
+            t.identity.version = current.empty() ? 0 : current.front().identity.version;
+            break;
+        }
+    }
+    return t;
+}
+
 void commodity_instrument_repository::write(context ctx, const domain::commodity_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing commodity_instrument: " << v.identity.instrument_id;
-    execute_write_query(ctx,
-                        commodity_instrument_mapper::map(v),
-                        lg(),
-                        "Writing commodity_instrument to database.");
+    write(ctx, v, replace_claim(ctx, v));
 }
 
 void commodity_instrument_repository::write(context ctx,
                                             const std::vector<domain::commodity_instrument>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing commodity_instruments. Count: " << v.size();
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void commodity_instrument_repository::write(context ctx,
+                                            const domain::commodity_instrument& v,
+                                            const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing commodity instrument. "
+                               << "instrument_id: " << v.identity.instrument_id;
+    const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
-                        commodity_instrument_mapper::map(v),
+                        commodity_instrument_mapper::map(t),
                         lg(),
-                        "Writing commodity_instruments to database.");
+                        "Writing commodity instrument to database.");
+}
+
+void commodity_instrument_repository::write(
+    context ctx,
+    const std::vector<domain::commodity_instrument>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing commodity instruments. Count: " << v.size();
+    std::vector<domain::commodity_instrument> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    execute_write_query(ctx,
+                        commodity_instrument_mapper::map(batch),
+                        lg(),
+                        "Writing commodity instruments to database.");
 }
 
 std::vector<domain::commodity_instrument>
 commodity_instrument_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("instrument_id"_c);
+        return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
+            ctx,
+            query,
+            [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
+            lg(),
+            "Reading latest commodity instruments (workspace resolution chain).");
+    }
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<commodity_instrument_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c);
 
     return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
         ctx,
         query,
         [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest commodity_instruments");
+        "Reading latest commodity instruments");
+}
+
+std::vector<domain::commodity_instrument>
+commodity_instrument_repository::read_latest(context ctx, const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity instrument. "
+                               << "instrument_id: " << instrument_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+
+    return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
+        ctx,
+        query,
+        [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
+        lg(),
+        "Reading latest commodity instrument by instrument_id.");
+}
+
+
+std::vector<domain::commodity_instrument>
+commodity_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all commodity instrument versions. "
+                               << "instrument_id: " << instrument_id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
+        ctx,
+        query,
+        [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
+        lg(),
+        "Reading all commodity instrument versions by instrument_id.");
+}
+
+std::optional<domain::commodity_instrument> commodity_instrument_repository::read_at_version(
+    context ctx, const std::string& instrument_id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading commodity instrument at version. "
+                               << "instrument_id: " << instrument_id << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
+            ctx,
+            query,
+            [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
+            lg(),
+            "Reading commodity instrument at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+commodity_instrument_repository::remove_status commodity_instrument_repository::remove(
+    context ctx, const std::string& instrument_id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing commodity instrument. "
+                               << "instrument_id: " << instrument_id;
+    const auto current = read_latest(ctx, instrument_id);
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().identity.version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<commodity_instrument_entity> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
+
+    execute_delete_query(ctx, query, lg(), "Removing commodity instrument from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, instrument_id).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void commodity_instrument_repository::remove(context ctx, const std::string& instrument_id) {
+    static_cast<void>(remove(ctx, instrument_id, std::nullopt));
 }
 
 std::vector<domain::commodity_instrument> commodity_instrument_repository::read_latest(
     context ctx, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity_instruments with offset: " << offset
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity instruments with offset: " << offset
                                << " and limit: " << limit;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<commodity_instrument_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
         ctx,
         query,
         [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest commodity_instruments with pagination");
+        "Reading latest commodity instruments with pagination.");
 }
 
-std::uint32_t commodity_instrument_repository::count_latest(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting latest commodity_instruments";
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
+std::uint32_t commodity_instrument_repository::get_total_commodity_instrument_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active commodity instrument count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::select_from<commodity_instrument_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active commodity_instrument count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active commodity instrument count: " << count;
     return count;
 }
 
 std::vector<domain::commodity_instrument>
-commodity_instrument_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity_instrument. id: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
-
-    return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
-        ctx,
-        query,
-        [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
-        lg(),
-        "Reading latest commodity_instrument by id.");
-}
-
-std::vector<domain::commodity_instrument>
-commodity_instrument_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all commodity_instrument versions. id: " << id;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
-
-    return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
-        ctx,
-        query,
-        [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
-        lg(),
-        "Reading all commodity_instrument versions by id.");
-}
-
-void commodity_instrument_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing commodity_instrument: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<commodity_instrument_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing commodity_instrument from database.");
-}
-
-
-std::vector<domain::commodity_instrument>
-commodity_instrument_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty())
+commodity_instrument_repository::read_latest(context ctx,
+                                             const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
         return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
         ctx,
         query,
         [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest commodity_instruments by ids.");
+        "Reading latest commodity instruments by ids.");
+    return result;
 }
+
+void commodity_instrument_repository::remove(context ctx,
+                                             const std::vector<std::string>& instrument_ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (instrument_ids.empty())
+        return;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<commodity_instrument_entity> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing commodity instruments.");
+}
+
 
 }

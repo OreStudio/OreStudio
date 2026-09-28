@@ -45,17 +45,17 @@ struct equity_barrier_option_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::string underlying_name;
     std::string currency;
-    double notional;
+    ores::utility::decimal::decimal notional;
     std::string option_type;
-    double strike;
-    std::string expiry_date;
+    ores::utility::decimal::decimal strike;
+    std::chrono::year_month_day expiry_date;
     std::string exercise_type;
     std::string long_short;
-    double lower_barrier;
+    ores::utility::decimal::decimal lower_barrier;
     std::string lower_barrier_type;
-    std::optional<double> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string upper_barrier_type;
-    std::optional<double> rebate;
+    std::optional<ores::utility::decimal::decimal> rebate;
     std::string description;
 };
 
@@ -174,7 +174,8 @@ struct put_equity_barrier_option_instrument_request {
 
 struct put_equity_barrier_option_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_barrier_option_instrument equity_barrier_option_instrument;
+    std::optional<ores::trading::domain::equity_barrier_option_instrument>
+        equity_barrier_option_instrument;
 };
 
 struct put_many_equity_barrier_option_instruments_request {
@@ -276,7 +277,7 @@ struct get_equity_barrier_option_instrument_version_request {
 
 struct get_equity_barrier_option_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_barrier_option_instrument version;
+    std::optional<ores::trading::domain::equity_barrier_option_instrument> version;
 };
 
 /**

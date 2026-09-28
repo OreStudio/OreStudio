@@ -93,7 +93,7 @@ def test_trade_resolves_every_column_through_a_group():
 def test_trade_carries_the_field_types_the_converter_needs():
     de = load_org_model(TRADE)["domain_entity"]
     by_name = {f["name"]: f["cpp_type"] for f in de["domain_group_fields"]}
-    assert by_name["lifecycle.trade_date"] == "std::optional<std::string>"
+    assert by_name["lifecycle.trade_date"] == "std::optional<std::chrono::year_month_day>"
     assert by_name["identity.id"] == "boost::uuids::uuid"
 
 

@@ -17,23 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/scripted_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<scripted_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Script Name" << "Description" << "Modified By"
-          << "Version" << fort::endr;
+    table << fort::header << "ID" << "Type" << "Script" << "Description" << "Recorded At"
+          << fort::endr;
 
-    for (const auto& t : v) {
-        table << boost::uuids::to_string(t.identity.instrument_id) << t.identity.trade_type_code
-              << t.script_name << t.description << t.audit.modified_by << t.identity.version
-              << fort::endr;
+    for ([[maybe_unused]] const auto& si : v) {
+        table << si.identity.instrument_id << si.identity.trade_type_code << si.script_name
+              << si.description << si.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

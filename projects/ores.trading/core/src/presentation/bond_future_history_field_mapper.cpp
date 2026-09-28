@@ -36,21 +36,28 @@ render_bond_future_fields(const domain::bond_future& v) {
 
     fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
     fields.push_back({.name = "Contract Name", .value = v.contract_name});
-    fields.push_back({.name = "Contract Notional", .value = std::to_string(v.contract_notional)});
+    fields.push_back({.name = "Contract Notional", .value = v.contract_notional.to_string()});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Contract Month", .value = v.contract_month});
     fields.push_back({.name = "Deliverable Grade", .value = v.deliverable_grade});
-    fields.push_back({.name = "Fair Price", .value = std::to_string(v.fair_price)});
+    fields.push_back({.name = "Fair Price", .value = v.fair_price.to_string()});
     fields.push_back({.name = "Settlement", .value = v.settlement});
     fields.push_back({.name = "Settlement Dirty", .value = v.settlement_dirty ? "true" : "false"});
-    fields.push_back({.name = "Root Date", .value = v.root_date});
+    fields.push_back({.name = "Root Date",
+                      .value = v.root_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.root_date) :
+                                   std::string{}});
     fields.push_back({.name = "Expiry Basis", .value = v.expiry_basis});
     fields.push_back({.name = "Settlement Basis", .value = v.settlement_basis});
     fields.push_back({.name = "Expiry Lag", .value = std::to_string(v.expiry_lag)});
     fields.push_back({.name = "Settlement Lag", .value = std::to_string(v.settlement_lag)});
-    fields.push_back({.name = "Last Trading Date", .value = v.last_trading_date});
-    fields.push_back({.name = "Last Delivery Date", .value = v.last_delivery_date});
+    fields.push_back(
+        {.name = "Last Trading Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.last_trading_date)});
+    fields.push_back(
+        {.name = "Last Delivery Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.last_delivery_date)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

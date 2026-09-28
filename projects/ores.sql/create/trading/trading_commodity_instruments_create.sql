@@ -17,32 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Commodity Instruments Table
---
--- Holds commodity economics for all commodity ORE product types. The
--- trade_type_code discriminates the exact product. Optional fields are NULL
--- when not applicable to the sub-type:
---   option_type/strike_price/exercise_type: option products only
---   average_type/averaging_start_date/averaging_end_date: Asian/average-price
---   spread_commodity_code/spread_amount: spread options
---   strip_frequency_code: option strips
---   variance_strike: variance swap products
---   accumulation_amount/knock_out_barrier: accumulator/TaRF products
---   barrier_type/lower_barrier/upper_barrier: barrier option products
---   basket_json: basket/rainbow/worst-of products
---   day_count_code/payment_frequency_code: swap products
---   swaption_expiry_date: CommoditySwaption
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Commodity Instrument Table
+ *
+ * Represents every commodity product type ORE states. trade_type_code
+ * discriminates the exact product, and each optional field block is null
+ * when the sub-type does not state it: the option block for option
+ * products, the pricing block for average-price and spread products, and
+ * the exotic block for variance, accumulator, barrier and basket
+ * products.
+ *
+ * A basket product's constituents are not a column: each is a row of
+ * ores.trading.commodity_basket_constituent, keyed to this instrument and
+ * its ordinal in the document. A text column held the list as a JSON array
+ * and could not be typed, indexed or questioned, so the collection is a
+ * child table now.
+ */
 
 create table if not exists "ores_trading_commodity_instruments_tbl" (
-    "id" uuid not null,
+    "instrument_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_type_code" text not null,
     "party_id" uuid not null,
     "trade_id" uuid null,
-    "trade_type_code" text not null,
     "commodity_code" text not null,
     "currency" text not null,
     "quantity" numeric(28, 10) not null,
@@ -65,8 +67,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "barrier_type" text null,
     "lower_barrier" numeric(28, 10) null,
     "upper_barrier" numeric(28, 10) null,
-    "basket_json" text null,
-    "day_count_code" text null,
+    "day_count_fraction_code" text null,
     "payment_frequency_code" text null,
     "swaption_expiry_date" date null,
     "description" text null,
@@ -77,14 +78,14 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, instrument_id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        instrument_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("quantity" > 0),
     check ("commodity_code" <> ''),
     check ("currency" <> ''),
@@ -92,39 +93,36 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
     check ("exercise_type" is null or "exercise_type" in ('European', 'American')),
     check ("average_type" is null or "average_type" in ('Arithmetic', 'Geometric')),
-    check ("barrier_type" is null or "barrier_type" in ('UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut'))
+    check ("barrier_type" is null or "barrier_type" in ('UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut')),
+    check ("payment_frequency_code" is null or "payment_frequency_code" in ('Once', 'Annual', 'Semiannual', 'Quarterly', 'Bimonthly', 'Monthly', 'Lunarmonth', 'Weekly', 'Daily')),
+    check ("trade_type_code" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01'))
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists commodity_instruments_version_uniq_idx
-on "ores_trading_commodity_instruments_tbl" (tenant_id, id, version)
+on "ores_trading_commodity_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists commodity_instruments_id_uniq_idx
-on "ores_trading_commodity_instruments_tbl" (tenant_id, id)
+on "ores_trading_commodity_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists commodity_instruments_tenant_idx
 on "ores_trading_commodity_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for party isolation
 create index if not exists commodity_instruments_party_idx
 on "ores_trading_commodity_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Trade type index for product filtering
-create index if not exists commodity_instruments_trade_type_idx
-on "ores_trading_commodity_instruments_tbl" (tenant_id, trade_type_code)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists commodity_instruments_trade_id_idx
 on "ores_trading_commodity_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
+
+create index if not exists commodity_instruments_trade_type_idx
+on "ores_trading_commodity_instruments_tbl" (tenant_id, trade_type_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists commodity_instruments_workspace_idx
 on "ores_trading_commodity_instruments_tbl" (workspace_id)
@@ -138,17 +136,11 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
-
-    -- Validate payment_frequency_code (optional)
-    if NEW.payment_frequency_code is not null then
-        NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(
-            NEW.tenant_id, NEW.payment_frequency_code);
-    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -157,45 +149,60 @@ begin
     select version into current_version
     from "ores_trading_commodity_instruments_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and instrument_id = NEW.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if NEW.version != 0 and NEW.version != current_version then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_commodity_instruments_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_commodity_instruments_insert_trg
 before insert on "ores_trading_commodity_instruments_tbl"
 for each row execute function ores_trading_commodity_instruments_insert_fn();
 
 create or replace rule ores_trading_commodity_instruments_delete_rule as
-on delete to "ores_trading_commodity_instruments_tbl" do instead
+on delete to "ores_trading_commodity_instruments_tbl" do instead (
     update "ores_trading_commodity_instruments_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and instrument_id = OLD.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

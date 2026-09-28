@@ -52,7 +52,7 @@ struct fx_digital_option_instrument_entity {
     std::string foreign_currency;
     std::string domestic_currency;
     std::string payoff_currency;
-    double payoff_amount = 0.0;
+    std::string payoff_amount;
     std::optional<std::string> option_type;
     std::string expiry_date;
     std::string long_short;

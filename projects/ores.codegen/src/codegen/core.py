@@ -62,6 +62,21 @@ _ENTITY_STRUCT_FLAGS = (
     # A value type reaches the struct as the string it wraps, so it is a
     # member like any other and not a hole.
     'is_value_type',
+    # A plain date column's domain member is std::chrono::year_month_day (or
+    # its optional) while the entity member is the ISO-8601 std::string the
+    # database stores -- sqlgen cannot bind year_month_day. The template pairs
+    # these flags with a std::string/std::optional<std::string> member, so
+    # without them the guard would refuse a shape the template carries.
+    'is_required_date',
+    'is_optional_date',
+    # A money column's domain member is ores::utility::decimal::decimal (or
+    # its optional) while the entity member is the exact decimal std::string
+    # the numeric column binds -- sqlgen cannot bind a multiprecision type.
+    # The template pairs these flags with a std::string/std::optional<
+    # std::string> member, so without them the guard would refuse a shape the
+    # template carries.
+    'is_required_decimal',
+    'is_optional_decimal',
     'is_simple',
 )
 
@@ -1821,6 +1836,40 @@ def _prepare_enum_write_fields(domain_entity: dict[str, Any]) -> None:
             or f"{enum_type}{{}}")
 
 
+def _prepare_date_write_fields(domain_entity: dict[str, Any]) -> None:
+    """State the ISO-8601 conversion a write field needs when its member is a date.
+
+    A grouped entity's wire record carries the column's own text spelling,
+    while the domain member its field group declares is a calendar date or an
+    instant: the column's ``:cpp_type:`` describes the row, and the two
+    genuinely differ. The service cannot assign one to the other, so it parses
+    the text. Mirrors _prepare_enum_write_fields: only a text wire whose group
+    member is typed needs the conversion, and a column already typed on the
+    wire is left alone.
+
+    A date parses through from_iso8601_date; an instant through
+    from_iso8601_utc, the platform's canonical wire spelling. An empty wire
+    field leaves the optional member unset rather than parsing an empty
+    string.
+    """
+    by_member = {
+        field["name"]: field
+        for field in domain_entity.get("domain_group_fields") or []
+    }
+    for field in domain_entity.get("write_fields") or []:
+        wire_type = (field.get("cpp_type") or "").strip()
+        if wire_type != "std::string":
+            continue
+        member = by_member.get(field.get("domain_member") or "")
+        member_type = ((member or {}).get("cpp_type") or wire_type).strip()
+        if member_type in ("std::chrono::year_month_day",
+                           "std::optional<std::chrono::year_month_day>"):
+            field["date_from_string"] = True
+        elif member_type in ("std::chrono::system_clock::time_point",
+                             "std::optional<std::chrono::system_clock::time_point>"):
+            field["timestamp_from_string"] = True
+
+
 def _protocol_owned_by_operation(model_path, entity) -> bool:
     """Whether an operation model beside this one owns the entity's protocol.
 
@@ -2494,6 +2543,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['name'].split('.', 1)[1]: (f.get('cpp_type') or '').strip()
                 for f in domain_entity.get('domain_group_fields', []) or []
             }
+            # The plain (non-key) columns, by identity: the loop below also
+            # walks natural keys and primary-key columns, which carry their
+            # own is_date projection and must not be re-flagged here.
+            _plain_column_ids = {id(c) for c in domain_entity['columns']}
             # Add type flags and iterator_var for protocol serialization
             for col in (domain_entity['columns']
                         + list(domain_entity.get('natural_keys') or [])
@@ -2512,10 +2565,74 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 )
                 is_enum_type = col.get('is_enum', False)
                 is_inet_address_type = 'boost::asio::ip::address' in col.get('cpp_type', '')
+                # A plain date column: the domain member is
+                # std::chrono::year_month_day (or its optional), but sqlgen
+                # cannot bind year_month_day -- its parsing layer rejects the
+                # type with a static_assert -- so the entity member stays the
+                # ISO-8601 std::string the database column stores, exactly as
+                # the refdata date columns already do, and the mapper converts
+                # at the boundary. The domain type is read from the resolved
+                # domain type, not the raw :cpp_type:, so a domain-grouped
+                # column (whose entity model declares the row type, std::string,
+                # while the field group declares the member) is covered too.
+                _domain_cpp_type = _domain_type_of.get(
+                    col.get('name'), (col.get('cpp_type') or '').strip()
+                )
+                is_date_domain = _domain_cpp_type in (
+                    'std::chrono::year_month_day',
+                    'std::optional<std::chrono::year_month_day>',
+                )
+                col['is_date'] = bool(
+                    id(col) in _plain_column_ids
+                    and col.get('type') == 'date'
+                    and is_date_domain
+                )
+                col['is_optional_date'] = col['is_date'] and col.get('nullable', False)
+                col['is_required_date'] = col['is_date'] and not col.get('nullable', False)
+                # A money column: the domain member is the exact decimal of
+                # ores.utility and the database column is numeric, which sqlgen
+                # binds as the text it already is but cannot hold a
+                # boost::multiprecision value. The entity member is therefore
+                # the decimal's canonical std::string and the mapper parses and
+                # renders at the boundary, the same seam a plain date uses. The
+                # projection keys on the resolved domain type, never on
+                # ':type: numeric' alone: rates, volatilities and correlations
+                # are numeric too and stay double, so only a column that names
+                # the decimal on its domain member moves.
+                is_numeric_sql_type = str(col.get('type', '')).strip().lower().startswith('numeric')
+                is_decimal_domain = _domain_cpp_type in (
+                    'ores::utility::decimal::decimal',
+                    'std::optional<ores::utility::decimal::decimal>',
+                )
+                col['is_decimal'] = bool(
+                    id(col) in _plain_column_ids
+                    and is_numeric_sql_type
+                    and is_decimal_domain
+                )
+                col['is_optional_decimal'] = col['is_decimal'] and col.get('nullable', False)
+                col['is_required_decimal'] = col['is_decimal'] and not col.get('nullable', False)
+                # A key column is reached through the entity's own key
+                # projections, none of which carries the decimal: the primary
+                # key is a sqlgen::PrimaryKey<std::string> and the natural-key
+                # block renders the raw cpp_type, so a decimal key would reach
+                # the entity as the domain type and sqlgen would refuse it.
+                # Refuse the shape here, where the reason is known, rather
+                # than emit an entity that cannot compile.
+                if (is_numeric_sql_type and is_decimal_domain
+                        and id(col) not in _plain_column_ids):
+                    raise ValueError(
+                        f"column '{col.get('name')}' is a key and its :cpp_type: is "
+                        f"the decimal type. The decimal projection covers plain "
+                        f"columns only, so a key would be generated as the domain "
+                        f"type and left unmapped. Model the key as the text the "
+                        f"decimal stores, or drop the decimal type from this column."
+                    )
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
                     and not is_uuid_type
                     and not is_timestamp_type
+                    and not col['is_date']
+                    and not col['is_decimal']
                 )
                 col['is_already_optional'] = is_already_optional
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
@@ -2572,6 +2689,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_timestamp_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_date']
+                    and not col['is_decimal']
                     and col.get('cpp_type') == 'std::string'
                 )
                 # A nullable numeric (or bool) column whose domain member is
@@ -2586,6 +2705,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_timestamp_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_decimal']
                     and col.get('cpp_type') in (
                         'int', 'std::int64_t', 'std::uint64_t', 'double', 'float', 'bool'
                     )
@@ -2597,6 +2717,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_inet_address_type
                     and not is_enum_type
                     and not is_already_optional
+                    and not col['is_date']
+                    and not col['is_decimal']
                     and not col['is_base64']
                     and not col['is_value_type']
                 )
@@ -2659,6 +2781,34 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['render_is_optional_timestamp'] = (
                     _render_cpp_type.startswith('std::optional<') and 'time_point' in _render_cpp_type
                 )
+                # A plain date's domain member renders through the ISO-8601
+                # helpers; key date columns already branch on is_date in their
+                # own template sections, so these flags exist for the plain
+                # column blocks (mapper and history field mapper).
+                col['render_is_date'] = _render_cpp_type == 'std::chrono::year_month_day'
+                col['render_is_optional_date'] = (
+                    _render_cpp_type == 'std::optional<std::chrono::year_month_day>'
+                )
+                # A money column's domain member renders through its own
+                # to_string(), which is the exact text the wire and the
+                # database column carry. These flags exist for the history
+                # field mapper, whose fields a std::to_string(decimal) would
+                # not reach.
+                col['render_is_decimal'] = _render_cpp_type == 'ores::utility::decimal::decimal'
+                col['render_is_optional_decimal'] = (
+                    _render_cpp_type == 'std::optional<ores::utility::decimal::decimal>'
+                )
+                # A nullable decimal column whose domain member is the bare
+                # decimal cannot state its absence: NULL and the value zero
+                # would be the same member. Refuse rather than map NULL to
+                # zero, which would turn an absent amount into a real one.
+                if col['is_optional_decimal'] and not col['render_is_optional_decimal']:
+                    raise ValueError(
+                        f"column '{col.get('name')}' is a nullable decimal column "
+                        f"whose :cpp_type: is '{_render_cpp_type}'. A nullable "
+                        f"amount states its absence with an optional, so declare "
+                        f"':cpp_type: std::optional<ores::utility::decimal::decimal>'."
+                    )
                 # Derived from the raw is_enum flag, not the nullable-narrowed
                 # col['is_enum'] above -- render_* flags must match the
                 # domain struct's actual field type (see the module
@@ -2783,6 +2933,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # asks for it, so neither drags the conversion in for every entity.
             domain_entity['has_base64_columns'] = any(
                 c.get('is_base64') for c in domain_entity['columns']
+            )
+            # The mapper's own include gate for the ISO-8601 date conversion:
+            # the mapper template pulls in ores.platform/time/datetime.hpp
+            # rather than relying on a transitive include from the domain
+            # header, the same way has_inet_columns does for make_address.
+            domain_entity['has_plain_date_columns'] = any(
+                c.get('is_date') for c in domain_entity['columns']
+            )
+            # The mapper's own include gate for the decimal conversion: the
+            # mapper template pulls in ores.utility/decimal/decimal.hpp rather
+            # than relying on a transitive include from the domain header.
+            domain_entity['has_decimal_columns'] = any(
+                c.get('is_decimal') for c in domain_entity['columns']
             )
         # Field-group contract: detect identity/audit group annotations and
         # mark each column so templates can emit nested-struct form.
@@ -4521,6 +4684,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)
         _prepare_enum_write_fields(domain_entity)
+        _prepare_date_write_fields(domain_entity)
         # The same list as operations, which is what the service and handler
         # state their methods from: one name per operation, so the subject,
         # the service method and the handler method cannot drift apart.

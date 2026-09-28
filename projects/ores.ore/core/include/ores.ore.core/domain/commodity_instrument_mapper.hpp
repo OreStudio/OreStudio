@@ -24,6 +24,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 
 namespace ores::ore::domain {
 
@@ -38,9 +39,13 @@ namespace ores::ore::domain {
  *   - CommodityVarianceSwap   (varianceSwapData — shared with equity)
  *   - CommodityAveragePriceOption (commodityAveragePriceOptionData)
  *   - CommodityOptionStrip    (commodityOptionStripData)
+ *   - CommodityBasketOption   (basketOptionData — with its constituent list)
  *
  * Forward mapping captures economic fields stored in the ORES relational
  * model. Reverse mapping reconstructs ORE XSD types from ORES domain fields.
+ *
+ * A basket product states an unbounded constituent list; that list is the
+ * instrument's child rows and the carrier returns it beside the instrument.
  */
 class ORES_ORE_CORE_EXPORT commodity_instrument_mapper {
 private:
@@ -62,6 +67,15 @@ public:
     static trading::domain::commodity_instrument forward_commodity_apo(const trade& t);
     static trading::domain::commodity_instrument forward_commodity_option_strip(const trade& t);
 
+    /**
+     * @brief Forward-maps a CommodityBasketOption, constituents included.
+     *
+     * The document's Underlyings list becomes one commodity_basket_constituent
+     * per member, keyed by the member's ordinal in the list.
+     */
+    static trading::domain::commodity_instrument_data
+    forward_commodity_basket_option(const trade& t);
+
     // Reverse mappings
     static trade
     reverse_commodity_forward(const ores::trading::domain::commodity_instrument& instr);
@@ -74,6 +88,16 @@ public:
     static trade reverse_commodity_apo(const ores::trading::domain::commodity_instrument& instr);
     static trade
     reverse_commodity_option_strip(const ores::trading::domain::commodity_instrument& instr);
+
+    /**
+     * @brief Reverse-maps a CommodityBasketOption from its instrument and rows.
+     *
+     * The rows rebuild the document's Underlyings list in ordinal order, each
+     * with the name and, when the row states one, the weight.
+     */
+    static trade reverse_commodity_basket_option(
+        const ores::trading::domain::commodity_instrument& instr,
+        const std::vector<ores::trading::domain::commodity_basket_constituent>& constituents);
 };
 
 }

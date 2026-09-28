@@ -67,6 +67,9 @@ struct ascot final {
 
     /**
      * @brief Option type of the conversion option (Call, Put).
+     *
+     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
+     * Put). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string ascot_option_type;
 

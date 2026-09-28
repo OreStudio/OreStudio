@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: A09F91EA-DF8C-41EE-853E-3F62274B3ED9
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.return_type
+#+description: Codegen entity model for the trading =return_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Equity leg return type (Total or Price).
+#+entity_singular: return_type
+#+entity_plural: return_types
+#+entity_title: Return Type
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Reference data table defining the closed return type set of an equity leg.
+ORE states =EquityLegData.ReturnType= as a bare =xs:string=
+(=external/ore/xsd/instruments.xsd=, lines 856 and 1127), so there is no XSD
+enum to read. The set is the one the ORE example corpus actually uses: every
+=ReturnType= element across =external/ore/examples/= is either =Total= or
+=Price=, and nothing else. The list is therefore the corpus's, not the model's
+own: the model previously carried =TotalReturn= and =PriceReturn=, and only
+=TotalReturn= was ever written, by a mapper default that no ORE document
+supports.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique return type code.
+
+Examples: 'Total', 'Price'.
+
+#+begin_src cpp :name generator
+std::string("Total")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the return type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_return_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_return_type_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: return_type
+:entity_plural_short:   return_types
+:entity_singular_words: return type
+:entity_plural_words:   return types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ret
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

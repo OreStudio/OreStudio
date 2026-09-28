@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_COMMODITY_INSTRUMENT_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_COMMODITY_INSTRUMENT_ENTITY_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_COMMODITY_INSTRUMENT_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_COMMODITY_INSTRUMENT_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -37,37 +42,36 @@ struct commodity_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_commodity_instruments_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> instrument_id;
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string trade_type_code;
     std::string party_id;
     std::optional<std::string> trade_id;
-    std::string trade_type_code;
     std::string commodity_code;
     std::string currency;
     double quantity = 0.0;
     std::string unit;
     std::optional<std::string> start_date;
     std::optional<std::string> maturity_date;
-    std::optional<double> fixed_price;
+    std::optional<std::string> fixed_price;
     std::optional<std::string> option_type;
-    std::optional<double> strike_price;
+    std::optional<std::string> strike_price;
     std::optional<std::string> exercise_type;
     std::optional<std::string> average_type;
     std::optional<std::string> averaging_start_date;
     std::optional<std::string> averaging_end_date;
     std::optional<std::string> spread_commodity_code;
-    std::optional<double> spread_amount;
+    std::optional<std::string> spread_amount;
     std::optional<std::string> strip_frequency_code;
     std::optional<double> variance_strike;
-    std::optional<double> accumulation_amount;
-    std::optional<double> knock_out_barrier;
+    std::optional<std::string> accumulation_amount;
+    std::optional<std::string> knock_out_barrier;
     std::optional<std::string> barrier_type;
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
-    std::optional<std::string> basket_json;
-    std::optional<std::string> day_count_code;
+    std::optional<std::string> lower_barrier;
+    std::optional<std::string> upper_barrier;
+    std::optional<std::string> day_count_fraction_code;
     std::optional<std::string> payment_frequency_code;
     std::optional<std::string> swaption_expiry_date;
     std::optional<std::string> description;

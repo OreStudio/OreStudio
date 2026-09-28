@@ -51,14 +51,14 @@ struct equity_accumulator_instrument_entity {
     std::optional<std::string> trade_id;
     std::string underlying_name;
     std::string currency;
-    double strike = 0.0;
-    double fixing_amount = 0.0;
+    std::string strike;
+    std::string fixing_amount;
     std::string start_date;
     std::string expiry_date;
     std::string fixing_frequency;
     std::string long_short;
-    std::optional<double> knock_out_level;
-    std::optional<double> target_amount;
+    std::optional<std::string> knock_out_level;
+    std::optional<std::string> target_amount;
     std::optional<std::string> target_type;
     std::string payoff_type;
     std::optional<std::string> description;

@@ -70,7 +70,10 @@ create table if not exists "ores_trading_equity_option_instruments_tbl" (
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
     check ("trade_type_code" in ('EquityOption', 'EquityCliquetOption')),
-    check (("trade_type_code" = 'EquityCliquetOption' and "cliquet_frequency" is not null) or ("trade_type_code" = 'EquityOption' and "cliquet_frequency" is null))
+    check (("trade_type_code" = 'EquityCliquetOption' and "cliquet_frequency" is not null) or ("trade_type_code" = 'EquityOption' and "cliquet_frequency" is null)),
+    check ("option_type" in ('Call', 'Put')),
+    check ("exercise_type" in ('European', 'Bermudan', 'American')),
+    check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -116,9 +119,6 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

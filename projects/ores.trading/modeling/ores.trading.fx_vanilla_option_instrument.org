@@ -100,15 +100,14 @@ std::string("EUR")
 ** bought_amount
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Amount bought in bought_currency. Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** sold_currency
@@ -127,15 +126,14 @@ std::string("USD")
 ** sold_amount
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Amount sold in sold_currency. Must be positive.
 
 #+begin_src cpp :name generator
-1100000.0
+ores::utility::decimal::decimal::from_string("1100000").value()
 #+end_src
 
 ** option_type
@@ -147,6 +145,9 @@ Amount sold in sold_currency. Must be positive.
 
 Option type: Call or Put.
 
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+
+
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -154,14 +155,14 @@ std::string("Call")
 ** expiry_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Option expiry date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** exercise_style
@@ -172,6 +173,9 @@ std::string("2025-01-15")
 :END:
 
 Exercise style: European or American.
+
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -220,15 +224,6 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -264,7 +259,9 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_variance_swap_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -50,10 +51,10 @@ generate_synthetic_equity_variance_swap_instrument(utility::generation::generati
     r.identity.party_id = ctx.generate_uuid();
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
-    r.notional = 1000000.0;
+    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.variance_strike = 0.04;
-    r.start_date = std::string("2024-01-15");
-    r.maturity_date = std::string("2025-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -47,13 +49,17 @@ struct equity_variance_swap_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Vega notional. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Strike variance.
@@ -63,12 +69,12 @@ struct equity_variance_swap_instrument final {
     /**
      * @brief ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief ISO 8601 date string (YYYY-MM-DD).
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Long or Short.

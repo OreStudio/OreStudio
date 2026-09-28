@@ -46,8 +46,8 @@ struct equity_forward_instrument_write {
     std::string underlying_name;
     std::string currency;
     double quantity;
-    std::optional<double> forward_price;
-    std::string expiry_date;
+    std::optional<ores::utility::decimal::decimal> forward_price;
+    std::chrono::year_month_day expiry_date;
     std::string long_short;
     std::string settlement_type;
     std::string description;
@@ -162,7 +162,7 @@ struct put_equity_forward_instrument_request {
 
 struct put_equity_forward_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_forward_instrument equity_forward_instrument;
+    std::optional<ores::trading::domain::equity_forward_instrument> equity_forward_instrument;
 };
 
 struct put_many_equity_forward_instruments_request {
@@ -262,7 +262,7 @@ struct get_equity_forward_instrument_version_request {
 
 struct get_equity_forward_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_forward_instrument version;
+    std::optional<ores::trading::domain::equity_forward_instrument> version;
 };
 
 /**

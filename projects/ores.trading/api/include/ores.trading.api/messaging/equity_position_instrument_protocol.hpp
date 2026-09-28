@@ -46,8 +46,7 @@ struct equity_position_instrument_write {
     std::string underlying_name;
     std::string currency;
     double quantity;
-    std::optional<double> price;
-    std::string option_data_json;
+    std::optional<ores::utility::decimal::decimal> price;
     std::string description;
 };
 
@@ -160,7 +159,7 @@ struct put_equity_position_instrument_request {
 
 struct put_equity_position_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_position_instrument equity_position_instrument;
+    std::optional<ores::trading::domain::equity_position_instrument> equity_position_instrument;
 };
 
 struct put_many_equity_position_instruments_request {
@@ -261,7 +260,7 @@ struct get_equity_position_instrument_version_request {
 
 struct get_equity_position_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::equity_position_instrument version;
+    std::optional<ores::trading::domain::equity_position_instrument> version;
 };
 
 /**

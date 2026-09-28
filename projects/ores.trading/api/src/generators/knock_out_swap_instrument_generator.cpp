@@ -48,8 +48,8 @@ generate_synthetic_knock_out_swap_instrument(utility::generation::generation_con
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("KnockOutSwap");
     r.identity.party_id = ctx.generate_uuid();
-    r.start_date = std::string("2024-01-15");
-    r.maturity_date = std::string("2029-01-15");
+    r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
+    r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.barrier_level = 0.05;
     r.barrier_type = std::string("UpAndOut");
     r.audit.modified_by = modified_by;

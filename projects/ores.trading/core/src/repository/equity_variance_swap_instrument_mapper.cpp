@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/equity_variance_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -49,10 +52,10 @@ equity_variance_swap_instrument_mapper::map(const equity_variance_swap_instrumen
                               std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.variance_strike = v.variance_strike;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
@@ -81,10 +84,10 @@ equity_variance_swap_instrument_mapper::map(const domain::equity_variance_swap_i
                      std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.variance_strike = v.variance_strike;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

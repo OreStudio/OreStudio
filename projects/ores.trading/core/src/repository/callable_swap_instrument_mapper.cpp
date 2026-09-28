@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/callable_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -47,10 +49,8 @@ callable_swap_instrument_mapper::map(const callable_swap_instrument_entity& v) {
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
-    r.call_dates_json = v.call_dates_json.value_or("");
-    r.call_type = v.call_type.value_or("");
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -76,10 +76,8 @@ callable_swap_instrument_mapper::map(const domain::callable_swap_instrument& v) 
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
-    r.call_dates_json = v.call_dates_json.empty() ? std::nullopt : std::optional(v.call_dates_json);
-    r.call_type = v.call_type.empty() ? std::nullopt : std::optional(v.call_type);
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

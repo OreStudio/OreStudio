@@ -59,14 +59,6 @@ register_trade_handlers(ores::nats::service::client& nats,
             h.export_trades_to_storage(std::move(msg));
         }));
 
-    // activity_type has no model yet, so its lookup verb is served here.
-    subs.push_back(nats.queue_subscribe(std::string(get_activity_types_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            trade_handler h(nats, ctx, verifier);
-                                            h.list_activity_types(std::move(msg));
-                                        }));
-
     // Instrument reference data — floating index types and leg types moved
     // to ores.refdata (see ores.refdata.core/messaging/registrar.cpp); trade
     // types are handled by the entity-shaped trade_type handler stack.

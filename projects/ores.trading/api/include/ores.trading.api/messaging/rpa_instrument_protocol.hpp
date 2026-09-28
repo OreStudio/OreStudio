@@ -42,8 +42,8 @@ struct rpa_instrument_key {
 struct rpa_instrument_write {
     boost::uuids::uuid instrument_id;
     std::optional<boost::uuids::uuid> trade_id;
-    std::string start_date;
-    std::string maturity_date;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
     std::string reference_counterparty;
     double participation_rate;
     std::optional<double> protection_fee;
@@ -158,7 +158,7 @@ struct put_rpa_instrument_request {
 
 struct put_rpa_instrument_response {
     ores::utility::domain::result result;
-    ores::trading::domain::rpa_instrument rpa_instrument;
+    std::optional<ores::trading::domain::rpa_instrument> rpa_instrument;
 };
 
 struct put_many_rpa_instruments_request {
@@ -254,7 +254,7 @@ struct get_rpa_instrument_version_request {
 
 struct get_rpa_instrument_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::rpa_instrument version;
+    std::optional<ores::trading::domain::rpa_instrument> version;
 };
 
 /**

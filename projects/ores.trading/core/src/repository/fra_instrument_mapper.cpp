@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/fra_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fra_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -46,13 +49,13 @@ domain::fra_instrument fra_instrument_mapper::map(const fra_instrument_entity& v
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.start_date = v.start_date;
-    r.end_date = v.end_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.end_date = ores::platform::time::datetime::from_iso8601_date(v.end_date);
     r.currency = v.currency;
     r.rate_index = v.rate_index;
     r.long_short = v.long_short;
     r.strike = v.strike;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -77,13 +80,13 @@ fra_instrument_entity fra_instrument_mapper::map(const domain::fra_instrument& v
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.start_date = v.start_date;
-    r.end_date = v.end_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.end_date = ores::platform::time::datetime::to_iso8601_date(v.end_date);
     r.currency = v.currency;
     r.rate_index = v.rate_index;
     r.long_short = v.long_short;
     r.strike = v.strike;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

@@ -74,7 +74,11 @@ create table if not exists "ores_trading_equity_barrier_option_instruments_tbl" 
     check ("strike" >= 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption'))
+    check ("trade_type_code" in ('EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption')),
+    check ("option_type" in ('Call', 'Put')),
+    check ("exercise_type" in ('European', 'Bermudan', 'American')),
+    check ("lower_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
+    check ("upper_barrier_type" is null or "upper_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -120,9 +124,6 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

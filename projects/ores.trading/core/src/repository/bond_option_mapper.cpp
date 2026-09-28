@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_option_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_option_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -41,7 +42,7 @@ domain::bond_option bond_option_mapper::map(const bond_option_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.option_type = v.option_type;
-    r.option_strike = v.option_strike;
+    r.option_strike = ores::utility::decimal::decimal::from_string(v.option_strike).value();
     r.redemption = v.redemption;
     r.price_type = v.price_type;
     r.knocks_out = v.knocks_out;
@@ -63,7 +64,7 @@ bond_option_entity bond_option_mapper::map(const domain::bond_option& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.option_type = v.option_type;
-    r.option_strike = v.option_strike;
+    r.option_strike = v.option_strike.to_string();
     r.redemption = v.redemption;
     r.price_type = v.price_type;
     r.knocks_out = v.knocks_out;

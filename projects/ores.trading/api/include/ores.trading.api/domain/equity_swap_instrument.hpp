@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -58,28 +60,36 @@ struct equity_swap_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
     /**
      * @brief Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
-     * @brief TotalReturn or PriceReturn.
+     * @brief Total or Price.
+     *
+     * Soft FK to ores_trading_return_types_tbl: ORE states EquityLegData.ReturnType as a bare
+     * xs:string, so the set is the one the ORE example corpus uses (Total, Price). PR 4 tightens
+     * the soft reference into a real foreign key.
      */
     std::string return_type;
 
     /**
      * @brief ISO 8601 date.
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief ISO 8601 date.
      */
-    std::string maturity_date;
+    std::chrono::year_month_day maturity_date;
 
     /**
      * @brief Long or Short.
@@ -88,8 +98,12 @@ struct equity_swap_instrument final {
 
     /**
      * @brief e.g. 3M, 6M, 1Y.
+     *
+     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
+     * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
+     * real foreign key.
      */
-    std::string payment_frequency;
+    std::string payment_frequency_code;
 
     /**
      * @brief Optional free-text description.

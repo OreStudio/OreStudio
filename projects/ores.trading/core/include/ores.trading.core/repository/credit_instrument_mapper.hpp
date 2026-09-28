@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_MAPPER_HPP
-#define ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_MAPPER_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_REPOSITORY_CREDIT_INSTRUMENT_MAPPER_HPP
+#define ORES_TRADING_CORE_REPOSITORY_CREDIT_INSTRUMENT_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
@@ -28,7 +33,7 @@
 namespace ores::trading::repository {
 
 /**
- * @brief Maps credit_instrument domain entities to data storage and vice-versa.
+ * @brief Maps credit_instrument domain entities to data storage layer and vice-versa.
  */
 class ORES_TRADING_CORE_EXPORT credit_instrument_mapper {
 private:

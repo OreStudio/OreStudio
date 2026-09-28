@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_EXERCISE_FEE_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_OPTION_EXERCISE_FEE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -71,7 +72,7 @@ struct instrument_option_exercise_fee final {
     /**
      * @brief Amount of the exercise fee.
      */
-    double amount = 0.0;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief Kind of exercise fee the document states.
@@ -85,6 +86,10 @@ struct instrument_option_exercise_fee final {
 
     /**
      * @brief Currency the exercise fee is stated in.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::optional<std::string> currency;
 

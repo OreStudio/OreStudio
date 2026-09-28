@@ -154,7 +154,7 @@ struct put_bond_repo_request {
 
 struct put_bond_repo_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_repo bond_repo;
+    std::optional<ores::trading::domain::bond_repo> bond_repo;
 };
 
 struct put_many_bond_repos_request {
@@ -250,7 +250,7 @@ struct get_bond_repo_version_request {
 
 struct get_bond_repo_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_repo version;
+    std::optional<ores::trading::domain::bond_repo> version;
 };
 
 /**

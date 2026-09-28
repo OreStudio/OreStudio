@@ -24,9 +24,11 @@
  */
 #include "ores.trading.core/repository/vanilla_swap_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -47,8 +49,8 @@ vanilla_swap_instrument_mapper::map(const vanilla_swap_instrument_entity& v) {
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.settlement_lag = v.settlement_lag;
     r.netting_set_id = v.netting_set_id.value_or("");
     r.description = v.description.value_or("");
@@ -76,8 +78,8 @@ vanilla_swap_instrument_mapper::map(const domain::vanilla_swap_instrument& v) {
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.start_date = v.start_date;
-    r.maturity_date = v.maturity_date;
+    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
+    r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.settlement_lag = v.settlement_lag;
     r.netting_set_id = v.netting_set_id.empty() ? std::nullopt : std::optional(v.netting_set_id);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

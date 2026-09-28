@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_STRIKE_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_STRIKE_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -65,7 +66,7 @@ struct instrument_strike final {
     /**
      * @brief The strike stated as a price.
      */
-    std::optional<double> price_value;
+    std::optional<ores::utility::decimal::decimal> price_value;
 
     /**
      * @brief Currency the price strike is stated in.
@@ -85,7 +86,7 @@ struct instrument_strike final {
     /**
      * @brief The strike stated as a bare number, when it did not reach the option fact row.
      */
-    std::optional<double> bare_value;
+    std::optional<ores::utility::decimal::decimal> bare_value;
 
     /**
      * @brief Currency the bare strike is stated in.

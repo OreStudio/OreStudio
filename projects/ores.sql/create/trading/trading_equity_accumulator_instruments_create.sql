@@ -72,7 +72,9 @@ create table if not exists "ores_trading_equity_accumulator_instruments_tbl" (
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
     check ("trade_type_code" in ('EquityAccumulator', 'EquityTaRF')),
-    check (("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null))
+    check (("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null)),
+    check ("payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla')),
+    check ("target_type" is null or "target_type" in ('TargetFull', 'TargetExact'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -118,9 +120,6 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

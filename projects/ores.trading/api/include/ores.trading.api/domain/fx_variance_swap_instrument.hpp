@@ -27,6 +27,8 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -44,17 +46,21 @@ struct fx_variance_swap_instrument final {
     /**
      * @brief Variance observation start date (ISO 8601 date string).
      */
-    std::string start_date;
+    std::chrono::year_month_day start_date;
 
     /**
      * @brief Variance observation end date (ISO 8601 date string).
      *
      * Must be after start_date.
      */
-    std::string end_date;
+    std::chrono::year_month_day end_date;
 
     /**
      * @brief Settlement currency.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -65,6 +71,10 @@ struct fx_variance_swap_instrument final {
 
     /**
      * @brief Position direction: Long or Short.
+     *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string long_short;
 
@@ -76,10 +86,14 @@ struct fx_variance_swap_instrument final {
     /**
      * @brief Notional amount for PnL scaling. Must be positive.
      */
-    double notional = 0.0;
+    ores::utility::decimal::decimal notional;
 
     /**
      * @brief Whether the product is a Variance or Volatility swap.
+     *
+     * Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set
+     * (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the
+     * soft reference into a real foreign key.
      */
     std::string moment_type;
 

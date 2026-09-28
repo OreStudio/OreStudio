@@ -24,9 +24,12 @@
  */
 #include "ores.trading.core/repository/equity_barrier_option_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -49,17 +52,22 @@ equity_barrier_option_instrument_mapper::map(const equity_barrier_option_instrum
                               std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.option_type = v.option_type;
-    r.strike = v.strike;
-    r.expiry_date = v.expiry_date;
+    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
+    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
-    r.lower_barrier = v.lower_barrier;
+    r.lower_barrier = ores::utility::decimal::decimal::from_string(v.lower_barrier).value();
     r.lower_barrier_type = v.lower_barrier_type;
-    r.upper_barrier = v.upper_barrier;
+    r.upper_barrier =
+        v.upper_barrier.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
+            std::nullopt;
     r.upper_barrier_type = v.upper_barrier_type.value_or("");
-    r.rebate = v.rebate;
+    r.rebate = v.rebate.has_value() ?
+                   std::optional(ores::utility::decimal::decimal::from_string(*v.rebate).value()) :
+                   std::nullopt;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -87,18 +95,19 @@ equity_barrier_option_instrument_mapper::map(const domain::equity_barrier_option
                      std::nullopt;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional;
+    r.notional = v.notional.to_string();
     r.option_type = v.option_type;
-    r.strike = v.strike;
-    r.expiry_date = v.expiry_date;
+    r.strike = v.strike.to_string();
+    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
-    r.lower_barrier = v.lower_barrier;
+    r.lower_barrier = v.lower_barrier.to_string();
     r.lower_barrier_type = v.lower_barrier_type;
-    r.upper_barrier = v.upper_barrier;
+    r.upper_barrier =
+        v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
     r.upper_barrier_type =
         v.upper_barrier_type.empty() ? std::nullopt : std::optional(v.upper_barrier_type);
-    r.rebate = v.rebate;
+    r.rebate = v.rebate.has_value() ? std::optional(v.rebate->to_string()) : std::nullopt;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

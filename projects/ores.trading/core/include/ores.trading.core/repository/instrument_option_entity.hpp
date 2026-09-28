@@ -67,7 +67,7 @@ struct instrument_option_entity {
     std::optional<std::string> automatic_exercise;
     bool has_exercise_data = false;
     std::optional<std::string> exercise_date;
-    std::optional<double> exercise_price;
+    std::optional<std::string> exercise_price;
     bool has_payment_data = false;
     std::optional<std::int64_t> payment_lag;
     std::optional<std::string> payment_calendar;

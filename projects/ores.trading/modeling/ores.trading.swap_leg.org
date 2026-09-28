@@ -1,0 +1,391 @@
+:PROPERTIES:
+:ID: 6F6B42BE-C8BB-4105-9ED3-7E87D67F9EB7
+:ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.swap_leg
+#+description: Codegen entity model for the trading =swap_leg= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: swap_leg
+#+entity_plural: swap_legs
+#+entity_title: Swap Leg
+#+brief: One leg of a rates instrument.
+#+created: 2026-09-27
+#+updated: 2026-09-27
+
+The shared legs table of the nine rates instrument families. Each row is one
+leg of an FRA, vanilla swap, cap/floor, swaption, balance-guaranteed swap,
+callable swap, knock-out swap, inflation swap or RPA instrument. A plain
+interest rate swap has two rows, one fixed and one floating; a cross-currency
+swap has two rows with different currencies.
+
+=leg_type_code= is the discriminator and the leg type is data, not a table, so
+one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
+leg type does not state are null: =fixed_rate= is null for a floating leg and
+=floating_index_code= is null for a fixed leg.
+
+The row keeps its own =id= surrogate and names the parent instrument through
+=instrument_id=, which is a soft foreign key to the instrument family rather
+than to one table.
+
+It binds =:profile: trading-instrument=, like the nine instrument sub-types
+whose legs it holds. Three table features justify the bind: the table is
+tenant-scoped through =tenant_id= and the tenant isolation policy, it is
+workspace-scoped through =workspace_id=, and its insert trigger stamps
+=party_id= from the session variable =app.current_party_id= rather than taking
+it from the client. The bind leaves the table with no UI surface -- the
+per-instrument forms were hand-crafted in the removed desktop client and
+consumed the generated messaging protocol. The identity and audit field
+groups and the generator facet are the model's own flags, stated under C++
+below, not profile assignments.
+
+The table is bi-temporal and audited, so the model takes the ordinary audited
+shape and needs no shape flag.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:supplied_by:  unset
+:END:
+
+UUID uniquely identifying this leg row.
+
+Surrogate key for the leg record. The import reads the parent instrument
+it was given rather than minting a new one, so nothing supplies this
+value from a positional argument.
+
+** party_id
+:PROPERTIES:
+:group:       identity
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:supplied_by: session_party
+:END:
+
+Party that owns this leg record.
+
+Set from session variable app.current_party_id.
+
+** instrument_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The rates instrument this leg belongs to.
+
+** leg_number
+:PROPERTIES:
+:group:    identity
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  1
+:END:
+
+1-based ordinal of this leg within the parent instrument.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 2)
+#+end_src
+
+** leg_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Leg type code (soft FK to ores_refdata_leg_types_tbl).
+
+Routes the leg economics: Fixed for a fixed leg, Floating for a floating
+leg, and the CMS, CPI, OIS and other codes the rates families state.
+
+#+begin_src cpp :name generator
+std::string("Fixed")
+#+end_src
+
+** day_count_fraction_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("A365F")
+#+end_src
+
+** business_day_convention_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Business day convention code (soft FK to
+ores_refdata_business_day_convention_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** payment_frequency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl).
+
+#+begin_src cpp :name generator
+std::string("Annual")
+#+end_src
+
+** floating_index_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Floating index code of a floating leg (soft FK to
+ores_refdata_floating_index_types_tbl).
+
+Empty for a fixed leg; validated only when stated.
+
+** fixed_rate
+:PROPERTIES:
+:type:          numeric(18, 10)
+:cpp_type:      double
+:nullable:      true
+:default_value: 0.0
+:END:
+
+Fixed rate of a fixed leg, as a decimal (e.g. 0.05 for 5%).
+
+Null for a floating leg.
+
+#+begin_src cpp :name generator
+0.05
+#+end_src
+
+** spread
+:PROPERTIES:
+:type:          numeric(18, 10)
+:cpp_type:      double
+:nullable:      true
+:default_value: 0.0
+:END:
+
+Spread over the floating index, as a decimal.
+
+Null for a fixed leg.
+
+** notional
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      ores::utility::decimal::decimal
+:nullable:      false
+:END:
+
+Notional amount of the leg. Must be positive.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code of the leg (e.g. USD).
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+* Foreign keys
+
+** instrument_id
+:PROPERTIES:
+:list_by:    true
+:skip_check: true
+:END:
+
+The nine rates instrument families write this one shared legs table, so the
+parent column has no single target and the insert trigger carries no
+existence check. =skip_check= states that; =list_by= generates the
+instrument-scoped read the trade read path uses. The parent key is the
+boundary the shared table gives up; the model does not invent one table
+where the schema has nine.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_swap_legs_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "leg_number" >= 1 |
+| "notional" > 0 |
+| "currency" <> '' |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| instrument | tenant_id, instrument_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| leg_type_code | ores_refdata_validate_leg_type_fn |
+| day_count_fraction_code | ores_refdata_validate_day_count_fraction_type_fn |
+| business_day_convention_code | ores_refdata_validate_business_day_convention_type_fn |
+| payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
+| floating_index_code | ores_refdata_validate_floating_index_type_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into a
+=swap_leg_identity identity;= member (see the
+ores.trading.swap_leg_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining terms stay
+flat in between. The leg is not an instrument sub-type: it carries its own
+=id= key, so it cannot take the =instrument_identity= field group the
+instrument sub-types share. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:domain_identity_group: ores.trading.swap_leg_identity
+:domain_audit_group:    ores.dq.audit_record
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swap_leg
+:entity_plural_short:   swap_legs
+:entity_singular_words: swap leg
+:entity_plural_words:   swap legs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sl
+:END:
+
+** Table display
+
+| column                  | header      |
+|-------------------------+-------------|
+| identity.id             | ID          |
+| identity.instrument_id  | Instrument  |
+| identity.leg_number     | Leg         |
+| leg_type_code           | Type        |
+| currency                | Ccy         |
+| notional                | Notional    |
+| fixed_rate              | Fixed Rate  |
+| floating_index_code     | Index       |
+| audit.recorded_at       | Recorded At |
+
+** Custom repository methods
+
+The trade read path fetches the legs of many instruments at once, and no
+generated read covers that: =read_latest(context, ids)= filters on the leg's
+own key and =read_latest_by_instrument_id= reads one instrument at a time.
+The batch read below is one statement over the instrument set, which is what
+the generated stack cannot express. It keeps the workspace filter the rest of
+the generated reads carry.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 2A7C9E4B-6D18-4F53-8B21-9C0E7A5D3F48
+:END:
+
+Reads every current leg of the given instruments, ordered by instrument and
+leg number, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::swap_leg>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& instrument_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::swap_leg>
+swap_leg_repository::read_by_instruments_batch(context ctx,
+                                               const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c, "leg_number"_c);
+    return execute_read_query<swap_leg_entity, domain::swap_leg>(
+        ctx,
+        query,
+        [](const auto& entities) { return swap_leg_mapper::map(entities); },
+        lg(),
+        "Reading swap legs for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

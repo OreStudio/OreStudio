@@ -39,6 +39,9 @@ The full template source. Edit here and re-tangle with
 {{#has_tenant_id}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/has_tenant_id}}
+{{#has_decimal_columns}}
+#include "ores.utility/decimal/decimal.hpp"
+{{/has_decimal_columns}}
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::{{component}}::{{generator_facet_name}} {
@@ -223,9 +226,17 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{group_prefix}}}{{name}} = std::string(faker::word::noun());
 {{/requires_unique_suffix}}
 {{/is_plain_string}}
+{{#is_date}}
+    r.{{{group_prefix}}}{{name}} = std::chrono::year_month_day{
+        std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+{{/is_date}}
 {{#is_base64}}
     r.{{{group_prefix}}}{{name}} = std::vector<std::uint8_t>{'<', 's', 'v', 'g', '/', '>'};
 {{/is_base64}}
+{{#is_decimal}}
+    r.{{{group_prefix}}}{{name}} = ores::utility::decimal::decimal::from_string(
+        std::to_string(faker::number::decimal<double>(1.0, 1000.0))).value();
+{{/is_decimal}}
 {{/generator_expr}}
 {{/sql_only}}
 {{/columns}}

@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <string>
 #include <string_view>
 
@@ -108,7 +109,7 @@ struct instrument_schedule_date final {
     /**
      * @brief The date (ISO 8601 date string).
      */
-    std::string schedule_date;
+    std::chrono::year_month_day schedule_date;
 
     /**
      * @brief Username of the person who last modified this instrument schedule date.

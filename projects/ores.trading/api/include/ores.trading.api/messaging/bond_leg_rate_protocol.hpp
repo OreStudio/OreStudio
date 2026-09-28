@@ -180,7 +180,7 @@ struct put_bond_leg_rate_request {
 
 struct put_bond_leg_rate_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_leg_rate bond_leg_rate;
+    std::optional<ores::trading::domain::bond_leg_rate> bond_leg_rate;
 };
 
 struct put_many_bond_leg_rates_request {
@@ -276,7 +276,7 @@ struct get_bond_leg_rate_version_request {
 
 struct get_bond_leg_rate_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_leg_rate version;
+    std::optional<ores::trading::domain::bond_leg_rate> version;
 };
 
 /**

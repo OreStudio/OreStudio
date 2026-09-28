@@ -51,7 +51,7 @@ struct instrument_schedule_date_write {
     std::string schedule_role;
     int schedule_sequence_number;
     int sequence_number;
-    std::string schedule_date;
+    std::chrono::year_month_day schedule_date;
 };
 
 struct instrument_schedule_date_change {
@@ -163,7 +163,7 @@ struct put_instrument_schedule_date_request {
 
 struct put_instrument_schedule_date_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_schedule_date instrument_schedule_date;
+    std::optional<ores::trading::domain::instrument_schedule_date> instrument_schedule_date;
 };
 
 struct put_many_instrument_schedule_dates_request {
@@ -263,7 +263,7 @@ struct get_instrument_schedule_date_version_request {
 
 struct get_instrument_schedule_date_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::instrument_schedule_date version;
+    std::optional<ores::trading::domain::instrument_schedule_date> version;
 };
 
 /**

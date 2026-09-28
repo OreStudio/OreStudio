@@ -17,20 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<fpml_event_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "version" << "code" << "description" << "modified_by" << fort::endr;
+    table << fort::header << "Code" << "Description" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& fet : v) {
-        table << fet.version << fet.code << fet.description << fet.modified_by << fort::endr;
+    for ([[maybe_unused]] const auto& fet : v) {
+        table << fet.code << fet.description << fet.modified_by << fet.version << fort::endr;
     }
     return table.to_string();
 }

@@ -49,8 +49,7 @@ equity_position_instrument make_instrument(database_helper& h) {
     r.underlying_name = "BBG00R251JN8";
     r.currency = "USD";
     r.quantity = 18101.486;
-    r.price = 6927.586;
-    r.option_data_json = "";
+    r.price = ores::utility::decimal::decimal::from_string("6927.586").value();
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
@@ -80,7 +79,7 @@ TEST_CASE("equity_position_instrument_write_and_read_latest", tags) {
     CHECK(read[0].underlying_name == "BBG00R251JN8");
     CHECK(read[0].currency == "USD");
     CHECK(read[0].quantity == 18101.486);
-    CHECK(read[0].price == 6927.586);
+    CHECK(read[0].price.value_or(ores::utility::decimal::decimal{}).to_double() == 6927.586);
     BOOST_LOG_SEV(lg, debug) << "Read equity position instrument: " << read[0];
 }
 

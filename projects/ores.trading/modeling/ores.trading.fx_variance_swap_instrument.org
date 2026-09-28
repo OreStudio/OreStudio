@@ -86,20 +86,20 @@ Links instrument to a trade if applicable.
 ** start_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
 Variance observation start date (ISO 8601 date string).
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::chrono::year_month_day{std::chrono::year{2024}/1/15}
 #+end_src
 
 ** end_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::string
+:cpp_type: std::chrono::year_month_day
 :nullable: false
 :END:
 
@@ -108,7 +108,7 @@ Variance observation end date (ISO 8601 date string).
 Must be after start_date.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 #+end_src
 
 ** currency
@@ -119,6 +119,8 @@ std::string("2025-01-15")
 :END:
 
 Settlement currency.
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -146,6 +148,8 @@ std::string("TR20H-EUR-USD")
 
 Position direction: Long or Short.
 
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("Long")
 #+end_src
@@ -167,15 +171,14 @@ Fixed variance or volatility strike. Must be positive.
 ** notional
 :PROPERTIES:
 :type:          numeric(28, 10)
-:cpp_type:      double
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :END:
 
 Notional amount for PnL scaling. Must be positive.
 
 #+begin_src cpp :name generator
-1000000.0
+ores::utility::decimal::decimal::from_string("1000000").value()
 #+end_src
 
 ** moment_type
@@ -186,6 +189,8 @@ Notional amount for PnL scaling. Must be positive.
 :END:
 
 Whether the product is a Variance or Volatility swap.
+
+Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("Variance")
@@ -226,15 +231,6 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
-
-* Insert trigger
-
-** Validations
-
-| column | validation_function |
-|--------+----------------------|
-| trade_type_code | ores_trading_validate_trade_type_fn |
-
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -270,7 +266,9 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

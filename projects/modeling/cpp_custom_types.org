@@ -60,6 +60,7 @@ carries clang-format's order whatever order the model lists them in.
 | =domain::scope= | ="ores.synthetic.api/domain/scope.hpp"= |
 | =ores::telemetry::domain::telemetry_source= | ="ores.telemetry.core/domain/telemetry_source.hpp"= |
 | =ores::trading::domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
+| =ores::utility::decimal::decimal= | ="ores.utility/decimal/decimal.hpp"= |
 | =std::chrono::year_month_day= | =<chrono>= |
 | =utility::uuid::tenant_id= | ="ores.utility/uuid/tenant_id.hpp"= |
 

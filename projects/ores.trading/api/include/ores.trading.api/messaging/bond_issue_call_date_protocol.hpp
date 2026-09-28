@@ -43,7 +43,7 @@ struct bond_issue_call_date_key {
 struct bond_issue_call_date_write {
     boost::uuids::uuid issue_id;
     int sequence_number;
-    std::string call_date;
+    std::chrono::year_month_day call_date;
 };
 
 struct bond_issue_call_date_change {
@@ -154,7 +154,7 @@ struct put_bond_issue_call_date_request {
 
 struct put_bond_issue_call_date_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue_call_date bond_issue_call_date;
+    std::optional<ores::trading::domain::bond_issue_call_date> bond_issue_call_date;
 };
 
 struct put_many_bond_issue_call_dates_request {
@@ -252,7 +252,7 @@ struct get_bond_issue_call_date_version_request {
 
 struct get_bond_issue_call_date_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::bond_issue_call_date version;
+    std::optional<ores::trading::domain::bond_issue_call_date> version;
 };
 
 /**

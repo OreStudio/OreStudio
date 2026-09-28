@@ -43,19 +43,19 @@ render_equity_barrier_option_instrument_fields(const domain::equity_barrier_opti
                                                      std::string{}});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back({.name = "Notional", .value = std::to_string(v.notional)});
+    fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Option Type", .value = v.option_type});
-    fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
-    fields.push_back({.name = "Expiry Date", .value = v.expiry_date});
+    fields.push_back({.name = "Strike", .value = v.strike.to_string()});
+    fields.push_back({.name = "Expiry Date",
+                      .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back({.name = "Lower Barrier", .value = std::to_string(v.lower_barrier)});
+    fields.push_back({.name = "Lower Barrier", .value = v.lower_barrier.to_string()});
     fields.push_back({.name = "Lower Barrier Type", .value = v.lower_barrier_type});
     fields.push_back({.name = "Upper Barrier",
-                      .value = v.upper_barrier ? std::to_string(*v.upper_barrier) : std::string{}});
+                      .value = v.upper_barrier ? v.upper_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Upper Barrier Type", .value = v.upper_barrier_type});
-    fields.push_back(
-        {.name = "Rebate", .value = v.rebate ? std::to_string(*v.rebate) : std::string{}});
+    fields.push_back({.name = "Rebate", .value = v.rebate ? v.rebate->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

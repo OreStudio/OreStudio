@@ -45,18 +45,21 @@ render_fx_asian_forward_instrument_fields(const domain::fx_asian_forward_instrum
     fields.push_back({.name = "Reference Currency", .value = v.reference_currency});
     fields.push_back(
         {.name = "Reference Notional",
-         .value = v.reference_notional ? std::to_string(*v.reference_notional) : std::string{}});
+         .value = v.reference_notional ? v.reference_notional->to_string() : std::string{}});
     fields.push_back({.name = "Settlement Currency", .value = v.settlement_currency});
     fields.push_back(
         {.name = "Settlement Notional",
-         .value = v.settlement_notional ? std::to_string(*v.settlement_notional) : std::string{}});
-    fields.push_back({.name = "Payment Date", .value = v.payment_date});
+         .value = v.settlement_notional ? v.settlement_notional->to_string() : std::string{}});
+    fields.push_back({.name = "Payment Date",
+                      .value = v.payment_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                    *v.payment_date) :
+                                                std::string{}});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Fixing Amount",
-                      .value = v.fixing_amount ? std::to_string(*v.fixing_amount) : std::string{}});
+                      .value = v.fixing_amount ? v.fixing_amount->to_string() : std::string{}});
     fields.push_back({.name = "Target Amount",
-                      .value = v.target_amount ? std::to_string(*v.target_amount) : std::string{}});
+                      .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
     fields.push_back(
         {.name = "Strike", .value = v.strike ? std::to_string(*v.strike) : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});

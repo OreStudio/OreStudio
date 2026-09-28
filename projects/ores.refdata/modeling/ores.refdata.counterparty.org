@@ -175,6 +175,18 @@ std::nullopt
 |-----------+----------------------+--------+--------------+-------------|
 | full_name | tenant_id, full_name | false  | true         |             |
 
+** Paste blocks
+
+*** Extra drop statements
+
+The self-referencing profile generates the hierarchy read, and the drop
+template knows nothing about it, so the entity drops it here. Without this
+block a drop-and-recreate leaves the function behind.
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_counterparties_hierarchy_fn(uuid, uuid, boolean);
+#+end_src
+
 * Foreign keys
 
 ** parent_counterparty_id

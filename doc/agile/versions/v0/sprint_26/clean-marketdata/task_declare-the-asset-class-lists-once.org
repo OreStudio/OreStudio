@@ -51,8 +51,8 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 
 * Decided
 
-**The two lists are two axes, not one list copied twice.** Recorded as a memory at
-[[id:A3565B4F-BFEB-4A1A-823F-8704DD6EE997][An asset class is two lists, not one]],
+**The two lists are two axes, not one list copied twice.** Captured at
+[[id:B9B8E238-F32B-40AC-88F2-6C210879B67A][An asset class is two lists, not one]],
 because the two share enough spellings to be mistaken for each other. The refdata
 product taxonomy answers what a trade or a market series *is*, and it is
 FK-validated: =ores_refdata_validate_asset_class_code_fn= rejects any code absent

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 47B2C888-A936-4CF9-8629-CADE44C6310E
+:END:
+#+title: Decide the modelling of the two asset class lists
+#+description: Once the fixing identities, the classification rules and the consolidation of the hand-written copies have solidified, analyse the two asset class lists in depth and decide the correct model for them. Deferred until then, because a decision taken now would be taken against a moving tree.
+#+type: capture
+#+level: cross
+#+filetags: :asset-class:taxonomy:modelling:design:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The correct modelling of the two asset class lists is an open question and
+should not be settled piecemeal. Once the fixing identities, the classification
+rules and the consolidation of the hand-written copies have solidified, run an
+in-depth analysis and decide the model.
+
+The questions the analysis has to answer:
+
+- Does the product asset class taxonomy stay the only FK-validated list, with
+  the market data namespace remaining a set of generated URI authorities?
+- Or does the namespace become a second first-class table, so that a market
+  series can be sliced by the key grammar it is written in as well as by the
+  product it is about?
+- How are the two related, and is that relation declared as data or derived from
+  a rule?
+- Where is a series' class recorded, and where is its key grammar recorded? Today
+  the class is a soft-FK code on a junction and the grammar is buried in the
+  =oresmd_uri= authority.
+- Does the namespace's looseness matter? It carries members no product list would
+  have (=correlation=, =shape_profile=, =rating=) and spells two shared members
+  differently (=ir= for =interest_rates=, =security= for =bond=). Either the
+  spellings are reconciled or the divergence is made explicit as a mapping.
+
+* Why
+
+A decision taken now would be taken against a moving tree. The fixing identity
+work is still adding members to the namespace, the classification rules still
+mis-classify every non-rates fixing, and both lists are still hand-copied in more
+than forty places with real drift in the copies. Each of those changes the shape
+of the question.
+
+It matters because reading one list as the other produces wrong identities and
+wrong classifications, and because the two are joined today only by an
+ORE-series-type-keyed rule table that never names a namespace authority.
+
+The prior art is thin: the only statement that puts the two side by side is a
+partially superseded design note, and the namespace's own membership is authored
+in one manifest that assumes the product taxonomy is somewhere else.
+
+* References
+
+- [[id:B9B8E238-F32B-40AC-88F2-6C210879B67A][An asset class is two lists, not one]] — the fact this decision is about.
+- [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Task: Declare the asset class lists once]] — the consolidation that must land first, and the census both lists are drawn from.
+- [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][ores.refdata.asset_class_code]] — the authoritative product taxonomy.
+- [[id:A0B1C2D3-E4F5-A6B7-C8D9-E0F1A2B3C4D5][oresmd quote types — all asset classes]] — the market data namespace's manifest.
+
+* See also
+
+-

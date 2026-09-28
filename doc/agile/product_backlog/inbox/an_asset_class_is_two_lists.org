@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: B9B8E238-F32B-40AC-88F2-6C210879B67A
+:END:
+#+title: An asset class is two lists, not one
+#+description: The product asset class taxonomy is authoritative, runtime-managed and FK-validated, and it is the list a market series takes its class from. The market data namespace is a different and much looser axis: the key grammar an oresmd_uri authority names, accreted from ORE's own key-prefix conventions rather than from any product taxonomy. The two share five spellings and diverge on the rest, and nothing in the repository declares the mapping between them.
+#+type: capture
+#+level: cross
+#+filetags: :asset-class:taxonomy:refdata:marketdata:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+An asset class is two lists, not one, and the second is much the looser of the
+two.
+
+The *product asset class taxonomy* is the authoritative one. It is
+runtime-managed in =ores_refdata_asset_class_codes_tbl= -- =fx=,
+=interest_rates=, =credit=, =equity=, =commodity=, =inflation=, =bond= -- and
+every market series, feed binding, classification rule and instrument code
+validates against it through =ores_refdata_validate_asset_class_code_fn=. Adding
+a code there is what makes it usable by a series.
+
+The *market data namespace* is a different axis: the key grammar an =oresmd_uri=
+authority names, holding =ir=, =credit=, =equity=, =commodity=, =fx=,
+=inflation=, =correlation=, =security=, =shape_profile=, =rating= and =power=. It
+accreted from ORE's own key-prefix conventions rather than from any product
+taxonomy, so it carries members no product list would have.
+
+The two share five spellings and diverge on the rest, so they read as one list
+with typos. They are not. =SHAPE_PROFILE= is classed =commodity= and =RATING= is
+classed =credit= in the product taxonomy, yet both are authorities of their own
+in the namespace. =ir= and =security= are the namespace's spellings of
+=interest_rates= and =bond=. ORE writes power fixings as =POWER-= while a power
+trade is a commodity, so a power market series is classed =commodity= and carries
+=power= in its URI.
+
+Neither list should be extended without saying which is meant. A new oresmd
+authority does not by itself become a product asset class. When a market series
+needs a class it takes a refdata code, and the namespace lives in the URI.
+
+The correct modelling of the two is left open on purpose:
+[[id:47B2C888-A936-4CF9-8629-CADE44C6310E][Decide the modelling of the two asset class lists]] holds the analysis, deferred
+until the fixing identities, the classification rules and the consolidation of
+the hand-written copies have solidified.
+
+* Why
+
+Nothing in the repository declares the mapping between the two lists, so reading
+one as the other is the default mistake, and it produces wrong identities and
+wrong classifications. The single =FIXING= classification rule already
+mis-classifies every non-rates fixing because of it: it classifies all index
+fixings as =interest_rates=, while the corpus carries FX, equity, inflation,
+commodity, power and security fixings as well.
+
+The distinction is easy to miss because the overlap is large and the divergent
+members look like spelling errors. It was nearly missed while adding the power
+identity, where the question "is power a commodity" has two different answers
+depending on which list is meant.
+
+Both lists are also hand-copied in more than forty places, and the copies have
+already drifted, so a change to either list has no single place to land.
+
+* References
+
+- [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][ores.refdata.asset_class_code]] — the authoritative product taxonomy, and the table that owns the validator every other entity calls.
+- [[id:A0B1C2D3-E4F5-A6B7-C8D9-E0F1A2B3C4D5][oresmd quote types — all asset classes]] — the market data namespace's manifest, which is the one place its members are authored.
+- [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Task: Declare the asset class lists once]] — the census of both lists' hand-written copies, the drift already in them, and the plan to generate the copies from one model per axis.
+
+* See also
+
+-

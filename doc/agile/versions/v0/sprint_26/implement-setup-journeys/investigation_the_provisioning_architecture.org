@@ -1,0 +1,461 @@
+:PROPERTIES:
+:ID: 0220C2D0-1813-4175-A05C-35429F38CA74
+:END:
+#+title: Investigation: The provisioning architecture
+#+description: What the correct architecture for tenant provisioning is, given that the journey must be click-minimal, no provider's specifics may live in code, and the work must be reusable for other provisioning later. Covers where orchestration belongs, what a step may target, and how errors, timeouts and retries behave.
+#+type: investigation
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into What the correct architecture for tenant provisioning is, given that the journey must be click-minimal, no provider's specifics may live in code, and the work must be reusable for other provisioning later. Covers where orchestration belongs, what a step may target, and how errors, timeouts and retries behave..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The story's plan step 6 landed the generic provision request:
+=iam.v1.tenants.provision= creates a tenant and its administrator from
+a seed profile and answers with the id of the run that provisions the
+rest. Plan step 7 was written as one line — "order the tenant
+provisioning steps as a workflow definition" — and step 7's
+reconnaissance found that the line hides three questions that decide
+whether the journeys can be built at all:
+
+1. *What may a step target, and who reports it done?* The engine
+   publishes a step fire-and-forget and advances a run only when the
+   handler on the far end reports a =step-completed= event. Only the
+   =publish-from-dq= leaves and a few write subjects report one today, so
+   a step sent to a composite verb hangs the run for ever.
+2. *Where does a provider's specifics live?* The only working
+   orchestrator, =provision_acme=, hard-codes Acme: its holding name,
+   its three offices, thirteen bundle codes, its photo keys, its
+   cross-entity grants. Lifting it moves that code into the workflow; the
+   story has already decided the seed profile is data.
+3. *What happens when a step fails, stalls or must be retried?* The
+   engine compensates a failed step — it rolls the completed steps back —
+   while the story's acceptance says a failed step *stops* the instance
+   and a retry *resumes* from it keeping what completed. The engine has
+   no step deadline anywhere, so a step that never answers hangs a run
+   for ever.
+
+The owner of the plan asked for this investigation instead of a lift, on
+the grounds that answering these questions properly is what makes the
+work reusable for the provisioning that comes after the three journeys,
+and that a journey which asks a person to press as few buttons as
+possible is exactly the case that cannot tolerate a half-hard-coded
+server side.
+
+* Methodology
+
+Read-only reconnaissance of the tree, in five passes, each with
+=path:line= evidence rather than recollection:
+
+1. The engine's contract: =workflow_definition.hpp=, the registry, the
+   start and step-completed events, =workflow_engine.cpp= in full, and
+   the instance and step state machines in the DQ populate scripts.
+2. The provider-specific orchestrator: every transport call, wait,
+   impersonation and SQL read in =provision_acme=, with the request
+   struct each one sends.
+3. The DQ data machinery, as the candidate that would carry the data
+   instead of the code: the dataset and bundle models, the publish path,
+   the parameter structs, the artefact-type catalogue with its target
+   subjects, and the seeded bundles.
+4. The long-running step as this tree already writes it: the compute
+   batch bridge, the ORE import, report execution, the dataset publish
+   leaf, and =provision_acme='s own polling wait.
+5. What the journeys require: the three journey documents, the story's
+   acceptance and plan, the prototype's progress and failure parts, and
+   the shell's provisioning commands and recipes.
+
+The four reconnaissance passes were delegated and their reports are the
+source of the evidence quoted here; the conclusions are mine.
+
+* What the tree does today
+
+Five patterns for a step, measured rather than recalled.
+
+*A step is dispatched fire-and-forget and advances only on a completion
+event.* =workflow_engine.cpp:157= dispatches, =:253-257= persists the
+command before publishing so a restart can re-dispatch it, =:380-477=
+handles the completion under one mutex, =:414-419= ignores a duplicate
+completion, and =:475= advances or =:477= compensates. The only
+engine-side backstop is startup recovery, =registrar.cpp:179-183= into
+=workflow_engine.cpp:652-722=, which re-dispatches every still
+=in_progress= step. *There is no step deadline anywhere in the engine*:
+every "timeout" in this tree is a caller giving up on observing, never a
+cancellation. Handlers run on NATS dispatch threads
+(=ores.nats/src/service/client.cpp:212-231=), so every blocking wait
+below holds a NATS thread, not the service's =io_context=.
+
+1. *Synchronous inline handler.* The work happens inside the step
+   callback and completion is published at the end:
+   =publish_from_dq_handler.cpp:126-149= (one SQL call per dataset, then
+   =complete=), the ORE import
+   (=ore_import_execute_handler.cpp:1073-2108=), report execution
+   (=report_execution_handler.cpp:207,322,443=), and the identity fixture
+   (=identity_step_handler.cpp:72-112=, whose declared delay is a
+   =sleep_for=). Cost: one NATS thread held for the whole operation, no
+   progress mid-step, no cancellation, and a completion lost after a
+   committed write means the work repeats on recovery.
+2. *Deferred completion through a link row and a poller.* The compute
+   batch bridge: =report_submit_handler.cpp:154-164= writes a
+   =workflow_batch_link{step_id, instance_id}= and returns;
+   =batch_workflow_bridge.cpp:45-112= polls every 10 s
+   (=application.cpp:162-165=), and when the batch closes it publishes
+   the completion and removes the link. Defects, all real: no TTL on the
+   link, so a batch that never closes strands the step for ever; a batch
+   row that vanishes removes the link and silently strands it
+   (=":68-74"=); recovery adds a second link for the same step; and the
+   poll does synchronous database reads on the single-threaded
+   =io_context=.
+3. *Nested run observed by a blocking poll.* =internal_request_client.cpp:53-179=
+   polls =workflow.v1.instances.steps= every 500 ms with
+   =sleep_for= until a deadline, and =provision_acme= drives it with
+   1500 s, 600 s and 120 s windows
+   (=tenant_provisioning_handler.hpp:459-469, 474-488, 521-530, 656-692=).
+   Cost: a NATS thread held for the whole nested run — up to 25 minutes
+   for the base bundle — 500 ms poll traffic per waiter, no end-to-end
+   budget, and a timeout that abandons the work without cancelling it.
+4. *Replay-idempotent step.* =check_step_idempotency=
+   (=workflow_helpers.hpp:226-255=) is called by
+   =party_handler.hpp:214-229=, =account_party_handler.hpp:489= and
+   =account_operations_handler.hpp:189=, replaying a cached outcome
+   instead of redoing the work. It fails open on timeout
+   (=":249-254"=), so it degrades to no guard exactly when the workflow
+   service is busy. The ORE import, report execution, every publish leaf
+   and =submit_compute= have no guard at all.
+5. *Idempotence by upsert instead of by guard.* The dataset publish path
+   leans on the SQL being an upsert and declares no compensation for a
+   step (=bundle_publish_workflow.hpp:65,75,111-113=), which is why a run
+   can be re-dispatched safely at all.
+
+The step row already carries what a retry needs — =idempotency_key=,
+=command_published_at=, =started_at=, =completed_at= — while neither
+=ores_workflow_workflow_steps_tbl= nor =ores_workflow_workflow_instances_tbl=
+has an attempt counter, a deadline, or a parent/child link.
+
+* What the engine does, and does not do
+
+The state machines are seed metadata only: nothing in the schema
+constrains =state_id= to the graph
+(=workflow_workflow_instances_create.sql:37=,
+=workflow_workflow_steps_create.sql:39=) and no C++ reads
+=fsm_transitions= — =load_fsm_states= reads states alone
+(=fsm_state_map.cpp:26-31=). Three transitions in the seed are dead code:
+=finish_compensation=, =fail_during_compensation=, and the only edge out
+of a failed step, =compensate=.
+
+*Failure always rolls the run back.* =on_step_completed= writes the step
+failed (=workflow_engine.cpp:437-440=) and then, on =!is_success=,
+calls =begin_compensation= (=":476-478"=), which walks the completed
+steps in reverse and publishes their compensation
+(=":281-346"=), finally setting the instance =compensated= and *clearing
+the error* (=":350-354", ":376"=). A failed step therefore never stops a
+run, and a run in which a step failed reports =compensated= with no
+error. The instance =failed= state is reached only for an unknown type,
+an out-of-range step index, a recovered instance with no steps, and a
+throw at start (=":160-167", ":191-198", ":692-703", ":622-649"=). A
+=build_command= that throws is compensated the same way (=":220-229"=).
+A definition with no steps creates nothing and logs (=":526-529"=).
+
+*There is no retry and no deadline anywhere.* No retry verb, subject,
+field or transition exists in =projects/ores.workflow/**= or
+=projects/ores.shell/workflow/**=. The only re-dispatch is
+=recover_in_progress= at service start
+(=registrar.cpp:177= into =workflow_engine.cpp:652-722=), which
+re-publishes each still =in_progress= step with the same step id and
+skips failed and compensated runs deliberately. No step, instance or
+dispatch deadline exists in the engine, the protocol, the FSM seed or
+the service options; =step.command_published_at= is written on dispatch
+(=":130-137"=) and never read, and =started_at= and =completed_at= are
+never written at all, so there is no timing to expire on even if a
+sweeper existed. A step whose service never answers stays =in_progress=
+for ever.
+
+*The data a resume needs is already there.* The engine keeps every
+completed step row, persists the failed step with its index, error and
+log, stores =materialised_steps_json= and =step_count= at start, and the
+step row carries =idempotency_key= and =command_json=. Nothing reads
+=materialised_steps_json= except an emptiness check. Idempotency has two
+guards: the engine ignores a completion for a step that is not
+=in_progress= (=":414-419"=, pinned by a test), and
+=check_step_idempotency= replays a terminal outcome so a handler can skip
+work (=workflow_helpers.hpp:226-255=, called by three handlers only, and
+it fails open on timeout).
+
+*What a resume needs and does not have* — the smallest set, measured:
+a way to stop instead of compensate, which no definition field or option
+can express today; a resume verb and handler, which no protocol names; the
+resume path itself, which does not exist in any form; a =failed →
+in_progress= step edge, absent from the seed; and the clearing of the
+instance's error and =current_step_index=, which =set_step_state= only
+partly does because it overwrites a field only when the new value is
+non-empty (=":149-151"=). There is also no test of any of it: the engine
+suite covers unknown types, no steps, a duplicate completion, recovery
+in two tenants, cross-tenant runs and =get_step_result=, and covers
+neither a failed step, nor compensation, nor =completed_with_warnings=,
+nor a resume — compensation is registered in the fixture and never
+asserted.
+
+*What a browser can read today.*=workflow.v1.instances.steps=
+(=workflow_query_protocol.hpp:111-149=) answers per-step name, status,
+index, error and log, and deliberately omits each step's result, and it
+*filters out compensation rows* (="workflow_query_handler.cpp:221-224"=),
+so a rollback is invisible while an instance is =compensating=. The only
+subject that returns a result is =workflow.v1.steps.get-result=
+(=steps_query_protocol.hpp:48-105=). Instance transitions publish an
+=entity_change_event= carrying only the instance id
+(="workflow_engine.cpp:87-104"=); there is no per-step event. There is no
+HTTP route for any workflow subject, so the browser reaches these only
+through the BFF.
+
+* Paths taken
+
+(Provide a detailed log of the various approaches explored during the investigation. Be transparent about what was tried and why, especially for paths that were ultimately unsuccessful or abandoned. Link to related PRs, branches, or commits where available.)
+
+- The direct lift, as plan step 7 was first written: one engine step per
+  declared step kind, dispatched to an iam subject that lifts the matching
+  piece of =provision_acme= and reports completion. Set aside — not
+  because it cannot work, but because it would put Acme's names in the
+  workflow and leave a production profile refused for want of data, which
+  answers the journey with an implementation shape rather than an
+  architecture.
+
+* Conclusions
+
+The problem is not that the ACME orchestrator is badly written. It is
+that four concepts the domain needs do not exist anywhere in the
+platform, and every workaround in the tree is evidence of one of them
+missing.
+
+*1. A step cannot wait for subordinate work.* The engine's only step
+protocol is: publish, then be told. Nothing lets a step say "I have
+started a run; complete me when it finishes". So each caller improvises:
+a blocking poll that holds a NATS thread for up to 25 minutes
+(=provision_acme=), a per-component link table with its own poller
+(=workflow_batch_link= and =batch_workflow_bridge=, with no TTL, a
+stranding bug when the watched row vanishes, and synchronous database
+reads on the single-threaded =io_context=), or a step that reports
+success before its work is done because the author had no way to wait
+(=collect_compute_results=, an explicit pass-through stub). The same
+missing concept is why a bundle publish — which is itself a workflow —
+cannot be a step of another workflow without a 1500-second =sleep_for=
+loop.
+
+*2. Failure means one thing to the engine and another to provisioning.*
+The engine rolls back on any failed step. The story has already decided
+the opposite for provisioning — "a retry resumes from the failed step and
+keeps the steps that completed", with discarding a half-provisioned
+tenant as a separate administrator action — and the prototype's failure
+UI says the same thing in the same words. The engine cannot express
+"stop here", so the domain's own decision is unimplementable today.
+Compensation is not wrong; it is a *policy*, and the engine hard-codes
+one.
+
+*3. Nothing distinguishes a working step from a dead one.* No deadline
+exists in the engine, the protocol, the state seeds or the service
+options. =command_published_at= is written and never read;
+=started_at= and =completed_at= are never written at all. A step whose
+service died, or whose subordinate never reports, holds its run
+=in_progress= for ever, and a person watching the journey has no way to
+learn that it is over.
+
+*4. The vocabulary of provisioning is in code because the data model
+covers data, not operations.* The bundle and dataset machinery
+expresses "put these rows in those tables", and it does that well enough
+that thirteen of the ACME orchestrator's steps are already just bundle
+publishes. What it does not express is the handful of operations that
+are not a table write. Measured against the tree, those are: party
+activation with its logo, onboarding and default party
+(=tenant_provisioning_handler.hpp:1318-1379=); staff photos, which read a
+=photo_key= out of a staging table and re-save each account
+(=":1252-1310"=); feed bindings and the feed start, which have no
+artefact type, dataset or parameter at all (=":1057-1182", ":935-1019"=);
+and the cross-entity grants, which are a direct insert (=":1394-1489"=).
+The parameter vocabulary is narrower still — a dataset can be published
+for a party, with a root LEI, or opted in by name, and nothing else
+(=publish_params.hpp:33-67=); there is no image key, no feed binding, no
+party activation. Even the shared plan cannot carry a value: a
+=party_bundle_publish_step= is a bundle code and a label
+(=party_provisioning_plan.hpp:37,66-75=), so the root LEI the ACME import
+needs has nowhere to live. Those are the step kinds, and because they had
+no home, they live inside one provider's orchestrator.
+
+*The shape the conclusions point at.* Three layers, one responsibility
+each.
+
+- *The plan is data.* The seed profile orders operations and states
+  their arguments; bundles and datasets carry the bulk. A new provider
+  is rows, not code; the ACME arguments move into the ACME rows, which
+  is the same reconciliation the cards' copy already had.
+- *An operation is code, owned by the component that performs it.* A
+  step kind is an operation with a subject, declared arguments and a
+  completion contract. It is owned where the capability lives — the
+  dataset leaf is DQ's, the party activation is refdata's, the account
+  and photo work is iam's — so no component wraps another's data and no
+  provider's names appear anywhere. iam owns the *tenant* plan, not the
+  vocabulary.
+- *The step lifecycle is the engine's, and it needs the three concepts it
+  lacks:* a step that completes asynchronously and is correlated to the
+  thing it waits for; a failure policy the definition chooses (stop for
+  provisioning, compensate where a saga fits); and a deadline the engine
+  enforces, so overdue stops being indistinguishable from working. The
+  engine already persists everything a retry needs — the failed step with
+  its index, error and log, every completed step, the step's idempotency
+  key — so the retry verb is the small part; the waiting and the deadline
+  are the parts that do not exist in any form.
+
+* What the journeys already fix
+
+The client side has decided more of this than the server side has, so the
+architecture has to catch up rather than choose. From the prototype and
+the sprint 25 contract:
+
+- A journey is a definition on the client; its *state* is a workflow
+  instance, and no second entity is added. Progress is read per instance
+  as an ordered list of steps with a state and an error, which
+  =workflow.v1.instances.steps= already answers.
+- The provisioning step takes no clicks: the person leaves it, the page
+  polls, and the rail advances only when the run is done. Retry and
+  discard are one click each.
+- On failure the tenant stays =bootstrapping= and the party stays
+  inactive, the completed steps are kept, retry resumes from the failed
+  one, and *Discard tenant* is a separate administrator action — which is
+  the sprint 25 decision, not a new one.
+- One contract serves both clients: the shell needs to wait for an
+  instance with an expected step count and a timeout, which is another
+  reason the step count and per-step state must be readable.
+- The change event cannot be followed today: the engine publishes an
+  =entity_change_event= carrying =entity_ids= while the browser decodes
+  =alpha2_codes= with every field defaulted, so the subscription succeeds
+  and carries nothing. The read is the reliable half; plan step 8 owns the
+  mismatch.
+
+* Recommendation
+
+The target is three layers with one responsibility each, and four
+concepts the engine does not have.
+
+**The layers**
+
+| Layer | Owns | Why there |
+|---|---|---|
+| The plan, as data | The seed profile: the operations it orders, their arguments, its parameter schema, its prefilled tenant details | A new provider is rows, and the ROM's premise — "as few buttons as possible, and nothing about the provider in code" — is met by the data, not by the code |
+| The operations, as code | One step kind per capability, owned by the component that performs it: the dataset publish leaf (dq), party activation and onboarding (refdata), accounts, images and account-parties (iam), feed start (marketdata) | The capability is where the domain knowledge is; no component wraps another's data and no provider's name appears anywhere |
+| The step lifecycle, in the engine | Dispatch, completion, waiting, deadlines, failure policy, retry, progress | Every component needs all of it; today each one improvises and each improvisation has the same three defects |
+
+**The four engine concepts, smallest form**
+
+1. *A step that completes asynchronously against a declared wait.* Today a
+   handler can only block a NATS thread (=provision_acme=, up to 25
+   minutes) or invent a per-component link table with a poller
+   (=workflow_batch_link=, with no TTL and a stranding bug). The smallest
+   form: the operation reports the subordinate run it started, the engine
+   records that on the step row and completes the step when the
+   subordinate reaches a terminal state. The child's identity is already
+   in the reply the operation gets (=publish_bundle_response.instance_id=);
+   the engine already owns the instance table, the state FSM and a change
+   event; =workflow_step= needs one column for the awaited instance and
+   the sweeper that follows it. This is also what makes a bundle publish
+   usable as a step of a larger run, which thirteen of the ACME
+   orchestrator's steps already are.
+2. *A failure policy the definition chooses.* =on_step_failure: stop |
+   compensate=. The story has already decided which one provisioning
+   needs — "a failed step stops the instance, the tenant stays
+   provisioning, a retry resumes from that step and keeps what
+   completed", with *Discard tenant* as a separate administrator action —
+   and the prototype's failure UI says it in the same words. Compensation
+   is the right policy for a small saga of writes (provisioning a party);
+   it is the wrong policy for a 25-minute run whose completed work is
+   published data.
+3. *A deadline the engine enforces.* A budget per step — declared by the
+   operation, overridable by the profile, so the provider's knowledge of
+   its own data decides it — and a sweeper that marks an overdue step and
+   applies the failure policy. Without it "still working" and "dead" are
+   the same state, which is exactly what a person watching a journey
+   cannot tolerate. The columns to expire on exist; =command_published_at=
+   is written today and =started_at= and =completed_at= are not.
+4. *A retry verb.* =workflow.v1.instances.retry= (instance, optional
+   from-step): reset the failed step to in_progress, restore
+   =current_step_index=, clear the instance's error, and re-dispatch that
+   step with its *same* step id, so the existing idempotency guards —
+   =check_step_idempotency= and the engine's "not in_progress implies
+   ignore" rule — keep it safe. Everything a resume reads is already
+   persisted: the failed step with its index, error and log, every
+   completed step, and the materialised step list. Only the
+   =failed → in_progress= step edge is missing from the seed, and nothing
+   enforces the graph today anyway.
+
+Two smaller domain-side pieces follow from the journeys and belong in
+this story rather than the engine:
+
+- *Discard must stop the run.* Discarding a half-provisioned tenant is a
+  stated action, and neither =iam.v1.system.reset-tenant= nor
+  =iam.v1.tenants.delete= stops a workflow instance today, so a discarded
+  tenant's run would carry on writing into it.
+- *The progress read and the event payload.* Per-step name, state, error
+  and log are already readable, and the prototype's list needs exactly
+  those plus a label the profile supplies. The page must poll rather than
+  trust the change event, whose payload does not match what the browser
+  decodes — that is plan step 8's "payload mismatch", and this
+  investigation does not change that conclusion, only records why the
+  read is the reliable half.
+
+**The options weighed**
+
+- *Lift =provision_acme= into iam-owned executors that block on each
+  subordinate run.* Works, keeps the change in one component, and is what
+  step 7 first proposed. Rejected: it holds a NATS thread for the whole
+  provisioning (up to 25 minutes for the base bundle), it keeps Acme's
+  names in code, it ignores the engine's roll-back-on-failure behaviour,
+  and none of it is reusable. It answers the journey with a shape rather
+  than an architecture.
+- *Express provisioning entirely as bundle publishes.* Attractive, and it
+  is already true for the bulk of the data: thirteen of the
+  orchestrator's operations are bundle publishes, and the dataset leaves
+  report completion correctly. It cannot express the operations that are
+  not a table write — import an LEI hierarchy from a root LEI, activate
+  and onboard a party, attach an image to an existing account, start the
+  feeds under a folder, grant cross-entity access — and three of those
+  are exactly the step kinds the Operational profile needs. So it is the
+  mechanism for the data, not the whole architecture.
+- *Put the waiting in a shared bridge instead of the engine* (a generic
+  version of the compute bridge: one link table and one poller owned
+  once). Viable without touching ores.workflow, and it fixes that
+  pattern's defects in one place; it costs a new service surface and
+  leaves the deadline, the failure policy and the retry verb still
+  missing, so the engine changes remain on the critical path either way.
+- *Change the engine* (recommended, and the only option that makes
+  failure, stalling and retry first-class for every workflow): four small
+  additions, listed above.
+
+**What this costs, and who owns it**
+
+The engine changes belong to =ores.workflow=, another environment's
+component. The story's decision licenses consuming the engine and *adding
+the retry verb*; it does not license rewriting the engine or its models,
+and a deadline plus a failure policy plus a deferred-wait column are more
+than a verb. That is the one thing in this investigation that needs the
+plan owner's ruling, because it decides whether step 7 waits on a task in
+another component.
+
+**The tasks this creates**
+
+| Task | Owner | Why |
+|---|---|---|
+| Give the engine a deferred wait, a failure policy, a step deadline and a retry verb | ores.workflow's environment, consumed by this story | Conclusion 1 to 4; plan step 8's retry verb is the smallest of them |
+| Define the step-kind catalogue as operations with owners, arguments and budgets | iam, with each component for its own operation | The vocabulary; replaces "lift the ACME orchestrator" |
+| Reconcile the seed rows with the operations' arguments | iam | The same reconciliation the cards' copy had: the rows state what the operations act on |
+| Write =party_essentials= and a generic LEI-import bundle | dq and the seeder, with iam | The Operational card cannot provision without them |
+| Reshape =workflow.v1.parties.provision= into the journey's party request | the workflow and refdata environments | It is a compensating 3-step saga today, creates accounts from request passwords, leaves =workflow_instance_ids= empty, and neither activates, onboards nor publishes |
+| Make discard stop the instance | iam with the engine's cancel path | A discarded tenant's run must not keep writing |
+
+* See also
+
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — why the journey's state is a workflow instance and no second entity is added.
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the steps, and the profile contract this investigation keeps.
+- [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Task: Decide the seed profile contract]] — the sprint 25 decision that already fixed idempotent steps, stop-and-retry, and discard as a separate action.
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp= — the dispatch, completion, compensation and recovery paths every claim above quotes.
+- =projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp= — the step-completion and idempotency contract a new operation must honour.

@@ -21,6 +21,7 @@
 #include "ores.analytics.core/repository/credit_simulation_entity_config_repository.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_config_repository.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_repository.hpp"
+#include "ores.analytics.core/repository/credit_simulation_netting_set_config_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
@@ -50,6 +51,7 @@ using ores::analytics::repository::credit_simulation_config_repository;
 using ores::analytics::repository::credit_simulation_entity_config_repository;
 using ores::analytics::repository::credit_simulation_matrix_config_repository;
 using ores::analytics::repository::credit_simulation_matrix_row_config_repository;
+using ores::analytics::repository::credit_simulation_netting_set_config_repository;
 using ores::ore::domain::credit_rating_scale;
 using ores::ore::domain::credit_simulation_mapper;
 using ores::ore::domain::creditsimulation;
@@ -81,11 +83,25 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     credit_simulation_matrix_config_repository matrix_repo;
     credit_simulation_matrix_row_config_repository row_repo;
     credit_simulation_entity_config_repository entity_repo;
+    credit_simulation_netting_set_config_repository netting_set_repo;
 
     config_repo.write(h.context(), mapped.config);
     matrix_repo.write(h.context(), mapped.matrices);
     row_repo.write(h.context(), mapped.rows);
+    netting_set_repo.write(h.context(), mapped.netting_sets);
     entity_repo.write(h.context(), mapped.entities);
+
+    const auto stored_nets = netting_set_repo.read_latest(h.context());
+    std::vector<std::string> stored_codes;
+    for (const auto& net : stored_nets)
+        stored_codes.push_back(net.netting_set_id);
+    std::sort(stored_codes.begin(), stored_codes.end());
+    std::vector<std::string> expected_codes;
+    for (const auto& net : mapped.netting_sets)
+        expected_codes.push_back(net.netting_set_id);
+    std::sort(expected_codes.begin(), expected_codes.end());
+    INFO("netting sets read back: " << stored_codes.size());
+    CHECK(stored_codes == expected_codes);
 
     const auto matrix_id = mapped.matrices.front().id;
     const auto rows = row_repo.read_latest_by_transition_matrix_id(h.context(), boost::uuids::to_string(matrix_id), 0, 100);

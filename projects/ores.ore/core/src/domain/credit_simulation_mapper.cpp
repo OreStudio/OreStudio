@@ -183,7 +183,25 @@ mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v
         mapped.entities.push_back(std::move(entity));
     }
 
-    mapped.netting_set_ids = v.NettingSetIds;
+    // ORE writes the netting sets as a comma separated list in one element. A
+    // list is rows, so each code becomes a row and the position keeps the order.
+    const std::string codes(v.NettingSetIds);
+    std::string current;
+    std::istringstream code_stream(codes);
+    int code_position = 0;
+    while (std::getline(code_stream, current, ',')) {
+        const auto first = current.find_first_not_of(" \t\r\n");
+        if (first == std::string::npos)
+            continue;
+        const auto last = current.find_last_not_of(" \t\r\n");
+        analytics::domain::credit_simulation_netting_set_config netting_set;
+        netting_set.id = new_uuid();
+        netting_set.credit_simulation_config_id = config.id;
+        netting_set.netting_set_id = current.substr(first, last - first + 1);
+        netting_set.position = code_position++;
+        set_audit(netting_set);
+        mapped.netting_sets.push_back(std::move(netting_set));
+    }
     return mapped;
 }
 
@@ -235,7 +253,15 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
         document.Entities.Entity.push_back(std::move(e));
     }
 
-    assign_text(document.NettingSetIds, v.netting_set_ids);
+    {
+        std::string joined;
+        for (const auto& netting_set : v.netting_sets) {
+            if (!joined.empty())
+                joined += ",";
+            joined += netting_set.netting_set_id;
+        }
+        assign_text(document.NettingSetIds, joined);
+    }
 
     document.Risk.Market = to_bool_enum(v.config.market);
     document.Risk.Credit = to_bool_enum(v.config.credit);

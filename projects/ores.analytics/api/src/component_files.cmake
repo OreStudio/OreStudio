@@ -52,6 +52,10 @@ set(files
     "domain/credit_simulation_matrix_row_config_table.cpp"
     "domain/credit_simulation_matrix_row_config_table_io.cpp"
     "generators/credit_simulation_matrix_row_config_generator.cpp"
+    "domain/credit_simulation_netting_set_config_json_io.cpp"
+    "domain/credit_simulation_netting_set_config_table.cpp"
+    "domain/credit_simulation_netting_set_config_table_io.cpp"
+    "generators/credit_simulation_netting_set_config_generator.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.

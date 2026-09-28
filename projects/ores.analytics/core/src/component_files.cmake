@@ -61,6 +61,9 @@ set(files
     "repository/credit_simulation_matrix_row_config_entity.cpp"
     "repository/credit_simulation_matrix_row_config_mapper.cpp"
     "repository/credit_simulation_matrix_row_config_repository.cpp"
+    "repository/credit_simulation_netting_set_config_entity.cpp"
+    "repository/credit_simulation_netting_set_config_mapper.cpp"
+    "repository/credit_simulation_netting_set_config_repository.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

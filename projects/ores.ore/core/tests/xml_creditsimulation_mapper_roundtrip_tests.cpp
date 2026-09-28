@@ -27,6 +27,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <filesystem>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -170,7 +171,22 @@ mismatch compare(const creditsimulation& original,
     if (!result.equal)
         return result;
 
-    if (std::string(original.NettingSetIds) != std::string(exported.NettingSetIds))
+    // The netting sets are a comma separated list whose surrounding whitespace
+    // is representation, so the codes are compared rather than the text. ORE
+    // indents the list across lines and the export writes it on one.
+    const auto codes_of = [](const std::string& text) {
+        std::vector<std::string> codes;
+        std::istringstream stream(text);
+        std::string token;
+        while (std::getline(stream, token, ',')) {
+            const auto first = token.find_first_not_of(" \t\r\n");
+            if (first == std::string::npos)
+                continue;
+            codes.push_back(token.substr(first, token.find_last_not_of(" \t\r\n") - first + 1));
+        }
+        return codes;
+    };
+    if (codes_of(std::string(original.NettingSetIds)) != codes_of(std::string(exported.NettingSetIds)))
         return {false, describe(path, "netting set ids differ")};
 
     const auto& l = original.Risk;

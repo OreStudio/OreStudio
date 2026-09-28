@@ -24,6 +24,7 @@
 #include "ores.analytics.api/domain/credit_simulation_entity_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
+#include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
@@ -58,7 +59,7 @@ struct mapped_credit_simulation {
     std::vector<analytics::domain::credit_simulation_entity_config> entities;
     std::vector<analytics::domain::credit_simulation_matrix_config> matrices;
     std::vector<analytics::domain::credit_simulation_matrix_row_config> rows;
-    std::string netting_set_ids;
+    std::vector<analytics::domain::credit_simulation_netting_set_config> netting_sets;
 };
 
 /**

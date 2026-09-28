@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/fixing-index-identities
+#+branch: feature/fx-fixing-source-identity
 #+pr: 2336
 #+blocked_on:
 #+blocked_since:
@@ -28,9 +28,9 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The interest-rate third of the fixing key space is closed: 57 of 57 names resolve. |
-| Waiting on   | A decision on the FX source and on the power contract-hour shape. |
-| Next         | Take the FX-source reading to the owner as a worked example. |
+| Now          | Two classes are closed: interest rates 57 of 57 and FX 7 of 7, so 64 of the corpus's 158 names resolve. |
+| Waiting on   | A decision on the power contract-hour shape, and then on the classes that need no new shape: inflation 7 names, equity 8, commodity 25, security 2 and the four =GENERIC= tokens. |
+| Next         | Take the power contract-hour shape to the owner as a worked example: =POWER-ICE:PDQ-2021-01-04-14400-18000= names an hourly contract, which is not a point on a curve. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -100,11 +100,11 @@ Two readings, and they produce different permanent URIs:
    but it makes the URI depend on reference data: the same file would produce
    different URIs in two databases that disagree.
 
-The recommendation is the first, with the FX source carried as a spelling beside
-the pair the way =index_spelling= carries one, because it is the only reading
-under which the corpus's own text determines the identity. It is a grammar change
-affecting identifiers outside the fixing boundary, so it is recorded here for a
-decision rather than taken.
+The recommendation was the first, with the FX source carried as a spelling beside
+the pair the way =index_spelling= carries one. The owner took the first and kept
+the source as a field rather than a spelling, because a spelling is orthographic
+and the two sources are two different rates; the decision is recorded under
+=* Decided=.
 
 * Decided
 
@@ -123,6 +123,20 @@ This settles the equity and commodity half of the gap. Still open, and separate:
 - the **FX source** (=FX-ECB-EUR-USD= against =FX-TR20H-EUR-USD=), which is a
   field the FX identifier does not have; and
 - the **power contract-hour shape**, which is a shape the grammar does not have.
+
+**The FX fixing carries its source, and the pair as it was quoted.** The source
+is a field, not a spelling: =FX-ECB-EUR-USD= and =FX-TR20H-EUR-USD= are two
+different rates, where a spelling difference is two ways of writing one. So
+=source= joins the FX identifier, lower-cased, with =source_spelling= carrying the
+token as ORE wrote it when the two differ, and both are meaningful only when
+=type=fixing= -- ORE's FX quote keys carry no source at all.
+
+The pair is never put into a canonical order. A fixing's value is only meaningful
+in the direction it was published, and the corpus writes =FX-TR20H-EUR-GBP= and
+=FX-TR20H-GBP-EUR= as one rate both ways, on 122 shared dates. Reciprocal, but not
+to the last digit: the product of the two is 1.0003 on the median date and 0.9964 on
+the worst. Canonicalising would put two values under one date, and nothing in the
+import inverts a value.
 
 * Plan
 
@@ -166,6 +180,13 @@ task and name that file in the Command column.
 | =ores.ore.core= suite | 429839 assertions in 552 cases | =ores.ore.core.tests= | =6fa10a87f4= |
 | codegen suite | 955 passed | =pytest projects/ores.codegen/tests= | =6fa10a87f4= |
 | Regeneration is idempotent | =git status= empty on a second run | =./projects/ores.codegen/codegen.sh generate --model projects/ores.marketdata/modeling/oresmd/model.org --address ores.cpp.oresmd= | =6fa10a87f4= |
+| FX names that name, before | 0 of 7 | =ores.marketdata.core.tests "[fixing]"= | =fb3c5a4f31= |
+| FX names that name, after | 7 of 7 | same | =fb3c5a4f31= |
+| FX names that round trip, after | 7 of 7 | same | =fb3c5a4f31= |
+| Corpus names that name, after | 64 of 158 (interest rates 57, FX 7) | same | =fb3c5a4f31= |
+| =ores.marketdata.core= suite, after the FX work | 1472 assertions in 346 cases | =ores.marketdata.core.tests= | =fb3c5a4f31= |
+| codegen suite, after the FX work | 961 passed | =pytest projects/ores.codegen/tests= | =fb3c5a4f31= |
+| The two GBP-EUR directions | 122 shared dates; product 1.0003 median, 0.9964 worst | a walk of =external/ore/examples= pairing =FX-TR20H-EUR-GBP= with =FX-TR20H-GBP-EUR= | =fb3c5a4f31= |
 
 The test binaries are under
 =build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the
@@ -218,6 +239,24 @@ earlier change, and the file lists the enum, so the gap was closed while the tab
 was being extended. Measured: the enum declares 38 values and the diagram now
 lists the same 38.
 
+**A type-gated key is gated by the table now, not by the template.** The section
+took only a key and the template hard-coded =quote=. It takes a type column; a row
+that names none is gated on quote, which is what the interest-rate table's one row
+means.
+
+**Three classes do not emit the Reject keys table their model carries.** =equity=
+(=delegate_function=), =credit= and =commodity= (=inline_delegate=) route their
+query validation through the shared check instead, so the rows added to their
+tables are documentation and the shared check is what refuses the keys. That is
+pre-existing -- their other rows are equally unenforced -- and it is why the two
+new keys went into the shared check as well as the six tables that do emit.
+
+**The first reciprocal figure was wrong.** The corpus's two GBP-EUR directions were
+first recorded as reciprocal to six decimal places, from a single sampled date. Over
+all 122 shared dates the product of the two is 1.0003 on the median date and 0.9964
+on the worst, so they agree to three decimal places and not more. The decision not
+to canonicalise does not rest on the precision: two values still land on one date.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -255,6 +294,14 @@ via its "Verifies task" field.
 | 14 | =;= widens the shared =tokenize()=, so market data reads it too | =market_data_parser.cpp= | Accepted | Measured: no selected market payload carries a semicolon, so the corpus measures the same. Recorded in Notes and in the pull request's limitations |
 | 15 | The PlantUML edit adds =ftiie=, which is not this task's | =ores.marketdata.puml= | Accepted | Disclosed in Notes. The file lists the enum, and the enum declares 38 values; leaving one out keeps the diagram wrong |
 | 16 | The commit message counted five lost round trips where there are six | -- | Accepted | Corrected in the rebuilt commit |
+| 17 | =source= is accepted and dropped by equity, credit and commodity, whose Reject keys tables are not emitted | =equity/credit/commodity_quote_type.org=, =ores.cpp.oresmd.parser.org= | Accepted | Found by both axes. The keys joined the shared check those three do run, which was renamed =validate_no_foreign_keys= for it; a case covers the three. The underlying codegen gap is recorded in Notes |
+| 18 | =from_index_name= re-implemented =split_index_name='s tokenizer | =oresmd_projections.cpp= | Accepted | Extracted =split_on_dash=, which both use |
+| 19 | The loader comment narrated how the section was first used | =org_loader.py= | Accepted | Present tense |
+| 20 | The spelling rule was stated three times | parser, projections, model | Accepted | One statement per site |
+| 21 | =fx_fixing_has_no_quote_key= is negative-only | =oresmd_oresmd_projections_tests.cpp= | Declined | The same table's positive rows fail if =to_quote_key= ever returned nullopt, so the pair is meaningful |
+| 22 | A positive assertion sat inside the FX rejection case | =oresmd_oresmd_projections_tests.cpp= | Accepted | Moved into the case that owns the direction |
+| 23 | The reciprocal figure was six decimal places | this task, =fx_quote_type.org= | Accepted | Measured: median product 1.0003, worst 0.9964. Corrected in all three places |
+| 24 | The review ran while the tree was still being written | -- | Accepted | Process: the axis pinned a revision and re-verified, but the worktree should have been still. Findings re-checked by hand |
 
 * Result
 
@@ -278,6 +325,12 @@ A curve identifier drops the tenor of an overnight family, because the tenor
 belongs to the curve key; a fixing identifier keeps the tenor the index was
 published at, because =USD-SOFR= and =USD-SOFR-3M= are two series. =role= is what
 tells the two apart, and both readings are pinned in the projections tests.
+
+The FX class is closed with it. An FX fixing carries =source=, lower-cased, and
+=source_spelling= for the token as ORE wrote it, both meaningful only when
+=type=fixing=; the pair stays the pair as published. All seven FX names the corpus
+carries name and round-trip, from none, and every other asset class refuses the two
+keys rather than dropping them. The corpus total is 64 of 158.
 
 The new coverage test walks every fixing payload with the real reader and reports
 the table per class. It found a fixing file the reader refused:

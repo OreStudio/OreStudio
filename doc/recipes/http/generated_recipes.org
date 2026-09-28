@@ -35,6 +35,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:567A34ED-0B68-5C66-A733-77163A4B45F6][How do I call the bootstrap endpoints over HTTP?]]
 
+* Currencies
+
+- [[id:1C8E834C-6C3E-5655-9887-6CB58081498C][How do I call the currencies endpoints over HTTP?]]
+
 * Image Tags
 
 - [[id:83E84B75-637A-5B86-A308-7FD495BFD81E][How do I call the image_tags endpoints over HTTP?]]

@@ -702,7 +702,6 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
     reject_if_present("security", "metric", qp.metric);
     reject_if_present("security", "source", qp.source);
     reject_if_present("security", "source_spelling", qp.source_spelling);
-    reject_if_present("security", "delivery", qp.delivery);
     reject_if_present("security", "name_spelling", qp.name_spelling);
     security_market_data_identifier id;
     id.security_id = to_upper(first_segment(u));
@@ -717,6 +716,8 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
                 "oresmd://security/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<security_quote_type>("quote", *qp.quote);
     }
+    if (qp.delivery)
+        id.delivery = to_lower(*qp.delivery);
     return id;
 }
 
@@ -1080,6 +1081,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.security_id));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "delivery", id.delivery);
             } else if constexpr (std::is_same_v<T, shape_profile_market_data_identifier>) {
                 u.set_host("shape_profile");
                 u.segments().push_back(to_lower(id.profile_id));

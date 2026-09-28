@@ -33,9 +33,34 @@ only meaningful when `type=quote`.
 
 A fully-resolved oresmd identifier for an inflation instrument (asset_class=inflation).
 
+=index_code= is the entity for every type. A quote's key is
+=ZC_INFLATIONSWAP/RATE/<CODE>/<POINT>=, while a fixing's index name is the code
+alone: no prefix, no separator, and nothing else in the string says which class it
+belongs to. That is why the codes the class knows are data rather than grammar, and
+why the index-name projection names a dash-less token only when it is one of them.
+
 * Requirement brief
 
 A logical, possibly-partial oresmd requirement for an inflation instrument.
+
+* Index codes
+
+The index codes the class carries, from the codes the corpus's fixing rows use. The
+two its curve configurations name, =UKRPI= and =EUHICPXT=, are among them. The
+index-name projection accepts a dash-less token only when it is one of these,
+spelled as the table spells it, so a stray token or a header word is left unnamed
+rather than given an inflation identity, and a code written in another case is
+refused rather than reshaped on the way back. A code ORE adds is a row here.
+
+| code |
+|------|
+| AUCPI |
+| EUHICP |
+| EUHICPXT |
+| FRHICP |
+| UKRPI |
+| USCPI |
+| ZACPI |
 
 * Fields
 
@@ -74,6 +99,7 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 
 | uri | expected | description |
 |-----+----------+-------------|
+| oresmd://inflation/ukrpi?type=fixing | nullopt | inflation_fixing_has_no_quote_key |
 | oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | ZC_INFLATIONSWAP/RATE/UKRPI/5Y | zc_inflation_swap_quote_key |
 | oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | YY_INFLATIONSWAP/RATE/UKRPI/5Y | yy_inflation_swap_quote_key |
 | oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | SEASONALITY/RATE/MULT/UKRPI/JAN | seasonality_quote_key |
@@ -85,6 +111,7 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 
 | uri | description |
 |-----+-------------|
+| oresmd://inflation/ukrpi?type=fixing | round_trip_inflation_fixing |
 | oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | round_trip_inflation |
 | oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | round_trip_inflation_yy_swap |
 | oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | round_trip_inflation_seasonality |

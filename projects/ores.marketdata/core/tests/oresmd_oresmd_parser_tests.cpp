@@ -388,6 +388,38 @@ TEST_CASE("round_trip_ir_bond_option_vol", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_equity_fixing", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://equity/sp5?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_equity_fixing_with_an_identifier_scheme", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://equity/ric:.spx?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("round_trip_equity", tags) {
     const auto original =
         oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));
@@ -1333,6 +1365,32 @@ TEST_CASE("round_trip_correlation_surface", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_security_fixing", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://security/isin:ie00bh3sq895?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_security_fixing_delivery", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://security/isin:ie00bh3sq895?type=fixing&delivery=2025-08"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("round_trip_security_bond_price", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price"));
@@ -1459,6 +1517,22 @@ TEST_CASE("parse_inflation_zc_swap", tags) {
     REQUIRE(inf.index_code == "UKRPI");
     REQUIRE(inf.quote_type == inflation_quote_type::zc_swap);
     REQUIRE(inf.point == "5y");
+}
+
+TEST_CASE("round_trip_inflation_fixing", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=fixing"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
 }
 
 TEST_CASE("round_trip_inflation", tags) {
@@ -1857,10 +1931,11 @@ TEST_CASE("reject_fx_source_keys_on_every_other_asset_class", tags) {
 }
 
 TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
-    // A delivery coordinate names a commodity future's contract period or an
-    // intraday power index's delivery window, and nothing else: a key accepted
-    // and dropped is a key the caller believes was recorded. Every class but
-    // those two refuses it, through its own Reject keys table or the shared check.
+    // A delivery coordinate names a commodity future's contract month, a bond
+    // future's expiry month or an intraday power index's delivery window, and
+    // nothing else: a key accepted and dropped is a key the caller believes was
+    // recorded. Every class but those three refuses it, through its own Reject keys
+    // table or the shared check.
     for (const auto& rejected :
          {"oresmd://equity/sp5?type=fixing&delivery=2024-12",
           "oresmd://credit/vod?ccy=eur&type=fixing&delivery=2024-12",
@@ -1869,11 +1944,11 @@ TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
           "oresmd://ir/usd?type=fixing&index=sofr&delivery=2024-12",
           "oresmd://correlation/ccy-eur-usd?type=fixing&delivery=2024-12",
           "oresmd://rating/provider_1?type=fixing&delivery=2024-12",
-          "oresmd://security/isin:de000a3h2wp2?type=fixing&delivery=2024-12",
+          "oresmd://generic/juniornote?type=fixing&delivery=2024-12",
           "oresmd://shape_profile/pjm_wh_rt_pk?type=fixing&delivery=2024-12"}) {
         REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
     }
-    // The two classes that name it keep it. They accept it on any type, because
+    // The three classes that name it keep it. They accept it on any type, because
     // the type gate a Type-gated keys table declares is emitted for the classes
     // that build a validate_<class>() and not for those that delegate, which is
     // the codegen gap the model records.
@@ -1885,6 +1960,10 @@ TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
         oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&delivery=2024-12")));
     REQUIRE(power.delivery.has_value());
     CHECK(*power.delivery == "2024-12");
+    const auto security = std::get<security_market_data_identifier>(oresmd_parser::parse(
+        uri("oresmd://security/isin:ie00bh3sq895?type=fixing&delivery=2025-08")));
+    REQUIRE(security.delivery.has_value());
+    CHECK(*security.delivery == "2025-08");
 }
 
 TEST_CASE("reject_name_spelling_on_every_class_that_does_not_name_it", tags) {

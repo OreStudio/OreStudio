@@ -190,6 +190,7 @@ market_data_identifier resolve_security(const security_market_data_requirement& 
         pick_mandatory_string(req.security_id, d ? d->security_id : std::string{}, "security_id");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.delivery = pick_optional(req.delivery, d ? d->delivery : std::nullopt);
     return id;
 }
 

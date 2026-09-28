@@ -235,18 +235,18 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
                      named,
                      round_tripped));
 
-    // The classes whose index-name grammar is a decision this task has not taken
-    // yet, plus the one the corpus misfiles. Each is recorded with its reason on
-    // the task; this list is the measured half of the same claim. It fails when
-    // one is closed without the record being updated, and when a change breaks a
-    // class that worked.
+    // The classes whose names reach no identifier. Every index-name class the
+    // corpus carries resolves now; the one entry left is not a class this library
+    // owes an index name to. It is recorded with its reason on the task, and this
+    // list is the measured half of the same claim: it fails when a class is closed
+    // without the record being updated, and when a change breaks a class that
+    // worked.
     //
-    // market-data-key is not a class this library owes an index name to: the two
-    // GENERIC-MD/... rows in Products/Input/fixings.csv are market-data keys in a
-    // fixing column, and the owner reads them as errors. They stay counted here so
-    // that the census keeps its whole population.
-    const std::set<std::string> recorded{
-        "equity", "inflation", "security", "market-data-key"};
+    // market-data-key is the two GENERIC-MD/... rows in
+    // Products/Input/fixings.csv, which are market-data keys in a fixing column.
+    // The owner reads them as errors rather than as fixings to model, and they stay
+    // counted here so that the census keeps its whole population.
+    const std::set<std::string> recorded{"market-data-key"};
 
     REQUIRE(classes_with_unnamed_names() == recorded);
 }
@@ -265,7 +265,8 @@ TEST_CASE("the_closed_classes_name_every_fixing_name_the_corpus_carries", tags) 
     // The classes whose grammar is decided, pinned at every name the corpus
     // carries rather than at a sample, so a family or a source that regresses in
     // one variant fails here.
-    for (const auto& cls : {"ir", "fx", "commodity", "power", "generic"}) {
+    for (const auto& cls :
+         {"ir", "fx", "commodity", "power", "generic", "inflation", "equity", "security"}) {
         const auto& c = corpus_coverage().classes.at(cls);
 
         CHECK(c.named == c.names);

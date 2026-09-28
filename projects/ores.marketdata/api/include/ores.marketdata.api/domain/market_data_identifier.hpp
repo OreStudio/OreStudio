@@ -139,6 +139,12 @@ struct ir_market_data_identifier final {
  * type and the parser requires it for every `type` except `fixing`. Unlike IR, where
  * `entity` already is the currency, an equity's `entity` is a ticker, so this is
  * independent information rather than a repeat of the path segment.
+ *
+ * A fixing's `ticker` is the whole tail ORE writes after `EQ-`, its identifier scheme
+ * included, because ORE spells the scheme in the name: the corpus carries
+ * `EQ-RIC:.SPX` and `EQ-FIGI:BBG00R251JN8` as fixings, and
+ * `EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/...` as the quote key for the same
+ * instrument. So the fixing name needs no field the type does not have.
  */
 struct equity_market_data_identifier final {
     std::string ticker;
@@ -199,6 +205,12 @@ struct commodity_market_data_identifier final {
 
 /**
  * @brief A fully-resolved oresmd identifier for an inflation instrument (asset_class=inflation).
+ *
+ * index_code is the entity for every type. A quote's key is
+ * ZC_INFLATIONSWAP/RATE/<CODE>/<POINT>, while a fixing's index name is the code
+ * alone: no prefix, no separator, and nothing else in the string says which class it
+ * belongs to. That is why the codes the class knows are data rather than grammar, and
+ * why the index-name projection names a dash-less token only when it is one of them.
  */
 struct inflation_market_data_identifier final {
     std::string index_code;
@@ -225,10 +237,21 @@ struct correlation_market_data_identifier final {
 
 /**
  * @brief A fully-resolved oresmd identifier for a security (asset_class=security).
+ *
+ * security_id is the entity, and it carries the scheme the corpus's own quote keys
+ * spell: ISIN:DE000A3H2WP2 in BOND/PRICE/ISIN:DE000A3H2WP2, and a name such as
+ * SECURITY_1_FWDEXP_20251220 where the instrument has no scheme.
+ *
+ * delivery is a fixing's coordinate, and only a fixing carries one. The corpus
+ * writes BOND-ISIN:IE00BH3SQ895-2025-08 for the bond future expiring in August
+ * 2025, so the trailing period is a delivery month, the shape the commodity class
+ * gives its contract month. A quote carries that information inside the name it is
+ * quoted under, which is why nothing reads the field for one.
  */
 struct security_market_data_identifier final {
     std::string security_id;
     instrument_type type = instrument_type::quote;
+    std::optional<std::string> delivery;
     std::optional<domain::security_quote_type> quote_type;
 
     bool operator==(const security_market_data_identifier&) const = default;

@@ -5779,6 +5779,19 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
             })
         result["index_family"] = families
 
+    # --- Index codes (inflation only): the dash-less index names the class
+    # carries. An inflation fixing's name has no prefix, so nothing in the string
+    # says which class it belongs to; the index-name projection accepts a
+    # dash-less token only when it is one of these. Emitted as dicts for the same
+    # last-item reason as the families above. ---
+    ic_section = _section(doc.root, "Index codes")
+    if ic_section:
+        result["index_codes"] = [
+            {"code": r.get("code", "")}
+            for r in _parse_org_table_rows(ic_section)
+            if r.get("code")
+        ]
+
     # --- Reject keys table ---
     reject_section = _section(doc.root, "Reject keys")
     reject_keys: list[str] = []

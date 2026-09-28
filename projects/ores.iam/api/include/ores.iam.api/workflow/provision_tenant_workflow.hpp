@@ -138,8 +138,8 @@ struct provision_tenant_workflow_request {
  *
  * A kind reads its own arguments from @c arguments_json, and takes a value the
  * profile left out of the request's @c parameters of the same name. That is how
- * the Operational profile supplies a root LEI: its row states no arguments at
- * all, and the value is the form's.
+ * the Operational profile supplies a root LEI: its row names the bundle that
+ * imports the hierarchy and leaves the LEI out, so the value is the form's.
  */
 struct provision_tenant_step_command {
     std::string kind;

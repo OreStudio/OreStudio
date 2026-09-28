@@ -87,5 +87,29 @@ BEGIN
         'CRM Cross-Rates Matrix Topology',
         'Named CRM topology configs (majors/exotics/scandies tiers) for the Cross-Rates Matrix window. Published per party, independent of which synthetic-data theme (if any) is providing live rates -- the CRM shows static/stale prices until a feed starts ticking the underlying driver pairs.'
     );
+
+    -- The generic LEI hierarchy import: the production counterpart of
+    -- acme_lei_import, carrying no organisation's data. Its one member
+    -- derives the parties of a GLEIF legal-entity subtree from the root LEI
+    -- the run supplies, reading the GLEIF entity/relationship staging rows
+    -- that the base bundle's gleif.* datasets carry. The profile's
+    -- import_lei_hierarchy step names this bundle and passes root_lei.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'lei_hierarchy',
+        'GLEIF LEI Hierarchy Import',
+        'Imports the GLEIF legal-entity hierarchy under a root LEI as the tenant''s parties. Published tenant-wide with the {"lei_parties": {"root_lei": "..."}} param, before any party under the root exists. The root LEI is the run''s, so the bundle holds no organisation''s data.'
+    );
+
+    -- The reference data one party needs and nothing more: the reporting
+    -- definitions it runs and its CRM topology. Published once per party
+    -- with a {"party_id": "..."} param. Deliberately excludes the
+    -- organisation structure, staff accounts and demonstration data that
+    -- the ACME office bundles and risk_management carry, so a production
+    -- tenant's parties get reference data and no test data.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'party_essentials',
+        'Party Essentials',
+        'The reference data a single party needs: its ORE report definitions and its CRM (Cross-Rates Matrix) topology. Published once per party with a {"party_id": "..."} param. Carries no organisation structure, staff accounts or demonstration data -- those belong to the ACME demo bundles.'
+    );
 END $$;
 

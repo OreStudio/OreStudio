@@ -96,6 +96,8 @@ inline std::string format_credit_simulation_grid(const credit_simulation_grid& g
     const auto side = grid.side();
     out.setf(std::ios::fixed, std::ios::floatfield);
     out.precision(4);
+    // Each row ends with a separator and no newline before the next, which is
+    // what ORE itself writes: a row in the shipped corpus ends "0.0000, ".
     for (std::size_t row = 0; row < side; ++row) {
         out << "\t";
         for (std::size_t col = 0; col < side; ++col)

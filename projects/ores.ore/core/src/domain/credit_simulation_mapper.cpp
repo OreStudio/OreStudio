@@ -57,10 +57,6 @@ void assign_text(T& target, const std::string& value) {
     static_cast<xsd::string&>(target) = value;
 }
 
-bool parse_bool_string(const std::string& v) {
-    return v == "Y" || v == "YES" || v == "TRUE" || v == "True" || v == "true" || v == "1";
-}
-
 double parse_double(const std::string& text) {
     double value = 0.0;
     const auto parsed =
@@ -97,6 +93,24 @@ bool credit_simulation_mapper::parse_bool(domain::bool_ v) {
 
 domain::bool_ credit_simulation_mapper::make_bool(bool v) {
     return v ? domain::bool_::Y : domain::bool_::N;
+}
+
+/**
+ * @brief Returns the flag in the spelling the document used.
+ *
+ * ORE accepts six spellings of a true flag. The model keeps the token it read,
+ * so the export must return that token rather than normalising every spelling
+ * to Y, which would change a document that said YES.
+ */
+domain::bool_ to_bool_enum(const std::string& v) {
+    using b = domain::bool_;
+    if (v == "Y") return b::Y;
+    if (v == "YES") return b::YES;
+    if (v == "TRUE") return b::TRUE_;
+    if (v == "True") return b::True;
+    if (v == "true") return b::true_;
+    if (v == "1") return b::_1;
+    return b::N;
 }
 
 mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v) {
@@ -223,8 +237,8 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
 
     assign_text(document.NettingSetIds, v.netting_set_ids);
 
-    document.Risk.Market = make_bool(parse_bool_string(v.config.market));
-    document.Risk.Credit = make_bool(parse_bool_string(v.config.credit));
+    document.Risk.Market = to_bool_enum(v.config.market);
+    document.Risk.Credit = to_bool_enum(v.config.credit);
     document.Risk.ZeroMarketPnl = make_bool(v.config.zero_market_pnl);
     assign_text(document.Risk.Evaluation, v.config.evaluation);
     document.Risk.DoubleDefault = make_bool(v.config.double_default);

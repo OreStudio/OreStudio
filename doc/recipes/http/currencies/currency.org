@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 1C8E834C-6C3E-5655-9887-6CB58081498C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the currencies endpoints over HTTP?
+#+description: Every endpoint the currencies resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:currencies:
+
+This file documents the currencies resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/refdata/currencies=
+:PROPERTIES:
+:ID: D9E0F89A-0921-5C17-B662-88236C790737
+:END:
+
+List currencies. It needs a session.
+
+It forwards to =refdata.v1.currencies.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/refdata/currencies
+#+end_example
+
+#+name: currencies-list
+#+begin_src hurl :tangle currencies-list.hurl :exports none
+GET {{base_url}}/api/v1/refdata/currencies
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/refdata/currencies/__none__=
+:PROPERTIES:
+:ID: 45C22DB6-CDDC-566E-AA67-3D9A6E7E3215
+:END:
+
+Get one currency. It needs a session.
+
+It forwards to =refdata.v1.currencies.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/refdata/currencies/__none__
+#+end_example
+
+#+name: currencies-get
+#+begin_src hurl :tangle currencies-get.hurl :exports none
+GET {{base_url}}/api/v1/refdata/currencies/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/refdata/currencies/get-many=
+:PROPERTIES:
+:ID: D7907C6F-3B87-50CA-ABD8-299B8729A051
+:END:
+
+Get many currencies. It needs a session.
+
+It forwards to =refdata.v1.currencies.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/refdata/currencies/get-many
+#+end_example
+
+#+name: currencies-get-many
+#+begin_src hurl :tangle currencies-get-many.hurl :exports none
+POST {{base_url}}/api/v1/refdata/currencies/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/refdata/currencies=
+:PROPERTIES:
+:ID: 79F39DFC-F813-545F-87D1-63D24A5BAD24
+:END:
+
+Create one currency. It needs a session.
+
+It forwards to =refdata.v1.currencies.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/refdata/currencies
+#+end_example
+
+#+name: currencies-add
+#+begin_src hurl :tangle currencies-add.hurl :exports none
+POST {{base_url}}/api/v1/refdata/currencies
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/refdata/currencies=
+:PROPERTIES:
+:ID: 054EE58B-D1D6-5DF7-9015-F1490FFF532A
+:END:
+
+Replace one currency. It needs a session.
+
+It forwards to =refdata.v1.currencies.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/refdata/currencies
+#+end_example
+
+#+name: currencies-set
+#+begin_src hurl :tangle currencies-set.hurl :exports none
+PUT {{base_url}}/api/v1/refdata/currencies
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/refdata/currencies/put-many=
+:PROPERTIES:
+:ID: 53B1CAD1-F03C-51FA-AC76-C6225A1B690D
+:END:
+
+Write many currencies. It needs a session.
+
+It forwards to =refdata.v1.currencies.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/refdata/currencies/put-many
+#+end_example
+
+#+name: currencies-put-many
+#+begin_src hurl :tangle currencies-put-many.hurl :exports none
+POST {{base_url}}/api/v1/refdata/currencies/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/refdata/currencies/__none__=
+:PROPERTIES:
+:ID: FB7F0C1C-477D-5788-BAC9-A5D4B087D261
+:END:
+
+Delete one currency. It needs a session.
+
+It forwards to =refdata.v1.currencies.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/refdata/currencies/__none__
+#+end_example
+
+#+name: currencies-delete
+#+begin_src hurl :tangle currencies-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/refdata/currencies/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/refdata/currencies/delete-many=
+:PROPERTIES:
+:ID: BDCF245D-EBBA-5F6F-931C-4C81A42CFA4F
+:END:
+
+Delete many currencies. It needs a session.
+
+It forwards to =refdata.v1.currencies.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/refdata/currencies/delete-many
+#+end_example
+
+#+name: currencies-delete-many
+#+begin_src hurl :tangle currencies-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/refdata/currencies/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/refdata/currencies/__none__/versions=
+:PROPERTIES:
+:ID: 872D648D-7824-51B8-8E54-FC2F2D0AF29D
+:END:
+
+List the recorded versions of one currency. It needs a session.
+
+It forwards to =refdata.v1.currencies_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/refdata/currencies/__none__/versions
+#+end_example
+
+#+name: currencies-versions
+#+begin_src hurl :tangle currencies-versions.hurl :exports none
+GET {{base_url}}/api/v1/refdata/currencies/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/refdata/currencies/__none__/versions/0=
+:PROPERTIES:
+:ID: B7863F09-5A05-5CCF-9E00-BF7BB36BE3FE
+:END:
+
+Get one recorded version of one currency. It needs a session.
+
+It forwards to =refdata.v1.currencies_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/refdata/currencies/__none__/versions/0
+#+end_example
+
+#+name: currencies-version
+#+begin_src hurl :tangle currencies-version.hurl :exports none
+GET {{base_url}}/api/v1/refdata/currencies/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -180,6 +180,7 @@ std::optional<domain::bond_trs> bond_trs_repository::read_at_version(context ctx
     return entities.front();
 }
 
+
 bond_trs_repository::remove_status bond_trs_repository::remove(
     context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond trs. " << "trade_id: " << trade_id;

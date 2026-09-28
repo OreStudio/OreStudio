@@ -352,7 +352,7 @@ nest.
 
 The trade read path fetches the legs of many instruments at once, and no
 generated read covers that: =read_latest(context, ids)= filters on the leg's
-own key and =read_latest_by_instrument_id= reads one instrument at a time.
+own key and =read_latest_by_trade_id= reads one instrument at a time.
 The batch read below is one statement over the instrument set, which is what
 the generated stack cannot express. It keeps the workspace filter the rest of
 the generated reads carry.

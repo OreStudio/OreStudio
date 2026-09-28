@@ -123,6 +123,7 @@ public:
     std::optional<domain::bond_repo>
     read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest bond repos with pagination support.
      * @param ctx Repository context with database connection

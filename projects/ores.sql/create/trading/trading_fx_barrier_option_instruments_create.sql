@@ -89,11 +89,6 @@ create index if not exists fx_barrier_option_instruments_party_idx
 on "ores_trading_fx_barrier_option_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists fx_barrier_option_instruments_trade_id_idx
-on "ores_trading_fx_barrier_option_instruments_tbl" (tenant_id, trade_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and trade_id is not null;
-
 create index if not exists fx_barrier_option_instruments_workspace_idx
 on "ores_trading_fx_barrier_option_instruments_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();

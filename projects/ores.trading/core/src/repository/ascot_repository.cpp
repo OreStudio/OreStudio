@@ -178,6 +178,7 @@ ascot_repository::read_at_version(context ctx, const std::string& trade_id, std:
     return entities.front();
 }
 
+
 ascot_repository::remove_status ascot_repository::remove(context ctx,
                                                          const std::string& trade_id,
                                                          std::optional<std::uint32_t> version) {

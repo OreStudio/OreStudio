@@ -186,6 +186,7 @@ std::optional<domain::instrument_strike> instrument_strike_repository::read_at_v
     return entities.front();
 }
 
+
 instrument_strike_repository::remove_status instrument_strike_repository::remove(
     context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. " << "trade_id: " << trade_id;

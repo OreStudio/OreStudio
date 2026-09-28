@@ -216,6 +216,7 @@ bond_future_delivery_basket_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 bond_future_delivery_basket_repository::remove_status
 bond_future_delivery_basket_repository::remove(context ctx,
                                                const std::string& trade_id,

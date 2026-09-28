@@ -225,6 +225,7 @@ equity_position_option_underlying_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 equity_position_option_underlying_repository::remove_status
 equity_position_option_underlying_repository::remove(context ctx,
                                                      const std::string& trade_id,

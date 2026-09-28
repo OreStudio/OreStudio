@@ -234,7 +234,6 @@ its trade, so a row cannot exist without one.
 | name | columns | unique | current_only | where_extra |
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
-| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202

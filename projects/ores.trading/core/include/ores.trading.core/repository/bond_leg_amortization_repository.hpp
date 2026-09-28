@@ -140,6 +140,7 @@ public:
                                                                  const std::string& sequence_number,
                                                                  std::uint32_t version);
 
+
     /**
      * @brief Reads latest bond leg amortizations with pagination support.
      * @param ctx Repository context with database connection

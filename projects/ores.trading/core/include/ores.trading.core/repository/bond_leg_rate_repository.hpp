@@ -134,6 +134,7 @@ public:
                                                          const std::string& leg_number,
                                                          std::uint32_t version);
 
+
     /**
      * @brief Reads latest bond leg rates with pagination support.
      * @param ctx Repository context with database connection

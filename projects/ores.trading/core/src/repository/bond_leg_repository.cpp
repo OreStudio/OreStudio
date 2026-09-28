@@ -198,6 +198,7 @@ std::optional<domain::bond_leg> bond_leg_repository::read_at_version(context ctx
     return entities.front();
 }
 
+
 bond_leg_repository::remove_status
 bond_leg_repository::remove(context ctx,
                             const std::string& trade_id,

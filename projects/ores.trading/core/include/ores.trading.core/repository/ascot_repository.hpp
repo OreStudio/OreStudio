@@ -121,6 +121,7 @@ public:
     std::optional<domain::ascot>
     read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest ascots with pagination support.
      * @param ctx Repository context with database connection

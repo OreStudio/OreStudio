@@ -124,6 +124,7 @@ public:
     std::optional<domain::instrument_strike>
     read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest instrument strikes with pagination support.
      * @param ctx Repository context with database connection

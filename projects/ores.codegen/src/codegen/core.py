@@ -1690,7 +1690,10 @@ def _column_member_prefixes(de: dict[str, Any]) -> dict[str, str]:
                    (de.get('primary_key') or {}).get('columns') or [],
                    de.get('natural_keys') or []):
         for column in source:
-            name = column.get('name')
+            # A key column keeps its name under 'column', a plain one under
+            # 'name'; reading only 'name' lost the key that is also a foreign
+            # key, which is exactly the collapsed instrument's trade_id.
+            name = column.get('name') or column.get('column')
             if not name or name in prefixes:
                 continue
             if has_identity and column.get('group') == 'identity':

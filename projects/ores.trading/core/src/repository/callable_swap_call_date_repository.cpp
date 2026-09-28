@@ -209,6 +209,7 @@ callable_swap_call_date_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 callable_swap_call_date_repository::remove_status
 callable_swap_call_date_repository::remove(context ctx,
                                            const std::string& trade_id,

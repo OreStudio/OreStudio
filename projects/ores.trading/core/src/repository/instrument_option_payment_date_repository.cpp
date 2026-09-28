@@ -217,6 +217,7 @@ instrument_option_payment_date_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 instrument_option_payment_date_repository::remove_status
 instrument_option_payment_date_repository::remove(context ctx,
                                                   const std::string& trade_id,

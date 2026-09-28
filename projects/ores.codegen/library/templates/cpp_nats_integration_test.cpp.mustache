@@ -254,7 +254,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
         const auto {{column}}_catalogue = {{column}}_catalogue_repo.read_latest(
             party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
         REQUIRE_FALSE({{column}}_catalogue.empty());
-        v.{{{group_prefix}}}{{column}} = {{column}}_catalogue.front().{{target_column}};
+        v.{{{group_prefix}}}{{column}} = {{column}}_catalogue.front().{{{parent_target_prefix}}}{{target_column}};
     }
 {{/use_system_tenant}}
 {{^use_system_tenant}}

@@ -180,6 +180,7 @@ std::optional<domain::bond_option> bond_option_repository::read_at_version(
     return entities.front();
 }
 
+
 bond_option_repository::remove_status bond_option_repository::remove(
     context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond option. " << "trade_id: " << trade_id;

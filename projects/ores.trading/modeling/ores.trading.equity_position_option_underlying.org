@@ -166,6 +166,20 @@ The ORE element is =OptionData/Settlement=.
 
 Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
 * SQL
 
 ** Flags
@@ -232,7 +246,7 @@ Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE sett
 The trade read path fetches the entries of many equity positions at once
 when it assembles the export payload, and no generated read covers that:
 =read_latest(context, ids)= filters on the child's own key and
-=read_latest_by_instrument_id= reads one instrument at a time. The batch
+=read_latest_by_trade_id= reads one instrument at a time. The batch
 read below is one statement over the instrument set, which is what the
 generated stack cannot express.
 

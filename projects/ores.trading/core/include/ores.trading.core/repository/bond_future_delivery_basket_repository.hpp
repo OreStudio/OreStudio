@@ -132,6 +132,7 @@ public:
                     const std::string& sequence_number,
                     std::uint32_t version);
 
+
     /**
      * @brief Reads latest bond future delivery basket identifiers with pagination support.
      * @param ctx Repository context with database connection

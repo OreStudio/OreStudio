@@ -210,6 +210,7 @@ instrument_option_premium_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 instrument_option_premium_repository::remove_status
 instrument_option_premium_repository::remove(context ctx,
                                              const std::string& trade_id,

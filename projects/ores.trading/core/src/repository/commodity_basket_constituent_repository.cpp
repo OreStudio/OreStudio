@@ -215,6 +215,7 @@ commodity_basket_constituent_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 commodity_basket_constituent_repository::remove_status
 commodity_basket_constituent_repository::remove(context ctx,
                                                 const std::string& trade_id,

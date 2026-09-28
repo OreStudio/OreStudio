@@ -260,6 +260,20 @@ names this the delivery date of the fact row.
 std::chrono::year_month_day{std::chrono::year{2029}/9/28}
 #+end_src
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
 * SQL
 
 ** Flags

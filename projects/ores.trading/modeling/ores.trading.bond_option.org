@@ -116,6 +116,20 @@ spelling the document chose rather than a decoded boolean, so export
 re-emits the same text. The corpus states =false=, so a decoded column
 would lose the spelling on every document that carries one.
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
 * SQL
 
 ** Flags

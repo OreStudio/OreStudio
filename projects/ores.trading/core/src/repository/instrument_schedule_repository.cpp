@@ -241,6 +241,7 @@ instrument_schedule_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 instrument_schedule_repository::remove_status
 instrument_schedule_repository::remove(context ctx,
                                        const std::string& trade_id,

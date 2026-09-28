@@ -329,6 +329,20 @@ Soft FK to ores_refdata_rounding_types_tbl: the values are the closed ORE roundi
 
 Decimal places the back stub's rounding keeps.
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
 * SQL
 
 ** Flags

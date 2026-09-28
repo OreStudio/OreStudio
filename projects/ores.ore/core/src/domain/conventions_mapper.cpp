@@ -382,6 +382,18 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
+swapIndexType reverse_swap_index(const refdata::domain::swap_index_convention& v) {
+    swapIndexType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Conventions) = v.conventions;
+    if (v.fixing_calendar) {
+        swapIndexType_FixingCalendar_t calendar;
+        static_cast<std::string&>(calendar) = *v.fixing_calendar;
+        r.FixingCalendar = calendar;
+    }
+    return r;
+}
+
 std::string fx_convention_id(const std::string& base_currency, const std::string& quote_currency) {
     return base_currency + "-" + quote_currency + "-FX-CONVENTIONS";
 }
@@ -794,6 +806,19 @@ refdata::domain::swap_convention conventions_mapper::map_swap(const swapType& v)
     return r;
 }
 
+refdata::domain::swap_index_convention
+conventions_mapper::map_swap_index(const swapIndexType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping swap index convention: " << std::string(v.Id);
+
+    refdata::domain::swap_index_convention r;
+    r.id = std::string(v.Id);
+    r.conventions = std::string(v.Conventions);
+    if (v.FixingCalendar)
+        r.fixing_calendar = std::string(*v.FixingCalendar);
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::ois_convention conventions_mapper::map_ois(const oisType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << std::string(v.Id);
 
@@ -999,6 +1024,12 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.swap_index.reserve(v.SwapIndex.size());
+    std::ranges::transform(
+        v.SwapIndex, std::back_inserter(r.swap_index), [](const auto& x) {
+            return map_swap_index(x);
+        });
+
     // Every category the document carries that this mapper does not model. A
     // skip that is counted is a gap a caller can read; a skip that is silent is
     // a document losing content and saying nothing.
@@ -1013,7 +1044,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
     count_unmodelled("CrossCurrencyBasis", v.CrossCurrencyBasis.size());
     count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
-    count_unmodelled("SwapIndex", v.SwapIndex.size());
     count_unmodelled("InflationSwap", v.InflationSwap.size());
     count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
     count_unmodelled("CommodityForward", v.CommodityForward.size());
@@ -1089,6 +1119,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.SwapIndex.reserve(v.swap_index.size());
+    for (const auto& x : v.swap_index)
+        r.SwapIndex.push_back(reverse_swap_index(x));
 
     BOOST_LOG_SEV(lg(), debug) << "Finished reverse-mapping conventions.";
     return r;

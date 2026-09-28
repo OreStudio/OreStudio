@@ -1015,3 +1015,7 @@ tangled into the runnable script library
 * Vanilla Swap Instruments
 
 - [[id:9F8435B5-AB4E-59E1-B85A-AB212F3E9A52][How do I run the vanilla_swap_instruments commands from the shell?]]
+
+* Swap Index Conventions
+
+- [[id:0519E904-7233-5F89-9476-DAE349DD325F][How do I run the swap_index_conventions commands from the shell?]]

@@ -107,6 +107,23 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Swap Index Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_swap_index_conventions_tbl enable row level security;
+
+drop policy if exists swap_index_conventions_tenant_isolation_policy
+    on ores_refdata_swap_index_conventions_tbl;
+
+create policy swap_index_conventions_tenant_isolation_policy
+    on ores_refdata_swap_index_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- OIS Conventions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ois_conventions_tbl enable row level security;

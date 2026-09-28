@@ -67,6 +67,53 @@ ores::ore::xml::roundtrip_kind conventions_kind() {
         conventions_difference);
 }
 
+int element_count(const std::string& xml, const std::string& name) {
+    const std::string open = "<" + name;
+    int count = 0;
+    std::size_t at = 0;
+    while ((at = xml.find(open, at)) != std::string::npos) {
+        const auto next = at + open.size();
+        if (next < xml.size() && (xml[next] == '>' || xml[next] == ' ' || xml[next] == '/'))
+            ++count;
+        at = next;
+    }
+    return count;
+}
+
+}
+
+// A category lands one at a time, and each one asserts its own elements survive
+// the export. The whole kind cannot be asserted until every category has, so a
+// case per category is how the work is proven as it goes.
+TEST_CASE("conventions_swap_index_round_trips", tags) {
+    int files_with_swap_index = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.SwapIndex.empty())
+            continue;
+
+        ++files_with_swap_index;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.swap_index.size() == document.SwapIndex.size());
+
+        for (std::size_t i = 0; i < document.SwapIndex.size(); ++i) {
+            const std::string id(document.SwapIndex[i].Id);
+            CHECK(mapped.swap_index[i].id == id);
+            CHECK(mapped.swap_index[i].conventions ==
+                  std::string(document.SwapIndex[i].Conventions));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "SwapIndex");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.SwapIndex.size()) + " SwapIndex element(s), the export " +
+             std::to_string(written));
+        CHECK(written == static_cast<int>(document.SwapIndex.size()));
+    }
+
+    // Forty-seven of the seventy-two at the commit this was written at.
+    CHECK(files_with_swap_index == 47);
 }
 
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {

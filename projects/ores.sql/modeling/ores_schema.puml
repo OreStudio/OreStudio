@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T00:10:13.045093Z
+' Generated: 2026-09-29T00:54:56.837292Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3172,6 +3172,33 @@ package "refdata" #FFF3E0 {
     Defines the fixed-leg schedule and the floating-leg index for a standard
     interest rate swap. Used by ORE to bootstrap par swap rates off a yield
     curve. Corresponds to the <Swap> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_swap_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * conventions : text
+          fixing_calendar : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swap_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Index Convention Table
+    A named swap index, which ORE describes by pointing at the swap convention it
+    follows rather than by restating that convention's fields. Corresponds to the
+    <SwapIndex> element in ORE conventions.xml. The id field is the natural key
+    (ORE <Id> element).
     end note
 
     entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {

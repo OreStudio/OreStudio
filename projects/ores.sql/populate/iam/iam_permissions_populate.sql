@@ -414,6 +414,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_conventions:write',                   'Create and modify swap conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_conventions:delete',                  'Delete swap conventions');
 
+    -- Swap index conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_index_conventions:read',              'View swap index conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_index_conventions:write',             'Create and modify swap index conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::swap_index_conventions:delete',            'Delete swap index conventions');
+
     -- Tenor anchors permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:read',                       'View tenor anchors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:write',                      'Create and modify tenor anchors');

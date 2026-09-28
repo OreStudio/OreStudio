@@ -194,6 +194,8 @@
 \ir ./refdata_deposit_conventions_notify_trigger_create.sql
 \ir ./refdata_swap_conventions_create.sql
 \ir ./refdata_swap_conventions_notify_trigger_create.sql
+\ir ./refdata_swap_index_conventions_create.sql
+\ir ./refdata_swap_index_conventions_notify_trigger_create.sql
 \ir ./refdata_ois_conventions_create.sql
 \ir ./refdata_ois_conventions_notify_trigger_create.sql
 \ir ./refdata_fra_conventions_create.sql

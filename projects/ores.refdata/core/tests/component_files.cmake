@@ -104,6 +104,7 @@ set(files
     "series_subclass_code_eventing_integration_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"
     "swap_convention_eventing_integration_tests.cpp"
+    "swap_index_convention_eventing_integration_tests.cpp"
     "tenor_anchor_eventing_integration_tests.cpp"
     "tenor_convention_eventing_integration_tests.cpp"
     "tenor_eventing_integration_tests.cpp"

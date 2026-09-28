@@ -86,6 +86,7 @@ set(files
     "rounding_type_commands_tests.cpp"
     "series_subclass_code_commands_tests.cpp"
     "swap_convention_commands_tests.cpp"
+    "swap_index_convention_commands_tests.cpp"
     "tenor_anchor_commands_tests.cpp"
     "tenor_commands_tests.cpp"
     "tenor_convention_commands_tests.cpp"

@@ -69,13 +69,22 @@ public:
     to_quote_key(const domain::market_data_identifier& identifier);
 
     /**
-     * @brief The reverse of to_quote_key()/to_curve_key(): splits an already-projected
-     * ORE key string (e.g. "FX/RATE/EUR/USD") into the three columns market_series
-     * stores them under. Returns std::nullopt if @p key has fewer than 3 '/'-delimited
-     * segments. Consolidates what were three separately hand-written, identical
-     * ad-hoc parsers (in ores.synthetic.service's feed_controller.hpp and
+     * @brief Splits an already-projected ORE key string (e.g. "FX/RATE/EUR/USD") into
+     * the three columns market_series stores them under, absorbing every segment after
+     * the metric into the qualifier. Returns std::nullopt if @p key has fewer than 3
+     * '/'-delimited segments. Consolidates what were three separately hand-written,
+     * identical ad-hoc parsers (in ores.synthetic.service's feed_controller.hpp and
      * ores.marketdata.service's feed_ingest_loop.cpp) into one shared, tested
      * implementation.
+     *
+     * The absorption is exact only for a series type that carries no point dimension,
+     * where the qualifier really is every remaining segment. For a point-bearing type
+     * the trailing segments are the point, not part of the qualifier, so this yields a
+     * qualifier no stored series carries: "DISCOUNT/RATE/EUR/CURVE/2Y" gives
+     * "EUR/CURVE/2Y" where the imported series holds "EUR/CURVE" and the point "2Y".
+     * Use series_key_registry::decompose(), which reads the shape table and splits the
+     * two apart, whenever the key may be point-bearing. Every current caller passes a
+     * point-free key (FX, and the FX spot tick path), which is why they do not.
      */
     [[nodiscard]] static std::optional<market_series_key>
     split_market_series_key(const std::string& key);

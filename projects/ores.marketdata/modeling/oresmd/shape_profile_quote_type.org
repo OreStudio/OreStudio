@@ -95,3 +95,4 @@ A logical, possibly-partial oresmd requirement for a shape profile.
 |-----+-------------|
 | oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&ccy=usd | reject_shape_profile_uri_with_ccy |
 | oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&metric=rate | reject_shape_profile_uri_with_ir_only_metric |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&model=rate_lnvol | reject_shape_profile_model_query_key |

@@ -1090,7 +1090,9 @@ Then, in order:
   segment survives the parse now -- PR 2 added =settle= to
   =ir_market_data_identifier= and stopped rewriting it -- so what remains is
   the case where the input carried no settlement segment and the projection
-  currently invents one.
+  currently invents one. **Re-checked and withdrawn; the source named is the
+  wrong convention.** See "The settlement segment is not a currency's spot
+  days" below.
 - The verbatim key, so the export is lossless for every case the
   reconstructed key cannot reproduce. A =key text not null= column on the
   observations and fixings tables, populated from =market_datum::key= in
@@ -1107,8 +1109,71 @@ Then, in order:
   validated as a currency, and =split_market_series_key= dropping the point
   against the registry's four-field key.
 
-*Closed by PRs 2 and 3, and struck from this list.*
+*What the re-checks found.*
 
+The grammar bullet asked for four holes to be re-checked against the current
+projections before any of them was claimed, and that was the right
+instruction: one of the four is not a defect, one of the four is a defect
+with no affected caller, and one of the seven items above rests on a
+convention that does not exist.
+
+- =model= was accepted on every asset class and kept on none. It names a
+  volatility surface's own subtype, so it means something only when the URI
+  also asked for =type=vol=; a quote URI naming a model parsed successfully
+  and dropped the value. The parser now emits one check per class --
+  =reject_model_unless_vol= for the six that carry a surface,
+  =reject_if_present= for the four that do not -- because no class gives
+  =model= a second meaning. Ten rejection cases, generated from the models.
+- =credit='s =quote= key was the one class not gated on =type=, so
+  =type=curve&quote=cds= parsed and the quote type was kept. Its model no
+  longer sets =quote_type_checked: false=.
+- An =ir= URI's entity segment is its currency and was never checked. It is
+  now a currency for every IR type except the bond option, whose third key
+  segment is the underlying bond curve's own name -- =EUR_GENERIC= in the
+  corpus, and the one IR identifier the round-trip walk produces that is not
+  three letters. The claim as written needed that exemption to be true; it
+  was not.
+- =split_market_series_key= does fold a point-bearing key's trailing point
+  into the qualifier, so =DISCOUNT/RATE/EUR/CURVE/2Y= yields the qualifier
+  =EUR/CURVE/2Y= where the import stores =EUR/CURVE= and the point =2Y=. But
+  all four of its callers pass an FX key, and FX has no point dimension, so
+  no stored series is looked up under a qualifier that never existed. The
+  fix needs the shape table, and three of the four callers -- two in
+  =ores.synthetic=, one free function -- have only a NATS client and no
+  context to read it from. The docstring now states the precondition and
+  points at =series_key_registry::decompose()= for the general case. Left as
+  a recorded limitation rather than a signature change three callers cannot
+  satisfy.
+
+** The settlement segment is not a currency's spot days
+
+The bullet above proposed =ores.refdata='s per-currency spot lag as the
+source for the =IR_SWAP= settlement segment. It is the wrong convention, and
+the corpus says so twice over.
+
+=ores_refdata_currencies_tbl= holds exactly two values: USD is 1 and every
+other currency is 2. =ores_dq_currencies_artefact_tbl= shows the same split,
+1 currency at 1 and 12,510 at 2. That is FX spot settlement, which really is
+T+1 for USD.
+
+The segment the corpus writes for an =IR_SWAP= key is not that. Across
+=external/ore/examples= the settle segment is =2D= for 2,158 USD keys and
+=0D= for 821, and =1D= never appears for USD at all. It also appears as an
+explicit date -- =IR_SWAP/RATE/GBP/20220922/...= -- which no per-currency
+integer can produce. So the segment is an ORE key component that is
+sometimes a lag and sometimes a date, and the field refdata exposes is the
+FX spot convention.
+
+Substituting it would also break the round trip the coverage gate measures.
+=from_ir_swap= records =settle= only when the segment is not =2D=, so a USD
+=2D= key carries no settle in the identifier and the forward's fallback is
+what reproduces it. A fallback of =1D= for USD turns
+=IR_SWAP/RATE/USD/2D/3M/PAR_RATE= into =IR_SWAP/RATE/USD/1D/3M/PAR_RATE=,
+and =oresmd_ore_coverage_tests.cpp= asserts all 485,606 corpus keys project
+back to the spelling they arrived in. The item is withdrawn, not deferred:
+there is nothing here to wire.
+
+*Closed by PRs 2 and 3, and struck from this list.*
 - The modelled-but-unrepresentable quote types -- BASIS_SWAP,
   CC_BASIS_SWAP, ZERO, FRA, IMM_FRA, MM, MM_FUTURE, OI_FUTURE, CORRELATION,
   CPR and the 7-segment IR and SWAPTION keys. All of them project and

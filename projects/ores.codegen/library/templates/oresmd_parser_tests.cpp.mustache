@@ -478,6 +478,18 @@ TEST_CASE("{{description}}", tags) {
 }
 
 {{/rating_rejection}}
+{{#correlation_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/correlation_rejection}}
+{{#inflation_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/inflation_rejection}}
 TEST_CASE("reject_unrecognised_scheme", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("https://fx/eurusd?type=quote")), oresmd_exception);
 }

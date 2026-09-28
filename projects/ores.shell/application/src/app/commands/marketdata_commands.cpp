@@ -76,7 +76,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
             process_import(std::ref(out), std::ref(session), args);
         },
         "Import ORE market.txt/fixings.txt content via import_market_data_request",
-        {"[--file <path>] [--fixings <path>] [--source <tag>]"});
+        {"[--file <path>] [--fixings <path>] [--source <tag>] [--duplicates-are-errors]"});
 
     ores::shell::app::insert_menu(root_menu, std::move(marketdata_menu));
 }
@@ -87,7 +87,8 @@ void marketdata_commands::process_import(std::ostream& out,
     auto parsed = parse_args(args,
                              {{.name = "file", .requires_value = true, .default_value = ""},
                               {.name = "fixings", .requires_value = true, .default_value = ""},
-                              {.name = "source", .requires_value = true, .default_value = ""}});
+                              {.name = "source", .requires_value = true, .default_value = ""},
+                              {.name = "duplicates-are-errors"}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -97,7 +98,8 @@ void marketdata_commands::process_import(std::ostream& out,
     const auto& fixings_path = parsed->flag("fixings");
     if (file_path.empty() && fixings_path.empty()) {
         fail(out) << "Usage: marketdata import [--file <path>] [--fixings <path>] "
-                     "[--source <tag>] (at least one of --file/--fixings is required)"
+                     "[--source <tag>] [--duplicates-are-errors] "
+                     "(at least one of --file/--fixings is required)"
                   << std::endl;
         return;
     }
@@ -125,6 +127,7 @@ void marketdata_commands::process_import(std::ostream& out,
         req.fixings_content = std::move(*content);
     }
     req.source = parsed->flag("source");
+    req.duplicates_are_errors = parsed->flag_set("duplicates-are-errors");
 
     BOOST_LOG_SEV(lg(), info) << "Importing market data (file: " << file_path
                               << ", fixings: " << fixings_path << ", source: " << req.source << ")";

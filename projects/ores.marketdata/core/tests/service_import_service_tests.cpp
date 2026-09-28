@@ -21,8 +21,13 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/nats_options_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -141,6 +146,114 @@ TEST_CASE("import_leaves_point_id_empty_for_series_with_short_key", tags) {
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
     CHECK(observations.front().point_id.empty());
+}
+
+TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A stand-in for ores.refdata's currency_pair reference data. This branch is
+    // the reason the warning is worth reading: a key the grammar merely re-spells
+    // is a tidy-up, while a key reversed against refdata is stored under the pair
+    // it should have been written with, and only the file's owner can fix that.
+    // With no pairs to check against the checker never swaps, which is why an
+    // unconnected auth client hid this path -- and why the two warnings are told
+    // apart by the pair actually moving rather than by the asset class.
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    ores::refdata::messaging::list_currency_pairs_request probe;
+    auto responder = nats.subscribe(probe.nats_subject, [&nats](ores::nats::message msg) {
+        ores::refdata::domain::currency_pair gbp_usd;
+        gbp_usd.base_currency = "GBP";
+        gbp_usd.quote_currency = "USD";
+        ores::refdata::messaging::list_currency_pairs_response pairs;
+        pairs.pairs.push_back(gbp_usd);
+        pairs.total = 1;
+        nats.publish(msg.reply_subject, ores::nats::default_wire_codec().encode(pairs));
+    });
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string{}; });
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    // Written the wrong way round against the pair refdata reports as canonical.
+    req.market_data_content = "20160205 FX/RATE/USD/GBP 1.394610179594994\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].find("reversed relative to refdata's canonical currency pair") !=
+          std::string::npos);
+    REQUIRE(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "GBP/USD").size() == 1);
+}
+
+TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The settlement segment is part of the series' own qualifier, so it is
+    // stored as the file wrote it -- a spot lag, or a date. An earlier reading
+    // of the corpus held that this segment was discarded and rebuilt as the
+    // projection's "2D" fallback, which would store the 821 USD 0D keys and the
+    // explicit-date keys as 2D. It is the fallback that is unreachable here, not
+    // the segment: the identifier records settle whenever it is not "2D", and
+    // the projection emits what it recorded.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 IR_SWAP/RATE/USD/0D/3M/PAR_RATE 0.043120\n"
+                              "20160205 IR_SWAP/RATE/GBP/20220922/3M/PAR_RATE 0.051000\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 2);
+    CHECK(resp.errors.empty());
+
+    CHECK(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/2D/3M").empty());
+    CHECK(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "GBP/2D/3M").empty());
+    REQUIRE(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/0D/3M").size() == 1);
+    REQUIRE(
+        series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "GBP/20220922/3M").size() ==
+        1);
+}
+
+TEST_CASE("import_stores_a_named_key_under_its_canonical_spelling", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The oresmd grammar is the authority for what a key means, so a key it can
+    // name becomes the series its own projection emits. Two spellings of one
+    // instrument then reach one series rather than two, which is what the
+    // lower-case pair below would otherwise produce: the shape registry
+    // decomposes a key without touching its case, and the series table is
+    // matched on the qualifier verbatim.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/gbp/jpy 188.5\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].find("FX/RATE/GBP/JPY") != std::string::npos);
+
+    CHECK(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "gbp/jpy").empty());
+    REQUIRE(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "GBP/JPY").size() == 1);
 }
 
 TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", tags) {

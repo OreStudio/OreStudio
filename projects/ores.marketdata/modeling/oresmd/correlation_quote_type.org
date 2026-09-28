@@ -73,3 +73,9 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 |-----+-------------|
 | oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise | round_trip_correlation |
 | oresmd://correlation/fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-generic-eur-usd&point=1y,atm | round_trip_correlation_surface |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise&model=rate_lnvol | reject_correlation_model_query_key |

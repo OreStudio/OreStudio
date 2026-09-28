@@ -40,6 +40,7 @@ namespace {
 
 using namespace ores::marketdata::domain;
 using ores::marketdata::core::oresmd_exception;
+using ores::marketdata::core::detail::is_currency_code;
 using ores::marketdata::core::detail::is_overnight;
 using ores::marketdata::core::detail::to_lower;
 using ores::marketdata::core::detail::to_upper;
@@ -151,6 +152,22 @@ void reject_if_present(std::string_view asset_class,
             std::format("oresmd://{}/... does not support the '{}' query key.", asset_class, key)));
 }
 
+/**
+ * @brief Throws if @p qp names a =model= on anything but a volatility surface.
+ *
+ * =model= is the surface's own subtype, so an identifier has somewhere to keep it
+ * only when the URI also asked for =type=vol=. Without this check a URI that names
+ * a model on a quote parses successfully and drops the value, so the caller cannot
+ * tell that what it asked for was ignored.
+ */
+void reject_model_unless_vol(std::string_view asset_class,
+                             const query_params& qp,
+                             instrument_type type) {
+    if (qp.model && type != instrument_type::vol)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://{}/... 'model' is only meaningful when type=vol.", asset_class)));
+}
+
 void validate_fx(const query_params& qp) {
     reject_if_present("fx", "ccy", qp.ccy);
     reject_if_present("fx", "index", qp.index);
@@ -202,6 +219,7 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
         BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
             "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
     id.type = parse_type(qp);
+    reject_model_unless_vol("fx", qp, id.type);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -239,6 +257,7 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
     ir_market_data_identifier id;
     id.ccy = to_upper(first_segment(u));
     id.type = parse_type(qp);
+    reject_model_unless_vol("ir", qp, id.type);
     if (qp.index)
         id.index = parse_enum<index_family>("index", *qp.index);
     if (qp.index_spelling)
@@ -273,6 +292,14 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
                 oresmd_exception("oresmd://ir/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<ir_quote_type>("quote", *qp.quote);
     }
+    // The entity path segment is the currency for every IR identifier except a
+    // bond option, whose third key segment is the underlying bond curve's own
+    // name -- EUR_GENERIC in the corpus -- rather than a currency.
+    const auto entity_is_underlying =
+        id.type == instrument_type::vol && id.quote_type == ir_quote_type::bond_option;
+    if (!entity_is_underlying && !is_currency_code(id.ccy))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... entity must be a currency, got: '{}'.", id.ccy)));
     if (qp.point) {
         id.point = to_lower(*qp.point);
         if (id.type == instrument_type::vol) {
@@ -344,6 +371,7 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
         BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://equity/... requires a ccy query key."));
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
+    reject_model_unless_vol("equity", qp, id.type);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -397,8 +425,16 @@ market_data_identifier parse_credit(const boost::urls::url_view& u, const query_
         BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://credit/... requires a ccy query key."));
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
-    if (qp.quote)
+    reject_model_unless_vol("credit", qp, id.type);
+    if (qp.quote) {
+        // A quote type names a volatility surface as well as a quote: CAPFLOOR
+        // arrives as type=vol with quote=capfloor. Anything else that carries a
+        // quote key is a genuine input error.
+        if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://credit/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<credit_quote_type>("quote", *qp.quote);
+    }
     if (qp.point)
         id.point = to_lower(*qp.point);
     // An index CDS option's surface point carries the index tenor ahead of the
@@ -447,6 +483,7 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     correlation_market_data_identifier id;
     id.factor_pair = to_upper(first_segment(u));
     id.type = parse_type(qp);
+    reject_if_present("correlation", "model", qp.model);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -483,6 +520,7 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     inflation_market_data_identifier id;
     id.index_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
+    reject_model_unless_vol("inflation", qp, id.type);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -527,6 +565,7 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
         BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://commodity/... requires a ccy query key."));
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
+    reject_model_unless_vol("commodity", qp, id.type);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -589,6 +628,7 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
     security_market_data_identifier id;
     id.security_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
+    reject_if_present("security", "model", qp.model);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -618,6 +658,7 @@ market_data_identifier parse_shape_profile(const boost::urls::url_view& u, const
     shape_profile_market_data_identifier id;
     id.profile_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
+    reject_if_present("shape_profile", "model", qp.model);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a
@@ -649,6 +690,7 @@ market_data_identifier parse_rating(const boost::urls::url_view& u, const query_
     rating_market_data_identifier id;
     id.provider_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
+    reject_if_present("rating", "model", qp.model);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
         // arrives as type=vol with quote=capfloor. Anything else that carries a

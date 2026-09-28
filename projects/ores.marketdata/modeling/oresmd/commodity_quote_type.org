@@ -87,3 +87,4 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | oresmd://commodity/gold?ccy=usd&type=fixing&quote=fwd | reject_commodity_quote_when_type_not_quote |
 | oresmd://commodity/gold?ccy=usd&type=quote&role=discount | reject_commodity_uri_with_ir_only_role_field |
 | oresmd://commodity/gold?type=quote | reject_commodity_uri_missing_mandatory_ccy |
+| oresmd://commodity/gold?ccy=usd&type=quote&model=rate_lnvol | reject_commodity_model_when_type_not_vol |

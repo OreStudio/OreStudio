@@ -269,3 +269,6 @@ IR has the most complex qualifier shape variants:
 |-----+-------------|
 | oresmd://ir/usd?type=fixing&index=sofr&ccy=usd | reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency |
 | oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate | reject_ir_metric_present_when_type_is_not_quote |
+| oresmd://ir/usd?type=quote&model=rate_lnvol | reject_ir_model_when_type_not_vol |
+| oresmd://ir/notaccy?type=quote | reject_ir_entity_that_is_not_a_currency |
+| oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm&ccy=eur | reject_ir_bond_option_ccy_query_key |

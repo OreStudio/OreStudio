@@ -301,13 +301,19 @@ public:
             for (const auto& step : declared_steps) {
                 if (ores::iam::workflow::is_executed_step_kind(step.step_kind))
                     continue;
+                // A kind the catalogue does not know and a kind this build does
+                // not execute are both refused, and the message says which:
+                // a typo in a profile's row reads differently to an operator
+                // than a kind that is real but unbuilt.
+                const auto reason = ores::iam::workflow::is_declared_step_kind(step.step_kind) ?
+                                        "', which this deployment does not execute." :
+                                        "', which this deployment does not know.";
                 reply(nats_,
                       msg,
                       provision_tenant_command_response{
                           .success = false,
                           .message = "The seed profile '" + profile->code +
-                                     "' orders the step kind '" + step.step_kind +
-                                     "', which this deployment does not execute."});
+                                     "' orders the step kind '" + step.step_kind + reason});
                 return;
             }
 
@@ -1101,22 +1107,33 @@ private:
 
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        ores::refdata::messaging::list_parties_request request;
-        request.limit = 1000;
-        const auto parties = discover.request(request).parties;
 
         std::vector<std::string> provisioned;
-        provisioned.reserve(parties.size());
-        for (const auto& party : parties) {
-            const auto party_id = boost::uuids::to_string(party.id);
-            auto client =
-                make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-            dq::messaging::publish_bundle_params params;
-            params.party_id = party_id;
-            const auto params_json = dq::messaging::build_params_json(params);
-            for (const auto& bundle_code : bundles)
-                publish_bundle_or_throw(client, bundle_code, actor.username, params_json, party_id);
-            provisioned.push_back(party_id);
+        // Every party the tenant holds, one page at a time: a single page with
+        // a fixed limit would provision the first thousand and report success
+        // for the rest.
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 1000;
+        while (true) {
+            ores::refdata::messaging::list_parties_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            const auto page = discover.request(request).parties;
+            for (const auto& party : page) {
+                const auto party_id = boost::uuids::to_string(party.id);
+                auto client =
+                    make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
+                dq::messaging::publish_bundle_params params;
+                params.party_id = party_id;
+                const auto params_json = dq::messaging::build_params_json(params);
+                for (const auto& bundle_code : bundles)
+                    publish_bundle_or_throw(
+                        client, bundle_code, actor.username, params_json, party_id);
+                provisioned.push_back(party_id);
+            }
+            if (page.size() < page_size)
+                break;
+            offset += page_size;
         }
 
         wf.complete(rfl::json::write(provision_step_result{

@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/credit_simulation_mapper.hpp"
 #include "ores.ore.core/domain/credit_simulation_grid.hpp"
+#include "ores.platform/numeric/floating_point.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <charconv>
@@ -58,12 +59,13 @@ void assign_text(T& target, const std::string& value) {
 }
 
 double parse_double(const std::string& text) {
-    double value = 0.0;
-    const auto parsed =
-        std::from_chars(text.data(), text.data() + text.size(), value);
-    if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size())
+    // platform::numeric, not std::from_chars: libc++ ships the floating-point
+    // from_chars as a deleted function, so the standard call compiles on Linux
+    // and MSVC and stops the macOS build.
+    const auto parsed = ores::platform::numeric::parse_double(text);
+    if (!parsed.has_value())
         throw std::runtime_error("A transition matrix bound is not a number: " + text);
-    return value;
+    return *parsed;
 }
 
 std::string format_double(double value) {

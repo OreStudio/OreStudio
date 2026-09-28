@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 5B2A72C4-9214-4C28-A715-55DB91DF7559
+:END:
+#+title: Task: Implement Hotfix: macOS cannot parse a floating point with std::from_chars
+#+description: Add ores.platform::numeric::parse_double and move the credit simulation mapper's transition-matrix parse onto it, prove the shim's contract with tests, prove the mapper keeps its behaviour, and scan the estate for any other floating-point from_chars.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:osx:cpp23:platform:ore:sprint_26:v0:macos-from-chars-hotfix:
+#+owner: marco
+#+branch: hotfix/macos-from-chars
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2824C99D-D151-4530-A998-352A6DB253B6][Hotfix: macOS cannot parse a floating point with std::from_chars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Get the macOS build past the credit simulation mapper without changing
+what the mapper does, and leave the portable parse where the next call
+site will find it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2824C99D-D151-4530-A998-352A6DB253B6][Hotfix: macOS cannot parse a floating point with std::from_chars]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- =ores::platform::numeric::parse_double= parses a complete number and
+  refuses anything else, tested.
+- The credit simulation mapper uses it and keeps its error message.
+- No floating-point =std::from_chars= is left in the estate.
+- The platform suite and the full =ores.ore.core.tests= suite pass.
+
+* Plan
+
+1. Confirm the scope: find every =from_chars=/=to_chars= use in the
+   estate and separate the integer ones, which libc++ implements, from the
+   floating-point ones.
+2. Add the shim and its umbrella header under =ores.platform/numeric=,
+   with the reason in the class doc and the implementation in the
+   component's source tree.
+3. Move the mapper onto it, keeping its message for a bound that is not a
+   number.
+4. Test the shim's contract, including the round trip with the
+   floating-point =to_chars= the estate formats with, then run the
+   affected suites.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Floating-point =from_chars= sites in the estate, before | 1 | =grep -rn "std::from_chars" projects/ --include=*.cpp --include=*.hpp= | this branch |
+| Integer =from_chars= sites, which libc++ implements | 2 | same | this branch |
+| Floating-point =from_chars= sites, after | 0 | same | this branch |
+| The shim's tests | 5 cases, 43 assertions, all pass | =ores.platform.tests "[floating_point]"= | this branch |
+| Credit mapper tests | 14 cases, 63 assertions, all pass | =ores.ore.core.tests "[credit]"= | this branch |
+| Full ore core suite | 551 cases, 550 passed, 1 failed | =ores.ore.core.tests= | this branch |
+
+* Notes
+
+- The failing case in the full ore suite is
+  =credit_simulation_roundtrip_through_the_database=, which needs
+  =ores_analytics_credit_simulation_configs_tbl=. The tree creates that
+  table and wires it into =analytics_create.sql=, so the failure is this
+  worktree's database rather than the tree: the database was recreated
+  before the SQL landed. The database is recreated and the suite re-run;
+  the result is recorded here once it is known.
+- The scope is exactly one call site. The two other =from_chars= uses
+  parse integers (a date field and a list-page limit) and libc++
+  implements those, so they stay. The floating-point =to_chars= calls --
+  one in the same mapper, one in the bond mapper, one in the refdata rate
+  formatter -- also stay, on three pieces of evidence: the macOS compiler
+  reported no error on the one in the same translation unit as the
+  failure, the refdata rate formatter is older than the failure and the
+  macOS job completed its build on 2026-09-25 (it failed in the tests),
+  and libc++ implements the floating-point =to_chars= while the
+  floating-point =from_chars= only arrived in libc++ 20, which Xcode
+  16.2's libc++ 19 predates.
+- The shim's implementation decision is tested rather than assumed.
+  =strtod= would have been shorter, but it follows =LC_NUMERIC= and skips
+  leading whitespace, and the standard overload does neither; the tests
+  pin both. Boost's lexical cast is library code the estate already
+  depends on, so the shim adds no dependency.
+- Recreating the database on this worktree needed =compass env configure=
+  first: the tree moved the environment format to version 26 and the
+  worktree's =.env= was at 25. That is per-worktree state, not a tree
+  defect, and it is worth knowing before the next recreate.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores.platform= gains =numeric/floating_point.hpp= and its umbrella, and
+the credit simulation mapper reads its transition-matrix bounds through
+=ores::platform::numeric::parse_double= instead of the floating-point
+=std::from_chars= that libc++ deletes. The mapper's behaviour and its
+error message are unchanged.
+
+Verified: the shim's 5 cases and 43 assertions pass, including the round
+trip against the floating-point =to_chars= the estate formats with; the
+credit mapper's 14 cases and 63 assertions pass; and no floating-point
+=from_chars= remains in the estate.

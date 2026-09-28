@@ -1394,6 +1394,20 @@ slash, which keeps them out of the fixing space, so the target is **156 of 158**
 rather than 158. Three classes remain: inflation (7), equity (8) and security (2).
 The =FIXING= exemption in the oresmd coverage gate still stands, unchanged.
 
+*Update, 2026-09-28 (task AB2922AA, commit 48eb0e27aa).* The fixing key space is
+closed. Inflation, equity and security are the last three classes. Inflation is the
+one class whose index name is a bare token, so its model carries the codes and a
+dash-less name resolves only when it is one of them; equity needs no new field,
+because a fixing carries no currency and the ticker is the tail ORE writes,
+identifier scheme included; security reuses =delivery= for a bond future's expiry
+month, which is the shape commodity already gives its contract month. Every class
+the corpus puts in the fixing space resolves, so **156 of 156** index names
+round-trip and the two =GENERIC-MD= rows stay refused. The corpus-driven test names
+the classes with an empty allowlist, and it pins those two keys in a bucket of their
+own, so the census is whole without an exception standing in for a class. What
+remains is the cutover itself: the import still writes the index name into the
+series qualifier.
+
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 
 *Scope.* Add =marketdata= to =component_registry.py= and run every gate:

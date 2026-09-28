@@ -136,3 +136,4 @@ A logical, possibly-partial oresmd requirement for an intraday power index.
 | oresmd://power/ice:pdq?type=fixing&source=ecb | reject_power_uri_with_a_source |
 | oresmd://power/ice:pdq?type=fixing&tenor=3m | reject_power_uri_with_a_tenor |
 | oresmd://power/ice:pdq?type=fixing&index=libor | reject_power_uri_with_an_index |
+| oresmd://power/ice:pdq?type=quote&delivery=2021-01-04 | reject_power_delivery_on_a_quote |

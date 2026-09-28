@@ -47,13 +47,15 @@
  * The sibling coverage test measures the instrument keys, and it steps around
  * these files because they are the other reader's payload.
  *
- * The corpus carries 158 distinct index names. This test walks them with the
- * real fixing reader, so a name it counts is a name the import sees, and asks
- * the real projection library to name each one: one way for
- * each class whose grammar is decided, and nothing for the classes whose grammar
- * is not. The full table is reported on every run, so the current figure is
- * visible rather than asserted in prose, and the classes that name nothing are
- * pinned against a list so that closing one fails until the list is updated.
+ * The corpus carries 158 distinct names in a fixing column. This test walks them
+ * with the real fixing reader, so a name it counts is a name the import sees, and
+ * asks the real projection library to name each one. Every class the corpus puts
+ * in the fixing space resolves, so the list of classes that name nothing is empty
+ * and stays asserted: a class that stops resolving fails here. The two names that
+ * are market-data keys rather than index names are counted apart and pinned by
+ * name, so the fixing space and the keys inside it still add up to the whole
+ * corpus. The full table is reported on every run, so the current figure is
+ * visible rather than asserted in prose.
  */
 
 namespace {
@@ -85,6 +87,10 @@ struct refused_file {
     std::string reason;
 };
 
+/// The bucket for a name the corpus puts in a fixing column that is not an index
+/// name at all.
+constexpr std::string_view market_data_key_class{"market-data-key"};
+
 /// The class an index name belongs to, from the name alone. The corpus does not
 /// label its names, so the shape is the only thing that says which asset class a
 /// family belongs to -- and the shape is what this library discriminates on, so
@@ -93,14 +99,13 @@ std::string class_of(std::string_view name) {
     // Two prefixes, not one. GENERIC-<name> is an index name ORE resolves, while
     // GENERIC-MD/<TYPE>/<METRIC>/... is the market-data key form an oresmd URI
     // replaces. The corpus puts two of the latter in a fixing payload, and they
-    // are errors rather than fixings, so the two are counted apart: one names,
-    // the other cannot.
+    // are errors rather than fixings.
     const std::pair<std::string_view, std::string_view> prefixed[] = {{"FX-", "fx"},
                                                                       {"EQ-", "equity"},
                                                                       {"COMM-", "commodity"},
                                                                       {"POWER-", "power"},
-                                                                      {"BOND-ISIN:", "security"},
-                                                                      {"GENERIC-MD/", "market-data-key"},
+                                                                      {"BOND-", "security"},
+                                                                      {"GENERIC-MD/", market_data_key_class},
                                                                       {"GENERIC-", "generic"}};
     for (const auto& [prefix, cls] : prefixed) {
         if (name.starts_with(prefix))
@@ -119,6 +124,11 @@ std::string class_of(std::string_view name) {
 
 struct corpus_survey {
     std::map<std::string, class_coverage> classes;
+    /// The names the corpus puts in a fixing column that are not index names at
+    /// all. They are counted apart from the classes rather than dropped, and a
+    /// case pins them and their refusal by name, so the population stays whole
+    /// while the classes carry an empty allowlist.
+    std::vector<std::string> not_index_names;
     std::vector<refused_file> refused;
 };
 
@@ -143,6 +153,11 @@ corpus_survey survey() {
         for (const auto& row : rows) {
             if (!seen.insert(row.index_name).second)
                 continue;
+
+            if (class_of(row.index_name) == market_data_key_class) {
+                result.not_index_names.push_back(row.index_name);
+                continue;
+            }
 
             auto& c = result.classes[class_of(row.index_name)];
             ++c.names;
@@ -234,21 +249,37 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
                      names,
                      named,
                      round_tripped));
+    for (const auto& key : corpus_coverage().not_index_names)
+        WARN(std::format("  not an index name: {}", key));
 
-    // The classes whose index-name grammar is a decision this task has not taken
-    // yet, plus the one the corpus misfiles. Each is recorded with its reason on
-    // the task; this list is the measured half of the same claim. It fails when
-    // one is closed without the record being updated, and when a change breaks a
-    // class that worked.
-    //
-    // market-data-key is not a class this library owes an index name to: the two
-    // GENERIC-MD/... rows in Products/Input/fixings.csv are market-data keys in a
-    // fixing column, and the owner reads them as errors. They stay counted here so
-    // that the census keeps its whole population.
-    const std::set<std::string> recorded{
-        "equity", "inflation", "security", "market-data-key"};
+    // The classes whose names reach no identifier, and the list is empty: every
+    // class the corpus puts in the fixing space resolves. A class that stops
+    // resolving fails here, and so does one whose names are not this corpus's.
+    const std::set<std::string> recorded{};
 
     REQUIRE(classes_with_unnamed_names() == recorded);
+
+    // The population itself is asserted, not only reported: a payload that left
+    // fixing_payloads() would shrink the census silently, and every class would
+    // still read as full. 158 is the count the task records for the corpus.
+    REQUIRE(names + corpus_coverage().not_index_names.size() == 158);
+}
+
+TEST_CASE("the_market_data_keys_the_corpus_misfiles_as_fixings_stay_refused", tags) {
+    // Two rows in Products/Input/fixings.csv carry market-data keys where the
+    // header promises a fixing id: they are SPX call prices, 2862.29 at the 3300
+    // strike and 2767.41 at 3400, and no class owes them an index name. They are
+    // pinned by name rather than dropped from the census, so the fixing space and
+    // the keys inside it still add up to every distinct name the corpus carries.
+    const std::vector<std::string> recorded{
+        "GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C",
+        "GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3400/C"};
+
+    auto keys = corpus_coverage().not_index_names;
+    std::ranges::sort(keys);
+    REQUIRE(keys == recorded);
+    for (const auto& key : keys)
+        REQUIRE_FALSE(oresmd_projections::from_index_name(key).has_value());
 }
 
 TEST_CASE("no_fixing_index_class_loses_names_on_the_way_back", tags) {
@@ -265,7 +296,8 @@ TEST_CASE("the_closed_classes_name_every_fixing_name_the_corpus_carries", tags) 
     // The classes whose grammar is decided, pinned at every name the corpus
     // carries rather than at a sample, so a family or a source that regresses in
     // one variant fails here.
-    for (const auto& cls : {"ir", "fx", "commodity", "power", "generic"}) {
+    for (const auto& cls :
+         {"ir", "fx", "commodity", "power", "generic", "inflation", "equity", "security"}) {
         const auto& c = corpus_coverage().classes.at(cls);
 
         CHECK(c.named == c.names);

@@ -38,6 +38,16 @@ when `type=quote`.
 
 A fully-resolved oresmd identifier for a security (asset_class=security).
 
+=security_id= is the entity, and it carries the scheme the corpus's own quote keys
+spell: =ISIN:DE000A3H2WP2= in =BOND/PRICE/ISIN:DE000A3H2WP2=, and a name such as
+=SECURITY_1_FWDEXP_20251220= where the instrument has no scheme.
+
+=delivery= is a fixing's coordinate, and only a fixing carries one. The corpus
+writes =BOND-ISIN:IE00BH3SQ895-2025-08= for the bond future expiring in August
+2025, so the trailing period is a delivery month, the shape the commodity class
+gives its contract month. A quote carries that information inside the name it is
+quoted under, which is why nothing reads the field for one.
+
 * Requirement brief
 
 A logical, possibly-partial oresmd requirement for a security instrument.
@@ -49,6 +59,7 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | security_id | std::string | yes | | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<security_quote_type> | no | quote | |
+| delivery | std::optional<std::string> | no | delivery | |
 
 * Reject keys
 
@@ -69,7 +80,6 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | metric |
 | source |
 | source_spelling |
-| delivery |
 | name_spelling |
 
 * URI order
@@ -78,12 +88,14 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 |-----|
 | type |
 | quote |
+| delivery |
 
 * Test cases
 ** Projections
 
 | uri | expected | description |
 |-----+----------+-------------|
+| oresmd://security/isin:ie00bh3sq895?type=fixing | nullopt | security_fixing_has_no_quote_key |
 | oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price | BOND/PRICE/ISIN:DE000A3H2WP2 | security_bond_price_quote_key_matches_the_corpus |
 | oresmd://security/security_1?type=quote&quote=bond_yield_spread | BOND/YIELD_SPREAD/SECURITY_1 | security_bond_yield_spread_quote_key_matches_the_corpus |
 | oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor | BOND/CONVERSION_FACTOR/SECURITY_1_FWDEXP_20251220 | security_bond_conversion_factor_quote_key_matches_the_corpus |
@@ -94,6 +106,8 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 
 | uri | description |
 |-----+-------------|
+| oresmd://security/isin:ie00bh3sq895?type=fixing | round_trip_security_fixing |
+| oresmd://security/isin:ie00bh3sq895?type=fixing&delivery=2025-08 | round_trip_security_fixing_delivery |
 | oresmd://security/isin:de000a3h2wp2?type=quote&quote=bond_price | round_trip_security_bond_price |
 | oresmd://security/security_1?type=quote&quote=bond_yield_spread | round_trip_security_bond_yield_spread |
 | oresmd://security/security_1_fwdexp_20251220?type=quote&quote=bond_conversion_factor | round_trip_security_bond_conversion_factor |
@@ -107,3 +121,4 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | oresmd://security/security_1?ccy=usd&type=quote&quote=bond_price | reject_security_uri_with_ccy |
 | oresmd://security/security_1?type=quote&quote=bond_price&metric=price | reject_security_uri_with_ir_only_metric |
 | oresmd://security/security_1?type=quote&quote=bond_price&model=rate_lnvol | reject_security_model_query_key |
+| oresmd://security/isin:ie00bh3sq895?type=quote&quote=bond_price&delivery=2025-08 | reject_security_delivery_on_a_quote |

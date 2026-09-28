@@ -133,6 +133,7 @@ struct correlation_market_data_requirement final {
 struct security_market_data_requirement final {
     std::optional<std::string> security_id;
     std::optional<instrument_type> type;
+    std::optional<std::string> delivery;
     std::optional<security_quote_type> quote_type;
 
     bool operator==(const security_market_data_requirement&) const = default;

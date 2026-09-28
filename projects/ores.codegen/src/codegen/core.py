@@ -1668,6 +1668,40 @@ def _build_ip2country_artefact(manifest: dict, manifest_path) -> dict | None:
     }
 
 
+def _column_member_prefixes(de: dict[str, Any]) -> dict[str, str]:
+    """Map each column of a raw entity model to the member it is reached by.
+
+    A template that writes a parent row's columns needs to know which member
+    carries each one. Two shapes nest them: a field-grouped entity declares
+    every field in ``domain_group_fields`` (the trade's ``parties.book_id``),
+    and an entity with an identity or audit group reaches those columns
+    through the group, including the ones the generator emits itself. A
+    column on neither path is flat and takes no prefix, which is the common
+    case for the reference-data entities.
+    """
+    prefixes: dict[str, str] = {}
+    for field in de.get('domain_group_fields') or []:
+        name = field.get('name') or ''
+        member, _, column = name.partition('.')
+        if member and column:
+            prefixes[column] = f"{member}."
+    has_identity = bool(de.get('domain_identity_group'))
+    for source in (de.get('columns') or [],
+                   (de.get('primary_key') or {}).get('columns') or [],
+                   de.get('natural_keys') or []):
+        for column in source:
+            name = column.get('name')
+            if not name or name in prefixes:
+                continue
+            if has_identity and column.get('group') == 'identity':
+                prefixes[name] = 'identity.'
+    if bool(de.get('domain_audit_group')):
+        for name in ('change_reason_code', 'change_commentary', 'modified_by',
+                     'performed_by', 'recorded_at'):
+            prefixes.setdefault(name, 'audit.')
+    return prefixes
+
+
 @functools.lru_cache(maxsize=None)
 def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
     """Raw model metadata of a soft-FK parent entity (no enrichment).
@@ -1686,21 +1720,31 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
     except Exception:
         return None
     de = raw.get('domain_entity') or {}
+    prefixes = _column_member_prefixes(de)
+    mandatory = []
+    for fk in de.get('foreign_keys') or []:
+        if fk.get('nullable', False):
+            continue
+        entry = dict(fk)
+        # The member the referencing row reaches this FK's column through.
+        entry['owner_group_prefix'] = prefixes.get(entry.get('column'), '')
+        mandatory.append(entry)
     return {
         'entity_singular': de.get('entity_singular'),
         'generator_facet_name': de.get('generator_facet_name'),
-        'has_audit_group': bool(de.get('domain_audit_group')),
-        'has_identity_group': bool(de.get('domain_identity_group')),
+        'has_audit_group': bool(de.get('domain_audit_group'))
+        or prefixes.get('change_reason_code') == 'audit.',
+        'has_identity_group': bool(de.get('domain_identity_group'))
+        or 'identity.' in prefixes.values(),
         'seed_country_sentinel': bool(de.get('seed_country_sentinel')),
         'seed_currency': bool(de.get('seed_currency')),
         'component': de.get('component'),
-        'mandatory_fks': [
-            f for f in de.get('foreign_keys') or [] if not f.get('nullable', False)
-        ],
+        'column_prefixes': prefixes,
+        'mandatory_fks': mandatory,
     }
 
 
-def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
+def _plan_required_seeds(mfks, parent_var, org_by_table, component, path, owner_prefixes=None):
     """Plan the ordered seed actions a written parent row needs first.
 
     Each non-nullable soft FK of the parent row must reference an active
@@ -1716,7 +1760,10 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
     parent's party branch is the single party-seeding mechanism). An
     ancestor in another component is seeded like any other; each item
     carries its own component so the test includes the right headers.
+    ``owner_prefixes`` maps the referencing entity's columns to the members
+    that carry them, so a patch onto a nested column reads the right member.
     """
+    owner_prefixes = owner_prefixes or {}
     items = []
     named: set[str] = set()
     for mfk in mfks:
@@ -1728,6 +1775,7 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
             continue
         if mfk.get('table') in path:
             continue
+        gp_prefixes = grandparent.get('column_prefixes') or {}
         # Name the ancestor after the row that references it and its entity,
         # not after its FK column alone: two root FKs whose chains reach the
         # same entity would otherwise declare the same variable twice, and so
@@ -1745,7 +1793,7 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
         named.add(var)
         items.extend(_plan_required_seeds(
             grandparent['mandatory_fks'], var, org_by_table, component,
-            path | {mfk.get('table')}))
+            path | {mfk.get('table')}, gp_prefixes))
         items.append({
             'var': var,
             'column': mfk['column'],
@@ -1775,6 +1823,14 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
                 grandparent['generator_facet_name'] or 'generators'),
             'target_column': mfk.get('target_column'),
             'parent_has_audit_group': grandparent['has_audit_group'],
+            # The member each side reaches its column through: the ancestor
+            # writes its own audit stamp and party, the referencing row
+            # patches its FK, and the ancestor's key is read back.
+            'audit_prefix': gp_prefixes.get('change_reason_code', ''),
+            'party_prefix': gp_prefixes.get('party_id', ''),
+            'owner_group_prefix': owner_prefixes.get(mfk['column'], ''),
+            'target_group_prefix': gp_prefixes.get(
+                mfk.get('target_column') or 'id', ''),
         })
     return items
 
@@ -3531,10 +3587,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             org_by_table = _entity_org_by_table(_projects_dir_from(model_path))
             # An FK names a column, and on a grouped entity that column is
             # reached through its member like any other.
-            _prefix_by_column = {
-                c['name']: c.get('group_prefix') or ''
-                for c in domain_entity.get('columns', []) or []
-            }
+            _prefix_by_column: dict[str, str] = {}
+            # A key column lives in the primary-key or natural-key dict rather
+            # than in 'columns', and after the identity collapse the FK itself
+            # can be the key -- so the map reads all three.
+            for _source in (domain_entity.get('columns') or [],
+                            (domain_entity.get('primary_key') or {}).get('columns') or [],
+                            domain_entity.get('natural_keys') or []):
+                for _column in _source:
+                    _name = _column.get('name') or _column.get('column')
+                    if _name:
+                        _prefix_by_column[_name] = _column.get('group_prefix') or ''
             for fk in fks:
                 fk['group_prefix'] = _prefix_by_column.get(fk.get('column'), '')
                 if fk.get('nullable'):
@@ -3555,6 +3618,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk['parent_is_party'] = parent['entity_singular'] == 'party'
                 fk['parent_has_audit_group'] = parent['has_audit_group']
                 fk['parent_has_identity_group'] = parent['has_identity_group']
+                # The members the parent reaches the columns below through.
+                fk['parent_audit_prefix'] = parent['column_prefixes'].get(
+                    'change_reason_code', '')
+                fk['parent_party_prefix'] = parent['column_prefixes'].get('party_id', '')
+                fk['parent_tenant_prefix'] = parent['column_prefixes'].get('tenant_id', '')
+                fk['parent_parent_party_prefix'] = parent['column_prefixes'].get(
+                    'parent_party_id', '')
+                fk['parent_target_prefix'] = parent['column_prefixes'].get(
+                    fk.get('target_column') or 'id', '')
                 fk['parent_seed_country_sentinel'] = parent['seed_country_sentinel']
                 # The parent's insert trigger may validate a currency the
                 # parent's generator hardcodes (portfolio's aggregation_ccy):
@@ -3595,7 +3667,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk['parent_required_fks'] = _plan_required_seeds(
                     parent['mandatory_fks'], fk['column'] + '_parent',
                     org_by_table, domain_entity.get('component'),
-                    set())
+                    set(), parent['column_prefixes'])
                 # Whether the FK column sits inside the child's identity
                 # group (trading entities) or is a flat domain field
                 # (refdata) -- set here, after the columns loop above has

@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<swaption_instrument>& v) {
           << "Long/Short" << "Start Date" << "Maturity Date" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& sw : v) {
-        table << sw.identity.instrument_id << sw.identity.trade_type_code << sw.expiry_date
+        table << sw.identity.trade_id << sw.identity.trade_type_code << sw.expiry_date
               << sw.exercise_type << sw.settlement_type << sw.long_short << opt_str(sw.start_date)
               << opt_str(sw.maturity_date) << sw.audit.recorded_at << fort::endr;
     }

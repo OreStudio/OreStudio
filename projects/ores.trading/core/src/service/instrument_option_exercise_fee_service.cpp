@@ -60,7 +60,7 @@ read_one(repository::instrument_option_exercise_fee_repository& repo,
          const ores::database::context& ctx,
          const messaging::instrument_option_exercise_fee_key& key) {
     return repo.read_latest(
-        ctx, boost::uuids::to_string(key.instrument_id), std::to_string(key.sequence_number));
+        ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
 
 /**
@@ -72,7 +72,7 @@ read_one(repository::instrument_option_exercise_fee_repository& repo,
 messaging::instrument_option_exercise_fee_key
 key_from(const domain::instrument_option_exercise_fee& v) {
     messaging::instrument_option_exercise_fee_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
     return key;
 }
@@ -87,7 +87,7 @@ key_from(const domain::instrument_option_exercise_fee& v) {
 domain::instrument_option_exercise_fee
 to_domain(const messaging::instrument_option_exercise_fee_write& write) {
     domain::instrument_option_exercise_fee v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
     v.amount = write.amount;
     v.type = write.type;
@@ -218,7 +218,7 @@ instrument_option_exercise_fee_service::delete_instrument_option_exercise_fee(
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          std::to_string(request.removal.key.sequence_number),
                          expected)) {
         case repository::instrument_option_exercise_fee_repository::remove_status::removed:
@@ -262,15 +262,15 @@ instrument_option_exercise_fee_service::delete_many_instrument_option_exercise_f
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> sequence_number_keys;
     sequence_number_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
-    repo_.remove(ctx_, instrument_id_keys, sequence_number_keys);
+    repo_.remove(ctx_, trade_id_keys, sequence_number_keys);
     return response;
 }
 
@@ -292,7 +292,7 @@ instrument_option_exercise_fee_service::list_instrument_option_exercise_fee_vers
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
@@ -311,7 +311,7 @@ instrument_option_exercise_fee_service::get_instrument_option_exercise_fee_versi
     messaging::get_instrument_option_exercise_fee_version_response response;
     auto found = repo_.read_at_version(
         ctx_,
-        boost::uuids::to_string(request.key.instrument_option_exercise_fee.instrument_id),
+        boost::uuids::to_string(request.key.instrument_option_exercise_fee.trade_id),
         std::to_string(request.key.instrument_option_exercise_fee.sequence_number),
         request.key.version);
     if (!found) {
@@ -387,21 +387,21 @@ std::uint32_t instrument_option_exercise_fee_service::count_exercise_fees() {
 
 std::optional<domain::instrument_option_exercise_fee>
 instrument_option_exercise_fee_service::get_exercise_fee_at_version(
-    const std::string& instrument_id, const std::string& sequence_number, std::uint32_t version) {
+    const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument option exercise fee at version. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, instrument_id, sequence_number, version);
+    return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::instrument_option_exercise_fee>
-instrument_option_exercise_fee_service::get_exercise_fee(const std::string& instrument_id,
+instrument_option_exercise_fee_service::get_exercise_fee(const std::string& trade_id,
                                                          const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument option exercise fee. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    auto results = repo_.read_latest(ctx_, instrument_id, sequence_number);
+    auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -409,33 +409,30 @@ instrument_option_exercise_fee_service::get_exercise_fee(const std::string& inst
 
 std::vector<domain::instrument_option_exercise_fee>
 instrument_option_exercise_fee_service::get_exercise_fees(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    return repo_.read_latest(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, sequence_numbers);
 }
 
 void instrument_option_exercise_fee_service::save_exercise_fee(
     const domain::instrument_option_exercise_fee& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument(
-            "Instrument Option Exercise Fee instrument_id cannot be empty.");
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Instrument Option Exercise Fee trade_id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving instrument option exercise fee. "
-                               << "instrument_id: " << v.instrument_id
+                               << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved instrument option exercise fee. "
-                              << "instrument_id: " << v.instrument_id
+                              << "trade_id: " << v.trade_id
                               << " sequence_number: " << v.sequence_number;
 }
 
 void instrument_option_exercise_fee_service::save_exercise_fees(
     const std::vector<domain::instrument_option_exercise_fee>& exercise_fees) {
     for (const auto& e : exercise_fees) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument(
-                "Instrument Option Exercise Fee instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Instrument Option Exercise Fee trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << exercise_fees.size()
                                << " instrument option exercise fees";
@@ -447,29 +444,28 @@ void instrument_option_exercise_fee_service::save_exercise_fees(
 }
 
 void instrument_option_exercise_fee_service::delete_exercise_fee(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Removing instrument option exercise fee. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, sequence_number);
+    repo_.remove(ctx_, trade_id, sequence_number);
     BOOST_LOG_SEV(lg(), info) << "Removed instrument option exercise fee. "
-                              << "instrument_id: " << instrument_id
+                              << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
 }
 
 void instrument_option_exercise_fee_service::delete_exercise_fees(
-    const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(ctx_, instrument_ids, sequence_numbers);
+    const std::vector<std::string>& trade_ids, const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, trade_ids, sequence_numbers);
 }
 
 std::vector<domain::instrument_option_exercise_fee>
 instrument_option_exercise_fee_service::get_exercise_fee_history(
-    const std::string& instrument_id, const std::string& sequence_number) {
+    const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument option exercise fee. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(ctx_, instrument_id, sequence_number);
+    return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 
 }

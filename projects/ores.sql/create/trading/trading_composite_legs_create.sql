@@ -25,7 +25,7 @@
  * Composite Leg Table
  *
  * Child table of composite_instruments. Each row is one constituent trade
- * of a composite basket and names the parent through instrument_id, with
+ * of a composite basket and names the parent through trade_id, with
  * leg_sequence giving the leg's 1-based ordinal inside the basket.
  *
  * The leg carries no economics of its own: the ORE schema states a basket as
@@ -36,7 +36,7 @@
  *
  * The row keeps its own id surrogate: composite_legs is one of the five
  * id-keyed tables the component's investigation names, and its
- * instrument_id is a foreign key to the instrument rather than the row's
+ * trade_id is a foreign key to the instrument rather than the row's
  * own key.
  */
 
@@ -45,7 +45,7 @@ create table if not exists "ores_trading_composite_legs_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "instrument_id" uuid not null,
+    "trade_id" uuid not null,
     "leg_sequence" integer not null default 1,
     "constituent_trade_id" text not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
@@ -84,8 +84,8 @@ create index if not exists composite_legs_party_idx
 on "ores_trading_composite_legs_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists composite_legs_instrument_idx
-on "ores_trading_composite_legs_tbl" (tenant_id, instrument_id)
+create index if not exists composite_legs_trade_id_idx
+on "ores_trading_composite_legs_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists composite_legs_workspace_idx
@@ -106,14 +106,14 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate instrument_id (soft FK to ores_trading_composite_instruments_tbl)
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
     if not exists (
-        select 1 from ores_trading_composite_instruments_tbl
+        select 1 from ores_trading_trades_tbl
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id
+          and id = NEW.trade_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid instrument_id: %. Composite instrument must exist for tenant.', NEW.instrument_id
+        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
             using errcode = '23503';
     end if;
 

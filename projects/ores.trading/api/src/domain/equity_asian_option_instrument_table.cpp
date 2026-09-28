@@ -37,10 +37,9 @@ std::string convert_to_table(const std::vector<equity_asian_option_instrument>& 
           << "Strike" << "Expiry Date" << "Average Type" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& eaoi : v) {
-        table << eaoi.identity.instrument_id << eaoi.identity.trade_type_code
-              << eaoi.underlying_name << eaoi.currency << eaoi.notional << eaoi.option_type
-              << eaoi.strike << eaoi.expiry_date << eaoi.average_type << eaoi.audit.recorded_at
-              << fort::endr;
+        table << eaoi.identity.trade_id << eaoi.identity.trade_type_code << eaoi.underlying_name
+              << eaoi.currency << eaoi.notional << eaoi.option_type << eaoi.strike
+              << eaoi.expiry_date << eaoi.average_type << eaoi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

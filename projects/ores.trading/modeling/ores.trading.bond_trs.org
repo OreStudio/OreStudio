@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: Per-trade bond total return swap facts: one row per TRS instrument, keyed by instrument_id.
+#+brief: Per-trade bond total return swap facts: one row per TRS instrument, keyed by trade_id.
 #+entity_singular: bond_trs
 #+entity_plural: bond_trs
 #+entity_title: Bond TRS
@@ -41,16 +41,17 @@ round trip is whole without them, and they are a recorded scope limit.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the bond TRS instrument this fact row extends.
+The trade the bond TRS fact row belongs to.
 
-The instrument row carries the trade, workspace and party; the fact
+The trade row carries the workspace and the party; the fact
 row only carries the swap terms. Per the ER, no workspace column
 rides the fact tables.
 
@@ -86,7 +87,6 @@ std::string("Total")
 Leg type of the funding leg (Fixed, Floating).
 
 Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating, OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
-
 
 #+begin_src cpp :name generator
 std::string("Floating")
@@ -170,6 +170,20 @@ an unengaged column means the document omitted it.
 #+begin_src cpp :name generator
 std::make_optional(ores::utility::decimal::decimal::from_string("109.712").value())
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

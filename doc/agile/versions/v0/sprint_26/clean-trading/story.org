@@ -31,9 +31,9 @@ that bound each one.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | PR 1 is complete, PR 2 is raised as #2204, and PR 3's model work is complete on =feature/model-missing-trading-families=. The nine missing families are ported, the closed sets are modelled, the defect 6 duplicates are renamed, the M04 sweep is clean, the local =average_type= exists with its producer fixed, and =call_type= is deleted. Defects 14 to 16 are carried to PR 4 by the owner's ruling. Every gate PR 3 owns is green; see the delivery table |
+| Now           | PRs 1 to 3 are merged; PR 3 landed in =main= as =9631df6bff=. PR 4 is raised as [[https://github.com/OreStudio/OreStudio/pull/2348][#2348]] from =feature/collapse-instrument-identity=, rebased onto =e2bda9e108=: the instrument's identity is the trade it belongs to, the relationship is declared and trigger-checked, and defect 13 closes. The bond security split moved to [[id:FF88C139-9C8B-4A59-9CCD-38066CA049DD][its own task]] by D17, and by the owner's ruling of 2026-09-28 defects 14 and 16 move to the bond pilot and defect 15 to the split |
 | Waiting on    | Nothing. |
-| Next          | Raise PR 3, then start PR 4, the identity collapse and the bond security split. |
+| Next          | Close PR 4, the identity collapse; the bond security split follows in PR 5. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -49,10 +49,11 @@ that bound each one.
 |------+-------+-------+-----+-------------|
 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | DONE | 2026-09-26 | 2026-09-26 | PR 1. Record the B01 to B06 baseline, the consumer census, the open work and the seven decisions, with the evidence files. No code change. |
 | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | STARTED | 2026-09-26 | | PR 2. Regenerate the modelled component, land the canonical protocol and the canonical notify triggers, delete the hand consolidation and the superseded hand-written twins, and make the tree build and test green. |
-| [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | BACKLOG | | | PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists. |
-| [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | BACKLOG | | | PR 4. One trade identity, one instrument identity and one security identity, with a real foreign key where a soft link sits today, regenerated. |
-| [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | BACKLOG | | | PR 5. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, and run the corpus-wide round trip. |
-| [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | BACKLOG | | | PR 6. Generate the shell units and recipes, seed the permissions, run the audits and the per-file survey, and enter the component in the registry. |
+| [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | DONE | | 2026-09-28 | PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists. |
+| [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade]] | DONE | 2026-09-28 | 2026-09-28 | PR 4. One instrument identity, keyed by the trade, with the relationship declared where the schema can hold it. The bond security split moved to PR 5 by D17. |
+| [[id:FF88C139-9C8B-4A59-9CCD-38066CA049DD][Split the bond security from the trade]] | BACKLOG | | | PR 5. Key the shared bond entities by the ORE reference datum id, hang the leg family off the security, give bond_issue the fields ORE has and take bond_notional onto the trade. Carries defect 15. |
+| [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | BACKLOG | | | PR 6. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, run the corpus-wide round trip, and carry defects 14 and 16. |
+| [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | BACKLOG | | | PR 7. Generate the shell units and recipes, seed the permissions, run the audits and the per-file survey, and enter the component in the registry. |
 
 * Where ores.trading stands (measured 2026-09-26)
 
@@ -263,16 +264,16 @@ belong to this story:
 | 4 | Enumerations held as free text with no reference table | PR 3 |
 | 5 | Code fields whose reference table does not exist | PR 3 |
 | 6 | One concept under two names | PR 3 |
-| 7 | Referential integrity in PL/pgSQL; 866 check constraints and no foreign keys | PR 4 |
+| 7 | Referential integrity in PL/pgSQL; 866 check constraints and no foreign keys | Partly closed in PR 4 (D15): 30 instrument-to-trade links are declared and trigger-enforced. The DDL foreign key is not declarable against a bi-temporal parent, and the 866 checks stand. Recorded |
 | 8 | Enumerations enforced in PL/pgSQL, 27 of them | PR 3 |
-| 9 | One table holding two products, five equity tables | PR 4 |
-| 10 | Product type names an asset class | PR 4 |
+| 9 | One table holding two products, five equity tables | Recorded in PR 4 and still open: the collapse does not change the row shape, so it stays with the equity modelling work |
+| 10 | Product type names an asset class | Recorded in PR 4 and still open: =product_type_t= is still a database enum on the trades table; modelling it reshapes the product dimension rather than the identity |
 | 11 | Staged reference data is never published | Out of scope, dq work |
 | 12 | The publish guard collapses every office onto one party | Out of scope, dq work |
-| 13 | Two names for an instrument's identity | PR 4 |
-| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 4, by the owner's ruling |
-| 15 | An underlying is an unqualified name | PR 4, by the owner's ruling |
-| 16 | No observation schedule | PR 4, by the owner's ruling |
+| 13 | Two names for an instrument's identity | Closed in PR 4: =instrument_id= is gone from the field group, from all 58 models that carried it, from the generated C++ and SQL and from every hand-written caller |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
+| 15 | An underlying is an unqualified name | PR 5, the bond security split, by the owner's ruling of 2026-09-28 |
+| 16 | No observation schedule | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
 | 17 | The trade's declared key is nullable, and its fixture left it empty | PR 3 |
 
 Defect 17 surfaced in PR 2, not in PR 3, because the regenerated trade
@@ -509,6 +510,38 @@ row is updated as each PR lands.
   FpML or ORE, never invented; where the data belongs to another
   component the dependency is recorded instead of a local copy. This
   closes defects 4, 5 and 8 as one thread.
+- *D14, the instrument key.* The instrument's key is the trade it belongs
+  to. =instrument_identity= drops =instrument_id=, every instrument table
+  is keyed by a non-null =trade_id=, every fact and child table that named
+  an instrument names that trade, and =trade.instrument_id= is deleted.
+  Reason: ORE carries two identities, the trade and the security, and a
+  one-to-one relationship modelled as two nullable pointers has nothing
+  that can make them agree. This closes defect 13.
+- *D15, the relationship the schema can hold.* The instrument-to-trade
+  link is declared in the model and enforced by the generated insert
+  trigger's existence check (errcode 23503), not by a DDL =references=
+  clause. A foreign key cannot be held against a bi-temporal parent: the
+  only unique index on =(tenant_id, id)= is partial, and PostgreSQL
+  refuses a foreign key to a partial unique index, which was proven
+  against the live database. The shape that would allow one -- the child
+  carrying the parent version's =valid_from= and the insert trigger
+  deriving it instead of stamping =clock_timestamp()= -- pins the two
+  version histories together and is recorded rather than taken here.
+  Defect 7 is partly closed by this and the remainder is recorded.
+- *D16, the standalone instrument.* An instrument with no real trade is
+  expressed as a trade of a reserved type, so there is one shape and no
+  nullable back door. The nullability is gone with D14; ORE's own
+  placeholder type is =Failed=, deliberately absent from the product
+  catalogue, and no caller in the tree writes an instrument without a
+  trade after the collapse, so no reserved type is seeded.
+- *D17, the bond security split moves out of PR 4.* It reshapes the bond
+  family around a security identity and is the largest part of the diff,
+  so it becomes =task_split-bond-security-from-trade.org= and PR 5. PR 4
+  stops after the collapse with the tree green, which the task's own note
+  authorises. The story ladder grows by one: the split is PR 5, the bond
+  pilot PR 6 and the shell and verification work PR 7. By the owner's
+  ruling of 2026-09-28, defects 14 and 16 move to the bond pilot and
+  defect 15 to the split.
 
 * Delivery plan
 
@@ -516,10 +549,11 @@ row is updated as each PR lands.
 |----+------+-------+------|
 | 1 | [[id:AC960907-8838-4254-9C45-F5E48FA8840C][Baseline, decisions and evidence for ores.trading]] | The analysis, the B01 to B06 evidence and the decisions | =compass lint=, =validate_docs.sh=, drift unchanged |
 | [[https://github.com/OreStudio/OreStudio/pull/2204][#2204]] | [[id:14795122-7D5B-442E-9B2A-E7517632F612][Sync the ores.trading tree to its models]] | The generated tree, the canonical protocol, the canonical triggers, the deletions | Whole-tree build, four suites green, drift dry run empty, D1 applied |
-| 3 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] — [[https://github.com/OreStudio/OreStudio/pull/2333][PR #2333]] | The missing orgs and their ports, the profile bindings and no-matches, the closed sets (defects 4, 5 and 8), the defect 6 renames, the M04 sweep, the local =average_type= with its producer fix, the =call_type= deletion, and defects 14 to 16 carried to PR 4 | =compass db recreate -y -k= exit 0; the whole-tree build exits 0 with zero =error:=; the full =ctest= suite 87 of 87 on a fresh database with the fleet up; =pytest projects/ores.codegen/tests -q= 971 passed; =check_component_drift.py --component trading-cpp --dry-run= twice and =--all --dry-run= once, all no drift; =validate_docs.sh= 40 components; the fleet at 25 running. Measured 2026-09-28 |
-| 4 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade and split the bond security]] | One identity, real foreign keys, the security split | Drift empty, round trip at zero loss, suites green |
-| 5 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | The v17 bond future, the missing child table and constraints, the delete and add paths, the corpus sweep | The corpus-wide round trip, drift empty |
-| 6 | [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | Shell units and recipes, permissions, audits, surveys, the registry entry | Every gate green with the component listed, =--all= passes |
+| [[https://github.com/OreStudio/OreStudio/pull/2333][#2333]] | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | The missing orgs and their ports, the profile bindings and no-matches, the closed sets (defects 4, 5 and 8), the defect 6 renames, the M04 sweep, the local =average_type= with its producer fix, the =call_type= deletion, and defects 14 to 16 carried to PR 4 | Merged as =9631df6bff= on 2026-09-28 with fifteen checks green. =compass db recreate -y -k= exit 0; the whole-tree build exits 0 with zero =error:=; the full =ctest= suite 89 of 89 on a fresh database with the fleet up; =pytest projects/ores.codegen/tests -q= 978 passed; =check_component_drift.py --component trading-cpp --dry-run= twice, =--all --dry-run= and =--sweep --dry-run=, all no drift; =validate_docs.sh= 40 components |
+| [[https://github.com/OreStudio/OreStudio/pull/2348][#2348]] | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade]] | One instrument identity, keyed by the trade, with the relationship declared where the schema can hold it (D14 to D16). The bond security split moved to PR 5 by D17 | Rebased onto =e2bda9e108=. The whole-tree build exits 0 with zero =error:=; =compass db recreate -y -k= exits 0; the fleet restarts to 25 of 25; =ctest= is 89 of 89; =pytest projects/ores.codegen/tests -q= is 995 passed; component drift, =--all --dry-run= and =--sweep --dry-run= clean; =check_sql_hygiene.py= 1676 files, 0 problems; =validate_docs.sh= 40 components |
+| 5 | [[id:FF88C139-9C8B-4A59-9CCD-38066CA049DD][Split the bond security from the trade]] | The shared bond entities keyed by the ORE reference datum id, the leg family on the security, =bond_issue= with the six fields ORE has and without =bond_notional=, and defect 15 | Drift empty, round trip at zero loss across the bond products |
+| 6 | [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | The v17 bond future, the missing child table and constraints, the delete and add paths, the corpus sweep, and defects 14 and 16 | The corpus-wide round trip, drift empty |
+| 7 | [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | Shell units and recipes, permissions, audits, surveys, the registry entry | Every gate green with the component listed, =--all= passes |
 
 * Risks
 

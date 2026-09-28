@@ -115,7 +115,7 @@ public:
      * @param version The version to fetch.
      * @return The ascot at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::ascot> get_ascot_at_version(const boost::uuids::uuid& instrument_id,
+    std::optional<domain::ascot> get_ascot_at_version(const boost::uuids::uuid& trade_id,
                                                       std::uint32_t version);
 
     /**
@@ -126,12 +126,12 @@ public:
      *
      * @return The ascot if found, std::nullopt otherwise.
      */
-    std::optional<domain::ascot> get_ascot(const boost::uuids::uuid& instrument_id);
+    std::optional<domain::ascot> get_ascot(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of ascots by primary key.
      */
-    std::vector<domain::ascot> get_ascots(const std::vector<std::string>& instrument_ids);
+    std::vector<domain::ascot> get_ascots(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a ascot (creates or updates).
@@ -154,19 +154,19 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_ascot(const boost::uuids::uuid& instrument_id);
+    void delete_ascot(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes ascots by their primary keys.
      */
-    void delete_ascots(const std::vector<std::string>& instrument_ids);
+    void delete_ascots(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a ascot.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::ascot> get_ascot_history(const std::string& instrument_id);
+    std::vector<domain::ascot> get_ascot_history(const std::string& trade_id);
 
 private:
     context ctx_;

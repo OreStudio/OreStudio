@@ -126,10 +126,8 @@ public:
      * @param version The version to fetch.
      * @return The commodity basket constituent at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::commodity_basket_constituent>
-    get_commodity_basket_constituent_at_version(const std::string& instrument_id,
-                                                const std::string& sequence_number,
-                                                std::uint32_t version);
+    std::optional<domain::commodity_basket_constituent> get_commodity_basket_constituent_at_version(
+        const std::string& trade_id, const std::string& sequence_number, std::uint32_t version);
 
     /**
      * @brief Retrieves a single commodity basket constituent by its primary key.
@@ -137,14 +135,14 @@ public:
      * @return The commodity basket constituent if found, std::nullopt otherwise.
      */
     std::optional<domain::commodity_basket_constituent>
-    get_commodity_basket_constituent(const std::string& instrument_id,
+    get_commodity_basket_constituent(const std::string& trade_id,
                                      const std::string& sequence_number);
 
     /**
      * @brief Retrieves a batch of commodity basket constituents by primary key.
      */
     std::vector<domain::commodity_basket_constituent>
-    get_commodity_basket_constituents(const std::vector<std::string>& instrument_ids,
+    get_commodity_basket_constituents(const std::vector<std::string>& trade_ids,
                                       const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -170,13 +168,13 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_commodity_basket_constituent(const std::string& instrument_id,
+    void delete_commodity_basket_constituent(const std::string& trade_id,
                                              const std::string& sequence_number);
 
     /**
      * @brief Deletes commodity basket constituents by their primary keys.
      */
-    void delete_commodity_basket_constituents(const std::vector<std::string>& instrument_ids,
+    void delete_commodity_basket_constituents(const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -185,7 +183,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::commodity_basket_constituent>
-    get_commodity_basket_constituent_history(const std::string& instrument_id,
+    get_commodity_basket_constituent_history(const std::string& trade_id,
                                              const std::string& sequence_number);
 
 private:

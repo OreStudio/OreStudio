@@ -93,7 +93,6 @@ domain::trade to_domain(const messaging::trade_write& write) {
         const auto parsed = domain::product_type_from_string(write.product_type);
         v.classification.product_type = parsed.value_or(domain::product_type::unknown);
     }
-    v.classification.instrument_id = write.instrument_id;
     v.classification.asset_class = write.asset_class;
     v.classification.netting_set_id = write.netting_set_id;
     v.classification.activity_type_code = write.activity_type_code;

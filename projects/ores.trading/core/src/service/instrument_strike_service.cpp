@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::instrument_strike> read_one(repository::instrument_strike_repository& repo,
                                                 const ores::database::context& ctx,
                                                 const messaging::instrument_strike_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::instrument_strike> read_one(repository::instrument_strike_re
  */
 messaging::instrument_strike_key key_from(const domain::instrument_strike& v) {
     messaging::instrument_strike_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     return key;
 }
 
@@ -82,7 +82,7 @@ messaging::instrument_strike_key key_from(const domain::instrument_strike& v) {
  */
 domain::instrument_strike to_domain(const messaging::instrument_strike_write& write) {
     domain::instrument_strike v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.price_value = write.price_value;
     v.price_currency = write.price_currency;
     v.yield_value = write.yield_value;
@@ -209,8 +209,7 @@ messaging::delete_instrument_strike_response instrument_strike_service::delete_i
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
         case repository::instrument_strike_repository::remove_status::removed:
             break;
         case repository::instrument_strike_repository::remove_status::missing:
@@ -252,11 +251,11 @@ instrument_strike_service::delete_many_instrument_strikes(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    repo_.remove(ctx_, trade_id_keys);
     return response;
 }
 
@@ -277,7 +276,7 @@ instrument_strike_service::list_instrument_strike_versions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -293,10 +292,8 @@ messaging::get_instrument_strike_version_response
 instrument_strike_service::get_instrument_strike_version(
     const messaging::get_instrument_strike_version_request& request) {
     messaging::get_instrument_strike_version_response response;
-    auto found =
-        repo_.read_at_version(ctx_,
-                              boost::uuids::to_string(request.key.instrument_strike.instrument_id),
-                              request.key.version);
+    auto found = repo_.read_at_version(
+        ctx_, boost::uuids::to_string(request.key.instrument_strike.trade_id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -368,45 +365,42 @@ std::uint32_t instrument_strike_service::count_instrument_strikes() {
 
 
 std::optional<domain::instrument_strike>
-instrument_strike_service::get_instrument_strike_at_version(const boost::uuids::uuid& instrument_id,
+instrument_strike_service::get_instrument_strike_at_version(const boost::uuids::uuid& trade_id,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument strike at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+                               << "trade_id: " << trade_id << " version: " << version;
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::instrument_strike>
-instrument_strike_service::get_instrument_strike(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument strike. "
-                               << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+instrument_strike_service::get_instrument_strike(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting instrument strike. " << "trade_id: " << trade_id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_service::get_instrument_strikes(const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+instrument_strike_service::get_instrument_strikes(const std::vector<std::string>& trade_ids) {
+    return repo_.read_latest(ctx_, trade_ids);
 }
 
 void instrument_strike_service::save_instrument_strike(const domain::instrument_strike& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Instrument Strike instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument strike. "
-                               << "instrument_id: " << v.instrument_id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Instrument Strike trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving instrument strike. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument strike. "
-                              << "instrument_id: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved instrument strike. " << "trade_id: " << v.trade_id;
 }
 
 void instrument_strike_service::save_instrument_strikes(
     const std::vector<domain::instrument_strike>& instrument_strikes) {
     for (const auto& e : instrument_strikes) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Instrument Strike instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Instrument Strike trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_strikes.size() << " instrument strikes";
     auto ts = instrument_strikes;
@@ -416,24 +410,22 @@ void instrument_strike_service::save_instrument_strikes(
     repo_.write(ctx_, ts);
 }
 
-void instrument_strike_service::delete_instrument_strike(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. "
-                               << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument strike. "
-                              << "instrument_id: " << instrument_id;
+void instrument_strike_service::delete_instrument_strike(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. " << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    BOOST_LOG_SEV(lg(), info) << "Removed instrument strike. " << "trade_id: " << trade_id;
 }
 
 void instrument_strike_service::delete_instrument_strikes(
-    const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+    const std::vector<std::string>& trade_ids) {
+    repo_.remove(ctx_, trade_ids);
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_service::get_instrument_strike_history(const std::string& instrument_id) {
+instrument_strike_service::get_instrument_strike_history(const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument strike. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+                               << "trade_id: " << trade_id;
+    return repo_.read_all(ctx_, trade_id);
 }
 
 }

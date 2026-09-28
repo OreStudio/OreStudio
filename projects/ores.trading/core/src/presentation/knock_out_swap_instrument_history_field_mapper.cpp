@@ -34,13 +34,9 @@ render_knock_out_swap_instrument_fields(const domain::knock_out_swap_instrument&
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back(
-        {.name = "Instrument ID", .value = boost::uuids::to_string(v.identity.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Trade ID",
-                      .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
-                                                     std::string{}});
     fields.push_back({.name = "Start Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date",

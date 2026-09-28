@@ -34,7 +34,7 @@ render_bond_leg_rate_fields(const domain::bond_leg_rate& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Rate Kind", .value = v.rate_kind});
     fields.push_back({.name = "Index", .value = v.index.value_or(std::string{})});
     fields.push_back(

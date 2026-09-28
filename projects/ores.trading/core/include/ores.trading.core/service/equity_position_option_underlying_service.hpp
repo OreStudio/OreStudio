@@ -130,7 +130,7 @@ public:
      * otherwise.
      */
     std::optional<domain::equity_position_option_underlying>
-    get_equity_position_option_underlying_at_version(const std::string& instrument_id,
+    get_equity_position_option_underlying_at_version(const std::string& trade_id,
                                                      const std::string& sequence_number,
                                                      std::uint32_t version);
 
@@ -140,14 +140,14 @@ public:
      * @return The equity position option underlying if found, std::nullopt otherwise.
      */
     std::optional<domain::equity_position_option_underlying>
-    get_equity_position_option_underlying(const std::string& instrument_id,
+    get_equity_position_option_underlying(const std::string& trade_id,
                                           const std::string& sequence_number);
 
     /**
      * @brief Retrieves a batch of equity position option underlyings by primary key.
      */
     std::vector<domain::equity_position_option_underlying>
-    get_equity_position_option_underlyings(const std::vector<std::string>& instrument_ids,
+    get_equity_position_option_underlyings(const std::vector<std::string>& trade_ids,
                                            const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -174,14 +174,14 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_equity_position_option_underlying(const std::string& instrument_id,
+    void delete_equity_position_option_underlying(const std::string& trade_id,
                                                   const std::string& sequence_number);
 
     /**
      * @brief Deletes equity position option underlyings by their primary keys.
      */
     void
-    delete_equity_position_option_underlyings(const std::vector<std::string>& instrument_ids,
+    delete_equity_position_option_underlyings(const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -190,7 +190,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::equity_position_option_underlying>
-    get_equity_position_option_underlying_history(const std::string& instrument_id,
+    get_equity_position_option_underlying_history(const std::string& trade_id,
                                                   const std::string& sequence_number);
 
 private:

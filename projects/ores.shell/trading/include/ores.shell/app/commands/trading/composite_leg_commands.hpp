@@ -87,14 +87,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <instrument_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
+     * @brief add <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <instrument_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
+     * @brief set <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
      * [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -102,8 +102,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <instrument_id> <leg_sequence> <constituent_trade_id>
-     * <reason> <commentary>
+     * @brief put-many --count <n> <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -124,12 +124,11 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief by-instrument-id <instrument_id> [--offset <n>] [--limit <n>] [--order <field>]
-     * [--desc]
+     * @brief by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
-    static void process_by_instrument_id(std::ostream& out,
-                                         ores::nats::service::nats_client& session,
-                                         const std::vector<std::string>& args);
+    static void process_by_trade_id(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
 
     /**
      * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

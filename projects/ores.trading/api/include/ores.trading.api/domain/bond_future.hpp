@@ -35,7 +35,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Per-trade bond future facts: one row per future instrument, keyed by instrument_id.
+ * @brief Per-trade bond future facts: one row per future instrument, keyed by trade_id.
  *
  * One row per bond future trade, keyed by the instrument row it
  * extends. The columns fix the ER row ("delivery date and the facts the
@@ -57,12 +57,12 @@ struct bond_future final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the bond future instrument this fact row extends.
+     * @brief The trade the bond future fact row belongs to.
      *
-     * The instrument row carries the trade, workspace and party; the fact row only carries the
-     * future terms. Per the ER, no workspace column rides the fact tables.
+     * The trade row carries the workspace and the party; the fact row only carries the future
+     * terms. Per the ER, no workspace column rides the fact tables.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Name of the futures contract (the bond the contract is written on).

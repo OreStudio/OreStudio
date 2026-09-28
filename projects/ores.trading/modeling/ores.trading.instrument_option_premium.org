@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One entry of an option block's premium list, keyed to the instrument and the entry's ordinal.
+#+brief: One entry of an option block's premium list, keyed to the trade and the entry's ordinal.
 #+entity_singular: instrument_option_premium
 #+entity_plural: instrument_option_premiums
 #+entity_title: Instrument Option Premium
@@ -37,14 +37,15 @@ document stated the block at all.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose option block stated this premium.
+The trade whose option block stated this premium.
 
 ** sequence_number
 :PROPERTIES:
@@ -139,6 +140,20 @@ FX index the premium's settlement block fixes against.
 :END:
 
 Date the premium's settlement block fixes on.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

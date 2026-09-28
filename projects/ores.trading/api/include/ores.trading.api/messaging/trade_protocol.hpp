@@ -52,7 +52,6 @@ struct trade_write {
     std::string trade_type;
     std::optional<boost::uuids::uuid> counterparty_id;
     std::string product_type;
-    std::optional<boost::uuids::uuid> instrument_id;
     std::optional<std::string> asset_class;
     std::string netting_set_id;
     std::string activity_type_code;
@@ -321,7 +320,6 @@ struct get_trade_instrument_response {
     ores::trading::domain::trade trade;
     ores::trading::domain::trade_instrument instrument;
 };
-
 
 /**
  * @brief Request to export all trades (and instruments) under a taxonomy node.

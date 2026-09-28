@@ -37,7 +37,7 @@ namespace ores::trading::domain {
  * @brief One constituent trade of a composite instrument basket.
  *
  * Child table of composite_instruments. Each row is one constituent trade
- * of a composite basket and names the parent through instrument_id, with
+ * of a composite basket and names the parent through trade_id, with
  * leg_sequence giving the leg's 1-based ordinal inside the basket.
  *
  * The leg carries no economics of its own: the ORE schema states a basket as
@@ -48,7 +48,7 @@ namespace ores::trading::domain {
  *
  * The row keeps its own id surrogate: composite_legs is one of the five
  * id-keyed tables the component's investigation names, and its
- * instrument_id is a foreign key to the instrument rather than the row's
+ * trade_id is a foreign key to the instrument rather than the row's
  * own key.
  */
 struct composite_leg final {

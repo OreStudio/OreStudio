@@ -36,12 +36,12 @@
 namespace ores::trading::messaging {
 
 struct instrument_option_payment_date_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
 };
 
 struct instrument_option_payment_date_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
     std::chrono::year_month_day payment_date;
 };

@@ -45,7 +45,7 @@ std::string fx_accumulator_instrument_repository::sql() {
 ores::utility::domain::precondition
 fx_accumulator_instrument_repository::replace_claim(context ctx,
                                                     const domain::fx_accumulator_instrument& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.instrument_id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -72,8 +72,7 @@ domain::fx_accumulator_instrument fx_accumulator_instrument_repository::apply_cl
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current =
-                read_latest(ctx, boost::uuids::to_string(v.identity.instrument_id));
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
             t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
         }
@@ -99,7 +98,7 @@ void fx_accumulator_instrument_repository::write(context ctx,
                                                  const domain::fx_accumulator_instrument& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX accumulator instrument. "
-                               << "instrument_id: " << v.identity.instrument_id;
+                               << "trade_id: " << v.identity.trade_id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
                         fx_accumulator_instrument_mapper::map(t),
@@ -131,7 +130,7 @@ fx_accumulator_instrument_repository::read_latest(context ctx) {
         const auto query = sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
                            where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
                                  "valid_to"_c == max.value()) |
-                           order_by("instrument_id"_c);
+                           order_by("trade_id"_c);
         return execute_read_query<fx_accumulator_instrument_entity,
                                   domain::fx_accumulator_instrument>(
             ctx,
@@ -144,7 +143,7 @@ fx_accumulator_instrument_repository::read_latest(context ctx) {
     const auto query =
         sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c);
+        order_by("trade_id"_c);
 
     return execute_read_query<fx_accumulator_instrument_entity, domain::fx_accumulator_instrument>(
         ctx,
@@ -155,55 +154,55 @@ fx_accumulator_instrument_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::fx_accumulator_instrument>
-fx_accumulator_instrument_repository::read_latest(context ctx, const std::string& instrument_id) {
+fx_accumulator_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX accumulator instrument. "
-                               << "instrument_id: " << instrument_id;
+                               << "trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                             "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_read_query<fx_accumulator_instrument_entity, domain::fx_accumulator_instrument>(
         ctx,
         query,
         [](const auto& entities) { return fx_accumulator_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest FX accumulator instrument by instrument_id.");
+        "Reading latest FX accumulator instrument by trade_id.");
 }
 
 
 std::vector<domain::fx_accumulator_instrument>
-fx_accumulator_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
+fx_accumulator_instrument_repository::read_all(context ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX accumulator instrument versions. "
-                               << "instrument_id: " << instrument_id;
+                               << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id) |
+        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<fx_accumulator_instrument_entity, domain::fx_accumulator_instrument>(
         ctx,
         query,
         [](const auto& entities) { return fx_accumulator_instrument_mapper::map(entities); },
         lg(),
-        "Reading all FX accumulator instrument versions by instrument_id.");
+        "Reading all FX accumulator instrument versions by trade_id.");
 }
 
 std::optional<domain::fx_accumulator_instrument>
 fx_accumulator_instrument_repository::read_at_version(context ctx,
-                                                      const std::string& instrument_id,
+                                                      const std::string& trade_id,
                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading FX accumulator instrument at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
+                               << "trade_id: " << trade_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "version"_c == version) |
+                             "trade_id"_c == trade_id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -219,11 +218,12 @@ fx_accumulator_instrument_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 fx_accumulator_instrument_repository::remove_status fx_accumulator_instrument_repository::remove(
-    context ctx, const std::string& instrument_id, std::optional<std::uint32_t> version) {
+    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX accumulator instrument. "
-                               << "instrument_id: " << instrument_id;
-    const auto current = read_latest(ctx, instrument_id);
+                               << "trade_id: " << trade_id;
+    const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -237,22 +237,22 @@ fx_accumulator_instrument_repository::remove_status fx_accumulator_instrument_re
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<fx_accumulator_instrument_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query =
+        sqlgen::delete_from<fx_accumulator_instrument_entity> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id &&
+              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing FX accumulator instrument from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id).empty())
+    if (!read_latest(ctx, trade_id).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void fx_accumulator_instrument_repository::remove(context ctx, const std::string& instrument_id) {
-    static_cast<void>(remove(ctx, instrument_id, std::nullopt));
+void fx_accumulator_instrument_repository::remove(context ctx, const std::string& trade_id) {
+    static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::fx_accumulator_instrument> fx_accumulator_instrument_repository::read_latest(
@@ -265,7 +265,7 @@ std::vector<domain::fx_accumulator_instrument> fx_accumulator_instrument_reposit
     const auto query =
         sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        order_by("trade_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<fx_accumulator_instrument_entity, domain::fx_accumulator_instrument>(
         ctx,
@@ -301,15 +301,15 @@ fx_accumulator_instrument_repository::get_total_fx_accumulator_instrument_count(
 
 std::vector<domain::fx_accumulator_instrument>
 fx_accumulator_instrument_repository::read_latest(context ctx,
-                                                  const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+                                                  const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fx_accumulator_instrument_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     auto result =
         execute_read_query<fx_accumulator_instrument_entity, domain::fx_accumulator_instrument>(
             ctx,
@@ -321,21 +321,21 @@ fx_accumulator_instrument_repository::read_latest(context ctx,
 }
 
 void fx_accumulator_instrument_repository::remove(context ctx,
-                                                  const std::vector<std::string>& instrument_ids) {
+                                                  const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
     // case the same way. The compound branch above is left alone: it loops, so
     // it already removes nothing, and its length check still refuses an
     // asymmetric pair.
-    if (instrument_ids.empty())
+    if (trade_ids.empty())
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<fx_accumulator_instrument_entity> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing FX accumulator instruments.");
 }
 

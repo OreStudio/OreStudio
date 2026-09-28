@@ -97,49 +97,49 @@ struct leg_amounts final {
 };
 
 std::unordered_map<std::string, instrument_rows>
-read_family_rows(ores::database::context ctx, const std::vector<std::string>& instrument_ids) {
+read_family_rows(ores::database::context ctx, const std::vector<std::string>& trade_ids) {
     std::unordered_map<std::string, instrument_rows> rows;
 
-    for (auto& row : repository::read_legs_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].legs.push_back(std::move(row));
+    for (auto& row : repository::read_legs_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].legs.push_back(std::move(row));
 
-    for (auto& row : repository::read_leg_amounts_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].amounts.push_back(std::move(row));
+    for (auto& row : repository::read_leg_amounts_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].amounts.push_back(std::move(row));
 
-    for (auto& row : repository::read_leg_rates_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].rates.push_back(std::move(row));
+    for (auto& row : repository::read_leg_rates_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].rates.push_back(std::move(row));
 
-    for (auto& row : repository::read_leg_amortizations_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].amortizations.push_back(std::move(row));
+    for (auto& row : repository::read_leg_amortizations_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].amortizations.push_back(std::move(row));
 
-    for (auto& row : repository::read_schedules_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].schedules.push_back(std::move(row));
+    for (auto& row : repository::read_schedules_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].schedules.push_back(std::move(row));
 
-    for (auto& row : repository::read_schedule_dates_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].schedule_dates.push_back(std::move(row));
+    for (auto& row : repository::read_schedule_dates_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].schedule_dates.push_back(std::move(row));
 
-    for (auto& row : repository::read_options_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].option = std::move(row);
+    for (auto& row : repository::read_options_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].option = std::move(row);
 
-    for (auto& row : repository::read_option_premiums_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].option_premiums.push_back(std::move(row));
+    for (auto& row : repository::read_option_premiums_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].option_premiums.push_back(std::move(row));
 
-    for (auto& row : repository::read_option_exercise_fees_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].option_exercise_fees.push_back(
+    for (auto& row : repository::read_option_exercise_fees_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].option_exercise_fees.push_back(
             std::move(row));
 
-    for (auto& row : repository::read_option_payment_dates_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].option_payment_dates.push_back(
+    for (auto& row : repository::read_option_payment_dates_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].option_payment_dates.push_back(
             std::move(row));
 
-    for (auto& row : repository::read_strikes_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].strike = std::move(row);
+    for (auto& row : repository::read_strikes_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].strike = std::move(row);
 
-    for (auto& row : repository::read_forwards_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].forward = std::move(row);
+    for (auto& row : repository::read_forwards_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].forward = std::move(row);
 
-    for (auto& row : repository::read_delivery_baskets_by_instrument_ids(ctx, instrument_ids))
-        rows[boost::uuids::to_string(row.instrument_id)].delivery_basket.push_back(std::move(row));
+    for (auto& row : repository::read_delivery_baskets_by_trade_ids(ctx, trade_ids))
+        rows[boost::uuids::to_string(row.trade_id)].delivery_basket.push_back(std::move(row));
 
     return rows;
 }
@@ -567,9 +567,9 @@ bond_instrument_reader::bond_instrument_reader(context ctx)
     : ctx_(std::move(ctx)) {}
 
 std::unordered_map<std::string, domain::bond_instrument_data>
-bond_instrument_reader::read_instruments(const std::vector<std::string>& instrument_ids) const {
+bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_ids) const {
     std::unordered_map<std::string, domain::bond_instrument_data> result;
-    if (instrument_ids.empty())
+    if (trade_ids.empty())
         return result;
 
     bond_instrument_service instrument_svc(ctx_);
@@ -580,7 +580,7 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& instrum
     bond_future_service future_svc(ctx_);
     ascot_service ascot_svc(ctx_);
 
-    auto rows = instrument_svc.get_bond_instruments(instrument_ids);
+    auto rows = instrument_svc.get_bond_instruments(trade_ids);
 
     std::unordered_map<std::string, domain::bond_issue> issue_cache;
     std::vector<std::string> issue_ids;
@@ -602,10 +602,10 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& instrum
     for (auto& row : repository::read_conversion_targets_by_issue_ids(ctx_, issue_ids))
         conversion_targets[boost::uuids::to_string(row.issue_id)].push_back(std::move(row));
 
-    const auto leg_family = read_family_rows(ctx_, instrument_ids);
+    const auto leg_family = read_family_rows(ctx_, trade_ids);
 
     for (auto& row : rows) {
-        const auto id = boost::uuids::to_string(row.identity.instrument_id);
+        const auto id = boost::uuids::to_string(row.identity.trade_id);
         const auto issue_id = boost::uuids::to_string(row.issue_id);
         domain::bond_instrument_data data;
         data.instrument = std::move(row);
@@ -628,15 +628,15 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& instrum
 
         const auto& ttc = data.instrument.identity.trade_type_code;
         if (ttc == "BondOption")
-            data.option = option_svc.get_option(row.identity.instrument_id);
+            data.option = option_svc.get_option(row.identity.trade_id);
         else if (ttc == "BondTRS")
-            data.trs = trs_svc.get_trs(row.identity.instrument_id);
+            data.trs = trs_svc.get_trs(row.identity.trade_id);
         else if (ttc == "BondRepo")
-            data.repo = repo_svc.get_repo(row.identity.instrument_id);
+            data.repo = repo_svc.get_repo(row.identity.trade_id);
         else if (ttc == "BondFuture")
-            data.future = future_svc.get_future(row.identity.instrument_id);
+            data.future = future_svc.get_future(row.identity.trade_id);
         else if (ttc == "Ascot")
-            data.ascot_row = ascot_svc.get_ascot(row.identity.instrument_id);
+            data.ascot_row = ascot_svc.get_ascot(row.identity.trade_id);
 
         apply_option_residue(data);
         if (family != leg_family.end())

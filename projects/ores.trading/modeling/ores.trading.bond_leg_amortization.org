@@ -35,14 +35,15 @@ type is not null here and the rest are nullable.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument this amortization belongs to.
+The trade this amortization belongs to.
 
 ** leg_role
 :PROPERTIES:
@@ -131,6 +132,20 @@ How often the step's amount applies within its window.
 :END:
 
 True when the step allows the notional to fall below zero.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

@@ -37,9 +37,9 @@ std::string convert_to_table(const std::vector<equity_accumulator_instrument>& v
           << "Expiry Date" << "Long/Short" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& eaci : v) {
-        table << eaci.identity.instrument_id << eaci.identity.trade_type_code
-              << eaci.underlying_name << eaci.currency << eaci.strike << eaci.fixing_amount
-              << eaci.expiry_date << eaci.long_short << eaci.audit.recorded_at << fort::endr;
+        table << eaci.identity.trade_id << eaci.identity.trade_type_code << eaci.underlying_name
+              << eaci.currency << eaci.strike << eaci.fixing_amount << eaci.expiry_date
+              << eaci.long_short << eaci.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

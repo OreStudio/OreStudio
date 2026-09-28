@@ -44,12 +44,11 @@
  */
 
 create table if not exists "ores_trading_credit_instruments_tbl" (
-    "instrument_id" uuid not null,
+    "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
-    "trade_id" uuid null,
     "reference_entity" text not null,
     "currency" text not null,
     "notional" numeric(28, 10) not null,
@@ -78,14 +77,14 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, instrument_id, valid_from, valid_to),
+    primary key (tenant_id, trade_id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        instrument_id WITH =,
+        trade_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("notional" > 0),
     check ("spread" >= 0),
     check ("recovery_rate" >= 0 AND "recovery_rate" <= 1),
@@ -97,11 +96,11 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists credit_instruments_version_uniq_idx
-on "ores_trading_credit_instruments_tbl" (tenant_id, instrument_id, version)
+on "ores_trading_credit_instruments_tbl" (tenant_id, trade_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists credit_instruments_id_uniq_idx
-on "ores_trading_credit_instruments_tbl" (tenant_id, instrument_id)
+on "ores_trading_credit_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists credit_instruments_tenant_idx
@@ -111,11 +110,6 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists credit_instruments_party_idx
 on "ores_trading_credit_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
-
-create unique index if not exists credit_instruments_trade_id_idx
-on "ores_trading_credit_instruments_tbl" (tenant_id, trade_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and trade_id is not null;
 
 create index if not exists credit_instruments_trade_type_idx
 on "ores_trading_credit_instruments_tbl" (tenant_id, trade_type_code)
@@ -139,6 +133,17 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
     -- Validate payment_frequency_code
     NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
 
@@ -149,7 +154,7 @@ begin
     select version into current_version
     from "ores_trading_credit_instruments_tbl"
     where tenant_id = NEW.tenant_id
-      and instrument_id = NEW.instrument_id
+      and trade_id = NEW.trade_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -178,7 +183,7 @@ begin
         update "ores_trading_credit_instruments_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id
+          and trade_id = NEW.trade_id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -203,6 +208,6 @@ on delete to "ores_trading_credit_instruments_tbl" do instead (
     update "ores_trading_credit_instruments_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and instrument_id = OLD.instrument_id
+      and trade_id = OLD.trade_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

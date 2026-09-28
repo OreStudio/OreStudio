@@ -36,13 +36,12 @@
 namespace ores::trading::messaging {
 
 struct fx_digital_option_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct fx_digital_option_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     std::string foreign_currency;
     std::string domestic_currency;
     std::string payoff_currency;

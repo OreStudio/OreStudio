@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One stated payment date of an option block, keyed to the instrument and the date's ordinal.
+#+brief: One stated payment date of an option block, keyed to the trade and the date's ordinal.
 #+entity_singular: instrument_option_payment_date
 #+entity_plural: instrument_option_payment_dates
 #+entity_title: Instrument Option Payment Date
@@ -30,14 +30,15 @@ list lives here. The ordinal preserves the document's order.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose option block stated this payment date.
+The trade whose option block stated this payment date.
 
 ** sequence_number
 :PROPERTIES:
@@ -60,6 +61,20 @@ The payment date.
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::year{2026}/1/15}
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

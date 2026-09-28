@@ -40,9 +40,12 @@ struct credit_instrument_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Changed credit instrument UUIDs (as strings).
+     * @brief Changed credit trade UUIDs (as strings).
+     *
+     * An instrument's key is the trade it belongs to, so the id of a
+     * changed instrument row is the id of its trade.
      */
-    std::vector<std::string> credit_instrument_ids;
+    std::vector<std::string> credit_trade_ids;
 
     /**
      * @brief The tenant that owns the changed entity.

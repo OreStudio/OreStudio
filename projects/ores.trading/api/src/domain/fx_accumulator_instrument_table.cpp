@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<fx_accumulator_instrument>& v) {
           << "Start Date" << "Knock-Out Barrier" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& fxai : v) {
-        table << fxai.identity.instrument_id << fxai.identity.trade_type_code << fxai.currency
+        table << fxai.identity.trade_id << fxai.identity.trade_type_code << fxai.currency
               << fxai.fixing_amount << fxai.strike << fxai.start_date
               << opt_str(fxai.knock_out_barrier) << fxai.audit.recorded_at << fort::endr;
     }

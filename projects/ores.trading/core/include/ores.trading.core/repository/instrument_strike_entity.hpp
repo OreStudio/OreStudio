@@ -42,7 +42,7 @@ struct instrument_strike_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_instrument_strikes_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> price_value;

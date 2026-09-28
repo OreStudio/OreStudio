@@ -36,11 +36,11 @@
 namespace ores::trading::messaging {
 
 struct bond_trs_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct bond_trs_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string return_type;
     std::string funding_leg_type;
     double funding_rate;

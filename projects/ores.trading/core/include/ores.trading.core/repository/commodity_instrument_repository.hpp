@@ -101,18 +101,16 @@ public:
      */
     /**@{*/
     std::vector<domain::commodity_instrument> read_latest(context ctx);
-    std::vector<domain::commodity_instrument> read_latest(context ctx,
-                                                          const std::string& instrument_id);
+    std::vector<domain::commodity_instrument> read_latest(context ctx, const std::string& trade_id);
     std::vector<domain::commodity_instrument>
-    read_latest(context ctx, const std::vector<std::string>& instrument_ids);
+    read_latest(context ctx, const std::vector<std::string>& trade_ids);
     /**@}*/
 
 
     /**
      * @brief Reads all commodity instruments, possibly filtered by primary key.
      */
-    std::vector<domain::commodity_instrument> read_all(context ctx,
-                                                       const std::string& instrument_id);
+    std::vector<domain::commodity_instrument> read_all(context ctx, const std::string& trade_id);
 
     /**
      * @brief Reads a single commodity instrument as it stood at a specific
@@ -124,7 +122,8 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::commodity_instrument>
-    read_at_version(context ctx, const std::string& instrument_id, std::uint32_t version);
+    read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
+
 
     /**
      * @brief Reads latest commodity instruments with pagination support.
@@ -145,7 +144,7 @@ public:
     /**
      * @brief Deletes a commodity instrument by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& instrument_id);
+    void remove(context ctx, const std::string& trade_id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -168,12 +167,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& instrument_id, std::optional<std::uint32_t> version);
+    remove(context ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes commodity instruments by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& instrument_ids);
+    void remove(context ctx, const std::vector<std::string>& trade_ids);
 
 
 private:

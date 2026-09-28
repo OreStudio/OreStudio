@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<cap_floor_instrument>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& cf : v) {
-        table << cf.identity.instrument_id << cf.identity.trade_type_code << cf.start_date
+        table << cf.identity.trade_id << cf.identity.trade_type_code << cf.start_date
               << cf.maturity_date << cf.audit.recorded_at << fort::endr;
     }
     return table.to_string();

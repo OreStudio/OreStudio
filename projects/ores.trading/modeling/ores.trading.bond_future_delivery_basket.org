@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One deliverable identifier of a bond future's delivery basket, keyed to the instrument and the identifier's ordinal.
+#+brief: One deliverable identifier of a bond future's delivery basket, keyed to the trade and the identifier's ordinal.
 #+entity_singular: bond_future_delivery_basket
 #+entity_plural: bond_future_delivery_baskets
 #+entity_title: Bond Future Delivery Basket
@@ -33,14 +33,15 @@ reference to a bond row.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the bond future instrument whose basket named this identifier.
+The trade whose bond future basket named this delivery identifier.
 
 ** sequence_number
 :PROPERTIES:
@@ -66,6 +67,20 @@ identifier, so export re-emits what the document stated.
 #+begin_src cpp :name generator
 std::string("BOND-1")
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

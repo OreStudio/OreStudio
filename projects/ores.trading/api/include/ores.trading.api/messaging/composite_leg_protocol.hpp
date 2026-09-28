@@ -41,7 +41,7 @@ struct composite_leg_key {
 
 struct composite_leg_write {
     boost::uuids::uuid id;
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int leg_sequence;
     std::string constituent_trade_id;
 };
@@ -62,7 +62,7 @@ struct composite_leg_lookup {
 };
 
 struct composite_legs_filter {
-    std::optional<boost::uuids::uuid> instrument_id;
+    std::optional<boost::uuids::uuid> trade_id;
 };
 
 struct composite_leg_event {
@@ -217,10 +217,9 @@ struct delete_many_composite_legs_response {
     ores::utility::domain::result result;
 };
 
-struct list_by_instrument_id_composite_legs_request {
-    using response_type = struct list_by_instrument_id_composite_legs_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.composite_legs.list_by_instrument_id";
+struct list_by_trade_id_composite_legs_request {
+    using response_type = struct list_by_trade_id_composite_legs_response;
+    static constexpr std::string_view nats_subject = "trading.v1.composite_legs.list_by_trade_id";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -228,7 +227,7 @@ struct list_by_instrument_id_composite_legs_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
@@ -236,7 +235,7 @@ struct list_by_instrument_id_composite_legs_request {
     std::optional<composite_legs_filter> filter;
 };
 
-struct list_by_instrument_id_composite_legs_response {
+struct list_by_trade_id_composite_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_leg> composite_legs;
     std::uint64_t total;

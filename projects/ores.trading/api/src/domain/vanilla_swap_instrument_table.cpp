@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<vanilla_swap_instrument>& v) {
           << "Netting Set" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& vs : v) {
-        table << vs.identity.instrument_id << vs.identity.trade_type_code << vs.start_date
+        table << vs.identity.trade_id << vs.identity.trade_type_code << vs.start_date
               << vs.maturity_date << opt_str(vs.settlement_lag) << vs.netting_set_id
               << vs.audit.recorded_at << fort::endr;
     }

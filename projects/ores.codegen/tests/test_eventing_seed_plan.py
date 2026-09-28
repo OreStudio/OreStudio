@@ -33,6 +33,7 @@ def org_infos():
         "ores_compute_workunits_tbl": {
             "entity_singular": "workunit",
             "generator_facet_name": "generators",
+            "column_prefixes": {},
             "has_audit_group": False,
             "component": "compute",
             "mandatory_fks": [
@@ -45,6 +46,7 @@ def org_infos():
         "ores_compute_batches_tbl": {
             "entity_singular": "batch",
             "generator_facet_name": "generators",
+            "column_prefixes": {},
             "has_audit_group": False,
             "component": "compute",
             "mandatory_fks": [],
@@ -52,6 +54,7 @@ def org_infos():
         "ores_compute_app_versions_tbl": {
             "entity_singular": "app_version",
             "generator_facet_name": "generators",
+            "column_prefixes": {},
             "has_audit_group": False,
             "component": "compute",
             "mandatory_fks": [
@@ -62,6 +65,7 @@ def org_infos():
         "ores_compute_apps_tbl": {
             "entity_singular": "app",
             "generator_facet_name": "generators",
+            "column_prefixes": {},
             "has_audit_group": False,
             "component": "compute",
             "mandatory_fks": [],
@@ -171,6 +175,7 @@ def test_party_ancestors_are_skipped(org_infos):
     org_infos["ores_parties_tbl"] = {
         "entity_singular": "party",
         "generator_facet_name": "generators",
+            "column_prefixes": {},
         "has_audit_group": False,
         "component": "compute",
         "mandatory_fks": [],

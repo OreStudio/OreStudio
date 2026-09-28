@@ -37,10 +37,9 @@ std::string convert_to_table(const std::vector<equity_swap_instrument>& v) {
           << "Start Date" << "Maturity Date" << "Long/Short" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& eqsi : v) {
-        table << eqsi.identity.instrument_id << eqsi.identity.trade_type_code
-              << eqsi.underlying_name << eqsi.currency << eqsi.notional << eqsi.return_type
-              << eqsi.start_date << eqsi.maturity_date << eqsi.long_short << eqsi.audit.recorded_at
-              << fort::endr;
+        table << eqsi.identity.trade_id << eqsi.identity.trade_type_code << eqsi.underlying_name
+              << eqsi.currency << eqsi.notional << eqsi.return_type << eqsi.start_date
+              << eqsi.maturity_date << eqsi.long_short << eqsi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

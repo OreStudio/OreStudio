@@ -36,13 +36,12 @@
 namespace ores::trading::messaging {
 
 struct bond_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct bond_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     boost::uuids::uuid issue_id;
 };
 

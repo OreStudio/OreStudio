@@ -103,10 +103,10 @@ public:
     /**@{*/
     std::vector<domain::bond_future_delivery_basket> read_latest(context ctx);
     std::vector<domain::bond_future_delivery_basket>
-    read_latest(context ctx, const std::string& instrument_id, const std::string& sequence_number);
+    read_latest(context ctx, const std::string& trade_id, const std::string& sequence_number);
     std::vector<domain::bond_future_delivery_basket>
     read_latest(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
     /**@}*/
 
@@ -115,7 +115,7 @@ public:
      * @brief Reads all bond future delivery basket identifiers, possibly filtered by primary key.
      */
     std::vector<domain::bond_future_delivery_basket>
-    read_all(context ctx, const std::string& instrument_id, const std::string& sequence_number);
+    read_all(context ctx, const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Reads a single bond future delivery basket identifier as it stood at a specific
@@ -128,9 +128,10 @@ public:
      */
     std::optional<domain::bond_future_delivery_basket>
     read_at_version(context ctx,
-                    const std::string& instrument_id,
+                    const std::string& trade_id,
                     const std::string& sequence_number,
                     std::uint32_t version);
+
 
     /**
      * @brief Reads latest bond future delivery basket identifiers with pagination support.
@@ -151,7 +152,7 @@ public:
     /**
      * @brief Deletes a bond future delivery basket identifier by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& instrument_id, const std::string& sequence_number);
+    void remove(context ctx, const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -174,7 +175,7 @@ public:
      * no version asked for.
      */
     remove_status remove(context ctx,
-                         const std::string& instrument_id,
+                         const std::string& trade_id,
                          const std::string& sequence_number,
                          std::optional<std::uint32_t> version);
 
@@ -182,7 +183,7 @@ public:
      * @brief Deletes bond future delivery basket identifiers by closing their temporal validity.
      */
     void remove(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
 
 

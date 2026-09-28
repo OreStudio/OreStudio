@@ -39,7 +39,7 @@ domain::ascot ascot_mapper::map(const ascot_entity& v) {
     domain::ascot r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.ascot_option_type = v.ascot_option_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -55,7 +55,7 @@ ascot_entity ascot_mapper::map(const domain::ascot& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ascot_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.ascot_option_type = v.ascot_option_type;

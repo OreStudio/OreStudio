@@ -42,12 +42,11 @@ struct rpa_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_rpa_instruments_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
     std::string party_id;
-    std::optional<std::string> trade_id;
     std::string start_date;
     std::string maturity_date;
     std::string reference_counterparty;

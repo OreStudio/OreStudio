@@ -121,7 +121,7 @@ public:
      * @return The RPA instrument at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::rpa_instrument>
-    get_rpa_instrument_at_version(const boost::uuids::uuid& instrument_id, std::uint32_t version);
+    get_rpa_instrument_at_version(const boost::uuids::uuid& trade_id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single RPA instrument by its primary key.
@@ -131,14 +131,13 @@ public:
      *
      * @return The RPA instrument if found, std::nullopt otherwise.
      */
-    std::optional<domain::rpa_instrument>
-    get_rpa_instrument(const boost::uuids::uuid& instrument_id);
+    std::optional<domain::rpa_instrument> get_rpa_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of RPA instruments by primary key.
      */
     std::vector<domain::rpa_instrument>
-    get_rpa_instruments(const std::vector<std::string>& instrument_ids);
+    get_rpa_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a RPA instrument (creates or updates).
@@ -161,20 +160,19 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_rpa_instrument(const boost::uuids::uuid& instrument_id);
+    void delete_rpa_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes RPA instruments by their primary keys.
      */
-    void delete_rpa_instruments(const std::vector<std::string>& instrument_ids);
+    void delete_rpa_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a RPA instrument.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::rpa_instrument>
-    get_rpa_instrument_history(const std::string& instrument_id);
+    std::vector<domain::rpa_instrument> get_rpa_instrument_history(const std::string& trade_id);
 
 private:
     context ctx_;

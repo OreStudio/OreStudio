@@ -37,10 +37,9 @@ std::string convert_to_table(const std::vector<equity_digital_option_instrument>
           << "Barrier Type" << "Expiry Date" << "Long/Short" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& edoi : v) {
-        table << edoi.identity.instrument_id << edoi.identity.trade_type_code
-              << edoi.underlying_name << edoi.currency << edoi.notional << edoi.option_type
-              << edoi.barrier_type << edoi.expiry_date << edoi.long_short << edoi.audit.recorded_at
-              << fort::endr;
+        table << edoi.identity.trade_id << edoi.identity.trade_type_code << edoi.underlying_name
+              << edoi.currency << edoi.notional << edoi.option_type << edoi.barrier_type
+              << edoi.expiry_date << edoi.long_short << edoi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

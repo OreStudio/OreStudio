@@ -46,7 +46,7 @@ generate_synthetic_fx_digital_option_instrument(utility::generation::generation_
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.identity.workspace_id = utility::uuid::live_workspace_id();
-    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxDigitalOption");
     r.identity.party_id = ctx.generate_uuid();
     r.foreign_currency = std::string("EUR");

@@ -36,7 +36,7 @@
 namespace ores::trading::messaging {
 
 struct bond_leg_amount_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string leg_role;
     int leg_number;
     std::string amount_role;
@@ -44,7 +44,7 @@ struct bond_leg_amount_key {
 };
 
 struct bond_leg_amount_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string leg_role;
     int leg_number;
     std::string amount_role;

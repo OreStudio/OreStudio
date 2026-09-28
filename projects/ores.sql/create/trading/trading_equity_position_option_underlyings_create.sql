@@ -49,13 +49,13 @@
  * a single date column would silently drop the rest of the list. That
  * shape belongs to defect 16, the observation schedule.
  *
- * The instrument row carries the trade, the workspace and the party. The
- * entry rows are family-owned and ride the instrument's scope, so no
+ * The trade row carries the workspace and the party. The
+ * entry rows are family-owned and ride the trade's scope, so no
  * workspace column rides them.
  */
 
 create table if not exists "ores_trading_equity_position_option_underlyings_tbl" (
-    "instrument_id" uuid not null,
+    "trade_id" uuid not null,
     "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -72,15 +72,15 @@ create table if not exists "ores_trading_equity_position_option_underlyings_tbl"
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, instrument_id, sequence_number, valid_from, valid_to),
+    primary key (tenant_id, trade_id, sequence_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        instrument_id WITH =,
+        trade_id WITH =,
         sequence_number WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("sequence_number" > 0),
     check ("underlying_name" <> ''),
     check ("long_short" in ('Long', 'Short')),
@@ -91,11 +91,11 @@ create table if not exists "ores_trading_equity_position_option_underlyings_tbl"
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists equity_position_option_underlyings_version_uniq_idx
-on "ores_trading_equity_position_option_underlyings_tbl" (tenant_id, instrument_id, sequence_number, version)
+on "ores_trading_equity_position_option_underlyings_tbl" (tenant_id, trade_id, sequence_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists equity_position_option_underlyings_id_uniq_idx
-on "ores_trading_equity_position_option_underlyings_tbl" (tenant_id, instrument_id, sequence_number)
+on "ores_trading_equity_position_option_underlyings_tbl" (tenant_id, trade_id, sequence_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists equity_position_option_underlyings_tenant_idx
@@ -110,6 +110,17 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -117,7 +128,7 @@ begin
     select version into current_version
     from "ores_trading_equity_position_option_underlyings_tbl"
     where tenant_id = NEW.tenant_id
-      and instrument_id = NEW.instrument_id and sequence_number = NEW.sequence_number
+      and trade_id = NEW.trade_id and sequence_number = NEW.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -146,7 +157,7 @@ begin
         update "ores_trading_equity_position_option_underlyings_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id and sequence_number = NEW.sequence_number
+          and trade_id = NEW.trade_id and sequence_number = NEW.sequence_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -171,6 +182,6 @@ on delete to "ores_trading_equity_position_option_underlyings_tbl" do instead (
     update "ores_trading_equity_position_option_underlyings_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and instrument_id = OLD.instrument_id and sequence_number = OLD.sequence_number
+      and trade_id = OLD.trade_id and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

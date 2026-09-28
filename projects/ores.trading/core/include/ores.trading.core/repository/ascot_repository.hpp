@@ -99,16 +99,15 @@ public:
      */
     /**@{*/
     std::vector<domain::ascot> read_latest(context ctx);
-    std::vector<domain::ascot> read_latest(context ctx, const std::string& instrument_id);
-    std::vector<domain::ascot> read_latest(context ctx,
-                                           const std::vector<std::string>& instrument_ids);
+    std::vector<domain::ascot> read_latest(context ctx, const std::string& trade_id);
+    std::vector<domain::ascot> read_latest(context ctx, const std::vector<std::string>& trade_ids);
     /**@}*/
 
 
     /**
      * @brief Reads all ascots, possibly filtered by primary key.
      */
-    std::vector<domain::ascot> read_all(context ctx, const std::string& instrument_id);
+    std::vector<domain::ascot> read_all(context ctx, const std::string& trade_id);
 
     /**
      * @brief Reads a single ascot as it stood at a specific
@@ -120,7 +119,8 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::ascot>
-    read_at_version(context ctx, const std::string& instrument_id, std::uint32_t version);
+    read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
+
 
     /**
      * @brief Reads latest ascots with pagination support.
@@ -140,7 +140,7 @@ public:
     /**
      * @brief Deletes a ascot by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& instrument_id);
+    void remove(context ctx, const std::string& trade_id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -163,12 +163,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& instrument_id, std::optional<std::uint32_t> version);
+    remove(context ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes ascots by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& instrument_ids);
+    void remove(context ctx, const std::vector<std::string>& trade_ids);
 
 
 private:

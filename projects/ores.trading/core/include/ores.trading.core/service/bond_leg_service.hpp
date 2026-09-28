@@ -117,7 +117,7 @@ public:
      * @param version The version to fetch.
      * @return The bond leg at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_leg> get_bond_leg_at_version(const std::string& instrument_id,
+    std::optional<domain::bond_leg> get_bond_leg_at_version(const std::string& trade_id,
                                                             const std::string& leg_role,
                                                             const std::string& leg_number,
                                                             std::uint32_t version);
@@ -127,14 +127,14 @@ public:
      *
      * @return The bond leg if found, std::nullopt otherwise.
      */
-    std::optional<domain::bond_leg> get_bond_leg(const std::string& instrument_id,
+    std::optional<domain::bond_leg> get_bond_leg(const std::string& trade_id,
                                                  const std::string& leg_role,
                                                  const std::string& leg_number);
 
     /**
      * @brief Retrieves a batch of bond legs by primary key.
      */
-    std::vector<domain::bond_leg> get_bond_legs(const std::vector<std::string>& instrument_ids,
+    std::vector<domain::bond_leg> get_bond_legs(const std::vector<std::string>& trade_ids,
                                                 const std::vector<std::string>& leg_roles,
                                                 const std::vector<std::string>& leg_numbers);
 
@@ -159,14 +159,14 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_bond_leg(const std::string& instrument_id,
+    void delete_bond_leg(const std::string& trade_id,
                          const std::string& leg_role,
                          const std::string& leg_number);
 
     /**
      * @brief Deletes bond legs by their primary keys.
      */
-    void delete_bond_legs(const std::vector<std::string>& instrument_ids,
+    void delete_bond_legs(const std::vector<std::string>& trade_ids,
                           const std::vector<std::string>& leg_roles,
                           const std::vector<std::string>& leg_numbers);
 
@@ -175,7 +175,7 @@ public:
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::bond_leg> get_bond_leg_history(const std::string& instrument_id,
+    std::vector<domain::bond_leg> get_bond_leg_history(const std::string& trade_id,
                                                        const std::string& leg_role,
                                                        const std::string& leg_number);
 

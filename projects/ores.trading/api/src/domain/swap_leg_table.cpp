@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<swap_leg>& v) {
           << "Fixed Rate" << "Index" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& sl : v) {
-        table << sl.identity.id << sl.identity.instrument_id << sl.identity.leg_number
+        table << sl.identity.id << sl.identity.trade_id << sl.identity.leg_number
               << sl.leg_type_code << sl.currency << sl.notional << sl.fixed_rate
               << sl.floating_index_code << sl.audit.recorded_at << fort::endr;
     }

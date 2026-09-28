@@ -371,9 +371,8 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
     }
 
     // The planner mints a fresh trade UUID per item so repeated imports do not
-    // collide. The soft back-reference instrument.trade_id must be re-wired to
-    // that UUID — otherwise the UI join from instrument → trade fails and the
-    // economics render blank.
+    // collide. The instrument is keyed by that UUID, so each mapped instrument
+    // must carry it or the economics cannot be reached from the trade.
     const boost::uuids::uuid nil{};
     int checked = 0;
     for (const auto& item : plan.trades) {
@@ -395,8 +394,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
-                            REQUIRE(instr.identity.trade_id.has_value());
-                            CHECK(*instr.identity.trade_id == item.trade.identity.id);
+                            CHECK(instr.identity.trade_id == item.trade.identity.id);
                             ++checked;
                         },
                         r.instrument);
@@ -404,8 +402,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
-                            REQUIRE(instr.identity.trade_id.has_value());
-                            CHECK(*instr.identity.trade_id == item.trade.identity.id);
+                            CHECK(instr.identity.trade_id == item.trade.identity.id);
                             ++checked;
                         },
                         r);
@@ -413,27 +410,22 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
-                            REQUIRE(instr.identity.trade_id.has_value());
-                            CHECK(*instr.identity.trade_id == item.trade.identity.id);
+                            CHECK(instr.identity.trade_id == item.trade.identity.id);
                             ++checked;
                         },
                         r.instrument);
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                    REQUIRE(r.instrument.identity.trade_id.has_value());
-                    CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
                     ++checked;
                 } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
-                    REQUIRE(r.instrument.identity.trade_id.has_value());
-                    CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
                     ++checked;
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
-                    REQUIRE(r.instrument.identity.trade_id.has_value());
-                    CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
                     ++checked;
                 } else {
                     // credit/commodity/scripted — identity at the top level.
-                    REQUIRE(r.identity.trade_id.has_value());
-                    CHECK(*r.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.identity.trade_id == item.trade.identity.id);
                     ++checked;
                 }
             },
@@ -441,7 +433,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
     }
 
     CHECK(checked > 0);
-    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id back-reference for " << checked
+    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id key for " << checked
                             << " trade(s)";
 }
 

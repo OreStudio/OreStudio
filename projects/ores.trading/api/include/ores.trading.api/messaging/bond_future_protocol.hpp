@@ -36,11 +36,11 @@
 namespace ores::trading::messaging {
 
 struct bond_future_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct bond_future_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string contract_name;
     ores::utility::decimal::decimal contract_notional;
     std::string long_short;

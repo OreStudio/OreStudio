@@ -34,7 +34,7 @@ render_instrument_option_fields(const domain::instrument_option& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Option Type", .value = v.option_type.value_or(std::string{})});
     fields.push_back({.name = "Payoff Type", .value = v.payoff_type.value_or(std::string{})});

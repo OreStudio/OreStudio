@@ -66,12 +66,12 @@ struct instrument_schedule_date final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose owner states the owning schedule.
+     * @brief The trade whose owner states the owning schedule.
      *
-     * The instrument row carries the trade, the workspace and the party. The date rows are
-     * family-owned and ride the instrument's scope, so no workspace column rides them.
+     * The trade row carries the workspace and the party. The date rows are family-owned and ride
+     * the trade's scope, so no workspace column rides them.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Which list of the instrument states the owning schedule: bond, trs_funding, repo,

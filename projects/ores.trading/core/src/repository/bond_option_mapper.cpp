@@ -40,7 +40,7 @@ domain::bond_option bond_option_mapper::map(const bond_option_entity& v) {
     domain::bond_option r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.option_type = v.option_type;
     r.option_strike = ores::utility::decimal::decimal::from_string(v.option_strike).value();
     r.redemption = v.redemption;
@@ -60,7 +60,7 @@ bond_option_entity bond_option_mapper::map(const domain::bond_option& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_option_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.option_type = v.option_type;

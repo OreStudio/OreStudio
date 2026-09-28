@@ -40,7 +40,7 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
     domain::bond_trs r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.return_type = v.return_type;
     r.funding_leg_type = v.funding_leg_type;
     r.funding_rate = v.funding_rate.value_or(0);
@@ -65,7 +65,7 @@ bond_trs_entity bond_trs_mapper::map(const domain::bond_trs& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_trs_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.return_type = v.return_type;

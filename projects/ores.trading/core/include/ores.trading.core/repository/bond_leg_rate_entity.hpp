@@ -42,7 +42,7 @@ struct bond_leg_rate_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_leg_rates_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     sqlgen::PrimaryKey<std::string> leg_role;
     sqlgen::PrimaryKey<std::string> leg_number;
     std::string tenant_id;

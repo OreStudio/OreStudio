@@ -51,7 +51,7 @@ std::string convert_to_table(const std::vector<fx_digital_option_instrument>& v)
           << fort::endr;
 
     for ([[maybe_unused]] const auto& fdoi : v) {
-        table << fdoi.identity.instrument_id << fdoi.identity.trade_type_code << fdoi.option_type
+        table << fdoi.identity.trade_id << fdoi.identity.trade_type_code << fdoi.option_type
               << fdoi.expiry_date << fdoi.payoff_currency << fdoi.payoff_amount
               << fdoi.foreign_currency << fdoi.domestic_currency << opt_str(fdoi.strike)
               << fdoi.audit.recorded_at << fort::endr;

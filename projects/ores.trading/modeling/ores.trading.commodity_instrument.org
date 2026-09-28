@@ -39,19 +39,6 @@ child table now.
 
 * Columns
 
-** instrument_id
-:PROPERTIES:
-:group:        identity
-:primary_key:  true
-:type:         uuid
-:cpp_type:     boost::uuids::uuid
-:nullable:     false
-:END:
-
-UUID uniquely identifying this commodity instrument.
-
-Surrogate key for the instrument record.
-
 ** trade_type_code
 :PROPERTIES:
 :group:    identity
@@ -85,15 +72,18 @@ Set from session variable app.current_party_id.
 ** trade_id
 :PROPERTIES:
 :group:       identity
+:primary_key: true
+:supplied_by:  user
 :type:        uuid
-:cpp_type:    std::optional<boost::uuids::uuid>
-:nullable:    true
-:supplied_by: unset
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
-Optional soft FK to the parent trade.
+The trade this instrument belongs to, and the instrument's own key.
 
-Null for a standalone instrument.
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
 
 ** commodity_code
 :PROPERTIES:
@@ -196,7 +186,6 @@ Call or Put; null for non-option products.
 
 Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
 
-
 ** strike_price
 :PROPERTIES:
 :type:     numeric(28, 10)
@@ -216,7 +205,6 @@ Option strike price.
 European or American exercise.
 
 Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
-
 
 ** average_type
 :PROPERTIES:
@@ -324,7 +312,6 @@ UpAndIn, UpAndOut, DownAndIn, DownAndOut.
 
 Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
 
-
 ** lower_barrier
 :PROPERTIES:
 :type:     numeric(28, 10)
@@ -387,6 +374,19 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 
 Optional free-text description.
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
 * SQL
 
 ** Flags
@@ -414,7 +414,6 @@ Optional free-text description.
 | name | columns | unique | current_only | where_extra |
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
-| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 | trade_type | tenant_id, trade_type_code | false | true | |
 * C++
 
@@ -466,7 +465,7 @@ repository profiles regenerate correctly.
 
 | column                    | header       |
 |--------------------------+--------------|
-| identity.instrument_id    | ID           |
+| identity.trade_id    | ID           |
 | identity.trade_type_code  | Type         |
 | commodity_code            | Commodity    |
 | currency                  | Ccy          |

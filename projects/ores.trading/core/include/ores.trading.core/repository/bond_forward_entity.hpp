@@ -42,7 +42,7 @@ struct bond_forward_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_forwards_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> long_in_forward;

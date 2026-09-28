@@ -59,7 +59,7 @@ std::vector<domain::bond_leg_amount> read_one(repository::bond_leg_amount_reposi
                                               const ores::database::context& ctx,
                                               const messaging::bond_leg_amount_key& key) {
     return repo.read_latest(ctx,
-                            boost::uuids::to_string(key.instrument_id),
+                            boost::uuids::to_string(key.trade_id),
                             key.leg_role,
                             std::to_string(key.leg_number),
                             key.amount_role,
@@ -74,7 +74,7 @@ std::vector<domain::bond_leg_amount> read_one(repository::bond_leg_amount_reposi
  */
 messaging::bond_leg_amount_key key_from(const domain::bond_leg_amount& v) {
     messaging::bond_leg_amount_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.leg_role = v.leg_role;
     key.leg_number = v.leg_number;
     key.amount_role = v.amount_role;
@@ -91,7 +91,7 @@ messaging::bond_leg_amount_key key_from(const domain::bond_leg_amount& v) {
  */
 domain::bond_leg_amount to_domain(const messaging::bond_leg_amount_write& write) {
     domain::bond_leg_amount v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.leg_role = write.leg_role;
     v.leg_number = write.leg_number;
     v.amount_role = write.amount_role;
@@ -217,7 +217,7 @@ messaging::delete_bond_leg_amount_response bond_leg_amount_service::delete_bond_
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          request.removal.key.leg_role,
                          std::to_string(request.removal.key.leg_number),
                          request.removal.key.amount_role,
@@ -264,10 +264,10 @@ bond_leg_amount_service::delete_many_bond_leg_amounts(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> leg_role_keys;
     leg_role_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
@@ -285,7 +285,7 @@ bond_leg_amount_service::delete_many_bond_leg_amounts(
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
     repo_.remove(ctx_,
-                 instrument_id_keys,
+                 trade_id_keys,
                  leg_role_keys,
                  leg_number_keys,
                  amount_role_keys,
@@ -311,7 +311,7 @@ bond_leg_amount_service::list_bond_leg_amount_versions(
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               request.key.leg_role,
                               std::to_string(request.key.leg_number),
                               request.key.amount_role,
@@ -333,7 +333,7 @@ bond_leg_amount_service::get_bond_leg_amount_version(
     messaging::get_bond_leg_amount_version_response response;
     auto found =
         repo_.read_at_version(ctx_,
-                              boost::uuids::to_string(request.key.bond_leg_amount.instrument_id),
+                              boost::uuids::to_string(request.key.bond_leg_amount.trade_id),
                               request.key.bond_leg_amount.leg_role,
                               std::to_string(request.key.bond_leg_amount.leg_number),
                               request.key.bond_leg_amount.amount_role,
@@ -410,63 +410,63 @@ std::uint32_t bond_leg_amount_service::count_bond_leg_amounts() {
 
 
 std::optional<domain::bond_leg_amount>
-bond_leg_amount_service::get_bond_leg_amount_at_version(const std::string& instrument_id,
+bond_leg_amount_service::get_bond_leg_amount_at_version(const std::string& trade_id,
                                                         const std::string& leg_role,
                                                         const std::string& leg_number,
                                                         const std::string& amount_role,
                                                         const std::string& sequence_number,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond leg amount at version. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number << " amount_role: " << amount_role
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond leg amount at version. " << "trade_id: " << trade_id
+                               << " leg_role: " << leg_role << " leg_number: " << leg_number
+                               << " amount_role: " << amount_role
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     return repo_.read_at_version(
-        ctx_, instrument_id, leg_role, leg_number, amount_role, sequence_number, version);
+        ctx_, trade_id, leg_role, leg_number, amount_role, sequence_number, version);
 }
 
 std::optional<domain::bond_leg_amount>
-bond_leg_amount_service::get_bond_leg_amount(const std::string& instrument_id,
+bond_leg_amount_service::get_bond_leg_amount(const std::string& trade_id,
                                              const std::string& leg_role,
                                              const std::string& leg_number,
                                              const std::string& amount_role,
                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond leg amount. " << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond leg amount. " << "trade_id: " << trade_id
                                << " leg_role: " << leg_role << " leg_number: " << leg_number
                                << " amount_role: " << amount_role
                                << " sequence_number: " << sequence_number;
     auto results =
-        repo_.read_latest(ctx_, instrument_id, leg_role, leg_number, amount_role, sequence_number);
+        repo_.read_latest(ctx_, trade_id, leg_role, leg_number, amount_role, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::bond_leg_amount>
-bond_leg_amount_service::get_bond_leg_amounts(const std::vector<std::string>& instrument_ids,
+bond_leg_amount_service::get_bond_leg_amounts(const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& leg_roles,
                                               const std::vector<std::string>& leg_numbers,
                                               const std::vector<std::string>& amount_roles,
                                               const std::vector<std::string>& sequence_numbers) {
     return repo_.read_latest(
-        ctx_, instrument_ids, leg_roles, leg_numbers, amount_roles, sequence_numbers);
+        ctx_, trade_ids, leg_roles, leg_numbers, amount_roles, sequence_numbers);
 }
 
 void bond_leg_amount_service::save_bond_leg_amount(const domain::bond_leg_amount& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Bond Leg Amount instrument_id cannot be empty.");
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Bond Leg Amount trade_id cannot be empty.");
     if (v.leg_role.empty())
         throw std::invalid_argument("Bond Leg Amount leg_role cannot be empty.");
     if (v.amount_role.empty())
         throw std::invalid_argument("Bond Leg Amount amount_role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond leg amount. " << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Saving bond leg amount. " << "trade_id: " << v.trade_id
                                << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number
                                << " amount_role: " << v.amount_role
                                << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond leg amount. " << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), info) << "Saved bond leg amount. " << "trade_id: " << v.trade_id
                               << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number
                               << " amount_role: " << v.amount_role
                               << " sequence_number: " << v.sequence_number;
@@ -475,8 +475,8 @@ void bond_leg_amount_service::save_bond_leg_amount(const domain::bond_leg_amount
 void bond_leg_amount_service::save_bond_leg_amounts(
     const std::vector<domain::bond_leg_amount>& bond_leg_amounts) {
     for (const auto& e : bond_leg_amounts) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Bond Leg Amount instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Bond Leg Amount trade_id cannot be empty.");
         if (e.leg_role.empty())
             throw std::invalid_argument("Bond Leg Amount leg_role cannot be empty.");
         if (e.amount_role.empty())
@@ -490,42 +490,42 @@ void bond_leg_amount_service::save_bond_leg_amounts(
     repo_.write(ctx_, ts);
 }
 
-void bond_leg_amount_service::delete_bond_leg_amount(const std::string& instrument_id,
+void bond_leg_amount_service::delete_bond_leg_amount(const std::string& trade_id,
                                                      const std::string& leg_role,
                                                      const std::string& leg_number,
                                                      const std::string& amount_role,
                                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg amount. " << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg amount. " << "trade_id: " << trade_id
                                << " leg_role: " << leg_role << " leg_number: " << leg_number
                                << " amount_role: " << amount_role
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, leg_role, leg_number, amount_role, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed bond leg amount. " << "instrument_id: " << instrument_id
+    repo_.remove(ctx_, trade_id, leg_role, leg_number, amount_role, sequence_number);
+    BOOST_LOG_SEV(lg(), info) << "Removed bond leg amount. " << "trade_id: " << trade_id
                               << " leg_role: " << leg_role << " leg_number: " << leg_number
                               << " amount_role: " << amount_role
                               << " sequence_number: " << sequence_number;
 }
 
 void bond_leg_amount_service::delete_bond_leg_amounts(
-    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& leg_roles,
     const std::vector<std::string>& leg_numbers,
     const std::vector<std::string>& amount_roles,
     const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(ctx_, instrument_ids, leg_roles, leg_numbers, amount_roles, sequence_numbers);
+    repo_.remove(ctx_, trade_ids, leg_roles, leg_numbers, amount_roles, sequence_numbers);
 }
 
 std::vector<domain::bond_leg_amount>
-bond_leg_amount_service::get_bond_leg_amount_history(const std::string& instrument_id,
+bond_leg_amount_service::get_bond_leg_amount_history(const std::string& trade_id,
                                                      const std::string& leg_role,
                                                      const std::string& leg_number,
                                                      const std::string& amount_role,
                                                      const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for bond leg amount. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
+                               << "trade_id: " << trade_id << " leg_role: " << leg_role
                                << " leg_number: " << leg_number << " amount_role: " << amount_role
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(ctx_, instrument_id, leg_role, leg_number, amount_role, sequence_number);
+    return repo_.read_all(ctx_, trade_id, leg_role, leg_number, amount_role, sequence_number);
 }
 
 }

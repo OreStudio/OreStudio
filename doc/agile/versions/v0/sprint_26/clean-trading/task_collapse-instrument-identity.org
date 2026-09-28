@@ -1,14 +1,14 @@
 :PROPERTIES:
 :ID: 8EB4DE8E-1A9B-40CB-9B61-2918F778557C
 :END:
-#+title: Task: Collapse the instrument identity into the trade and split the bond security
-#+description: PR 4. One trade identity, one instrument identity and one security identity, with a real foreign key where a soft link sits today, regenerated.
+#+title: Task: Collapse the instrument identity into the trade
+#+description: PR 4. One instrument identity, keyed by the trade, with the relationship declared where the schema can hold it. The bond security split moved to its own task by D17.
 #+type: task
 #+level: s1
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/collapse-instrument-identity
-#+pr:
+#+pr: 2348
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -52,43 +52,78 @@ collapse first, because the reverse reshapes the same tables twice.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR 3 merged, so every family has a model to reshape. |
-| Next         | Model the collapse, regenerate, then split the security. |
-| Last touched | 2026-09-26                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
 
 * Acceptance
 
 - =instrument_id= is gone from =instrument_identity_field_group= and
-  from every entity that inherits or references it.
+  from every entity that inherits or references it. *Met*: the field group
+  dropped the field, the 30 instrument families that inherit it and the 28
+  tables that pointed at an instrument all name =trade_id=, and
+  =grep -rn '\binstrument_id\b' projects/ores.trading/modeling= returns
+  nothing. A one-shot migration and some dated plans keep the old name on
+  their source side.
 - =trade.instrument_id= is gone, so the two directions of a one-to-one
-  relationship cannot disagree.
+  relationship cannot disagree. *Met*: the column, its index and its
+  classification field-group field are deleted.
 - Instrument tables are keyed by =trade_id=, not null, with a real
-  foreign key to the trade rather than a soft link.
+  foreign key to the trade rather than a soft link. *Met as far as the
+  schema can hold it, and recorded*: the key is the trade and every
+  instrument table declares a mandatory =trade_id= FK to
+  =ores_trading_trades_tbl=, which the generated insert trigger enforces
+  with an existence check (errcode 23503). A DDL =references= clause is
+  not declarable against a bi-temporal parent: the only unique index on
+  =(tenant_id, id)= is partial (=where valid_to = infinity=), and
+  PostgreSQL refuses a foreign key to a partial unique index -- proven
+  against the live database and recorded as decision D15, with the shape
+  that would allow one.
 - An instrument with no real trade is a trade of a reserved type, so
-  there is one shape rather than two.
-- The bond security split follows: the shared entities are keyed by the
-  ORE reference datum id, which is SecurityId for a bond and
-  ContractName for a bond future; =bond_future= keeps only what ORE
-  keeps on the trade; =bond_leg= and its rate, amount and amortization
-  children hang off the security; =bond_issue= gains the fields ORE has
-  and we lack, and loses =bond_notional=, which ORE holds on the trade;
-  and the fields duplicated against the leg tables are held once.
+  there is one shape rather than two. *Recorded as decision D16*: the
+  nullability is gone, so the standalone case has no back door; ORE's own
+  placeholder type is =Failed=, which its catalogue deliberately excludes
+  as a product, and no caller in the tree writes an instrument without a
+  trade after the collapse -- the import planner mints the trade id and
+  stamps the instrument with it, and the shell verb now takes it.
+- The bond security split follows. *Moved to
+  =task_split-bond-security-from-trade.org=* (decision D17): it reshapes
+  the bond family around a security identity, which is the largest part
+  of the diff, and this task stops after the collapse with the tree green
+  rather than leaving the component mid-reshape. The note under * Notes
+  authorises exactly this.
 - Defect 7 of the trade model investigation closes: the schema declares
   the relationships it enforces, instead of 866 check constraints and
-  no foreign keys.
+  no foreign keys. *Partly closed and recorded*: 30 instrument-to-trade
+  relationships are declared and trigger-enforced instead of being two
+  nullable soft links that nothing could make agree, and D15 records why
+  no more of them can be a DDL constraint. The 866 check constraints
+  stand.
 - Defect 9 closes or is recorded: five equity tables hold two products
-  each behind a =trade_type_code= discriminator.
+  each behind a =trade_type_code= discriminator. *Recorded, open*: the
+  collapse does not change it; the tables keep one row shape per family
+  and the discriminator still chooses the product. It stays with the
+  equity modelling work.
 - Defect 10 closes or is recorded: =product_type= stops being a database
-  enum on the trades table and becomes the modelled entity.
-- Defect 13 closes: one key name for an instrument's identity.
+  enum on the trades table and becomes the modelled entity. *Recorded,
+  open*: =product_type_t= is still a database enum on the trades table;
+  modelling it is a reshape of the product dimension rather than of the
+  identity, and it is carried with the remaining product work.
+- Defect 13 closes: one key name for an instrument's identity. *Met*:
+  the key is =trade_id= in the field group, in all 58 models, in the
+  generated C++ and SQL, in the hand-written callers and in the shell
+  verb.
 - A trade that states its bond inline rather than by reference still
   round-trips, so the ORE round trip stays at zero loss across the bond
-  products and the trade envelope.
+  products and the trade envelope. *Carried with the split task*: the
+  collapse does not touch the bond tables' fields, and the corpus round
+  trip is a suite case here.
 - =check_component_drift.py --component trading-cpp --dry-run= reports
-  nothing, and the four suites pass.
+  nothing, and the four suites pass. *Met for the drift run and the
+  build*; the suites are recorded in * Result.
 
 * Plan
 
@@ -112,6 +147,11 @@ SQL. No commit removes a column before its replacement exists. The
 component audit runs before the task closes.
 
 ** 3. Split the security, after the collapse
+
+*Moved out of this task by decision D17.* The split reshapes the bond
+family around a security identity and is the largest part of the diff,
+so it is =task_split-bond-security-from-trade.org= and PR 5. What
+follows is the plan it inherits.
 
 Apply the split plan from the abandoned task, which is written against
 ORE's schema rather than invented:
@@ -177,12 +217,143 @@ closure of defects 7, 9, 10 and 13.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2348][#2348]] | [trading] Key every instrument by the trade it belongs to |
 |    | Collapse the instrument identity into the trade and split the bond security |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The population loader is broken by the collapse | =scripts/load_trade_population.py= | Accepted | It loads the trades first and couples every trade-keyed table to them; the fact rows keep their alignment. Verified statically, not by a live load |
+| 2 | Twenty-one fact and child tables carry no trade check | 21 models | Accepted | They now declare the mandatory =trade_id= foreign key and the generated trigger checks it |
+| 3 | A key column that is also a foreign key gets no member prefix | =core.py=, eventing template | Accepted | A key entry keeps its name under =column=; the read now accepts either. Latent, and the sibling template branch ignored the prefix it had been given |
+| 4 | The redundant unique index is still generated | 29 instrument models | Accepted | The codemod's pattern never matched the row; the rows are gone and the duplicate index with them. The commit message that claimed it was wrong |
+| 5 | Stale prose and three unmanaged diagrams | 4 models, 3 =puml= | Accepted in part | The prose is fixed; the diagrams carry no sentinel and no gate reads them, so the shell-and-verification PR reissues them |
 
 * Result
+
+* Result
+
+The collapse is delivered and merged as PR #2348. The instrument's key is
+the trade it belongs to: =instrument_id= is gone from the identity field
+group and from all 58 models that carried it, every instrument table is
+keyed by a non-null =trade_id=, the 28 tables that named an instrument
+name that same trade, =trade.instrument_id= is deleted, and the
+relationship is declared in the model and checked by the generated insert
+trigger. The bond security split moved to its own task by D17, and the
+owner's ruling of 2026-09-28 moved defects 14 and 16 to the bond pilot and
+defect 15 to the split. What follows is the measured record.
+
+** What the collapse changed (measured 2026-09-28)
+
+| Change | Count |
+|--------+-------|
+| Instrument models whose identity group lost =instrument_id= | 30 |
+| Tables that named an instrument and now name the trade | 28 |
+| Leg identity groups that gained the trade member | 2 |
+| Instrument tables declaring the =trade_id= foreign key to the trades table | 30 |
+| Columns whose model now marks the caller as the supplier of the trade | 48 |
+
+The shape of the change in the models:
+
+- =instrument_identity_field_group= drops =instrument_id= and makes
+  =trade_id= the =boost::uuids::uuid= the group exists for; the two leg
+  identity groups gain the same member, which is what the domain struct
+  reads (the first build failed on =no member named 'trade_id' in
+  composite_leg_identity=).
+- Each of the 30 instrument families drops its =instrument_id= column and
+  makes =trade_id= the primary key, and declares
+  =* Foreign keys ** trade_id= against =ores_trading_trades_tbl= with
+  =:nullable: false=. The redundant =(tenant_id, trade_id)= index the old
+  soft link carried is gone: the generated primary-key index covers it.
+- The 28 fact and child tables rename their column; the four that already
+  declared a foreign key (composite_leg, swap_leg and the two leg groups)
+  retarget it at the trades table. =swap_leg= loses =:skip_check:=, which
+  existed only because its parent column had no single instrument table to
+  point at.
+- =trade= drops =instrument_id=, its index and its generator block;
+  =trade_classification= drops the field.
+
+The hand-written callers, in the order the sequence fix required:
+
+- =stamp_ids= now takes one id, the trade's: the instrument's key is the
+  trade, so there is no second id to stamp. The import planner mints the
+  trade id and stamps it; the ORE import handler writes the trade's and the
+  instrument's =trade_id= from it and no longer writes
+  =trade.classification.instrument_id=.
+- The export join in the trade handler reads the instrument by the trade's
+  own id instead of by a separate instrument pointer, and the child
+  collections (legs, call dates, constituents, underlyings) are keyed by
+  it.
+- The bond reader and the parent-scoped queries rename their parameter and
+  their column; the shell's commodity verb takes the trade as its first
+  argument instead of minting an instrument id, and the equity position
+  child verb takes it in place of the instrument id.
+
+** Two defects the gates caught, and the fixes
+
+1. The DB recreate refused the first schema: =too many parameters
+   specified for RAISE= compiling =ores_trading_swap_legs_insert_fn=. The
+   =swap_leg= foreign-key block was rewritten without
+   =:error_message:=, so the generated check raised an empty message and
+   the column became a parameter. Fixed in the model, regenerated, and the
+   recreate then exited 0. The whole set of foreign-key entries was swept
+   for the same omission; this was the only one.
+2. The first regenerated eventing tests did not compile. The seed plan
+   wrote a parent row's columns flat, which was wrong for the trade: it
+   groups its columns into identity, parties, classification, lifecycle
+   and audit. The codegen fix is its own commit and carries five new
+   cases; the collapse is the change that exposed it.
+
+** The suites, on the recreated database (measured 2026-09-28)
+
+| Check | Result |
+|-------+--------|
+| Whole-tree build | =cmake --build build/output/linux-clang-debug-make -j 4= exits 0 with zero =error:= |
+| Database | =compass db recreate -y -k= exits 0 from the tree, after the =swap_leg= fix |
+| Drift | =check_component_drift.py --component trading-cpp --dry-run= reports no drift |
+| Codegen | =pytest projects/ores.codegen/tests -q= is 983 passed before the rebase and 995 on the rebased tree |
+| Hygiene | =check_sql_hygiene.py projects/ores.sql= is 1676 files with 0 problems |
+| Recipes | =regenerate_shell_recipe_inventory.py --check= exits 0 |
+| ER diagram | =plantuml_er_generate.sh= regenerated =ores_schema.puml=, =.cmapx= and =.png= |
+| Suites | =ctest= is 89 of 89 on the recreated database, the fleet at 25 of 25 |
+
+** The final run, on the rebase (measured 2026-09-28)
+
+The branch was rebased onto =main= at =e2bda9e108= and every gate was run
+once more on the result, because the codegen gates see the merge with main
+rather than the branch alone.
+
+| Check | Result |
+|-------+--------|
+| Rebase | Five commits replay with no conflict |
+| Regen | =check_component_drift.py --component trading-cpp= regenerates in place and reports no drift |
+| Drift | =--all --dry-run= reports no drift; =--sweep --dry-run= is clean, with 192 files that would change elsewhere in the catalogue, which belong to those components' own clean-up |
+| Codegen | =pytest projects/ores.codegen/tests -q= is 995 passed |
+| Build | The whole tree builds with exit 0 and zero =error:= |
+| Database | =compass db recreate -y -k= exits 0 from the rebased tree |
+| Fleet | =compass services restart= exits 0; 25 of 25 units running |
+| Suite | =ctest= runs 89 tests and all 89 pass |
+| Hygiene | =check_sql_hygiene.py projects/ores.sql= is 1676 files with 0 problems |
+| Docs | =validate_docs.sh= reports 40 components passing |
+| Recipes | =regenerate_shell_recipe_inventory.py --check= exits 0 |
+| PR | Raised as described in the delivery plan |
+
+** The review round (2026-09-28)
+
+An independent review of the diff found five issues; the table above
+records the decisions. Four were defects and were fixed at their source,
+including two the suite could not see: the loader that introspects the
+schema and would have loaded no instrument row, and the duplicate unique
+index the collapse claimed to have removed. The prose is fixed and the
+three unmanaged component diagrams are recorded for the hygiene PR.
+
+Verified again on the fixed tree: the whole-tree build exits 0 with zero
+=error:=; =compass db recreate -y -k= exits 0; =ctest= is 89 of 89 on the
+recreated database; the codegen suite is 995 passed; component drift and
+the sweep are clean; =validate_docs.sh= reports 40 components.
+
+** PR 4 (raised 2026-09-28)
+
+The collapse only. Decision D17 moves the bond security split to
+=task_split-bond-security-from-trade.org=, which the acceptance records.

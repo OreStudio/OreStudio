@@ -40,9 +40,12 @@ struct commodity_instrument_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Changed commodity instrument UUIDs (as strings).
+     * @brief Changed commodity trade UUIDs (as strings).
+     *
+     * An instrument's key is the trade it belongs to, so the id of a
+     * changed instrument row is the id of its trade.
      */
-    std::vector<std::string> commodity_instrument_ids;
+    std::vector<std::string> commodity_trade_ids;
 
     /**
      * @brief The tenant that owns the changed entity.

@@ -51,7 +51,7 @@ std::string convert_to_table(const std::vector<fx_barrier_option_instrument>& v)
           << fort::endr;
 
     for ([[maybe_unused]] const auto& fboi : v) {
-        table << fboi.identity.instrument_id << fboi.identity.trade_type_code << fboi.option_type
+        table << fboi.identity.trade_id << fboi.identity.trade_type_code << fboi.option_type
               << fboi.expiry_date << fboi.barrier_type << fboi.lower_barrier
               << opt_str(fboi.upper_barrier) << fboi.bought_currency << fboi.bought_amount
               << fboi.audit.recorded_at << fort::endr;

@@ -42,7 +42,7 @@ struct bond_future_delivery_basket_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_future_delivery_baskets_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;

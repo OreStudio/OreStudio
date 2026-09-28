@@ -123,7 +123,7 @@ public:
      * @return The instrument schedule date at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_schedule_date>
-    get_instrument_schedule_date_at_version(const std::string& instrument_id,
+    get_instrument_schedule_date_at_version(const std::string& trade_id,
                                             const std::string& owner_role,
                                             const std::string& owner_number,
                                             const std::string& schedule_role,
@@ -137,7 +137,7 @@ public:
      * @return The instrument schedule date if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_schedule_date>
-    get_instrument_schedule_date(const std::string& instrument_id,
+    get_instrument_schedule_date(const std::string& trade_id,
                                  const std::string& owner_role,
                                  const std::string& owner_number,
                                  const std::string& schedule_role,
@@ -148,7 +148,7 @@ public:
      * @brief Retrieves a batch of instrument schedule dates by primary key.
      */
     std::vector<domain::instrument_schedule_date>
-    get_instrument_schedule_dates(const std::vector<std::string>& instrument_ids,
+    get_instrument_schedule_dates(const std::vector<std::string>& trade_ids,
                                   const std::vector<std::string>& owner_roles,
                                   const std::vector<std::string>& owner_numbers,
                                   const std::vector<std::string>& schedule_roles,
@@ -178,7 +178,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_instrument_schedule_date(const std::string& instrument_id,
+    void delete_instrument_schedule_date(const std::string& trade_id,
                                          const std::string& owner_role,
                                          const std::string& owner_number,
                                          const std::string& schedule_role,
@@ -188,7 +188,7 @@ public:
     /**
      * @brief Deletes instrument schedule dates by their primary keys.
      */
-    void delete_instrument_schedule_dates(const std::vector<std::string>& instrument_ids,
+    void delete_instrument_schedule_dates(const std::vector<std::string>& trade_ids,
                                           const std::vector<std::string>& owner_roles,
                                           const std::vector<std::string>& owner_numbers,
                                           const std::vector<std::string>& schedule_roles,
@@ -201,7 +201,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::instrument_schedule_date>
-    get_instrument_schedule_date_history(const std::string& instrument_id,
+    get_instrument_schedule_date_history(const std::string& trade_id,
                                          const std::string& owner_role,
                                          const std::string& owner_number,
                                          const std::string& schedule_role,

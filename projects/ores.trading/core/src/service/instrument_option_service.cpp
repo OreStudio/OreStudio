@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::instrument_option> read_one(repository::instrument_option_repository& repo,
                                                 const ores::database::context& ctx,
                                                 const messaging::instrument_option_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::instrument_option> read_one(repository::instrument_option_re
  */
 messaging::instrument_option_key key_from(const domain::instrument_option& v) {
     messaging::instrument_option_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     return key;
 }
 
@@ -82,7 +82,7 @@ messaging::instrument_option_key key_from(const domain::instrument_option& v) {
  */
 domain::instrument_option to_domain(const messaging::instrument_option_write& write) {
     domain::instrument_option v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.long_short = write.long_short;
     v.option_type = write.option_type;
     v.payoff_type = write.payoff_type;
@@ -235,8 +235,7 @@ messaging::delete_instrument_option_response instrument_option_service::delete_i
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
         case repository::instrument_option_repository::remove_status::removed:
             break;
         case repository::instrument_option_repository::remove_status::missing:
@@ -278,11 +277,11 @@ instrument_option_service::delete_many_instrument_options(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    repo_.remove(ctx_, trade_id_keys);
     return response;
 }
 
@@ -303,7 +302,7 @@ instrument_option_service::list_instrument_option_versions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -319,10 +318,8 @@ messaging::get_instrument_option_version_response
 instrument_option_service::get_instrument_option_version(
     const messaging::get_instrument_option_version_request& request) {
     messaging::get_instrument_option_version_response response;
-    auto found =
-        repo_.read_at_version(ctx_,
-                              boost::uuids::to_string(request.key.instrument_option.instrument_id),
-                              request.key.version);
+    auto found = repo_.read_at_version(
+        ctx_, boost::uuids::to_string(request.key.instrument_option.trade_id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -394,45 +391,42 @@ std::uint32_t instrument_option_service::count_instrument_options() {
 
 
 std::optional<domain::instrument_option>
-instrument_option_service::get_instrument_option_at_version(const boost::uuids::uuid& instrument_id,
+instrument_option_service::get_instrument_option_at_version(const boost::uuids::uuid& trade_id,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument option at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+                               << "trade_id: " << trade_id << " version: " << version;
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::instrument_option>
-instrument_option_service::get_instrument_option(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument option. "
-                               << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+instrument_option_service::get_instrument_option(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting instrument option. " << "trade_id: " << trade_id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::instrument_option>
-instrument_option_service::get_instrument_options(const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+instrument_option_service::get_instrument_options(const std::vector<std::string>& trade_ids) {
+    return repo_.read_latest(ctx_, trade_ids);
 }
 
 void instrument_option_service::save_instrument_option(const domain::instrument_option& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Instrument Option instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument option. "
-                               << "instrument_id: " << v.instrument_id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Instrument Option trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving instrument option. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument option. "
-                              << "instrument_id: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved instrument option. " << "trade_id: " << v.trade_id;
 }
 
 void instrument_option_service::save_instrument_options(
     const std::vector<domain::instrument_option>& instrument_options) {
     for (const auto& e : instrument_options) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Instrument Option instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Instrument Option trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_options.size() << " instrument options";
     auto ts = instrument_options;
@@ -442,24 +436,22 @@ void instrument_option_service::save_instrument_options(
     repo_.write(ctx_, ts);
 }
 
-void instrument_option_service::delete_instrument_option(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument option. "
-                               << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument option. "
-                              << "instrument_id: " << instrument_id;
+void instrument_option_service::delete_instrument_option(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument option. " << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    BOOST_LOG_SEV(lg(), info) << "Removed instrument option. " << "trade_id: " << trade_id;
 }
 
 void instrument_option_service::delete_instrument_options(
-    const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+    const std::vector<std::string>& trade_ids) {
+    repo_.remove(ctx_, trade_ids);
 }
 
 std::vector<domain::instrument_option>
-instrument_option_service::get_instrument_option_history(const std::string& instrument_id) {
+instrument_option_service::get_instrument_option_history(const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument option. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+                               << "trade_id: " << trade_id;
+    return repo_.read_all(ctx_, trade_id);
 }
 
 }

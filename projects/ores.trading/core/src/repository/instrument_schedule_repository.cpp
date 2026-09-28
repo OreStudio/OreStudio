@@ -48,7 +48,7 @@ std::string instrument_schedule_repository::sql() {
 ores::utility::domain::precondition
 instrument_schedule_repository::replace_claim(context ctx, const domain::instrument_schedule& v) {
     const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.instrument_id),
+                                     boost::uuids::to_string(v.trade_id),
                                      v.owner_role,
                                      std::to_string(v.owner_number),
                                      v.schedule_role,
@@ -80,7 +80,7 @@ instrument_schedule_repository::apply_claim(context ctx,
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
             const auto current = read_latest(ctx,
-                                             boost::uuids::to_string(v.instrument_id),
+                                             boost::uuids::to_string(v.trade_id),
                                              v.owner_role,
                                              std::to_string(v.owner_number),
                                              v.schedule_role,
@@ -108,8 +108,7 @@ void instrument_schedule_repository::write(context ctx,
 void instrument_schedule_repository::write(context ctx,
                                            const domain::instrument_schedule& v,
                                            const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument schedule. "
-                               << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Writing instrument schedule. " << "trade_id: " << v.trade_id
                                << " owner_role: " << v.owner_role
                                << " owner_number: " << v.owner_number
                                << " schedule_role: " << v.schedule_role
@@ -137,13 +136,11 @@ void instrument_schedule_repository::write(
 std::vector<domain::instrument_schedule> instrument_schedule_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_schedule_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c,
-                                "owner_role"_c,
-                                "owner_number"_c,
-                                "schedule_role"_c,
-                                "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_schedule_entity>> |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        order_by(
+            "trade_id"_c, "owner_role"_c, "owner_number"_c, "schedule_role"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
         ctx,
@@ -155,51 +152,50 @@ std::vector<domain::instrument_schedule> instrument_schedule_repository::read_la
 
 std::vector<domain::instrument_schedule>
 instrument_schedule_repository::read_latest(context ctx,
-                                            const std::string& instrument_id,
+                                            const std::string& trade_id,
                                             const std::string& owner_role,
                                             const std::string& owner_number,
                                             const std::string& schedule_role,
                                             const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument schedule. "
-                               << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument schedule. " << "trade_id: " << trade_id
                                << " owner_role: " << owner_role << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_schedule_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "owner_role"_c == owner_role && "owner_number"_c == owner_number &&
-                             "schedule_role"_c == schedule_role &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<instrument_schedule_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "owner_role"_c == owner_role &&
+              "owner_number"_c == owner_number && "schedule_role"_c == schedule_role &&
+              "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
 
     return execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
         ctx,
         query,
         [](const auto& entities) { return instrument_schedule_mapper::map(entities); },
         lg(),
-        "Reading latest instrument schedule by instrument_id.");
+        "Reading latest instrument schedule by trade_id.");
 }
 
 
 std::vector<domain::instrument_schedule>
 instrument_schedule_repository::read_all(context ctx,
-                                         const std::string& instrument_id,
+                                         const std::string& trade_id,
                                          const std::string& owner_role,
                                          const std::string& owner_number,
                                          const std::string& schedule_role,
                                          const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all instrument schedule versions. "
-                               << "instrument_id: " << instrument_id
-                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << "trade_id: " << trade_id << " owner_role: " << owner_role
+                               << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<instrument_schedule_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-              "owner_role"_c == owner_role && "owner_number"_c == owner_number &&
-              "schedule_role"_c == schedule_role && "sequence_number"_c == sequence_number) |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "owner_role"_c == owner_role &&
+              "owner_number"_c == owner_number && "schedule_role"_c == schedule_role &&
+              "sequence_number"_c == sequence_number) |
         order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
@@ -207,30 +203,30 @@ instrument_schedule_repository::read_all(context ctx,
         query,
         [](const auto& entities) { return instrument_schedule_mapper::map(entities); },
         lg(),
-        "Reading all instrument schedule versions by instrument_id.");
+        "Reading all instrument schedule versions by trade_id.");
 }
 
 std::optional<domain::instrument_schedule>
 instrument_schedule_repository::read_at_version(context ctx,
-                                                const std::string& instrument_id,
+                                                const std::string& trade_id,
                                                 const std::string& owner_role,
                                                 const std::string& owner_number,
                                                 const std::string& schedule_role,
                                                 const std::string& sequence_number,
                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading instrument schedule at version. "
-                               << "instrument_id: " << instrument_id
-                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << "trade_id: " << trade_id << " owner_role: " << owner_role
+                               << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_schedule_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "owner_role"_c == owner_role && "owner_number"_c == owner_number &&
-                             "schedule_role"_c == schedule_role &&
-                             "sequence_number"_c == sequence_number && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        sqlgen::read<std::vector<instrument_schedule_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "owner_role"_c == owner_role &&
+              "owner_number"_c == owner_number && "schedule_role"_c == schedule_role &&
+              "sequence_number"_c == sequence_number && "version"_c == version) |
+        sqlgen::limit(1);
 
     const auto entities =
         execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
@@ -245,21 +241,21 @@ instrument_schedule_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 instrument_schedule_repository::remove_status
 instrument_schedule_repository::remove(context ctx,
-                                       const std::string& instrument_id,
+                                       const std::string& trade_id,
                                        const std::string& owner_role,
                                        const std::string& owner_number,
                                        const std::string& schedule_role,
                                        const std::string& sequence_number,
                                        std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument schedule. "
-                               << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument schedule. " << "trade_id: " << trade_id
                                << " owner_role: " << owner_role << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number;
     const auto current =
-        read_latest(ctx, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
+        read_latest(ctx, trade_id, owner_role, owner_number, schedule_role, sequence_number);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -274,34 +270,29 @@ instrument_schedule_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<instrument_schedule_entity> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-              "owner_role"_c == owner_role && "owner_number"_c == owner_number &&
-              "schedule_role"_c == schedule_role && "sequence_number"_c == sequence_number &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "owner_role"_c == owner_role &&
+              "owner_number"_c == owner_number && "schedule_role"_c == schedule_role &&
+              "sequence_number"_c == sequence_number && "valid_to"_c == max.value() &&
+              "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing instrument schedule from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id, owner_role, owner_number, schedule_role, sequence_number)
+    if (!read_latest(ctx, trade_id, owner_role, owner_number, schedule_role, sequence_number)
              .empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
 void instrument_schedule_repository::remove(context ctx,
-                                            const std::string& instrument_id,
+                                            const std::string& trade_id,
                                             const std::string& owner_role,
                                             const std::string& owner_number,
                                             const std::string& schedule_role,
                                             const std::string& sequence_number) {
-    static_cast<void>(remove(ctx,
-                             instrument_id,
-                             owner_role,
-                             owner_number,
-                             schedule_role,
-                             sequence_number,
-                             std::nullopt));
+    static_cast<void>(remove(
+        ctx, trade_id, owner_role, owner_number, schedule_role, sequence_number, std::nullopt));
 }
 
 std::vector<domain::instrument_schedule> instrument_schedule_repository::read_latest(
@@ -312,7 +303,7 @@ std::vector<domain::instrument_schedule> instrument_schedule_repository::read_la
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_schedule_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c,
+                       order_by("trade_id"_c,
                                 "owner_role"_c,
                                 "owner_number"_c,
                                 "schedule_role"_c,
@@ -350,19 +341,19 @@ std::uint32_t instrument_schedule_repository::get_total_instrument_schedule_coun
 
 std::vector<domain::instrument_schedule>
 instrument_schedule_repository::read_latest(context ctx,
-                                            const std::vector<std::string>& instrument_ids,
+                                            const std::vector<std::string>& trade_ids,
                                             const std::vector<std::string>& owner_roles,
                                             const std::vector<std::string>& owner_numbers,
                                             const std::vector<std::string>& schedule_roles,
                                             const std::vector<std::string>& sequence_numbers) {
-    if (instrument_ids.empty() || owner_roles.empty() || owner_numbers.empty() ||
+    if (trade_ids.empty() || owner_roles.empty() || owner_numbers.empty() ||
         schedule_roles.empty() || sequence_numbers.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<instrument_schedule_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
               "owner_role"_c.in(owner_roles) && "owner_number"_c.in(owner_numbers) &&
               "schedule_role"_c.in(schedule_roles) && "sequence_number"_c.in(sequence_numbers) &&
               "valid_to"_c == max.value());
@@ -375,23 +366,18 @@ instrument_schedule_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
     // exact requested key-tuples here.
-    if (owner_roles.size() != instrument_ids.size() ||
-        owner_numbers.size() != instrument_ids.size() ||
-        schedule_roles.size() != instrument_ids.size() ||
-        sequence_numbers.size() != instrument_ids.size())
+    if (owner_roles.size() != trade_ids.size() || owner_numbers.size() != trade_ids.size() ||
+        schedule_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
         throw std::invalid_argument("instrument_schedule_repository::read_latest: key column "
                                     "vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string, std::string, std::string>> requested;
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        requested.emplace(instrument_ids[i],
-                          owner_roles[i],
-                          owner_numbers[i],
-                          schedule_roles[i],
-                          sequence_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(
+            trade_ids[i], owner_roles[i], owner_numbers[i], schedule_roles[i], sequence_numbers[i]);
     std::vector<domain::instrument_schedule> filtered;
     filtered.reserve(result.size());
     for (auto& item : result) {
-        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.instrument_id),
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.trade_id),
                                                item.owner_role,
                                                std::to_string(item.owner_number),
                                                item.schedule_role,
@@ -402,7 +388,7 @@ instrument_schedule_repository::read_latest(context ctx,
 }
 
 void instrument_schedule_repository::remove(context ctx,
-                                            const std::vector<std::string>& instrument_ids,
+                                            const std::vector<std::string>& trade_ids,
                                             const std::vector<std::string>& owner_roles,
                                             const std::vector<std::string>& owner_numbers,
                                             const std::vector<std::string>& schedule_roles,
@@ -410,15 +396,13 @@ void instrument_schedule_repository::remove(context ctx,
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
-    if (owner_roles.size() != instrument_ids.size() ||
-        owner_numbers.size() != instrument_ids.size() ||
-        schedule_roles.size() != instrument_ids.size() ||
-        sequence_numbers.size() != instrument_ids.size())
+    if (owner_roles.size() != trade_ids.size() || owner_numbers.size() != trade_ids.size() ||
+        schedule_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
         throw std::invalid_argument(
             "instrument_schedule_repository::remove: key column vectors must be the same length");
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
         remove(ctx,
-               instrument_ids[i],
+               trade_ids[i],
                owner_roles[i],
                owner_numbers[i],
                schedule_roles[i],

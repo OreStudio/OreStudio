@@ -36,8 +36,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One entry of an option block's premium list, keyed to the instrument and the entry's
- * ordinal.
+ * @brief One entry of an option block's premium list, keyed to the trade and the entry's ordinal.
  *
  * One row per premium an option block's list states, keyed to the
  * instrument and the entry's ordinal.
@@ -65,9 +64,9 @@ struct instrument_option_premium final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose option block stated this premium.
+     * @brief The trade whose option block stated this premium.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Ordinal of this premium within the option block's list.

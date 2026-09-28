@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<inflation_swap_instrument>& v) {
           << "Base CPI" << "Lag Convention" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& is : v) {
-        table << is.identity.instrument_id << is.identity.trade_type_code << is.start_date
+        table << is.identity.trade_id << is.identity.trade_type_code << is.start_date
               << is.maturity_date << is.inflation_index_code << opt_str(is.base_cpi)
               << is.lag_convention << is.audit.recorded_at << fort::endr;
     }

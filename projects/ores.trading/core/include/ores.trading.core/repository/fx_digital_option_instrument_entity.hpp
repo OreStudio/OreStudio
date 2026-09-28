@@ -42,13 +42,12 @@ struct fx_digital_option_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_fx_digital_option_instruments_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
     std::string trade_type_code;
     std::string party_id;
-    std::optional<std::string> trade_id;
     std::string foreign_currency;
     std::string domestic_currency;
     std::string payoff_currency;

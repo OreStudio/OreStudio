@@ -46,9 +46,9 @@ const std::string tags("[messaging][codec]");
  * other member is left default: the point of the case is which alternative
  * survives the codec, not how rich the instrument is.
  */
-trade_export_item make_bond_item(boost::uuids::uuid instrument_id, boost::uuids::uuid issue_id) {
+trade_export_item make_bond_item(boost::uuids::uuid trade_id, boost::uuids::uuid issue_id) {
     bond_instrument_data bond;
-    bond.instrument.identity.instrument_id = instrument_id;
+    bond.instrument.identity.trade_id = trade_id;
     bond.instrument.issue_id = issue_id;
     bond.trs_price_type = "Dirty";
 
@@ -62,12 +62,12 @@ trade_export_item make_bond_item(boost::uuids::uuid instrument_id, boost::uuids:
 
 void check_bond_survives_the_codec(wire_format format) {
     const auto codec = wire_codec{format};
-    const auto instrument_id = boost::uuids::random_generator()();
+    const auto trade_id = boost::uuids::random_generator()();
     const auto issue_id = boost::uuids::random_generator()();
 
     export_portfolio_response sent;
     sent.success = true;
-    sent.items.push_back(make_bond_item(instrument_id, issue_id));
+    sent.items.push_back(make_bond_item(trade_id, issue_id));
 
     const auto bytes = codec.encode(sent);
     const auto decoded = codec.decode<export_portfolio_response>(bytes);
@@ -81,7 +81,7 @@ void check_bond_survives_the_codec(wire_format format) {
     const auto instrument = ores::trading::domain::decode_instrument(decoded->items[0].instrument);
     REQUIRE(std::holds_alternative<bond_instrument_data>(instrument));
     const auto& bond = std::get<bond_instrument_data>(instrument);
-    CHECK(bond.instrument.identity.instrument_id == instrument_id);
+    CHECK(bond.instrument.identity.trade_id == trade_id);
     CHECK(bond.instrument.issue_id == issue_id);
     CHECK(bond.trs_price_type == "Dirty");
 }

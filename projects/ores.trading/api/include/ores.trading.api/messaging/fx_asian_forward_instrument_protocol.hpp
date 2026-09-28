@@ -36,13 +36,12 @@
 namespace ores::trading::messaging {
 
 struct fx_asian_forward_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct fx_asian_forward_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     std::string fx_index;
     std::string reference_currency;
     std::optional<ores::utility::decimal::decimal> reference_notional;

@@ -35,9 +35,9 @@
 namespace ores::trading::domain {
 
 /**
- * @brief The forward block a document states on a forward bond, keyed to the instrument.
+ * @brief The forward block a document states on a forward bond, keyed to the trade it belongs to.
  *
- * One row per forward bond instrument, keyed to the instrument.
+ * One row per forward bond instrument, keyed to the trade.
  *
  * A forward bond states a bond block, a settlement block, an optional
  * premium block and a long-in-forward flag. The bond block is the issue
@@ -61,9 +61,9 @@ struct bond_forward final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the forward bond instrument this row extends.
+     * @brief The trade the forward bond fact row belongs to.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Flag saying the holder is long the forward.

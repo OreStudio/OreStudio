@@ -34,13 +34,9 @@ render_equity_position_instrument_fields(const domain::equity_position_instrumen
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back(
-        {.name = "Instrument ID", .value = boost::uuids::to_string(v.identity.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Trade ID",
-                      .value = v.identity.trade_id ? boost::uuids::to_string(*v.identity.trade_id) :
-                                                     std::string{}});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Quantity", .value = std::to_string(v.quantity)});

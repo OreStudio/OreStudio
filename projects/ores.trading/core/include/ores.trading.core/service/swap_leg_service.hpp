@@ -87,8 +87,8 @@ public:
     delete_swap_leg(const messaging::delete_swap_leg_request& request);
     messaging::delete_many_swap_legs_response
     delete_many_swap_legs(const messaging::delete_many_swap_legs_request& request);
-    messaging::list_by_instrument_id_swap_legs_response list_by_instrument_id_swap_legs(
-        const messaging::list_by_instrument_id_swap_legs_request& request);
+    messaging::list_by_trade_id_swap_legs_response
+    list_by_trade_id_swap_legs(const messaging::list_by_trade_id_swap_legs_request& request);
     messaging::list_swap_leg_versions_response
     list_swap_leg_versions(const messaging::list_swap_leg_versions_request& request);
     messaging::get_swap_leg_version_response
@@ -113,24 +113,24 @@ public:
 
 
     /**
-     * @brief Lists swap legs filtered by instrument_id, with pagination.
+     * @brief Lists swap legs filtered by trade_id, with pagination.
      *
-     * @param instrument_id The instrument_id to filter by.
+     * @param trade_id The trade_id to filter by.
      * @param offset Number of records to skip.
      * @param limit Maximum number of records to return.
      * @return Vector of matching swap legs for the requested page.
      */
-    std::vector<domain::swap_leg> list_swap_legs_by_instrument_id(const std::string& instrument_id,
-                                                                  std::uint32_t offset,
-                                                                  std::uint32_t limit);
+    std::vector<domain::swap_leg> list_swap_legs_by_trade_id(const std::string& trade_id,
+                                                             std::uint32_t offset,
+                                                             std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active swap legs filtered by instrument_id.
+     * @brief Gets the total count of active swap legs filtered by trade_id.
      *
-     * @param instrument_id The instrument_id to filter by.
+     * @param trade_id The trade_id to filter by.
      * @return Total number of matching swap legs.
      */
-    std::uint32_t count_swap_legs_by_instrument_id(const std::string& instrument_id);
+    std::uint32_t count_swap_legs_by_trade_id(const std::string& trade_id);
 
 
     /**

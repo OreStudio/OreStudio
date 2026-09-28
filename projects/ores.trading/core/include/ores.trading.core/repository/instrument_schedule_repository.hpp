@@ -102,14 +102,14 @@ public:
     /**@{*/
     std::vector<domain::instrument_schedule> read_latest(context ctx);
     std::vector<domain::instrument_schedule> read_latest(context ctx,
-                                                         const std::string& instrument_id,
+                                                         const std::string& trade_id,
                                                          const std::string& owner_role,
                                                          const std::string& owner_number,
                                                          const std::string& schedule_role,
                                                          const std::string& sequence_number);
     std::vector<domain::instrument_schedule>
     read_latest(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& owner_roles,
                 const std::vector<std::string>& owner_numbers,
                 const std::vector<std::string>& schedule_roles,
@@ -121,7 +121,7 @@ public:
      * @brief Reads all instrument schedules, possibly filtered by primary key.
      */
     std::vector<domain::instrument_schedule> read_all(context ctx,
-                                                      const std::string& instrument_id,
+                                                      const std::string& trade_id,
                                                       const std::string& owner_role,
                                                       const std::string& owner_number,
                                                       const std::string& schedule_role,
@@ -137,12 +137,13 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::instrument_schedule> read_at_version(context ctx,
-                                                               const std::string& instrument_id,
+                                                               const std::string& trade_id,
                                                                const std::string& owner_role,
                                                                const std::string& owner_number,
                                                                const std::string& schedule_role,
                                                                const std::string& sequence_number,
                                                                std::uint32_t version);
+
 
     /**
      * @brief Reads latest instrument schedules with pagination support.
@@ -164,7 +165,7 @@ public:
      * @brief Deletes a instrument schedule by closing its temporal validity.
      */
     void remove(context ctx,
-                const std::string& instrument_id,
+                const std::string& trade_id,
                 const std::string& owner_role,
                 const std::string& owner_number,
                 const std::string& schedule_role,
@@ -191,7 +192,7 @@ public:
      * no version asked for.
      */
     remove_status remove(context ctx,
-                         const std::string& instrument_id,
+                         const std::string& trade_id,
                          const std::string& owner_role,
                          const std::string& owner_number,
                          const std::string& schedule_role,
@@ -202,7 +203,7 @@ public:
      * @brief Deletes instrument schedules by closing their temporal validity.
      */
     void remove(context ctx,
-                const std::vector<std::string>& instrument_ids,
+                const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& owner_roles,
                 const std::vector<std::string>& owner_numbers,
                 const std::vector<std::string>& schedule_roles,

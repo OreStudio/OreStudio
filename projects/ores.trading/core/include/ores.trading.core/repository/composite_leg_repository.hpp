@@ -124,20 +124,22 @@ public:
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Reads latest composite legs filtered by instrument_id, with pagination.
+     * @brief Reads latest composite legs filtered by trade_id, with pagination.
      * @param ctx Repository context with database connection
-     * @param instrument_id The instrument_id to filter by
+     * @param trade_id The trade_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      */
-    std::vector<domain::composite_leg> read_latest_by_instrument_id(
-        context ctx, const std::string& instrument_id, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::composite_leg> read_latest_by_trade_id(context ctx,
+                                                               const std::string& trade_id,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active composite legs filtered by instrument_id.
+     * @brief Gets the total count of active composite legs filtered by trade_id.
      */
-    std::uint32_t get_total_composite_leg_count_by_instrument_id(context ctx,
-                                                                 const std::string& instrument_id);
+    std::uint32_t get_total_composite_leg_count_by_trade_id(context ctx,
+                                                            const std::string& trade_id);
 
 
     /**

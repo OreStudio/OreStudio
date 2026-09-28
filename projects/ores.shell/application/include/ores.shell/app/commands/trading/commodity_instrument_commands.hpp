@@ -73,6 +73,7 @@ public:
      */
     static void process_add_commodity_instrument(std::ostream& out,
                                                  ores::nats::service::nats_client& session,
+                                                 std::string trade_id,
                                                  std::string trade_type_code,
                                                  std::string commodity_code,
                                                  std::string currency,
@@ -109,7 +110,7 @@ public:
      */
     static void process_delete_commodity_instrument(std::ostream& out,
                                                     ores::nats::service::nats_client& session,
-                                                    std::string instrument_id);
+                                                    std::string trade_id);
 
     /**
      * @brief Process an commodity instrument history request.
@@ -120,7 +121,7 @@ public:
      */
     static void process_get_commodity_instrument_history(std::ostream& out,
                                                          ores::nats::service::nats_client& session,
-                                                         std::string instrument_id);
+                                                         std::string trade_id);
 };
 
 }

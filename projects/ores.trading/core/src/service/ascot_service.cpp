@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::ascot> read_one(repository::ascot_repository& repo,
                                     const ores::database::context& ctx,
                                     const messaging::ascot_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::ascot> read_one(repository::ascot_repository& repo,
  */
 messaging::ascot_key key_from(const domain::ascot& v) {
     messaging::ascot_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     return key;
 }
 
@@ -82,7 +82,7 @@ messaging::ascot_key key_from(const domain::ascot& v) {
  */
 domain::ascot to_domain(const messaging::ascot_write& write) {
     domain::ascot v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.ascot_option_type = write.ascot_option_type;
     return v;
 }
@@ -202,8 +202,7 @@ ascot_service::delete_ascot(const messaging::delete_ascot_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
+    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
         case repository::ascot_repository::remove_status::removed:
             break;
         case repository::ascot_repository::remove_status::missing:
@@ -244,11 +243,11 @@ ascot_service::delete_many_ascots(const messaging::delete_many_ascots_request& r
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    repo_.remove(ctx_, trade_id_keys);
     return response;
 }
 
@@ -268,7 +267,7 @@ ascot_service::list_ascot_versions(const messaging::list_ascot_versions_request&
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -284,7 +283,7 @@ messaging::get_ascot_version_response
 ascot_service::get_ascot_version(const messaging::get_ascot_version_request& request) {
     messaging::get_ascot_version_response response;
     auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.ascot.instrument_id), request.key.version);
+        ctx_, boost::uuids::to_string(request.key.ascot.trade_id), request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -354,41 +353,39 @@ std::uint32_t ascot_service::count_ascots() {
 }
 
 
-std::optional<domain::ascot>
-ascot_service::get_ascot_at_version(const boost::uuids::uuid& instrument_id,
-                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ascot at version. " << "instrument_id: " << instrument_id
+std::optional<domain::ascot> ascot_service::get_ascot_at_version(const boost::uuids::uuid& trade_id,
+                                                                 std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting ascot at version. " << "trade_id: " << trade_id
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
-std::optional<domain::ascot> ascot_service::get_ascot(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ascot. " << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+std::optional<domain::ascot> ascot_service::get_ascot(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting ascot. " << "trade_id: " << trade_id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-std::vector<domain::ascot>
-ascot_service::get_ascots(const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+std::vector<domain::ascot> ascot_service::get_ascots(const std::vector<std::string>& trade_ids) {
+    return repo_.read_latest(ctx_, trade_ids);
 }
 
 void ascot_service::save_ascot(const domain::ascot& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Ascot instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ascot. " << "instrument_id: " << v.instrument_id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Ascot trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving ascot. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ascot. " << "instrument_id: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved ascot. " << "trade_id: " << v.trade_id;
 }
 
 void ascot_service::save_ascots(const std::vector<domain::ascot>& ascots) {
     for (const auto& e : ascots) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Ascot instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Ascot trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ascots.size() << " ascots";
     auto ts = ascots;
@@ -398,20 +395,19 @@ void ascot_service::save_ascots(const std::vector<domain::ascot>& ascots) {
     repo_.write(ctx_, ts);
 }
 
-void ascot_service::delete_ascot(const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ascot. " << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed ascot. " << "instrument_id: " << instrument_id;
+void ascot_service::delete_ascot(const boost::uuids::uuid& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing ascot. " << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    BOOST_LOG_SEV(lg(), info) << "Removed ascot. " << "trade_id: " << trade_id;
 }
 
-void ascot_service::delete_ascots(const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+void ascot_service::delete_ascots(const std::vector<std::string>& trade_ids) {
+    repo_.remove(ctx_, trade_ids);
 }
 
-std::vector<domain::ascot> ascot_service::get_ascot_history(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ascot. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+std::vector<domain::ascot> ascot_service::get_ascot_history(const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for ascot. " << "trade_id: " << trade_id;
+    return repo_.read_all(ctx_, trade_id);
 }
 
 }

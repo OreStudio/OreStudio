@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: FF88C139-9C8B-4A59-9CCD-38066CA049DD
+:END:
+#+title: Task: Split the bond security from the trade
+#+description: PR 5. Key the shared bond entities by the ORE reference datum id, hang the leg family off the security, give bond_issue the fields ORE has and take bond_notional onto the trade.
+#+type: task
+#+level: s1
+#+filetags: :clean-trading:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bond's static data is stored once per security and referenced by trades,
+matching ORE's split between the trade and the reference datum.
+
+The collapse (PR 4, decision D14) left two identities where this component
+carried three: the trade and the security. The instrument is now the trade,
+so what remains is the security. It is still missing: every bond table
+hangs off the trade, so a coupon schedule and a future's contract terms
+are repeated once per trade instead of held once per security, and
+=bond_issue= -- the one entity already shared -- is missing six fields ORE
+has and carries =bond_notional=, which ORE holds on the trade.
+
+This ports the abandoned sprint 25 task =0C525D24= onto the collapsed
+model, and carries defect 15 from the owner's ruling of 2026-09-28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The shared bond entities are keyed by the ORE reference datum id, which
+  is =SecurityId= for a bond and =ContractName= for a bond future. No
+  entity needs the words "reference data" in its name: =bond_issue= is
+  already the shape to follow.
+- =bond_future= keeps only what ORE keeps on the trade -- =ContractName=,
+  =ContractNotional=, =LongShort=, =ApplyConversionFactor= and
+  =UseFuturePrice= -- and its thirteen contract terms move to a shared
+  entity keyed by the contract name.
+- =bond_leg= and its rate, amount and amortization tables hang off the
+  security rather than the trade.
+- =bond_issue= gains the six fields ORE has and we lack: =CreditGroup=,
+  =VolatilityCurveId=, =PriceQuoteMethod=, =PriceQuoteBaseValue=,
+  =SubType= and =PriceType=. It loses =bond_notional=, which ORE holds on
+  the trade.
+- The fields duplicated against the leg tables -- currency, coupon rate,
+  coupon frequency and day count -- are held once.
+- A trade that states its bond inline rather than by reference still
+  round-trips: the inline case populates the security rather than
+  bypassing it.
+- Defect 15: an underlying is an unqualified name. The underlyings the
+  ORE documents name become qualified references, and each place the
+  document states only a free name is recorded with its evidence.
+- The ORE round trip stays at zero loss across the bond products and the
+  trade envelope.
+- =check_component_drift.py --component trading-cpp --dry-run= reports
+  nothing, the whole-tree build exits 0, and the suites pass on a
+  recreated database.
+
+* Plan
+
+ORE is the ground truth. The job is to apply data-oriented
+principles to ORE's data model, not to invent one.
+
+** The relationship ORE states
+
+=bondReferenceDatum= is exactly =bondData= minus =SecurityId=,
+=BondNotional=, =Payer= and =CreditRisk=. Everything else on a bond is
+static data about the security, and the four exceptions are the trade's
+own: which security, how much, which side, and whether credit risk
+applies.
+
+=bondFutureData= says the same in the other direction: v17 cut it to
+=ContractName=, =ContractNotional= and =LongShort= plus the new
+=ApplyConversionFactor= and =UseFuturePrice=, and moved the thirteen
+contract terms into =bondFutureReferenceDatum=.
+
+=ReferenceData= is a list of =ReferenceDatum=, each with an =id=
+attribute, an optional =validFrom=, a =Type= element and one payload from
+a closed choice. The key is the datum id, so a bond's is its =SecurityId=
+and a bond future's is its =ContractName=.
+
+** Where our model disagrees
+
+- =bond_future= holds twelve contract terms that belong to the contract,
+  so ten trades on one Bund future repeat them ten times.
+- =bond_leg= and its rate, amount and amortization tables hold the coupon
+  schedule, currency and day count, which in ORE are =LegData= inside
+  =bondReferenceDatum=, so they belong to the security.
+- =bond_issue= is the entity already shared and keyed by =security_id=,
+  and it is =bondReferenceDatum= under another name. It is missing the
+  six fields above, it carries =bond_notional=, and its =currency=,
+  =coupon_rate=, =coupon_frequency_code= and =day_count_code= duplicate
+  the leg tables.
+
+** Sequence
+
+Shared entities first, because the per-trade tables point at them. Model,
+mapper and tests move together; no commit removes a column before its
+replacement exists. The corpus round trip runs before the task closes,
+as it did for the collapse.
+
+** Branch
+
+Cut from =main= after PR 4 merges, so the split reshapes the collapsed
+model rather than the three-identity one.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Two documents describe the change and are stale in detail only:
+  =doc/knowledge/architecture/trading_bond_relational_model.org= and the
+  abandoned task body =0C525D24= under
+  =doc/agile/versions/v0/sprint_25/data-oriented-trading-model/=.
+- The design's =instrument_underlyings= table was never built. Defect 15
+  is where that gap is decided: either the table is authored here or the
+  gap is recorded with the ORE evidence for each product that states an
+  underlying.
+- The bond family is the largest part of the component's remaining model
+  work. If the split cannot land whole, stop at a green tree with the
+  shared entities in place and record the rest rather than leaving the
+  family half-reshaped.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

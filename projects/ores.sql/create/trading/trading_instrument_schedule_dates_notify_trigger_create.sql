@@ -29,7 +29,7 @@ declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_instrument_id uuid;
+    changed_trade_id uuid;
     changed_owner_role text;
     changed_owner_number integer;
     changed_schedule_role text;
@@ -40,7 +40,7 @@ declare
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_instrument_id := OLD.instrument_id;
+        changed_trade_id := OLD.trade_id;
         changed_owner_role := OLD.owner_role;
         changed_owner_number := OLD.owner_number;
         changed_schedule_role := OLD.schedule_role;
@@ -63,7 +63,7 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_instrument_id := NEW.instrument_id;
+        changed_trade_id := NEW.trade_id;
         changed_owner_role := NEW.owner_role;
         changed_owner_number := NEW.owner_number;
         changed_schedule_role := NEW.schedule_role;
@@ -72,7 +72,7 @@ begin
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
-    changed_key := jsonb_build_object('instrument_id', changed_instrument_id, 'owner_role', changed_owner_role, 'owner_number', changed_owner_number, 'schedule_role', changed_schedule_role, 'schedule_sequence_number', changed_schedule_sequence_number, 'sequence_number', changed_sequence_number);
+    changed_key := jsonb_build_object('trade_id', changed_trade_id, 'owner_role', changed_owner_role, 'owner_number', changed_owner_number, 'schedule_role', changed_schedule_role, 'schedule_sequence_number', changed_schedule_sequence_number, 'sequence_number', changed_sequence_number);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,

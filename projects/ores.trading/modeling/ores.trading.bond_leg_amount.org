@@ -37,14 +37,15 @@ the schema states the value unconditionally.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument this amount belongs to.
+The trade this amount belongs to.
 
 ** leg_role
 :PROPERTIES:
@@ -125,6 +126,20 @@ ores::utility::decimal::decimal::from_string("0.0425").value()
 
 Date the amount takes effect (ISO 8601 date string), when the document
 states one.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

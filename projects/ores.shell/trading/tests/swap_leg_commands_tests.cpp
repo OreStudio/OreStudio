@@ -82,7 +82,7 @@ TEST_CASE("swap_leg_commands_registers_every_derived_verb", tags) {
              std::string{"swap_legs put-many"},
              std::string{"swap_legs delete"},
              std::string{"swap_legs delete-many"},
-             std::string{"swap_legs by-instrument-id"},
+             std::string{"swap_legs by-trade-id"},
              std::string{"swap_legs versions"},
              std::string{"swap_legs version"},
          })
@@ -283,21 +283,21 @@ TEST_CASE("swap_leg_commands_process_delete_many_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("swap_leg_commands_process_by_instrument_id_requires_a_session", tags) {
+TEST_CASE("swap_leg_commands_process_by_trade_id_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_by_instrument_id(out, session, tokens(1));
+    swap_leg_commands::process_by_trade_id(out, session, tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("swap_leg_commands_process_by_instrument_id_reports_the_expected_count", tags) {
+TEST_CASE("swap_leg_commands_process_by_trade_id_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -305,7 +305,7 @@ TEST_CASE("swap_leg_commands_process_by_instrument_id_reports_the_expected_count
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_by_instrument_id(out, session, {});
+    swap_leg_commands::process_by_trade_id(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it

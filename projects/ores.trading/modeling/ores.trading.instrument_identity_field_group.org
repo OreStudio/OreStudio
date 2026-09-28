@@ -53,13 +53,6 @@ Tenant identifier for multi-tenancy isolation.
 
 Workspace this record belongs to; defaults to the Live workspace sentinel.
 
-** instrument_id
-:PROPERTIES:
-:cpp_type: boost::uuids::uuid
-:END:
-
-UUID uniquely identifying this instrument.
-
 ** trade_type_code
 :PROPERTIES:
 :cpp_type: std::string
@@ -76,10 +69,13 @@ Party that owns this instrument record.
 
 ** trade_id
 :PROPERTIES:
-:cpp_type: std::optional<boost::uuids::uuid>
+:cpp_type: boost::uuids::uuid
 :END:
 
-Soft back-reference to the trade this instrument belongs to, when known.
+The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so there is one
+identity rather than two and the two cannot disagree.
 
 * See also
 

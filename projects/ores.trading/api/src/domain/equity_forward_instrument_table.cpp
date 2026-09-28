@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<equity_forward_instrument>& v) {
           << "Long/Short" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& efi : v) {
-        table << efi.identity.instrument_id << efi.identity.trade_type_code << efi.underlying_name
+        table << efi.identity.trade_id << efi.identity.trade_type_code << efi.underlying_name
               << efi.currency << efi.quantity << efi.expiry_date << efi.long_short
               << efi.audit.recorded_at << fort::endr;
     }

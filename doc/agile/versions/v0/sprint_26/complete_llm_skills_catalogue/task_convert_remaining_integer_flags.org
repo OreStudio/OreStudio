@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/dq-m08-flags
+#+pr: 2315
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-12

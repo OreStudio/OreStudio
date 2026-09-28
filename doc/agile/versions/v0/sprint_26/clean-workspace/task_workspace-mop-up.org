@@ -26,11 +26,11 @@ Everything the [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][clean-standard pass]] 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] |
-| Now          | Every item below is done or recorded as needing its own task. The branch is green on the gates this work is in scope for. |
+| Now          | Complete, and merged as #2337. Every item below is done or handed over with its measurement. |
 | Waiting on   | Nothing.                               |
-| Next         | The review round, then the merge. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

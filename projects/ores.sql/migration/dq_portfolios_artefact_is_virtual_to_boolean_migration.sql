@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,30 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
 /**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
- * To modify, update the template and regenerate.
- */
-/**
- * The fsm state wire shape.
+ * One-shot migration: the dq portfolio artefact's is_virtual becomes boolean
  *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
+ * The staging column was integer while the store it feeds,
+ * ores_refdata_portfolios_tbl.is_virtual, was already boolean, so
+ * ores_refdata_publish_portfolios_from_dq_fn carried a conversion and
+ * the populate scripts wrote 0 and 1. The staging column now matches
+ * the store and the conversion is gone.
  *
- * See the sibling protocol module for the messages that carry this type.
+ * On a freshly recreated database the create script already emits
+ * boolean and this migration is unnecessary. It exists for databases
+ * created before the change.
  */
-export interface FsmState {
-    version: number;
-    tenant_id: string;
-    id: string;
-    machine_id: string;
-    name: string;
-    is_initial: boolean;
-    is_terminal: boolean;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
-}
+
+alter table ores_dq_portfolios_artefact_tbl
+    alter column is_virtual type boolean
+    using (is_virtual <> 0);

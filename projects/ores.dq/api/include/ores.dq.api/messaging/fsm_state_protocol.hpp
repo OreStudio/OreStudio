@@ -43,8 +43,8 @@ struct fsm_state_write {
     boost::uuids::uuid id;
     boost::uuids::uuid machine_id;
     std::string name;
-    int is_initial;
-    int is_terminal;
+    bool is_initial;
+    bool is_terminal;
 };
 
 struct fsm_state_change {

@@ -104,31 +104,31 @@ begin
     ) values
         -- pending: canonical initial state (no concurrent instance running)
         (v_state_pending, v_sys_tenant, 0,
-         v_machine_id, 'pending', 1, 0,
+         v_machine_id, 'pending', true, false,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: pending'),
         -- queued: initial state under queue concurrency policy
         (v_state_queued, v_sys_tenant, 0,
-         v_machine_id, 'queued', 1, 0,
+         v_machine_id, 'queued', true, false,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: queued'),
         (v_state_running, v_sys_tenant, 0,
-         v_machine_id, 'running', 0, 0,
+         v_machine_id, 'running', false, false,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: running'),
         (v_state_completed, v_sys_tenant, 0,
-         v_machine_id, 'completed', 0, 1,
+         v_machine_id, 'completed', false, true,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: completed'),
         -- failed: terminal initial state under the fail concurrency policy, and
         -- the state a report reaches when execution fails. The fail policy runs
         -- the trigger against an instance that already runs, so the new
         -- instance is recorded as failed without ever starting.
         (v_state_failed, v_sys_tenant, 0,
-         v_machine_id, 'failed', 1, 1,
+         v_machine_id, 'failed', true, true,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: failed'),
         (v_state_cancelled, v_sys_tenant, 0,
-         v_machine_id, 'cancelled', 0, 1,
+         v_machine_id, 'cancelled', false, true,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: cancelled'),
         -- skipped: terminal initial state under skip concurrency policy
         (v_state_skipped, v_sys_tenant, 0,
-         v_machine_id, 'skipped', 1, 1,
+         v_machine_id, 'skipped', true, true,
          current_user, 'system.initial_load', 'Seed report_instance_lifecycle state: skipped');
 
     raise debug 'Created 7 report_instance_lifecycle states.';

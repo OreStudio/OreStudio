@@ -151,7 +151,7 @@ ore_import_plan ore_import_planner::plan() {
         parent_p.aggregation_ccy = choices_.aggregation_ccy;
         parent_p.purpose_type = choices_.purpose_type;
         parent_p.status = "Active";
-        parent_p.is_virtual = 0;
+        parent_p.is_virtual = false;
         parent_p.change_reason_code = std::string(reason::codes::new_record);
         parent_p.change_commentary = "Imported from ORE directory";
         result.portfolios.push_back(std::move(parent_p));
@@ -171,7 +171,7 @@ ore_import_plan ore_import_planner::plan() {
         p.aggregation_ccy = choices_.aggregation_ccy;
         p.purpose_type = choices_.purpose_type;
         p.status = "Active";
-        p.is_virtual = 0;
+        p.is_virtual = false;
         p.change_reason_code = std::string(reason::codes::new_record);
         p.change_commentary = "Imported from ORE directory";
 

@@ -37,8 +37,8 @@ std::string convert_to_table(const std::vector<fsm_state>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& s : v) {
-        table << s.name << s.is_initial << s.is_terminal << s.modified_by << s.version
-              << fort::endr;
+        table << s.name << (s.is_initial ? "true" : "false") << (s.is_terminal ? "true" : "false")
+              << s.modified_by << s.version << fort::endr;
     }
     return table.to_string();
 }

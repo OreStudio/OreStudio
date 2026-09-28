@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_26:codegen:clean_standard:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,10 +25,10 @@ The component needs two passes. The first gives a model to the SQL that has none
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Both passes are open and both are moving. Pass 1 reached byte-identical regeneration and put every dq entity on the generated protocol stack, so dq is in =COMPONENTS_UNDER_TEST= and the drift check is green; what it still owes is seven orphan artefact tables and seven hand-written =*_artefact_create.sql= files. Pass 2 landed its first defect batch on =feature/dq-clean-batch-2=: seven items fixed and verified, and the items that need a live fleet or a survey of their own recorded open on the [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][pass 2 task]]. |
-| Waiting on    | A live fleet for V03 and V04, which this sandbox cannot start. Nothing else. |
-| Next          | Pass 1's artefact tail, then pass 2's H01, V07 and V08. See the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]] and the [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][pass 2 task]]. |
-| Last touched  | 2026-09-27                               |
+| Now           | Pass 2 is complete: all 49 items pass. Three defect batches landed as #2286, #2291 and #2296, #2309 verified V03 and V04 against a live fleet rather than excepting them, and the last item, M08, is fixed on =feature/dq-m08-flags=. Pass 1 reached byte-identical regeneration and put every dq entity on the generated protocol stack, so dq is in =COMPONENTS_UNDER_TEST= and the drift check is green; what it still owes is seven orphan artefact tables and seven hand-written =*_artefact_create.sql= files. |
+| Waiting on    | Nothing. Pass 1's artefact tail is recorded on the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]] rather than blocking this story. |
+| Next          | Pass 1's artefact tail. See the [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][pass 1 task]]. |
+| Last touched  | 2026-09-28                               |
 
 * Acceptance
 
@@ -44,7 +44,7 @@ Pass 1 models the handcrafted SQL. Pass 2 runs the standard. Pass 1 is first, be
 | Task | Pass | State | Start | End | Description |
 |------+------+-------+-------+-----+-------------|
 | [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the handcrafted ores.dq code and generate the artefact tables]] | 1 | STARTED | 2026-09-26 | | Author models for every handcrafted ores.dq table and function, automate the artefact tables, and reach byte-identical regeneration. |
-| [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]] | 2 | STARTED | 2026-09-27 | | Work ores.dq through the Component Clean Standard in order and record each item. |
+| [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]] | 2 | DONE | 2026-09-27 | 2026-09-28 | Work ores.dq through the Component Clean Standard in order and record each item. |
 | [[id:94424F3A-5FF9-415E-B9ED-8067C84CB7C2][Fix the artefact index emission and the tags ON CONFLICT]] | DONE | 2026-09-27 | 2026-09-27 | Task for: Clean ores.dq to the component clean standard |
 | [[id:3F5F7880-BB04-476A-9BAF-1E593B2A0886][Migrate the FSM state consumers to the generated surface]] | DONE | 2026-09-27 | 2026-09-27 | Task for: Clean ores.dq to the component clean standard |
 | [[id:4205D956-5738-43F5-8083-B06211726780][Make the LEI staging entities match the table they read]] | DONE | | 2026-09-27 | Task for: Clean ores.dq to the component clean standard |

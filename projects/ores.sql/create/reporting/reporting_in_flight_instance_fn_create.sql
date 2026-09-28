@@ -49,7 +49,7 @@ returns uuid as $$
     where i.tenant_id = p_tenant_id
       and i.definition_id = p_definition_id
       and i.valid_to = ores_utility_infinity_timestamp_fn()
-      and s.is_terminal = 0
+      and s.is_terminal = false
     order by i.valid_from
     limit 1;
 $$ language sql stable security definer set search_path = public, pg_temp;

@@ -58,7 +58,7 @@ insert into ores_refdata_portfolios_tbl (
     ores_utility_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000010'::uuid,
     'VIEW-TEST-PORTFOLIO', 'Test portfolio for view tests',
-    'Risk', 0, 'active',
+    'Risk', false, 'active',
     current_user, current_user, 'system.test', 'Test portfolio'
 );
 

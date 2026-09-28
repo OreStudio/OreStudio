@@ -37,7 +37,7 @@ create table if not exists "ores_dq_portfolios_artefact_tbl" (
     "owner_unit_id" uuid null,
     "purpose_type" text not null,
     "aggregation_ccy" text null,
-    "is_virtual" integer not null
+    "is_virtual" boolean not null default false
 );
 
 create index if not exists dq_portfolios_artefact_dataset_idx

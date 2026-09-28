@@ -7,17 +7,34 @@
 #+level: cross
 #+filetags: 
 #+created: 2026-09-17
-#+updated: 2026-09-17
+#+updated: 2026-09-28
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox=* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-(One paragraph: the idea.)
+Measured again on 2026-09-28, from a change that needed one line of it.
+Making `ores_dq_portfolios_artefact_tbl.is_virtual` boolean leaves the diagram
+still saying `integer`. Regenerating it produced 1127 changed lines that are
+not the timestamp: the account table still carries its retired two-line
+summary where the create script now carries the generated header and a
+four-line description, and column order disagrees with the create script. So
+the choice is to drag unrelated drift into a change about a flag, or to
+hand-edit a generated file, or to leave the diagram wrong. This change left it
+wrong and recorded the fact here.
+
+That is the third measurement of the same drift: 26 hunks (BE48603C), 2069
+lines (this capture, 2026-09-17), 1127 lines (2026-09-28). The numbers differ
+because they were taken at different times and count differently, but the
+finding does not: a generated artefact no gate covers cannot be kept current,
+and each change that touches the schema has to decide again what to do about
+it.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+See the description above: gate the generator, or drop the tracked
+=puml=/=png=/=cmapx= in favour of build-only output, which the earlier
+measurement already proposed.
 
 * References
 

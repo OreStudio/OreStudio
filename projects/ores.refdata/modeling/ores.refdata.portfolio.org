@@ -202,7 +202,7 @@ std::string("Active")
 
 * Artefact columns
 
-The import carries =is_virtual= as =0= or =1=, which =ores_refdata_publish_portfolios_from_dq_fn= converts to the store's boolean with =(m.is_virtual != 0)=. The Acme populate writes those literals, so the staging column stays integer.
+The import carries =is_virtual= as a boolean, matching the store's column, so =ores_refdata_publish_portfolios_from_dq_fn= copies it across with no conversion.
 
 ** id
 :PROPERTIES:
@@ -244,7 +244,8 @@ The import carries =is_virtual= as =0= or =1=, which =ores_refdata_publish_portf
 
 ** is_virtual
 :PROPERTIES:
-:type: integer
+:type: boolean
+:default: false
 :END:
 
 * SQL

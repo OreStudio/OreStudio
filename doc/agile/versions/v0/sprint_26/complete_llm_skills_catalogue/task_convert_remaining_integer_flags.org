@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete_llm_skills_catalogue:sprint_26:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/dq-m08-flags
+#+pr: 2315
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-12
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-28
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every flag column is boolean, so none of them can be parsed or compared as an in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. All three columns are boolean, each with a one-shot migration. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-12                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-28                               |
 
 * Acceptance
 
@@ -42,11 +42,38 @@ Every flag column is boolean, so none of them can be parsed or compared as an in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each column is a flag the code already read as a flag, so the work is to make
+the storage side agree with the code and then remove every trace of the
+integer spelling. One column at a time:
+
+1. Change the model's `:type:` and `:cpp_type:` to boolean, drop the
+   `in (0, 1)` checks that only existed to bound an integer, and update the
+   presentation placeholders from `0 or 1` to `true or false`.
+2. Regenerate and follow the change outward: the entity, the domain type, the
+   table I/O, the protocol struct and the web wire schema.
+3. Correct every hand-written consumer: a predicate that compares the column
+   with 0 or 1, a populate script that writes those literals, a seeder that
+   formats them, and a C++ call that passes an `int`.
+4. Add a one-shot migration for a database that predates the change, so the
+   change does not depend on `compass db recreate`.
+
+`is_virtual` is the third column the acceptance names, and it is the one that
+is not a plain `0`/`1` flag: the store, `ores_refdata_portfolios_tbl`, was
+already boolean, and only the dq staging table it is published from was
+integer, with a conversion in the publish function. The staging column now
+matches the store, which deletes the conversion rather than preserving it.
 
 * Notes
+
+- The dq FSM flags are the M08 item of the `clean-dq` pass, so the change is
+  recorded there as well: [[id:43AF9F63-5764-4F8E-A8D0-38454B2FD199][Bring ores.dq to the clean standard]].
+- The three `is_virtual` columns in `ores.synthetic` and `ores.ore` were
+  `int` parameters and `!= 0` / `== 0` comparisons in hand-written C++; they
+  take `bool` now.
+- The four `ores.sql/test/trade_*_test.sql` scripts inserted `0` into the
+  refdata portfolio's boolean column. That was already wrong before this
+  change — postgres refuses an integer where a boolean is declared — and the
+  sweep the acceptance asks for is what found it.
 
 * Test Scenarios
 
@@ -72,3 +99,57 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Landed on `feature/dq-m08-flags`. Every acceptance clause is met, and the
+three columns it names are boolean.
+
+*`is_initial` and `is_terminal`*, in `ores.dq.fsm_state`. Both were
+`:type: integer` with a default of 0 and an `in (0, 1)` check, while every
+consumer already read them as flags: the shell reads them into a `bool`, the
+domain and protocol structs declare `bool`, and the presentation mappers
+print `"true"` or `"false"`. Only the storage side disagreed. Both are
+boolean now, the two check constraints are gone, and the change followed
+through the entity, the domain type, the table I/O, the protocol struct, the
+web wire schema, the two hand-written `ores.reporting` predicates that
+compared them with `true` and `false`, and five populate scripts that wrote
+`0` and `1` in 27 rows.
+
+*`is_virtual`*, the third column. The store, `ores_refdata_portfolios_tbl`,
+was already boolean; only the dq staging table it is published from was
+integer, and `ores_refdata_publish_portfolios_from_dq_fn` carried the
+conversion `(m.is_virtual != 0)`. The staging column is boolean now, the
+conversion is `m.is_virtual`, the seeder writes `true` and `false` instead of
+1 and 0, and the two `int` parameters and three comparisons in
+`ores.synthetic` and `ores.ore` take `bool`.
+
+*Each column has a one-shot migration*, in `projects/ores.sql/migration/`:
+`dq_fsm_states_flags_to_boolean_migration.sql` and
+`dq_portfolios_artefact_is_virtual_to_boolean_migration.sql`. The first drops
+the two check constraints before converting, because postgres re-evaluates a
+check constraint on a type change and `is_initial in (0, 1)` is not an
+expression a boolean column can satisfy. Both follow the shape of the
+existing `scheduler_job_definitions_is_active_to_boolean_migration.sql`, and
+both are unnecessary on a database created after the change, which is what
+`compass db recreate` produces.
+
+*Proof.* `check_component_drift.py --sweep` reports "no file this branch
+touched would change". The database recreated from the generated schema and
+the fleet came up 25 of 25, including `ores.reporting.service` and
+`ores.workflow.service`, the two units that read the flags through the dq
+repository. The dq and reporting suites pass. The first attempt at the fleet
+start failed with `Failed to parse field 'is_initial': stoll`, which was a
+stale `libores.dq.core.so` that predated the regenerated entity header, not a
+defect in the change: rebuilding and restarting cleared it.
+
+The flags also round-trip through the wire as booleans. Against the live fleet,
+`fsm_states add 11111111-1111-4111-8111-111111111111 m08-bool-check true false
+system.new_record bool-check` answers `"is_initial":true,"is_terminal":false`,
+and `fsm_states list` answers 28 rows that all report the two fields as `true`
+or `false` rather than as a number. That exercises the shell's bool token, the
+protocol struct, the dq service, the repository's `sqlgen` read, the boolean
+column, and the JSON reply in one pass.
+
+*What the sweep found that was already broken.* The four
+`ores.sql/test/trade_*_test.sql` scripts inserted `0` into the refdata
+portfolio's boolean column. Postgres refuses an integer where a boolean is
+declared, so those scripts could not have run; they insert `false` now.

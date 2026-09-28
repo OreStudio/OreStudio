@@ -63,20 +63,20 @@ std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
 
 ** is_initial
 :PROPERTIES:
-:type:      integer
-:cpp_type:  int
+:type:      boolean
+:cpp_type:  bool
 :nullable:  false
-:default:   0
+:default:   false
 :END:
 
 Whether this is the machine's initial state.
 
 ** is_terminal
 :PROPERTIES:
-:type:      integer
-:cpp_type:  int
+:type:      boolean
+:cpp_type:  bool
 :nullable:  false
-:default:   0
+:default:   false
 :END:
 
 Whether this is a terminal state.
@@ -98,8 +98,6 @@ Whether this is a terminal state.
 
 | expression                |
 |---------------------------|
-| "is_initial" in (0, 1)    |
-| "is_terminal" in (0, 1)   |
 
 * C++
 
@@ -223,16 +221,16 @@ fsm_state_repository::read_latest_by_machine_name(context ctx,
 | field       | label    | widget         | type      | is_key | is_required | placeholder    |
 |-------------+----------+----------------+-----------+--------+-------------+----------------|
 | name        | Name     | nameEdit       | line_edit | true   | true        | Enter state name |
-| is_initial  | Initial  | isInitialEdit  | line_edit |        | true        | 0 or 1         |
-| is_terminal | Terminal | isTerminalEdit | line_edit |        | true        | 0 or 1         |
+| is_initial  | Initial  | isInitialEdit  | line_edit |        | true        | true or false  |
+| is_terminal | Terminal | isTerminalEdit | line_edit |        | true        | true or false  |
 
 *** Columns
 
 | enum_name  | field       | header      | type      | width |
 |------------+-------------+-------------+-----------+-------|
 | Name       | name        | Name        | string    | 200   |
-| IsInitial  | is_initial  | Initial     | int       | 80    |
-| IsTerminal | is_terminal | Terminal    | int       | 80    |
+| IsInitial  | is_initial  | Initial     | bool      | 80    |
+| IsTerminal | is_terminal | Terminal    | bool      | 80    |
 | ModifiedBy | modified_by | Modified By | string    | 120   |
 | RecordedAt | recorded_at | Recorded At | timestamp | 150   |
 

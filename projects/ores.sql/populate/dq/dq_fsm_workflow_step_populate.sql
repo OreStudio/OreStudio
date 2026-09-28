@@ -93,22 +93,22 @@ begin
         modified_by, change_reason_code, change_commentary
     ) values
         (v_state_pending, v_sys_tenant, 0,
-         v_machine_id, 'pending', 1, 0,
+         v_machine_id, 'pending', true, false,
          current_user, 'system.initial_load', 'Seed workflow_step state: pending'),
         (v_state_in_progress, v_sys_tenant, 0,
-         v_machine_id, 'in_progress', 0, 0,
+         v_machine_id, 'in_progress', false, false,
          current_user, 'system.initial_load', 'Seed workflow_step state: in_progress'),
         (v_state_completed, v_sys_tenant, 0,
-         v_machine_id, 'completed', 0, 1,
+         v_machine_id, 'completed', false, true,
          current_user, 'system.initial_load', 'Seed workflow_step state: completed'),
         (v_state_completed_with_warn, v_sys_tenant, 0,
-         v_machine_id, 'completed_with_warnings', 0, 1,
+         v_machine_id, 'completed_with_warnings', false, true,
          current_user, 'system.initial_load', 'Seed workflow_step state: completed_with_warnings'),
         (v_state_failed, v_sys_tenant, 0,
-         v_machine_id, 'failed', 0, 1,
+         v_machine_id, 'failed', false, true,
          current_user, 'system.initial_load', 'Seed workflow_step state: failed'),
         (v_state_compensated, v_sys_tenant, 0,
-         v_machine_id, 'compensated', 0, 1,
+         v_machine_id, 'compensated', false, true,
          current_user, 'system.initial_load', 'Seed workflow_step state: compensated');
 
     raise debug 'Created 6 workflow_step states.';

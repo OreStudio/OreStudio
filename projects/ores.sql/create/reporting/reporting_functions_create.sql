@@ -45,7 +45,7 @@ as $$
     join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
     where m.name     = 'report_definition_lifecycle'
       and s.name     = 'draft'
-      and s.is_initial = 1
+      and s.is_initial = true
       and s.valid_to = ores_utility_infinity_timestamp_fn()
       and m.valid_to = ores_utility_infinity_timestamp_fn()
       and s.tenant_id = ores_utility_system_tenant_id_fn()

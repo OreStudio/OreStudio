@@ -1,0 +1,82 @@
+Live run of the ACME demo card through the provision tenant workflow, 2026-09-28,
+environment eager_maxwell, branch feature/execute-the-acme-step-kinds, commit
+fff1e5b733.
+
+The database was recreated from the scripts, so the ACME demo profile's rows
+carry the arguments the three new step kinds read; the fleet was restarted on
+the branch's binaries; the initial administrator was bootstrapped; and the
+profile was provisioned from the shell through the generic request:
+
+  login super_admin@localhost Secure-Password-123
+  tenant_provisioning provision-tenant acme_demo acme_probe2 ACME_Probe_Two \
+    acme-probe2.example ACME_demo_probe_tenant_two admin_probe2 \
+    admin@acme-probe2.example Secure-Password-123 __NONE__
+
+  {"success":true,"message":"","instance_id":"76c4147e-9bd8-4959-abe2-bd6698635fc1",
+   "tenant_id":"dc607c96-ed4b-444d-90e4-ec86e075c128",
+   "account_id":"01a0e909-2ee7-7508-b93a-530d414d0929"}
+
+The workflow service's log for that instance, with the repository and
+notification lines removed:
+
+  18:21:28 [INFO] workflow_engine] Start-workflow request received:
+      type=provision_tenant_workflow instance_id=76c4147e-... corr=ce2a87d2-...
+  18:21:28 [INFO] workflow_engine] Workflow STARTED:
+      type=provision_tenant_workflow workflow=76c4147e-... step_count=7
+      first_step=publish_bundle subject=iam.v1.tenants.provision-step
+  18:21:40 [INFO] workflow_engine] Step-completed ... outcome=completed   (publish_bundle)
+  18:21:41 [INFO] workflow_engine] Step-completed ... outcome=completed   (import_lei_hierarchy)
+  18:21:44 [INFO] workflow_engine] Step-completed ... outcome=completed   (provision_party)
+  18:21:47 [INFO] workflow_engine] Step-completed ... outcome=completed   (load_staff)
+  18:21:55 [INFO] workflow_engine] Step-completed ... outcome=completed   (attach_photos)
+  18:21:58 [INFO] workflow_engine] Step-completed ... outcome=completed   (start_market_feeds)
+  18:21:58 [INFO] workflow_engine] Step-completed ... outcome=completed_with_warnings
+                                                                         (complete_provisioning)
+  18:21:58 [INFO] workflow_engine] Workflow COMPLETED:
+      type=provision_tenant_workflow workflow=76c4147e-... steps=7
+
+The tenant and the data the run produced, read from the database:
+
+  tenant       = acme_probe2, type evaluation, status active, hostname acme-probe2.example
+
+  parties (name, status, logo, accounts linked to the party):
+    Acme Corporation Plc    Active  logo yes   2
+    ACME Corporation UK plc Active  logo yes  20
+    ACME Corporation US Inc Active  logo yes  20
+    ACME Corporation HK Ltd Active  logo yes  20
+    System Party            Active  logo no    1
+
+  accounts     = 59, of which 58 carry an image
+  bindings     = 13 per party for all five parties (65 in total)
+  observations = 325 per ACME party and 339 for the system party (1639 in total),
+                 materialised from the shared stream by the ingest loop
+
+What this proves, against the task's acceptance:
+
+- the executed-kind list carries the three kinds and the ACME demo profile's
+  rows state the parties, the datasets, the bundles and the keys they act on;
+- load_staff resolves each party the profile names, publishes that party's
+  staff bundles against it, and leaves it ready: every ACME party is active,
+  carries its logo, and is linked to the accounts the bundles published;
+- attach_photos attaches the staff photos the profile's datasets carry (58 of
+  59 accounts; the administrator carries no photo key) and the party logo to
+  every party it names;
+- start_market_feeds publishes the configuration bundles against the system
+  party, binds every party the tenant holds to the theme, and starts the
+  feeds, which the ingest loop's per-party observations prove;
+- the run completes on the live deployment, in seven steps and thirty seconds.
+
+Two defects this unit found, neither of them the unit's own:
+
+- A feed binding's existence claim is read by the ORE key alone while the
+  binding's natural key is the party with the ORE key and the source. The
+  first run of this card, instance 610655ea-1ebd-4382-aea7-c7e09845536a,
+  stopped in start_market_feeds for exactly this reason: the store refused the
+  second party's binding for a source the first party held. This unit's step
+  states no expectation for the write and keeps its own freshness check, which
+  lets the kind bind every party; the key defect is captured for the component
+  that owns it.
+- The completing step cannot clear a tenant's bootstrap mode: the settings
+  write is a create over a row the provisioner seeded, so the step reports a
+  warning and the tenant keeps bootstrap mode true. The warning is the run's
+  only blemish, and the defect is captured for the components that own it.

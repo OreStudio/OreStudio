@@ -612,8 +612,12 @@ public:
                     }
 
                     add_step("acme_group.staff_photos", "starting", 0);
-                    attach_staff_photos(
-                        client, *ctx_expected, tenant_id_str, "acme_group", username);
+                    std::vector<std::string> group_staff_photos;
+                    attach_staff_photos(client,
+                                        *ctx_expected,
+                                        tenant_id_str,
+                                        "acme.acme_group.accounts",
+                                        group_staff_photos);
                     add_step("acme_group.staff_photos", "completed");
 
                     // Market data for the holding party: only its own CRM
@@ -775,7 +779,12 @@ public:
 
                 const auto photo_label = office.code + ".staff_photos";
                 add_step(photo_label, "starting", 0);
-                attach_staff_photos(client, *ctx_expected, tenant_id_str, office.code, username);
+                std::vector<std::string> office_staff_photos;
+                attach_staff_photos(client,
+                                    *ctx_expected,
+                                    tenant_id_str,
+                                    "acme." + office.code + ".accounts",
+                                    office_staff_photos);
                 add_step(photo_label, "completed");
             }
 
@@ -954,6 +963,8 @@ private:
         std::vector<std::string> bundles;
         std::string root_lei;
         std::vector<std::string> parties;
+        std::vector<std::string> images;
+        std::vector<std::string> datasets;
         std::string tenant_id;
     };
 
@@ -1022,6 +1033,15 @@ private:
                 return;
             case provision_step_action::provision_party:
                 provision_party_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::load_staff:
+                load_staff_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::attach_photos:
+                attach_photos_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::start_market_feeds:
+                start_market_feeds_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::refuse:
                 wf.fail("The step kind '" + command.kind +
@@ -1138,6 +1158,138 @@ private:
 
         wf.complete(rfl::json::write(provision_step_result{
             .kind = command.kind, .bundles = bundles, .parties = provisioned}));
+    }
+
+    /// Resolves each party the step names, publishes the bundles that entry
+    /// names against it, and leaves the party ready for the staff those
+    /// bundles carry.
+    void load_staff_step(const ores::service::messaging::workflow_step_context& wf,
+                         const ores::iam::workflow::provision_tenant_step_command& command,
+                         const step_actor& actor) {
+        const auto assignments = parse_staff_assignments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        std::vector<std::string> parties;
+        for (const auto& assignment : assignments) {
+            const auto party = find_party(discover, assignment.party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" +
+                                         assignment.party_name + "'.");
+
+            auto client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+            dq::messaging::publish_bundle_params params;
+            params.party_id = boost::uuids::to_string(party->id);
+            const auto params_json = dq::messaging::build_params_json(params);
+            for (const auto& bundle_code : assignment.bundles)
+                publish_bundle_or_throw(
+                    client, bundle_code, actor.username, params_json, assignment.party_name);
+
+            activate_party(client, *party);
+            complete_party_onboarding(client, party->id);
+            associate_account_with_party(client, actor.account_id, party->id);
+            if (assignment.is_default)
+                set_account_default_party(client, party->id);
+            parties.push_back(boost::uuids::to_string(party->id));
+        }
+
+        wf.complete(
+            rfl::json::write(provision_step_result{.kind = command.kind, .parties = parties}));
+    }
+
+    /// Attaches each named party's staff photos, read from the dataset that
+    /// entry names, and the party logo the step names.
+    void attach_photos_step(const ores::service::messaging::workflow_step_context& wf,
+                            const ores::iam::workflow::provision_tenant_step_command& command,
+                            const step_actor& actor) {
+        const auto arguments = parse_photo_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        // The images the kind copies are the tenant's, so the direct reads that
+        // decide what to copy run under the tenant's context.
+        auto tenant_ctx = tenant_context::with_tenant(ctx_, command.tenant_id);
+
+        std::vector<std::string> images;
+        std::vector<std::string> parties;
+        for (const auto& assignment : arguments.parties) {
+            auto party = find_party(discover, assignment.party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" +
+                                         assignment.party_name + "'.");
+
+            auto client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+            attach_staff_photos(client, tenant_ctx, command.tenant_id, assignment.dataset, images);
+
+            if (!arguments.party_logo.empty() && !party->image_id)
+                attach_party_logo(
+                    client, tenant_ctx, *party, arguments.party_logo, command.tenant_id, images);
+            parties.push_back(boost::uuids::to_string(party->id));
+        }
+
+        wf.complete(rfl::json::write(provision_step_result{
+            .kind = command.kind, .parties = parties, .images = images}));
+    }
+
+    /// Publishes the configuration bundles against the tenant's system party,
+    /// binds every party the tenant holds to the theme the step names, and
+    /// starts that theme's feeds.
+    void start_market_feeds_step(
+        const ores::service::messaging::workflow_step_context& wf,
+        const ores::iam::workflow::provision_tenant_step_command& command,
+        const step_actor& actor) {
+        const auto arguments = parse_market_feed_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        const auto system_party = find_system_party(discover);
+        if (!system_party)
+            throw std::runtime_error(
+                "The tenant holds no system party to publish its market configuration against.");
+
+        auto system_client = make_step_client(
+            command.tenant_id, actor.account_id, system_party->id, actor.username);
+        dq::messaging::publish_bundle_params params;
+        params.party_id = boost::uuids::to_string(system_party->id);
+        const auto params_json = dq::messaging::build_params_json(params);
+        for (const auto& bundle_code : arguments.bundles)
+            publish_bundle_or_throw(
+                system_client, bundle_code, actor.username, params_json, bundle_code);
+
+        // Every party the tenant holds consumes the shared stream through its
+        // own bindings, which is how the consistent world reaches each party.
+        std::vector<std::string> bound;
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 1000;
+        while (true) {
+            ores::refdata::messaging::list_parties_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            const auto page = discover.request(request).parties;
+            for (const auto& party : page) {
+                const auto party_id = boost::uuids::to_string(party.id);
+                auto party_client =
+                    make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
+                if (!create_theme_feed_bindings(
+                        system_client, party_client, arguments.theme, party_id))
+                    throw std::runtime_error("The theme '" + arguments.theme +
+                                             "' was not bound for the party '" + party_id + "'.");
+                bound.push_back(party_id);
+            }
+            if (page.size() < page_size)
+                break;
+            offset += page_size;
+        }
+
+        if (!start_synthetic_theme_feeds(system_client, arguments.theme))
+            throw std::runtime_error("The theme '" + arguments.theme +
+                                     "' feeds were not started.");
+
+        wf.complete(rfl::json::write(provision_step_result{.kind = command.kind,
+                                                           .bundles = arguments.bundles,
+                                                           .parties = bound,
+                                                           .datasets = {arguments.theme}}));
     }
 
     /// Marks the tenant active and clears bootstrap mode, the two operations
@@ -1485,8 +1637,14 @@ private:
             req.change.write.asset_class = "fx";
             req.change.write.enabled = true;
             req.change.write.party_id = sg(party_id_str);
-            req.change.precondition = ores::utility::domain::precondition{
-                ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+            // The write states no expectation, because the store's
+            // must-not-exist claim is keyed on the ORE key alone while the
+            // binding's natural key is the party with the ORE key and the
+            // source. A must-not-exist claim therefore refuses the second
+            // party's binding for a source the first party already holds.
+            // The freshness check above is what keeps this idempotent, and
+            // the natural key's unique index is what keeps it honest.
+            req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             req.intent.reason_code = "system.new_record";
             req.intent.commentary =
                 "Created by ACME provisioning: consumes the system-party simulated market "
@@ -1564,29 +1722,29 @@ private:
         return new_image_id;
     }
 
-    // Attaches a profile picture to every staff account in one office that
-    // has a photo_key recorded in its accounts dataset and doesn't already
-    // have an image_id. Reads (username, photo_key) directly from the DQ
-    // artefact table (not modeled in the account NATS API, same reason
-    // grant_cross_entity_access's account_ids_for does the same for
-    // business_unit_code/role), then copies each account's own template
-    // image and re-saves the account with every other field echoed back
-    // unchanged (update_account_request has no partial-update semantics --
-    // omitting a field would clear it).
+    // Attaches a profile picture to every staff account the named dataset
+    // carries a photo_key for and that doesn't already have an image_id. Reads
+    // (username, photo_key) directly from the DQ artefact table (not modeled in
+    // the account NATS API, same reason grant_cross_entity_access's
+    // account_ids_for does the same for business_unit_code/role), then copies
+    // each account's own template image and re-saves the account with every
+    // other field echoed back unchanged (update_account_request has no
+    // partial-update semantics -- omitting a field would clear it).
     void attach_staff_photos(internal_request_client& client,
                              ores::database::context& ctx,
                              const std::string& tenant_id,
-                             const std::string& office_code,
-                             [[maybe_unused]] const std::string& username) {
+                             const std::string& dataset_code,
+                             std::vector<std::string>& images) {
         auto dataset = execute_parameterized_string_query(
             ctx,
             "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
             "AND valid_to = ores_utility_infinity_timestamp_fn()",
-            {"acme." + office_code + ".accounts"},
+            {dataset_code},
             tenant_provisioning_handler_lg(),
             "attach_staff_photos");
         if (dataset.empty())
-            return;
+            throw std::runtime_error("The dataset '" + dataset_code +
+                                     "' does not exist, so its staff photos cannot be attached.");
 
         auto rows = execute_parameterized_multi_column_query(
             ctx,
@@ -1615,7 +1773,8 @@ private:
 
             auto image_id = copy_template_image(client, ctx, tenant_id, it->second);
             if (!image_id)
-                continue;
+                throw std::runtime_error("The template image '" + it->second +
+                                         "' was not copied into the tenant.");
 
             iam::messaging::update_account_request update_req;
             update_req.account_id = boost::uuids::to_string(a.id);
@@ -1628,9 +1787,116 @@ private:
                 a.reports_to_account_id ? boost::uuids::to_string(*a.reports_to_account_id) : "";
             update_req.image_id = boost::uuids::to_string(*image_id);
             update_req.change_reason_code = "system.external_data_import";
-            update_req.change_commentary = "Attached staff photo during Acme provisioning";
-            client.request(update_req);
+            update_req.change_commentary = "Attached staff photo during provisioning";
+            const auto resp = client.request(update_req);
+            if (!resp.success)
+                throw std::runtime_error("The photo was not attached to the account '" +
+                                         a.username + "': " + resp.message);
+            images.push_back(boost::uuids::to_string(*image_id));
         }
+    }
+
+    /// Copies the named template image into the tenant and saves it on the
+    /// party, which the caller read first so the write states its version.
+    void attach_party_logo(internal_request_client& client,
+                           ores::database::context& ctx,
+                           const ores::refdata::domain::party& party,
+                           const std::string& template_key,
+                           const std::string& tenant_id,
+                           std::vector<std::string>& images) {
+        const auto image_id = copy_template_image(client, ctx, tenant_id, template_key);
+        if (!image_id)
+            throw std::runtime_error("The template image '" + template_key +
+                                     "' was not copied into the tenant.");
+        save_party(client,
+                   party,
+                   party.status,
+                   *image_id,
+                   "Attached the party logo while provisioning the tenant");
+        images.push_back(boost::uuids::to_string(*image_id));
+    }
+
+    /// Saves a party with the state the caller decided. The caller read the
+    /// party first, so the write states the version it read and the store
+    /// refuses a row that moved on.
+    static void save_party(internal_request_client& client,
+                           const ores::refdata::domain::party& party,
+                           const std::string& status,
+                           const std::optional<boost::uuids::uuid>& image_id,
+                           const std::string& commentary) {
+        ores::refdata::messaging::put_party_request save_req;
+        save_req.change.write = {.id = party.id,
+                                 .short_code = party.short_code,
+                                 .full_name = party.full_name,
+                                 .codename = party.codename,
+                                 .transliterated_name = party.transliterated_name,
+                                 .party_category = party.party_category,
+                                 .party_type = party.party_type,
+                                 .parent_party_id = party.parent_party_id,
+                                 .business_center_code = party.business_center_code,
+                                 .status = status,
+                                 .image_id = image_id};
+        save_req.change.precondition.kind =
+            ores::utility::domain::precondition_kind::must_match_version;
+        save_req.change.precondition.version = static_cast<std::uint32_t>(party.version);
+        save_req.intent.reason_code = "system.external_data_import";
+        save_req.intent.commentary = commentary;
+
+        const auto resp = client.request(save_req);
+        if (resp.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The party '" + party.full_name +
+                                     "' was not saved: " + resp.result.message);
+    }
+
+    /// Saves the party active when the import left it inactive.
+    static void activate_party(internal_request_client& client,
+                               const ores::refdata::domain::party& party) {
+        if (party.status == "Active")
+            return;
+        save_party(client, party, "Active", party.image_id, "Activated during provisioning");
+    }
+
+    /// Marks the party's onboarding wizard complete, which is what makes the
+    /// party usable rather than a half-set-up one.
+    static void complete_party_onboarding(internal_request_client& client,
+                                          const boost::uuids::uuid& party_id) {
+        ores::variability::messaging::complete_party_onboarding_request req;
+        req.party_id = party_id;
+        const auto resp = client.request(req);
+        if (resp.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The party's onboarding was not completed: " +
+                                     resp.result.message);
+    }
+
+    /// Associates an account with a party, which is what lets that account work
+    /// in the party.
+    static void associate_account_with_party(internal_request_client& client,
+                                             const boost::uuids::uuid& account_id,
+                                             const boost::uuids::uuid& party_id) {
+        ores::iam::messaging::put_many_account_parties_request req;
+        ores::iam::messaging::account_party_change change;
+        change.write.account_id = account_id;
+        change.write.party_id = party_id;
+        change.precondition.kind = ores::utility::domain::precondition_kind::any;
+        req.changes.push_back(std::move(change));
+        req.intent.reason_code = "system.external_data_import";
+        req.intent.commentary = "Associated during provisioning";
+
+        const auto resp = client.request(req);
+        if (resp.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The administrator was not associated with the party: " +
+                                     resp.result.message);
+    }
+
+    /// Sets the acting account's default party.
+    static void set_account_default_party(internal_request_client& client,
+                                          const boost::uuids::uuid& party_id) {
+        ores::iam::messaging::set_my_default_party_request req;
+        req.party_id = boost::uuids::to_string(party_id);
+        const auto resp = client.request(req);
+        if (!resp.success)
+            throw std::runtime_error("The party was not set as the acting account's default: " +
+                                     resp.message);
     }
 
     // Activates the party (if Inactive), attaches its logo (if unset),
@@ -1638,7 +1904,9 @@ private:
     // admin with it -- the same effects the generic shell/wizard
     // "provision party" flow's final phase produces, driven here via the
     // real save_party/complete_party_onboarding/save_account_party
-    // requests instead of hand-written SQL.
+    // requests instead of hand-written SQL. Best-effort, because the
+    // synchronous Acme handler this serves never read these responses;
+    // the step kinds report their failures instead.
     void finish_party(internal_request_client& client,
                       ores::database::context& ctx,
                       const std::string& tenant_id,
@@ -1646,59 +1914,25 @@ private:
                       [[maybe_unused]] const std::string& username,
                       ores::refdata::domain::party party,
                       bool set_default) {
-        bool changed = false;
-        if (party.status != "Active") {
-            party.status = "Active";
-            changed = true;
-        }
-        if (!party.image_id) {
-            auto image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo");
-            if (image_id) {
-                party.image_id = image_id;
-                changed = true;
-            }
-        }
-        if (changed) {
-            // The party was read above, so the write states the version it
-            // read and the store refuses a row that moved on.
-            ores::refdata::messaging::put_party_request save_req;
-            save_req.change.write = {.id = party.id,
-                                     .short_code = party.short_code,
-                                     .full_name = party.full_name,
-                                     .codename = party.codename,
-                                     .transliterated_name = party.transliterated_name,
-                                     .party_category = party.party_category,
-                                     .party_type = party.party_type,
-                                     .parent_party_id = party.parent_party_id,
-                                     .business_center_code = party.business_center_code,
-                                     .status = party.status,
-                                     .image_id = party.image_id};
-            save_req.change.precondition.kind =
-                ores::utility::domain::precondition_kind::must_match_version;
-            save_req.change.precondition.version = static_cast<std::uint32_t>(party.version);
-            save_req.intent.reason_code = "system.external_data_import";
-            save_req.intent.commentary = "Activated (and logo attached) during Acme provisioning";
-            client.request(save_req);
-        }
+        try {
+            const auto status = party.status == "Active" ? party.status : std::string("Active");
+            auto image_id = party.image_id;
+            if (!image_id)
+                image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo");
+            if (status != party.status || image_id != party.image_id)
+                save_party(client,
+                           party,
+                           status,
+                           image_id,
+                           "Activated (and logo attached) during Acme provisioning");
 
-        ores::variability::messaging::complete_party_onboarding_request onboarding_req;
-        onboarding_req.party_id = party.id;
-        client.request(onboarding_req);
-
-        ores::iam::messaging::put_many_account_parties_request assoc_req;
-        ores::iam::messaging::account_party_change change;
-        change.write.account_id = account_id;
-        change.write.party_id = party.id;
-        change.precondition.kind = ores::utility::domain::precondition_kind::any;
-        assoc_req.changes.push_back(std::move(change));
-        assoc_req.intent.reason_code = "system.external_data_import";
-        assoc_req.intent.commentary = "Associated during Acme provisioning";
-        client.request(assoc_req);
-
-        if (set_default) {
-            ores::iam::messaging::set_my_default_party_request default_req;
-            default_req.party_id = boost::uuids::to_string(party.id);
-            client.request(default_req);
+            complete_party_onboarding(client, party.id);
+            associate_account_with_party(client, account_id, party.id);
+            if (set_default)
+                set_account_default_party(client, party.id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                << "finish_party did not complete for " << party.full_name << ": " << e.what();
         }
     }
 

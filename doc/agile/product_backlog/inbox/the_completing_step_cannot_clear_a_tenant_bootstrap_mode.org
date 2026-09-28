@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 88018237-9892-41BF-8C2D-49C1E649B35D
+:END:
+#+title: The completing step cannot clear a tenant's bootstrap mode
+#+description: Tenant provisioning seeds each new tenant with system.bootstrap_mode true and onboarding.tenant pending, and its completing step clears both. Both writes are creates over rows the provisioner already made, so the store refuses them: the step completes with a warning, the tenant keeps bootstrap mode, and the login reply tells the tenant's own administrator that provisioning is unfinished. The completing step must write the settings the tenant already holds, stating the version it read.
+#+type: capture
+#+level: cross
+#+filetags: :iam:variability:provisioning:correctness:bug:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the completing step of tenant provisioning able to clear the settings
+it clears. The provisioner seeds every new tenant with bootstrap mode set
+and tenant onboarding pending, and the completing step writes both to their
+finished values. Both writes are creates over rows that already exist, so
+the store refuses them and the step reports a warning rather than a
+completion.
+
+* Why
+
+A tenant is created with two settings rows: bootstrap mode true, and tenant
+onboarding pending. The completing step marks the tenant active and then
+asks the settings service to clear bootstrap mode and complete tenant
+onboarding. The settings service builds a new setting value with no version
+and saves it, which the store reads as a create, and a create over a live
+row is refused by design. The step therefore completes with one warning
+that names the refusal, and the tenant keeps bootstrap mode.
+
+The consequence reaches the person the journey is for. The login reply
+carries the tenant's bootstrap mode, and the browser's gate makes the setup
+page the only page while a tenant reports it. So the administrator of a
+tenant whose provisioning has finished is told that provisioning has not
+finished, and the same administrator can never reach the tenant's own
+pages. The tenant's status and its bootstrap mode disagree, and the status
+is the one the completing step set directly.
+
+The write the completing step means is an update: the row exists, its
+version is known to the deployment, and the finished value replaces the
+seeded one. Either the settings service states the version it read for a
+setting the tenant already holds, or it offers the update as an operation
+of its own. The tenant onboarding flag rides the same call, so it fails the
+same way and belongs in the same fix.
+
+* References
+
+- [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — the workflow whose completing step cannot clear these settings.
+- [[id:1516C4BD-65A6-4A5D-A2AD-A1F358D14050][Task: Define the tenant provisioning workflow]] — the task that added the completing step, whose live run reported the warning.
+
+* See also
+
+-

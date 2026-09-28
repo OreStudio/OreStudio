@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: F62FC7AD-DE81-43FB-93D5-65BD5AA1F2D6
+:END:
+#+title: Task: Execute the ACME provisioning step kinds
+#+description: The three step kinds only the ACME demo card declares — load_staff, attach_photos and start_market_feeds — so the demo card's run creates the tenant's staff and their parties, attaches the images its records display, and starts its market feeds.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/execute-the-acme-step-kinds
+#+pr: 2341
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+iam.v1.tenants.provision drives the ACME demo card end to end: the three step kinds only that card declares execute, so its run loads the tenant's staff and their parties, attaches the images its records display, and starts its market feeds, and the instance finishes. The kinds act on the bundles, parties and keys the profile's rows state, so no ACME name stands in code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | The three executors, their argument parsers and the ACME demo's rows are in, and the demo card's run completes on the live deployment. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The executed-kind list carries the three kinds, and the ACME demo profile's rows state the parties, the bundles and the keys each kind acts on.
+- load_staff resolves each party the profile names, publishes the staff bundle that party names against it, and leaves the party ready for its staff.
+- attach_photos attaches the staff photos the profile's datasets carry and the party logo to the parties it names.
+- start_market_feeds publishes the configuration bundles against the system party, binds every party to the theme, and starts the feeds.
+- The ACME demo card's run completes on the live deployment, and the tenant holds its staff accounts, its images and its running market feeds.
+
+* Plan
+
+The unit is the three step kinds only the ACME demo card declares, the
+executors behind them, and the arguments that card's rows state. The
+definition, the run lifecycle and the other three kinds landed in the
+task beside this one; this task grows the executed-kind list by three
+and gives each new kind its own arguments.
+
+*What a kind acts on.* Every kind reads what it acts on from its own
+arguments, so no ACME name stands in code. The profile's rows carry the
+values; the kind's parser fixes their shape and refuses a row that omits
+one, naming the field.
+
+- =load_staff= names, for each party, the party's legal name and the bundles
+  that carry its staff and its organisation. The legal name is what the
+  profile's own hierarchy data creates the party with, and it is the key
+  the party read resolves: a party's external identifier is guarded by
+  party isolation, which a step's own context does not carry, so the
+  name is the handle the profile can state and the deployment can honour.
+  The kind publishes each bundle scoped to its party, then leaves the
+  party ready for its staff: the party becomes active, its onboarding is
+  complete, and the run's administrator is associated with it. The entry
+  that says so makes that party the administrator's default.
+- =attach_photos= names, for each party, the dataset that carries the
+  staff's photo keys, and the key of the party logo's template. The kind
+  reads each dataset's account rows as that party, copies each account's
+  own template image into the tenant, saves it on the account, and
+  attaches the logo to the party.
+- =start_market_feeds= names the configuration bundles and the theme
+  dataset. The kind publishes each configuration bundle against the
+  tenant's system party, binds every party the tenant holds to the
+  theme, and starts the theme's feeds from the system party's
+  collection folder.
+
+*The failure rule.* Every kind throws when its work does not complete,
+so the step fails, the instance stops and a retry resumes from that
+step. That is the policy the workflow page declares. The synchronous
+ACME handler this work is lifted from is deliberately not the model: it
+reported no step, so its uneven best-effort behaviour — a slow base
+bundle logged and ignored, a missing system party skipped, two
+responses never read — is not carried into a step that has an instance
+to report to.
+
+*What is lifted.* The three executors call the requests =provision_acme=
+calls today — =dq.v1.bundles.publish= with a follower wait,
+=refdata.v1.parties.put=, =variability.v1.ops.complete_party_onboarding=,
+=iam.v1.account_parties.put_many=, =iam.v1.accounts.set-default-party=,
+=assets.v1.images.put=, =iam.v1.accounts.update=,
+=marketdata.v1.feed_bindings.put= and
+=marketdata.v1.market_feed_configs.start_folder= — so the demo card
+provisions end to end against data that exists and no other component
+changes. =provision_acme= itself stays until the shell moves to the
+generic request at plan step 12, which is where it retires.
+
+*The party's ready state is a step kind's work, not a request's.* The
+ACME path activates each party and completes its onboarding inside the
+same synchronous handler that publishes its data. The new kinds keep
+that pairing, in =load_staff=, because the profile's row is what names
+the party: a kind that loads a party's staff is the kind that says the
+party is ready to hold them.
+
+*Live proof.* The acceptance is the ACME demo card's own run: a tenant
+created by =iam.v1.tenants.provision= with the =acme_demo= profile,
+followed to its terminal state, and the tenant's staff, images and
+feeds read back from the deployment.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Step kinds the executor runs | 6 | =./compass.sh test run -- -R ores.iam.api.tests\|ores.iam.core.tests= (the workflow tests assert the executed list) | fff1e5b733 |
+| Argument-parser test cases added | 9 | =./compass.sh test run -- -R ores.iam.core.tests= (136 cases, all passing) | fff1e5b733 |
+| Steps the demo card's run took, and its duration | 7 steps, 30 s | =evidence/provision_acme_run_completed.txt= (the request, the workflow log and the reads) | 76c4147e-9bd8-4959-abe2-bd6698635fc1 |
+| Staff accounts the tenant holds, of which photographed | 59, 58 photographed | =evidence/provision_acme_run_completed.txt= (read over =ores_iam_accounts_tbl=) | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Feed bindings the run created | 65, 13 for each of the tenant's five parties | =evidence/provision_acme_run_completed.txt= (read over =ores_marketdata_feed_bindings_tbl= grouped by party) | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+| Market observations the running feeds materialised | 1639 across five parties | =evidence/provision_acme_run_completed.txt= (read over =ores_marketdata_market_observations_tbl= grouped by party) | dc607c96-ed4b-444d-90e4-ec86e075c128 |
+
+The raw output of the run is =evidence/provision_acme_run_completed.txt= beside this
+task.
+
+* Notes
+
+- *What a kind reads, and why a party is named by its legal name.* The
+  profile's rows state each kind's arguments. A party is named by the legal
+  name the hierarchy import created it with, because a party's external
+  identifier is guarded by party isolation, which a step's own context does
+  not carry: the name is the handle the party read answers and the profile
+  can state. The datasets, bundles, template keys and theme are named
+  outright, so the executor composes no ACME name of its own.
+- *The demo card's rows.* =load_staff= names four parties with the bundles
+  that carry their staff, the holding party marked as the administrator's
+  default. =attach_photos= names the four accounts datasets and the party
+  logo's template key. =start_market_feeds= names the three configuration
+  bundles and the theme. All of them live in the seed profile's rows, which
+  is what makes the card data rather than code.
+- *A feed binding's existence claim.* The first live run stopped in
+  =start_market_feeds= because the store's must-not-exist claim for a
+  binding is read by the ORE key alone while the binding's natural key is
+  the party with the ORE key and the source, so the second party's binding
+  for a shared source was refused. The step now states no expectation for
+  that write and keeps its own freshness check, which is what lets it bind
+  every party; the key defect is captured for the component that owns it.
+- *The completing step's warning.* The run's last step reports
+  =completed_with_warnings= because the settings write that clears a
+  tenant's bootstrap mode is a create over a row the provisioner seeded.
+  The tenant's status is active and its data is in place, so the run is
+  accepted; the settings defect is captured for the components that own it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2341][#2341]] | [iam] Execute the ACME provisioning step kinds |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The executor runs the three step kinds the ACME demo card declares, and the
+card's run completes on the live deployment. The run is recorded beside this
+task in =evidence/provision_acme_run_completed.txt=: seven steps in thirty
+seconds, every step kind reporting completion, and the tenant holds the data
+the three kinds produced — its four legal entities active and linked to
+their staff, fifty-eight photographed staff accounts, sixty-five feed
+bindings, and the observations its running feeds materialise.
+
+Two defects were found by running the card, neither of them this unit's own,
+and both are captured in the product backlog's inbox: a feed binding's
+existence claim is read by the ORE key alone rather than by the binding's
+natural key, which this kind works around with its own freshness check; and
+the completing step cannot clear a tenant's bootstrap mode, which is the
+run's single warning.
+

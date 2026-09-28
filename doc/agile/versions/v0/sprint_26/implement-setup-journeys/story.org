@@ -48,9 +48,9 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, and one provision request creates a tenant and its administrator for every tenant, the first included. |
+| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. |
 | Waiting on    | Nothing. |
-| Next          | Plan step 7: order the tenant provisioning steps as the workflow definition the provision request starts. |
+| Next          | Plan step 8: follow the progress, retry from the failed step, and settle the event payload. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -100,6 +100,7 @@ state and the progress are real.
 | [[id:F016C6D3-2832-46A0-B4EB-8680DD5E4B8E][Make the seed profile rows match the prototype's cards]] | DONE | 2026-09-28 | 2026-09-28 | The prototype at prototype/first-run-journey is the accepted record for the cards' copy and shape. The rows seeded by the previous task carry a longer description, no bullets, and a counterparty count where the contract and the prototype both say a counterparty size. Reconcile the model, the rows and the read with the prototype. |
 | [[id:B03D4339-FECB-4A9E-B5A1-1CA23FB2BF17][Add the generic provision request]] | DONE | 2026-09-28 | 2026-09-28 | Provisioning a tenant is one request for every tenant, the first one included, instead of a bootstrap-specific request and an ACME-specific one. The request names the seed profile and the values its parameters take, and answers with a workflow instance id at once. |
 | [[id:1516C4BD-65A6-4A5D-A2AD-A1F358D14050][Define the tenant provisioning workflow]] | DONE | 2026-09-28 | 2026-09-28 | The provision-tenant definition over the fixed step kinds, in the shape workflow.v1.parties.provision already uses, running provision party once per party. |
+| [[id:F62FC7AD-DE81-43FB-93D5-65BD5AA1F2D6][Execute the ACME provisioning step kinds]] | STARTED | 2026-09-28 | | The three step kinds only the ACME demo card declares — load_staff, attach_photos and start_market_feeds — so the demo card's run creates the tenant's staff and their parties, attaches the images its records display, and starts its market feeds. |
 
 * Plan
 
@@ -142,6 +143,21 @@ none of them depends on it and all of them are permanent.
   catalogue, so a new profile is a row and a new step kind is code. The
   screen builds its form from the profile's declared parameter schema
   and holds no profile of its own.
+- *A step kind reads what it acts on from its own arguments.* A profile's
+  row states the bundles, the parties, the datasets and the keys a kind
+  works from, so the executor holds no profile's names and one kind serves
+  every profile that orders it. A kind that needs the run's parameters
+  reads them too, which is how a form supplies an LEI the row leaves out.
+  A row whose kind cannot be honoured is refused before the run starts,
+  naming the kind, so no card can half-provision a tenant.
+- *A party is named by the legal name its hierarchy import created it
+  with.* A party's external identifier is guarded by party isolation,
+  which a step's own context does not carry, so the name is the handle the
+  profile can state and the deployment's party read answers.
+- *Every kind fails its step rather than half-finishing it.* The engine
+  keeps the steps that completed and stops the run on the one that failed.
+  The synchronous ACME handler the work was lifted from is not the model:
+  it reported no step, so its uneven best-effort behaviour is not carried.
 - *The tenant's type is the starting point's, and a replaced verb retires
   with its last caller.* A tenant row carries a type that a lookup table
   validates, and the profile states it: Operational's tenants are

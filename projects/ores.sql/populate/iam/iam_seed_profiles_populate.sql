@@ -21,18 +21,19 @@
 /**
  * Seed Profile Population Script
  *
- * Seeds the two starting points provisioning offers: Empty operational and
- * the ACME demo. A seed profile is registered data, so the first two live
- * here and a new one is a row.
+ * Seeds the two starting points provisioning offers: Operational (the row
+ * whose code is =empty_operational=) and the ACME demo. A seed profile is
+ * registered data, so the first two live here and a new one is a row. The
+ * cards' copy is the accepted prototype's.
  *
  * The step kinds come from the catalogue in code: publish_bundle,
  * import_lei_hierarchy, provision_party, load_staff, attach_photos and
  * start_market_feeds. ACME orders all six, because it produces every kind of
- * datum a demonstration needs. Empty operational orders the three that
- * create real data and no test data at all.
+ * datum a demonstration needs. Operational orders the three that create real
+ * data and no test data at all.
  *
- * Empty operational is offered first: it is the production starting point,
- * and the demonstration is the deliberate second choice.
+ * Operational is offered first: it is the production starting point, and the
+ * demonstration is the deliberate second choice.
  *
  * The insert trigger forces the system tenant on every row, so this script
  * states no tenant and the rows are readable by whoever provisions. The
@@ -42,21 +43,26 @@
 
 \echo '--- Seed Profiles ---'
 
--- Empty operational: for production. It publishes the base bundle, imports
--- the parties under a GLEIF root LEI the administrator names, and creates no
--- test data. It prefills no tenant detail, because the administrator supplies
--- the tenant and its own identity.
+-- Operational: for real use. It publishes the base bundle, imports the parties
+-- under a GLEIF root LEI the administrator names, and creates no test data. It
+-- prefills no tenant detail, because the administrator supplies the tenant and
+-- its own identity.
+--
+-- The card copy is the prototype's: the accepted starting-point design states
+-- the tagline, the audience line and the three bullets, and a new profile
+-- states its own in its row.
 insert into ores_iam_seed_profiles_tbl (
-    id, code, name, description, audience,
+    id, code, name, summary, audience, bullets_json,
     tenant_name, tenant_code, tenant_hostname, admin_username, admin_email,
     inherits_admin_password, force_password_change, display_order,
     version, modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     gen_random_uuid(),
     'empty_operational',
-    'Empty operational',
-    'A production tenant: the base reference data and the parties you name, with no test data.',
-    'For production',
+    'Operational',
+    'Production-ready setup',
+    'For real use',
+    '["Standard reference data and counterparties", "Your legal entities, from their LEI", "No test data"]'::jsonb,
     '', '', null, '', '',
     false, true, 10,
     0, current_user, current_user, 'system.initial_load',
@@ -65,8 +71,9 @@ insert into ores_iam_seed_profiles_tbl (
     gen_random_uuid(),
     'acme_demo',
     'ACME demo',
-    'The Acme Corporation holding group: reference data, staff, books and market data. Every record is test data.',
-    'For demonstration',
+    'Pre-configured sandbox',
+    'For demos and testing',
+    '["4 legal entities, books and desks", "45 staff to sign in as", "Live synthetic market data"]'::jsonb,
     'Acme Corporation', 'acme_corporation', 'acme_corporation',
     'tenant_admin', 'admin@acme_corporation.com',
     true, false, 20,
@@ -108,23 +115,29 @@ do nothing;
 
 -- The parameters the form declares. A parameter is what the administrator
 -- supplies; the step kinds and the demonstration take nothing.
+--
+-- Operational's pair is the contract's: a GLEIF root LEI to import the parties
+-- under, and the size of the counterparty set it publishes. The size is a
+-- declared choice rather than a number, so a value the run cannot use is not
+-- typeable.
 insert into ores_iam_seed_profile_parameters_tbl (
-    id, tenant_id, seed_profile_id, name, data_type, default_value,
-    is_required, description, display_order,
+    id, tenant_id, seed_profile_id, name, label, data_type, choices_json,
+    default_value, is_required, description, display_order,
     version, modified_by, performed_by, change_reason_code, change_commentary
 )
 select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
-       v.name, v.data_type, v.default_value, v.is_required, v.description,
-       v.display_order,
+       v.name, v.label, v.data_type, v.choices_json, v.default_value,
+       v.is_required, v.description, v.display_order,
        0, current_user, current_user, 'system.initial_load',
        'Initial population of seed profile parameters'
 from ores_iam_seed_profiles_tbl p
 cross join (values
-    ('empty_operational', 'counterparty_count', 'integer', '50', true,
-     'How many counterparties the tenant starts with.', 10),
-    ('empty_operational', 'gleif_root_lei', 'string', null, false,
-     'GLEIF root LEI to import the parties under. Leave blank to create the tenant without parties.', 20)
-) as v(code, name, data_type, default_value, is_required, description, display_order)
+    ('empty_operational', 'root_lei', 'Root LEI', 'string', null, '', true,
+     'The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant''s parties.', 10),
+    ('empty_operational', 'counterparty_size', 'Counterparty set', 'choice',
+     '["small", "large"]'::jsonb, 'small', true,
+     'small is about 13k GLEIF counterparties; large is about 500k.', 20)
+) as v(code, name, label, data_type, choices_json, default_value, is_required, description, display_order)
 where p.code = v.code
   and p.valid_to = ores_utility_infinity_timestamp_fn()
 on conflict (tenant_id, seed_profile_id, name)

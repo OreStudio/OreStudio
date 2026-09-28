@@ -112,6 +112,7 @@ const acmeDemoId = '650550c6-8c4f-4b14-bef7-c78a42bc4d19';
 /**
  * The two seeded profiles answer the profile subject in key order, which is
  * not the order the cards are offered in: that is the point of the sort.
+ * Their copy is the accepted prototype's.
  */
 const profilesReply = {
     result: ok,
@@ -121,8 +122,13 @@ const profilesReply = {
             id: acmeDemoId,
             code: 'acme_demo',
             name: 'ACME demo',
-            description: 'The Acme Corporation holding group.',
-            audience: 'For demonstration',
+            summary: 'Pre-configured sandbox',
+            audience: 'For demos and testing',
+            bullets_json: JSON.stringify([
+                '4 legal entities, books and desks',
+                '45 staff to sign in as',
+                'Live synthetic market data',
+            ]),
             tenant_name: 'Acme Corporation',
             tenant_code: 'acme_corporation',
             tenant_hostname: 'acme_corporation',
@@ -135,9 +141,14 @@ const profilesReply = {
         {
             id: emptyOperationalId,
             code: 'empty_operational',
-            name: 'Empty operational',
-            description: 'A production tenant with no test data.',
-            audience: 'For production',
+            name: 'Operational',
+            summary: 'Production-ready setup',
+            audience: 'For real use',
+            bullets_json: JSON.stringify([
+                'Standard reference data and counterparties',
+                'Your legal entities, from their LEI',
+                'No test data',
+            ]),
             tenant_name: '',
             tenant_code: '',
             tenant_hostname: '',
@@ -176,19 +187,25 @@ const emptyParametersReply = {
     total: 2,
     seed_profile_parameters: [
         {
-            name: 'counterparty_count',
-            data_type: 'integer',
-            default_value: '50',
+            name: 'root_lei',
+            label: 'Root LEI',
+            data_type: 'string',
+            // A nullable jsonb column reaches the wire as an empty string.
+            choices_json: '',
+            default_value: '',
             is_required: true,
-            description: 'How many counterparties the tenant starts with.',
+            description:
+                "The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant's parties.",
             display_order: 10,
         },
         {
-            name: 'gleif_root_lei',
-            data_type: 'string',
-            default_value: '',
-            is_required: false,
-            description: 'GLEIF root LEI to import the parties under.',
+            name: 'counterparty_size',
+            label: 'Counterparty set',
+            data_type: 'choice',
+            choices_json: JSON.stringify(['small', 'large']),
+            default_value: 'small',
+            is_required: true,
+            description: 'small is about 13k GLEIF counterparties; large is about 500k.',
             display_order: 20,
         },
     ],
@@ -220,9 +237,14 @@ describe('OresClient seed profiles', () => {
         expect(profiles).toEqual([
             {
                 code: 'empty_operational',
-                name: 'Empty operational',
-                description: 'A production tenant with no test data.',
-                audience: 'For production',
+                name: 'Operational',
+                summary: 'Production-ready setup',
+                audience: 'For real use',
+                bullets: [
+                    'Standard reference data and counterparties',
+                    'Your legal entities, from their LEI',
+                    'No test data',
+                ],
                 tenant: {
                     name: '',
                     code: '',
@@ -236,19 +258,23 @@ describe('OresClient seed profiles', () => {
                 steps: [{ kind: 'publish_bundle', order: 10 }],
                 parameters: [
                     {
-                        name: 'counterparty_count',
-                        dataType: 'integer',
-                        defaultValue: '50',
+                        name: 'root_lei',
+                        label: 'Root LEI',
+                        dataType: 'string',
+                        choices: [],
+                        defaultValue: '',
                         required: true,
-                        description: 'How many counterparties the tenant starts with.',
+                        hint: "The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant's parties.",
                         order: 10,
                     },
                     {
-                        name: 'gleif_root_lei',
-                        dataType: 'string',
-                        defaultValue: '',
-                        required: false,
-                        description: 'GLEIF root LEI to import the parties under.',
+                        name: 'counterparty_size',
+                        label: 'Counterparty set',
+                        dataType: 'choice',
+                        choices: ['small', 'large'],
+                        defaultValue: 'small',
+                        required: true,
+                        hint: 'small is about 13k GLEIF counterparties; large is about 500k.',
                         order: 20,
                     },
                 ],
@@ -256,8 +282,13 @@ describe('OresClient seed profiles', () => {
             {
                 code: 'acme_demo',
                 name: 'ACME demo',
-                description: 'The Acme Corporation holding group.',
-                audience: 'For demonstration',
+                summary: 'Pre-configured sandbox',
+                audience: 'For demos and testing',
+                bullets: [
+                    '4 legal entities, books and desks',
+                    '45 staff to sign in as',
+                    'Live synthetic market data',
+                ],
                 tenant: {
                     name: 'Acme Corporation',
                     code: 'acme_corporation',
@@ -315,6 +346,42 @@ describe('OresClient seed profiles', () => {
             order: { field: '', descending: false },
             filter: null,
         });
+    });
+
+    it('refuses a bullet list the row does not hold as a list of strings', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.seed_profiles.list': [
+                {
+                    body: {
+                        result: ok,
+                        total: 1,
+                        seed_profiles: [
+                            {
+                                id: emptyOperationalId,
+                                code: 'empty_operational',
+                                name: 'Operational',
+                                summary: 'Production-ready setup',
+                                audience: 'For real use',
+                                bullets_json: JSON.stringify({ not: 'a list' }),
+                                tenant_name: '',
+                                tenant_code: '',
+                                tenant_hostname: '',
+                                admin_username: '',
+                                admin_email: '',
+                                inherits_admin_password: false,
+                                force_password_change: true,
+                                display_order: 10,
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.seedProfiles()).rejects.toThrow();
     });
 
     it('fails rather than answering with the rows a refused read carried', async () => {

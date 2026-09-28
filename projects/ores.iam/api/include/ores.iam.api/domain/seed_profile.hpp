@@ -38,7 +38,8 @@ namespace ores::iam::domain {
  *
  * A seed profile is the data set that provisioning gives a new tenant. One
  * row orders step kinds from the catalogue in code, declares the parameters
- * its form takes, and carries the tenant details it prefills.
+ * its form takes, carries the tenant details it prefills, and carries the card
+ * the person choosing a starting point reads.
  *
  * A new profile is a row, so an operator adds one with no code change. A new
  * step kind is code. The accepted seed profile contract fixes both lists,
@@ -95,15 +96,23 @@ struct seed_profile final {
     std::string name;
 
     /**
-     * @brief What the profile creates, in the words the card shows.
+     * @brief The card's tagline: one line saying what the profile sets up, for example
+     * "Production-ready setup".
      */
-    std::string description;
+    std::string summary;
 
     /**
-     * @brief Short line under the name that says who the profile is for, for example "For
-     * production" or "For demonstration".
+     * @brief Who the profile is for, as the line beside its name on the card, for example "For real
+     * use" or "For demos and testing".
      */
     std::string audience;
+
+    /**
+     * @brief The card's bullets, in the order it shows them, as a serialised JSON array of short
+     * lines. The card shows at most three. A profile that states none shows none, which is not the
+     * same as stating an empty line.
+     */
+    std::string bullets_json;
 
     /**
      * @brief Tenant display name the profile prefills. An empty value states that the form starts

@@ -432,15 +432,49 @@ export const seedProfileStepSchema = z.object({
 });
 
 /**
+ * A list of strings the server holds as a serialised JSON array.
+ *
+ * The column is `jsonb`, so the database guarantees valid JSON and not an
+ * array: a writer can store an object there. Reading one as a list is
+ * therefore a parse with a refusal, not a cast, so a row that is not a list
+ * fails the read it reached rather than quietly showing no bullets.
+ */
+const jsonStringListSchema = z.string().transform((raw, ctx) => {
+    /*
+     * A nullable `jsonb` column reaches the wire as an empty string, not as
+     * null: the generated domain member is a plain `std::string`, so the
+     * mapper writes nothing for a SQL null. No choices is that empty string.
+     */
+    if (raw === '') {
+        return [];
+    }
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (cause) {
+        ctx.addIssue({ code: 'custom', message: 'Not JSON', cause });
+        return z.NEVER;
+    }
+    if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== 'string')) {
+        ctx.addIssue({ code: 'custom', message: 'Not a JSON array of strings' });
+        return z.NEVER;
+    }
+    return parsed as string[];
+});
+
+/**
  * One input a starting point's form declares.
  *
  * The type is a word rather than a value because one table carries every
  * type, and the default stays text for the same reason: the form reads the
- * type to pick its widget and parses the default with it.
+ * type to pick its widget and parses the default with it. A `choice` carries
+ * the values it accepts; anything else carries none.
  */
 export const seedProfileParameterSchema = z.object({
     name: z.string(),
+    label: z.string().default(''),
     data_type: z.string().default('string'),
+    choices_json: jsonStringListSchema.nullable().default(null),
     default_value: z.string().default(''),
     is_required: z.boolean().default(false),
     description: z.string().default(''),
@@ -451,17 +485,18 @@ export const seedProfileParameterSchema = z.object({
  * A starting point a new tenant is provisioned from.
  *
  * The tenant details are the ones the profile prefills, and an empty one
- * states that the form starts blank there. The surrogate id is carried
- * because the steps and the parameters are read by it, and the audit tail
- * and the tenant the row belongs to are not: nothing that reads a starting
- * point may act on them.
+ * states that the form starts blank there. The bullets are the card's, in
+ * the order it shows them. The surrogate id is carried because the steps and
+ * the parameters are read by it, and the audit tail and the tenant the row
+ * belongs to are not: nothing that reads a starting point may act on them.
  */
 export const seedProfileSchema = z.object({
     id: uuidSchema,
     code: z.string(),
     name: z.string(),
-    description: z.string().default(''),
+    summary: z.string().default(''),
     audience: z.string().default(''),
+    bullets_json: jsonStringListSchema.default([]),
     tenant_name: z.string().default(''),
     tenant_code: z.string().default(''),
     tenant_hostname: z.string().default(''),
@@ -537,8 +572,9 @@ export const seedProfileParameterPageSchema = z.object({
 export const seedProfileChoiceSchema = z.object({
     code: z.string(),
     name: z.string(),
-    description: z.string().default(''),
+    summary: z.string().default(''),
     audience: z.string().default(''),
+    bullets: z.array(z.string()).default([]),
     tenant: z.object({
         name: z.string().default(''),
         code: z.string().default(''),
@@ -561,10 +597,12 @@ export const seedProfileChoiceSchema = z.object({
         .array(
             z.object({
                 name: z.string(),
+                label: z.string().default(''),
                 dataType: z.string().default('string'),
+                choices: z.array(z.string()).default([]),
                 defaultValue: z.string().default(''),
                 required: z.boolean().default(false),
-                description: z.string().default(''),
+                hint: z.string().default(''),
                 order: z.int().default(0),
             }),
         )
@@ -588,8 +626,9 @@ export function toSeedProfileChoice(
     return {
         code: profile.code,
         name: profile.name,
-        description: profile.description,
+        summary: profile.summary,
         audience: profile.audience,
+        bullets: profile.bullets_json,
         tenant: {
             name: profile.tenant_name,
             code: profile.tenant_code,
@@ -603,10 +642,12 @@ export function toSeedProfileChoice(
         steps: steps.map((step) => ({ kind: step.step_kind, order: step.display_order })),
         parameters: parameters.map((parameter) => ({
             name: parameter.name,
+            label: parameter.label,
             dataType: parameter.data_type,
+            choices: parameter.choices_json ?? [],
             defaultValue: parameter.default_value,
             required: parameter.is_required,
-            description: parameter.description,
+            hint: parameter.description,
             order: parameter.display_order,
         })),
     };

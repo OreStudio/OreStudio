@@ -25,13 +25,18 @@
  * Seed Profile Parameter Table
  *
  * The schema of the form that a seed profile presents: one row per
- * parameter, stating its name, its type, its default and whether a value is
- * required. The web builds the tenant form from these rows. The shell takes
- * the same values as =--param key=value=.
+ * parameter, stating the label the form shows, the key a shell command types,
+ * the type, the default and whether a value is required. The web builds the
+ * tenant form from these rows. The shell takes the same values as
+ * =--param key=value=.
  *
  * The declared shape is deliberately small. A profile decides how many
  * counterparties to create and which GLEIF root LEI to import; it does not
  * decide what a step kind does, because that is code.
+ *
+ * A parameter whose type is choice names the values it accepts, in the order
+ * the form offers them. A choice is declared rather than left to free text so
+ * that a value the run cannot use is not typeable at all.
  *
  * A profile with no parameters states that its form asks for nothing. The
  * demonstration profile is one: it carries every value it needs, so its
@@ -46,7 +51,9 @@ create table if not exists "ores_iam_seed_profile_parameters_tbl" (
     "version" integer not null,
     "seed_profile_id" uuid not null,
     "name" text not null,
+    "label" text not null,
     "data_type" text not null,
+    "choices_json" jsonb null,
     "default_value" text null,
     "is_required" boolean not null default true,
     "description" text not null default '',

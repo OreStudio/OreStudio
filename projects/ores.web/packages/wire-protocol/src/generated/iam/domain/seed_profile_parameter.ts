@@ -36,7 +36,9 @@ export interface SeedProfileParameter {
     id: string;
     seed_profile_id: string;
     name: string;
+    label: string;
     data_type: string;
+    choices_json: string;
     default_value: string;
     is_required: boolean;
     description: string;

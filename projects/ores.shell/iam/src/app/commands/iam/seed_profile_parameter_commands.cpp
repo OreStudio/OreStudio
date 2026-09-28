@@ -142,24 +142,24 @@ void seed_profile_parameter_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> "
-        "<display_order> <reason> <commentary>");
+        "add <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value> "
+        "<is_required> <description> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> "
-        "<display_order> <reason> <commentary> [--version <n>]");
+        "set <id> <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value> "
+        "<is_required> <description> <display_order> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <seed_profile_id> <name> <data_type> <default_value> "
-        "<is_required> <description> <display_order> <reason> <commentary>");
+        "put-many --count <n> <id> <seed_profile_id> <name> <label> <data_type> <choices_json> "
+        "<default_value> <is_required> <description> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -361,8 +361,8 @@ void seed_profile_parameter_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -370,7 +370,9 @@ void seed_profile_parameter_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.seed_profile_id, parsed->positionals[next++], "seed_profile_id");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
+        read_token(req.change.write.label, parsed->positionals[next++], "label");
         read_token(req.change.write.data_type, parsed->positionals[next++], "data_type");
+        read_token(req.change.write.choices_json, parsed->positionals[next++], "choices_json");
         read_token(req.change.write.default_value, parsed->positionals[next++], "default_value");
         read_token(req.change.write.is_required, parsed->positionals[next++], "is_required");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
@@ -417,8 +419,8 @@ void seed_profile_parameter_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -426,7 +428,9 @@ void seed_profile_parameter_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.seed_profile_id, parsed->positionals[next++], "seed_profile_id");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
+        read_token(req.change.write.label, parsed->positionals[next++], "label");
         read_token(req.change.write.data_type, parsed->positionals[next++], "data_type");
+        read_token(req.change.write.choices_json, parsed->positionals[next++], "choices_json");
         read_token(req.change.write.default_value, parsed->positionals[next++], "default_value");
         read_token(req.change.write.is_required, parsed->positionals[next++], "is_required");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
@@ -485,8 +489,8 @@ void seed_profile_parameter_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -496,7 +500,9 @@ void seed_profile_parameter_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.seed_profile_id, parsed->positionals[next++], "seed_profile_id");
             read_token(change.write.name, parsed->positionals[next++], "name");
+            read_token(change.write.label, parsed->positionals[next++], "label");
             read_token(change.write.data_type, parsed->positionals[next++], "data_type");
+            read_token(change.write.choices_json, parsed->positionals[next++], "choices_json");
             read_token(change.write.default_value, parsed->positionals[next++], "default_value");
             read_token(change.write.is_required, parsed->positionals[next++], "is_required");
             read_token(change.write.description, parsed->positionals[next++], "description");

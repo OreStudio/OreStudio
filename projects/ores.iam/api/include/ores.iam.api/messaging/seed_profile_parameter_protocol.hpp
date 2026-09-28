@@ -43,7 +43,9 @@ struct seed_profile_parameter_write {
     boost::uuids::uuid id;
     boost::uuids::uuid seed_profile_id;
     std::string name;
+    std::string label;
     std::string data_type;
+    std::string choices_json;
     std::string default_value;
     bool is_required;
     std::string description;

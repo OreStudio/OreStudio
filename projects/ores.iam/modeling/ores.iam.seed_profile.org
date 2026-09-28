@@ -15,7 +15,8 @@
 
 A seed profile is the data set that provisioning gives a new tenant. One
 row orders step kinds from the catalogue in code, declares the parameters
-its form takes, and carries the tenant details it prefills.
+its form takes, carries the tenant details it prefills, and carries the card
+the person choosing a starting point reads.
 
 A new profile is a row, so an operator adds one with no code change. A new
 step kind is code. The accepted seed profile contract fixes both lists,
@@ -91,14 +92,15 @@ Name shown on the starting-point card.
 std::string(faker::word::adjective()) + " Profile"
 #+end_src
 
-** description
+** summary
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
 
-What the profile creates, in the words the card shows.
+The card's tagline: one line saying what the profile sets up, for example
+"Production-ready setup".
 
 #+begin_src cpp :name generator
 std::string(faker::lorem::sentence())
@@ -111,11 +113,27 @@ std::string(faker::lorem::sentence())
 :nullable: false
 :END:
 
-Short line under the name that says who the profile is for, for example
-"For production" or "For demonstration".
+Who the profile is for, as the line beside its name on the card, for example
+"For real use" or "For demos and testing".
 
 #+begin_src cpp :name generator
 std::string("For ") + std::string(faker::word::noun())
+#+end_src
+
+** bullets_json
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:default:  '[]'::jsonb
+:END:
+
+The card's bullets, in the order it shows them, as a serialised JSON array of
+short lines. The card shows at most three. A profile that states none shows
+none, which is not the same as stating an empty line.
+
+#+begin_src cpp :name generator
+std::string("[]")
 #+end_src
 
 ** tenant_name

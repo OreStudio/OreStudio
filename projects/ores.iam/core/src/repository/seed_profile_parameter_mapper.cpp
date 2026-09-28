@@ -46,7 +46,9 @@ seed_profile_parameter_mapper::map(const seed_profile_parameter_entity& v) {
 
     r.name = v.name;
 
+    r.label = v.label;
     r.data_type = v.data_type;
+    r.choices_json = v.choices_json.value_or("");
     r.default_value = v.default_value.value_or("");
     r.is_required = v.is_required;
     r.description = v.description;
@@ -74,7 +76,9 @@ seed_profile_parameter_mapper::map(const domain::seed_profile_parameter& v) {
 
     r.name = v.name;
 
+    r.label = v.label;
     r.data_type = v.data_type;
+    r.choices_json = v.choices_json.empty() ? std::nullopt : std::optional(v.choices_json);
     r.default_value = v.default_value.empty() ? std::nullopt : std::optional(v.default_value);
     r.is_required = v.is_required;
     r.description = v.description;

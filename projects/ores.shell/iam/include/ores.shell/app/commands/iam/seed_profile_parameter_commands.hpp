@@ -87,24 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <seed_profile_id> <name> <data_type> <default_value> <is_required> <description>
-     * <display_order> <reason> <commentary>
+     * @brief add <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value>
+     * <is_required> <description> <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <seed_profile_id> <name> <data_type> <default_value> <is_required>
-     * <description> <display_order> <reason> <commentary> [--version <n>]
+     * @brief set <id> <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value>
+     * <is_required> <description> <display_order> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <seed_profile_id> <name> <data_type> <default_value>
-     * <is_required> <description> <display_order> <reason> <commentary>
+     * @brief put-many --count <n> <id> <seed_profile_id> <name> <label> <data_type> <choices_json>
+     * <default_value> <is_required> <description> <display_order> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -38,7 +38,9 @@ render_seed_profile_parameter_fields(const domain::seed_profile_parameter& v) {
     fields.push_back(
         {.name = "Seed Profile ID", .value = boost::uuids::to_string(v.seed_profile_id)});
     fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back({.name = "Label", .value = v.label});
     fields.push_back({.name = "Data Type", .value = v.data_type});
+    fields.push_back({.name = "Choices Json", .value = v.choices_json});
     fields.push_back({.name = "Default Value", .value = v.default_value});
     fields.push_back({.name = "Is Required", .value = v.is_required ? "true" : "false"});
     fields.push_back({.name = "Description", .value = v.description});

@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ID: F016C6D3-2832-46A0-B4EB-8680DD5E4B8E
+:END:
+#+title: Task: Make the seed profile rows match the prototype's cards
+#+description: The prototype at prototype/first-run-journey is the accepted record for the cards' copy and shape. The rows seeded by the previous task carry a longer description, no bullets, and a counterparty count where the contract and the prototype both say a counterparty size. Reconcile the model, the rows and the read with the prototype.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/make-the-seed-profile-rows-match-the-prototype-cards
+#+pr: 2312
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new profile states the card the screen shows. Carry the prototype's card data as profile data: the tagline, the bullets, the audience, and the parameter schema the form is built from, including a labelled choice parameter. The prototype is the design record for the copy; the parameter names and shapes it uses are the contract's.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The profile rows carry the prototype's card copy: name, audience, summary and bullets, for both Empty operational and ACME demo.
+- The parameters match the contract and the prototype: root_lei, required, and counterparty_size as a declared choice of small and large, each with its human label and hint.
+- The read returns the new fields, and its tests assert the literal shape they now have.
+- No prototype-only fields are added to the rows: the logo stays in the image store and the resulting party list stays provisioning output.
+- The live deployment serves the reconciled cards, and the workspace typechecks, formats, tests green and builds.
+
+* Plan
+
+1. Read the prototype's own data, not only its decisions:
+   =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/stub.ts= on
+   =prototype/first-run-journey= holds the two profiles, their card copy and
+   their parameter schemas, and =parts.tsx= holds the card and the form that
+   read them.
+2. Diff it against the seeded rows field by field, and decide per field: carry
+   it as profile data, leave it to something else, or keep the implemented
+   value where the prototype and the code disagree.
+3. Change the model: the tagline (=summary=, renamed from the longer
+   =description=), the card's =bullets_json=, a parameter =label=, and a
+   declared =choice= type with its =choices_json=.
+4. Regenerate the component, re-seed the rows with the prototype's copy, and
+   update the read, its schemas and both tests.
+5. Apply the new shape to the live database, and prove the route serves the
+   reconciled cards.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Prototype profiles read | 2, with 3 bullets each and 2 parameters on one | =git show origin/prototype/first-run-journey:.../stub.ts= | =9cbed76982= |
+| Columns added to the model | 3 (profile =bullets_json=; parameter =label= and =choices_json=) | =compass codegen regenerate --component iam --entity seed_profile,seed_profile_step,seed_profile_parameter --address ores= | =9cbed76982= (working tree) |
+| Seeded rows after reconciliation | 2 profiles, 9 steps, 2 parameters | =compass sql -- -f projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql= | =9cbed76982= (working tree) |
+| Tests, whole workspace | 3 packages, 118 passed (bff 34, web 44, wire-protocol 40) | =npm test= in =projects/ores.web= | =9cbed76982= (working tree) |
+| C++ suites for the component | 5, 100% passed | =compass test run -- -R iam= | =9cbed76982= (working tree) |
+| Codegen sweep, files this branch touched | 0 | =check_component_drift.py --sweep= | =9cbed76982= (working tree) |
+| Gates | model drift 0; SQL hygiene 1548 files 0 problems; protocol twins 80; handler permissions 226; populate references resolve | the five check scripts | =9cbed76982= (working tree) |
+| Live route | both cards with the prototype's copy, labels and choices | =curl -b jar .../api/seed-profiles= | =9cbed76982= (working tree) |
+
+* Notes
+
+- *Carried as data.* =summary=, =bullets_json=, the parameter =label= and the
+  declared choices are rows, because a new profile must be able to state its
+  own card. A label in particular cannot be derived from the parameter name:
+  the name is a key a shell command types and the label is a sentence a person
+  reads, and deriving one from the other would put English in the code.
+- *Bullets as a JSON array.* They are card copy with no identity and no
+  lookup, so they are a =jsonb= array on the row rather than a fourth entity;
+  =ores.marketdata.observation_lineage.source_series_ids= is the precedent for
+  a serialised array column. The read parses it and refuses a value that is not
+  an array of strings, because =jsonb= guarantees valid JSON and not a list.
+- *A nullable =jsonb= reaches the wire as an empty string.* The generated
+  domain member is a plain =std::string=, so a SQL null arrives as =''=: the
+  read treats that as "no choices". Found by the live route going red on the
+  first attempt, not by a test, which is why the client test now feeds =''=.
+- *Two prototype values deliberately not carried.* The prefill hostname stays
+  =acme_corporation= and the administrator email stays
+  =admin@acme_corporation.com=, because the implemented principal convention is
+  =username@hostname= and both the shell recipe and this environment's login
+  use that pair; the prototype's =acme_corporation.localhost= and
+  =tenant_admin@acme.example.com= have no counterpart in the code.
+- *Two prototype fields deliberately not carried.* The logo stays in the image
+  store, which the story already decided, and the party list stays provisioning
+  output the tenant record holds once the run finishes.
+- *The step arguments are unchanged.* The prototype's step lists are the
+  progress rail's labels, which the workflow definition owns (step 7); the
+  kinds the rows order are the contract's catalogue and already match its
+  sequence.
+- *The card copy is English in data.* Profile copy is registered data rather
+  than i18n keys, so it is not translated by the catalogue that translates the
+  screen's own words. That is inherent to "a profile is a row"; translating
+  registered copy is its own concern and is not attempted here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2312][#2312]] | [iam] Make the seed profile rows match the prototype's cards |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The rows now state the card the accepted prototype draws. Read from
+=prototype/first-run-journey=, the two profiles carry the prototype's name,
+audience, tagline and bullets:
+
+#+begin_example
+Operational    Production-ready setup   For real use
+  Standard reference data and counterparties
+  Your legal entities, from their LEI
+  No test data
+  parameters: Root LEI (required), Counterparty set (choice small/large,
+              default small)
+ACME demo      Pre-configured sandbox   For demos and testing
+  4 legal entities, books and desks
+  45 staff to sign in as
+  Live synthetic market data
+  parameters: none
+#+end_example
+
+The model gained what those need: =summary= on the profile (renamed from the
+longer =description=, which no screen read), =bullets_json= as a JSON array,
+and a =label= and =choices_json= on a parameter, so the form can put a sentence
+above the field and offer a choice rather than accept free text. Three columns,
+one of them a rename.
+
+The read carries them through unchanged: the composed shape exposes =bullets=,
+and each parameter exposes =label=, =choices= and the hint. Both tests assert
+the new literal, and the client suite gained a case for a bullet column that is
+not a list of strings.
+
+Verified on the live deployment, signed in through the BFF: =GET
+/api/seed-profiles= returns the two cards above, in that order. Five C++ suites
+pass, the whole workspace typechecks, formats clean and passes 118 tests, the
+tree builds, the sweep finds no drift in any file this branch touched, and the
+model-drift, SQL-hygiene, protocol-twin, handler-permission, populate-reference
+and lint gates are green.
+
+Deliberately not carried, with reasons in =* Notes=: the prototype's prefill
+hostname and administrator email (the implemented principal convention wins),
+the logo (image store) and the party list (provisioning output). The step
+kinds and their arguments are untouched; the prototype's step labels belong to
+the workflow definition that step 7 of the story builds.

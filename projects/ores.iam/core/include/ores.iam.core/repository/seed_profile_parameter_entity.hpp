@@ -50,7 +50,9 @@ struct seed_profile_parameter_entity {
 
     std::string name;
 
+    std::string label;
     std::string data_type;
+    std::optional<std::string> choices_json;
     std::optional<std::string> default_value;
     bool is_required = false;
     std::string description;

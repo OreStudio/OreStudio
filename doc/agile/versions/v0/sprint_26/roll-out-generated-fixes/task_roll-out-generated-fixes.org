@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 21B66CCB-379C-434B-821E-418CB5EC5867
+:END:
+#+title: Task: Regenerate the five components and fix the callers the new shapes break
+#+description: Regenerate history, scheduler, storage, marketdata and synthetic against the current templates, commit each component on its own, and migrate every hand-written caller the new response shapes break.
+#+type: task
+#+level: s1
+#+filetags: :sprint_26:codegen:clean_standard:v0:roll-out-generated-fixes:
+#+owner: marco
+#+branch: feature/roll-out-generated-fixes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The components outside =COMPONENTS_UNDER_TEST= carry the four generator fixes
+the refdata clean-standard pass landed, rather than the shapes they were last
+generated with. The capture =shell-recipes-no-longer-run= is what asked for it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED |
+| Parent story | [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] |
+| Now          | All the work is on the branch and every gate is green: build, database recreate, fleet, the full test suite, the drift check and the codegen suite. The pull request is open. |
+| Waiting on   | The pull request's checks. |
+| Next         | Merge, then flip the capture's remaining two components. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- Each of the five components is regenerated and committed on its own, so a
+  reviewer reads one component's diff at a time.
+- =check_component_drift.py --all= reports no drift.
+- Every hand-written caller the new shapes break is migrated.
+- =compass build= exits 0, =compass db recreate -y -k= exits 0, the fleet is
+  25 of 25, and the full =ctest= suite passes.
+- The capture records =trading= and =workspace-cpp= as the remainder, with the
+  reason each is out.
+
+* Plan
+
+Take one component at a time, in the order the capture lists them: regenerate,
+read the diff, and commit. The regeneration is not trusted to be mechanical, so
+after all five are in, the whole tree is built and tested before the branch is
+pushed. Each component that turns out to need more than a regeneration gets its
+own commit with the reason in the message.
+
+The order that was followed:
+
+1. =history=, =scheduler=, =storage=, =marketdata= and =synthetic=, regenerated
+   and committed separately.
+2. The recipes the regenerations materialised, committed beside their component.
+3. A full =compass build=, which found the one hand-written caller the new
+   response shape breaks.
+4. The store rebuilt from nothing, so the tests run against the branch's own
+   schema rather than a store from an earlier tree.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Components regenerated | 5 | =check_component_drift.py --all= → "No drift: regenerated output matches the checked-in tree" | =ce04a90acd= |
+| Files the branch changes | 68 files, 1168 insertions, 172 deletions | =git diff --stat origin/main= | =ce04a90acd= |
+| Build | exit 0, every target linked | =compass build= | =ce04a90acd= |
+| Database | exit 0; schema 0.0.25, =drift: current= | =compass db recreate -y -k=, =compass db status= | =ce04a90acd= |
+| Fleet | 25 of 25 units running | =compass services status= | =ce04a90acd= |
+| Test suite | 87 of 87 targets, 6706 cases, 0 failed, 100% | =compass test run=, =compass test results= | =ce04a90acd= |
+| Codegen suite | 955 passed | =python3 -m pytest projects/ores.codegen/tests -q= | =ce04a90acd= |
+| Codegen gates | 8 gates exit 0 | =check_sql_hygiene.py=, =check_protocol_twin_coverage.py=, =check_model_drift.py=, =check_handler_permissions.py=, =check_shell_menu_collisions.py=, =check_route_auth_declarations.py=, =check_registry_exceptions.py=, =check_test_case_reachability.py= | =ce04a90acd= |
+| Org corpus | lint clean; 0 unresolved links | =compass lint=, =emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el= | =ce04a90acd= |
+
+* Notes
+
+- The regeneration of a protocol can stop a hand-written caller in *another*
+  component from compiling. =ores.shell= read
+  =put_job_definition_response::job_definition= as a value; the scheduler
+  regeneration made the field an =std::optional=, and =ores.shell.application=
+  stopped building at that line. The caller is migrated in =dd6150918c=. The
+  first build that ran after the regeneration is what found it, which is why
+  the full build is part of the plan rather than an afterthought.
+- =ores.synthetic='s regeneration also corrected one generated SQL artefact
+  index the model states once, committed separately so the model fix and the
+  materialised file do not read as one change.
+- The suite passes on a database recreated from nothing. A second run against
+  the same database fails in two =ores.iam.core.tests= cases, because the
+  synthetic seed-profile code repeats across processes; that is filed as
+  =iam_seed_profile_tests_fail_on_a_second_run= and is not this branch's.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Not yet merged. On the branch, every acceptance item holds: the five
+components regenerate with no drift, the migrated caller builds, the store
+rebuilds from nothing, the fleet is 25 of 25, the full suite is 87 of 87 with
+6706 cases and no failure, and the codegen suite and its gates are green.

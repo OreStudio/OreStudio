@@ -95,6 +95,7 @@ root.
 <<dsh-paths-ccache>>
 <<dsh-paths-sccache>>
 <<dsh-paths-emacs>>
+<<dsh-paths-gh>>
 #+end_src
 
 ** The shared bare repository
@@ -153,6 +154,20 @@ the target fails part-way through with a read-only filesystem error against
 # Emacs is the engine behind every compass deploy target, and it installs
 # packages and rewrites package-quickstart.elc in its own directory.
 ~/.emacs.d
+#+end_src
+
+** The gh CLI cache
+
+=gh= unpacks a run's log into its own cache before printing any of it. A
+confined =gh run view --log-failed= therefore fails with a read-only filesystem
+error against =~/.cache/gh=, and the failure names the cache rather than the
+run. The token and the host configuration live in =~/.config/gh=, which this
+grant deliberately does not cover: only the cache is written.
+
+#+begin_src sh :tangle no :noweb-ref dsh-paths-gh
+# gh unpacks a run log here before printing it, so `gh run view --log-failed`
+# fails confined. The credentials stay in ~/.config/gh, which is not granted.
+~/.cache/gh
 #+end_src
 
 ** Header
@@ -297,10 +312,10 @@ a limit of the mechanism, not a gap in the list.
 
 | Verb | What it needs | Confined? |
 |------+---------------+-----------|
-| =compass build=, =compass services start= | the systemd user manager, reached through =systemd-run --user --scope= | No. The bus socket is visible and =busctl --user= works, but =systemd-run= cannot create a transient scope inside the user namespace. Builds use the standing escalation in [[id:06A0919D-B741-40EA-BFF2-376BD36C4A27][Builds can run outside the sandbox]]. |
+| =compass build=, =compass services start=, =compass services restart=, =systemctl --user= | the systemd user manager, reached through =systemd-run --user --scope= and the user bus | No. The bus socket is visible and =busctl --user= works, but =systemd-run= cannot create a transient scope inside the user namespace. Under Claude Code, use the standing escalation in [[id:06A0919D-B741-40EA-BFF2-376BD36C4A27][Builds can run outside the sandbox]]. Under DSH, the call is widened once through the official =sandbox_permissions: danger-full-access= plus =justification= contract, which =dsh-auto-mode= classifies against the user's direct authorisation; the user authorised this path for this checkout on 2026-09-28, so a build or a fleet verb does not need a fresh decision each time. |
 | =compass deploy *= (skills, site, manual, settings) | Emacs and its package directory | Yes, with the Emacs grant above. |
 | =compass services status= | =busctl --user= | Yes, with =ORES_USE_BUSCTL=1=, which the checkout sets. |
-| =compass pr *=, =compass review *= | =gh= and its token | Yes. |
+| =compass pr *=, =compass review *=, =gh run view --log-failed= | =gh=, its token and its run-log cache | Yes, with the =~/.cache/gh= grant above. |
 | =compass sql=, =compass db= | a TCP connection | Yes. |
 
 * The two surfaces

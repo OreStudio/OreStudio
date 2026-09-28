@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/remaining-fixing-identities
-#+pr: 2353
+#+branch: feature/inflation-equity-security-fixings
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -28,16 +28,16 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Five classes are closed: interest rates 57 of 57, FX 7 of 7, commodity 25 of 25, intraday power 48 of 48 and generic 2 of 2, so 139 of the corpus's 158 names resolve. The two market-data keys the corpus misfiles as fixings are counted as a class of their own and refused. |
-| Waiting on   | The three classes left: inflation 7 names, equity 8 and security 2. |
-| Next         | Merge pull request #2353, then take the three remaining classes: inflation 7, equity 8 and security 2. |
+| Now          | Every class the corpus puts in the fixing space is closed: interest rates 57 of 57, intraday power 48, commodity 25, equity 8, inflation 7, FX 7, security 2 and generic 2. That is 156 of the 158 names in a fixing column, and the other two are market-data keys rather than index names, refused and pinned apart. |
+| Waiting on   | Nothing. The corpus-driven test's allowlist is empty. |
+| Next         | Run the two-axis review, raise the pull request and merge it. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
 
-- from_index_name names every distinct index name the corpus carries, asserted by a corpus-driven test whose allowlist is empty.
-- Each asset class the corpus puts in the fixing space has a stated mapping, or a recorded reason it has none.
-- The corpus fixing import creates a series for every fixing row, with no skipped-name warnings.
+- from_index_name names every distinct index name the corpus carries, asserted by a corpus-driven test whose allowlist is empty. **Met**: the class list is empty and the census reads 156 of 156 index names.
+- Each asset class the corpus puts in the fixing space has a stated mapping, or a recorded reason it has none. **Met**: the two rows that are not index names are the only ones with a reason, and it is recorded.
+- The corpus fixing import creates a series for every fixing row, with no skipped-name warnings. **Not met, and not this task's**: the import still writes the index name into the series qualifier and never calls from_index_name, which is the identity cutover's work. Review rows 10 and 11 record it.
 
 * The index names, and what each class needs
 
@@ -353,6 +353,43 @@ The character set is ORE's and not the URI's. =#= is a fragment delimiter, so it
 percent-encoded in the path segment and in the spelling, and the parser decodes
 both. A case reads =GENERIC-PortfolioBasket#1= out to a URI and back to prove it.
 
+* The last three classes, and the allowlist they close
+
+Inflation, equity and security are closed, which leaves no class the corpus puts in
+the fixing space unnamed: 156 of its 158 names in a fixing column resolve, and the
+other two are the market-data keys.
+
+**Inflation is the one class whose index name has no prefix.** =UKRPI= is the whole
+of the name: there is no =INFLATION-=, no separator, and nothing in the string says
+which class the token belongs to. So the class carries the codes it knows, in an
+Index codes table in =inflation_quote_type.org=, and the index-name projection names
+a dash-less token only when it is one of them. A stray token or a header word keeps
+its name instead of being given an inflation identity, and a code written in another
+case is refused rather than reshaped -- the rule the power delivery date follows,
+and why the seven codes the corpus carries are all upper-case. The list is data: a
+code ORE adds is a row.
+
+**Equity needs no new field.** A fixing carries no currency, which
+=ccy_optional_for_fixing= already settles, so the whole projection is
+=EQ-<ticker>=. The ticker is the tail ORE writes, its identifier scheme included:
+the corpus carries =EQ-RIC:.SPX= and =EQ-FIGI:BBG00R251JN8= as fixings beside
+=EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/...= as the quote key for the same
+instrument, so the scheme belongs in the name rather than in a field beside it.
+
+**Security reuses =delivery=.** The corpus writes =BOND-ISIN:IE00BH3SQ895= for the
+bond and =BOND-ISIN:IE00BH3SQ895-2025-08= for the future that expires in August
+2025, so the trailing period is a contract month: the shape commodity already gives
+its delivery. =delivery= joins security's Fields table and leaves its Reject keys
+table, and the shared shape helper becomes =contract_month_is_the_shape= now that it
+has a second caller. A quote carries that information inside the name it is quoted
+under, which is why nothing reads the field for one.
+
+**The allowlist is empty and the population is still whole.** The two
+=GENERIC-MD/EQUITY_OPTION/PRICE/...= rows are not index names, so the census counts
+them in a bucket of their own, pins them by name and asserts that the projection
+refuses both. That case replaces the recorded-list entry that used to excuse them,
+so nothing was dropped to make the list empty.
+
 * Plan
 
 1. **Measure first.** Walk every fixing payload with the real fixing reader,
@@ -417,6 +454,11 @@ task and name that file in the Command column.
 | codegen suite, after the generic work | 990 passed | =pytest projects/ores.codegen/tests= | =7b3918b6fe= |
 | codegen suite, after the declared-case check | 992 passed | same | =9edae76203= |
 | Declared oresmd test cases no template emitted, before | 22 of 198 (power 11, generic 11) | =pytest projects/ores.codegen/tests/test_oresmd_spec_test_cases.py=, run against the same generated files at =7b3918b6fe~1= | =9edae76203= |
+| Inflation, equity and security names that name, after | 17 of 17 (inflation 7, equity 8, security 2), all round-tripped | =ores.marketdata.core.tests "[fixing]"= | =38f63cb9b6= |
+| Corpus index names that name, after the last three classes | 156 of 156, with the 2 market-data keys counted apart and refused | same | =48eb0e27aa= |
+| =ores.marketdata.core= suite, after the last three classes | 1764 assertions in 394 cases | =ores.marketdata.core.tests= | =48eb0e27aa= |
+| codegen suite, after the last three classes | 992 passed | =pytest projects/ores.codegen/tests= | =48eb0e27aa= |
+| Component file lists, the marketdata parts and codegen | up to date, rc 0 for each | =regenerate_cmake_component_files.py --component <name> --check= | =48eb0e27aa= |
 
 The test binaries are under
 =build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the
@@ -499,6 +541,15 @@ nothing else. =test_oresmd_spec_test_cases.py= now loads every model through the
 generator's own loader and requires each declared description to appear as a
 =TEST_CASE= in the generated sources. Run against the tree before the wiring it
 names all 22 rows.
+
+**One component file list is stale on main, and it is not this task's.**
+=regenerate_cmake_component_files.py --all --check= reports
+=projects/ores.workflow/api/src/component_files.cmake= stale at =48eb0e27aa=, and
+=git diff origin/main= shows this branch does not touch =ores.workflow= at all, so
+the drift arrives with main. Every component this task edits is clean: the four
+marketdata parts and =ores.codegen= each report rc 0 on the same check. Fixing
+another component's generated list here would put an unrelated regeneration in this
+pull request, so it is recorded rather than fixed.
 
 * Test Scenarios
 
@@ -652,3 +703,21 @@ identifier carries the index name upper-cased and the case ORE wrote it in besid
 in =name_spelling=, which is the FX =source_spelling= rule. Both names the corpus
 carries name and round-trip, the second of them through the =%23= its =#= becomes in
 a URI, and 2 of 2 takes the corpus total to 139 of 158.
+
+The fixing key space is closed with the last three classes. Every class the corpus
+puts in it resolves and round-trips: interest rates 57, intraday power 48, commodity
+25, equity 8, inflation 7, FX 7, security 2 and generic 2, which is 156 of the 158
+names in a fixing column. The other two are market-data keys in a fixing column, and
+the projection refuses them, so the target is 156 of 158 rather than 158: the owner
+reads them as errors rather than as fixings to model.
+
+The corpus-driven coverage test now names the classes with an empty allowlist, so a
+class that stops resolving fails it, and the two keys are pinned in a bucket of
+their own and asserted to project to nothing. Nothing was dropped to make the list
+empty: the fixing space and the keys misfiled inside it still add up to every
+distinct name the corpus carries.
+
+What remains is not this task's. The import still stores the index name in the
+series qualifier and never calls =from_index_name=, so the acceptance criterion
+about the import creating a series for every fixing row belongs to the identity
+cutover, as Review rows 10 and 11 record.

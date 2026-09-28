@@ -29,8 +29,8 @@ ores.marketdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | PRs 1 to 3 merged, and PR 4's first half as #2313. PR 4's second half is on =feature/clean-marketdata-pr4-export=: the verbatim key column, the ORE export path, and the file round trip through the database that proves it. |
-| Waiting on   | Nothing.                               |
-| Next         | Land PR 4, then PR 5, the identity cutover. |
+| Waiting on   | The fixing key space's oresmd mapping, before PR 5 can start. |
+| Next         | PR 5, the identity cutover, is blocked on a piece the six-PR plan does not have: the fixing key space has no oresmd mapping. =from_index_name()= names 24 of the 96 distinct index names in =fixings*.txt= (34 of 158 with =fixings*.csv=); the abandoned branch dropped the rest with a warning. The fixing key space must be mapped asset class by asset class first -- see the analysis. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

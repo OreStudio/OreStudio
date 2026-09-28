@@ -54,13 +54,22 @@ import {
     accountPageSchema,
     httpInfoResponseSchema,
     listAccountsRequestSchema,
+    retryWorkflowInstanceReplySchema,
+    retryWorkflowInstanceRequestSchema,
     toProvisionTenantCommand,
     toProvisionTenantResult,
+    toRetryWorkflowInstanceCommand,
+    toRetryWorkflowInstanceResult,
+    workflowProgressSchema,
+    workflowStepsRequestSchema,
     type LoginResponse,
     type ProvisionTenantRequest,
     type ProvisionTenantResult,
+    type RetryWorkflowInstanceRequest,
+    type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
     type WireAccountPage,
+    type WorkflowProgress,
 } from './operations.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
 import type { Transport } from './transport.js';
@@ -350,6 +359,43 @@ export class OresClient {
             { timeoutMs: this.#timeouts.slowMs },
         );
         return toProvisionTenantResult(reply);
+    }
+
+    /**
+     * Follows a run through the progress read.
+     *
+     * The page's rail comes from here: the run's status, how many steps it
+     * declared, the step it is executing, and one summary per step. The read
+     * is the progress contract, so a page that asks again sees the run move
+     * without subscribing to anything.
+     */
+    async workflowProgress(instanceId: string): Promise<WorkflowProgress> {
+        return this.#authenticatedCall(
+            SUBJECTS.workflowInstanceSteps,
+            workflowStepsRequestSchema.parse({ workflow_instance_id: instanceId }),
+            workflowProgressSchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+    }
+
+    /**
+     * Asks the engine to resume a stopped run.
+     *
+     * The answer names the step that was re-dispatched, or why the engine
+     * refused. A refusal is an answer rather than a thrown error: a run that
+     * has not stopped, or a step the run does not hold, is something the
+     * person asking can see and act on.
+     */
+    async retryWorkflowInstance(
+        input: RetryWorkflowInstanceRequest,
+    ): Promise<RetryWorkflowInstanceResult> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.retryWorkflowInstance,
+            toRetryWorkflowInstanceCommand(retryWorkflowInstanceRequestSchema.parse(input)),
+            retryWorkflowInstanceReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        return toRetryWorkflowInstanceResult(reply);
     }
 
     /**

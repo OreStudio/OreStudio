@@ -37,4 +37,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.api/generators/workspace_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.api/messaging/workspace_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.api/messaging/workspace_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workspace.api/ores.workspace.api.hpp"
 )

@@ -8,7 +8,7 @@
 #+filetags: :hotfix:build:cmake:vcpkg:utility:sprint_26:v0:boost-multiprecision-hotfix:
 #+owner: marco
 #+branch: hotfix/boost-cmake-component
-#+pr:
+#+pr: 2345
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28

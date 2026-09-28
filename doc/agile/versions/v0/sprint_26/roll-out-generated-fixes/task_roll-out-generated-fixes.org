@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:codegen:clean_standard:v0:roll-out-generated-fixes:
 #+owner: marco
 #+branch: feature/roll-out-generated-fixes
-#+pr:
+#+pr: 2334
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -105,7 +105,7 @@ The order that was followed:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2334][#2334]] | [codegen] Roll the generator fixes out to the five components outside the test list |
 
 * Review
 

@@ -66,9 +66,10 @@ std::string(faker::word::noun()) + "_report"
 
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
 :END:
 
 Party that owns this report definition.

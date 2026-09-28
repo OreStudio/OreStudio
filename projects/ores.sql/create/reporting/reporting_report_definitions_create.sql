@@ -74,9 +74,9 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Unique name for active records
-create unique index if not exists report_definitions_name_uniq_idx
-on "ores_reporting_report_definitions_tbl" (tenant_id, name)
+-- Composite natural key: unique combination for active records
+create unique index if not exists report_definitions_name_party_id_uniq_idx
+on "ores_reporting_report_definitions_tbl" (tenant_id, name, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

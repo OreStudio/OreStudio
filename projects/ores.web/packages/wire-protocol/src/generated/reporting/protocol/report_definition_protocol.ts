@@ -35,6 +35,7 @@ export interface ReportDefinitionKey {
 export interface ReportDefinitionWrite {
     id: string;
     name: string;
+    party_id: string;
     description: string;
     report_type: string;
     fsm_state_id: string | null;

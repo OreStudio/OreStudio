@@ -50,6 +50,7 @@ struct report_definition_entity {
     std::string name;
 
     std::string party_id;
+
     std::string description;
     std::string report_type;
     std::optional<std::string> fsm_state_id;

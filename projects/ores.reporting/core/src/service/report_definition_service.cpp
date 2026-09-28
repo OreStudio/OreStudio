@@ -84,6 +84,7 @@ domain::report_definition to_domain(const messaging::report_definition_write& wr
     domain::report_definition v;
     v.id = write.id;
     v.name = write.name;
+    v.party_id = write.party_id;
     v.description = write.description;
     v.report_type = write.report_type;
     v.fsm_state_id = write.fsm_state_id;

@@ -45,6 +45,7 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     r.name = v.name;
 
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
     r.description = v.description;
     r.report_type = v.report_type;
     r.fsm_state_id = v.fsm_state_id.has_value() ?
@@ -81,6 +82,7 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     r.name = v.name;
 
     r.party_id = boost::uuids::to_string(v.party_id);
+
     r.description = v.description;
     r.report_type = v.report_type;
     r.fsm_state_id = v.fsm_state_id.has_value() ?

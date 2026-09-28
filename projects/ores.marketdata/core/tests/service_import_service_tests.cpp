@@ -309,3 +309,26 @@ TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
     REQUIRE(inflation.size() == 1);
     CHECK(inflation.front().oresmd_uri == "oresmd://inflation/ukrpi?type=fixing");
 }
+
+TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The identity is a lookup in its own right, so a reader finds a series without
+    // knowing how the registry decomposed its key. The triple reader still finds the
+    // same row, which is what carries a series written before the column existed.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/EUR/USD 1.09\n";
+    req.source = "test.import_service";
+    REQUIRE(svc.import(req).success);
+
+    const auto by_identity = series_repo.read_latest_by_uri(
+        h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
+    REQUIRE(by_identity.size() == 1);
+    CHECK(by_identity.front().qualifier == "EUR/USD");
+    CHECK(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD").size() == 1);
+}

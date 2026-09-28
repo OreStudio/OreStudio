@@ -66,6 +66,10 @@ struct credit_instrument final {
 
     /**
      * @brief ISO 4217 currency code (e.g. USD).
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -101,11 +105,21 @@ struct credit_instrument final {
 
     /**
      * @brief Day count convention code (e.g. Actual365Fixed, Thirty360).
+     *
+     * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
+     * ores.refdata, so the dependency is recorded rather than copied. CreditInstrument stores ORE
+     * dayCounter spellings (Actual365Fixed, Thirty360) while the reference table keys on ISDA short
+     * codes (A365F, 30/360), so PR 4 needs a conversion helper in the shape of
+     * payment_frequency_conversion.hpp. PR 4 tightens the soft reference into a real foreign key.
      */
     std::string day_count_code;
 
     /**
      * @brief Payment frequency code (e.g. Quarterly, SemiAnnual).
+     *
+     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
+     * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
+     * real foreign key.
      */
     std::string payment_frequency_code;
 

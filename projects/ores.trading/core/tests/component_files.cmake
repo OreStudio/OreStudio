@@ -43,6 +43,7 @@ set(files
     "fx_vanilla_option_instrument_eventing_integration_tests.cpp"
     "fx_variance_swap_instrument_eventing_integration_tests.cpp"
     "lifecycle_event_eventing_integration_tests.cpp"
+    "long_short_type_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_export_portfolio_codec_tests.cpp"
     "party_role_type_eventing_integration_tests.cpp"

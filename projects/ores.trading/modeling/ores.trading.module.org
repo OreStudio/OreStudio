@@ -24,6 +24,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:06F0B798-F261-4BBC-974E-52A41C4AA1F0][ores.trading.lifecycle_event]] | Trade lifecycle event type (e.g. New, Amendment, Novation, PartialTermination). |
 | [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][ores.trading.activity_type]] | Internal trade activity classification (e.g. new_booking, amendment, novation). |
 | [[id:F0F5580D-B2BD-48BE-9ADA-1F21A311326C][ores.trading.fpml_event_type]] | Standard FpML lc_EventType_Type coding scheme (New, Amendment, Novation, PartialTermination, FullTermination). |
+| [[id:BAC3E39A-8EE6-4114-A69D-E83487939887][ores.trading.long_short_type]] | Position direction code (Long or Short). |
 | [[id:0143968F-0BAF-44A0-A38B-C32146BD46F6][ores.trading.credit_instrument]] | Credit instrument economics for CreditDefaultSwap, CDSIndex, SyntheticCDO and their variants. |
 | [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] | Scripted instrument economics for the AMC script-based product types. |
 | [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] | Vanilla interest rate swap or cross-currency swap instrument. |

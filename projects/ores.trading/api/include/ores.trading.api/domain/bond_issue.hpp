@@ -93,6 +93,10 @@ struct bond_issue final {
 
     /**
      * @brief ISO 4217 currency code of the bond.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -108,11 +112,25 @@ struct bond_issue final {
 
     /**
      * @brief Coupon payment frequency (Annual, SemiAnnual, Quarterly).
+     *
+     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
+     * so the dependency is recorded rather than copied. The stored spelling is SemiAnnual; the
+     * reference table keys on Semiannual, so PR 4 needs the same conversion helper
+     * payment_frequency_conversion.hpp provides. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string coupon_frequency_code;
 
     /**
      * @brief Day count convention of the bond (30/360, Actual/360, Actual/Actual).
+     *
+     * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
+     * ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft
+     * reference into a real foreign key.
+     *
+     * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
+     * ores.refdata, so the dependency is recorded rather than copied. The values are ORE's
+     * dayCounter spellings. PR 4 tightens the soft reference into a real foreign key.
      */
     std::string day_count_code;
 

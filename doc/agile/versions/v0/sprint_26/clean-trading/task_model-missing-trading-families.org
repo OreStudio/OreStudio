@@ -960,6 +960,213 @@ dropped; the table held no rows, so no value was lost.
   used to drop; the dates are the one value it still does not carry, and
   defect 16 owns the observation schedule that would.
 
+* Defects 4, 5 and 8: the enumeration record
+
+Measured at =092ab3b017=, with =projects/ores.codegen/venv=. The models were
+loaded through the generator's own loader (=codegen.org_loader.load_org_model=),
+and =projects/ores.sql/create/trading/*.sql= was scanned for =check (= and
+=raise exception=. The document's counts in
+=trade_model_defects.org= are the September 8 snapshot; the ports replaced the
+41 hand-written tables with 68 modelled entities, so the schema check count fell
+while the model count rose.
+
+** Size
+
+| Measure | Value |
+|---------+-------|
+| Trading entity models | 68 |
+| Trading create scripts | 142 |
+| Trading =check (...)= constraints in the generated schema | 379 |
+| Trading =raise exception= sites in the generated schema | 156 |
+| Columns matching the closed-set filter | 156 instances of 62 distinct names |
+| Distinct names that are a genuine closed set | 47 |
+
+** The closed sets
+
+Only sets with a fixed, enumerable value domain are listed. =underlying_name=,
+=commodity_code=, =spread_commodity_code=, =linked_asset_code=,
+=reference_entity=, =script_name=, =tenor=, =rate_index=, =fx_index=,
+=constituent_trade_id=, =underlying_code= and the currency columns beyond
+=currency= are open identifiers or code lists, not closed sets; defect 15 owns
+the underlying name. =product_type= is the generated =product_type_t= enum and
+defect 10 owns it in PR 4.
+
+A *modelled lookup* means a trading entity that binds =simple-lookup=; an
+*external lookup* means the table exists in another component.
+
+| Column | Entities | Modelled lookup | Enforcement today | Reference table | Row source |
+|--------+---------:|-----------------|-------------------|-----------------|------------|
+| =trade_type= / =trade_type_code= | 1 + 29 | trading =trade_type= | trigger lookup; 21 of 29 also carry a family IN-list check | =ores_trading_trade_types_tbl= | ORE =oreTradeType=, 121 rows seeded |
+| =currency= | 21 (14 also carry a =<> ''= check) | external =refdata.currency= | =<> ''= only | =ores_refdata_currencies_tbl= | ISO 4217 |
+| =option_type= | 12 | none | 3 carry an IN-list check; 9 nothing | — | ORE =optionType= (Call, Put) |
+| =exercise_type= / =exercise_style= | 6 + 1 | none | 2 IN-list; 6 nothing | — | ORE =exerciseStyle= (European, Bermudan, American) |
+| =long_short= | 7 | none | all 7 carry =in ('Long','Short')= | — | ORE =longShort= |
+| =barrier_type= / =lower_barrier_type= / =upper_barrier_type= | 5 + 2 | none | 3 IN-list or =<> ''=; 4 nothing | — | ORE =barrierType= (10 values) |
+| =settlement_type= | 4 | none | 1 IN-list; 3 nothing | — | ORE =settlementType= (Physical, Cash) |
+| =day_count_code= / =day_count_fraction_code= | 3 + 1 | external =refdata.day_count_fraction_type= | 1 refdata trigger; 3 nothing | =ores_refdata_day_count_fraction_types_tbl= | ISDA; refdata seeds 12 canonical codes |
+| =payment_frequency_code= / =payment_frequency= | 3 + 1 | external =refdata.payment_frequency= | 3 refdata triggers; 1 nothing | =ores_refdata_payment_frequencies_tbl= | ISDA; refdata seeds 9 codes |
+| =average_type= | 2 | none | 1 IN-list; 1 nothing | — | ORE =averageType= (Arithmetic, Geometric) |
+| =return_type= | 2 | none | 1 IN-list; 1 nothing | — | ORE =returnType= (TotalReturn, PriceReturn) |
+| =payoff_type= | 2 | none | nothing | — | ORE accumulator/TaRF terms |
+| =price_type= | 2 | none | nothing | — | ORE =bondPriceType= (Clean, Dirty) |
+| =moment_type= | 1 | none | IN-list | — | ORE =momentType= (Variance, Volatility) |
+| =target_type= | 1 | none | product gate only | — | ORE TaRF =targetType= |
+| =amortization_type= | 1 | none | nothing | — | ORE =amortizationType= (5 values) |
+| =ascot_option_type= | 1 | none | nothing | — | ORE =optionType= |
+| =call_type= | 1 | none | IN-list | — | ORE Bermudan / One-Time |
+| =funding_leg_type= / =repo_type= / =leg_type= / =leg_type_code= | 1 each | external =refdata.leg_type= | 1 refdata trigger; 3 nothing | =ores_refdata_leg_types_tbl= | ISDA/Ore leg types, 10 rows |
+| =back_stub_rounding_type= / =front_stub_rounding_type= | 2 | none | nothing | — | ORE =roundingType= (5 values) |
+| =coupon_frequency_code= / =strip_frequency_code= / =cliquet_frequency= | 3 | external =refdata.payment_frequency= | nothing | =ores_refdata_payment_frequencies_tbl= | ISDA; refdata seeds 9 codes |
+| =business_day_convention_code= | 1 | external =refdata.business_day_convention_type= | refdata trigger | =ores_refdata_business_day_convention_types_tbl= | refdata seed |
+| =floating_index_code= / =inflation_index_code= | 2 | external =refdata.floating_index_type= | 1 refdata trigger; 1 nothing | =ores_refdata_floating_index_types_tbl= | refdata seed, 28 rows |
+| =asset_class= | 1 | external =refdata.asset_class_code= | refdata trigger | =ores_refdata_asset_classes_tbl= | refdata seed |
+| =change_reason_code= | all audited | external =dq.change_reason= | =ores_dq_validate_change_reason_fn= on every insert | =ores_dq_change_reasons_tbl= | dq seed, BCBS 239 taxonomy |
+| =activity_type_code= | 1 | trading =activity_type= | trigger lookup | =ores_trading_activity_types_tbl= | trading seed |
+| =role= | 1 | trading =party_role_type= | trigger lookup | =ores_trading_party_role_types_tbl= | trading seed, 4 rows |
+| =id_type= | 1 | trading =trade_id_type= | nothing: the validate function is generated but never called | =ores_trading_trade_id_types_tbl= | trading seed, 3 rows |
+| =fpml_event_type_code= | 1 | trading =fpml_event_type= | trigger lookup | =ores_trading_fpml_event_types_tbl= | trading seed, 5 rows |
+| =category= | 1 | none | IN-list in the schema | — | trading activity categories, in the activity seed |
+| =rate_kind= | 1 | none | IN-list in the schema | — | internal rate-group discriminator |
+| =schedule_kind= | 1 | none | IN-list in the schema | — | internal schedule-choice discriminator |
+
+Already modelled lookups, the ones the defect page calls done: =trade_type=,
+=party_role_type=, =lifecycle_event= (=workspace-scoped-lookup=),
+=trade_id_type=, =activity_type= and =fpml_event_type=. Each keys on a text
+code, carries =version=, the four audit columns and the bitemporal pair, and
+generates =ores_trading_validate_<entity>_fn=.
+
+No closed set lacks a source. Every value list is either an ORE XSD simple type
+under =external/ore/xsd/ore_types.xsd= or =external/ore/xsd/instruments.xsd=, or
+a seed under =projects/ores.sql/populate/refdata=, =.../populate/dq= or
+=.../populate/trading=. Nothing is invented.
+
+** Two value-domain gaps, as a dependency
+
+The reference data is another component's, and two trading columns store a
+spelling that component does not key on. Both are recorded rather than patched
+here, because a local conversion would be a second mapping no other consumer
+sees.
+
+| Trading column | Stored spelling | Owning table key | Evidence |
+|----------------+-----------------+------------------+----------|
+| =credit_instrument.day_count_code= | ORE =dayCounter= names (=Actual365Fixed=, =Thirty360=) | ISDA short codes (=A365F=, =30/360=) | =bond_instrument_mapper.cpp:1107= writes =to_string(*ld.DayCounter)=; =refdata_day_count_fraction_types_populate.sql= seeds the short codes |
+| =bond_issue.coupon_frequency_code= | =SemiAnnual= | =Semiannual= | the model generator is =std::string("SemiAnnual")=; the refdata seed keys =Semiannual= |
+
+=bond_issue.day_count_code= stores =30/360=, which does match. The precedent for
+the missing conversion is
+=projects/ores.ore/core/include/ores.ore.core/domain/payment_frequency_conversion.hpp=,
+which converts an ORE schedule tenor to the canonical =ores.refdata= code.
+The real foreign key in PR 4 needs that conversion helper to exist first; this
+unit does not add a local conversion.
+
+** The enumeration checks that still live in PL/pgSQL
+
+The 156 =raise exception= sites classify as:
+
+| Class | Sites | Stays? |
+|-------+------:|--------|
+| State: a create collides with a live row | 68 | Yes, legitimate |
+| State: optimistic-concurrency version conflict | 68 | Yes, legitimate |
+| Reference: soft-FK existence check (book, counterparty, successor trade, trade, instrument) | 6 | Yes until PR 4 replaces it with a real foreign key (defect 7) |
+| State: FSM transition legality and transition existence | 5 | Yes, legitimate |
+| Closed set: the enumeration value is not in the reference table | 5 | Defect 8; leaves PL/pgSQL |
+| Closed set: the enumeration value is null or empty | 5 | Defect 8; a foreign key cannot state it, so a not-null column or a schema check states it |
+
+The 10 closed-set sites live in five generated functions:
+=ores_trading_validate_{trade_type,activity_type,party_role_type,fpml_event_type,trade_id_type}_fn=.
+They are called from 42 trigger sites across 41 columns:
+
+| Validation function | Owner | Trigger call sites |
+|---------------------+-------+-------------------:|
+| =ores_trading_validate_trade_type_fn= | trading | 30 |
+| =ores_refdata_validate_payment_frequency_fn= | refdata | 3 |
+| =ores_trading_validate_activity_type_fn= | trading | 1 |
+| =ores_trading_validate_fpml_event_type_fn= | trading | 1 |
+| =ores_trading_validate_party_role_type_fn= | trading | 1 |
+| =ores_refdata_validate_asset_class_fn= | refdata | 1 |
+| =ores_refdata_validate_business_day_convention_type_fn= | refdata | 1 |
+| =ores_refdata_validate_day_count_fraction_type_fn= | refdata | 1 |
+| =ores_refdata_validate_floating_index_type_fn= | refdata | 1 |
+| =ores_refdata_validate_leg_type_fn= | refdata | 1 |
+| =ores_trading_validate_trade_id_type_fn= | trading | 0 (generated, never called) |
+
+The four trading-owned functions are this component's to retire into the
+schema's Checks. The six =ores_refdata_validate_*= functions are another
+component's, so the dependency is recorded here and refdata is not edited; their
+real foreign key is PR 4's. Two oddities are recorded rather than left silent:
+=trade_id_type='s validate function is generated and never called, and
+=trade_identifier.id_type= is unvalidated today even though
+=ores_trading_trade_id_types_tbl= holds its values.
+
+** The plan the census gives
+
+Work in the defect page's order. The four defect-5 fields all resolve to an
+existing table owned by refdata or dq, so they add no trading table and no
+trading rows; their work is the recorded reference plus the PL/pgSQL removal.
+
+| Field | Owning component | Table | Action |
+|-------+------------------+-------+--------|
+| =currency= | refdata | =ores_refdata_currencies_tbl= | record the dependency; the ISO 4217 table is refdata's |
+| =day_count_code= | refdata | =ores_refdata_day_count_fraction_types_tbl= | record the dependency; the ORE-spelling gap above is the PR-4 precondition |
+| =payment_frequency_code= | refdata | =ores_refdata_payment_frequencies_tbl= | record the dependency; the conversion helper exists |
+| =change_reason_code= | dq | =ores_dq_change_reasons_tbl= | record the dependency; dq's taxonomy, not a trading copy |
+
+** Set 1, defect 5: done
+
+Measured and applied on =feature/model-missing-trading-families=. No local
+reference table is created, because every field already has an owner in the tree;
+the defect page's proposed =ores_trading_*= tables are superseded by D13's
+"record the dependency instead of a local copy". The real foreign key is defect
+7's work in PR 4.
+
+| Field | Columns edited | Model files |
+|-------+----------------+-------------|
+| =currency= | 21 | 21 |
+| =day_count_code= | 3 | 3 |
+| =payment_frequency_code= / =payment_frequency= | 4 | 4 |
+| =coupon_frequency_code=, =strip_frequency_code=, =cliquet_frequency= | 3 | 3 |
+| =asset_class= | 1 | 1 |
+
+Thirty-one column descriptions across 24 models now state the soft FK, the way
+=swap_leg.payment_frequency_code= and =swap_leg.day_count_fraction_code= already
+do: "Soft FK to <table>: <concept> belongs to <component>, so the dependency is
+recorded rather than copied. PR 4 tightens the soft reference into a real
+foreign key." The regeneration changed 21 generated C++ domain headers and
+nothing else. =change_reason_code= is an implicit audit column validated by
+=ores_dq_validate_change_reason_fn=, so its dependency is recorded here rather
+than per model.
+
+| Gate | Result |
+|------+--------|
+| =pytest projects/ores.codegen/tests -q= | 806 passed |
+| =check_component_drift.py --component trading-cpp --dry-run= twice | No drift, both runs |
+| =check_component_drift.py --all --dry-run= | No drift |
+| =cmake --build build/output/linux-clang-debug-make -j 3= | Exit 0, zero =error:= |
+| =ctest -R 'ores\.trading\.|ores\.shell\.trading\.|ores\.shell\.application\.|ores\.ore\.|ores\.utility\.'= | 9 of 9 passed |
+
+No create script gained a table or a check, so no DDL was applied for Set 1.
+
+** Set 2, defect 4: the reference entity per closed set
+
+A reference entity per closed set the defect page names, in its order:
+=long_short= (7), =option_type= (12), =exercise_type= (6), =barrier_type= (5),
+=settlement_type= (4), then the once-or-twice sets. Each binds =simple-lookup=
+like =activity_type=, its rows come from the ORE XSD simple type above, and the
+referencing column states the reference in its prose and states its closed set in
+the model's SQL Checks. The C++ member and column name do not change: D13 asks
+for the table, the reference and the schema check, and defect 6 owns the naming.
+
+** Set 3, defect 8: the enumerations enforced in PL/pgSQL
+
+With Sets 1 and 2 in place: delete the =* Insert trigger / ** Validations= rows
+whose function validates a closed set, so the generated trigger stops calling the
+function; keep the 68 + 68 state guards, the 6 soft-FK existence checks and the
+FSM checks; state the four trading-owned closed sets in the models' SQL Checks so
+the schema carries them and retire those five raise sites; record that the six
+external sets (=refdata.*=, =dq.*=) gain their real foreign key in PR 4; and
+either wire =trade_identifier.id_type= to =ores_trading_validate_trade_id_type_fn=
+or record why it stays unenforced.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

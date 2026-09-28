@@ -80,6 +80,10 @@ struct instrument_option final {
     /**
      * @brief Whether the holder is long or short the option.
      *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
+     *
      * The schema declares the member required, so a row here always states it. The type is the
      * schema's own enumeration of two values.
      */

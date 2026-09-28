@@ -124,6 +124,8 @@ std::string("ACME Corp")
 
 ISO 4217 currency code (e.g. USD).
 
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
@@ -217,6 +219,8 @@ std::chrono::year_month_day{std::chrono::year{2031}/1/15}
 
 Day count convention code (e.g. Actual365Fixed, Thirty360).
 
+Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to ores.refdata, so the dependency is recorded rather than copied. CreditInstrument stores ORE dayCounter spellings (Actual365Fixed, Thirty360) while the reference table keys on ISDA short codes (A365F, 30/360), so PR 4 needs a conversion helper in the shape of payment_frequency_conversion.hpp. PR 4 tightens the soft reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::string("Actual365Fixed")
 #+end_src
@@ -229,6 +233,8 @@ std::string("Actual365Fixed")
 :END:
 
 Payment frequency code (e.g. Quarterly, SemiAnnual).
+
+Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("Quarterly")

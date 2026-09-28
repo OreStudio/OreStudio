@@ -189,6 +189,10 @@ std::nullopt
 
 Asset class code for the trade.
 
+Soft FK to ores_refdata_asset_classes_tbl: asset classes belong to ores.refdata,
+so the dependency is recorded rather than copied. PR 4 tightens the soft
+reference into a real foreign key.
+
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src

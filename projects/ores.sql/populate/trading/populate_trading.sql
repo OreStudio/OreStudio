@@ -33,6 +33,7 @@
 \ir ./trading_activity_types_populate.sql
 \ir ./trading_party_role_types_populate.sql
 \ir ./trading_trade_id_types_populate.sql
+\ir ./trading_long_short_types_populate.sql
 
 \echo ''
 \echo '=== Trade Population Complete ==='

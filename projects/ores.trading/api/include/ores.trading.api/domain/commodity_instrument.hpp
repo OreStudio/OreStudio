@@ -61,6 +61,10 @@ struct commodity_instrument final {
 
     /**
      * @brief ISO 4217 currency code.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 
@@ -131,6 +135,10 @@ struct commodity_instrument final {
 
     /**
      * @brief Strip frequency code for option strips (e.g. Monthly, Quarterly).
+     *
+     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
+     * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
+     * real foreign key.
      */
     std::string strip_frequency_code;
 
@@ -166,11 +174,19 @@ struct commodity_instrument final {
 
     /**
      * @brief Day count fraction code for swap products.
+     *
+     * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
+     * ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string day_count_code;
 
     /**
      * @brief Payment frequency code for swap products.
+     *
+     * Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata,
+     * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
+     * real foreign key.
      */
     std::string payment_frequency_code;
 

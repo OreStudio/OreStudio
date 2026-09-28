@@ -44,6 +44,7 @@ set(files
     "inflation_swap_instrument_commands_tests.cpp"
     "knock_out_swap_instrument_commands_tests.cpp"
     "lifecycle_event_commands_tests.cpp"
+    "long_short_type_commands_tests.cpp"
     "main.cpp"
     "party_role_type_commands_tests.cpp"
     "rpa_instrument_commands_tests.cpp"

@@ -67,6 +67,10 @@ struct swaption_instrument final {
     /**
      * @brief Position direction: Long or Short.
      *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
+     *
      * Indicates whether the party holds or writes the option.
      */
     std::string long_short;

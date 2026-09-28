@@ -58,6 +58,10 @@ struct equity_position_instrument final {
     /**
      * @brief ISO 4217 currency code.
      *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
+     *
      * e.g., USD, EUR, GBP.
      */
     std::string currency;

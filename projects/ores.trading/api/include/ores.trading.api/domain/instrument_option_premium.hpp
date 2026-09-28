@@ -81,6 +81,10 @@ struct instrument_option_premium final {
 
     /**
      * @brief Currency the premium pays in.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::string currency;
 

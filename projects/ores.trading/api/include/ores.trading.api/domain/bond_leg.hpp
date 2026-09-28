@@ -116,6 +116,10 @@ struct bond_leg final {
 
     /**
      * @brief ISO 4217 currency code of the leg.
+     *
+     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
+     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
+     * foreign key.
      */
     std::optional<std::string> currency;
 

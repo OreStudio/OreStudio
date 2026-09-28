@@ -614,6 +614,12 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
     //   EQUITY_OPTION/MODEL/TICKER/CCY/EXPIRY/STRIKE
     //   EQUITY_OPTION/MODEL/TICKER/CCY/EXPIRY/STRIKE/CALL_PUT
     //   EQUITY_OPTION/MODEL/TICKER/CCY/EXPIRY/DELTA/PREMIUM/CALL_PUT/STRIKE
+    // A fixing's key is an index name and carries no currency, and this emits ORE
+    // quote keys only. The parser refuses a ccy-less identifier for every type
+    // that reaches the branches below, so one arriving here has no key to emit.
+    if (!id.ccy)
+        return std::nullopt;
+
     if (id.type == instrument_type::vol) {
         if (!id.vol)
             return std::nullopt;
@@ -623,22 +629,22 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
         if (v.delta_type && v.premium_type && v.call_put)
             return std::format("{}/{}/{}/{}/{}/{}/{}",
                                head,
-                               id.ccy,
+                               *id.ccy,
                                v.expiry,
                                *v.delta_type,
                                *v.premium_type,
                                *v.call_put,
                                v.strike);
         if (v.call_put)
-            return std::format("{}/{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike, *v.call_put);
-        return std::format("{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike);
+            return std::format("{}/{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike, *v.call_put);
+        return std::format("{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike);
     }
     if (id.type != instrument_type::quote)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(equity_quote_type::spot);
     // spot: EQUITY/PRICE/TICKER/CCY (scalar, no tenor).
     if (qt == equity_quote_type::spot)
-        return std::format("{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt), id.ticker, id.ccy);
+        return std::format("{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt), id.ticker, *id.ccy);
     // dividend/fwd: TYPE/METRIC/TICKER/CCY/TENOR — curves, need point for the tenor dimension.
     if (!id.point)
         return std::nullopt;
@@ -646,7 +652,7 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
                        ore_type(qt),
                        ore_equity_metric(qt),
                        id.ticker,
-                       id.ccy,
+                       *id.ccy,
                        to_upper(*id.point));
 }
 
@@ -987,6 +993,12 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
     //   COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY/STRIKE
     //   COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY/STRIKE/CALL_PUT
     //   COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY/DELTA/PREMIUM/CALL_PUT/STRIKE
+    // A fixing's key is a contract name and carries no currency, and this emits ORE
+    // quote keys only. The parser refuses a ccy-less identifier for every type
+    // that reaches the branches below, so one arriving here has no key to emit.
+    if (!id.ccy)
+        return std::nullopt;
+
     if (id.type == instrument_type::vol) {
         if (!id.vol)
             return std::nullopt;
@@ -998,15 +1010,15 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
         if (v.delta_type && v.premium_type && v.call_put)
             return std::format("{}/{}/{}/{}/{}/{}/{}",
                                head,
-                               id.ccy,
+                               *id.ccy,
                                v.expiry,
                                *v.delta_type,
                                *v.premium_type,
                                *v.call_put,
                                v.strike);
         if (v.call_put)
-            return std::format("{}/{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike, *v.call_put);
-        return std::format("{}/{}/{}/{}", head, id.ccy, v.expiry, v.strike);
+            return std::format("{}/{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike, *v.call_put);
+        return std::format("{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike);
     }
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -1014,7 +1026,7 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
     // spot: COMMODITY/PRICE/CODE/CCY (scalar).
     if (qt == commodity_quote_type::spot)
         return std::format(
-            "{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt), id.commodity_code, id.ccy);
+            "{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt), id.commodity_code, *id.ccy);
     // fwd: TYPE/METRIC/CODE/CCY/TENOR — a curve, needs point for the tenor.
     if (!id.point)
         return std::nullopt;
@@ -1022,7 +1034,7 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
                        ore_type(qt),
                        ore_commodity_metric(qt),
                        id.commodity_code,
-                       id.ccy,
+                       *id.ccy,
                        to_upper(*id.point));
 }
 

@@ -107,10 +107,17 @@ market_data_identifier resolve_equity(const equity_market_data_requirement& req,
     const auto* d = std::get_if<equity_market_data_identifier>(&defaults);
     equity_market_data_identifier id;
     id.ticker = pick_mandatory_string(req.ticker, d ? d->ticker : std::string{}, "ticker");
-    id.ccy = pick_mandatory_string(req.ccy, d ? d->ccy : std::string{}, "ccy");
+    id.ccy = pick_optional(req.ccy, d ? d->ccy : std::nullopt);
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    // Requiredness follows the entity kind here as well as in the parser. A
+    // requirement resolved without a currency would otherwise produce an
+    // identifier the parser refuses and no quote key can be built from, which
+    // is a failure this function is better placed to report than the caller.
+    if (!id.ccy && id.type != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://equity/... requires a ccy unless type=fixing."));
     return id;
 }
 
@@ -158,10 +165,17 @@ market_data_identifier resolve_commodity(const commodity_market_data_requirement
     commodity_market_data_identifier id;
     id.commodity_code = pick_mandatory_string(
         req.commodity_code, d ? d->commodity_code : std::string{}, "commodity_code");
-    id.ccy = pick_mandatory_string(req.ccy, d ? d->ccy : std::string{}, "ccy");
+    id.ccy = pick_optional(req.ccy, d ? d->ccy : std::nullopt);
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    // Requiredness follows the entity kind here as well as in the parser. A
+    // requirement resolved without a currency would otherwise produce an
+    // identifier the parser refuses and no quote key can be built from, which
+    // is a failure this function is better placed to report than the caller.
+    if (!id.ccy && id.type != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://commodity/... requires a ccy unless type=fixing."));
     return id;
 }
 

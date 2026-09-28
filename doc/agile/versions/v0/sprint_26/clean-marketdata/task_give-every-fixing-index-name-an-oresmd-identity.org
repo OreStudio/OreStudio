@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: AB2922AA-8208-442C-B39C-156877E83D64
+:END:
+#+title: Task: Give every fixing index name an oresmd identity
+#+description: Map the fixing key space to oresmd so the identity cutover can land: a fixing's key is an index name, not the series key grammar, and the corpus carries 158 distinct ones across six asset classes.
+#+type: task
+#+level: s1
+#+filetags: :clean-marketdata:sprint_26:v0:
+#+owner: marco
+#+branch: feature/marketdata-fixing-identity
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every distinct fixing index name in external/ore/examples resolves to an oresmd identifier, so a market_fixing row can carry an oresmd_uri and the identity cutover has a way back for the fixing half of the corpus.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- from_index_name names every distinct index name the corpus carries, asserted by a corpus-driven test whose allowlist is empty.
+- Each asset class the corpus puts in the fixing space has a stated mapping, or a recorded reason it has none.
+- The corpus fixing import creates a series for every fixing row, with no skipped-name warnings.
+
+* The index names, and what each class needs
+
+Measured over =external/ore/examples= (every =*fixing*.txt= and =*fixing*.csv=
+outside =ExpectedOutput=): **158 distinct index names**. They fall into six
+shapes, and only the first is nameable today.
+
+| class | count | shape | nameable now | what it needs |
+|-------+-------+-------+--------------+---------------|
+| ir    | 57 | =CCY-FAMILY[-TENOR]= | 34 | 23 families the enum does not hold |
+| inflation | 7 | a bare index code | 0 | the inflation class already models it |
+| equity | 8 | =EQ-<ticker-or-ric>= | 0 | a currency the name does not carry |
+| fx | 7 | =FX-<source>-<CCY1>-<CCY2>= | 0 | a source field |
+| commodity | 73 | =<COMM\|POWER>-<EXCHANGE>:<CONTRACT>-<month-or-date>[-<hours>]= | 0 | a currency, a contract shape |
+| security | 2 | =BOND-ISIN:<isin>[-<month>]= | 0 | the security class already models it |
+| (unclassified) | 4 | =GENERIC-...= | 0 | see below |
+
+**The interest-rate 57 split two ways.** The ones whose family the enum holds
+are nameable; the rest are real benchmark families it does not: =AONIA=, =BBSW=,
+=CAMARA=, =REPOFIX=, =CZEONIA=, =PRIBOR=, =CIBOR=, =DKKOIS=, =CMS=, =EONIA=,
+=FedFunds=, =NIBOR=, =SIOR=, =STIBOR=, =SIFMA=, =HIBOR=. Two more are spelling
+mismatches rather than missing families: the corpus writes =AONIA= where the enum
+has =aonia=, and =TONAR= where it has =tona=. The identifier already carries
+=index_spelling= for exactly this -- "the spelling that arrived is carried beside
+the family so the key reads back as it came" -- so the spelling mismatches need
+an alias, and the missing families need adding.
+
+**Two of the four =GENERIC= names are not fixings at all.** They are
+=GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C= and its sibling:
+market-data keys that appear inside a fixings file, read by the whole-line parser
+as fixings because that is the file they are in. Whether the reader should refuse
+a key that is not an index name is part of this task. The other two,
+=GENERIC-JuniorNote= and =GENERIC-PortfolioBasket#1=, are a curve name and a
+basket name, and need classifying rather than mapping.
+
+* The decision that gates the rest
+
+Four of the six classes need a field the index name does not carry:
+
+- an **equity** fixing (=EQ-SP5=) names a ticker and no currency, and the equity
+  identifier requires one;
+- a **commodity** or **power** fixing (=COMM-NYMEX:CL-2024-12=,
+  =POWER-ICE:PDQ-2021-01-04-14400-18000=) names a contract and no currency, and
+  the commodity identifier requires one;
+- an **FX** fixing (=FX-ECB-EUR-USD=) names a *source* as well as a pair, and the
+  FX identifier has no field for one.
+
+Two readings, and they produce different permanent URIs:
+
+1. **A fixing's identity does not include a currency.** For =type=fixing= the
+   currency is a property of where the instrument is quoted, not of which index it
+   is, so the grammar should not require it. =oresmd://equity/sp5?type=fixing= and
+   =oresmd://commodity/nymex:cl-2024-12?type=fixing=, each carrying a contract as
+   its point where there is one. This is the reading the IR case already follows
+   in reverse -- there the currency *is* in the name, so the identifier has it --
+   and it needs no field the corpus cannot supply.
+2. **The caller supplies the missing fields.** The fixing boundary would look the
+   currency up (refdata knows a ticker's currency) and add =ccy= to the URI. This
+   keeps the identifier's invariants intact and moves the problem to the import,
+   but it makes the URI depend on reference data: the same file would produce
+   different URIs in two databases that disagree.
+
+The recommendation is the first, with the FX source carried as a spelling beside
+the pair the way =index_spelling= carries one, because it is the only reading
+under which the corpus's own text determines the identity. It is a grammar change
+affecting identifiers outside the fixing boundary, so it is recorded here for a
+decision rather than taken.
+
+* Decided
+
+Requiredness follows the entity kind: a fixing and a quote do not share a set of
+required fields, because they do not answer the same question. A quote says what
+a thing is worth and in what currency; a fixing says what an index was on a date.
+So the currency is required of every type that is not a fixing, and not of a
+fixing -- which is what the parser now enforces, with the type carrying it as
+optional rather than mandatory.
+
+This settles the equity and commodity half of the gap. Still open, and separate:
+
+- the **interest-rate families** the enum does not hold -- =EONIA=, =CIBOR=,
+  =NIBOR=, =STIBOR=, =SIOR=, =FedFunds=, =CMS=, =SIFMA=, =BBSW=, =AONIA=,
+  =CAMARA=, =REPOFIX= and the rest -- which is data rather than grammar;
+- the **FX source** (=FX-ECB-EUR-USD= against =FX-TR20H-EUR-USD=), which is a
+  field the FX identifier does not have; and
+- the **power contract-hour shape**, which is a shape the grammar does not have.
+
+* Plan
+
+
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

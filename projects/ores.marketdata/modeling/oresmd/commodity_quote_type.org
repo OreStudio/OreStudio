@@ -6,6 +6,7 @@
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: commodity
 #+validate: inline_delegate
+#+ccy_optional_for_fixing: true
 #+authority: commodity
 #+component: ores.marketdata
 #+level: s2
@@ -39,7 +40,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | name | cpp_type | mandatory | query_key | default |
 |------+----------+-----------+-----------+---------|
 | commodity_code | std::string | yes | | |
-| ccy | std::string | yes | ccy | |
+| ccy | std::optional<std::string> | no | ccy | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<commodity_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |

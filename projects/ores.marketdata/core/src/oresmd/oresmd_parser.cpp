@@ -367,10 +367,15 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
     validate_equity(qp);
     equity_market_data_identifier id;
     id.ticker = to_upper(first_segment(u));
-    if (!qp.ccy)
-        BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://equity/... requires a ccy query key."));
-    id.ccy = to_upper(*qp.ccy);
+    // A fixing's key is an index name, and an index name does not carry the
+    // currency the index is quoted in -- EQ-SP5 is the level of an index, not
+    // a price in a currency. Every other type still needs one.
     id.type = parse_type(qp);
+    if (!qp.ccy && id.type != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://equity/... requires a ccy query key unless type=fixing."));
+    if (qp.ccy)
+        id.ccy = to_upper(*qp.ccy);
     reject_model_unless_vol("equity", qp, id.type);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
@@ -561,10 +566,15 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     validate_no_ir_only_keys("commodity", qp);
     commodity_market_data_identifier id;
     id.commodity_code = to_upper(first_segment(u));
-    if (!qp.ccy)
-        BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://commodity/... requires a ccy query key."));
-    id.ccy = to_upper(*qp.ccy);
+    // A fixing's key is an index name, and an index name does not carry the
+    // currency the index is quoted in -- EQ-SP5 is the level of an index, not
+    // a price in a currency. Every other type still needs one.
     id.type = parse_type(qp);
+    if (!qp.ccy && id.type != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            "oresmd://commodity/... requires a ccy query key unless type=fixing."));
+    if (qp.ccy)
+        id.ccy = to_upper(*qp.ccy);
     reject_model_unless_vol("commodity", qp, id.type);
     if (qp.quote) {
         // A quote type names a volatility surface as well as a quote: CAPFLOOR
@@ -846,7 +856,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
             } else if constexpr (std::is_same_v<T, equity_market_data_identifier>) {
                 u.set_host("equity");
                 u.segments().push_back(to_lower(id.ticker));
-                u.params().append({"ccy", to_lower(id.ccy)});
+                if (id.ccy)
+                    u.params().append({"ccy", to_lower(*id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
@@ -874,7 +885,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
             } else if constexpr (std::is_same_v<T, commodity_market_data_identifier>) {
                 u.set_host("commodity");
                 u.segments().push_back(to_lower(id.commodity_code));
-                u.params().append({"ccy", to_lower(id.ccy)});
+                if (id.ccy)
+                    u.params().append({"ccy", to_lower(*id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);

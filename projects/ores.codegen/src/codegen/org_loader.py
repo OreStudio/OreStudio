@@ -5714,6 +5714,11 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
             if (field.get("name") == "ccy" and field.get("mandatory") == "yes"
                     and not field.get("is_entity_field")):
                 result["requires_ccy"] = True
+        # A class whose ccy is optional in the type because a fixing's own key
+        # need not carry one: the parser still requires it for every other
+        # type, so the requirement moves from the type into the grammar.
+        if fm.get("ccy_optional_for_fixing", "false") == "true":
+            result["ccy_optional_for_fixing"] = True
     result["fields"] = fields
 
     # --- Per-struct doc comments: identifier/requirement briefs, in the
@@ -5783,7 +5788,10 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         ]
     else:
         uri_keys = []
-        if result.get("requires_ccy"):
+        # A class whose ccy is optional for fixings still has one to emit on
+        # every other type, so it belongs in the order either way; the kind
+        # below says whether the emission is guarded.
+        if result.get("requires_ccy") or result.get("ccy_optional_for_fixing"):
             uri_keys.append("ccy")
         uri_keys.append("type")
         uri_keys.extend(
@@ -5795,7 +5803,10 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         if k == "type":
             entry: dict[str, Any] = {"key": k, "kind": "type"}
         elif k == "ccy":
-            entry = {"key": k, "kind": "ccy"}
+            entry = {
+                "key": k,
+                "kind": "ccy_optional" if result.get("ccy_optional_for_fixing") else "ccy",
+            }
         else:
             f = next((x for x in fields if x.get("query_key") == k), None)
             if not f:

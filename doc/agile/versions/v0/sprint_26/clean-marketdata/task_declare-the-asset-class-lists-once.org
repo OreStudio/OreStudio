@@ -51,10 +51,12 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 
 * Decided
 
-**The two lists are two axes, not one list copied twice.** The refdata product
-taxonomy answers what a trade or a market series *is*, and it is FK-validated:
-=ores_refdata_validate_asset_class_code_fn= rejects any code absent from
-=ores_refdata_asset_class_codes_tbl=, and =market_series_asset_classes=,
+**The two lists are two axes, not one list copied twice.** Recorded as a memory at
+[[id:A3565B4F-BFEB-4A1A-823F-8704DD6EE997][An asset class is two lists, not one]],
+because the two share enough spellings to be mistaken for each other. The refdata
+product taxonomy answers what a trade or a market series *is*, and it is
+FK-validated: =ores_refdata_validate_asset_class_code_fn= rejects any code absent
+from =ores_refdata_asset_class_codes_tbl=, and =market_series_asset_classes=,
 =feed_bindings=, =series_classification_rules= and =instrument_codes= all call
 it. The oresmd namespace answers which key grammar a market data item is written
 in, and it is what an =oresmd_uri='s authority carries.

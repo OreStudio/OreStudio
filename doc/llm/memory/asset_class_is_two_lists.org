@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: A3565B4F-BFEB-4A1A-823F-8704DD6EE997
+:END:
+#+title: An asset class is two lists, not one
+#+description: The product asset class taxonomy is authoritative and FK-validated; the oresmd market-data namespace is a separate and much looser axis
+#+type: memory
+#+memory_subtype: reference
+#+level: cross
+#+filetags: :llm:memory:reference:bearings:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+There are two asset class lists and they are not the same list. The *product asset class taxonomy* is authoritative and runtime-managed in =ores_refdata_asset_class_codes_tbl= -- fx, interest_rates, credit, equity, commodity, inflation, bond -- and every market series, feed binding, classification rule and instrument code validates against it through =ores_refdata_validate_asset_class_code_fn=. The *market data namespace* is a different axis: the key grammar an =oresmd_uri= authority names, holding ir, credit, equity, commodity, fx, inflation, correlation, security, shape_profile, rating and power. It accreted from ORE's own key-prefix conventions rather than from any product taxonomy, so it is a looser and more miscellaneous list than the first, and nothing in the repository declares the mapping between the two.
+
+*Why:* The two share five spellings and diverge on the rest, so they look like one list with typos. They are not. =SHAPE_PROFILE= is classed =commodity= and =RATING= is classed =credit= in the product taxonomy, yet both are authorities of their own in the namespace. =ir= and =security= are the namespace's spellings of =interest_rates= and =bond=. ORE's power fixings are written =POWER-= while a power trade is a commodity. Reading one list as the other produces wrong identities and wrong classifications, and the single =FIXING= classification rule already mis-classes every non-rates fixing because of it.
+
+*How to apply:* Before adding, renaming or removing a member of either list, say which list is meant. A new oresmd authority does not by itself become a product asset class; a power series is classed =commodity= and carries =power= in its =oresmd_uri=. When a market series needs a class, it takes a refdata code from the taxonomy, and the namespace lives in the URI. The consolidation of the hand-written copies of both lists is task E205D30E-3DD3-4E04-BC27-424C3376550B.

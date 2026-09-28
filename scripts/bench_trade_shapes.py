@@ -37,16 +37,18 @@ IDENT = ("trade_identifier", 12, 2, 0)
 PARTY = ("trade_party_role", 9, 2, 0)
 LEGS = ("swap_leg", 19, 2, 0)
 
-# A callable swap stores its exercise schedule in call_dates_json rather than in
-# a child table. Forty quarterly call dates as ISO dates in a JSON array.
-CALL_DATES_BYTES = 40 * 14
+# A callable swap states its exercise schedule as a child table, one row per
+# call date, so the instrument row carries no schedule column. Forty quarterly
+# call dates per trade.
+CALL_DATES = ("callable_swap_call_date", 6, 40, 0)
 
 SHAPES = {
     "forward": [TRADE, ("fx_forward_instrument", 15, 1, 0), IDENT, PARTY],
     "swap": [TRADE, ("vanilla_swap_instrument", 15, 1, 0), LEGS, IDENT, PARTY],
     "swaption": [TRADE, ("swaption_instrument", 17, 1, 0), LEGS, IDENT, PARTY],
     "callable_swap": [TRADE,
-                      ("callable_swap_instrument", 15, 1, CALL_DATES_BYTES),
+                      ("callable_swap_instrument", 15, 1, 0),
+                      CALL_DATES,
                       LEGS, IDENT, PARTY],
 }
 

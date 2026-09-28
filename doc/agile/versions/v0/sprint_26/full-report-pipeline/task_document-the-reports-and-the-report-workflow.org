@@ -26,11 +26,11 @@ A reader can find one page per report, one page for the report execution workflo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
-| Now          | Implemented; open for review.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then close.                     |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This file carries the smallest complete example of a repeated value row, the tra
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -89,3 +89,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All fourteen credit simulation documents in the vendored corpus round trip
+in memory, and one of them now round trips through PostgreSQL as well:
+parsed, mapped into the analytics entities, written through the generated
+repositories, read back, and exported. Five tables hold the content,
+including one row per matrix cell and one row per netting set, so the lists
+ORE writes as text in an element are rows here.
+
+  All tests passed (429831 assertions in 551 test cases)
+
+Four defects were found by building and running rather than by reading.
+The generated repositories were never compiled because codegen does not add
+a new entity to the component file lists; the state comment was compared
+over an empty vector, so fourteen files passed a check that never ran, and
+an assertion about the comment was unsatisfiable because the binding strips
+comments on load; and the netting set ids were dropped on the database leg
+because no column stored them. Each is recorded in =evidence/= beside this
+task.
+
+The export deliberately does not write ORE's state comment back: the rating
+names are held by the type, and the difference is asserted rather than
+compared away. Whether ORE itself accepts the exported document is not
+tested.
+
+Note the mapping runs over a model that predates the row type: =map()=
+throws unless a matrix is eight by eight, which every corpus document is.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A report definition reaches a named, reusable configuration through typed entiti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -121,3 +121,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The registry is modelled and live. Six tables exist in the development
+database and are aggregated on both the create and the drop side:
+=configuration_types=, =configurations=, =report_configurations=,
+=parameter_value_domains=, =parameter_definitions= and
+=configuration_parameters=. Every discriminator is foreign key to a seeded
+lookup, and a report definition reaches its configuration through
+=report_configurations= with three validated keys rather than through a
+column per kind.
+
+A configuration is a header row in =configurations= and its content lives
+in the component that owns the concept, joined by =configuration_id=; the
+credit simulation tables are the first content to use it.
+
+Verified with `select count(*)` over the six table names returning 6, and
+by the full suite passing at 551 cases.
+
+Two things the work found and did not settle: the table-display header row
+must be lowercase =| column | header |= or the generated table code has
+empty field names and will not compile, and adding an entity needs its
+permissions seeded and its recipe inventories regenerated, which three CI
+jobs catch.

@@ -91,13 +91,12 @@ struct refused_file {
 /// family belongs to -- and the shape is what this library discriminates on, so
 /// the classification is stated in the same terms.
 std::string class_of(std::string_view name) {
-    const std::pair<std::string_view, std::string_view> prefixed[] = {
-        {"FX-", "fx"},
-        {"EQ-", "equity"},
-        {"COMM-", "commodity"},
-        {"POWER-", "power"},
-        {"BOND-ISIN:", "security"},
-        {"GENERIC-", "unclassified"}};
+    const std::pair<std::string_view, std::string_view> prefixed[] = {{"FX-", "fx"},
+                                                                      {"EQ-", "equity"},
+                                                                      {"COMM-", "commodity"},
+                                                                      {"POWER-", "power"},
+                                                                      {"BOND-ISIN:", "security"},
+                                                                      {"GENERIC-", "unclassified"}};
     for (const auto& [prefix, cls] : prefixed) {
         if (name.starts_with(prefix))
             return std::string(cls);
@@ -106,10 +105,10 @@ std::string class_of(std::string_view name) {
     // CCY-FAMILY[-TENOR]: three letters, then a dash. The inflation codes the
     // corpus writes (UKRPI, ZACPI) carry no dash at all, so this is what
     // separates the two classes that arrive without a prefix.
-    const auto is_currency_segment =
-        name.size() > 4 && name[3] == '-' &&
-        std::ranges::all_of(name.substr(0, 3),
-                            [](unsigned char c) { return std::isalpha(c) != 0; });
+    const auto is_currency_segment = name.size() > 4 && name[3] == '-' &&
+                                     std::ranges::all_of(name.substr(0, 3), [](unsigned char c) {
+                                         return std::isalpha(c) != 0;
+                                     });
     return is_currency_segment ? "ir" : "inflation";
 }
 
@@ -132,8 +131,7 @@ corpus_survey survey() {
         } catch (const std::invalid_argument& ex) {
             // Relative to the corpus root: a recorded refusal has to read the same
             // on every machine that checks out the corpus.
-            result.refused.push_back(
-                {std::filesystem::relative(path, root).string(), ex.what()});
+            result.refused.push_back({std::filesystem::relative(path, root).string(), ex.what()});
             continue;
         }
 
@@ -156,8 +154,7 @@ corpus_survey survey() {
             if (back && *back == row.index_name) {
                 ++c.round_tripped;
             } else if (c.mismatch.empty()) {
-                c.mismatch =
-                    row.index_name + " -> " + (back ? *back : std::string("<none>"));
+                c.mismatch = row.index_name + " -> " + (back ? *back : std::string("<none>"));
             }
         }
     }
@@ -191,28 +188,17 @@ std::set<std::string> classes_with_round_trip_gaps() {
     return result;
 }
 
-/// The fixing payloads the reader refused, as corpus-relative paths.
-std::set<std::string> refused_payloads() {
-    std::set<std::string> result;
-    for (const auto& file : corpus_coverage().refused)
-        result.insert(file.path);
-    return result;
 }
 
-}
-
-TEST_CASE("no_fixing_payload_the_reader_refuses_has_gone_unrecorded", tags) {
+TEST_CASE("every_fixing_payload_in_the_corpus_is_readable_as_fixings", tags) {
     // The census is only as complete as the reader. A payload the reader refuses
     // contributes no names, and the classes below would report a clean sheet over
-    // a file nobody looked at. The one entry is a fixing file ORE reads and this
-    // library does not: CurveBuilding writes it with semicolons, where the reader
-    // separates on commas and whitespace.
+    // a file nobody looked at. Empty is the goal: a payload the corpus names as
+    // fixings has to be one the fixing reader reads.
     for (const auto& file : corpus_coverage().refused)
         WARN(std::format("{}: {}", file.path, file.reason));
 
-    const std::set<std::string> recorded{"CurveBuilding/Input/fixings_bondyieldshifted.csv"};
-
-    REQUIRE(refused_payloads() == recorded);
+    REQUIRE(corpus_coverage().refused.empty());
 }
 
 TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
@@ -226,9 +212,11 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
         names += c.names;
         named += c.named;
         round_tripped += c.round_tripped;
-        WARN(std::format(
-            "{:<14} {:>5} names, {:>5} named, {:>5} round-tripped", cls, c.names, c.named,
-            c.round_tripped));
+        WARN(std::format("{:<14} {:>5} names, {:>5} named, {:>5} round-tripped",
+                         cls,
+                         c.names,
+                         c.named,
+                         c.round_tripped));
         // On its own line: the log wraps long messages, and a truncated name is
         // worse than none.
         if (!c.unprojected.empty())
@@ -236,8 +224,11 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
         if (!c.mismatch.empty())
             WARN(std::format("  {} first loss: {}", cls, c.mismatch));
     }
-    WARN(std::format("{:<14} {:>5} names, {:>5} named, {:>5} round-tripped", "TOTAL", names,
-                     named, round_tripped));
+    WARN(std::format("{:<14} {:>5} names, {:>5} named, {:>5} round-tripped",
+                     "TOTAL",
+                     names,
+                     named,
+                     round_tripped));
 
     // The classes whose index-name grammar is a decision this task has not taken
     // yet. Each is recorded with its reason on the task; this list is the
@@ -246,9 +237,8 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
     //
     // Interest rates are absent because they are the class this work closes, and
     // the assertion below fails if they come back.
-    const std::set<std::string> recorded{"commodity", "equity",     "fx",
-                                         "inflation", "power",      "security",
-                                         "unclassified"};
+    const std::set<std::string> recorded{
+        "commodity", "equity", "fx", "inflation", "power", "security", "unclassified"};
 
     REQUIRE(classes_with_unnamed_names() == recorded);
 }

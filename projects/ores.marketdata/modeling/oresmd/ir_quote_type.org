@@ -55,31 +55,70 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 
 * Index family
 
-| value |
-|-------|
-| libor |
-| euribor |
-| sofr |
-| estr |
-| sonia |
-| tona |
-| saron |
-| aonia |
-| corra |
-| honia |
-| sora |
-| swestr |
-| nowa |
-| kofr |
-| mibor |
-| zaronia |
-| destr |
-| polonia |
-| nzonia |
-| shibor |
-| tiie |
-| ftiie |
-| taibor |
+The benchmark families an ORE index name can carry, with the two properties the
+family token itself does not spell.
+
+`requires_tenor` says whether every index name ORE writes for that family carries
+a tenor -- `USD-LIBOR-3M`, where no `USD-LIBOR` exists -- rather than the family
+also being written bare, as `USD-SOFR` is. It is a property of the name, not of
+how often the rate resets, and "required" is not "the only form allowed": the
+corpus writes both `USD-SOFR` and `USD-SOFR-3M`, so sofr does not require a tenor
+and still takes one. The projections emit whatever tenor the identifier holds.
+
+This table is the one place the rule is written: the generated enum's
+`requires_tenor()` comes from it, and the parser and the projections both read
+that predicate. The curve-configuration CHECK constraint in
+`synthetic_ir_curve_generation_configs_create.sql` is a *different* rule over a
+family list that overlaps this one: it fixes which (family, tenor) pairs a
+synthetic curve can be configured with, and answers `tenor = ''` for shibor,
+taibor and tiie, whose index names are term ones. A family here and not there is
+a family no synthetic curve can be configured for, which is a decision for that
+component rather than a consequence of this table.
+
+`aliases` lists the spellings ORE writes for a family whose enum name differs
+(`ESTER` for `estr`). An alias resolves to the family, and the spelling that
+arrived is carried beside it, so a name reads back as it came.
+
+| value      | requires_tenor | aliases |
+|------------+----------------+---------|
+| libor      | yes            |         |
+| euribor    | yes            |         |
+| sofr       | no             |         |
+| estr       | no             | ester   |
+| sonia      | no             |         |
+| tona       | no             | tonar   |
+| saron      | no             |         |
+| aonia      | no             |         |
+| corra      | no             |         |
+| honia      | no             |         |
+| sora       | no             |         |
+| swestr     | no             |         |
+| nowa       | no             |         |
+| kofr       | no             |         |
+| mibor      | no             |         |
+| zaronia    | no             |         |
+| destr      | no             |         |
+| polonia    | no             |         |
+| nzonia     | no             |         |
+| shibor     | yes            |         |
+| tiie       | yes            |         |
+| ftiie      | no             |         |
+| taibor     | yes            |         |
+| bbsw       | yes            |         |
+| cibor      | yes            |         |
+| cms        | yes            |         |
+| hibor      | yes            |         |
+| nibor      | yes            |         |
+| pribor     | yes            |         |
+| repofix    | yes            |         |
+| stibor     | yes            |         |
+| camara     | no             |         |
+| czeonia    | no             |         |
+| dkkois     | no             |         |
+| eonia      | no             |         |
+| fedfunds   | no             |         |
+| sifma      | no             |         |
+| sior       | no             |         |
 
 * Fields
 

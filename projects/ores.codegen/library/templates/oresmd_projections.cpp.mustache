@@ -1,7 +1,6 @@
 {{! GENERATED FILE — tangled from ores.cpp.oresmd.projections.org. Edit the org source. }}
 {{{cpp_license}}}
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
-#include "ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
 #include "ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
 #include <algorithm>
 #include <cctype>
@@ -14,7 +13,6 @@
 namespace {
 
 using namespace ores::marketdata::domain;
-using ores::marketdata::core::detail::is_overnight;
 using ores::marketdata::core::detail::to_lower;
 using ores::marketdata::core::detail::to_upper;
 
@@ -129,6 +127,23 @@ void record_index_spelling(ir_market_data_identifier& id, std::string_view token
 }
 
 /*
+ * The index-name space keeps a spelling that the ORE-key space discards.
+ *
+ * An ORE key segment is uppercase, so a token that differs from the family's name
+ * only in case is that name written loudly, and recording it would hand one family
+ * two URIs. An index name is the corpus's own text, where "USD-FedFunds" is how ORE
+ * writes the family: the name has to come back exactly as it arrived, so only the
+ * family's uppercase name is the ordinary spelling here.
+ */
+void record_index_name_spelling(ir_market_data_identifier& id, std::string_view token) {
+    if (!id.index)
+        return;
+    if (token == to_upper(std::string(magic_enum::enum_name(*id.index))))
+        return;
+    id.index_spelling = std::string{token};
+}
+
+/*
  * Both index name and curve key are produced together, gated on `type=fixing` -- the
  * design doc's own worked-examples table shows a single `type=fixing` URI producing
  * BOTH an index name and a curve key (the underlying curve construct has both facets),
@@ -138,8 +153,18 @@ void record_index_spelling(ir_market_data_identifier& id, std::string_view token
 std::optional<std::string> index_name_ir(const ir_market_data_identifier& id) {
     if (id.type != instrument_type::fixing || !id.index)
         return std::nullopt;
-    const auto family = to_upper(std::string(magic_enum::enum_name(*id.index)));
-    if (is_overnight(*id.index) || !id.tenor)
+    // The family token comes from index_token() rather than from the enum name, so
+    // a name that arrived under one of the family's other spellings reads back as
+    // it came, the same way the ORE-key projections already emit it.
+    const auto family = index_token(id);
+    // A curve identifier carries the curve's own tenor beside the index the curve
+    // samples, and ORE names a curve on an overnight family -- sofr, saron -- by
+    // the family alone, so there the tenor belongs to the curve key and not to the
+    // index name. A fixing identifier carries the tenor the index was published
+    // at, where USD-SOFR and USD-SOFR-3M are two different fixings. `role` is what
+    // separates the two: only a curve config names one.
+    const auto tenor_is_the_curves = id.role.has_value() && !requires_tenor(*id.index);
+    if (!id.tenor || tenor_is_the_curves)
         return std::format("{}-{}", id.ccy, family);
     return std::format("{}-{}-{}", id.ccy, family, to_upper(*id.tenor));
 }
@@ -1060,11 +1085,26 @@ std::optional<metric> parse_metric(std::string_view value) {
 std::optional<index_family> parse_index(std::string_view value) {
     if (const auto exact = parse_enum_lower<index_family>(value))
         return exact;
-    // ORE's own examples spell the euro short-term rate ESTER where the family
-    // is named estr. The family is what the alias resolves to, and the spelling
-    // that arrived is carried beside it so the key reads back as it came.
-    if (to_lower(value) == "ester")
-        return index_family::estr;
+    // ORE spells some families differently from the enum name -- it writes ESTER
+    // for estr, and TONAR for tona. The family is what an alias resolves to, and
+    // the spelling that arrived is carried beside it so the name reads back as it
+    // came. Generated from the Index family table's aliases column.
+    static const std::pair<std::string_view, index_family> aliases[] = {
+{{#oresmd_quote_types}}
+{{#first_asset_class}}
+{{#index_family}}
+{{#aliases}}
+        {"{{alias}}", index_family::{{value}}},
+{{/aliases}}
+{{/index_family}}
+{{/first_asset_class}}
+{{/oresmd_quote_types}}
+    };
+    const auto spelling = to_lower(value);
+    for (const auto& [alias, family] : aliases) {
+        if (spelling == alias)
+            return family;
+    }
     return std::nullopt;
 }
 
@@ -2022,9 +2062,13 @@ oresmd_projections::from_index_name(const std::string& index_name) {
     id.ccy = to_upper((*parts)[0]);
     id.type = instrument_type::fixing;
     id.index = *idx;
+    // A family ORE spells differently keeps the spelling it arrived under, so the
+    // identifier projects back to the name it came from rather than to the enum's
+    // own spelling of it.
+    record_index_name_spelling(id, (*parts)[1]);
     if (parts->size() == 3) {
         id.tenor = to_lower((*parts)[2]);
-    } else if (!is_overnight(*idx)) {
+    } else if (requires_tenor(*idx)) {
         // A term family without a tenor could not have come from the forward
         // projection, which emits the two-segment form for overnight families
         // alone, and the parser rejects it. Mirror both rather than accept a

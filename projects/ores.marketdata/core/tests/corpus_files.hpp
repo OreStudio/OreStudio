@@ -67,6 +67,41 @@ inline std::vector<std::filesystem::path> market_payloads(const std::filesystem:
     return found;
 }
 
+/**
+ * @brief Whether a path under external/ore/examples is a fixing payload.
+ *
+ * A fixing file and a market file share both of ORE's two formats, and differ in
+ * what the second field is: a fixing row carries a dated index name and the whole
+ * name is the series identifier, where a market row carries an instrument key in
+ * TYPE/METRIC/... form. So the two selections must not overlap -- an index name
+ * read as a market key, or a market key read as an index name, both measure a
+ * corpus the reader never saw.
+ *
+ * The name is the only thing that says which reader a file feeds, so the two
+ * predicates are stated one beside the other and each is the other's complement.
+ */
+inline bool is_fixing_payload(const std::string& path) {
+    const auto name = std::filesystem::path(path).filename().string();
+    if (name.find("fixing") == std::string::npos)
+        return false;
+    if (!name.ends_with(".txt") && !name.ends_with(".csv"))
+        return false;
+    return path.find("ExpectedOutput") == std::string::npos;
+}
+
+/**
+ * @brief Every fixing payload under @p root, sorted, for a deterministic walk.
+ */
+inline std::vector<std::filesystem::path> fixing_payloads(const std::filesystem::path& root) {
+    std::vector<std::filesystem::path> found;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (entry.is_regular_file() && is_fixing_payload(entry.path().string()))
+            found.push_back(entry.path());
+    }
+    std::sort(found.begin(), found.end());
+    return found;
+}
+
 } // namespace ores::marketdata::test
 
 #endif

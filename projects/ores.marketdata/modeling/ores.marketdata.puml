@@ -170,7 +170,23 @@ namespace ores #F2F2F2 {
                 nzonia
                 shibor
                 tiie
+                ftiie
                 taibor
+                bbsw
+                cibor
+                cms
+                hibor
+                nibor
+                pribor
+                repofix
+                stibor
+                camara
+                czeonia
+                dkkois
+                eonia
+                fedfunds
+                sifma
+                sior
             }
             enum credit_quote_type #F2DAFD {
                 cds

@@ -84,12 +84,38 @@ TEST_CASE("ir_eur_estr_index_name_drops_tenor_suffix_for_overnight_index", tags)
 
 TEST_CASE("ir_chf_saron_index_name_drops_tenor_suffix_for_new_rfr_family", tags) {
     // A family added by the SQL CHECK beyond the original 6
-    // (synthetic_ir_curve_generation_configs_create.sql): is_overnight() must classify it as
+    // (synthetic_ir_curve_generation_configs_create.sql): requires_tenor() must classify it as
     // overnight so the index name drops the tenor suffix, exactly as the original four overnight
     // families do.
     const auto id = parse("oresmd://ir/chf?index=saron&tenor=1d&role=discount&type=fixing");
     REQUIRE(oresmd_projections::to_index_name(id) == "CHF-SARON");
     REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/CHF/CHF1D");
+}
+
+TEST_CASE("index_name_keeps_a_fixings_tenor_and_drops_a_curves", tags) {
+    // Both of these are type=fixing and name sofr; what differs is what the
+    // identifier is for. A curve config carries the curve's own tenor beside the
+    // overnight index the curve samples, and ORE names that index by the family
+    // alone -- the tenor is what curve_key_ir() builds the curve name from. A
+    // fixing carries the tenor the index was published at, and the corpus's
+    // fixings files write USD-SOFR and USD-SOFR-3M as two different series, so
+    // there the tenor is part of the name. role is the only field that says which
+    // of the two an identifier is.
+    const auto curve = parse("oresmd://ir/usd?index=sofr&tenor=3m&role=projection&type=fixing");
+    CHECK(oresmd_projections::to_index_name(curve) == "USD-SOFR");
+    CHECK(oresmd_projections::to_curve_key(curve) == "Yield/USD/USD3M");
+
+    const auto term_fixing = parse("oresmd://ir/usd?index=sofr&tenor=3m&type=fixing");
+    CHECK(oresmd_projections::to_index_name(term_fixing) == "USD-SOFR-3M");
+
+    const auto overnight_fixing = parse("oresmd://ir/usd?index=sofr&type=fixing");
+    CHECK(oresmd_projections::to_index_name(overnight_fixing) == "USD-SOFR");
+
+    // A family that requires a tenor keeps it in both readings: there is no bare
+    // USD-LIBOR for the curve's index name to fall back to.
+    const auto term_curve =
+        parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing");
+    CHECK(oresmd_projections::to_index_name(term_curve) == "USD-LIBOR-3M");
 }
 
 {{#ir_projections_worked_examples}}
@@ -838,7 +864,17 @@ TEST_CASE("from_index_name_round_trips_through_to_index_name", tags) {
     // The pair is the contract: a name this reads back must project to the
     // name it arrived as, or the fixing boundary would rewrite identities on
     // the way through the database.
-    for (const auto& name : {"USD-LIBOR-3M", "EUR-EURIBOR-6M", "USD-SOFR", "EUR-ESTR"}) {
+    //
+    // The list carries one name per reason the pair could break: the two
+    // segment counts, a term family that arrived with a tenor, the two families
+    // whose spelling differs from the enum's name (ESTER, TONAR), a family whose
+    // spelling differs only in case (FedFunds), and the term families this work
+    // added, whose tenor has to survive the round trip rather than be collapsed
+    // the way an overnight family's would be.
+    for (const auto& name : {"USD-LIBOR-3M", "EUR-EURIBOR-6M", "USD-SOFR", "EUR-ESTR",
+                             "EUR-ESTER",    "JPY-TONAR",      "USD-FedFunds",
+                             "DKK-CIBOR-3M", "EUR-CMS-5Y",     "SEK-SIOR",
+                             "CLP-CAMARA",   "AUD-BBSW-6M"}) {
         const auto id = oresmd_projections::from_index_name(name);
         REQUIRE(id.has_value());
         const auto back = oresmd_projections::to_index_name(*id);
@@ -847,19 +883,41 @@ TEST_CASE("from_index_name_round_trips_through_to_index_name", tags) {
     }
 }
 
+TEST_CASE("from_index_name_resolves_a_spelling_to_its_family_and_keeps_the_spelling", tags) {
+    // The family is what the identifier holds; the spelling that arrived sits
+    // beside it. Both are asserted, because resolving the spelling without
+    // keeping it would pass a check on the family and still lose the name.
+    const auto ester = oresmd_projections::from_index_name("EUR-ESTER");
+    REQUIRE(ester.has_value());
+    const auto& estr = std::get<ir_market_data_identifier>(*ester);
+    CHECK(estr.index == index_family::estr);
+    REQUIRE(estr.index_spelling.has_value());
+    CHECK(*estr.index_spelling == "ESTER");
+
+    // A name in the family's own uppercase spelling carries no spelling: the
+    // family is the whole of the identity, and recording it would give one
+    // family two URIs.
+    const auto plain = oresmd_projections::from_index_name("USD-SOFR");
+    REQUIRE(plain.has_value());
+    CHECK_FALSE(std::get<ir_market_data_identifier>(*plain).index_spelling.has_value());
+}
+
 TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     // A term family without a tenor: the forward emits the two-segment form
     // for overnight families alone, and the parser rejects a term-index fixing
-    // with no tenor, so this name is nobody's.
+    // with no tenor, so this name is nobody's. Both are asserted -- one of the
+    // original term families and one this work added -- because the rule comes
+    // from the family's own classification rather than from a list of two.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD-LIBOR").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("DKK-CIBOR").has_value());
     // Segment counts the forward never emits.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-EUR-USD").has_value());
-    // Empty segments, and a family the enum does not declare. EUR-EONIA is in
-    // the corpus and still unnameable: it is the spelling a producer wrote,
-    // not a family oresmd models.
+    // Empty segments, and a family the enum does not declare: the enum holds the
+    // families the corpus and the synthetic curve configurations use, and a
+    // producer's other token has no family to resolve to.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD--3M").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_index_name("EUR-EONIA").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("EUR-NOSUCHFAMILY").has_value());
     // Another asset class's index name. UKRPI is an inflation index, and this
     // projection is the interest-rate one; naming it is its own asset class's
     // work, recorded in the analysis.

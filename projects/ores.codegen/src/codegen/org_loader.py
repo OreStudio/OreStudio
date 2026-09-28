@@ -5744,16 +5744,30 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 if key == "requirement_brief" and len(lines) > 1:
                     result["requirement_brief_multiline"] = True
 
-    # --- Index family (ir only): the shared benchmark-family enum values.
-    # Emitted as dicts so core's _mark_last_item() (dict-only) can flag the
-    # final value and the template can omit its trailing comma. ---
+    # --- Index family (ir only): the shared benchmark-family enum values. Each
+    # row also carries whether ORE writes a tenor into that family's index name,
+    # and the spellings ORE uses for a family whose enum name differs -- the
+    # generated requires_tenor() and the alias table both come from here, so the
+    # rule lives with the families rather than in the templates. Emitted as dicts
+    # so core's _mark_last_item() (dict-only) can flag the final value and the
+    # template can omit its trailing comma. ---
     if_section = _section(doc.root, "Index family")
     if if_section:
-        result["index_family"] = [
-            {"value": v}
-            for v in (r.get("value", "") for r in _parse_org_table_rows(if_section))
-            if v
-        ]
+        families: list[dict[str, Any]] = []
+        for r in _parse_org_table_rows(if_section):
+            value = r.get("value", "")
+            if not value:
+                continue
+            families.append({
+                "value": value,
+                "requires_tenor": r.get("requires_tenor", "").strip().lower() == "yes",
+                "aliases": [
+                    {"alias": alias.strip()}
+                    for alias in r.get("aliases", "").split(",")
+                    if alias.strip()
+                ],
+            })
+        result["index_family"] = families
 
     # --- Reject keys table ---
     reject_section = _section(doc.root, "Reject keys")

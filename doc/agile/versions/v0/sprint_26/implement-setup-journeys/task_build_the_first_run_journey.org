@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 68113CC3-55C1-4EDE-AEFF-CEE043A9431C
+:END:
+#+title: Task: Build the First run journey
+#+description: The first run journey leads an empty installation from the welcome screen through creating the system administrator, the first tenant's steps inline on one rail, the hand-over to its administrator, their first sign-in, and Ready.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-the-first-run-journey
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An empty installation leads one person from a welcome screen to a working
+tenant on one rail: the system administrator is created, the first tenant is
+described and provisioned, its administrator takes over, signs in for the
+first time and reaches *Ready*. The steps that create a tenant are the same
+steps the *New tenant* journey runs, written once and placed on both rails.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- An empty installation opens on the journey: a welcome screen, then one flat rail that carries the new tenant steps inline, the hand-over, the administrator's first sign-in and Ready.
+- Creating the administrator closes bootstrap mode, and the journey signs in as that account, so the starting-point read and the provisioning request are made by the account that owns them.
+- The starting-point cards and the tenant form are the server's seed profiles: each card states the profile's own counts and bullets, and the form is built from the parameters the profile declares.
+- The provisioning step renders one line per workflow step from the progress read, asks again while the run is open, and retries from the failed step without re-running the steps that completed.
+- A first sign-in whose account must change its password sets one against the rules the server's policy read answers with, and chooses the party to start in when the account works in more than one.
+- The person reaches Ready, and the journey states what to do next.
+
+* Plan
+
+First run is nine steps on one rail, and the middle five are the *New tenant*
+journey's steps. So the unit has two halves: the step library every tenant
+journey shares, and the three steps that belong to the first run alone.
+
+*The journey is a mode, not a page.* While the installation is in bootstrap
+mode the route table shows the journey on every path, which is the rule it
+already follows for the setup form. Creating the administrator clears that
+mode, and the journey continues past it, so the route table carries a second
+reason to stay: the journey has begun in this tab. Finishing it hands the
+browser to the ordinary routes. The position on the rail is memory and not
+storage, so a reload leaves the journey at the sign-in screen — the behaviour
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] already
+records.
+
+*The new tenant steps are a library, and first run inlines them.* The step
+list is data: one definition per step, and the rail is derived from the same
+list, so a step cannot appear on the rail and not in the page. First run
+concatenates its own steps with the shared ones rather than nesting a journey
+inside a journey, and the two rails address the shared steps by name, so a
+step added to one journey cannot shift what another journey means.
+
+*The journey's state is one hook.* The chosen starting point, the typed
+details, the run's id, and the passwords held in memory live in one place, and
+every step body is a function of it. A password reaches no storage: it is
+typed, used for the sign-in it belongs to, and dropped when the hand-over
+ends.
+
+*The browser signs in as the administrator it creates.* The starting-point
+read and the provisioning request are made by an account, and until the
+administrator exists there is none. The journey therefore signs in with the
+credentials it just created, before it reads a starting point. A tenant
+administrator signs in as `/username@hostname/`, which the profile prefilled
+or the person typed, because that is what routes the request to its tenant.
+
+*The form is the profile's.* The cards are the server's rows, each showing the
+bullets, the counts and the settings that row declares, and the tenant form is
+built from the parameters the profile carries. No profile's name or shape is
+written in the browser, so a third profile is a row and a new setting is a row
+and a column.
+
+*Progress is read, not pushed.* The provisioning step asks the progress read
+again while the run is open, renders one line per step the run materialised,
+and offers the retry when the run stopped. A retry that refuses is an answer
+to show, not an error to raise: the engine says which step it re-dispatched or
+why it will not.
+
+*The rules the screen shows are the server's.* The forced change and every
+password field read the policy the server answers with, so the copy the field
+kept until now becomes the one the read fills, and a deployment that tightens
+a rule tightens the screen without a client release.
+
+*Nothing is walked back past a write.* The steps that create server state are
+final, so the rail offers no way backwards into a half-finished write, and a
+step that fails does not advance.
+
+*What this task leaves.* The *New tenant* and *New party* journeys are the
+next step's, and the shell's provisioning verbs move to the same contract in
+the one after that. There is no *Tenants* page yet, so *Ready* offers the way
+home rather than a second tenant. Discarding a half-provisioned tenant stays
+the administrator's own action, as the story records.
+
+*The copy is translated.* Every message the journey shows joins the
+catalogue, which carries all three languages, so the screens are readable in
+each and the catalogue's own test keeps them at parity.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

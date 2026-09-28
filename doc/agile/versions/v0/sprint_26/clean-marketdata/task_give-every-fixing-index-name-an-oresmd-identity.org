@@ -452,6 +452,19 @@ via its "Verifies task" field.
 | 31 | Both commit bodies run past 72 columns | -- | Recorded, not fixed | Measured: 22 of main's last 40 non-merge commits also exceed it, and correcting these means force-pushing a branch whose reviewed revisions are already recorded. Titles are 71 and 67 and the trailers are complete |
 | 32 | =source= and the pair are checked for shape, not against a currency list | -- | Recorded as a limit | The library has no reference-data dependency by design, as its own header states; the model brief says what is checked. Tightening it belongs to the migration that gives the library one |
 
+| 33 | Edit-history narration: "four ways now", and a list of which classes are absent | =oresmd_fixing_coverage_tests.cpp= | accept | Reworded to present state. The reviewer cited a template as the source; no such template exists and the test is hand-written, so the fix landed in the file itself. |
+| 34 | Two delivery-shape helpers differing only in how they count parts | =ores.cpp.oresmd.projections.org= | accept | A shared =is_number()= is extracted. The two predicates stay two, because a power window and a commodity month are different grammars and are not the same predicate called twice. |
+| 35 | =is_digits= duplicates one in =ores.utility= | same | decline | That copy is file-local in a =.cpp=, so the projections translation unit cannot reach it. |
+| 36 | An assertion whose comment claims more than it pins | =ores.cpp.oresmd.projection_tests.org= | accept | The comment now says what the assertion covers. |
+| 37 | A ragged 143-column comment wrap in the template and its output | =ores.cpp.oresmd.projections.org= | accept | Caused by an earlier edit of mine joining two lines; the wrap is restored. |
+| 38 | =model.org= keeps a stale =#+updated= after gaining a row | =model.org= | accept | Bumped, and commodity's model with it. |
+| 39 | =delivery= accepted and silently dropped by every class but commodity and power | every oresmd model and the parser template | accept | The real defect, and the same one the FX source work closed. =delivery= joins =validate_no_foreign_keys= and the nine other Reject keys tables, a case walks every class but the two that name it, and commodity moves onto its own reject list so the shared check stops refusing the key commodity owns. |
+| 40 | The task's Result section is stale and contradicts its own Status | this task | accept | Superseded by this PR's result row below. |
+| 41 | =analysis.org= carries no update for the power and commodity commits | =analysis.org= | accept | Recorded as the next step before the PR, since the section still counts power 48 as unnameable. |
+| 42 | Both variant doc comments still say "seven" | identifiers and requirements templates | accept | The count is dropped rather than raised to eleven, so it cannot go stale again. |
+| 43 | The =DST= flag is refused in a spelling ORE matches case-insensitively | projections and the power model | decline | Deliberate: a flag written any other way would not read back as it arrived, which is the test the rest of the class's refusals are held to. Already recorded in the model, and the fix if the corpus ever writes another spelling is a =delivery_spelling= field, the FX =source_spelling= precedent. |
+| 44 | =inbox.org= gained index rows for two captures unrelated to this work | =inbox.org= | decline | The regenerator rewrites a bucket index from the directory, so it lists captures the index had drifted from. No capture file is touched by this branch. |
+
 * Result
 
 The interest-rate third of the fixing key space is closed. =from_index_name= names
@@ -487,5 +500,16 @@ the table per class. It found a fixing file the reader refused:
 =fixingDataFile= its example names, and is a file ORE reads. The reader now reads
 it, and every one of the 66 payloads is walked.
 
-Still open, each its own decision: inflation (7 names), equity (8), FX (7),
-commodity (25), power (48), security (2) and the four =GENERIC= tokens.
+The power and commodity halves are closed with the next change. ORE states the
+intraday power index grammar in its own parser rather than leaving it to be
+inferred, and its commodity parser reads a contract month the same way, so a
+fixing's delivery period becomes a =delivery= field of its own rather than a
+=point=: =point= is what a quote or a vol names, and a fixing whose coordinate is a
+field stays scalar, as the interest-rate tenor already does. Power becomes a class
+of its own because ORE accepts a bare =POWER-ICE:PDQ= and a bare =COMM-ICE:PDQ=,
+and one class could not write both names back. Power is 48 of 48 and commodity 25
+of 25, all round-tripped, which takes the corpus total to 137 of 158. =delivery=
+joins the keys the other classes refuse, so no class accepts it and drops it.
+
+Still open, each its own decision: equity (8 names), inflation (7), security (2)
+and the four =GENERIC= tokens, of which two are not fixings at all.

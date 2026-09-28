@@ -101,8 +101,8 @@ the diagrams refreshed, and the component added to the registry.
 | W02 | Pass. Every permission the handlers check is seeded: the generated handler checks =workspace::workspaces:read=, =:write= and =:delete=, which the privilege seed defines; the operation handler checks =:read= and =:write=, which it also defines. The four permissions the retired three-tier logic checked (=:archive=, =:archive_any=, =:delete_any= and =live_workspace:archive=) are still seeded and now unreferenced; they are recorded under "What this unit leaves open" rather than deleted, because the workspace feature story may still want them. | =check_handler_permissions.py= |
 | W03 | Not applicable to the model. The component has one populate script of its own, =workspace_live_populate.sql=, and it references only functions that exist: =check_populate_references.py= reports every reference resolved. | =check_populate_references.py= |
 | W04 | Pass. Every SQL script is reachable from the create and drop aggregators, and =validate_schemas.sh= reports no warning for any workspace object: the four generated files are wired into the component aggregator, and the four hand-written ones beside them. The table has the seventeen columns, the seven index names and the three checks the hand-written schema carried, and the database recreates from scratch. | =validate_schemas.sh=; =compass db recreate -y -k=; the live catalogue reads |
-| S01 | Exception recorded in =ACCEPTED_EXCEPTIONS=, not waved through as not applicable. The item applies: the component has entity verbs. It does not pass, because the =ores.shell= composite carries no workspace part, so the =ores.cpp.shell-command= facet the profile enables would emit its units into a directory no build reaches; the model disables the facet with that reason. The item could be made to pass by adding the part, so it is unfinished work rather than impossible work, and the registry names it as a gap with its reason and its acceptor rather than claiming the item passes. Listing the component is the alternative the standard prefers over withholding every gate from it. | =component_registry.py='s =ACCEPTED_EXCEPTIONS=; =check_registry_exceptions.py= |
-| S02 | Not applicable. The item asks that every command have a generated literate recipe; the component generates no command, so there is none to document, and the recipe inventory is unchanged and current. | =regenerate_shell_recipe_inventory.py --check= |
+| S01 | Pass. Every verb of the workspace entity has a generated shell command unit and a test, in the shell composite's new =workspace= adapter part: =workspace_commands.hpp=, its =.cpp= and =workspace_commands_tests.cpp=, which run 48 assertions in 17 cases. The part is a composite part like the other fifteen, with its own modeling page, its CMakeLists files and its diagram, and the unit is registered in =ores.shell.application='s =repl.cpp=. The two operations that are not entity verbs have no unit, and none is asked for: S01 covers entities and junctions. | =projects/ores.shell/workspace/=; the part's test run |
+| S02 | Pass. The same opt-in generates the literate recipe at =doc/recipes/shell/workspaces/workspace.org=, the recipe inventory lists it, and the tangle writes its ten runnable scripts to =projects/ores.shell/scripts/library/workspaces/=. The item's destructive clause has nothing to attach to: the delete verbs are the canonical ones, whose destructiveness is intrinsic to the verb rather than declared per message, and no model declares a message of its own here. | =regenerate_shell_recipe_inventory.py --check=; =compass build --direct tangle_shell_scripts= |
 | H01 | Pass. The three component diagrams are authored in two passes: the sentinel sits at the end of the automated section in each, and everything below it is hand-authored. The automated section was rewritten to the current code -- the domain type with its tenant and party members, the canonical protocol, the operation protocol, the generated registrars and the history provider -- and each rendered image was read, not merely regenerated. The audit's structural findings are recorded under "What this unit leaves open". | The three =.puml= files with their sentinels and rendered =.png= files; the Component Architecture Audit |
 | H02 | Pass. No legacy code remains: the retired change event, the retired protocol, the dead =** Presentation= drawer and the four superseded SQL objects are gone, and no commented-out code was found. The one pair of implementations of the same behaviour -- the hand-written service's =list_workspaces= and the generated canonical list -- collapses into the generated one, and the survivor keeps the behaviour the component's callers had, except for the one delta recorded below. | Deletion list; the survey |
 | H03 | Pass. Every comment written by this pass follows the project comment rules: they sit above the code they describe, they state a fact the code does not, and none narrates an edit. | Comment pass |
@@ -111,9 +111,9 @@ the diagrams refreshed, and the component added to the registry.
 | V01 | Pass. The whole tree builds at the head this record is written against, with the component's three libraries, its service entry point, its test binary and every consumer -- there is none, which is why the build is the weak form of this evidence. | The whole-tree build log |
 | V02 | Pass. With the fleet up, the component's suite passes. =ores.workspace.core.tests= is 13 assertions in 3 cases: the generated eventing integration test's 7, and the 6 this pass added for the resolution chain and the trade-scope whitelist. | The test run |
 | V03 | Pass. =compass db recreate -y -k= exits 0, creating the whole schema from scratch and running every populate script. The generated objects were then read back from the live database rather than from a diff: =ores_workspaces_tbl= has the same seventeen columns as the hand-written table, the same seven index names, and the same three check constraints; the five functions and the Live workspace row are present; and the seeding of the Live workspace per tenant, which is what tenant provisioning calls, succeeds. | =compass db recreate -y -k=; the catalogue and row reads |
-| V04 | Not applicable as written, and its intent is recorded. The item asks that every *generated* shell command run against the live fleet; the component generates none because the facet is disabled with its reason, so there is nothing for it to run. Unlike the scheduler pass, no hand-written submenu exists to run in its place. | The model's =* Physical space= table |
+| V04 | Pass. Every generated shell command ran against the live fleet and answered. The component's ten commands -- list, get, get_many, add, set, put_many, delete, delete_many, versions and version -- were run in one scripted session as the bootstrapped system administrator. =list --limit 1= returned the Live workspace row with its tenant, party, owner and status and a total of 1; =get=, =version= and =delete= on the nil UUID answered =missing=/=not_found=; =get_many=, =delete_many= and =versions= answered =ok= with empty collections; and the three write verbs reached the generated insert trigger and were refused by it, reporting =Invalid owner_id ... Must reference a valid account=, which is the placeholder nil UUID failing rather than a wiring fault, and is itself evidence that the generated trigger is live. | The run log; =projects/ores.shell/scripts/library/workspaces/= |
 | V05 | Pass for every gate this component is in scope for. Component drift (in both modes, all addresses), the shared-list drift run, model drift, protocol twin coverage, handler permissions, populate references, the recipe inventories, the component's CMake source lists, test-case reachability, pasted block symbols, the registry-exception check and =validate_docs.sh= are all green. Two repository-wide checks are red on main and neither names workspace: =validate_schemas.sh= reports 20 =RLS_001= warnings in =analytics=, =iam= and =reporting=, and the CMake source-list check reports 32 stale lists in other components. | Each check script |
-| V06 | Pass, with one accepted exception. =workspace-cpp= joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all --dry-run= passes with it listed: no drift across every listed component at this revision. The entry carries one exception, S01, because that item applies and does not pass; every other applicable item either passes or is recorded as not applicable above. | =component_registry.py= diff; =check_registry_exceptions.py=; =check_component_drift.py --all --dry-run= |
+| V06 | Pass, with no accepted exception. =workspace-cpp= joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all --dry-run= passes with it listed: no drift across every listed component at this revision. Every item that applies passes, and the ones that do not apply are recorded with their reason above. | =component_registry.py= diff; =check_registry_exceptions.py=; =check_component_drift.py --all --dry-run= |
 | V07 | Pass. The six assertions this pass added are literal: the resolution chain is asserted to be exactly the two identifiers that were written, in order, and the trade-scope count is asserted against 2, then 1, then 0 after a replace and a clear. Neither can pass if its subject does nothing -- a stubbed =resolution_order= returning an empty vector fails the size assertion, and a stubbed =set_trade_scope= leaves the count at 0. The generated eventing test is a real end-to-end chain, not an assertion of a length. | =repository_workspace_tests.cpp=; the per-file survey |
 | V08 | Recorded. Every source file under =src/= is surveyed in the per-file table below. Twelve carry the generated marker and are the output of a template the codegen suite covers; two are covered directly by the tests this pass added; the remaining fifteen are recorded with their reason -- the service application, host, options, parser and their exceptions, =main.cpp=, the registrars, and the export headers. No hand-written source is left with neither a test nor a stated reason. | The per-file survey below |
 
@@ -153,6 +153,8 @@ Every figure below was measured at the head this record names, =feature/clean-wo
 | Generated sources under =src/= | 12 of 29 | =grep -rl "AUTO-GENERATED FILE" projects/ores.workspace/*/src= |
 | Whole-tree build | exit 0 | =cmake --build --preset linux-clang-debug-make -j 3= |
 | =ores.workspace.core.tests= | 13 assertions, 3 cases, all pass | The test target |
+| =ores.shell.workspace.tests= | 48 assertions, 17 cases, all pass | The test target |
+| Generated shell commands run live | 10 of 10 answered | =compass shell -l= over the tangled scripts |
 | =compass db recreate -y -k= | exit 0 | Bare |
 | =ores_workspaces_tbl= columns read back | 17 | =information_schema.columns= |
 | =ores_workspaces_tbl= indexes read back | 7 named, plus the PK and the exclusion constraint | =pg_indexes= |
@@ -218,14 +220,19 @@ Every figure below was measured at the head this record names, =feature/clean-wo
   feature's intended surface and the design doc describes the
   trade-scope filter as unfinished rather than abandoned. Removal
   under P03 would be a product decision, not a clean-up one.
+- *The shell surface is a new composite part, not a model flag.*
+  S01 and S02 cannot pass by turning a facet on: the generated units
+  need a part for them to land in, with its own CMake files, its own
+  modeling page and a registration call in the shell application.
+  =projects/ores.shell/workspace= is that part, built the way the
+  other fifteen are. The first pass recorded the item as an accepted
+  exception, reasoning that the facet would emit into a directory no
+  build reaches; that was true of the tree as it stood and wrong as a
+  conclusion, because the part is the work the item names. The
+  exception is retired and the item passes.
 
 * What this unit leaves open
 
-- *The shell part.* The component has no shell surface and the
-  =ores.cpp.shell-command= facet stays off with its reason. Adding the
-  part to the =ores.shell= composite, registering its commands and
-  re-enabling the facet is what turns S01 and S02 from recorded into
-  passed, and it is the next unit of the story.
 - *The namespace documentation headers.* G08 wants one per outermost
   namespace. The component is a composite of three parts and carries
   none; the scheduler pass added =ores.scheduler.hpp= to its core part
@@ -291,8 +298,9 @@ the row-level security layer, the two operation handlers, the component
 registrar and the service infrastructure -- each with its reason above.
 
 Verified: the whole tree builds, =ores.workspace.core.tests= passes 13
-assertions in 3 cases, =compass db recreate -y -k= exits 0 and the table reads
-back with the seventeen columns, seven index names and three checks the
-hand-written schema carried, and every codegen gate this component is in scope
-for is green. =workspace-cpp= joins =COMPONENTS_UNDER_TEST= with one accepted
-exception, S01, which names the shell part it does not yet have.
+assertions in 3 cases, the shell part's suite passes 48 assertions in 17 cases,
+=compass db recreate -y -k= exits 0 and the table reads back with the seventeen
+columns, seven index names and three checks the hand-written schema carried,
+all ten generated shell commands ran against the live fleet and answered, and
+every codegen gate this component is in scope for is green. =workspace-cpp=
+joins =COMPONENTS_UNDER_TEST= with no accepted exception.

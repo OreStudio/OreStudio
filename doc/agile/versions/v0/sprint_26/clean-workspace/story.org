@@ -25,7 +25,7 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Nothing. The component is generated, builds, tests, recreates its schema from scratch, and is listed in =COMPONENTS_UNDER_TEST=. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing. The shell part and the namespace documentation headers the task records as open are a separate task. |
+| Next          | Nothing. The namespace documentation headers the task records as open are a separate task. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -77,14 +77,14 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
   tenant-independent; the schema has always carried =tenant_id=, a
   version and RLS. The inert entries are removed and the comment now
   describes the two tables.
-- *List the component with one accepted exception rather than keep it
-  out.* S01 applies -- the component has entity verbs -- and it does not
-  pass, because the shell composite carries no workspace part for the
-  generated units to land in. The two honest alternatives were to build
-  the part now or to hold the component out of the registry until it
-  exists; the exception names the gap with its reason and its acceptor,
-  which is what the standard prefers over withholding every gate from
-  the component in the meantime.
+- *Build the shell part rather than take an exception for it.* The
+  first pass disabled the =ores.cpp.shell-command= facet and recorded
+  S01 as an accepted exception, on the grounds that the generated units
+  would land in a directory no build reaches. That described the tree
+  and not the item: S01 asks for the units, and the part they need is
+  the work. =projects/ores.shell/workspace= now carries them, the
+  entity's ten verbs run against the live fleet, and the component
+  joins the registry with no exception.
 
 * Out of scope
 

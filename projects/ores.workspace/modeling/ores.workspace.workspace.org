@@ -235,19 +235,6 @@ drop function if exists ores_workspaces_hierarchy_fn(uuid, uuid, boolean);
 :error_message: Invalid owner_id: %. Must reference a valid account.
 :END:
 
-* Physical space
-
-The shell commands for this entity are switched off. The =ores.shell=
-composite carries no workspace part, so the generated units would land in a
-directory no build reaches. Adding the part to the shell composite,
-registering its commands, and then enabling this facet is the next unit of
-the workspace clean-up; the profile enables the facet, so this table states
-the reason it is overridden.
-
-| Address                | Enabled |
-|------------------------+---------|
-| ores.cpp.shell-command | false   |
-
 * C++
 
 ** Flags

@@ -96,11 +96,12 @@ from dataclasses import dataclass
 # its one operation model regenerate byte for byte, every protocol header has
 # its TypeScript twin, and the database recreates from scratch with the
 # generated table: the same seventeen columns, the same seven index names and
-# the same three checks the hand-written schema carried. What stays
-# hand-written is recorded with its reason on the task -- the resolution-order
-# and workspace-validation functions, the trade-scope whitelist, the RLS layer,
-# and the two operation handlers. S01 is the one item it does not pass, and the
-# exception below records why:
+# the same three checks the hand-written schema carried. The entity's verbs
+# also have their generated shell command unit and its test, in the shell
+# composite's workspace adapter part, and the literate recipe that goes with
+# them. What stays hand-written is recorded with its reason on the task -- the
+# resolution-order and workspace-validation functions, the trade-scope
+# whitelist, the RLS layer, and the two operation handlers:
 # doc/agile/versions/v0/sprint_26/clean-workspace/task_clean_workspace.org.
 @dataclass(frozen=True)
 class AcceptedException:
@@ -214,30 +215,6 @@ ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
             ),
             accepted_by="marco",
             accepted_on="2026-09-27",
-        ),
-    ),
-    # workspace-cpp serves every entity verb but has no shell surface to serve
-    # them through. S01 asks for a generated shell command unit per verb, and
-    # the profile turns the ores.cpp.shell-command facet on, so the units would
-    # be emitted into a shell part the composite does not carry -- a directory
-    # no build reaches. The model therefore disables the facet with that
-    # reason, and the component is listed so every other gate runs against it
-    # rather than being withheld from all of them. S02 and V04 are recorded as
-    # not applicable on the task instead: with no generated command there is
-    # none to document and none to run. Adding the shell part is the next unit
-    # of the story.
-    "workspace-cpp": (
-        AcceptedException(
-            item="S01",
-            reason=(
-                "The ores.shell composite carries no workspace part, so the "
-                "generated command units would land in a directory no build "
-                "reaches; the model disables the facet with that reason. Every "
-                "other item the standard applies to an Entity passes, and the "
-                "component is listed so the gates cover it in the meantime."
-            ),
-            accepted_by="marco",
-            accepted_on="2026-09-28",
         ),
     ),
 }

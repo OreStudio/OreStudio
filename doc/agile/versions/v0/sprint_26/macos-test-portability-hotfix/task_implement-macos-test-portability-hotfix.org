@@ -8,7 +8,7 @@
 #+filetags: :hotfix:osx:tests:platform:service:sprint_26:v0:macos-test-portability-hotfix:
 #+owner: marco
 #+branch: hotfix/macos-test-portability
-#+pr:
+#+pr: 2322
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28

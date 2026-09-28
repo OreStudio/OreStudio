@@ -1637,8 +1637,14 @@ private:
             req.change.write.asset_class = "fx";
             req.change.write.enabled = true;
             req.change.write.party_id = sg(party_id_str);
-            req.change.precondition = ores::utility::domain::precondition{
-                ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+            // The write states no expectation, because the store's
+            // must-not-exist claim is keyed on the ORE key alone while the
+            // binding's natural key is the party with the ORE key and the
+            // source. A must-not-exist claim therefore refuses the second
+            // party's binding for a source the first party already holds.
+            // The freshness check above is what keeps this idempotent, and
+            // the natural key's unique index is what keeps it honest.
+            req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             req.intent.reason_code = "system.new_record";
             req.intent.commentary =
                 "Created by ACME provisioning: consumes the system-party simulated market "

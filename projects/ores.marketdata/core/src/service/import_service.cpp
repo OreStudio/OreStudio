@@ -352,7 +352,8 @@ import_service::import(const messaging::import_market_data_request& req) {
             fixings.reserve(data.size());
             for (const auto& f : data) {
                 // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name
-                const auto series = find_or_create_series("FIXING", "RATE", f.qualifier);
+                const auto series = find_or_create_series(
+                    std::string(fixing_series_type), "RATE", f.qualifier);
 
                 domain::market_fixing fix;
                 fix.id = gen();

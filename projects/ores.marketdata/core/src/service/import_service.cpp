@@ -117,12 +117,33 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
 }
 
 // What oresmd makes of one parsed key: the canonical spelling it projects back
-// to, and the registry's decomposition of that spelling into the columns a
-// series and its observations are stored under.
+// to, the registry's decomposition of that spelling into the columns a series
+// and its observations are stored under, and whether the difference between the
+// two is the FX convention checker reversing the pair.
+//
+// The last one is worth separating. A spelling difference is the grammar
+// tidying up after the producer; a reversed pair means the file stored the
+// instrument the wrong way round against refdata, and the operator is the only
+// one who can fix the file. Reporting both as "not canonical" hides the second.
 struct named_key final {
     std::string canonical;
     ores::ore::market::decomposed_key decomposition;
+    bool fx_pair_reversed = false;
 };
+
+// Whether the convention checker is what moved this key's currencies, as opposed
+// to a spelling the grammar corrected. Only an FX identifier carries a pair, and
+// only a reversed pair makes the checker change it.
+bool fx_pair_moved(const std::string& key, const domain::market_data_identifier& corrected) {
+    const auto* after = std::get_if<domain::fx_market_data_identifier>(&corrected);
+    if (!after)
+        return false;
+    const auto before = core::oresmd_projections::from_ore_key(key);
+    if (!before)
+        return false;
+    const auto* was = std::get_if<domain::fx_market_data_identifier>(&*before);
+    return was && was->pair != after->pair;
+}
 
 // The oresmd grammar is the authority for what an ORE key means. A key it can
 // name is stored under its canonical spelling, so two spellings of one
@@ -145,6 +166,10 @@ canonical_key(const std::string& key,
     named_key result;
     result.decomposition = registry.decompose(*canonical);
     result.canonical = std::move(*canonical);
+    // Only asked when there is a difference to explain, so the second projection
+    // costs nothing on the keys that already read back as they arrived.
+    result.fx_pair_reversed =
+        fx_checker && result.canonical != key && fx_pair_moved(key, *identifier);
     return result;
 }
 
@@ -285,7 +310,10 @@ import_service::import(const messaging::import_market_data_request& req) {
                 if (named && named->canonical != d.key)
                     resp.warnings.push_back(
                         d.key + " = " + d.value + " -> " + named->canonical + " = " + d.value +
-                        " (value unchanged): not the canonical spelling of this key.");
+                        " (value unchanged): " +
+                        (named->fx_pair_reversed ?
+                             "reversed relative to refdata's canonical currency pair." :
+                             "not the canonical spelling of this key."));
 
                 const auto series = find_or_create_series(series_type, metric, qualifier);
 

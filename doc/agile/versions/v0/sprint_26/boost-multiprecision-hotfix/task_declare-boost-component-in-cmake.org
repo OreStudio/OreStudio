@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 36D28711-DCAD-4B86-ACFD-14A8BE4D1F87
+:END:
+#+title: Task: Declare the Boost component in CMake, not only the vcpkg port
+#+description: The vcpkg port made the header install, but the estate declares every Boost library it uses in the root find_package COMPONENTS list, and that declaration is what turns a missing port into a configure-time failure instead of a missing header twenty minutes into a build. Add multiprecision there and prove both directions.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:build:cmake:vcpkg:utility:sprint_26:v0:boost-multiprecision-hotfix:
+#+owner: marco
+#+branch: hotfix/boost-cmake-component
+#+pr: 2345
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7AB722C0-9CCC-4ED4-996C-C2118CBEBFCE][Hotfix: a Boost library landed without its vcpkg port]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the other half of the same dependency. The vcpkg port makes the
+header install; the root =find_package(Boost ... COMPONENTS ...)= is what
+the estate uses to declare which Boost libraries the project builds
+against, and what CMake checks before anything compiles.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7AB722C0-9CCC-4ED4-996C-C2118CBEBFCE][Hotfix: a Boost library landed without its vcpkg port]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The root =find_package(Boost ... COMPONENTS ...)= lists =multiprecision=,
+  as it already lists the other header-only libraries the tree uses
+  (=crc=, =scope_exit=, =circular_buffer=).
+- A configure with the port declared succeeds and reports the component
+  found.
+- A configure with the port undeclared fails, naming
+  =boost_multiprecision=, before anything compiles.
+- The decimal suite still passes and the tree still builds.
+
+* Plan
+
+1. Add the component to the root list and configure, reading the
+   =Found Boost ... found components:= line back rather than trusting the
+   exit code alone.
+2. Prove the gate by removing the manifest line, reconfiguring, and
+   reading the failure; restore it and reconfigure.
+3. Rebuild the affected library and re-run the decimal suite.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Components the root find_package resolves | 12, =multiprecision= among them | =cmake --preset linux-clang-debug-make= | this branch |
+| Configure with the port undeclared | fails, exit 1, naming =boost_multiprecision= | same, with the manifest line removed | this branch |
+| Configure with the port declared | succeeds, exit 0 | same | this branch |
+| Decimal suite | 71 assertions, 17 cases, all pass | =ores.utility.tests "[decimal]"= | this branch |
+
+* Notes
+
+- The declaration is what makes the failure early. Without the port, CMake
+  stops at configure time with the component's name; with only the vcpkg
+  line and no component, the same defect appears as a missing header after
+  vcpkg has run and hundreds of files have compiled.
+- A component that is header-only still belongs in the list. =crc=,
+  =scope_exit= and =circular_buffer= are all header-only and all listed,
+  and none of them is linked: the estate links =Boost::boost= for
+  header-only use and specific targets such as =Boost::json= only where a
+  compiled library is needed. =multiprecision= joins the list on the same
+  terms, which is why no link line changed.
+- The component resolves against vcpkg's Boost because
+  =share/boost_multiprecision/boost_multiprecision-config.cmake= is
+  installed by the port. It was verified against that tree directly, and
+  separately with a two-file CMake project, because the first attempt
+  picked up the system Boost and reported the component missing -- a
+  different Boost, not a different answer.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The root =find_package(Boost 1.88 REQUIRED COMPONENTS ...)= lists
+=multiprecision=, and a configure reports twelve components found, that one
+among them. The decimal suite passes 71 assertions in 17 cases and
+=ores.utility.tests= builds.
+
+The gate is proved in both directions. With the port declared, the
+configure succeeds. With the manifest line removed, the configure fails
+before compiling and names =boost_multiprecision=, which is the failure the
+original defect should have produced: seconds instead of twenty minutes,
+and the port to add rather than a header that cannot be found.

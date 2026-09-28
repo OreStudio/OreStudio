@@ -81,8 +81,15 @@ and the commit it was measured at.
   installed because =boost-multiprecision= depends on it and is not
   declared; a check that demanded one line per include would fail the tree
   for being right.
-- =vcpkg.json= is the only file the build needed. Boost.Multiprecision is
-  header-only, so no =find_package= component and no link line changes.
+- The manifest turned out not to be the only file the build needed. The
+  root =find_package(Boost ... COMPONENTS ...)= declares every Boost library
+  the project builds against, header-only ones included, and the follow-up
+  task
+  [[id:36D28711-DCAD-4B86-ACFD-14A8BE4D1F87][Declare the Boost component in CMake, not only the vcpkg port]]
+  adds =multiprecision= there. That is the declaration that fails at
+  configure time when the port is missing, which this task's own run
+  confirmed only after the fact. No link line changes: the header-only
+  libraries already in the list are not linked either.
 - A pull-request-time version of the check would need the workflow to fetch
   the vcpkg submodule, which no pull-request workflow does today. The story
   records that option rather than taking it, because it changes the cost of

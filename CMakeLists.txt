@@ -388,7 +388,8 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     iostreams
     process
     graph
-    circular_buffer)
+    circular_buffer
+    multiprecision)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)

@@ -67,6 +67,8 @@ declared twice.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C8FE8C3E-1AB8-4908-8C3A-41D756EFDB69][Implement Hotfix: a Boost library landed without its vcpkg port]] | DONE | 2026-09-28 | 2026-09-28 | Declare the port, prove the decimal unit and its consumer build and pass, write the check and wire it before the build, then raise the pull request. |
+| [[id:36D28711-DCAD-4B86-ACFD-14A8BE4D1F87][Declare the Boost component in CMake, not only the vcpkg port]] | DONE | 2026-09-28 | 2026-09-28 | Add =multiprecision= to the root =find_package= component list, as the other header-only Boost libraries are listed, and prove that a configure without the port fails before anything compiles. |
+| [[id:36D28711-DCAD-4B86-ACFD-14A8BE4D1F87][Declare the Boost component in CMake, not only the vcpkg port]] | BACKLOG | | | The vcpkg port made the header install, but the estate declares every Boost library it uses in the root find_package COMPONENTS list, and that declaration is what turns a missing port into a configure-time failure instead of a missing header twenty minutes into a build. Add multiprecision there and prove both directions. |
 
 * Decisions
 
@@ -83,6 +85,15 @@ declared twice.
   pull request. A pull-request check would have to fetch the vcpkg
   submodule in a workflow that does not currently, which is a CI design
   decision rather than part of this fix; the task records that option.
+- The dependency is declared in two places, and the first task found only
+  one of them. =vcpkg.json= makes the port install; the root
+  =find_package(Boost ... COMPONENTS ...)= is what the estate uses to say
+  which Boost libraries the project builds against, and what CMake checks
+  before compiling anything. The second task adds it there, which is also
+  what makes a missing port fail at configure time with the component's
+  name instead of as a missing header after the compile has started. Every
+  header-only library already in that list is declared this way and is not
+  linked, so no link line changed.
 
 * Out of scope
 

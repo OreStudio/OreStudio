@@ -150,6 +150,14 @@ A report definition's configuration is a set of strongly typed entities rather t
   the failure list. The credit simulation comparison moved out of its test into
   =credit_simulation_diff.cpp= for this reason, so the test and the harness
   share one implementation rather than drifting apart.
+- **A comparison may state a normalisation, but only one that carries the same
+  information.** Calendar adjustments are the case: ORE writes a date list it
+  has no dates for as an empty element and the mapper omits it, so the kind
+  declares that an empty list may be written either way. The rule is narrow by
+  construction, because a list with dates in it is compared date by date and
+  cannot slip past it. A comparison may not be widened to accept a lost value:
+  where the difference is a field the entities cannot hold, as with ORE's
+  currency type, the model is wrong and the model is what changes.
 - **The harness walks a corpus by file prefix, which is what the census globs.**
   A kind's files are the ones whose stem starts with the kind's prefix, so
   =creditsimulation*= finds the 14 credit simulation documents including

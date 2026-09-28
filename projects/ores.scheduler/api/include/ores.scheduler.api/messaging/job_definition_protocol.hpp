@@ -158,7 +158,7 @@ struct put_job_definition_request {
 
 struct put_job_definition_response {
     ores::utility::domain::result result;
-    ores::scheduler::domain::job_definition job_definition;
+    std::optional<ores::scheduler::domain::job_definition> job_definition;
 };
 
 struct put_many_job_definitions_request {
@@ -254,7 +254,7 @@ struct get_job_definition_version_request {
 
 struct get_job_definition_version_response {
     ores::utility::domain::result result;
-    ores::scheduler::domain::job_definition version;
+    std::optional<ores::scheduler::domain::job_definition> version;
 };
 
 /**

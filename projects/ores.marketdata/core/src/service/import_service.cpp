@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
@@ -113,6 +114,38 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
         return {};
     }
     return pairs;
+}
+
+// What oresmd makes of one parsed key: the canonical spelling it projects back
+// to, and the registry's decomposition of that spelling into the columns a
+// series and its observations are stored under.
+struct named_key final {
+    std::string canonical;
+    ores::ore::market::decomposed_key decomposition;
+};
+
+// The oresmd grammar is the authority for what an ORE key means. A key it can
+// name is stored under its canonical spelling, so two spellings of one
+// instrument reach one series rather than two; a key it cannot name -- BOND,
+// the option and capfloor families, anything ORE adds later -- returns nullopt
+// and keeps the decomposition the registry gave it, because ORE's own examples
+// carry such keys and an import must not drop them.
+std::optional<named_key>
+canonical_key(const std::string& key,
+              const ores::ore::market::series_key_registry& registry,
+              const ores::ore::market::fx_quote_convention_checker* fx_checker) {
+    const auto identifier = fx_checker ?
+                                core::oresmd_projections::from_ore_key(key, *fx_checker) :
+                                core::oresmd_projections::from_ore_key(key);
+    if (!identifier)
+        return std::nullopt;
+    auto canonical = core::oresmd_projections::to_quote_key(*identifier);
+    if (!canonical)
+        return std::nullopt;
+    named_key result;
+    result.decomposition = registry.decompose(*canonical);
+    result.canonical = std::move(*canonical);
+    return result;
 }
 
 } // namespace
@@ -215,36 +248,18 @@ import_service::import(const messaging::import_market_data_request& req) {
         // Best-effort: a reversed FX/RATE key (e.g. some vendored ORE
         // example market.txt files store GBP/USD under FX/RATE/USD/GBP —
         // see fx_quote_convention_checker's docs) is detected against
-        // ores.refdata's currency_pair reference data and corrected here,
-        // before persistence, so every downstream consumer (including the
-        // series this creates) sees the canonical key. The value is never
-        // touched — only the qualifier's two currencies are swapped — so
-        // this can never introduce floating-point error.
-        const auto has_fx_rate = std::any_of(data.begin(), data.end(), [](const auto& d) {
-            return d.series_type == "FX" && d.metric == "RATE";
-        });
-        if (has_fx_rate) {
-            const auto known_pairs = fetch_known_currency_pairs(auth_nats_);
-            const ores::ore::market::fx_quote_convention_checker checker(known_pairs);
-            for (auto& d : data) {
-                if (d.series_type != "FX" || d.metric != "RATE")
-                    continue;
-                const auto slash = d.qualifier.find('/');
-                if (slash == std::string::npos ||
-                    d.qualifier.find('/', slash + 1) != std::string::npos)
-                    continue; // not a plain two-currency qualifier
-                const auto base = d.qualifier.substr(0, slash);
-                const auto quote = d.qualifier.substr(slash + 1);
-                const auto result = checker.check(base, quote);
-                if (result.status != ores::ore::market::fx_quote_status::key_swapped)
-                    continue;
-                resp.warnings.push_back(
-                    "FX/RATE/" + base + "/" + quote + " = " + d.value + " -> FX/RATE/" +
-                    result.base_currency + "/" + result.quote_currency + " = " + d.value +
-                    " (value unchanged): reversed relative to refdata's canonical currency pair.");
-                d.qualifier = result.base_currency + "/" + result.quote_currency;
-            }
-        }
+        // ores.refdata's currency_pair reference data and corrected before
+        // persistence, so every downstream consumer (including the series
+        // this creates) sees the canonical key. The checker swaps the
+        // identifier's =pair= field and the projection emits the corrected
+        // key, so the value is never touched and this can never introduce
+        // floating-point error. The reference data is read once, and only
+        // when a key in the batch would actually consult it.
+        std::optional<ores::ore::market::fx_quote_convention_checker> fx_checker;
+        if (std::any_of(data.begin(), data.end(), [](const auto& d) {
+                return d.series_type == "FX" && d.metric == "RATE";
+            }))
+            fx_checker.emplace(fetch_known_currency_pairs(auth_nats_));
 
         // parse_market_data already de-duplicated repeated (date, key)
         // pairs (last-line-wins) — see duplicate_policy. In error mode,
@@ -254,7 +269,25 @@ import_service::import(const messaging::import_market_data_request& req) {
             std::vector<domain::market_observation> observations;
             observations.reserve(data.size());
             for (const auto& d : data) {
-                const auto series = find_or_create_series(d.series_type, d.metric, d.qualifier);
+                const auto named =
+                    canonical_key(d.key, registry, fx_checker ? &*fx_checker : nullptr);
+                // A key oresmd cannot name keeps the registry's own
+                // decomposition; one it can name is taken from the
+                // identifier, canonical spelling and all.
+                const auto series_type =
+                    named ? named->decomposition.series_type : d.series_type;
+                const auto metric = named ? named->decomposition.metric : d.metric;
+                const auto qualifier = named ? named->decomposition.qualifier : d.qualifier;
+                const auto point = (named && named->decomposition.point_id) ?
+                                       named->decomposition.point_id :
+                                       d.point_id;
+
+                if (named && named->canonical != d.key)
+                    resp.warnings.push_back(
+                        d.key + " = " + d.value + " -> " + named->canonical + " = " + d.value +
+                        " (value unchanged): not the canonical spelling of this key.");
+
+                const auto series = find_or_create_series(series_type, metric, qualifier);
 
                 domain::market_observation obs;
                 obs.id = gen();
@@ -264,7 +297,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.observation_datetime = std::chrono::sys_days{d.date};
                 // A key that carries no point of its own takes the series
                 // type's answer for its single point.
-                obs.point_id = d.point_id.value_or(registry.default_point_for(d.series_type));
+                obs.point_id = point.value_or(registry.default_point_for(series_type));
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

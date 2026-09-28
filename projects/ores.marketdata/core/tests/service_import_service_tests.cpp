@@ -143,6 +143,35 @@ TEST_CASE("import_leaves_point_id_empty_for_series_with_short_key", tags) {
     CHECK(observations.front().point_id.empty());
 }
 
+TEST_CASE("import_stores_a_named_key_under_its_canonical_spelling", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The oresmd grammar is the authority for what a key means, so a key it can
+    // name becomes the series its own projection emits. Two spellings of one
+    // instrument then reach one series rather than two, which is what the
+    // lower-case pair below would otherwise produce: the shape registry
+    // decomposes a key without touching its case, and the series table is
+    // matched on the qualifier verbatim.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/gbp/jpy 188.5\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].find("FX/RATE/GBP/JPY") != std::string::npos);
+
+    CHECK(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "gbp/jpy").empty());
+    REQUIRE(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "GBP/JPY").size() == 1);
+}
+
 TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", tags) {
     auto lg(make_logger(test_suite));
 

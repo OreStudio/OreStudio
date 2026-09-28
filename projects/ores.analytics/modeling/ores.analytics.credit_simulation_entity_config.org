@@ -90,6 +90,7 @@ The factor loadings ORE writes as one text value for this entity.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_credit_simulation_entities_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

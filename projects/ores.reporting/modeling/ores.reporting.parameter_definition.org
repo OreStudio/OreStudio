@@ -103,6 +103,7 @@ Whether the document must carry the parameter.
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_parameter_definitions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

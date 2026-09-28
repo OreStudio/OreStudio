@@ -26,7 +26,7 @@ set(files
     "validation/password_validator.cpp"
 )
 
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+# The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/password_hasher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/export.hpp"

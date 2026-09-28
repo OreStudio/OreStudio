@@ -21,7 +21,13 @@
 # To modify, update the template and regenerate.
 set(files
     "concurrency_policy_eventing_integration_tests.cpp"
+    "configuration_eventing_integration_tests.cpp"
+    "configuration_parameter_eventing_integration_tests.cpp"
+    "configuration_type_eventing_integration_tests.cpp"
     "main.cpp"
+    "parameter_definition_eventing_integration_tests.cpp"
+    "parameter_value_domain_eventing_integration_tests.cpp"
+    "report_configuration_eventing_integration_tests.cpp"
     "report_definition_eventing_integration_tests.cpp"
     "report_instance_eventing_integration_tests.cpp"
     "report_type_eventing_integration_tests.cpp"

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:interfaces:reference:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 
 * Summary
 
@@ -16,10 +16,9 @@ the messages of the pipeline, the messages that control it, and the objects a
 run reads and writes, so that an implementer has one list to work from rather
 than one per phase.
 
-Subjects marked *new* do not exist yet. Subjects marked *substitute* belong to
-the replacement steps described in
-[[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] and
-are dispatched instead of the phase they replace, never alongside it.
+Subjects marked *designed* do not exist yet; an unmarked subject is implemented
+and its name is the one in the protocol header. A substitute's subject is
+dispatched instead of the phase it replaces, never alongside it.
 
 * Detail
 
@@ -27,18 +26,20 @@ are dispatched instead of the phase they replace, never alongside it.
 
 | Subject | Publisher | Consumer | Payload |
 |---------+-----------+----------+---------|
-| =reporting.v1.ops.trigger_report_instance= | the scheduler, on a firing | reporting | definition, tenant, job instance |
-| =workflow.v1.start= | reporting | the workflow engine | workflow type and the run's configuration |
-| =reporting.v1.ops.preprocess= *(new)* | the workflow engine | pre-processing | tenant, instance, scope, market data timestamp, analytics switches |
-| =reporting.v1.ops.use-prepared-input= *(new, substitute)* | the workflow engine | pre-processing, substitute path | tenant, instance, and the location of a prepared archive |
-| =compute.v1.report.submit= | the workflow engine | ores.compute | instance, tenant, correlation, input locations |
+| =reporting.v1.ops.trigger_report_instance= | the shell, or the scheduler on a firing | reporting | definition, tenant, and the firing's identity |
+| =workflow.v1.start= | reporting | the workflow engine | workflow type, the run's request, and its run configuration |
+| =reporting.v1.report.gather-trades= | the workflow engine | reporting | instance, definition, tenant |
+| =reporting.v1.report.gather-market-data= | the workflow engine | reporting | instance, definition, tenant |
+| =reporting.v1.report.assemble-bundle= | the workflow engine | reporting | the two storage keys and the counts they carry |
+| =ore.v1.report.prepare-package= | the workflow engine | ores.ore | the two storage keys |
+| =reporting.v1.report.resolve-prepared-input= *(substitute)* | the workflow engine | reporting | instance, tenant, and the prepared input key |
+| =compute.v1.report.submit= | the workflow engine | ores.compute | instance, tenant, correlation, and the tarball URIs |
 | =compute.v1.work.assignments.{tenant}.{platform}= | ores.compute | a worker node, by queue group | result, workunit, package and its digest, input, output |
 | =compute.v1.results.submit= | the worker node | ores.compute | result, host, output location, outcome |
-| =reporting.v1.ops.retrieve-results= *(new)* | the workflow engine | reporting | instance and batch |
-| =reporting.v1.ops.postprocess= *(new)* | the workflow engine | post-processing | instance and the output location |
-| =reporting.v1.ops.ignore-results= *(new, substitute)* | the workflow engine | post-processing, substitute path | instance and the output location |
-| =reporting.v1.ops.finalise= | the workflow engine | reporting | instance |
-| =reporting.v1.ops.fail= | any phase, and the engine's compensation | reporting | instance and the reason |
+| =reporting.v1.report.collect-compute-results= | the workflow engine | reporting | instance, tenant, batch (a stub: it ingests nothing yet) |
+| =reporting.v1.report.ignore-compute-results= *(substitute)* | the workflow engine | reporting | instance, tenant, batch |
+| =reporting.v1.report.finalise= | the workflow engine | reporting | instance, tenant |
+| =reporting.v1.report.fail= | the engine's compensation | reporting | instance, tenant, and the reason |
 | =workflow.v1.events.step-completed= | any phase | the workflow engine | step and its result |
 
 ** The messages that control the run rather than perform it
@@ -47,53 +48,73 @@ are dispatched instead of the phase they replace, never alongside it.
 |---------+-----------+----------+---------|
 | =scheduler.v1.job_definitions.put= | reporting, when reconciling | the scheduler | create or update a definition's schedule |
 | =scheduler.v1.job_definitions.delete= | reporting, when unscheduling | the scheduler | remove a definition's schedule |
-| =workflow.v1.steps.get-result= | the workflow engine, and any reader | the workflow engine | read a completed phase's result |
-| =reporting.v1.ops.schedule-report-definitions= | the shell, or an operator | reporting | schedule on demand |
-| =reporting.v1.ops.unschedule-report-definitions= | the shell, or an operator | reporting | unschedule on demand |
+| =workflow.v1.steps.get-result= | the workflow engine, and any reader | the workflow engine | read a completed step's result |
+| =reporting.v1.report-definitions.schedule= | the shell, or an operator | reporting | schedule on demand |
+| =reporting.v1.report-definitions.unschedule= | the shell, or an operator | reporting | unschedule on demand |
 
 ** The bulk reads pre-processing depends on
 
-These are not part of a run's pipeline but are the interfaces its first phase
-cannot work without. Both are *new*: neither component exposes a scope-limited
-bulk read today.
+These are not steps of the run, but the first phase cannot work without them.
+Both exist, as operation subjects on the component that owns the data.
 
 | Subject | Publisher | Consumer | Payload |
 |---------+-----------+----------+---------|
-| =trading.v1.ops.scope-read= *(new)* | pre-processing | ores.trading | scope and as-of timestamp; returns the trades |
-| =marketdata.v1.ops.resolve= *(new)* | pre-processing | ores.marketdata | the selected trades; returns the items they require |
+| =trading.v1.trades.export-to-storage= | pre-processing | ores.trading | the book scope and the target key; returns the trade count |
+| =marketdata.v1.series.export-to-storage= | pre-processing | ores.marketdata | the target key; returns the series count |
+
+Both write into the platform bucket under the key the caller supplies, which is
+=reporting/runs/{instance}/trades.msgpack= and
+=reporting/runs/{instance}/market_data.msgpack=
+(=projects/ores.reporting/core/src/service/execution_storage_plan.cpp=). Neither
+filters by the run's scope beyond the trades call's book list, so a report whose
+scope is narrower than its tenant still exports the tenant's data. That is what
+the designed, scope-limited reads below would close; they do not exist.
+
+| Subject | Publisher | Consumer | Payload |
+|---------+-----------+----------+---------|
+| =trading.v1.ops.scope-read= *(designed)* | pre-processing | ores.trading | scope and as-of timestamp; returns the trades |
+| =marketdata.v1.ops.resolve= *(designed)* | pre-processing | ores.marketdata | the selected trades; returns the items they require |
 
 ** Storage
 
+#+ATTR_HTML: :class hug-leading
 | Object | Key | Written by | Read by |
 |--------+-----+------------+---------|
-| the engine package | =compute/packages/{app}/{version}/{platform}.tar.gz= | seeded, once per engine build | the worker node |
-| the input artifact | =reporting/inputs/{digest}.tar.gz= *(new)* | pre-processing | pre-processing, on a hit; the worker node |
-| a prepared input | named by the run's configuration *(new)* | seeding, or an earlier run | pre-processing, substitute path |
+| the engine package | =compute/packages/{app}-{version}/{app}-{version}-{platform}.tar.gz= | seeded, once per engine build | the worker node |
+| the gathered trades | =reporting/runs/{instance}/trades.msgpack= | ores.trading, asked by pre-processing | the packaging step |
+| the gathered market data | =reporting/runs/{instance}/market_data.msgpack= | ores.marketdata, asked by pre-processing | the packaging step |
+| the package | =ore/packages/{instance}/ore_package.tar.gz= | the packaging step | the worker node |
+| a prepared input | whatever the definition's =prepared_input_key= names | seeding, or an earlier run | the run, on the substitute path |
 | the engine output | =compute/output/{result_id}.tar.gz= | the worker node | retrieval, post-processing |
+
+All keys are under the platform bucket =ores=, so the object path is
+=/api/v1/storage/ores/{key}=. The engine package and the output path are built
+by =ores.compute.api/net/compute_storage.hpp=, and the three reporting keys by
+=projects/ores.reporting/core/src/service/execution_storage_plan.cpp= and
+=projects/ores.ore/service/src/messaging/report_package_handler.cpp=.
+
+The packaging step re-downloads the two gathered blobs and re-tars them without
+parsing them, so the objects need not be MsgPack the engine understands. The
+tarball it produces is the =Input/= directory shape the engine expects, which is
+why the prepared substitute for a test run is a bundle a person could hand the
+engine.
 
 Both object access paths are as specified in
 [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]]: the command subjects
 =storage.v1.objects.put/get/delete/list= for control, and
 =PUT/GET /api/v1/storage/{bucket}/{key}= for bytes.
 
-** Keys that exist today and are replaced
-
-The current pipeline writes =reporting/runs/{instance}/trades.msgpack= and
-=market_data.msgpack=, and packages them into
-=ore/packages/{instance}/ore_package.tar.gz=. Those carry the run's intermediate
-data, which the target does not store: the trades and market data are read,
-mapped and released within pre-processing, and only the mapped artifact is kept.
-The three keys disappear with the phases that produced them.
-
 ** Naming
 
 - Entity verbs name a resource and a verb, as the
   [[id:C650CBC9-FDED-4C68-981F-7902E296928E][entity protocol]] specifies.
-- Everything that is not an entity verb is an operation, under the component's
-  =ops= segment. Every new subject on this page is an operation, because a phase
-  is an action rather than a resource.
-- The subject of a substitute names what it does — =use-prepared-input=,
-  =ignore-results= — rather than naming the phase it replaces plus a flag.
+- Not every subject here is an operation. The phase subjects are addressed by
+  the service that owns the phase (=reporting.v1.report.*=, =ore.v1.report.*=,
+  =compute.v1.report.*=) rather than under a shared =ops= segment, because the
+  phase a service implements is part of that service's own surface.
+- The subject of a substitute names what it does — =resolve-prepared-input=,
+  =ignore-compute-results= — rather than naming the phase it replaces plus a
+  flag.
 
 * See also
 

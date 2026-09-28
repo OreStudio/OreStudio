@@ -57,6 +57,7 @@ struct currency_entity {
     std::string format;
     std::string monetary_nature;
     std::string market_tier;
+    std::optional<std::string> ore_currency_type;
     std::optional<std::string> image_id;
     int spot_days = 0;
     std::string day_basis;

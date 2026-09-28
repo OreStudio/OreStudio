@@ -44,6 +44,7 @@ export interface Currency {
     format: string;
     monetary_nature: string;
     market_tier: string;
+    ore_currency_type: string | null;
     image_id: string | null;
     spot_days: number;
     day_basis: string;

@@ -140,7 +140,8 @@ TEST_CASE("map_domain_currency_to_definition_with_all_fields", tags) {
     c.fractions_per_unit = 100;
     c.rounding_type = "Down";
     c.rounding_precision = 2;
-    c.monetary_nature = "Major";
+    c.monetary_nature = "fiat";
+    c.ore_currency_type = "Major";
 
     const auto result = currency_mapper::map(c);
     BOOST_LOG_SEV(lg, debug) << "Mapped definition: " << std::string(result.ISOCode);
@@ -304,6 +305,7 @@ TEST_CASE("map_currency_roundtrip_preserves_fields", tags) {
     original.rounding_type = "Floor";
     original.rounding_precision = 0;
     original.monetary_nature = "fiat";
+    original.ore_currency_type = "Crypto";
 
     const auto def = currency_mapper::map(original);
     const auto roundtripped = currency_mapper::map(def);
@@ -316,5 +318,10 @@ TEST_CASE("map_currency_roundtrip_preserves_fields", tags) {
     CHECK(roundtripped.fractions_per_unit == original.fractions_per_unit);
     CHECK(roundtripped.rounding_type == original.rounding_type);
     CHECK(roundtripped.rounding_precision == original.rounding_precision);
-    CHECK(roundtripped.monetary_nature == original.monetary_nature);
+    // ORE's token round trips verbatim. The nature is our classification of
+    // it and comes back as the classification of that token, not as whatever
+    // the original bothered to set, which is why the two assertions differ.
+    CHECK(roundtripped.ore_currency_type == original.ore_currency_type);
+    CHECK(roundtripped.ore_currency_type == "Crypto");
+    CHECK(roundtripped.monetary_nature == "synthetic");
 }

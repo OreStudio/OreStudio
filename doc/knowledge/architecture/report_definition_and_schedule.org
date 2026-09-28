@@ -143,4 +143,5 @@ change that run's shape.
 
 * See also
 
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

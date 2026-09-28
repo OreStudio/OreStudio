@@ -106,4 +106,5 @@ action can be replaced without moving the schedule.
 
 * See also
 
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the structure note that orders this cluster, and where to read this page in it.
 - [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the five-field notation this page follows.

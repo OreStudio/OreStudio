@@ -454,6 +454,7 @@ another component.
 
 * See also
 
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — why the journey's state is a workflow instance and no second entity is added.
 - [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the steps, and the profile contract this investigation keeps.
 - [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][Task: Decide the seed profile contract]] — the sprint 25 decision that already fixed idempotent steps, stop-and-retry, and discard as a separate action.

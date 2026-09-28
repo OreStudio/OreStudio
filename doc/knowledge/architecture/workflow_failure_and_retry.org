@@ -51,3 +51,7 @@ A definition declares its failure policy. Provisioning declares stop; a saga of 
 The retry message re-dispatches the step under its own identity and leaves the completed steps alone, and that same identity is what makes the retry safe: the engine ignores a late completion for a step that is not =in_progress=, and a handler that replays instead of repeating runs the work once.
 
 Discard is a separate action, and it must also stop the run: a delete of a tenant must leave no workflow instance of that tenant running behind it.
+
+* See also
+
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

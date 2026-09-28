@@ -127,4 +127,5 @@ not run at all. Two limits follow.
 
 * See also
 
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the structure note that orders this cluster, and where to read this page in it.
 - [[https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html][The Open Group, =crontab=]] — the notation whose instants the loop sleeps towards.

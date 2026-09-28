@@ -75,6 +75,7 @@ three obligations the scheduler has at that boundary. The job starts a
 run; it does not execute it, and the run belongs to the workflow cluster.
 
 ** Components that use the scheduler
+# aside
 
 The pages in this section are not about the scheduler. Each describes a
 component that uses it, and each assumes the pages above.

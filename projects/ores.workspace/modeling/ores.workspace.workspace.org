@@ -1,9 +1,8 @@
 :PROPERTIES:
 :ID: B09B3A40-C58C-4918-AFD6-22CFF2B4E4C6
-:ores.sql.schema.enabled: false
 :END:
 #+title: ores.workspace.workspace
-#+description: Codegen entity model for the workspace =workspace= table. Drives the C++ domain class, mapper, repository, service, and generator from a single literate source. The SQL schema facet is off while this model is migrated (see the note below).
+#+description: Codegen entity model for the workspace =workspace= table. Drives the C++ domain class, mapper, repository, service, protocol, eventing, generator, history provider and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: workspace
 #+filetags: :model:entity:workspace:
@@ -12,61 +11,66 @@
 #+entity_plural: workspaces
 #+entity_title: Workspace
 #+created: 2026-06-01
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 
-Workspaces provide Docker-layer-style inheritance: data not present in a
-workspace is resolved from the parent chain up to the Live workspace
-(ores_utility_live_workspace_id_fn()).
+A named, isolated data context. Data a workspace does not carry is
+resolved from its parent chain, up to the Live workspace
+(=ores_utility_live_workspace_id_fn()=).
 
-* The SQL schema facet is off, and must stay off until this model is migrated
+The table is bi-temporal and audited (see
+=projects/ores.sql/create/workspace/workspace_create.sql=): it carries
+=version=, the four audit columns and the =valid_from=/=valid_to= pair
+with the GIST exclusion and the delete rule, so the model takes the
+ordinary audited shape and needs no shape flag.
 
-The =ores.sql.schema= facet is disabled outright (=.enabled: false= above)
-rather than generated and discarded, the way
-[[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] disables the editing
-surface it does not own. The live schema for =ores_workspaces_tbl= is
-hand-written and wired: =create/workspace/workspace_create.sql=,
-=create/workspace/workspace_notify_trigger.sql= and their =drop/= siblings.
-It carries what this model does not yet express -- the =party_id= and =name=
-columns, the parent-chain cycle guard, =ores_workspace_resolution_order_fn=,
-and =ores_workspace_trade_scope_tbl=.
+A workspace belongs to one tenant and one party, and its name is unique
+within that pair. =party_id= is a natural key beside =name= for that
+reason: two parties in one tenant may each hold a workspace named =prod=.
+Only an active workspace holds its name, so the uniqueness index covers
+the active rows and an archived name is free to be taken again.
 
-Generating the facet produced a second definition of the same table, the same
-three indexes and the same =ores_workspaces_insert_fn=, one that drops
-=party_id= and =name= because this model states its natural key in the retired
-=* Natural keys= heading (the loader reads keys from =* Columns=, so =name= is
-silently ignored) and states =party_id= through =:has_party_id:=, a flag no
-other model uses. Wiring that file in place of the hand-written one would
-break the workspace repository, which reads both columns. Unwired, it failed
-=validate_schemas.sh= with four WIRE_001 warnings, so the facet is off until
-[[id:EF349D87-4D3A-4F98-A454-7DBB2A80E48B][the workspace model drift task]] moves the key and the columns into the
-current format, at which point the facet is re-enabled, the generated schema
-is reconciled with the hand-written one, and the aggregators are re-pointed.
+=parent_workspace_id= is a self-referencing soft foreign key, so the model
+binds =self-referencing-hierarchy= for its UUID surrogate key, its tenant
+scope and its self-reference. The same profile generates the recursive
+subtree read over =parent_workspace_id=.
+
+=scope_portfolio_id= optionally narrows a workspace to one portfolio. It is
+a soft foreign key with no declared target, because =ores.refdata= is
+created after this component.
+
+The component's row-level security stays hand-written in
+=create/workspace/workspace_rls_policies_create.sql=: the live fleet creates
+this table before the =iam= section that defines
+=ores_iam_current_tenant_id_fn=, so an inline policy cannot be emitted here.
 
 * Flags
 :PROPERTIES:
-:schema:           public
-:product:          ores
-:component:        workspace
-:has_tenant_id:    true
-:has_party_id:     true
-:has_workspace_id: false
+:schema:               public
+:product:              ores
+:component:            workspace
+:profile:              self-referencing-hierarchy
+:parent_id_column:     parent_workspace_id
+:hierarchy_name_field: name
 :END:
 
 * Natural keys
 
+* Columns
+
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
-Unique workspace name.
+Unique workspace name within its party.
+
+The Live workspace is named =Live= in every tenant.
 
 #+begin_src cpp :name generator
 std::string(faker::word::noun())
 #+end_src
-
-* Columns
 
 ** id
 :PROPERTIES:
@@ -78,13 +82,41 @@ std::string(faker::word::noun())
 
 UUID primary key.
 
-Live workspace uses the sentinel aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.
+The Live workspace uses the sentinel
+=ores_utility_live_workspace_id_fn()=, one row per tenant.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:nullable:    false
+:END:
+
+Party that owns this workspace.
+
+The Live workspace belongs to the system party of its tenant.
+
+** owner_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+UUID of the IAM account that owns this workspace.
+
+The account is looked up across every tenant, because tenant provisioning
+seeds a Live workspace owned by the provisioning account rather than by an
+account of the tenant it is creating.
 
 ** description
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
 :END:
 
 Optional free-text description.
@@ -96,7 +128,7 @@ Optional free-text description.
 :nullable: true
 :END:
 
-Optional path to source data.
+Optional path to the source data this workspace was created from.
 
 ** parent_workspace_id
 :PROPERTIES:
@@ -105,7 +137,9 @@ Optional path to source data.
 :nullable: true
 :END:
 
-Optional parent workspace UUID for inheritance chain.
+Optional parent workspace, which resolves this workspace's inherited data.
+
+NULL on the Live workspace, the root of every chain.
 
 ** scope_portfolio_id
 :PROPERTIES:
@@ -114,38 +148,111 @@ Optional parent workspace UUID for inheritance chain.
 :nullable: true
 :END:
 
-Optional portfolio UUID to scope this workspace.
-
-** owner_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-UUID of the IAM account that owns this workspace.
+Optional portfolio that scopes this workspace.
 
 ** status_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'active'
+:default_value: "active"
 :END:
 
-Lifecycle status: active or archived.
+Lifecycle status: =active= or =archived=.
+
+An archived workspace keeps its row and its history.
+
+The synthetic generator states the value rather than sampling a word,
+because the table's check constraint admits only these two.
+
+#+begin_src cpp :name generator
+std::string("active")
+#+end_src
 
 * SQL
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_workspaces_tbl
+:tablename:          ores_workspaces_tbl
+:suppress_nk_index: true
 :END:
+
+** Indexes
+
+The composite natural-key index is declared here rather than left to the
+generated one, because it must admit a name again once the row that held
+it is archived. The generated form drops the =status_code= predicate.
+
+| name      | columns                   | unique | current_only | where_extra              |
+|-----------+---------------------------+--------+--------------+--------------------------|
+| name_uniq | tenant_id, party_id, name | true   | true         | "status_code" = 'active' |
+| party     | party_id                  | false  | true         |                          |
+| status    | status_code               | false  | true         |                          |
+| owner     | owner_id                  | false  | true         |                          |
+
+** Checks
+
+| expression                              |
+|-----------------------------------------|
+| "name" <> ''                            |
+| "status_code" in ('active', 'archived') |
+| "id" <> "parent_workspace_id"           |
+
+** Paste blocks
+
+*** Extra drop statements
+
+The profile generates the hierarchy read, and the drop template knows
+nothing about it, so the entity drops it here.
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_workspaces_hierarchy_fn(uuid, uuid, boolean);
+#+end_src
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** parent_workspace_id
+:PROPERTIES:
+:table:         ores_workspaces_tbl
+:nullable:      true
+:prevent_cycle: true
+:error_message: Invalid parent_workspace_id: %. No active workspace found with this id.
+:END:
+
+** owner_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:use_no_tenant: true
+:error_message: Invalid owner_id: %. Must reference a valid account.
+:END:
+
+* Physical space
+
+The shell commands for this entity are switched off. The =ores.shell=
+composite carries no workspace part, so the generated units would land in a
+directory no build reaches. Adding the part to the shell composite,
+registering its commands, and then enabling this facet is the next unit of
+the workspace clean-up; the profile enables the facet, so this table states
+the reason it is overridden.
+
+| Address                | Enabled |
+|------------------------+---------|
+| ores.cpp.shell-command | false   |
 
 * C++
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent: api
 :END:
 
 ** Repository
@@ -165,15 +272,6 @@ Lifecycle status: active or archived.
 #include <boost/uuid/uuid.hpp>
 #+end_src
 
-** Entity includes
-
-#+begin_src cpp :name includes
-#include <string>
-#include <optional>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
-#+end_src
-
 ** Conventions
 :PROPERTIES:
 :iterator_var: ws
@@ -188,51 +286,82 @@ Lifecycle status: active or archived.
 | version     | Version     |
 | modified_by | Modified By |
 
-** Presentation
-:PROPERTIES:
-:domain_include:          ores.workspace.api/domain/workspace.hpp
-:domain_class:            workspace::domain::workspace
-:protocol_include:        ores.workspace.api/messaging/workspace_protocol.hpp
-:collection_name:         workspaces
-:key_field:               name
-:has_uuid_primary_key:    true
-:has_pagination:          false
-:get_request_class:       workspace::messaging::list_workspaces_request
-:get_response_class:      workspace::messaging::list_workspaces_response
-:get_message_type:        list_workspaces_request
-:save_request_class:      workspace::messaging::create_workspace_request
-:save_response_class:     workspace::messaging::create_workspace_response
-:save_message_type:       create_workspace_request
-:save_request_item_field: workspace
-:delete_request_class:    workspace::messaging::archive_workspace_request
-:delete_response_class:   workspace::messaging::archive_workspace_response
-:delete_message_type:     archive_workspace_request
-:delete_request_id_field: id
-:END:
-
-*** Detail fields
-
-| field               | label       | widget          | type            | is_key | is_required | placeholder               |
-|---------------------+-------------+-----------------+-----------------+--------+-------------+---------------------------|
-| name                | Name        | nameEdit        | line_edit       | true   | true        | Unique workspace name     |
-| description         | Description | descriptionEdit | plain_text_edit |        |             |                           |
-| source_path         | Source Path | sourcePathEdit  | line_edit       |        |             | Optional data source path |
-| parent_workspace_id | Parent      | parentEdit      | line_edit       |        |             | Inherited from (UUID)     |
-| owner_id            | Owner       | ownerEdit       | line_edit       |        |             |                           |
-| status_code         | Status      | statusEdit      | line_edit       |        |             |                           |
-
-*** Columns
-
-| enum_name   | field       | header      | type   | width |
-|-------------+-------------+-------------+--------+-------|
-| Name        | name        | Name        | string | 200   |
-| Description | description | Description | string | 340   |
-| StatusCode  | status_code | Status      | string | 90    |
-| ParentName  | parent_name | Parent      | string | 160   |
-| Version     | version     | Version     | int    | 70    |
-| ModifiedBy  | modified_by | Modified By | string | 130   |
-
 ** Custom repository methods
+
+The generated CRUD set reads and writes by primary key. The workspace
+operations need three reads and writes beyond it: the ancestor chain the
+resolution order names, and the trade-scope whitelist of a workspace. None
+of them is an entity verb, so none has a generated method.
+
+*** Repository declarations
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Returns the UUID ancestor chain for a workspace, closest first.
+     */
+    std::vector<std::string> resolution_order(context ctx,
+                                              const std::string& workspace_id);
+
+    /**
+     * @brief Replaces the trade scope of a workspace.
+     */
+    void set_trade_scope(context ctx,
+                         const std::string& workspace_id,
+                         const std::vector<boost::uuids::uuid>& trade_ids);
+
+    /**
+     * @brief Removes every trade scope entry of a workspace.
+     */
+    void clear_trade_scope(context ctx, const std::string& workspace_id);
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<std::string>
+workspace_repository::resolution_order(context ctx, const std::string& workspace_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Resolving workspace chain for: " << workspace_id;
+    const auto tid = ctx.tenant_id().to_string();
+    const std::string sql =
+        "SELECT unnest(ores_workspace_resolution_order_fn($1::uuid, $2::uuid))::text";
+    return execute_parameterized_string_query(
+        ctx, sql, {workspace_id, tid}, lg(), "Resolving workspace resolution order");
+}
+
+void workspace_repository::set_trade_scope(
+    context ctx,
+    const std::string& workspace_id,
+    const std::vector<boost::uuids::uuid>& trade_ids) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting trade scope for workspace: " << workspace_id
+                               << " count: " << trade_ids.size();
+    execute_parameterized_command(
+        ctx,
+        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
+        {workspace_id},
+        lg(),
+        "Clearing existing trade scope");
+
+    for (const auto& tid : trade_ids) {
+        execute_parameterized_command(
+            ctx,
+            "INSERT INTO ores_workspace_trade_scope_tbl (workspace_id, trade_id)"
+            " VALUES ($1::uuid, $2::uuid)",
+            {workspace_id, boost::uuids::to_string(tid)},
+            lg(),
+            "Inserting trade scope entry");
+    }
+}
+
+void workspace_repository::clear_trade_scope(context ctx, const std::string& workspace_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Clearing trade scope for workspace: " << workspace_id;
+    execute_parameterized_command(
+        ctx,
+        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
+        {workspace_id},
+        lg(),
+        "Clearing trade scope");
+}
+#+end_src
 
 * See also
 

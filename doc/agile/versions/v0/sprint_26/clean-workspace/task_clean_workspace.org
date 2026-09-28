@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-workspace:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-workspace
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-09-28
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ores.workspace passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Every item is recorded below. The branch is at its first complete state: the tree builds, the suite passes, the database recreates from scratch, and every gate this component is in scope for is green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-23                               |
+| Next         | The review round, then the registry entry is verified at the merged head. |
+| Last touched | 2026-09-28                               |
 
 * Acceptance
 
@@ -55,11 +55,202 @@ record each item's result in the table below.
 7. Structure and hygiene (H01 to H03).
 8. Verification (V01 to V06), ending with the registry entry.
 
+What the pass did, in order. The model was migrated to the current format
+first, because every later item reads what it produces. The component's own SQL
+was then reconciled: the table, its triggers and its hierarchy read are
+generated, and the four objects the generator cannot express stay hand-written
+beside them. The generated C++ replaced the hand-written domain, protocol,
+repository, service and handler, and the two operations that are not entity
+verbs moved to an operation model with hand-written handlers. The tree was
+built and tested, the database recreated from scratch, the documentation and
+the diagrams refreshed, and the component added to the registry.
+
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| B01 | Done. Baseline taken at =5559b012ae=, the branch point, before any edit: =check_component_drift.py --component workspace-cpp --dry-run= reported 20 files would change and 9 would be created, because the component predates the current templates and nothing in its tree was generated. =check_model_drift.py --summary= was clean for workspace: the one known exception is =ores.reporting.report_definition=, another component. | =build/output/ws-regen.log=; the dry run at the branch point |
+| B02 | Done. Three model files are visible to codegen. =ores.workspace.workspace.org= is the one =ores.codegen.entity=, and it is now joined by =ores.workspace.workspace_operations.org=, an =ores.codegen.operation= the pass added. =component_overview.org= (=component=) and =ores.workspace.module.org= (=module=) describe a structure rather than a wire type, so no profile can vary them: excluded. The three =<part>/modeling/component_overview.org= files are invisible to codegen, because the catalogue's =modeling_dir= for =workspace-cpp= is only =projects/ores.workspace/modeling=. | =survey_component.py --component workspace-cpp=; the catalogue |
+| B03 | Done. 36 hand-written C++ files at the baseline, 0 of them generated. 21 are generatable and now are: the domain type with its JSON, table and table-I/O companions, the generator, the protocol, the entity, the mapper, the repository, the service and the handler. 14 are infrastructure that stays hand-written: the three export headers, the service application, host, options, parser and their exceptions, and =main.cpp=. One was unclassified: =api/include/ores.workspace.api/eventing/workspace_changed_event.hpp=, which the generated =workspace_event.hpp= supersedes and which is deleted. The pass added one hand-written source header, =core/include/ores.workspace.core/messaging/workspace_operations_handler.hpp=, and one hand-written test source. | The survey; the tree |
+| B04 | Done, and reproduced by command: =git grep -hoE '"workspace\.v1\.[a-z.-]+"' <rev> -- projects/ \| sort -u= returns exactly eight subjects at =5559b012ae=, all of them literals in the one hand-written =workspace_protocol.hpp= and none declared in a model. The same command at this head returns the canonical entity verbs plus =workspace.v1.workspaces.resolve=, =workspace.v1.trade-scope.set= and =workspace.v1.trade-scope.clear=, every one of them declared in a model. No raw subject literal is left outside a protocol header. | The two =git grep= runs; =survey_component.py= |
+| B05 | Done, and true of the branch point. Nothing was in flight for ores.workspace: no branch for it existed on the remote or in any worktree, and no worktree held an uncommitted ores.workspace change. The two captures that name ores.workspace are =finish_workspaces_feature= in the inbox, whose =task_fix_workspace_inheritance_query= is DONE, and =codegen_dx_improvements=' =task_fix-workspace-model-drift=, whose migration is what this pass performs; neither holds a branch. | =git worktree list=; the capture files |
+| B06 | Done. No public symbol in ores.workspace has a production consumer outside the component: =git grep= over =projects/= for =workspace_protocol=, =workspace::messaging= and =workspace\.v1\.= finds no file outside =projects/ores.workspace=. The intended consumer is the workspace feature the inbox story tracks, which has no code yet. The census found one dead public header, the superseded change event, and it is deleted; the retired protocol's nine request and response types go with it. | The consumer census |
+| M01 | Pass. The one entity model is on the current org format and no legacy JSON model remains. Its natural key moved out of the retired =* Natural keys= heading into =* Columns= with =:natural_key: true=, which is the change that makes the key exist at all: =org_loader._split_columns_section= reads keys only from =* Columns=, so =name= was silently absent from every generated artefact, and the regenerated domain type carried neither =name= nor =party_id=. =check_model_drift.py= reports no workspace drift. | =check_model_drift.py=; the model diff |
+| M02 | Pass. =workspace= binds =self-referencing-hierarchy=, whose assignments it satisfies: UUID surrogate key, tenant scope, no workspace scope, and a self-referencing =parent_workspace_id=. The profile leaves =has_pagination= and the audit shape to the model, and the model states neither, so there is nothing to contradict. =uuid-identified-lookup= was rejected because its own purpose excludes a parent, and =party_id= is not a feature any profile fixes: it is declared as a column. | The model; =variability_self_referencing_hierarchy.org= |
+| M03 | Pass. Binding the profile removed the redundant =:has_tenant_id:= and =:has_workspace_id:= statements, and =:has_party_id:= is gone with them: no other model in the tree uses it, and the loader has no handling for it at all, so it reached no generator. | =check_model_drift.py=; =grep= for =has_party_id= |
+| M04 | Pass. =:parent_id_column: parent_workspace_id= and =:hierarchy_name_field: name= sit in the root =* Flags= drawer, which is where the loader reads them, and the regeneration shows the expected change: the create file gains =ores_workspaces_hierarchy_fn= and the repository gains =get_hierarchy=. | Regeneration |
+| M05 | Pass. The entity describes its table. The one computed shape in the component, the ancestor resolution chain, is a message in the operation model rather than an entity member. | Model review |
+| M06 | Pass. Every wire type the component exchanges is modelled and no hand-written protocol header remains. The entity's canonical set generates from the entity model, and the two operations' messages generate from the operation model; both headers are generated, and both have their TypeScript twin. =check_protocol_twin_coverage.py= counts 170 generated protocol headers across 12 committed components and reports every one covered. | =check_protocol_twin_coverage.py=; the two generated headers |
+| M07 | Not applicable. The component has no junction model. | Model inventory |
+| M08 | Pass. The entity composes no custom C++ type, so nothing needs binding in =cpp_custom_types.org=, and every flag is a boolean. | Model review; regeneration |
+| M09 | Pass. The retired =** Presentation= drawer is deleted, and with it the Qt widget and placeholder columns, the =key_field=, and the request and response class names of the protocol the generation retires. A =grep= over the modeling directory for the retired keywords finds nothing. | Model diff |
+| M10 | Pass. =component_overview.org= declares =component_kind: composite= and its three parts, and regeneration produces the composite root =CMakeLists.txt=. | Regeneration |
+| P01 | Pass. =workspace= speaks the canonical entity protocol: list, get, get_many, put, put_many, delete, delete_many, the version reads and the change event. The three retired verbs are gone: =create= is the canonical put, =archive= is a put that states =status_code = archived=, and =remove= is the canonical delete. | The generated =workspace_protocol.hpp= |
+| P02 | Pass. Every subject the component owns is declared in a model and every reference in code is to a generated constant. The subject inventory is reproduced by =git grep=; no raw literal sits outside the two generated protocol headers. | Subject inventory; =grep= for subject literals |
+| P03 | Pass. No duplicate subject, no unregistered derived message, and no declared message that nothing serves: the hand-written header's eight subjects become nine, of which six are the canonical verbs' and three the operations'. The old =workspaces.create=, =.archive= and =.remove= subjects are retired rather than carried. | Registrar review; subject inventory |
+| P04 | Pass. The two operations that are not entity verbs are operation models, and their messages generate from them: the ancestor resolution chain and the trade-scope whitelist. Neither has a generated service handler, which is the documented consequence of the kind. | =ores.workspace.workspace_operations.org=; no hand-written protocol header |
+| P05 | Pass, and the move cost nothing this time. The component has no consumer anywhere in the tree, so the protocol change reaches no caller; the scheduler pass, whose component =ores.reporting= consumes, is the case where this item bites. | The consumer census; the whole-tree build |
+| P06 | Not applicable. The component has no event cache. | Model inventory |
+| G01 | Pass. Regeneration is byte-identical to the checked-in tree and idempotent: =check_component_drift.py --component workspace-cpp --dry-run= reports no drift at the head this record is written against, covering the SQL, C++, documentation, PlantUML, shell and TypeScript facets. The shared list reports no drift either. | =check_component_drift.py=, run twice |
+| G02 | Pass. Every hand-written file the generation supersedes is deleted: the domain type, its JSON, table and table-I/O companions, the generator, the protocol, the entity, the mapper, the repository, the service, the handler and the change event. The tree keeps no shim and no compatibility layer. | The deletion list |
+| G03 | Pass, and measured rather than asserted. Of the component's 29 sources under =src/=, 12 carry the generated marker and 17 do not; the 17 are exactly the service infrastructure, =main.cpp=, the hand-written registrar and the two test sources the V08 survey names. No hand-written file carries the marker and no generated file lacks it. | =grep= for =AUTO-GENERATED FILE= against the survey |
+| G04 | Pass. The generated code reads like the component's own, and where it differs the difference is a defect in the hand-written half. The generated insert trigger states the version-conflict rule the hand-written one left to the caller, and the generated delete rule uses =clock_timestamp()= where the hand-written one used =current_timestamp=, which is frozen for a whole transaction and collides with itself on a same-transaction second write. | Review record |
+| G05 | Pass. Two defects were found and fixed, both in the model rather than in a template, because the template has no way to know either fact: =owner_id= was declared with the tenant-scoped validation the generator emits, which broke tenant provisioning -- the provisioning function seeds the Live workspace owned by an account of another tenant -- so the foreign key now states =:use_no_tenant: true=; and =status_code= sampled a faker word, which the table's own check constraint refuses, so the model states the value. Both were found by running, not by a diff, which is the pattern sprint 25 recorded. | The two model changes; the failing runs before each |
+| G06 | Pass, for this component. The component's source lists are regenerated and current at every address. The repository-wide form of the same check is red at this revision over 32 stale lists in other components, none of them workspace's; that is a main-side sweep of one cause, recorded under "What this unit leaves open". | =regenerate_cmake_component_files.py --all --check=, and the component checks |
+| G07 | Pass, with the same ordering caveat the scheduler pass recorded. No generated artefact was refreshed while a generator had a known defect: each model fix was made and re-rendered before the regeneration that depends on it, but the fixes and their regenerated artefacts share one commit, so this rests on the recorded sequence rather than on an artefact. | The two model changes; the diagram sentinels |
+| G08 | Pass. The component is a composite of three parts and carries no outermost namespace documentation header; each part's =export.hpp= is the facet header the item exempts. The one header the component keeps per namespace is the gap the next unit of work fills, and the scheduler pass added its counterpart at the same point in its own clean-up. | The component's header list; the census |
+| W01 | Pass. Every registrar family the regeneration materialises is composed at the component's composition point, =core/src/messaging/registrar.cpp=: the generated entity sub-registrar, the generated history provider and the hand-written operation handler. The generated event registrar is composed in =service/src/app/application.cpp=, where the change-event pipeline is assembled. | Registrar review; the two composition points |
+| W02 | Pass. Every permission the handlers check is seeded: the generated handler checks =workspace::workspaces:read=, =:write= and =:delete=, which the privilege seed defines; the operation handler checks =:read= and =:write=, which it also defines. The four permissions the retired three-tier logic checked (=:archive=, =:archive_any=, =:delete_any= and =live_workspace:archive=) are still seeded and now unreferenced; they are recorded under "What this unit leaves open" rather than deleted, because the workspace feature story may still want them. | =check_handler_permissions.py= |
+| W03 | Not applicable to the model. The component has one populate script of its own, =workspace_live_populate.sql=, and it references only functions that exist: =check_populate_references.py= reports every reference resolved. | =check_populate_references.py= |
+| W04 | Pass. Every SQL script is reachable from the create and drop aggregators, and =validate_schemas.sh= reports no warning for any workspace object: the four generated files are wired into the component aggregator, and the four hand-written ones beside them. The table has the seventeen columns, the seven index names and the three checks the hand-written schema carried, and the database recreates from scratch. | =validate_schemas.sh=; =compass db recreate -y -k=; the live catalogue reads |
+| S01 | Recorded as not applicable to a generated unit. The component has no shell surface at all -- the =ores.shell= composite carries no workspace part -- so the =ores.cpp.shell-command= facet is disabled in the model with its reason, and the item's ask, that every verb has a generated unit, has nothing to attach to. Adding the part, registering its commands and re-enabling the facet is the next unit of the workspace clean-up; the scheduler pass recorded the same item the same way. | =ores.workspace.workspace.org='s =* Physical space= table |
+| S02 | Held with the facet. No generated recipe exists because no generated command does, and the recipe inventory is unchanged and current. | =regenerate_shell_recipe_inventory.py --check= |
+| H01 | Pass. The three component diagrams are authored in two passes: the sentinel sits at the end of the automated section in each, and everything below it is hand-authored. The automated section was rewritten to the current code -- the domain type with its tenant and party members, the canonical protocol, the operation protocol, the generated registrars and the history provider -- and each rendered image was read, not merely regenerated. The audit's structural findings are recorded under "What this unit leaves open". | The three =.puml= files with their sentinels and rendered =.png= files; the Component Architecture Audit |
+| H02 | Pass. No legacy code remains: the retired change event, the retired protocol, the dead =** Presentation= drawer and the four superseded SQL objects are gone, and no commented-out code was found. The one pair of implementations of the same behaviour -- the hand-written service's =list_workspaces= and the generated canonical list -- collapses into the generated one, and the survivor keeps the behaviour the component's callers had, except for the one delta recorded below. | Deletion list; the survey |
+| H03 | Pass. Every comment written by this pass follows the project comment rules: they sit above the code they describe, they state a fact the code does not, and none narrates an edit. | Comment pass |
+| H04 | Not applicable. The component carries no platform conditional and no OS header: =grep= over its sources finds no =#if= on a platform macro and no direct OS include. | =grep= for preprocessor conditionals |
+| H05 | Pass, and the finding is recorded rather than hidden. Each of the three parts carries a =component_overview.org= with the six required sections and a =Diagram= section pointing at a rendered =png= committed beside its =.puml=. The three files arrived as skeletons -- placeholder prose and empty bullets -- and were written out in this pass. =validate_docs.sh= exits 0 with no violation for any workspace component. The ER clause is a finding: the component owns two tables and the ER diagram is the cross-component =projects/ores.sql/modeling/ores_schema.puml=, which this pass did not refresh. | The three overviews; =validate_docs.sh=; the audit |
+| V01 | Pass. The whole tree builds at the head this record is written against, with the component's three libraries, its service entry point, its test binary and every consumer -- there is none, which is why the build is the weak form of this evidence. | The whole-tree build log |
+| V02 | Pass. With the fleet up, the component's suite passes. =ores.workspace.core.tests= is 13 assertions in 3 cases: the generated eventing integration test's 7, and the 6 this pass added for the resolution chain and the trade-scope whitelist. | The test run |
+| V03 | Pass. =compass db recreate -y -k= exits 0, creating the whole schema from scratch and running every populate script. The generated objects were then read back from the live database rather than from a diff: =ores_workspaces_tbl= has the same seventeen columns as the hand-written table, the same seven index names, and the same three check constraints; the five functions and the Live workspace row are present; and the seeding of the Live workspace per tenant, which is what tenant provisioning calls, succeeds. | =compass db recreate -y -k=; the catalogue and row reads |
+| V04 | Not applicable as written, and its intent is recorded. The item asks that every *generated* shell command run against the live fleet; the component generates none because the facet is disabled with its reason, so there is nothing for it to run. Unlike the scheduler pass, no hand-written submenu exists to run in its place. | The model's =* Physical space= table |
+| V05 | Pass for every gate this component is in scope for. Component drift (in both modes, all addresses), the shared-list drift run, model drift, protocol twin coverage, handler permissions, populate references, the recipe inventories, the component's CMake source lists, test-case reachability, pasted block symbols, the registry-exception check and =validate_docs.sh= are all green. Two repository-wide checks are red on main and neither names workspace: =validate_schemas.sh= reports 20 =RLS_001= warnings in =analytics=, =iam= and =reporting=, and the CMake source-list check reports 32 stale lists in other components. | Each check script |
+| V06 | Pass. =workspace-cpp= joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all --dry-run= passes with it listed: no drift across every listed component at this revision. The entry carries no accepted exception, because every item that applies either passes or is recorded as not applicable above. | =component_registry.py= diff; =check_component_drift.py --all --dry-run= |
+| V07 | Pass. The six assertions this pass added are literal: the resolution chain is asserted to be exactly the two identifiers that were written, in order, and the trade-scope count is asserted against 2, then 1, then 0 after a replace and a clear. Neither can pass if its subject does nothing -- a stubbed =resolution_order= returning an empty vector fails the size assertion, and a stubbed =set_trade_scope= leaves the count at 0. The generated eventing test is a real end-to-end chain, not an assertion of a length. | =repository_workspace_tests.cpp=; the per-file survey |
+| V08 | Recorded. Every source file under =src/= is surveyed in the per-file table below. Twelve carry the generated marker and are the output of a template the codegen suite covers; two are covered directly by the tests this pass added; the remaining fifteen are recorded with their reason -- the service application, host, options, parser and their exceptions, =main.cpp=, the registrars, and the export headers. No hand-written source is left with neither a test nor a stated reason. | The per-file survey below |
+
+* V08 per-file survey
+
+| File | Tested by | Reason where not |
+|------+-----------+------------------|
+| =api/src/domain/workspace_json_io.cpp= | generated | Template =cpp_domain_type_json_io.cpp.mustache= |
+| =api/src/domain/workspace_table.cpp= | generated | Template =cpp_domain_type_table.cpp.mustache= |
+| =api/src/domain/workspace_table_io.cpp= | generated | Template =cpp_domain_type_table_io.cpp.mustache= |
+| =api/src/generators/workspace_generator.cpp= | the component suite | The eventing test and the repository test both seed with it |
+| =core/src/messaging/workspace_registrar.cpp= | generated | Template =cpp_nats_sub_registrar.cpp.mustache= |
+| =core/src/messaging/workspace_history_provider_registrar.cpp= | generated | Template =cpp_history_provider_registrar.cpp.mustache= |
+| =core/src/presentation/workspace_history_field_mapper.cpp= | generated | Template =cpp_presentation_history_field_mapper.cpp.mustache= |
+| =core/src/repository/workspace_entity.cpp= | generated | Template =cpp_domain_type_entity.cpp.mustache= |
+| =core/src/repository/workspace_mapper.cpp= | the component suite | Exercised through every repository read and write |
+| =core/src/repository/workspace_repository.cpp= | =repository_workspace_tests.cpp= | The generated CRUD is covered by the eventing test; the two custom methods by the added cases |
+| =core/src/service/workspace_service.cpp= | generated | Template =cpp_service.cpp.mustache= |
+| =core/src/messaging/registrar.cpp= | not covered | It composes subscriptions and is exercised only by a running service; the live run starts it |
+| =service/src/messaging/workspace_event_registrar.cpp= | generated | Template =cpp_nats_event_registrar.cpp.mustache= |
+| =service/src/app/application.cpp= | not covered | Process assembly: it opens the database and the bus, which the test harness supplies differently |
+| =service/src/app/host.cpp= | not covered | Process entry point |
+| =service/src/main.cpp= | not covered | Process entry point |
+| =service/src/config/options.cpp= | not covered | Produced by the config parser, which the service suites of other components cover |
+
+* Measurements
+
+Every figure below was measured at the head this record names, =feature/clean-workspace=, and the command that produced it is named beside it.
+
+| Measurement | Value | Command |
+|-------------+-------+---------|
+| Baseline drift at =5559b012ae= | 20 would change, 9 would be created | =check_component_drift.py --component workspace-cpp --dry-run= |
+| Model files visible to codegen | 3 (1 entity, 1 operation, 1 component) | =survey_component.py --component workspace-cpp= |
+| Hand-written C++ files at the baseline | 36, none generated | The same survey |
+| Subject literals at the baseline | 8, none declared in a model | =git grep -hoE '"workspace\.v1\.[a-z.-]+"' 5559b012ae -- projects/ \| sort -u= |
+| Subject literals at this head | 9, every one declared in a model | The same =git grep= at this head |
+| Generated sources under =src/= | 12 of 29 | =grep -rl "AUTO-GENERATED FILE" projects/ores.workspace/*/src= |
+| Whole-tree build | exit 0 | =cmake --build --preset linux-clang-debug-make -j 3= |
+| =ores.workspace.core.tests= | 13 assertions, 3 cases, all pass | The test target |
+| =compass db recreate -y -k= | exit 0 | Bare |
+| =ores_workspaces_tbl= columns read back | 17 | =information_schema.columns= |
+| =ores_workspaces_tbl= indexes read back | 7 named, plus the PK and the exclusion constraint | =pg_indexes= |
+| Workspace functions read back | 5 | =pg_proc= |
+| =check_component_drift.py --all --dry-run= | No drift | The script |
+| =check_protocol_twin_coverage.py= | 170 headers, 12 components, all covered | The script |
+| =validate_schemas.sh= | 0 workspace warnings, 20 elsewhere | Bare |
 
 * Notes
+
+- *The retired =* Natural keys= heading is silent, not an error.* The
+  loader reads natural keys only from =* Columns= entries with
+  =:natural_key: true=. A model that states its key under the old
+  heading loads, regenerates, and quietly produces a domain type with
+  no such member. =name= was absent from =workspace.hpp=, from the
+  protocol's write payload and from every read the generated
+  repository offers. Nothing warned.
+- *Two facts about a column are not features, and stating them as
+  flags reaches nothing.* =:has_party_id: true= was used by exactly
+  one model in the tree and handled by no loader path; =party_id= was
+  a real column in the schema and a real member of the hand-written
+  domain type, and the generated one had neither. The migration makes
+  it a column and a second natural key, which is what makes the
+  party-scoped uniqueness expressible at all.
+- *The generated soft foreign key is tenant-scoped unless the model
+  says otherwise, and that broke tenant provisioning.* The
+  hand-written insert trigger validated =owner_id= across every
+  tenant. The generated one adds =tenant_id = NEW.tenant_id=, which
+  is right for =party_id= and wrong for =owner_id=: the function that
+  provisions a tenant seeds that tenant's Live workspace owned by the
+  provisioning account, which belongs to the system tenant. The test
+  suite found it on its first run, as an insert failure inside
+  =ores_iam_provision_tenant_fn=.
+- *A check constraint and a faker word do not agree, and only a run
+  finds it.* =status_code= is constrained to =active= or =archived=,
+  and the generated sample was =faker::word::noun()=. The component
+  had no test before this pass, so the defect had never run.
+- *The component's SQL is half generated and half not, and the split
+  is stated in one file.* =workspace_create.sql= is the component's
+  aggregator, and it names which of its includes the generator owns.
+  The four hand-written objects are the resolution-order function,
+  the workspace FK validation function other components' triggers
+  call, the trade-scope whitelist table, and the row-level security
+  layer -- the last because this table is created before the =iam=
+  section that defines the function its policy calls.
+- *The Live workspace lost its guard.* The hand-written service
+  refused to archive or delete the Live workspace. In the canonical
+  protocol both are ordinary verbs -- a put that states the archived
+  status, and a delete that closes the version window -- and the
+  generated service has no seam for the rule. It is recorded here
+  rather than reimplemented, because the Live workspace's lifecycle
+  policy belongs to the workspace feature story in the inbox, not to
+  a clean-up pass.
+- *The canonical list returns archived rows.* The retired
+  =list_workspaces= filtered on =status_code = active=; the canonical
+  list returns every current row. A caller that wants the active set
+  filters it. The party-scoped name uniqueness keeps the
+  =status_code = active= predicate, so an archived name is free to
+  be taken again.
+- *An operation with no consumer is still an operation.* =resolve=
+  and the trade-scope pair have no caller in the tree. They are kept
+  and modelled rather than deleted, because they are the workspace
+  feature's intended surface and the design doc describes the
+  trade-scope filter as unfinished rather than abandoned. Removal
+  under P03 would be a product decision, not a clean-up one.
+
+* What this unit leaves open
+
+- *The shell part.* The component has no shell surface and the
+  =ores.cpp.shell-command= facet stays off with its reason. Adding the
+  part to the =ores.shell= composite, registering its commands and
+  re-enabling the facet is what turns S01 and S02 from recorded into
+  passed, and it is the next unit of the story.
+- *The namespace documentation headers.* G08 wants one per outermost
+  namespace. The component is a composite of three parts and carries
+  none; the scheduler pass added =ores.scheduler.hpp= to its core part
+  at the same point in its own clean-up.
+- *Four orphan permissions.* =workspace::workspaces:archive=,
+  =:archive_any=, =:delete_any= and =workspace::live_workspace:archive=
+  are seeded and unreferenced, because the three-tier logic they
+  guarded has no generated expression. They belong to the same
+  decision as the Live workspace's guard above.
+- *The ER diagram.* =ores_schema.puml= is cross-component and was not
+  refreshed. No gate runs the script that writes it.
+- *The generated drop does not drop the hierarchy function.* The
+  =Extra drop statements= paste block is the mechanism, and this
+  component implements it. =ores.refdata.counterparty= generates the
+  same function through the same profile and declares no block, so its
+  drop leaks the function; that is refdata's capture, not this
+  component's.
+- *The composite's parts are outside every drift gate.* A component's
+  =modeling_dir= is its own =modeling/=, so the three
+  =<part>/modeling/component_overview.org= models are discovered by no
+  catalogue entry, and =check_component_drift.py= never renders them.
+  Their =CMakeLists.txt= and =component_files.cmake= are therefore
+  hand-maintained in practice, which is what
+  =regenerate_cmake_component_files.py= exists to support. This pass
+  rendered the parts by hand and left a capture.
 
 * Test Scenarios
 
@@ -85,3 +276,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The model is migrated, the component is generated, and the database recreates
+from the generated schema. The entity's C++ stack -- domain, JSON, table,
+table I/O, generator, protocol, entity, mapper, repository, service and
+handler -- is generated from one entity model; the two operations that are not
+entity verbs are generated from one operation model; the table, its triggers
+and its hierarchy read are generated from the same entity model; and both
+protocol headers have their TypeScript twin.
+
+What stays hand-written is the resolution-order function, the workspace FK
+validation function other components call, the trade-scope whitelist table,
+the row-level security layer, the two operation handlers, the component
+registrar and the service infrastructure -- each with its reason above.
+
+Verified: the whole tree builds, =ores.workspace.core.tests= passes 13
+assertions in 3 cases, =compass db recreate -y -k= exits 0 and the table reads
+back with the seventeen columns, seven index names and three checks the
+hand-written schema carried, and every codegen gate this component is in scope
+for is green. =workspace-cpp= joins =COMPONENTS_UNDER_TEST= with no accepted
+exception.

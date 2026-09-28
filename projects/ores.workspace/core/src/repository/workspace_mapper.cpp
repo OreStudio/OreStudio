@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.workspace.core/repository/workspace_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workspace.api/domain/workspace_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -33,12 +37,16 @@ domain::workspace workspace_mapper::map(const workspace_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workspace r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.name = v.name;
-    r.description = v.description.value_or("");
+
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
+    r.owner_id = boost::lexical_cast<boost::uuids::uuid>(v.owner_id);
+    r.description = v.description;
     r.source_path = v.source_path.value_or("");
     r.parent_workspace_id =
         v.parent_workspace_id.has_value() ?
@@ -48,7 +56,6 @@ domain::workspace workspace_mapper::map(const workspace_entity& v) {
         v.scope_portfolio_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scope_portfolio_id)) :
             std::nullopt;
-    r.owner_id = boost::lexical_cast<boost::uuids::uuid>(v.owner_id);
     r.status_code = v.status_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -66,9 +73,13 @@ workspace_entity workspace_mapper::map(const domain::workspace& v) {
     workspace_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
+
     r.name = v.name;
+
+    r.party_id = boost::uuids::to_string(v.party_id);
+
+    r.owner_id = boost::uuids::to_string(v.owner_id);
     r.description = v.description;
     r.source_path = v.source_path.empty() ? std::nullopt : std::optional(v.source_path);
     r.parent_workspace_id = v.parent_workspace_id.has_value() ?
@@ -77,7 +88,6 @@ workspace_entity workspace_mapper::map(const domain::workspace& v) {
     r.scope_portfolio_id = v.scope_portfolio_id.has_value() ?
                                std::optional(boost::uuids::to_string(*v.scope_portfolio_id)) :
                                std::nullopt;
-    r.owner_id = boost::uuids::to_string(v.owner_id);
     r.status_code = v.status_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

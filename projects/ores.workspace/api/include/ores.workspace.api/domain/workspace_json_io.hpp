@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_JSON_IO_HPP
-#define ORES_WORKSPACE_DOMAIN_WORKSPACE_JSON_IO_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_json_io.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKSPACE_API_DOMAIN_WORKSPACE_JSON_IO_HPP
+#define ORES_WORKSPACE_API_DOMAIN_WORKSPACE_JSON_IO_HPP
 
 #include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.workspace.api/export.hpp"

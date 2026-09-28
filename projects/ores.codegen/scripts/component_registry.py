@@ -91,6 +91,16 @@ from dataclasses import dataclass
 # suites pass with the fleet's NATS up. What remains hand-written is recorded
 # with its reason on the task:
 # doc/agile/versions/v0/sprint_26/clean-variability/task_clean_variability.org.
+#
+# workspace-cpp joins at the end of its clean-standard pass. Its one entity and
+# its one operation model regenerate byte for byte, every protocol header has
+# its TypeScript twin, and the database recreates from scratch with the
+# generated table: the same seventeen columns, the same seven index names and
+# the same three checks the hand-written schema carried. What stays
+# hand-written is recorded with its reason on the task -- the resolution-order
+# and workspace-validation functions, the trade-scope whitelist, the RLS layer,
+# and the two operation handlers:
+# doc/agile/versions/v0/sprint_26/clean-workspace/task_clean_workspace.org.
 @dataclass(frozen=True)
 class AcceptedException:
     """One checklist item a listed component does not pass.
@@ -228,4 +238,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "workflow-cpp", "variability-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")

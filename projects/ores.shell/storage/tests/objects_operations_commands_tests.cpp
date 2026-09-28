@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/storage/objects_operations_commands.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <sstream>
@@ -43,10 +44,8 @@ namespace {
 const std::string_view test_suite("ores.shell.storage.tests");
 const std::string tags("[commands]");
 
-// One token per positional argument the command takes, in declaration order.
-std::vector<std::string> tokens(const std::size_t count) {
-    return std::vector<std::string>(count, std::string{"sample"});
-}
+// One token per positional argument the command takes, in declaration order,
+// spelled for the type the command parses it with.
 
 }
 
@@ -58,8 +57,18 @@ TEST_CASE("objects_operations_registers_every_declared_command", tags) {
 
     objects_operations_commands::register_commands(root_menu, session);
 
+    // The menu's completion list is the only public view of its children, so a
+    // command that is missing from it was never registered.
+    const auto completions = root_menu.GetCompletions("objects ");
+    for (const auto& verb : {
+             std::string{"objects put-objects"},
+             std::string{"objects get-objects"},
+             std::string{"objects delete-objects"},
+             std::string{"objects list-objects"},
+         })
+        CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
     BOOST_LOG_SEV(lg, debug) << "Registered 4 command(s).";
-    CHECK(true);
 }
 
 TEST_CASE("objects_operations_process_put_objects_requires_a_session", tags) {
@@ -69,7 +78,14 @@ TEST_CASE("objects_operations_process_put_objects_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_put_objects(out, session, tokens(4));
+    objects_operations_commands::process_put_objects(out,
+                                                     session,
+                                                     std::vector<std::string>{
+                                                         "sample",
+                                                         "sample",
+                                                         "sample",
+                                                         "sample",
+                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -105,7 +121,14 @@ TEST_CASE("objects_operations_process_put_objects_reaches_the_transport", tags) 
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_put_objects(out, session, tokens(4));
+    objects_operations_commands::process_put_objects(out,
+                                                     session,
+                                                     std::vector<std::string>{
+                                                         "sample",
+                                                         "sample",
+                                                         "sample",
+                                                         "sample",
+                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -121,7 +144,12 @@ TEST_CASE("objects_operations_process_get_objects_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_get_objects(out, session, tokens(2));
+    objects_operations_commands::process_get_objects(out,
+                                                     session,
+                                                     std::vector<std::string>{
+                                                         "sample",
+                                                         "sample",
+                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -157,7 +185,12 @@ TEST_CASE("objects_operations_process_get_objects_reaches_the_transport", tags) 
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_get_objects(out, session, tokens(2));
+    objects_operations_commands::process_get_objects(out,
+                                                     session,
+                                                     std::vector<std::string>{
+                                                         "sample",
+                                                         "sample",
+                                                     });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -173,7 +206,12 @@ TEST_CASE("objects_operations_process_delete_objects_requires_a_session", tags) 
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_delete_objects(out, session, tokens(2));
+    objects_operations_commands::process_delete_objects(out,
+                                                        session,
+                                                        std::vector<std::string>{
+                                                            "sample",
+                                                            "sample",
+                                                        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -209,7 +247,12 @@ TEST_CASE("objects_operations_process_delete_objects_reaches_the_transport", tag
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_delete_objects(out, session, tokens(2));
+    objects_operations_commands::process_delete_objects(out,
+                                                        session,
+                                                        std::vector<std::string>{
+                                                            "sample",
+                                                            "sample",
+                                                        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
@@ -225,7 +268,12 @@ TEST_CASE("objects_operations_process_list_objects_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_list_objects(out, session, tokens(2));
+    objects_operations_commands::process_list_objects(out,
+                                                      session,
+                                                      std::vector<std::string>{
+                                                          "sample",
+                                                          "sample",
+                                                      });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -261,7 +309,12 @@ TEST_CASE("objects_operations_process_list_objects_reaches_the_transport", tags)
     std::ostringstream out;
 
     command_feedback::reset();
-    objects_operations_commands::process_list_objects(out, session, tokens(2));
+    objects_operations_commands::process_list_objects(out,
+                                                      session,
+                                                      std::vector<std::string>{
+                                                          "sample",
+                                                          "sample",
+                                                      });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

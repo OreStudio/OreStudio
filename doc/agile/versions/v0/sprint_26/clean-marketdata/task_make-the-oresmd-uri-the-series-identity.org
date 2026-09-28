@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; each lookup asks by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing.                               |
-| Next         | Move the curve snapshot handler's request onto the URI, the last reader on the triple alone, then delete the triple against the census. |
+| Next         | Delete the triple against the census, taking the two fallbacks with it: a series created through the API without an identity would be duplicated by the first import of the same key, which is why the write message has to stop offering the triple first. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -108,6 +108,13 @@ fallback exists for a database that does have one, and it is the thing the delet
 removes -- at which point a series with no identity is unreachable, which is why the
 create scripts and the writers have to agree before the columns go.
 
+**The curve snapshot requests name the series by identity now.** Both of them
+carried the triple, which made the handler the last production reader that could
+not read a URI. The change is two hand edits, because neither the protocol header
+nor the handler is generated. It is verified by the compiler and the suites and by
+nothing else: this path has no sender anywhere in the tree and no case exercises it,
+which is worth knowing before the cutover leans on it.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
@@ -122,7 +129,7 @@ plan itself stays — it is the historical record of what we did.)
 | Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
 | =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
 | Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
-| Production readers left on the triple alone | 1: the curve snapshot handler | grep for =read_latest_by_type= beyond the two fallbacks | =47327e935b= |
+| Production readers left on the triple alone | 0; the two remaining calls are the import's and the ingest loop's fallbacks | grep for =read_latest_by_type= beyond those | =47327e935b= |
 | =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |

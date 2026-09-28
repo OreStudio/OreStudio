@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4845D6F5-DCEF-494E-859E-F4D5A86F419A
+:END:
+#+title: The staff-photos branch of the Acme seeder generates SQL for…
+#+description: The staff-photos branch of the Acme seeder generates SQL for column names the assets image table no longer has. projects/ores.seeder/datasets/acme_corporation/generate_sql.py writes acme_staff_photos_populate.sql with the columns key and image_id, while projects/ores.sql/create/assets/assets_images_create.sql declares id and code, so regenerating that script produces a populate that cannot run. The committed script is the correct one and disagrees with its own generator, which is why the generator's output was reverted rather than committed while regenerating the Acme portfolio scripts for the boolean flag change. The other seventeen scripts the same generator writes are in step, so the fault is in this one branch of it, and it is either a stale column list in the assets image model's reader or a rename that reached the generator and not the table.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 90C80491-9626-4CCC-8F27-5C7D5B053BA2
+:END:
+#+title: Story: Hotfix: the site build aborts on a POSIX class that reads as a link
+#+description: The site build stops on main while publishing the dq clean task: an inline verbatim span is closed early by an equals sign inside it, so the POSIX class that follows is parsed as an org link to :space:. The two spans take tilde delimiters, which the inner equals sign cannot close, and a doc-lint check now fails any link whose target begins with a colon, because no link type does.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:site:orgmode:ci:sprint_26:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The site build and the CDash site job abort on main while publishing
+=doc/agile/versions/v0/sprint_26/clean-dq/task_clean_dq.org=:
+
+#+begin_src text
+Build failed: Unable to resolve link: ":space:"
+#+end_src
+
+The page records the command that counted the dq NATS subjects. The
+command contains a POSIX character class,
+~nats_subject[[:space:]]*=~, written between equals-delimited verbatim
+markers. The = after the class closes the verbatim span early, so the
+rest of the command is ordinary prose, and org parses the opening
+bracket pair of the character class as the start of a link whose target
+is =:space:=.
+Nothing can resolve it, so the export aborts, and the site build is red
+on main for every push.
+
+The fix is two delimiters. The command is written with tilde delimiters
+instead, which the inner = cannot close, so the exact command text stays
+in the page and the class stays inside the span. The check that would
+have caught this at pull-request time did not exist, so this story also
+adds it: no link type begins with a colon, so a parsed link whose target
+does is always a mistake, and the check is exact rather than heuristic.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-28                               |
+
+* Acceptance
+
+- The page publishes, and the command in it still renders as the exact
+  command that produced the number.
+- The full site build completes and publishes every page.
+- A doc-lint check fails a link whose target begins with a colon, and
+  fails on the text this story fixes.
+- Every other documentation gate stays green: =compass lint=,
+  =validate_docs.sh= and the skill checks.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ED695A7D-60C6-4800-A7C6-8F1DF86D03AE][Implement Hotfix: the site build aborts on a POSIX class that reads as a link]] | DONE | 2026-09-28 | 2026-09-28 | Re-delimit the two spans, add the link check to the doc-lint job, prove the check fails on the original text and passes on the tree, and verify the page and the full site build publish. |
+
+* Decisions
+
+- The spans take tilde delimiters rather than a rewritten pattern or an
+  inline source block. Rewriting the pattern to avoid the bracket pair
+  would change
+  the evidence command, and the recorded command is the point of the
+  page. An inline source block survives in a paragraph but not in a table
+  cell, which is where both spans live, so it would not have fixed this.
+  Tilde and equals are both org verbatim markers, so the rendering is
+  unchanged and the command is untouched.
+- The check parses only the files that contain a candidate, rather than
+  the whole corpus. Every org file is scanned as text, and the parser
+  sees the handful whose text carries a bracket pair before a colon. On
+  this tree that is two
+  files out of 6020, which keeps a pull-request check cheap enough to run
+  on every documentation change.
+
+* Out of scope
+
+- The =file:= link with a line-number search into a Python file that
+  broke the same build on 2026-09-27 (PR #2262). It was fixed before this
+  story started; the check this story adds catches the shape that
+  remains, and a general "every link resolves" check would need the id
+  map and a full parse of the corpus, which the site build already does
+  on every push to main.

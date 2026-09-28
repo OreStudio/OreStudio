@@ -26,6 +26,7 @@ set(files
     "domain/composite_instrument_mapper.cpp"
     "domain/conventions_mapper.cpp"
     "domain/credit_instrument_mapper.cpp"
+    "domain/credit_simulation_diff.cpp"
     "domain/credit_simulation_mapper.cpp"
     "domain/currency_mapper.cpp"
     "domain/domain.cpp"
@@ -49,6 +50,7 @@ set(files
     "xml/exporter.cpp"
     "xml/importer.cpp"
     "xml/roundtrip.cpp"
+    "xml/roundtrip_harness.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -95,5 +97,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/exporter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/importer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/roundtrip.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/roundtrip_harness.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/xml.hpp"
 )

@@ -194,22 +194,27 @@ profile-driven request =iam.v1.tenants.provision= does not exist yet.
    instance id at once, for every tenant including the first. The candidate is
    =iam.v1.tenants.provision=, carrying the profile code and the profile's
    parameters.
-4. *No streamed progress the browser can read.* =provision_acme_tenant_response=
-   returns its steps only at the end, and the shell waits up to 45 minutes with
-   no feedback. The engine already publishes
-   =ores.workflow.workflow_instance_changed=, but the payload is an
-   =entity_change_event= that carries =entity_ids=, and the schema the browser
-   decodes reads =alpha2_codes= with every field defaulted, so the event
-   delivers an empty identifier list. The reads =workflow.v1.instances.steps=
-   and =workflow.v1.instances.list= exist and are subscribed, so the page can
-   poll them. The work that remains is the payload the browser can read.
-5. *No retry; discard exists.* The contract keeps completed steps and resumes
-   from the failed one. Nothing starts a retry: no retry, resume or abandon verb
-   exists anywhere in =ores.workflow=, and the only recovery is
-   =workflow_engine::recover_in_progress()=, which runs once at service start.
-   The candidate is a retry request for the workflow instance. Discard already
-   exists as =iam.v1.system.reset-tenant=, which returns a tenant to bootstrap
-   state. It does not resume a failed workflow.
+4. *Progress is read, not pushed.* =provision_acme_tenant_response= returns its
+   steps only at the end, and the shell waits up to 45 minutes with no feedback.
+   A run started through the generic request is followed instead: the reads
+   =workflow.v1.instances.steps= and =workflow.v1.instances.list= answer the
+   run's status, the step it is executing and one summary per step, and the
+   browser reaches them through its own route and wire-client method, so the
+   page renders the rail from the read and asks again while the run is open.
+   The engine's =ores.workflow.workflow_instance_changed= event is not the
+   progress contract: its payload is an =entity_change_event= that carries
+   =entity_ids= while the schema the browser decodes reads =alpha2_codes= with
+   every field defaulted, and no one schema can read every entity's own event.
+   That mismatch is owned by
+   [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
+5. *A retry exists; discard exists.* The contract keeps completed steps and
+   resumes from the failed one. =workflow.v1.instances.retry= resumes a run that
+   stopped on its failed step, re-dispatching that step under its own identity
+   and leaving every completed step and its result alone;
+   =workflow_engine::recover_in_progress()= stays for runs that were in progress
+   when a service restarted. Discard already exists as
+   =iam.v1.system.reset-tenant=, which returns a tenant to bootstrap state. It
+   does not resume a failed workflow.
 6. *No password hand-over flags.* First run copies the system administrator's
    password hash to the ACME tenant administrator, and only /Empty
    operational/ forces a change at first sign-in. The provision request has no

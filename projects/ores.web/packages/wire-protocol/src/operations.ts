@@ -60,6 +60,11 @@ export const SUBJECTS = {
     listSeedProfileParameters:
         seedProfileParameterSubjects.list_by_seed_profile_id_seed_profile_parameters_request,
     provisionTenant: tenantProvisioningSubjects.provision_tenant_command,
+    // ores.workflow generates no TypeScript contract yet, so the two subjects
+    // its journey speaks are mirrored here, and the shapes they carry with
+    // them. A rename in C++ must be mirrored here or the boundary test fails.
+    workflowInstanceSteps: 'workflow.v1.instances.steps',
+    retryWorkflowInstance: 'workflow.v1.instances.retry',
 } as const;
 
 /**
@@ -741,5 +746,118 @@ export function toProvisionTenantResult(
         instanceId: reply.instance_id,
         tenantId: reply.tenant_id,
         accountId: reply.account_id,
+    };
+}
+
+/**
+ * One line of the rail a person watching a run reads.
+ *
+ * The engine's own summary of a step, mirrored: the operation's name, the
+ * state it is in, the error it carries when it failed, and one log entry per
+ * item it could not do cleanly. `status` is the state's name rather than an
+ * id, because the state machine's names are what the server answers and a
+ * client that mapped them would be a second place for the machine to live.
+ */
+export const workflowStepSummarySchema = z.object({
+    id: z.string().default(''),
+    name: z.string().default(''),
+    status: z.string().default(''),
+    step_index: z.number().int().default(0),
+    created_at: z.string().default(''),
+    started_at: z.string().nullish(),
+    completed_at: z.string().nullish(),
+    error: z.string().default(''),
+    log: z
+        .array(
+            z.object({
+                level: z.string().default('info'),
+                message: z.string().default(''),
+                context: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
+
+export type WorkflowStepSummary = z.infer<typeof workflowStepSummarySchema>;
+
+/**
+ * A run as the progress read answers it.
+ *
+ * `status` names the run's state, `current_step_index` says which step it is
+ * executing, `step_count` says how many it declared, and `steps` holds one
+ * summary per step the run has materialised. `success` defaults to false, so
+ * an answer that arrives without it reads as a failure the caller can see.
+ */
+export const workflowProgressSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    status: z.string().default(''),
+    error: z.string().default(''),
+    step_count: z.number().int().default(0),
+    current_step_index: z.number().int().default(0),
+    steps: z.array(workflowStepSummarySchema).default([]),
+});
+
+export type WorkflowProgress = z.infer<typeof workflowProgressSchema>;
+
+/** The wire request the progress read takes. */
+export const workflowStepsRequestSchema = z.object({
+    workflow_instance_id: z.string().min(1),
+});
+
+/**
+ * A retry, as the interface asks for one.
+ *
+ * The step is named only when a person chooses to resume somewhere other than
+ * where the run stopped; an empty name means the step that failed.
+ */
+export const retryWorkflowInstanceRequestSchema = z.object({
+    workflowInstanceId: z.string().min(1),
+    stepName: z.string().default(''),
+});
+
+export type RetryWorkflowInstanceRequest = z.infer<typeof retryWorkflowInstanceRequestSchema>;
+
+/** What the retry answered, as the interface reads it. */
+export const retryWorkflowInstanceResultSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    instanceId: z.string().default(''),
+    stepIndex: z.number().int().default(-1),
+    stepName: z.string().default(''),
+});
+
+export type RetryWorkflowInstanceResult = z.infer<typeof retryWorkflowInstanceResultSchema>;
+
+/** The server's own answer to the retry, before it is read as a result. */
+export const retryWorkflowInstanceReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    workflow_instance_id: z.string().default(''),
+    step_index: z.number().int().default(-1),
+    step_name: z.string().default(''),
+});
+
+/** The wire command one retry request becomes. */
+export function toRetryWorkflowInstanceCommand(request: RetryWorkflowInstanceRequest): {
+    workflow_instance_id: string;
+    step_name: string;
+} {
+    return {
+        workflow_instance_id: request.workflowInstanceId,
+        step_name: request.stepName,
+    };
+}
+
+/** The interface's result, read from the server's answer. */
+export function toRetryWorkflowInstanceResult(
+    reply: z.infer<typeof retryWorkflowInstanceReplySchema>,
+): RetryWorkflowInstanceResult {
+    return {
+        success: reply.success,
+        message: reply.message,
+        instanceId: reply.workflow_instance_id,
+        stepIndex: reply.step_index,
+        stepName: reply.step_name,
     };
 }

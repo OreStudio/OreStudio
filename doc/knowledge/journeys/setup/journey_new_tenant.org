@@ -189,19 +189,25 @@ that gap in full.
    request that takes the profile code and its parameters, returns a workflow
    instance id at once, and streams progress. The candidate is
    =iam.v1.tenants.provision=.
-4. *No streamed progress.* =provision_acme_tenant_response= returns its steps
-   only at the end; the shell waits up to 45 minutes with no feedback. The
-   engine already publishes =ores.workflow.workflow_instance_changed=, but its
-   payload is an =entity_change_event= carrying =entity_ids=, and that does not
-   match the schema the browser decodes, which reads =alpha2_codes= and defaults
-   every field. The reads =workflow.v1.instances.steps= and
-   =workflow.v1.instances.list= exist. The page follows the instance through
-   those reads until the payload matches.
-5. *No retry.* The contract keeps completed steps and resumes from the failed
-   one. No retry, resume or abandon verb exists in =ores.workflow=: the only
-   recovery is =recover_in_progress()=, which runs once when the service starts.
-   The candidate is a retry verb in =ores.workflow=, for example
-   =workflow.v1.instances.retry=.
+4. *Progress is read, not pushed.* =provision_acme_tenant_response= returns its
+   steps only at the end; the shell waits up to 45 minutes with no feedback. A
+   run started through the generic request is followed instead: the reads
+   =workflow.v1.instances.steps= and =workflow.v1.instances.list= answer the
+   run's status, the step it is executing and one summary per step, and both
+   the browser route and the wire-client method behind it exist, so the page
+   renders its rail from the read and asks again while the run is open. The
+   engine's =ores.workflow.workflow_instance_changed= event is not the progress
+   contract: its payload is an =entity_change_event= carrying =entity_ids=
+   while the shared browser schema reads =alpha2_codes=, and no one schema can
+   read every entity's own event. That mismatch is owned by
+   [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
+5. *A retry exists.* The contract keeps completed steps and resumes from the
+   failed one. =workflow.v1.instances.retry= resumes a run that stopped on its
+   failed step: it re-dispatches that step under its own identity, clears the
+   run's error, and leaves every completed step and its result alone. A run
+   whose definition declares the compensate policy still rolls back instead, and
+   =recover_in_progress()= stays for runs that were in progress when a service
+   restarted.
 6. *No discard that stops the workflow.* =iam.v1.system.reset-tenant= discards
    the tenant, but it does not stop a workflow instance the tenant owns.
    =iam.v1.tenants.delete= closes the row and sets the status to /terminated/,

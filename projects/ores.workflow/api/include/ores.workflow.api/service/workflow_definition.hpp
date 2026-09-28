@@ -21,6 +21,7 @@
 #define ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 
 #include "ores.workflow.api/export.hpp"
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -136,6 +137,23 @@ struct ORES_WORKFLOW_API_EXPORT materialised_step {
 };
 
 /**
+ * @brief What a definition asks the engine to do when one of its steps fails.
+ *
+ * The policy belongs to the definition because it follows from what a
+ * completed step is worth. A saga of writes leaves a partial result that is a
+ * liability, so it rolls back; a definition whose completed steps are
+ * published data a person expects to keep stops on the failed step and waits
+ * for a retry, because every step is idempotent and undoing costs more than
+ * resuming.
+ */
+enum class ORES_WORKFLOW_API_EXPORT failure_policy : std::uint8_t {
+    /// Roll the completed steps back and end in compensated. The default.
+    compensate = 0,
+    /// Stop on the failed step, keep every completed step, and end in failed.
+    stop = 1
+};
+
+/**
  * @brief Declarative definition of a complete named workflow.
  *
  * Registered once at startup in the workflow_registry. The engine calls
@@ -153,6 +171,11 @@ struct ORES_WORKFLOW_API_EXPORT workflow_definition {
      * @brief Human-readable description of what this workflow does.
      */
     std::string description;
+
+    /**
+     * @brief What the engine does when one of this definition's steps fails.
+     */
+    failure_policy on_failure = failure_policy::compensate;
 
     /**
      * @brief Builds the full step list for a specific workflow instance.

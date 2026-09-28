@@ -45,9 +45,11 @@ import {
     loginResultSchema,
     provisionTenantRequestSchema,
     provisionTenantResultSchema,
+    retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
+    workflowProgressSchema,
     NotAuthenticatedError,
     type LoginOutcome,
     type PartySummary,
@@ -494,6 +496,41 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             );
         }
         return provisionTenantResultSchema.parse(await session.client.provisionTenant(parsed.data));
+    });
+
+    /**
+     * A run's progress, as the journey's rail renders it.
+     *
+     * The page follows the run by asking this again while it is open: the
+     * answer carries the run's status, the step it is executing and one
+     * summary per step, so the rail is a rendering of the answer rather than a
+     * state the page keeps. The engine's change event is not the progress
+     * contract, which is why this read is what the journey follows.
+     */
+    server.get('/api/provision-tenant/:instanceId', async (request) => {
+        const session = requireSession(request);
+        const { instanceId } = request.params as { instanceId: string };
+        return workflowProgressSchema.parse(await session.client.workflowProgress(instanceId));
+    });
+
+    /**
+     * Resumes a stopped run from the step that failed.
+     *
+     * The body names the step only when a person resumes somewhere other than
+     * where the run stopped. The engine decides, so the answer says which step
+     * it re-dispatched or why it refused, and the page re-reads the progress
+     * either way.
+     */
+    server.post('/api/provision-tenant/:instanceId/retry', async (request) => {
+        const session = requireSession(request);
+        const { instanceId } = request.params as { instanceId: string };
+        const body = z.object({ stepName: z.string().default('') }).parse(request.body ?? {});
+        return retryWorkflowInstanceResultSchema.parse(
+            await session.client.retryWorkflowInstance({
+                workflowInstanceId: instanceId,
+                stepName: body.stepName,
+            }),
+        );
     });
 
     /**

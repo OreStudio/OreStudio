@@ -139,6 +139,19 @@ export { provisionTenantRequestSchema, provisionTenantResultSchema } from './ope
 export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
 
 export {
+    retryWorkflowInstanceRequestSchema,
+    retryWorkflowInstanceResultSchema,
+    workflowProgressSchema,
+    workflowStepSummarySchema,
+} from './operations.js';
+export type {
+    RetryWorkflowInstanceRequest,
+    RetryWorkflowInstanceResult,
+    WorkflowProgress,
+    WorkflowStepSummary,
+} from './operations.js';
+
+export {
     imageInfoSchema,
     listImagesRequestSchema,
     listImagesResponseSchema,

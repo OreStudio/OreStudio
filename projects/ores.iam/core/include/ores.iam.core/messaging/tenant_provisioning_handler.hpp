@@ -329,6 +329,7 @@ public:
 
             ores::iam::workflow::provision_tenant_workflow_request run;
             run.profile_code = profile->code;
+            run.tenant_id = created.tenant_id;
             run.tenant_code = req->tenant_code;
             run.tenant_hostname = req->tenant_hostname;
             run.admin_account_id = created.account_id;
@@ -345,7 +346,13 @@ public:
 
             ores::workflow::messaging::start_workflow_message start;
             start.type = std::string(ores::iam::workflow::provision_tenant_workflow_type);
-            start.tenant_id = created.tenant_id;
+            // The run belongs to the tenant that asked for it, not to the one
+            // it creates. A run is a tenant's own work and the progress read
+            // answers the tenant that owns it, so a run owned by the tenant
+            // being created could not be followed by the person who asked for
+            // it: their session is in another tenant. The tenant being
+            // provisioned travels in the request and in every step command.
+            start.tenant_id = ctx_expected->tenant_id().to_string();
             start.request_json = rfl::json::write(run);
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;

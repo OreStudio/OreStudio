@@ -94,6 +94,7 @@ using ores::workflow::messaging::step_completed_event;
 using ores::workflow::messaging::step_outcome;
 using ores::workflow::repository::workflow_instance_repository;
 using ores::workflow::repository::workflow_step_repository;
+using ores::workflow::service::failure_policy;
 using ores::workflow::service::fsm_state_map;
 using ores::workflow::service::load_fsm_states;
 using ores::workflow::service::workflow_definition;
@@ -158,10 +159,13 @@ struct fixture {
         return service_context().tenant_id().to_string();
     }
 
-    void register_steps(const std::string& type, const std::vector<std::string>& names) {
+    void register_steps(const std::string& type,
+                        const std::vector<std::string>& names,
+                        failure_policy on_failure = failure_policy::compensate) {
         workflow_definition def;
         def.type_name = type;
         def.description = "engine fixture";
+        def.on_failure = on_failure;
         def.build_steps =
             [names](const std::string& request, const std::string&, const std::string&) {
                 std::vector<workflow_step_def> steps;
@@ -407,6 +411,299 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     CHECK(rows.size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched step " << step_id;
+}
+
+TEST_CASE("a definition that declares stop keeps its completed steps on a failure", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_stop_policy_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_stop_policy_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+
+    // Step one answers a result, so the run holds work a rollback would undo.
+    auto done = completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed);
+    done.result_json = R"({"kept":"yes"})";
+    f.engine->on_step_completed(as_message(done));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    const auto second_step_id = boost::uuids::to_string(rows.back().id);
+
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
+
+    // The run stops where it is: failed, with the error standing against it.
+    auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("failed"));
+    CHECK(instance.front().error == "two broke");
+    CHECK(instance.front().current_step_index == 1);
+
+    // The failed step keeps its error, and the completed step keeps its result.
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.front().state_id == f.step_states.require("completed"));
+    CHECK(rows.front().response_json == R"({"kept": "yes"})");
+    CHECK(rows.back().state_id == f.step_states.require("failed"));
+    CHECK(rows.back().error == "two broke");
+
+    // A stop is not a rollback: nothing else was dispatched, which is what
+    // tells this policy from the default.
+    CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::milliseconds(300)).size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "Stop policy left the run on its failed step.";
+}
+
+TEST_CASE("a retry re-dispatches the failed step under its own identity", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_workflow", {"one", "two", "three"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    auto done = completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed);
+    done.result_json = R"({"kept":"yes"})";
+    f.engine->on_step_completed(as_message(done));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    const auto failed_step_id = boost::uuids::to_string(rows.back().id);
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, failed_step_id, step_outcome::failed, "two broke")));
+
+    auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    REQUIRE(instance.front().state_id == f.instance_states.require("failed"));
+
+    // The retry names no step, so the step that failed is the one.
+    const auto outcome =
+        f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
+                                 "",
+                                 f.h.context().tenant_id());
+    CHECK(outcome.resumed);
+    CHECK(outcome.step_index == 1);
+    CHECK(outcome.step_name == "two");
+
+    // The command goes out again under the step's own id: that identity is the
+    // idempotency key the service deduplicates on, so a retry that minted a
+    // new one would ask for the work twice.
+    const auto after = wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5));
+    REQUIRE(after.size() == 3);
+    CHECK(after.back().headers.at(std::string(ores::workflow::messaging::step_id_header)) ==
+          failed_step_id);
+
+    // The run is running again with no error of its own, and the failure that
+    // stood against the step is gone: the retry re-runs it.
+    instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("in_progress"));
+    CHECK(instance.front().error.empty());
+    CHECK(instance.front().current_step_index == 1);
+
+    // The completed step is untouched, result and all, and only one command
+    // was published: a retry resumes, it does not repeat the run.
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.front().state_id == f.step_states.require("completed"));
+    CHECK(rows.front().response_json == R"({"kept": "yes"})");
+    CHECK(rows.back().state_id == f.step_states.require("in_progress"));
+    CHECK(rows.back().error.empty());
+    CHECK(wait_for_instance(commands, instance_id, 4, std::chrono::milliseconds(300)).size() == 3);
+    BOOST_LOG_SEV(lg, debug) << "Retry re-dispatched step " << failed_step_id;
+}
+
+TEST_CASE("a retry refuses a run that has not stopped", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_refusal_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_refusal_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // Running, not stopped: there is no failed step to resume.
+    const auto refused = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
+    CHECK_FALSE(refused.resumed);
+    CHECK(refused.reason.find("has not stopped") != std::string::npos);
+
+    // And a run that never started is not the caller's to resume either.
+    const auto unknown = f.engine->retry_instance(boost::uuids::random_generator{}(),
+                                                  "",
+                                                  f.h.context().tenant_id());
+    CHECK_FALSE(unknown.resumed);
+    CHECK(unknown.reason == "Workflow instance not found.");
+    BOOST_LOG_SEV(lg, debug) << "Retry refused runs that had not stopped.";
+}
+
+TEST_CASE("a retry refuses a step the run does not hold", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_name_workflow", {"one", "two", "three"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_name_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
+
+    // The run stopped at step one, so no step is named three: a run that
+    // stopped never materialised the steps after the one that failed.
+    const auto refused = f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
+                                                  "three",
+                                                  f.h.context().tenant_id());
+    CHECK_FALSE(refused.resumed);
+    CHECK(refused.reason.find("'three'") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "Retry refused a step the run does not hold.";
+}
+
+TEST_CASE("a retry refuses a stopped run that has no failed step", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_no_failed_step_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_no_failed_step_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    // A run can rest in failed with no failed step: a stop that left every
+    // step complete, which the engine reaches when the definition it
+    // materialised disagrees with the one it re-reads. The state is written
+    // here rather than provoked, because the engine has no product path to it,
+    // and what the case pins is the answer a person sees.
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    const auto instances_before = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instances_before.size() == 1);
+
+    auto stopped = instances_before.front();
+    stopped.state_id = f.instance_states.require("failed");
+    stopped.error = "The run stopped without failing a step.";
+    instances.write(f.h.context(), stopped);
+
+    auto finished = rows.front();
+    finished.state_id = f.step_states.require("completed");
+    steps.write(f.h.context(), finished);
+
+    const auto refused = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
+    CHECK_FALSE(refused.resumed);
+    CHECK(refused.reason == "The run holds no failed step to resume from.");
+    BOOST_LOG_SEV(lg, debug) << "Retry refused a stopped run with no failed step.";
+}
+
+TEST_CASE("a retry is confined to the caller's own tenant", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The engine holds the system tenant, as the deployed service does, while
+    // the run belongs to the test tenant.
+    fixture f(engine_tenant::service);
+    f.register_steps("test_retry_tenant_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto run_tenant = f.tenant();
+    REQUIRE(run_tenant != f.service_tenant_id());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_tenant_workflow", run_tenant, instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    const auto rows = steps.read_latest_by_workflow_id(f.service_context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
+
+    // A caller in another tenant is told the run does not exist, not that it
+    // exists and is not theirs: the answer must not disclose the run.
+    const auto refused = f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
+                                                  "",
+                                                  f.service_context().tenant_id());
+    CHECK_FALSE(refused.resumed);
+    CHECK(refused.reason == "Workflow instance not found.");
+
+    // A retry that reads, mutates and re-dispatches nothing is what the
+    // refusal above must leave behind, so the run's own tenant can still
+    // resume it.
+    const auto accepted = f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
+                                                   "",
+                                                   f.h.context().tenant_id());
+    CHECK(accepted.resumed);
+    CHECK(accepted.step_index == 0);
+    BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
+}
+
+TEST_CASE("a definition that declares compensate still rolls its work back", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // The default, stated: the fixture's steps carry a compensation subject.
+    f.register_steps("test_compensate_policy_workflow", {"one", "two"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    auto compensation = f.nats.subscribe_buffered(compensation_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_compensate_policy_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed)));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.back().id), step_outcome::failed, "two broke")));
+
+    // The rollback is the default policy's answer: the run compensates and the
+    // completed step's compensation goes out.
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("compensating"));
+    CHECK(wait_for_instance(compensation, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+    BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 
 TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {

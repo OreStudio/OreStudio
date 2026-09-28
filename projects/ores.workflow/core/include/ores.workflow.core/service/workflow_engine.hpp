@@ -28,6 +28,7 @@
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
@@ -131,6 +132,40 @@ public:
      */
     void recover_in_progress();
 
+    /**
+     * @brief What a retry did, so its caller can answer without reading again.
+     */
+    struct retry_outcome {
+        /// Whether the run was resumed.
+        bool resumed = false;
+        /// Why it was not, naming what was refused. Empty when it was.
+        std::string reason;
+        /// The step the engine re-dispatched, or -1 when it re-dispatched none.
+        int step_index = -1;
+        std::string step_name;
+    };
+
+    /**
+     * @brief Resumes a stopped run from the step that failed.
+     *
+     * The run must have stopped, the target step must be one the run has not
+     * completed, and every step before it must have completed, so a retry
+     * never resumes past work that did not finish and never repeats work that
+     * did. The target is re-dispatched under the step id it already holds —
+     * its idempotency key — with its command as the store persisted it, and
+     * the target's error and the instance's error are cleared.
+     *
+     * @param instance_id   The run to resume.
+     * @param step_name     The step to resume from, or empty for the step that
+     *                      failed.
+     * @param caller_tenant The caller's tenant. The engine reads runs of every
+     *                      tenant, so this is what confines a retry to the
+     *                      caller's own.
+     */
+    [[nodiscard]] retry_outcome retry_instance(const boost::uuids::uuid& instance_id,
+                                               const std::string& step_name,
+                                               const utility::uuid::tenant_id& caller_tenant);
+
 private:
     /**
      * @brief Moves an instance to a state, recording an optional result and error.
@@ -201,6 +236,16 @@ private:
      */
     void begin_compensation(const domain::workflow_instance& instance,
                             const std::string& failure_msg);
+
+    /**
+     * @brief Stops a run whose definition declares the stop-and-retry policy.
+     *
+     * Leaves the run in failed with the failure recorded and every completed
+     * step untouched, so a person can retry the step that failed. The failed
+     * step keeps its own error and log.
+     */
+    void stop_on_failure(const domain::workflow_instance& instance,
+                         const std::string& failure_msg);
 
     /**
      * @brief Checks whether all compensation steps have finished.

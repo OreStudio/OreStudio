@@ -30,8 +30,8 @@ generated with. The capture =shell-recipes-no-longer-run= is what asked for it.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] |
-| Now          | Nothing. |
-| Waiting on   | The pull request's checks. |
+| Now          | Merged. Every gate passed on the branch, and the merge commit's tree is identical to the branch head that was verified, so nothing needed re-running. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
@@ -77,6 +77,8 @@ The order that was followed:
 | Codegen suite | 955 passed | =python3 -m pytest projects/ores.codegen/tests -q= | =ce04a90acd= |
 | Codegen gates | 8 gates exit 0 | =check_sql_hygiene.py=, =check_protocol_twin_coverage.py=, =check_model_drift.py=, =check_handler_permissions.py=, =check_shell_menu_collisions.py=, =check_route_auth_declarations.py=, =check_registry_exceptions.py=, =check_test_case_reachability.py= | =ce04a90acd= |
 | Org corpus | lint clean; 0 unresolved links | =compass lint=, =emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el= | =ce04a90acd= |
+| Merged | =17fa9f47fd= through PR #2334, 14 checks green | =gh pr checks 2334=; =git log -1 --format=%P origin/main= | =17fa9f47fd= |
+| Merge tree | Identical to the verified branch head, so no gate was re-run | =git diff --stat 8e449df026 origin/main= — no output | =17fa9f47fd= |
 
 * Notes
 

@@ -71,6 +71,7 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | metric |
 | source |
 | source_spelling |
+| delivery |
 
 * Test cases
 ** Projections

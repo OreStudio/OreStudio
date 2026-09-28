@@ -97,7 +97,7 @@ struct {{asset_class}}_market_data_identifier final {
 
 {{/oresmd_variant_specs}}
 /**
- * @brief Tagged union of the seven per-asset-class identifier structs.
+ * @brief Tagged union of the per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
  * authority component already tells a consumer which concrete struct applies, and

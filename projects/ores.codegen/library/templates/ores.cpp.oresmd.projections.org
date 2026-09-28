@@ -1131,6 +1131,12 @@ bool is_digits(std::string_view x) {
            std::ranges::all_of(x, [](unsigned char c) { return std::isdigit(c) != 0; });
 }
 
+// A segment of a delivery coordinate that is a fixed-width number: four digits
+// for a year, two for a month or a day, and any width for a count of seconds.
+bool is_number(const std::string& x, std::size_t digits) {
+    return x.size() == digits && is_digits(x);
+}
+
 /*
  * A delivery coordinate, the part of a commodity fixing's and an intraday power
  * index's name that says which contract the series is. The two classes read it
@@ -1148,8 +1154,7 @@ bool power_delivery_is_the_shape(const std::string& delivery) {
     const auto parts = split_on_dash(delivery);
     if (parts.size() < 3 || parts.size() > 6)
         return false;
-    if (parts[0].size() != 4 || parts[1].size() != 2 || parts[2].size() != 2 ||
-        !is_digits(parts[0]) || !is_digits(parts[1]) || !is_digits(parts[2]))
+    if (!is_number(parts[0], 4) || !is_number(parts[1], 2) || !is_number(parts[2], 2))
         return false;
     if (parts.size() > 3 && (parts.size() < 5 || !is_digits(parts[3]) || !is_digits(parts[4])))
         return false;
@@ -1160,8 +1165,7 @@ bool power_delivery_is_the_shape(const std::string& delivery) {
 
 bool commodity_delivery_is_the_shape(const std::string& delivery) {
     const auto parts = split_on_dash(delivery);
-    return parts.size() == 2 && parts[0].size() == 4 && parts[1].size() == 2 &&
-           is_digits(parts[0]) && is_digits(parts[1]);
+    return parts.size() == 2 && is_number(parts[0], 4) && is_number(parts[1], 2);
 }
 
 /*
@@ -1198,7 +1202,8 @@ std::optional<std::string> quote_key_power(const power_market_data_identifier&) 
 }
 
 /*
- * COMM-<CODE>[-<MONTH>], the name ORE gives a commodity future index. A * commodity *quote* carries its delivery period as the last segment of
+ * COMM-<CODE>[-<MONTH>], the name ORE gives a commodity future index. A
+ * commodity *quote* carries its delivery period as the last segment of
  * COMMODITY_FWD/PRICE/<CODE>/<CCY>/<PERIOD>, which is `point`; a fixing carries
  * it in the index name, which is `delivery`. They are two fields because a
  * quote's observations each name their own period and a fixing's do not.

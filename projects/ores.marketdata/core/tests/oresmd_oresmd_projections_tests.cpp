@@ -1392,8 +1392,8 @@ TEST_CASE("from_index_name_rejects_commodity_names_that_are_not_the_shape", tags
     REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-ICE:B-2024-12-15").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-SOME-B-2024-12").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-ICE:B-20-12").has_value());
-    // A delivery names the series, so it is a fixing's field: a quote names its
-    // own period in `point` and projects no index name.
+    // The projection emits an index name for a fixing alone, so a quote carrying
+    // the period it is quoted for projects none.
     REQUIRE_FALSE(oresmd_projections::to_index_name(
                       parse("oresmd://commodity/ice:b?ccy=usd&type=quote&quote=fwd&point=2024-12"))
                       .has_value());

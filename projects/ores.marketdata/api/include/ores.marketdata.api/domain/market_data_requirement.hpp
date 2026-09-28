@@ -168,7 +168,7 @@ struct power_market_data_requirement final {
 };
 
 /**
- * @brief Tagged union of the seven per-asset-class requirement structs -- see
+ * @brief Tagged union of the per-asset-class requirement structs -- see
  * market_data_identifier.hpp for the rationale against a common base class.
  */
 using market_data_requirement = std::variant<fx_market_data_requirement,

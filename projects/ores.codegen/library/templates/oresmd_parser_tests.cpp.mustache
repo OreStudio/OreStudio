@@ -586,8 +586,8 @@ TEST_CASE("reject_fx_source_when_type_is_not_fixing", tags) {
 
 TEST_CASE("reject_fx_source_keys_on_every_other_asset_class", tags) {
     // The source keys name an FX fixing and nothing else. correlation, inflation,
-    // ir, rating, security and shape_profile refuse them through the Reject keys
-    // table their model carries; equity, credit and commodity carry such a table
+    // ir, rating, security, shape_profile and commodity refuse them through the
+    // Reject keys table their model carries; equity and credit carry such a table
     // too but generate only the shared check, so the shared check is what refuses
     // them there. Every class but FX is here.
     for (const auto& rejected :
@@ -603,6 +603,37 @@ TEST_CASE("reject_fx_source_keys_on_every_other_asset_class", tags) {
           "oresmd://equity/sp5?type=fixing&source_spelling=ECB"}) {
         REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
     }
+}
+
+TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
+    // A delivery coordinate names a commodity future's contract period or an
+    // intraday power index's delivery window, and nothing else: a key accepted
+    // and dropped is a key the caller believes was recorded. Every class but
+    // those two refuses it, through its own Reject keys table or the shared check.
+    for (const auto& rejected :
+         {"oresmd://equity/sp5?type=fixing&delivery=2024-12",
+          "oresmd://credit/vod?ccy=eur&type=fixing&delivery=2024-12",
+          "oresmd://fx/eurusd?type=fixing&source=ecb&delivery=2024-12",
+          "oresmd://inflation/ukrpi?type=fixing&delivery=2024-12",
+          "oresmd://ir/usd?type=fixing&index=sofr&delivery=2024-12",
+          "oresmd://correlation/ccy-eur-usd?type=fixing&delivery=2024-12",
+          "oresmd://rating/provider_1?type=fixing&delivery=2024-12",
+          "oresmd://security/isin:de000a3h2wp2?type=fixing&delivery=2024-12",
+          "oresmd://shape_profile/pjm_wh_rt_pk?type=fixing&delivery=2024-12"}) {
+        REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
+    }
+    // The two classes that name it keep it. They accept it on any type, because
+    // the type gate a Type-gated keys table declares is emitted for the classes
+    // that build a validate_<class>() and not for those that delegate, which is
+    // the codegen gap the model records.
+    const auto commodity = std::get<commodity_market_data_identifier>(
+        oresmd_parser::parse(uri("oresmd://commodity/ice:b?type=fixing&delivery=2024-12")));
+    REQUIRE(commodity.delivery.has_value());
+    CHECK(*commodity.delivery == "2024-12");
+    const auto power = std::get<power_market_data_identifier>(
+        oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&delivery=2024-12")));
+    REQUIRE(power.delivery.has_value());
+    CHECK(*power.delivery == "2024-12");
 }
 
 TEST_CASE("reject_ir_term_index_fixing_without_a_tenor", tags) {

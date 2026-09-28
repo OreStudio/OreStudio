@@ -285,7 +285,7 @@ struct power_market_data_identifier final {
 };
 
 /**
- * @brief Tagged union of the seven per-asset-class identifier structs.
+ * @brief Tagged union of the per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
  * authority component already tells a consumer which concrete struct applies, and

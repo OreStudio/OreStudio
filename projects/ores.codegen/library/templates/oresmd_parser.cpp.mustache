@@ -168,10 +168,11 @@ void validate_{{asset_class}}(const query_params& qp) {
 {{/oresmd_validate_pre}}
 /*
  * The query keys none of the classes that delegate here models. index, tenor,
- * role and metric belong to another class's grammar, and source and
- * source_spelling to an FX fixing. equity, credit and commodity generate no
- * reject list of their own, so for those three this is the whole of their query
- * validation and a key refused everywhere but its owner has to be named here.
+ * role and metric belong to another class's grammar, source and source_spelling
+ * to an FX fixing, and delivery to a commodity or power fixing. equity and credit
+ * generate no reject list of their own, so for those two this is the whole of
+ * their query validation and a key refused everywhere but its owner has to be
+ * named here.
  */
 void validate_no_foreign_keys(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "index", qp.index);
@@ -180,6 +181,7 @@ void validate_no_foreign_keys(std::string_view asset_class, const query_params& 
     reject_if_present(asset_class, "metric", qp.metric);
     reject_if_present(asset_class, "source", qp.source);
     reject_if_present(asset_class, "source_spelling", qp.source_spelling);
+    reject_if_present(asset_class, "delivery", qp.delivery);
 }
 
 {{#oresmd_validate_post}}

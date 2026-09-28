@@ -49,12 +49,11 @@
  *
  * The corpus carries 158 distinct index names across eight shapes. This test
  * walks them with the real fixing reader, so a name it counts is a name the
- * import sees, and asks the real projection library to name each one -- four ways
- * now, one for each class whose grammar is decided, and nothing for the classes
- * whose grammar is still a decision. The full
- * table is reported on every run, so the current figure is visible rather than
- * asserted in prose, and the classes that name nothing are pinned against a list
- * so that closing one fails until the list is updated.
+ * import sees, and asks the real projection library to name each one: one way for
+ * each class whose grammar is decided, and nothing for the classes whose grammar
+ * is not. The full table is reported on every run, so the current figure is
+ * visible rather than asserted in prose, and the classes that name nothing are
+ * pinned against a list so that closing one fails until the list is updated.
  */
 
 namespace {
@@ -234,9 +233,6 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
     // yet. Each is recorded with its reason on the task; this list is the
     // measured half of the same claim. It fails when one is closed without the
     // record being updated, and when a change breaks a class that worked.
-    //
-    // Interest rates, FX, commodity and intraday power are absent because every
-    // name of theirs is named, and the assertion below fails if one comes back.
     const std::set<std::string> recorded{
         "equity", "inflation", "security", "unclassified"};
 

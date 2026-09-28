@@ -95,6 +95,7 @@ no source, so a source on a quote names nothing.
 | strip |
 | role |
 | metric |
+| delivery |
 
 * Test cases
 ** Projections

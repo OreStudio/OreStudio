@@ -5,14 +5,14 @@
 #+description: Quote types for commodity: spot, forward, option.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: commodity
-#+validate: inline_delegate
+#+validate: inline
 #+ccy_optional_for_fixing: true
 #+authority: commodity
 #+component: ores.marketdata
 #+level: s2
 #+filetags: :codegen:oresmd:commodity:
 #+created: 2026-08-09
-#+updated: 2026-08-09
+#+updated: 2026-09-28
 
 * Quote types
 

@@ -197,6 +197,9 @@ record each item's result in the table below.
 | V01 | The regeneration this branch ran had deleted a hand-written correctness guard, and a second environment's report is how it was found. =ores.iam='s generated =party_cache.hpp= carried a hand-written tenant-isolation filter: the party read is deliberately widened to the system tenant so IAM can resolve a name during authentication, so rows from every tenant arrive, and only the requested partition's rows may be filed under its key. The checked-in copy had the filter; the regenerated copy dropped it, and the next regeneration would have re-dropped it. The fix is at source: =derive_tenant_read_flags= now sets =cache_tenant_filter= beside =read_tenant_filtered= (they answer one question from opposite sides), the =nats-event-cache= header keeps only rows whose =tenant_id= matches the partition, and five tests pin the derivation and both renderings. Regenerating refdata restores the file to main's behaviour with the filter template-rendered. | =6c7d088e60=, =bec4bba545=; =test_cache_tenant_filter.py=; =check_component_drift.py --all= exit 0; =compass build= exit 0; 7 of 7 targets pass. |
 | V01 | The same report lists two other reasons regeneration was rejected on main. Both are already answered here, because the branch regenerates rather than hand-patches: =business_unit_key= is ={std::string unit_code}= on this branch and ={boost::uuids::uuid id}= on main, which is the disagreement that makes the installed notify trigger's key undecodable; and the two =del_req.removals.push_back= sites in =ore_import_execute_handler.cpp= pass a natural key (={.key = {.name = name}}=) rather than a uuid, so the regenerated removal type compiles. | =git show origin/main:.../business_unit_protocol.hpp= versus the branch; =bec4bba545='s build, exit 0. |
 | Final 3 | Re-verified again after the cache fix, on the fleet restarted onto the rebuilt binaries: =compass build= exits 0, =check_component_drift.py --all= reports no drift, the codegen suite passes (941 tests), and 7 of 7 targets pass — the six refdata suites plus =ores.iam.core.tests=, which owns the regenerated cache. V04 re-ran end to end on this tree: 732 commands, 0 aborts. | =cachefix-drift-all.txt=, =cachefix-tests.txt=, =postrebase3-v04-console-cachefix.txt=, each exit 0. |
+| Rebase 3 | Rebased 78 commits onto main at =384b41221acc=, which had moved 138 commits since the second rebase and 8 inside codegen/refdata. Four commits were dropped as superseded: the two bootstrap recipe entries from a generated inventory file (the generator is what puts them back), main's own protocol-facet gate fix (main's =5d001d773e= is broader, so its implementation was taken and this branch kept only its tests), and the storage cherry-pick remainder. The registry conflict kept main's =dq= entry and added =refdata= beside it. | =git rebase origin/main=; 77 ahead, 0 behind; =backup/pre-rebase-3-24269da3d6=. |
+| Rebase 3 | Regeneration after that rebase touched three trees that had never seen the branch's shared-template fixes: dq (47 files, now in =COMPONENTS_UNDER_TEST=), iam's new seed-profile entities (6 files), and the TypeScript twins of both response shapes (43 files). The shell recipe inventory was regenerated, and one of this branch's own tests was corrected: the gate's negative case was pinned to a live dq junction that now keeps its protocol, so the assertion had become a statement about the tree; main pins that case against a fixture, and this branch keeps the half that matters to refdata. | =29f01287de=, =6b1c82edb3=; =rebase3-drift-final.txt= (no drift), =rebase3-gates.txt=, =rebase3-tests.txt=. |
+| Final 4 | Re-verified on the pushed tree: =compass build= exits 0; the store was rebuilt from nothing (=compass db recreate -y -k= exits 0); 8 of 8 targets pass — the six refdata suites, =ores.iam.core.tests= and =ores.dq.core.tests=; the codegen suite passes (955 tests); =check_component_drift.py --all= reports no drift; every other codegen gate exits 0 and =validate_docs.sh= reports 40 of 40 components; and V04 re-ran end to end at 732 commands with 0 aborts. The only red check is the known main-side CMake source-list drift already captured. | =rebase3-tests.txt=, =rebase3-gates.txt=, =rebase3-drift-final.txt=, =rebase3-v04-console.txt=, =rebase3-db-recreate.txt=. |
 
 * Notes
 
@@ -263,6 +266,17 @@ record each item's result in the table below.
   fixed above. Nothing in this task should be taken as disagreeing with their
   finding — the hand-written filter was the one real casualty of regenerating
   refdata, and it is the reason the fix belongs in the generator.
+- While this branch was being rebased for the third time, =main='s CI showed the
+  same refdata suite failing with the second-order symptom: ten eventing tests
+  reporting a changed event that never arrived, then the poll's re-drive raising
+  =Row already exists: a create cannot replace it= from
+  =ores_refdata_books_insert_fn=, =ores_refdata_party_identifiers_insert_fn= and
+  =ores_refdata_party_contact_informations_insert_fn=. That is the same defect:
+  on =main= the C++ key type is stale against the current trigger, so the
+  notification never decodes, no event is seen, and the test's own retry is what
+  the store refuses. On this branch =ores.refdata.core.tests= passes in full
+  (235 cases, 4029 assertions), because the key type is ={std::string unit_code}=
+  and the payload decodes. Merging this PR is the fix for that CI red.
 
 * Test Scenarios
 
@@ -279,7 +293,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2318][#2318]] | [ores.refdata] Bring the component to the clean standard |
 
 * Review
 

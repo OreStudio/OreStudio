@@ -142,8 +142,9 @@ void currency_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> "
-        "<rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id> "
-        "<spot_days> <day_basis> <base_precedence> <reason> <commentary>");
+        "<rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> "
+        "<ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +152,9 @@ void currency_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> "
-        "<rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id> "
-        "<spot_days> <day_basis> <base_precedence> <reason> <commentary> [--version <n>]");
+        "<rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> "
+        "<ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +163,8 @@ void currency_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "put-many --count <n> <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> "
         "<fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> "
-        "<market_tier> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary>");
+        "<market_tier> <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +359,8 @@ void currency_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -376,6 +379,8 @@ void currency_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.monetary_nature, parsed->positionals[next++], "monetary_nature");
         read_token(req.change.write.market_tier, parsed->positionals[next++], "market_tier");
+        read_token(
+            req.change.write.ore_currency_type, parsed->positionals[next++], "ore_currency_type");
         read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
         read_token(req.change.write.spot_days, parsed->positionals[next++], "spot_days");
         read_token(req.change.write.day_basis, parsed->positionals[next++], "day_basis");
@@ -423,8 +428,8 @@ void currency_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -443,6 +448,8 @@ void currency_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.monetary_nature, parsed->positionals[next++], "monetary_nature");
         read_token(req.change.write.market_tier, parsed->positionals[next++], "market_tier");
+        read_token(
+            req.change.write.ore_currency_type, parsed->positionals[next++], "ore_currency_type");
         read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
         read_token(req.change.write.spot_days, parsed->positionals[next++], "spot_days");
         read_token(req.change.write.day_basis, parsed->positionals[next++], "day_basis");
@@ -502,8 +509,8 @@ void currency_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 16 + 2) {
+            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -524,6 +531,8 @@ void currency_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.monetary_nature, parsed->positionals[next++], "monetary_nature");
             read_token(change.write.market_tier, parsed->positionals[next++], "market_tier");
+            read_token(
+                change.write.ore_currency_type, parsed->positionals[next++], "ore_currency_type");
             read_token(change.write.image_id, parsed->positionals[next++], "image_id");
             read_token(change.write.spot_days, parsed->positionals[next++], "spot_days");
             read_token(change.write.day_basis, parsed->positionals[next++], "day_basis");

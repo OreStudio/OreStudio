@@ -52,6 +52,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.format = v.format;
     r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
+    r.ore_currency_type = v.ore_currency_type;
     r.image_id = v.image_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
                      std::nullopt;
@@ -87,6 +88,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.format = v.format;
     r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
+    r.ore_currency_type = v.ore_currency_type;
     r.image_id =
         v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
     r.spot_days = v.spot_days;

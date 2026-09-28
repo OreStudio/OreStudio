@@ -51,6 +51,7 @@ struct currency_write {
     std::string format;
     std::string monetary_nature;
     std::string market_tier;
+    std::optional<std::string> ore_currency_type;
     std::optional<boost::uuids::uuid> image_id;
     int spot_days;
     std::string day_basis;

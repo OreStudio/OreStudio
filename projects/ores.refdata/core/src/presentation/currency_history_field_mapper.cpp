@@ -44,6 +44,8 @@ std::vector<ores::diff::domain::field_value> render_currency_fields(const domain
     fields.push_back({.name = "Format", .value = v.format});
     fields.push_back({.name = "Monetary Nature", .value = v.monetary_nature});
     fields.push_back({.name = "Market Tier", .value = v.market_tier});
+    fields.push_back(
+        {.name = "Ore Currency Type", .value = v.ore_currency_type.value_or(std::string{})});
     fields.push_back({.name = "Image ID",
                       .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});
     fields.push_back({.name = "Spot Days", .value = std::to_string(v.spot_days)});

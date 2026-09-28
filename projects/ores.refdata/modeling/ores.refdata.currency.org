@@ -188,6 +188,24 @@ Market tier classification; soft FK to =ores_refdata_currency_market_tiers_tbl= 
 std::string("g10")
 #+end_src
 
+** ore_currency_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+ORE's own =CurrencyType= token, carried verbatim so that an export writes back
+what an import read. ORE declares the element as a free string, so this is not
+a lookup: the vendored corpus uses =Major=, =Minor=, =Metal= and =Crypto=, and
+most documents set none. =monetary_nature= is our classification of a currency
+and is derived from this token; it is not a substitute for it, because =Major=
+and =Minor= both classify as =fiat=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** image_id
 :PROPERTIES:
 :type:     uuid
@@ -312,6 +330,12 @@ The ISO import carries =holiday_calendar=, which =refdata_currency_calendars_see
 ** market_tier
 :PROPERTIES:
 :type: text
+:END:
+
+** ore_currency_type
+:PROPERTIES:
+:type: text
+:nullable: true
 :END:
 
 ** image_id

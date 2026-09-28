@@ -120,6 +120,15 @@ struct currency final {
     std::string market_tier;
 
     /**
+     * @brief ORE's own CurrencyType token, carried verbatim so that an export writes back what an
+     * import read. ORE declares the element as a free string, so this is not a lookup: the vendored
+     * corpus uses Major, Minor, Metal and Crypto, and most documents set none. monetary_nature is
+     * our classification of a currency and is derived from this token; it is not a substitute for
+     * it, because Major and Minor both classify as fiat.
+     */
+    std::optional<std::string> ore_currency_type;
+
+    /**
      * @brief Optional reference to a flag or logo image in the images table.
      */
     std::optional<boost::uuids::uuid> image_id;

@@ -88,8 +88,9 @@ public:
 
     /**
      * @brief add <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit>
-     * <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id>
-     * <spot_days> <day_basis> <base_precedence> <reason> <commentary>
+     * <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier>
+     * <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +98,9 @@ public:
 
     /**
      * @brief set <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit>
-     * <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id>
-     * <spot_days> <day_basis> <base_precedence> <reason> <commentary> [--version <n>]
+     * <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier>
+     * <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +109,8 @@ public:
     /**
      * @brief put-many --count <n> <iso_code> <name> <numeric_code> <symbol> <fraction_symbol>
      * <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature>
-     * <market_tier> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary>
+     * <market_tier> <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

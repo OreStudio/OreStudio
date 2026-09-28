@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 98333188-D708-40EE-9059-21ECE76F7129
+:END:
+#+title: Assemble the commit message instead of substituting into it
+#+description: Never put a $(cat ...) command substitution inside a quoted heredoc when building a commit message; append the trailer file instead, or verify with git log -1 after committing.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:git:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Build a commit message in two steps: write the body with a quoted heredoc, then append the trailers file with cat >>. Never place a command substitution inside the body, and always read the result back with git log -1 before moving on.
+
+*Why:* A quoted heredoc (<<'EOF') does not expand command substitutions, so a line written as $(cat tmp/<pr>/trailers.txt) is committed literally. Fifteen commits reached main and five reached an open PR that way, each missing its Story-ID, Task-ID, Environment and Co-Authored-By trailers -- the exact traceability the trailers exist for. Nothing caught it: the text is valid, the diff is correct, and compass lint does not read commit messages.
+
+*How to apply:* Do not compose the message with an embedded substitution. Write the body, then append: cat > /tmp/msg <<'EOF' ... EOF; cat tmp/<pr>/trailers.txt >> /tmp/msg; git commit -F /tmp/msg. After committing, run git log -1 --format=%B and read the trailer lines. Fixing an existing commit message needs a rewrite, not an amend: git filter-branch -f --msg-filter with an absolute path to the sed script rewrites the range, and the diff must hash the same before and after.

@@ -28,9 +28,9 @@ Every conventions document in the corpus imports, exports and matches, with the 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Scoped. The mapper counts what it skips; the corpus is measured and the work is cut into three parts. |
+| Now          | The mapper counts what it skips, and the nine files that use only modelled categories round trip. The fourteen categories the corpus uses are scoped and not yet modelled. |
 | Waiting on   | Nothing.                               |
-| Next         | Map the fields the modelled categories already have, then model the fourteen categories the corpus uses. |
+| Next         | Model the fourteen categories, most used first, each with a refdata entity, both mappers and its own round trip. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -66,25 +66,29 @@ Every conventions document in the corpus imports, exports and matches, with the 
 | Files using a category the mapper does not model | 63 | the same | =8215ab6253= |
 | Categories the document carries | 26, of which 9 are modelled | =grep -A 30 "struct conventions {" domain.hpp= | =8215ab6253= |
 | Categories the corpus uses and the mapper does not model | 14 | the same | =8215ab6253= |
-| Files using only modelled categories that round trip | 0 of 9 | the same | =8215ab6253= |
+| Files using only modelled categories that round trip | 9 of 9, was 0 of 9 | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =8215ab6253= |
 | The per-category counts and the field-level causes | =evidence/round_trip_conventions_gap.md= | the same | =8215ab6253= |
 
 * Notes
 
-- The cheapest work is not the unmodelled categories. Nine files carry no
-  unmodelled category and still fail, on two causes: =<IndexBased>= is dropped,
-  and a boolean and a day counter come back in ORE's enum spelling rather than
-  the document's.
-- =<IndexBased>= is a mapper line on Deposit, whose column already exists, and a
-  new column on Zero, which has none although ORE writes an index-based zero
-  convention.
-- =true= against =True=, and =A365= against =A365F=, are the mapper's deliberate
-  normalisation of booleans and enum aliases to canonical codes. Both carry the
-  same information, so the comparison may state them. A dropped element carries
-  less information than the document, so it may not.
-- The mapper now warns once per unmodelled category on every import, which will
-  be noisy for the corpus until the categories land. That noise is the point:
-  the skip was invisible for as long as it was silent.
+- The nine files that carry only modelled categories round trip, and are
+  asserted green. The rest cannot, because a category the mapper does not model
+  is content the export cannot write.
+- The failure on those nine was a value spelling, not a lost element. A boolean
+  comes back as =True= for =true=, and a day counter as =A365F= for =A365=,
+  because the mapper collapses ORE's boolean spellings and enum aliases to the
+  canonical codes the refdata columns hold. That is deliberate and carries the
+  same information, so the kind's comparison states it. An earlier note here
+  claimed =<IndexBased>= was dropped; dumping the export showed it present and
+  respelled, and that note is corrected.
+- The comparison is sound because it checks two things: no element appears fewer
+  times in the export than in the document, and the same mapper reads the same
+  conventions out of both. The first catches a category the mapper reads and
+  does not model; the second tolerates the canonicalisation and still catches a
+  value the mapper got wrong, because such a value survives neither direction.
+- The mapper warns once per unmodelled category on every import, which will be
+  noisy for the corpus until the categories land. That noise is the point: the
+  skip was invisible for as long as it was silent.
 
 * Test Scenarios
 

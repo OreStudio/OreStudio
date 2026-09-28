@@ -38,28 +38,27 @@ Sixty-three of the seventy-two files carry at least one of them.
 
 ## What the nine files that use only modelled categories fail on
 
-Nine files carry no unmodelled category, and none of them round trips either.
-That is the half a field mapping can fix, and its causes are two.
+Nine files carry no unmodelled category, and none of them round tripped under a
+plain text comparison. Nothing is dropped on this half: every difference is a
+value the mapper writes in its own canonical spelling.
 
-**A dropped element.** `<IndexBased>` is in the document and not in the export.
-`deposit_convention` already has the column and the mapper never reads it:
-`zero_convention` has no `index_based` field at all, although ORE writes an
-index-based zero convention, which is what `EUR-EONIA-CONVENTIONS` is.
-
-```
-examples/CurveBuilding/Input/conventions_centralbank.xml:
-imported "<Id>GBP-DEPOSIT</Id>
-  <IndexBased>true</IndexBased>
-  <Index>GBP-SONIA</Index>"
-exported "<Id>GBP-DEPOSIT</Id>
-  <Index>GBP-SONIA</Index>"
-```
+**Correction.** An earlier version of this page said the export dropped
+`<IndexBased>`. It does not. The comparison message quotes a window that starts
+forty bytes before the difference, so the element printed at the top of the
+imported side is context, not the difference. Dumping the export settles it: the
+element is there, written as `True` where the document wrote `true`. Nothing is
+dropped on this half, and the correction matters because the fix it implied was
+a mapper line and a new column, and neither is needed.
 
 **Two normalisations the mapper performs deliberately.** A boolean comes back
 with ORE's enum spelling rather than the document's, and a day counter alias
 comes back as the canonical code the mapper normalises to.
 
 ```
+examples/CurveBuilding/Input/conventions_centralbank.xml:
+imported "<IndexBased>true</IndexBased>"
+exported "<IndexBased>True</IndexBased>"
+
 examples/Academy/TA001_Equity_Option/Input/conventions.xml:
 imported "<TenorBased>true</TenorBased>
   <DayCounter>A365</DayCounter>"
@@ -67,27 +66,35 @@ exported "<TenorBased>True</TenorBased>
   <DayCounter>A365F</DayCounter>"
 ```
 
-The second is the mapper's stated design: it collapses ORE's enum aliases to
-canonical FpML/CDM codes before storing them, because the refdata columns are
-soft foreign keys to code tables. `A365` and `A365F` are two spellings of one
-code, and `true` and `True` are one boolean, so both carry the same information
-and the comparison may state them.
+This is the mapper's stated design: it collapses ORE's boolean spellings and its
+enum aliases to the canonical codes the refdata columns hold, because those
+columns are soft foreign keys to code tables. `A365` and `A365F` are two
+spellings of one code, and `true` and `True` are one boolean, so both carry the
+same information and the comparison may state them.
+
+Conventions are therefore the case where a plain text comparison cannot work at
+all, and the kind's comparison (`conventions_diff.cpp`) answers it in two parts:
+no element may appear fewer times in the export than in the document, and the
+same mapper must read the same conventions out of both documents. The first
+catches a category the mapper reads and does not model; the second tolerates the
+canonicalisation while still catching a value the mapper got wrong, because a
+value the mapper got wrong survives neither direction.
+
+With that in place the nine files that carry only modelled categories round
+trip, and they are asserted green rather than measured.
 
 ## What this means for the work
 
-Three kinds of change, in order of how much they buy:
+Two kinds of change remain, in order of how much they buy:
 
-1. **The dropped fields on the modelled categories.** `IndexBased` on Deposit is
-   a mapper line. On Zero it is a column. These are the cheapest and they are
-   the reason nine files fail for a reason unrelated to the unmodelled
-   categories.
-2. **The two declared normalisations**, stated in the kind's comparison rather
-   than fixed, because the mapper normalises on purpose and the information
-   survives it.
-3. **The fourteen categories**, each of which needs a refdata entity, a mapper
-   in both directions, and its own round trip. This is the bulk of the work and
-   it is why conventions is not one round's job.
+1. **The fourteen categories**, each of which needs a refdata entity, a mapper in
+   both directions, and its own round trip. This is the bulk of the work and it
+   is why conventions is not one round's job.
+2. **The mapper's report of what it skips**, already delivered: it counts and
+   warns, and the task's acceptance asks for a test that asserts the count is
+   zero, which cannot pass until the categories land.
 
-Until all three land, the kind stays measured by a hidden probe rather than
+Until the categories land the kind stays measured by a hidden probe rather than
 asserted green, because a test that passes while a document loses a category is
-worse than a measurement a person reads.
+worse than a measurement a person reads. The nine files that do not lose one are
+asserted.

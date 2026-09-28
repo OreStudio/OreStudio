@@ -38,7 +38,7 @@ to the reference-data work and are out of scope, per decision D5.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | The commodity family is ported and proven end to end, the knock-out date column is deleted with its gap recorded under defect 14, and the equity position's option entries are child rows with the producer wired through the nested sub-trade. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
 | Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
-| Next         | The last U3 collection, =equity_swap_instrument.basket_json=, waits for defect 9; then U4 the enumerations; then regenerate and prove the component once more, update the story's checklist rows, and raise PR 3. |
+| Next         | U4, the enumerations: a reference table per closed set, its check out of PL/pgSQL, and the missing reference tables populated from the standard. Then defect 6, defects 14 to 16, the final regeneration pass, the story checklist, and PR 3. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -502,7 +502,7 @@ the order below, because each makes the next smaller.
 | 5 | Code fields whose reference table does not exist | Pending |
 | 4 | Enumerations held as free text with no reference table | Pending |
 | 8 | Enumerations enforced in PL/pgSQL, 27 of them | Pending |
-| 1 | Schedules and collections held as JSON text | Pending |
+| 1 | Schedules and collections held as JSON text | Closed except =equity_swap.basket_json=, which waits for defect 9's product split, and the scripted columns, which defect 1 itself excepts |
 | 14 | Declared coverage is incomplete, and elsewhere undeclared | Pending |
 | 15 | An underlying is an unqualified name | Pending |
 | 16 | No observation schedule | Pending |
@@ -590,6 +590,21 @@ arguable: =credit_instrument.option_strike= stayed =double= although its
 name says strike, because the model describes it as a spread in basis
 points, and a quantity that is not a whole number would lose precision as
 a =double=.
+
+** 5f. The collection columns, closed
+
+The callable swap's exercise dates, the commodity basket's constituents
+and the equity position's option underlyings are child tables now, each
+with its producer wired and the round trip asserting the values the
+mappers used to drop or never carried. The knock-out date column had no
+payload to model -- the schema states barrier levels, one start date and
+two legs -- and its family is never produced, so the column is deleted
+and the coverage gap recorded against defect 14. Two columns remain, both
+by decision: =equity_swap.basket_json= waits for defect 9's product
+split, because removing it would weaken the guard that tells a
+worst-of-basket swap from a plain swap, and =scripted_instrument='s three
+columns hold a user script whose shape the domain does not fix, which
+defect 1 itself excepts.
 
 ** 6. Regenerate and prove
 

@@ -1269,6 +1269,71 @@ drops columns -- and everything before it makes it verifiable. It should
 not be attempted before the corpus exists and the projections are
 lossless.
 
+*Not startable as scoped, and the corpus says why.* The cutover's premise is
+that every identity-bearing row can be given an =oresmd_uri=: the column is
+=not null=, the natural key moves to it, and the decided policy rejects a type
+oresmd cannot name. For a series that arrives in a =market.txt= that premise
+holds -- =from_ore_key()= names all 485,606 corpus keys and the coverage gate
+asserts it. For **fixings** it does not, and the fixing half is the half the
+target state never measured.
+
+A fixing's key space is the index name, not the =TYPE/METRIC/QUALIFIER/POINT=
+grammar, so it needs an inverse of its own. The abandoned branch wrote exactly
+one, =from_index_name()=, whose contract is =CCY-FAMILY[-TENOR]= against the
+=index_family= enum. Measured against the corpus with that contract:
+
+| files                        | distinct index names | nameable | not nameable |
+|------------------------------+----------------------+----------+--------------|
+| =fixings*.txt=               | 96                   | 24       | 72           |
+| the same plus =fixings*.csv= | 158                  | 34       | 124          |
+
+The 72 in the first row are not a residue. They are 48 =POWER-ICE:PDQ-...=
+contracts, 6 inflation indices (=UKRPI=, =USCPI=, =EUHICP=, =EUHICPXT=,
+=FRHICP=, =ZACPI=), 3 equity tickers (=EQ-SP5=, =EQ-RIC:...=), 2 FX fixings
+(=FX-ECB-EUR-USD=), one credit name (=GENERIC-JuniorNote=), and twelve
+interest-rate names whose family the enum does not declare -- =EUR-EONIA=, the
+=CIBOR=/=NIBOR=/=STIBOR=/=SIOR= families, and =USD-FedFunds=, =USD-CMS-5Y=,
+=USD-SIFMA=.
+
+The abandoned branch handled this by skipping: on a failed =from_index_name= it
+pushed =="Skipped fixing '...'"= into =warnings= and wrote no row. On the corpus
+that drops three quarters of the distinct fixing series, and it drops them
+*quietly* -- which is why it went unnoticed. The branch predates
+=service_corpus_import_tests.cpp= by five weeks, and the test this task built in
+PR 4's first half is what makes the loss visible, because it asserts the warning
+count is exactly the de-duplication count. The branch's own verification line,
+"ctest 69/71 passed", could not have caught it.
+
+So PR 5 needs a predecessor the six-PR plan does not have: **map the fixing key
+space to oresmd, asset class by asset class.** That is a grammar question before
+it is a code question, and adding enum members does not answer it:
+
+- an inflation fixing names an index the inflation asset class already models
+  as =index_code=, so =UKRPI= is close to nameable already;
+- an equity fixing (=EQ-SP5=) names a ticker and no currency, and the equity
+  identifier requires one, so the name does not carry enough to build the URI;
+- an FX fixing (=FX-ECB-EUR-USD=) carries its *source* as well as the pair, and
+  the FX identifier has no field for a source;
+- a power fixing (=POWER-ICE:PDQ-2021-01-04-14400-18000=) is an hourly
+  contract rather than a point on a curve, and needs a shape the grammar lacks;
+- =GENERIC-JuniorNote= is a curve name, not an index;
+- and the twelve interest-rate names are producer spellings the =index_family=
+  enum does not hold -- the same spelling-versus-family gap the ESTER alias
+  already papers over for one of them.
+
+Until that lands the cutover cannot be attempted: adding =oresmd_uri= and
+dropping the triple would leave the fixing boundary unable to write the fixings
+ORE's own examples carry.
+
+*What landed from it meanwhile.* =from_index_name()= and =is_scalar()= are in,
+generated from the projections templates, with corpus-driven cases that pin the
+round trip and the limit -- =EUR-EONIA=, =UKRPI= and a power contract are
+asserted unnameable rather than left undocumented. =is_scalar()= is the
+primitive the point repurposing needs, and it is where the abandoned branch
+disagreed with its own plan: it kept the ="SPOT"= sentinel, while both the story
+and the deletion task say the sentinel dies and a scalar series carries a null
+point. That repurposing is still to do.
+
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 
 *Scope.* Add =marketdata= to =component_registry.py= and run every gate:

@@ -834,4 +834,80 @@ TEST_CASE("from_ore_key_rejects_malformed_keys", tags) {
     REQUIRE_FALSE(oresmd_projections::from_ore_key("IR_SWAP/BOGUS/USD/2D/3M/5Y").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("SWAPTION/BOGUS/EUR/5Y/2Y/ATM").has_value());
 }
+
+/*
+ * The fixing boundary's key space. A fixing's key is an index name rather
+ * than the TYPE/METRIC/QUALIFIER/POINT grammar the registry seeds, so it has
+ * its own inverse and its own coverage limit, and the cases here pin both.
+ */
+
+TEST_CASE("from_index_name_reads_the_two_and_three_segment_forms", tags) {
+    const auto overnight = oresmd_projections::from_index_name("USD-SOFR");
+    REQUIRE(overnight.has_value());
+    const auto& sofr = std::get<ir_market_data_identifier>(*overnight);
+    REQUIRE(sofr.ccy == "USD");
+    REQUIRE(sofr.type == instrument_type::fixing);
+    REQUIRE(sofr.index == index_family::sofr);
+    CHECK_FALSE(sofr.tenor.has_value());
+
+    const auto term = oresmd_projections::from_index_name("USD-LIBOR-3M");
+    REQUIRE(term.has_value());
+    const auto& libor = std::get<ir_market_data_identifier>(*term);
+    REQUIRE(libor.ccy == "USD");
+    REQUIRE(libor.index == index_family::libor);
+    REQUIRE(libor.tenor.has_value());
+    CHECK(*libor.tenor == "3m");
+}
+
+TEST_CASE("from_index_name_round_trips_through_to_index_name", tags) {
+    // The pair is the contract: a name this reads back must project to the
+    // name it arrived as, or the fixing boundary would rewrite identities on
+    // the way through the database.
+    for (const auto& name : {"USD-LIBOR-3M", "EUR-EURIBOR-6M", "USD-SOFR", "EUR-ESTR"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+}
+
+TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
+    // A term family without a tenor: the forward emits the two-segment form
+    // for overnight families alone, and the parser rejects a term-index fixing
+    // with no tenor, so this name is nobody's.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD-LIBOR").has_value());
+    // Segment counts the forward never emits.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-EUR-USD").has_value());
+    // Empty segments, and a family the enum does not declare. EUR-EONIA is in
+    // the corpus and still unnameable: it is the spelling a producer wrote,
+    // not a family oresmd models.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD--3M").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("EUR-EONIA").has_value());
+    // Another asset class's index name. UKRPI is an inflation index, and this
+    // projection is the interest-rate one; naming it is its own asset class's
+    // work, recorded in the analysis.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("UKRPI").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000")
+                      .has_value());
+}
+
+TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", tags) {
+    // A spot quote and a fixing have one point per date, whoever supplies the
+    // name for it.
+    for (const auto& uri : {"oresmd://fx/eurusd?type=quote&quote=spot",
+                            "oresmd://ir/usd?type=fixing&index=libor&tenor=3m",
+                            "oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"}) {
+        const auto id = oresmd_parser::parse(oresmd_uri{uri});
+        CHECK(oresmd_projections::is_scalar(id));
+    }
+    // A curve, a surface, and a quote that names its own point.
+    for (const auto& uri : {"oresmd://fx/eurusd?type=quote&quote=fwd&point=6m",
+                            "oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm",
+                            "oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"}) {
+        const auto id = oresmd_parser::parse(oresmd_uri{uri});
+        CHECK_FALSE(oresmd_projections::is_scalar(id));
+    }
+}
 #+end_src

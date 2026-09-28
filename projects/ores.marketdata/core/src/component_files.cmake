@@ -100,7 +100,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/oresmd/oresmd_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/oresmd/oresmd_parser.hpp"

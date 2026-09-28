@@ -64,16 +64,48 @@ enum class {{asset_class}}_quote_type {
  * @brief The `index` query key of an oresmd URI, IR-only: a fixed benchmark-family token,
  * not free text -- closes the gap-analysis's "index_name is free text" finding.
  *
- * The 23 values mirror the CHECK constraint on ores_synthetic_ir_curve_generation_configs_tbl
- * (synthetic_ir_curve_generation_configs_create.sql) exactly: libor and euribor are the only
- * term families (they require a tenor); all others are overnight-style families. See
- * oresmd_index_family_utils's is_overnight() for the tenor rule.
+ * The values mirror the family list the CHECK constraint on
+ * ores_synthetic_ir_curve_generation_configs_tbl
+ * (synthetic_ir_curve_generation_configs_create.sql) admits, and the two move
+ * together: a family this enum holds and that constraint does not is a family no
+ * synthetic curve can be configured for.
  */
 enum class index_family {
 {{#index_family}}
     {{value}}{{^last}},{{/last}}
 {{/index_family}}
 };
+
+/**
+ * @brief Whether every index name ORE writes for this family carries a tenor --
+ * USD-LIBOR-3M, where no USD-LIBOR exists -- rather than the family also being
+ * written bare, as USD-SOFR is.
+ *
+ * False does not forbid a tenor. The corpus writes both USD-SOFR and USD-SOFR-3M,
+ * as two different fixings, so a family this answers false for is written both
+ * ways and the identifier's own fields decide which name is emitted.
+ *
+ * Generated from the Index family table of ir_quote_type.org, which is where the
+ * rule is written and where the reason for each family's answer sits beside it.
+ * The switch is exhaustive and has no default, so a family added to the enum
+ * without being classified fails to compile: that is the only thing keeping the
+ * two from drifting apart.
+ */
+inline bool requires_tenor(index_family f) {
+    switch (f) {
+{{#index_family}}
+{{#requires_tenor}}
+        case index_family::{{value}}:
+            return true;
+{{/requires_tenor}}
+{{^requires_tenor}}
+        case index_family::{{value}}:
+            return false;
+{{/requires_tenor}}
+{{/index_family}}
+    }
+    return false;
+}
 {{/first_asset_class}}
 {{/oresmd_quote_types}}
 

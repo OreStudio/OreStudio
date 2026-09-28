@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
 #include "ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
 #include <boost/throw_exception.hpp>
@@ -41,7 +40,6 @@ namespace {
 using namespace ores::marketdata::domain;
 using ores::marketdata::core::oresmd_exception;
 using ores::marketdata::core::detail::is_currency_code;
-using ores::marketdata::core::detail::is_overnight;
 using ores::marketdata::core::detail::to_lower;
 using ores::marketdata::core::detail::to_upper;
 
@@ -356,7 +354,7 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
             id.vol.emplace();
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     }
-    if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
+    if (id.type == instrument_type::fixing && id.index && requires_tenor(*id.index) && !id.tenor)
         BOOST_THROW_EXCEPTION(oresmd_exception(
             std::format("oresmd://ir/... a term index ('{}') fixing requires a tenor.",
                         magic_enum::enum_name(*id.index))));

@@ -103,34 +103,65 @@ TEST_CASE("parse_ir_eur_estr_discount_fixing", tags) {
     REQUIRE(ir.role == curve_role::discount);
 }
 
-TEST_CASE("parse_ir_new_rfr_families_fixing_without_tenor", tags) {
-    // The 16 RFR/IBOR families the SQL CHECK allows beyond the original 6
-    // (synthetic_ir_curve_generation_configs_create.sql): all overnight-style, so a fixing
-    // without a tenor must parse. Previously the enum lacked them, so parse_enum threw
-    // "Unrecognised index value" and provisioning a party from realistic-2026 seed data failed.
-    const std::vector<std::pair<std::string, index_family>> new_families{
-        {"saron", index_family::saron},
-        {"aonia", index_family::aonia},
-        {"corra", index_family::corra},
-        {"honia", index_family::honia},
-        {"sora", index_family::sora},
-        {"swestr", index_family::swestr},
-        {"nowa", index_family::nowa},
-        {"kofr", index_family::kofr},
-        {"mibor", index_family::mibor},
-        {"zaronia", index_family::zaronia},
-        {"destr", index_family::destr},
-        {"polonia", index_family::polonia},
-        {"nzonia", index_family::nzonia},
-        {"shibor", index_family::shibor},
-        {"tiie", index_family::tiie},
-        {"taibor", index_family::taibor}};
-    for (const auto& [name, expected] : new_families) {
+TEST_CASE("every_index_family_parses_a_fixing_the_way_its_index_name_is_written", tags) {
+    // Generated from the Index family table of ir_quote_type.org, so a family
+    // added to the model is covered here without anyone editing this list.
+    //
+    // A family ORE writes bare parses without a tenor. A family whose index name
+    // always carries one is refused without it, and parses with it. The
+    // classification is a property of the index name and not of the
+    // curve-configuration CHECK, which answers an empty tenor for shibor, taibor
+    // and tiie while their names here are CNY-SHIBOR-3M, TWD-TAIBOR-3M and
+    // MXN-TIIE-28D.
+    const std::vector<std::pair<std::string, index_family>> overnight{
+        {"sofr", index_family::sofr},         {"estr", index_family::estr},
+        {"sonia", index_family::sonia},       {"tona", index_family::tona},
+        {"saron", index_family::saron},       {"aonia", index_family::aonia},
+        {"corra", index_family::corra},       {"honia", index_family::honia},
+        {"sora", index_family::sora},         {"swestr", index_family::swestr},
+        {"nowa", index_family::nowa},         {"kofr", index_family::kofr},
+        {"mibor", index_family::mibor},       {"zaronia", index_family::zaronia},
+        {"destr", index_family::destr},       {"polonia", index_family::polonia},
+        {"nzonia", index_family::nzonia},     {"ftiie", index_family::ftiie},
+        {"camara", index_family::camara},     {"czeonia", index_family::czeonia},
+        {"dkkois", index_family::dkkois},     {"eonia", index_family::eonia},
+        {"fedfunds", index_family::fedfunds}, {"sifma", index_family::sifma},
+        {"sior", index_family::sior},
+    };
+    REQUIRE_FALSE(overnight.empty());
+    for (const auto& [name, expected] : overnight) {
         const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&type=fixing"));
         const auto& ir = std::get<ir_market_data_identifier>(id);
         REQUIRE(ir.type == instrument_type::fixing);
         REQUIRE(ir.index == expected);
         REQUIRE_FALSE(ir.tenor.has_value());
+    }
+
+    const std::vector<std::pair<std::string, index_family>> term{
+        {"libor", index_family::libor},
+        {"euribor", index_family::euribor},
+        {"shibor", index_family::shibor},
+        {"tiie", index_family::tiie},
+        {"taibor", index_family::taibor},
+        {"bbsw", index_family::bbsw},
+        {"cibor", index_family::cibor},
+        {"cms", index_family::cms},
+        {"hibor", index_family::hibor},
+        {"nibor", index_family::nibor},
+        {"pribor", index_family::pribor},
+        {"repofix", index_family::repofix},
+        {"stibor", index_family::stibor},
+    };
+    REQUIRE_FALSE(term.empty());
+    for (const auto& [name, expected] : term) {
+        REQUIRE_THROWS_AS(
+            oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&type=fixing")),
+            oresmd_exception);
+        const auto id =
+            oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&tenor=3m&type=fixing"));
+        const auto& ir = std::get<ir_market_data_identifier>(id);
+        REQUIRE(ir.index == expected);
+        REQUIRE(ir.tenor.has_value());
     }
 }
 

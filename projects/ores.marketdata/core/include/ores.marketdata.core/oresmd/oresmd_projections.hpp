@@ -128,16 +128,20 @@ public:
      * back for a row that arrived as a fixing.
      *
      * Mirrors the parser's tenor rule: the two-segment form (ccy-family) is accepted
-     * only for overnight families, because a term family without a tenor could not have
-     * come from a forward projection and the parser rejects it. Malformed names -- a
-     * segment count other than two or three, an empty segment -- yield std::nullopt.
+     * only for a family ORE also writes bare, because a family whose index name always
+     * carries a tenor could not have come from a forward projection and the parser
+     * rejects such a fixing. The spelling a family was written under is carried on the
+     * identifier, so a name that arrived as ESTER projects back as ESTER. Malformed
+     * names -- a segment count other than two or three, an empty segment -- yield
+     * std::nullopt.
      *
-     * Covers the interest-rate index-name space the index_family enum declares, and
-     * nothing else. The corpus also carries inflation (UKRPI), equity (EQ-SP5), FX
-     * (FX-ECB-EUR-USD), power (POWER-ICE:PDQ-...) and credit (GENERIC-JuniorNote) index
-     * names, for which this returns std::nullopt: they are other asset classes, and no
-     * mapping exists for them yet. The analysis records that as the blocker standing in
-     * front of the identity cutover rather than as a limitation of this function.
+     * Covers the interest-rate index names the corpus carries, and nothing else: every
+     * one of them resolves. The corpus also carries inflation (UKRPI), equity (EQ-SP5),
+     * FX (FX-ECB-EUR-USD), commodity and power (COMM-NYMEX:CL-2024-12,
+     * POWER-ICE:PDQ-...) and security (BOND-ISIN:...) index names, for which this
+     * returns std::nullopt: they are other asset classes, and no mapping exists for them
+     * yet. The analysis records that as the blocker standing in front of the identity
+     * cutover rather than as a limitation of this function.
      */
     [[nodiscard]] static std::optional<domain::market_data_identifier>
     from_index_name(const std::string& index_name);

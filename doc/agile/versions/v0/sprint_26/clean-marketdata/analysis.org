@@ -1334,6 +1334,29 @@ disagreed with its own plan: it kept the ="SPOT"= sentinel, while both the story
 and the deletion task say the sentinel dies and a scalar series carries a null
 point. That repurposing is still to do.
 
+*Update, 2026-09-28 (task AB2922AA, commit 495dc8d2e3).* The interest-rate third
+of the gap is closed. The =index_family= enum gained the fifteen families the
+corpus uses and the two spelling aliases, and the tenor rule moved out of a
+hand-written header into the model: =from_index_name()= now names **all 57**
+distinct interest-rate index names and projects every one back to the name it
+arrived as, from 34 named and 28 round-tripped. The table above stands as the
+measurement at the revision that made PR 5 unstartable; the total named is now 57
+of 158.
+
+A corpus-driven test now walks the fixing payloads class by class and fails when a
+class that named names stops naming them, so the remaining classes are measured
+rather than described: inflation 7 names, equity 8, FX 7, commodity 25, power 48,
+security 2, =GENERIC= 4. It also asks whether the reader reads each payload at
+all, which found =CurveBuilding/Input/fixings_bondyieldshifted.csv=: the
+=fixingDataFile= of an example ORE runs, semicolon-separated, and unreadable here.
+That is fixed too (commit 6fa10a87f4), so the census covers all 66 payloads rather
+than 65.
+
+Two of the four =GENERIC= tokens are market-data keys that sit inside a fixings
+file rather than index names, and the reader reads them as fixings because that is
+the file they are in. Whether it should refuse a key that is not an index name is
+part of what remains.
+
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 
 *Scope.* Add =marketdata= to =component_registry.py= and run every gate:

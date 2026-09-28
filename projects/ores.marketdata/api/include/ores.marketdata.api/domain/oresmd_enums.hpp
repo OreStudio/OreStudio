@@ -95,10 +95,11 @@ enum class ir_quote_type {
  * @brief The `index` query key of an oresmd URI, IR-only: a fixed benchmark-family token,
  * not free text -- closes the gap-analysis's "index_name is free text" finding.
  *
- * The 23 values mirror the CHECK constraint on ores_synthetic_ir_curve_generation_configs_tbl
- * (synthetic_ir_curve_generation_configs_create.sql) exactly: libor and euribor are the only
- * term families (they require a tenor); all others are overnight-style families. See
- * oresmd_index_family_utils's is_overnight() for the tenor rule.
+ * The values mirror the family list the CHECK constraint on
+ * ores_synthetic_ir_curve_generation_configs_tbl
+ * (synthetic_ir_curve_generation_configs_create.sql) admits, and the two move
+ * together: a family this enum holds and that constraint does not is a family no
+ * synthetic curve can be configured for.
  */
 enum class index_family {
     libor,
@@ -123,8 +124,120 @@ enum class index_family {
     shibor,
     tiie,
     ftiie,
-    taibor
+    taibor,
+    bbsw,
+    cibor,
+    cms,
+    hibor,
+    nibor,
+    pribor,
+    repofix,
+    stibor,
+    camara,
+    czeonia,
+    dkkois,
+    eonia,
+    fedfunds,
+    sifma,
+    sior
 };
+
+/**
+ * @brief Whether every index name ORE writes for this family carries a tenor --
+ * USD-LIBOR-3M, where no USD-LIBOR exists -- rather than the family also being
+ * written bare, as USD-SOFR is.
+ *
+ * False does not forbid a tenor. The corpus writes both USD-SOFR and USD-SOFR-3M,
+ * as two different fixings, so a family this answers false for is written both
+ * ways and the identifier's own fields decide which name is emitted.
+ *
+ * Generated from the Index family table of ir_quote_type.org, which is where the
+ * rule is written and where the reason for each family's answer sits beside it.
+ * The switch is exhaustive and has no default, so a family added to the enum
+ * without being classified fails to compile: that is the only thing keeping the
+ * two from drifting apart.
+ */
+inline bool requires_tenor(index_family f) {
+    switch (f) {
+        case index_family::libor:
+            return true;
+        case index_family::euribor:
+            return true;
+        case index_family::sofr:
+            return false;
+        case index_family::estr:
+            return false;
+        case index_family::sonia:
+            return false;
+        case index_family::tona:
+            return false;
+        case index_family::saron:
+            return false;
+        case index_family::aonia:
+            return false;
+        case index_family::corra:
+            return false;
+        case index_family::honia:
+            return false;
+        case index_family::sora:
+            return false;
+        case index_family::swestr:
+            return false;
+        case index_family::nowa:
+            return false;
+        case index_family::kofr:
+            return false;
+        case index_family::mibor:
+            return false;
+        case index_family::zaronia:
+            return false;
+        case index_family::destr:
+            return false;
+        case index_family::polonia:
+            return false;
+        case index_family::nzonia:
+            return false;
+        case index_family::shibor:
+            return true;
+        case index_family::tiie:
+            return true;
+        case index_family::ftiie:
+            return false;
+        case index_family::taibor:
+            return true;
+        case index_family::bbsw:
+            return true;
+        case index_family::cibor:
+            return true;
+        case index_family::cms:
+            return true;
+        case index_family::hibor:
+            return true;
+        case index_family::nibor:
+            return true;
+        case index_family::pribor:
+            return true;
+        case index_family::repofix:
+            return true;
+        case index_family::stibor:
+            return true;
+        case index_family::camara:
+            return false;
+        case index_family::czeonia:
+            return false;
+        case index_family::dkkois:
+            return false;
+        case index_family::eonia:
+            return false;
+        case index_family::fedfunds:
+            return false;
+        case index_family::sifma:
+            return false;
+        case index_family::sior:
+            return false;
+    }
+    return false;
+}
 
 /**
  * @brief The `quote` query key for credit instruments — the ORE TYPE, independent of the

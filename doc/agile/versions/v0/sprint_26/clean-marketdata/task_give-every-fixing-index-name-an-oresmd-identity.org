@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/marketdata-fixing-identity
-#+pr:
+#+branch: feature/fixing-index-identities
+#+pr: 2336
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -28,9 +28,9 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The interest-rate third of the fixing key space is closed: 57 of 57 names resolve. |
+| Waiting on   | A decision on the FX source and on the power contract-hour shape. |
+| Next         | Take the FX-source reading to the owner as a worked example. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -56,14 +56,14 @@ shapes, and only the first is nameable today.
 | (unclassified) | 4 | =GENERIC-...= | 0 | see below |
 
 **The interest-rate 57 split two ways.** The ones whose family the enum holds
-are nameable; the rest are real benchmark families it does not: =AONIA=, =BBSW=,
+are nameable; 22 of the rest are real benchmark families it does not: =BBSW=,
 =CAMARA=, =REPOFIX=, =CZEONIA=, =PRIBOR=, =CIBOR=, =DKKOIS=, =CMS=, =EONIA=,
-=FedFunds=, =NIBOR=, =SIOR=, =STIBOR=, =SIFMA=, =HIBOR=. Two more are spelling
-mismatches rather than missing families: the corpus writes =AONIA= where the enum
-has =aonia=, and =TONAR= where it has =tona=. The identifier already carries
+=FedFunds=, =NIBOR=, =SIOR=, =STIBOR=, =SIFMA=, =HIBOR=. The twenty-third,
+=JPY-TONAR=, is the spelling ORE writes for =tona=. The identifier already carries
 =index_spelling= for exactly this -- "the spelling that arrived is carried beside
-the family so the key reads back as it came" -- so the spelling mismatches need
-an alias, and the missing families need adding.
+the family so the key reads back as it came" -- so a spelling needs an alias beside
+its family, and the missing families need adding. =AONIA= is neither: the family
+token is matched case-insensitively, so it has always resolved to =aonia=.
 
 **Two of the four =GENERIC= names are not fixings at all.** They are
 =GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C= and its sibling:
@@ -126,7 +126,19 @@ This settles the equity and commodity half of the gap. Still open, and separate:
 
 * Plan
 
-
+1. **Measure first.** Walk every fixing payload with the real fixing reader,
+   report the yield per index-name class, and pin the classes that name nothing.
+   The instrument landed with the interest-rate work rather than after it: the
+   branch this task descends from skipped three quarters of the distinct series
+   with a warning, and no test asked about the names it skipped.
+2. **Interest rates are data, not grammar.** The families and the spellings ORE
+   writes for them go in the Index family table of =ir_quote_type.org=. The tenor
+   rule moves into that table too, so a family cannot join the enum without being
+   classified, and the hand-written header that held a copy of the rule goes.
+3. **Then the grammar, one class at a time.** The FX source and the power
+   contract-hour shape each need a field or a shape the identifier does not have.
+   Each is a decision taken with a worked example against the corpus, and each
+   shrinks the pinned list by one class.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -144,9 +156,67 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Fixing payloads walked | 66 files, 158 distinct index names, 8 classes | =ores.marketdata.core.tests "[fixing]"= | =495dc8d2e3= |
+| Interest-rate names that name, before | 34 of 57 | same | =495dc8d2e3= |
+| Interest-rate names that name, after | 57 of 57 | same | =495dc8d2e3= |
+| Interest-rate names that round trip, after | 57 of 57 | same | =495dc8d2e3= |
+| Fixing payloads the reader refuses, before | 1: =CurveBuilding/Input/fixings_bondyieldshifted.csv= | same | =495dc8d2e3= |
+| Fixing payloads the reader refuses, after | 0 | same | =6fa10a87f4= |
+| =ores.marketdata.core= suite | 1393 assertions in 333 cases | =ores.marketdata.core.tests= | =6fa10a87f4= |
+| =ores.ore.core= suite | 429839 assertions in 552 cases | =ores.ore.core.tests= | =6fa10a87f4= |
+| codegen suite | 955 passed | =pytest projects/ores.codegen/tests= | =6fa10a87f4= |
+| Regeneration is idempotent | =git status= empty on a second run | =./projects/ores.codegen/codegen.sh generate --model projects/ores.marketdata/modeling/oresmd/model.org --address ores.cpp.oresmd= | =6fa10a87f4= |
+
+The test binaries are under
+=build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the
+=WARN= output of the =[fixing]= cases, printed on every run rather than asserted
+in prose.
 
 * Notes
+
+**The curve-configuration CHECK is a different rule from the index-name one.**
+=requires_tenor= says whether every index name ORE writes for a family carries a
+tenor, so that the family is never written bare. The CHECK constraint
+on =ores_synthetic_ir_curve_generation_configs_tbl= says which (family, tenor)
+pairs a synthetic curve may be configured with, and the two disagree for =shibor=,
+=taibor= and =tiie=: the CHECK wants =tenor = ''= for them, and the corpus writes
+=CNY-SHIBOR-3M=, =TWD-TAIBOR-3M= and =MXN-TIIE-28D=. The old =is_overnight()=
+kept both rules in one predicate, which is why the hand-kept family list in the
+parser tests called those three overnight and failed once the corpus was measured.
+
+**A family in the enum is not a family synthetic can configure.** The same list is
+written into
+=projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org=
+three times -- the membership CHECK, the tenor-combo CHECK and a =static_combo= --
+and it generates the SQL from there. None of the fifteen families this task adds
+is in it, so a synthetic curve cannot be configured for them. That is a decision
+for that component, not a consequence of this table.
+
+**=ftiie= is in the enum and in a migration but not in =create/=.**
+=git grep ftiie= finds it in the marketdata enum and in
+=synthetic_ir_curve_generation_configs_add_ftiie_migration.sql=, and finds nothing
+under =projects/ores.sql/create/= or in the synthetic model. A database created
+from =create/= therefore rejects a family a migrated one accepts. Recorded here
+because this task walked the same list; it belongs to ores.synthetic.
+
+**The refused fixing file was invisible to every count.** Its two names,
+=USD-FedFunds= and =USD-LIBOR-3M=, also appear in files the reader could read, so
+refusing it changed no total. Only a test that asks about the *file* can see it,
+which is why the coverage test asserts on refused payloads and not only on names.
+
+**The semicolon separator is read for market data too.** =tokenize()= is shared by
+=parse_fixings()= and =parse_market_data()=, and it normalises separators rather
+than detecting them, so adding =;= widens both readers. Measured: none of the 66
+market payloads the coverage test selects contains a semicolon, so the corpus
+measures the same either way; the widening is the design's own shape rather than a
+concession to one file, and it is the shape a producer's semicolon-delimited
+market file would need.
+
+**One line of the PlantUML diagram is not this task's.** The =index_family= enum
+in =ores.marketdata.puml= was missing =ftiie=, which the enum has held since an
+earlier change, and the file lists the enum, so the gap was closed while the table
+was being extended. Measured: the enum declares 38 values and the diagram now
+lists the same 38.
 
 * Test Scenarios
 
@@ -163,12 +233,57 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2336][#2336]] | [marketdata] Give every interest-rate fixing index name an identity |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Six added comments narrate what the code used to be rather than what it is | templates, tests, =market_data_parser.cpp= | Accepted | Fixed in =0d8b0bdc8a=; each states the present rule |
+| 2 | The first commit's subject is 82 characters, over the documented 72 | -- | Accepted | Rebuilt at 70 characters |
+| 3 | =record_index_spelling= and =record_index_name_spelling= are one shape with the comparison swapped | =oresmd_projections.cpp= | Declined | The two key spaces spell differently on purpose: an ORE key segment is case-folded, an index name is compared exactly. A shared helper needs a mode flag, which hides the difference rather than removing it |
+| 4 | =aliases= is a comma-joined cell split in the loader | =org_loader.py= | Declined | A second table for two aliases is more structure than the data holds |
+| 5 | =index_name_ir()= carried eleven lines of comment | =oresmd_projections.cpp= | Accepted | Trimmed to four in =0d8b0bdc8a= |
+| 6 | =is_fixing_payload= and =named_as_fixings= duplicate a predicate | =corpus_files.hpp=, =classification_series_classifier_tests.cpp= | Declined | They select different sets: a payload a reader feeds, against a census of the whole tree that includes ORE's own outputs. Both say which |
+| 7 | Untracked =.misspell-fixer.3*= byproducts are in the tree | -- | No action | None remain. The only =.misspell-fixer*= file is the tracked ignore file; the numbered ones are transient within a run |
+| 8 | "Five fixing index classes remain", and then lists seven | =task_clean_marketdata.org= | Accepted | Corrected to seven |
+| 9 | The interest-rate class is called "half" of the key space; it is 36% of the names | this task | Accepted | Both places say "third" |
+| 10 | Acceptance "a corpus-driven test whose allowlist is empty" is not met | =oresmd_fixing_coverage_tests.cpp= | Accepted | The task stays STARTED and the per-class list is the record; the analysis carries the update. Only interest rates are closed |
+| 11 | The import creating a series for every fixing row is neither delivered nor tested | =import_service.cpp= | Accepted | Recorded in Result: the import still stores the index name in the series qualifier and never calls =from_index_name=, which is the identity cutover's work |
+| 12 | The spec said the two spelling mismatches were AONIA and TONAR | this task | Accepted | Corrected: AONIA has always resolved, the family token being matched case-insensitively; the second spelling is ESTER |
+| 13 | The Notes paraphrase inverted =requires_tenor= | this task | Accepted | Corrected |
+| 14 | =;= widens the shared =tokenize()=, so market data reads it too | =market_data_parser.cpp= | Accepted | Measured: no selected market payload carries a semicolon, so the corpus measures the same. Recorded in Notes and in the pull request's limitations |
+| 15 | The PlantUML edit adds =ftiie=, which is not this task's | =ores.marketdata.puml= | Accepted | Disclosed in Notes. The file lists the enum, and the enum declares 38 values; leaving one out keeps the diagram wrong |
+| 16 | The commit message counted five lost round trips where there are six | -- | Accepted | Corrected in the rebuilt commit |
 
 * Result
+
+The interest-rate third of the fixing key space is closed. =from_index_name= names
+all 57 distinct interest-rate index names the corpus carries, and each projects
+back to the name it arrived as; before this work it named 34 and round-tripped 28.
+That is 57 of the corpus's 158 names, so most of the key space is still open, and
+none of it is wired: =import_service= still stores the index name in the series
+qualifier and never calls =from_index_name=, so the acceptance criterion about the
+import creating a series for every fixing row belongs to the identity cutover.
+
+Fifteen families joined the enum: BBSW, CIBOR, CMS, HIBOR, NIBOR, PRIBOR,
+REPOFIX, STIBOR, CAMARA, CZEONIA, DKKOIS, EONIA, FedFunds, SIFMA and SIOR. The
+two spellings ORE writes differently, ESTER for =estr= and TONAR for =tona=,
+became aliases in the model, and the identifier now carries the spelling a name
+arrived under so it reads back as it came. The tenor rule left the hand-written
+=oresmd_index_family_utils.hpp= for the Index family table, which the generated
+=requires_tenor()= and both suite's family lists are built from.
+
+A curve identifier drops the tenor of an overnight family, because the tenor
+belongs to the curve key; a fixing identifier keeps the tenor the index was
+published at, because =USD-SOFR= and =USD-SOFR-3M= are two series. =role= is what
+tells the two apart, and both readings are pinned in the projections tests.
+
+The new coverage test walks every fixing payload with the real reader and reports
+the table per class. It found a fixing file the reader refused:
+=CurveBuilding/Input/fixings_bondyieldshifted.csv= is semicolon-separated, is the
+=fixingDataFile= its example names, and is a file ORE reads. The reader now reads
+it, and every one of the 66 payloads is walked.
+
+Still open, each its own decision: inflation (7 names), equity (8), FX (7),
+commodity (25), power (48), security (2) and the four =GENERIC= tokens.

@@ -28,9 +28,9 @@ ores.marketdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | PRs 1 to 3 merged, and PR 4's first half as #2313. PR 4's second half is on =feature/clean-marketdata-pr4-export=: the verbatim key column, the ORE export path, and the file round trip through the database that proves it. |
-| Waiting on   | The fixing key space's oresmd mapping, before PR 5 can start. |
-| Next         | PR 5, the identity cutover, is blocked on a piece the six-PR plan does not have: the fixing key space has no oresmd mapping. =from_index_name()= names 24 of the 96 distinct index names in =fixings*.txt= (34 of 158 with =fixings*.csv=); the abandoned branch dropped the rest with a warning. The fixing key space must be mapped asset class by asset class first -- see the analysis. |
+| Now          | PRs 1 to 4 are merged, the last as #2321 and #2327. The fixing identity task has closed the interest-rate third of the fixing key space: 57 of 57 names resolve, from 34. |
+| Waiting on   | A decision on the FX source and on the power contract-hour shape, before PR 5 can start. |
+| Next         | Take the FX-source reading to the owner as a worked example (task AB2922AA). Seven fixing index classes remain: inflation 7 names, equity 8, FX 7, commodity 25, power 48, security 2, =GENERIC= 4. PR 5 is blocked until they are mapped, or the type is refused at the boundary. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -232,6 +232,7 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/2243][#2243]] | [marketdata] Regenerate, migrate the consumers, delete what generation supersedes |
 | [[https://github.com/OreStudio/OreStudio/pull/2313][#2313]] | [marketdata] Wire the import boundary through oresmd, and make its grammar honest |
 | [[https://github.com/OreStudio/OreStudio/pull/2321][#2321]] | [marketdata] Write the stored market data back out as ORE text |
+| [[https://github.com/OreStudio/OreStudio/pull/2327][#2327]] | [marketdata] Require a currency of a quote, not of a fixing |
 
 * Review
 

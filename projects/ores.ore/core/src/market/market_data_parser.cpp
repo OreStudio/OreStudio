@@ -113,15 +113,20 @@ line_tokens tokenize(std::string_view line) {
         return p == std::string_view::npos ? std::string_view{} : sv.substr(p);
     };
 
-    // Commas and whitespace both separate fields in ORE's market data: some
-    // files are comma-delimited throughout, some put a comma only after the
-    // date and a space before the value, and some use whitespace alone. The
+    // Commas, semicolons and whitespace all separate fields in ORE's market
+    // data: some files are comma-delimited throughout, some put a comma only
+    // after the date and a space before the value, some use whitespace alone, and
+    // the CurveBuilding examples write their fixing file with semicolons. The
     // separator is normalised rather than detected. Detecting it meant taking
     // the comma path only when a line held two commas or more, so a line with
     // exactly one fell through to the whitespace path, failed to yield three
     // tokens, and aborted its whole file.
+    //
+    // The CurveBuilding fixing files date their rows DD.MM.YY, which parse_date()
+    // reads, and separate them with semicolons, which this reads.
     std::string normalised(line);
     std::replace(normalised.begin(), normalised.end(), ',', ' ');
+    std::replace(normalised.begin(), normalised.end(), ';', ' ');
     line = skip_ws(normalised);
 
     // Three fields, whitespace-separated. The value is the remainder of the

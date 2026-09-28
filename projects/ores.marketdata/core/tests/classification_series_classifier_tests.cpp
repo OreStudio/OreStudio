@@ -159,14 +159,19 @@ const std::vector<corpus_file>& corpus_files() {
     return files;
 }
 
-/// A fixing payload is one the corpus names as fixings, because the name is
-/// the only thing that says which reader a file feeds. import_service never
-/// asks either reader to guess: market data and fixings arrive as two
-/// separately named payloads. Handing every file the market data reader
-/// rejects to the fixing reader instead would take the corpus's exposure
-/// reports for fixings, since parse_fixings checks the date and stores the
-/// two fields after it without reading them.
-bool is_fixing_payload(const std::string& path) {
+/// A file the corpus names as fixings, because the name is the only thing that
+/// says which reader a file feeds. import_service never asks either reader to
+/// guess: market data and fixings arrive as two separately named payloads.
+/// Handing every file the market data reader rejects to the fixing reader
+/// instead would take the corpus's exposure reports for fixings, since
+/// parse_fixings checks the date and stores the two fields after it without
+/// reading them.
+///
+/// This census covers every file in the tree, ORE's own expected outputs
+/// included, which is why it does not share corpus_files.hpp's
+/// is_fixing_payload(): that one selects the payloads a reader feeds, and a
+/// record of ORE's outputs is not an input.
+bool named_as_fixings(const std::string& path) {
     return std::filesystem::path(path).filename().string().rfind("fixings", 0) == 0;
 }
 
@@ -184,7 +189,7 @@ corpus_survey walk_with(const ores::ore::market::series_key_registry& registry) 
         }
 
         std::set<std::string> from_this_file;
-        if (is_fixing_payload(file.path)) {
+        if (named_as_fixings(file.path)) {
             // A fixing series is the one import_service builds for it, so the
             // census counts series and not file lines.
             std::istringstream fixings{file.content};

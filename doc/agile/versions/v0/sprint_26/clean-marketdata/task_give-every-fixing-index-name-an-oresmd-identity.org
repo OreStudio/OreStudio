@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/fx-fixing-source-identity
-#+pr: 2340
+#+branch: feature/power-fixing-identity
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -28,9 +28,9 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Two classes are closed: interest rates 57 of 57 and FX 7 of 7, so 64 of the corpus's 158 names resolve. |
-| Waiting on   | A decision on the power contract-hour shape, and then on the classes that need no new shape: inflation 7 names, equity 8, commodity 25, security 2 and the four =GENERIC= tokens. |
-| Next         | Take the power contract-hour shape to the owner as a worked example: =POWER-ICE:PDQ-2021-01-04-14400-18000= names an hourly contract, which is not a point on a curve. |
+| Now          | Two classes are closed: interest rates 57 of 57 and FX 7 of 7, so 64 of the corpus's 158 names resolve. The power shape is measured against ORE's own parser and put to the owner with a recommendation. |
+| Waiting on   | The owner's decision on the power class and the =delivery= field, and then on the classes that need no new shape: inflation 7 names, equity 8, commodity 25, security 2 and the four =GENERIC= tokens. |
+| Next         | On the decision, add =power_quote_type.org=, the two projection arms and the corpus-driven cases; then take the commodity delivery month, which shares the decision's shape. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -42,8 +42,10 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 * The index names, and what each class needs
 
 Measured over =external/ore/examples= (every =*fixing*.txt= and =*fixing*.csv=
-outside =ExpectedOutput=): **158 distinct index names**. They fall into six
-shapes, and only the first is nameable today.
+outside =ExpectedOutput=): **158 distinct index names**. They fall into seven shapes,
+and only the first is nameable today. =COMM-= and =POWER-= are one shape up to the
+prefix but two classes in the census below, because the prefix is what the class
+tag is: 25 and 48 names.
 
 | class | count | shape | nameable now | what it needs |
 |-------+-------+-------+--------------+---------------|
@@ -51,7 +53,8 @@ shapes, and only the first is nameable today.
 | inflation | 7 | a bare index code | 0 | the inflation class already models it |
 | equity | 8 | =EQ-<ticker-or-ric>= | 0 | a currency the name does not carry |
 | fx | 7 | =FX-<source>-<CCY1>-<CCY2>= | 0 | a source field |
-| commodity | 73 | =<COMM\|POWER>-<EXCHANGE>:<CONTRACT>-<month-or-date>[-<hours>]= | 0 | a currency, a contract shape |
+| commodity | 25 | =COMM-<EXCHANGE>:<CONTRACT>-<YYYY-MM>= | 0 | a currency, a delivery period |
+| power | 48 | =POWER-<EXCHANGE>:<CONTRACT>[-<YYYY-MM-DD>[-<SEC>-<SEC>[-DST]]]= | 0 | a delivery window, and the class |
 | security | 2 | =BOND-ISIN:<isin>[-<month>]= | 0 | the security class already models it |
 | (unclassified) | 4 | =GENERIC-...= | 0 | see below |
 
@@ -138,6 +141,132 @@ three decimal places and no more. The model brief carries the measured pair of
 figures. Canonicalising would put two values under one date, and nothing in the
 import inverts a value.
 
+* The power contract-hour shape, against ORE's own grammar
+
+The last grammar decision. =POWER-ICE:PDQ-2021-01-04-14400-18000= arrives as an
+index name, and ORE writes the grammar for that name down rather than leaving it to
+be inferred from the corpus.
+
+**ORE states the format.** =OREData/ored/utilities/indexparser.cpp= carries a parser
+of its own for this family, =parseIntradayPowerIndex()=, standing beside
+=parseCommodityIndex()= rather than inside it, and its failure message is the
+grammar:
+
+#+begin_src text
+Expected format: POWER-COMMNAME[-YYYY-MM-DD[-DELIVERYSTART-DELIVERYEND[-DST]]]
+#+end_src
+
+It builds a =QuantExt::IntradayPowerIndex=, a type of its own, and =parseIndex()=
+gives the power parser its own place in the dispatch order. The parser splits the
+remainder after =POWER-= on dashes and reads =tokens[0]= as the commodity name, so
+the name's boundary is the first dash and a power commodity name carries no dash --
+=ICE:PDQ= is whole. It then accepts the remainder only at three token counts: one
+(the commodity name alone, with no date), four (a name and a date, with no time), and
+six or seven (a name, a date, a start, an end, and an optional =DST=, matched
+case-insensitively). Every power name the corpus carries is the six-token form but
+for one four-token name, and no name has a shape the grammar does not admit.
+
+The two numbers are seconds from midnight, and the window they name is half-open:
+the corpus's windows are all 3600 seconds wide and tile a day without a gap.
+
+**The date is the delivery date.** Every power row carries the same date in the
+file's first column and in the name, so the power payload alone cannot say which the
+name's date is. Its sibling settles it: =COMM-NYMEX:CL-2025-04= is observed on
+2024-12-02, so a period in a name of this family is the *delivery* period. ORE's own
+types agree -- =IntradayPowerIndex= takes a =deliveryDate=, and the trade that
+consumes it, =IntradayPowerForwardData=, carries =DeliveryDate=, =DeliveryStart=
+and =DeliveryEnd= as three separate fields, the last two in seconds.
+
+**The window is not an hour.** The corpus samples 3600-second windows only, but the
+trade model carries =DeliveryStart= 2700 and =DeliveryEnd= 4500 for the forward it
+calls "0.45am to 1.15am". The coordinate is therefore a second-resolution window,
+and "the contract-hour shape" names the corpus's own sampling rather than a rule the
+model may hardcode.
+
+**What the corpus carries.** 48 distinct names, every one of them on =ICE:PDQ=:
+
+| shape                                     | names | example                                  | carried |
+|-------------------------------------------+-------+------------------------------------------+---------|
+| =POWER-COMMNAME=                          | 0 | =POWER-ICE:PDQ=                          | no |
+| =POWER-COMMNAME-YYYY-MM-DD=               | 1 | =POWER-ICE:PDQ-2021-01-04=               | yes |
+| =POWER-COMMNAME-YYYY-MM-DD-START-END=     | 47 | =POWER-ICE:PDQ-2021-01-04-14400-18000=   | yes |
+| =POWER-COMMNAME-YYYY-MM-DD-START-END-DST= | 0 | =POWER-ICE:PDQ-2021-01-04-14400-18000-DST= | no |
+
+The one date-only name is the whole-day contract for 2021-01-04, at 38.75 against
+25 to 38 for that day's 23 hourly windows. That day carries 24 rows and 2021-01-01
+to 2021-01-03 carry 8 each, so the corpus is not a complete tiling of a day and
+nothing may assume one window per hour of a delivery date.
+
+**The name is an index name and nothing else.** Every other class with an
+index-name prefix in the corpus also appears as a market quote key -- =FX/RATE= on
+1372 rows, =EQUITY/PRICE= on 105, =COMMODITY_FWD/PRICE= on 2803, =BOND/YIELD_SPREAD=
+on 92 -- so each of them has a quote key to project as well as a fixing key.
+=POWER= does not: the string occurs on the 48 fixing rows and nowhere else, and an
+intraday power price is quoted as =SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/UNIT=,
+which the =shape_profile= class already owns. So the index name is the only key this
+class has, and the class has no quote type at all.
+
+*** Worked example
+
+The four forms the grammar admits, and the identifier proposed for each:
+
+| ORE index name                            | proposed oresmd URI                                            |
+|-------------------------------------------+----------------------------------------------------------------|
+| =POWER-ICE:PDQ=                           | =oresmd://power/ice:pdq?type=fixing=                           |
+| =POWER-ICE:PDQ-2021-01-04=                | =oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04=       |
+| =POWER-ICE:PDQ-2021-01-04-14400-18000=    | =oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000= |
+| =POWER-ICE:PDQ-2021-01-04-14400-18000-DST= | =oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000-DST= |
+
+=to_index_name()= renders =POWER-=, the commodity code upper-cased, and the
+delivery with the same dashes the field arrived under; =from_index_name()= strips
+the prefix, takes the first dash-delimited token as the commodity code, and reads
+the tail by token count exactly as ORE does -- one token for no delivery, four for a
+date, six or seven for a date and a window -- refusing every other length. A date
+that is not the canonical =YYYY-MM-DD= is refused rather than reshaped, because a
+name that would not read back as it arrived is not an identity.
+
+*** Why the coordinate is a fixing field and not =point=
+
+=point= is defined as the coordinate a *quote or a vol* URI names, and the model's
+own =is_scalar()= already draws the line: a fixing whose coordinate is a field of its
+own is scalar -- =oresmd://ir/usd?type=fixing&index=libor&tenor=3m= is, and a case
+asserts it -- while an identifier that carries a =point= is not. The precedent for
+"the coordinate that says *which* index a fixing is" is therefore a dedicated field
+-- =tenor= for interest rates, =source= for FX -- and both leave the fixing scalar.
+The delivery window is not a per-observation coordinate either: every observation of
+=POWER-ICE:PDQ-2021-01-04-14400-18000= carries the same window, and it is the series
+that is specific to it.
+
+The sibling =shape_profile= class does put this same intraday coordinate -- a
+delivery date, a second of the day, a unit and a =DST= flag -- in =point=, but it
+does so for a *quote*, which is exactly the case =point= is for. One coordinate, two
+slots, because ORE itself splits them: the coordinate as a quote is
+=SHAPE_PROFILE/SHAPE_FACTOR/...=, and as an index it is =POWER-...=.
+
+One =delivery= field carries the tail whole, because the grammar's own nesting is
+already "a date, then optionally a window, then optionally =DST=, each level
+available only under the one before it", and one key keeps the query grammar small --
+the same reason credit folds its seniority and tenor into =point= and =shape_profile=
+folds four parts into it. Typed =delivery_date=, =delivery_start=, =delivery_end= and
+=dst= keys remain available if the coordinate should be queryable per component.
+
+*** Why =power= is its own class and not commodity
+
+They are the same shape up to the prefix -- =COMM-COMMNAME-YYYY-MM= and
+=POWER-COMMNAME-YYYY-MM-DD[-START-END]= -- so folding power into =commodity= is the
+obvious alternative, and the shared token argues for it: =ICE:PDQ= is a commodity
+code, and the daily-average curve the intraday power curve is built on is quoted as
+=COMMODITY_FWD/PRICE/ICE:PDQ/USD/<date>=.
+
+The prefix cannot be derived, and that is what decides it. ORE's power parser accepts
+a bare =POWER-ICE:PDQ=, and its commodity parser accepts a bare =COMM-ICE:PDQ=; under
+one class both would be the identifier =commodity/ice:pdq?type=fixing= with no
+coordinate, and one of the two names could not be written back. A discriminator field
+would be needed to tell them apart, and the URI's class tag is already that
+discriminator. So =power= joins =shape_profile= and =rating= as a class the corpus's
+own prefix names, and the =class_of()= census, which already counts power separately,
+stays true.
+
 * Plan
 
 1. **Measure first.** Walk every fixing payload with the real fixing reader,
@@ -187,6 +316,10 @@ task and name that file in the Command column.
 | =ores.marketdata.core= suite, after the FX work | 1472 assertions in 346 cases | =ores.marketdata.core.tests= | =fb3c5a4f31= |
 | codegen suite, after the FX work | 961 passed | =pytest projects/ores.codegen/tests= | =fb3c5a4f31= |
 | The two GBP-EUR directions | 122 shared dates; product 0.9997 median, 0.9964 worst | a walk of =external/ore/examples= pairing =FX-TR20H-EUR-GBP= with =FX-TR20H-GBP-EUR= | =fb3c5a4f31= |
+| Power index names the corpus carries | 48: 47 with a delivery window, 1 date-only, 0 =DST=, on one commodity code | a walk of =external/ore/examples/MarketRisk/Input/Intradaypower/fixings.txt= | =d3325300d5= |
+| Power index names ORE's grammar refuses | 0 of 48 | the same walk, reading the tail by token count as =parseIntradayPowerIndex()= does | =d3325300d5= |
+| Power windows that are one hour wide | 47 of 47, contiguous and half-open, 01:00 to 24:00 at the widest | the same walk | =d3325300d5= |
+| Commodity fixing rows whose period is not the observation month | 711 of 928 | a walk of =external/ore/examples/Products/Input/fixings.csv= | =d3325300d5= |
 
 The test binaries are under
 =build/output/linux-clang-debug-make/publish/bin/=. The per-class table is in the

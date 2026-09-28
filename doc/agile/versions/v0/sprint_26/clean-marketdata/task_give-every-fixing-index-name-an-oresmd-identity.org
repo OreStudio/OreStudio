@@ -28,9 +28,9 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Two classes are closed: interest rates 57 of 57 and FX 7 of 7, so 64 of the corpus's 158 names resolve. The power shape is measured against ORE's own parser and put to the owner with a recommendation. |
-| Waiting on   | The owner's decision on the power class and the =delivery= field, and then on the classes that need no new shape: inflation 7 names, equity 8, commodity 25, security 2 and the four =GENERIC= tokens. |
-| Next         | On the decision, add =power_quote_type.org=, the two projection arms and the corpus-driven cases; then take the commodity delivery month, which shares the decision's shape. |
+| Now          | Four classes are closed: interest rates 57 of 57, FX 7 of 7, commodity 25 of 25 and intraday power 48 of 48, so 137 of the corpus's 158 names resolve. The power class and the =delivery= field are implemented and the core suite is green. |
+| Waiting on   | The remaining classes that need no new shape: inflation 7 names, equity 8, security 2 and the four =GENERIC= tokens. |
+| Next         | Run the codegen suite, the drift check and the review, then raise the PR. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -317,6 +317,11 @@ task and name that file in the Command column.
 | codegen suite, after the FX work | 961 passed | =pytest projects/ores.codegen/tests= | =fb3c5a4f31= |
 | The two GBP-EUR directions | 122 shared dates; product 0.9997 median, 0.9964 worst | a walk of =external/ore/examples= pairing =FX-TR20H-EUR-GBP= with =FX-TR20H-GBP-EUR= | =fb3c5a4f31= |
 | Power index names the corpus carries | 48: 47 with a delivery window, 1 date-only, 0 =DST=, on one commodity code | a walk of =external/ore/examples/MarketRisk/Input/Intradaypower/fixings.txt= | =d3325300d5= |
+| Power names that name, after | 48 of 48, all round-tripped | =ores.marketdata.core.tests "[fixing]"= | =2a0d8afef6= |
+| Commodity names that name, after | 25 of 25, all round-tripped | same | =2a0d8afef6= |
+| Corpus names that name, after the power and commodity work | 137 of 158 (interest rates 57, power 48, commodity 25, FX 7) | same | =2a0d8afef6= |
+| =ores.marketdata.core= suite, after | 1556 assertions in 350 cases | =ores.marketdata.core.tests= | =2a0d8afef6= |
+| Instrument-key coverage, after | 485606 of 485606 keys, unchanged | =ores.marketdata.core.tests "[oresmd]"= | =2a0d8afef6= |
 | Power index names ORE's grammar refuses | 0 of 48 | the same walk, reading the tail by token count as =parseIntradayPowerIndex()= does | =d3325300d5= |
 | Power windows that are one hour wide | 47 of 47, contiguous and half-open, 01:00 to 24:00 at the widest | the same walk | =d3325300d5= |
 | Commodity fixing rows whose period is not the observation month | 711 of 928 | a walk of =external/ore/examples/Products/Input/fixings.csv= | =d3325300d5= |

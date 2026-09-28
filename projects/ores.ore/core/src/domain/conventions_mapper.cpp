@@ -999,6 +999,37 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    // Every category the document carries that this mapper does not model. A
+    // skip that is counted is a gap a caller can read; a skip that is silent is
+    // a document losing content and saying nothing.
+    const auto count_unmodelled = [&r](std::string_view name, std::size_t count) {
+        if (count != 0)
+            r.unmodelled.emplace(std::string(name), count);
+    };
+    count_unmodelled("Future", v.Future.size());
+    count_unmodelled("AverageOIS", v.AverageOIS.size());
+    count_unmodelled("TenorBasisSwap", v.TenorBasisSwap.size());
+    count_unmodelled("TenorBasisTwoSwap", v.TenorBasisTwoSwap.size());
+    count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
+    count_unmodelled("CrossCurrencyBasis", v.CrossCurrencyBasis.size());
+    count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
+    count_unmodelled("SwapIndex", v.SwapIndex.size());
+    count_unmodelled("InflationSwap", v.InflationSwap.size());
+    count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
+    count_unmodelled("CommodityForward", v.CommodityForward.size());
+    count_unmodelled("CommodityFuture", v.CommodityFuture.size());
+    count_unmodelled("FxOption", v.FxOption.size());
+    count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
+    count_unmodelled("ZeroInflationIndex", v.ZeroInflationIndex.size());
+    count_unmodelled("BondYield", v.BondYield.size());
+    count_unmodelled("IntradayPowerLoad", v.IntradayPowerLoad.size());
+
+    for (const auto& [name, count] : r.unmodelled) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Convention category '" << name << "' has " << count
+            << " element(s) and no entity to hold them; the document cannot round trip.";
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Finished mapping conventions. " << "Zero=" << r.zero.size()
                                << " Deposit=" << r.deposit.size() << " Swap=" << r.swap.size()
                                << " OIS=" << r.ois.size() << " FRA=" << r.fra.size()

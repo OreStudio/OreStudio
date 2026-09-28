@@ -23,9 +23,9 @@ A report definition's configuration is a set of strongly typed entities rather t
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The harness exists, and credit simulation and calendar adjustments round trip through it. The shared reference kinds are measured: currencies lose ORE's currency type, and conventions lose every category the mapper does not model. |
+| Now           | The harness exists, and credit simulation, calendar adjustments and currencies round trip through it. Conventions are scoped: fourteen categories the mapper does not model, and two field gaps on the ones it does. |
 | Waiting on    | Nothing.                               |
-| Next          | Give the refdata currency a home for ORE's currency type, then model the convention categories and fields the mapper skips. |
+| Next          | Map the convention fields the modelled categories already have, then model the fourteen categories the corpus uses, most used first. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -61,6 +61,8 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]] | BACKLOG | | | curveconfig.xml end to end: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes, with both mappers and a round trip over every file in the corpus. |
 | [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | DONE | 2026-09-28 | 2026-09-28 | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
 | [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | BACKLOG | | | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
+| [[id:8A0973B9-A595-45D1-97EC-E83ECCCF5B27][Round trip the conventions configuration]] | DONE | 2026-09-28 | 2026-09-29 | conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Fourteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip. |
+| [[id:A436B63F-778C-4EE5-BD9C-9BAB5133316A][Model the convention categories the mapper skips]] | BACKLOG | | | Fourteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip. |
 
 * Decisions
 
@@ -163,6 +165,20 @@ A report definition's configuration is a set of strongly typed entities rather t
   =creditsimulation*= finds the 14 credit simulation documents including
   =creditsimulation3_ts.xml=. Counting files named exactly after the kind
   undercounts, which the census already recorded.
+- **A mapper that skips must count what it skips.** =conventions_mapper= ignored
+  seventeen of the document's twenty-six categories and said nothing, so
+  seventy-two files passed a round-trip test that compared element counts while
+  losing content. It now fills =mapped_conventions::unmodelled= and warns per
+  category. A gap that is counted is one a caller can act on; a gap that is
+  silent is indistinguishable from a document with nothing in it.
+- **A normalisation the mapper performs on purpose is stated, not fixed.**
+  Conventions come back with =true= written as =True= and =A365= as =A365F=,
+  because the mapper collapses booleans and enum aliases to the canonical codes
+  the refdata columns hold. Two spellings of one boolean, and two aliases of one
+  day counter, carry the same information, so the kind's comparison states them.
+  The rule this story already holds to applies unchanged: what may be stated is
+  a difference that carries the same information, and a dropped element carries
+  less than the document did.
 
 * Out of scope
 

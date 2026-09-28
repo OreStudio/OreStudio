@@ -1,0 +1,123 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
+#include <fstream>
+#include <map>
+#include <sstream>
+#include <string>
+
+/**
+ * @file xml_roundtrip_conventions_tests.cpp
+ * @brief The conventions kind: what rounds trips, and what the mapper drops.
+ *
+ * The document carries twenty-six convention categories and the mapper models
+ * nine. The files that use only those nine round trip. The rest do not, because
+ * a category the mapper does not model is content the export cannot write, and
+ * the measurement below says which categories those are and how many files each
+ * one costs.
+ */
+
+namespace {
+
+const std::string tags("[ore][xml][roundtrip][conventions]");
+
+using namespace ores::ore::domain;
+
+std::filesystem::path corpus_root() {
+    return ores::testing::project_root::resolve("external/ore/examples");
+}
+
+std::string read(const std::filesystem::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    std::ostringstream buffer;
+    buffer << in.rdbuf();
+    return buffer.str();
+}
+
+conventions load(const std::filesystem::path& path) {
+    conventions document;
+    load_data(read(path), document);
+    return document;
+}
+
+ores::ore::xml::roundtrip_kind conventions_kind() {
+    return ores::ore::xml::make_roundtrip_kind<conventions, mapped_conventions>(
+        "conventions", "conventions", &conventions_mapper::map, &conventions_mapper::reverse,
+        conventions_difference);
+}
+
+}
+
+TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
+    const auto kind = conventions_kind();
+    int walked = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        // A file that carries a category the mapper does not model cannot round
+        // trip, and saying which those are is the measurement's job rather than
+        // this case's.
+        if (!conventions_mapper::map(load(path)).unmodelled.empty())
+            continue;
+
+        ++walked;
+        const auto outcome = kind.check(path);
+        INFO(outcome.detail);
+        CHECK(outcome.passed);
+    }
+
+    // Nine of the seventy-two at the commit this was written at. The count is
+    // asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 9);
+}
+
+// Hidden by default, and run on demand:
+//   ores.ore.core.tests "[.][conventions]"
+// The categories below are the ones the corpus needs, ordered by how many files
+// use them. Modelling starts at the top of that list.
+TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][measurement]") {
+    std::map<std::string, int> files_by_category;
+    std::map<std::string, int> elements_by_category;
+    int files = 0;
+    int files_with_unmodelled = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto mapped = conventions_mapper::map(load(path));
+        ++files;
+        if (!mapped.unmodelled.empty())
+            ++files_with_unmodelled;
+        for (const auto& [name, count] : mapped.unmodelled) {
+            ++files_by_category[name];
+            elements_by_category[name] += static_cast<int>(count);
+        }
+    }
+
+    WARN("conventions files=" + std::to_string(files) +
+         " with unmodelled categories=" + std::to_string(files_with_unmodelled));
+    for (const auto& [name, count] : files_by_category) {
+        WARN("  " + name + " in " + std::to_string(count) + " file(s), " +
+             std::to_string(elements_by_category[name]) + " element(s)");
+    }
+
+    CHECK(files == 72);
+}

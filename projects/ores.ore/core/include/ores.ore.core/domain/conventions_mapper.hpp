@@ -33,6 +33,8 @@
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
+#include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -57,6 +59,8 @@ struct mapped_fx {
     refdata::domain::currency_pair_convention convention;
     int spot_days = 0;
     std::vector<std::string> advance_calendars;
+
+    friend bool operator==(const mapped_fx&, const mapped_fx&) = default;
 };
 
 /**
@@ -77,6 +81,19 @@ struct mapped_conventions {
     std::vector<refdata::domain::overnight_index_convention> overnight_index;
     std::vector<mapped_fx> fx;
     std::vector<refdata::domain::cds_convention> cds;
+
+    /**
+     * @brief The categories the mapper read but does not model, and how many
+     * elements each held.
+     *
+     * A skipped category that is counted is a gap a caller can act on. A silent
+     * skip is a document that lost content and said nothing, which is how this
+     * kind went unmeasured for as long as it did: seventy-two files passed a
+     * round-trip test that only compared element counts.
+     */
+    std::map<std::string, std::size_t> unmodelled;
+
+    friend bool operator==(const mapped_conventions&, const mapped_conventions&) = default;
 };
 
 /**
@@ -134,6 +151,27 @@ public:
      */
     static domain::conventions reverse(const mapped_conventions& v);
 };
+
+/**
+ * @brief The first difference between an imported and an exported document, or
+ * empty when the two agree.
+ *
+ * Conventions are the case where a plain text comparison cannot work. The mapper
+ * collapses ORE's boolean spellings and its enum aliases to the canonical codes
+ * the refdata columns hold, so =true= comes back as =True= and =A365= as =A365F=
+ * on a document that lost nothing. Only this component can tell that
+ * normalisation from a loss, so the comparison lives beside the mappers.
+ *
+ * It refuses an element the export writes fewer times than the document did, and
+ * one the export invents, and then requires the same mapper to read the same
+ * conventions out of both documents.
+ *
+ * @param path Prefixed to the message, so a caller walking a corpus can say
+ * which file disagreed
+ */
+ORES_ORE_CORE_EXPORT std::string conventions_difference(const conventions& original,
+                                                        const conventions& exported,
+                                                        const std::string& path);
 
 }
 

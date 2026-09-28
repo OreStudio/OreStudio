@@ -20,28 +20,66 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { assessPassword } from './passwordPolicy.js';
+import type { PasswordPolicy } from '@ores/wire-protocol/browser';
+import { assessPassword, passwordRules } from './passwordPolicy.js';
+
+/**
+ * The assessment is the server's record, applied.
+ *
+ * The policy below is the one the deployment answers with, which is also the
+ * rule set the validator enforces; what is asserted here is that the screen
+ * assesses what the record says, and stops requiring a rule the record does
+ * not state.
+ */
+const policy: PasswordPolicy = {
+    success: true,
+    message: '',
+    minLength: 12,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireDigit: true,
+    requireSpecial: true,
+    specialChars: '!@#$%^&*()_+-=[]{}|;:,.<>?',
+};
+
+/** A policy that asks for length alone, as a deployment may. */
+const lengthOnly: PasswordPolicy = {
+    ...policy,
+    requireUppercase: false,
+    requireLowercase: false,
+    requireDigit: false,
+    requireSpecial: false,
+};
 
 describe('assessPassword', () => {
     it('rates an empty password zero', () => {
-        expect(assessPassword('')).toMatchObject({ valid: false, strength: 0 });
+        expect(assessPassword('', policy)).toMatchObject({ valid: false, strength: 0 });
     });
 
     it('names each rule a password misses', () => {
-        const result = assessPassword('abcdefghijkl');
+        const result = assessPassword('abcdefghijkl', policy);
         expect(result.valid).toBe(false);
         expect([...result.met].sort()).toEqual(['length', 'lower']);
     });
 
-    it('accepts a password that meets every server rule', () => {
-        expect(assessPassword('Abcdefgh123!')).toMatchObject({ valid: true, strength: 3 });
+    it('accepts a password that meets every rule the server stated', () => {
+        expect(assessPassword('Abcdefgh123!', policy)).toMatchObject({ valid: true, strength: 3 });
     });
 
     it('rates a longer valid password strongest', () => {
-        expect(assessPassword('Abcdefgh123!wxyz').strength).toBe(4);
+        expect(assessPassword('Abcdefgh123!wxyz', policy).strength).toBe(4);
     });
 
-    it('counts only the server special characters', () => {
-        expect(assessPassword('Abcdefgh1234~').met.has('special')).toBe(false);
+    it('counts only the special characters the server listed', () => {
+        expect(assessPassword('Abcdefgh1234~', policy).met.has('special')).toBe(false);
+    });
+
+    it('requires no rule the policy does not state', () => {
+        expect(assessPassword('abcdefghijkl', lengthOnly)).toMatchObject({ valid: true });
+        expect(passwordRules(lengthOnly)).toEqual(['length']);
+    });
+
+    it('states the rules in the order a screen lists them', () => {
+        expect(passwordRules(policy)).toEqual(['length', 'upper', 'lower', 'digit', 'special']);
     });
 });

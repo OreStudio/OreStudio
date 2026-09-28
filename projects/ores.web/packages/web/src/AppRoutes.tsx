@@ -19,19 +19,19 @@
  *
  */
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
+import { useJourneyServer } from './journeys/server.js';
+import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
-import { SetupPage } from './pages/SetupPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
-import { api } from './api/client.js';
-import type { CreateAdministratorRequest, SessionView } from '@ores/wire-protocol/browser';
+import type { SessionView } from '@ores/wire-protocol/browser';
 
 /**
  * The route table, and the bootstrap gate.
@@ -41,28 +41,35 @@ import type { CreateAdministratorRequest, SessionView } from '@ores/wire-protoco
  * page is the only page" is a rule, and a rule a test cannot call is a rule
  * nobody has checked. `ConnectedApp` below is the wiring.
  *
- * In bootstrap mode every path renders the setup page rather than redirecting to
- * a setup path. There is nothing else to be at, and a redirect leaves a URL
- * somebody can share that leads nowhere.
+ * A deployment in bootstrap mode has nobody to sign in as, so every path
+ * renders the first run journey rather than redirecting to a setup path: there
+ * is nothing else to be at, and a redirect leaves a URL somebody can share that
+ * leads nowhere. The journey outlives that mode — creating the administrator
+ * closes it — so the gate carries its second reason to stay: the journey has
+ * begun in this browser, and it stays on the rail until it finishes.
  */
 export interface AppRoutesProps {
     readonly gate: BootstrapState;
     readonly session: SessionState;
+    /** The first run journey, which only the wiring can reach the server for. */
+    readonly journey: ReactNode;
+    /** Whether that journey is running, which keeps the browser on its rail. */
+    readonly journeyInProgress: boolean;
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
     readonly onRetryBootstrap: () => void;
-    readonly onCreateAdministrator: (request: CreateAdministratorRequest) => Promise<void>;
 }
 
 export function AppRoutes({
     gate,
     session,
+    journey,
+    journeyInProgress,
     onSignIn,
     onChooseParty,
     onSignOut,
     onRetryBootstrap,
-    onCreateAdministrator,
 }: AppRoutesProps): ReactNode {
     const { t } = useTranslation();
 
@@ -85,17 +92,10 @@ export function AppRoutes({
         );
     }
 
-    if (gate.inBootstrapMode) {
+    if (gate.inBootstrapMode || journeyInProgress) {
         return (
             <Routes>
-                <Route
-                    path="*"
-                    element={
-                        <PublicShell>
-                            <SetupPage message={gate.message} onCreate={onCreateAdministrator} />
-                        </PublicShell>
-                    }
-                />
+                <Route path="*" element={<PublicShell>{journey}</PublicShell>} />
             </Routes>
         );
     }
@@ -134,11 +134,21 @@ export function AppRoutes({
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
+    const server = useJourneyServer();
+    const [journeyInProgress, setJourneyInProgress] = useState(false);
 
     return (
         <AppRoutes
             gate={gate}
             session={session}
+            journey={
+                <FirstRunJourney
+                    server={server}
+                    onStarted={() => setJourneyInProgress(true)}
+                    onFinished={() => setJourneyInProgress(false)}
+                />
+            }
+            journeyInProgress={journeyInProgress}
             onSignIn={signIn}
             onChooseParty={chooseParty}
             onSignOut={() => {
@@ -146,16 +156,6 @@ export function ConnectedApp(): ReactNode {
             }}
             onRetryBootstrap={() => {
                 void recheck();
-            }}
-            /*
-             * The server closes bootstrap mode when the administrator is
-             * created, so the gate asks again rather than assuming the new
-             * state: the flag is the server's to clear, and a screen that
-             * decided for itself would be a second answer.
-             */
-            onCreateAdministrator={async (request) => {
-                await api.createAdministrator(request);
-                await recheck();
             }}
         />
     );

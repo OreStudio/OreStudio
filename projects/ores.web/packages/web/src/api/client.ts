@@ -23,12 +23,23 @@ import {
     bootstrapStatusSchema,
     initialAdministratorSchema,
     loginResultSchema,
+    passwordPolicySchema,
+    provisionTenantResultSchema,
+    retryWorkflowInstanceResultSchema,
+    seedProfilesResponseSchema,
     sessionViewSchema,
+    workflowProgressSchema,
     type BootstrapStatus,
     type CreateAdministratorRequest,
     type InitialAdministrator,
     type LoginResult,
+    type PasswordPolicy,
+    type ProvisionTenantRequest,
+    type ProvisionTenantResult,
+    type RetryWorkflowInstanceResult,
+    type SeedProfileChoice,
     type SessionView,
+    type WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
 
@@ -107,6 +118,86 @@ export const api = {
 
     async logout(): Promise<void> {
         await request('/api/session', { method: 'DELETE' });
+    },
+
+    /**
+     * The rules a password must satisfy.
+     *
+     * Asked for before a session exists, because the screens that show the
+     * rules are the ones a person signs in on and the one that creates the
+     * first administrator. The answer is the server's own policy, so a screen
+     * that shows it shows the rules the server applies.
+     */
+    async passwordPolicy(): Promise<PasswordPolicy> {
+        return passwordPolicySchema.parse(await request('/api/password-policy', { method: 'GET' }));
+    },
+
+    /** The starting points a new tenant may be provisioned from. */
+    async seedProfiles(): Promise<readonly SeedProfileChoice[]> {
+        const payload = seedProfilesResponseSchema.parse(
+            await request('/api/seed-profiles', { method: 'GET' }),
+        );
+        return payload.profiles;
+    },
+
+    /**
+     * Creates a tenant from a starting point.
+     *
+     * The tenant and its administrator exist when this answers, and the run
+     * that provisions the rest is followed by the id it carries rather than by
+     * waiting here.
+     */
+    async provisionTenant(input: ProvisionTenantRequest): Promise<ProvisionTenantResult> {
+        const payload = await request('/api/provision-tenant', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+        return provisionTenantResultSchema.parse(payload);
+    },
+
+    /** The state of a provisioning run, as its journey's rail renders it. */
+    async provisionTenantProgress(instanceId: string): Promise<WorkflowProgress> {
+        return workflowProgressSchema.parse(
+            await request(`/api/provision-tenant/${encodeURIComponent(instanceId)}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /**
+     * Resumes a stopped run from the step that failed.
+     *
+     * A refusal is an answer rather than a failure: a run that has not stopped,
+     * or a step it does not hold, is something the person asking can see.
+     */
+    async retryProvisionTenant(
+        instanceId: string,
+        stepName = '',
+    ): Promise<RetryWorkflowInstanceResult> {
+        const payload = await request(
+            `/api/provision-tenant/${encodeURIComponent(instanceId)}/retry`,
+            {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ stepName }),
+            },
+        );
+        return retryWorkflowInstanceResultSchema.parse(payload);
+    },
+
+    /**
+     * Sets a password of the signed-in account's own.
+     *
+     * The current password travels with the request, because the account is
+     * changing a credential it holds rather than one an administrator issued.
+     */
+    async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+        await request('/api/account/password', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ currentPassword, newPassword }),
+        });
     },
 };
 

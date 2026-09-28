@@ -86,3 +86,20 @@ export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
 // reason: the BFF serialised them from these definitions.
 export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
 export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
+
+// The run a provision starts, which its journey follows by asking again, and
+// the retry that resumes it from the step that failed.
+export {
+    retryWorkflowInstanceResultSchema,
+    workflowProgressSchema,
+} from './operations.js';
+export type {
+    RetryWorkflowInstanceResult,
+    WorkflowProgress,
+    WorkflowStepSummary,
+} from './operations.js';
+
+// The rules a password must satisfy, read before anybody has signed in because
+// the sign-in screen is where they are shown.
+export { passwordPolicySchema } from './operations.js';
+export type { PasswordPolicy } from './operations.js';

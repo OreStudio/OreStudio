@@ -23,6 +23,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { PasswordInput } from '../ui/PasswordField.js';
+import type { SignInOutcome } from '../session/SessionProvider.js';
 import type { PartySummary } from '@ores/wire-protocol/browser';
 
 /**
@@ -42,10 +43,7 @@ export interface SignInPageProps {
     readonly onSignIn: (credentials: {
         readonly username: string;
         readonly password: string;
-    }) => Promise<
-        | { readonly outcome: 'active' }
-        | { readonly outcome: 'party-required'; readonly parties: readonly PartySummary[] }
-    >;
+    }) => Promise<SignInOutcome>;
     readonly onChooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
 }
 

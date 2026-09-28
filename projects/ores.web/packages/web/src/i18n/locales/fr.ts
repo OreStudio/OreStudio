@@ -439,19 +439,6 @@ const fr: SourceCatalogue = {
         session: '{username} · {tenant}',
     },
 
-    setup: {
-        title: 'Configurer cette installation',
-        bootstrapMode:
-            "Cette installation n'a pas encore de compte administrateur et fonctionne en mode amorçage. Personne ne peut se connecter tant qu'un administrateur n'existe pas.",
-        next: 'Créez le premier compte administrateur pour commencer.',
-        username: "Nom d'utilisateur de l'administrateur",
-        email: "Courriel de l'administrateur",
-        password: "Mot de passe de l'administrateur",
-        create: "Créer l'administrateur",
-        creating: 'Création...',
-        failed: "L'administrateur n'a pas été créé :",
-    },
-
     gate: {
         unreachable:
             "Le serveur n'a pas répondu : l'interface ne peut pas savoir si cette installation doit encore être configurée. {reason}",
@@ -461,6 +448,146 @@ const fr: SourceCatalogue = {
     journey: {
         steps: 'Étapes du parcours',
         actionFailed: "L'étape a échoué : {message}",
+        policyFailed:
+            "Les règles de mot de passe n'ont pas pu être lues, aucun mot de passe ne peut donc être défini ici. {message}",
+
+        welcome: {
+            title: 'Bienvenue dans ORE Studio',
+            lead: 'Cette installation est vide. Configurez-la en trois étapes.',
+            start: 'Commencer',
+            stage: {
+                admin: "Créer l'administrateur",
+                adminBody: 'Le compte propriétaire de cette installation.',
+                tenant: 'Créer le premier locataire',
+                tenantBody: 'Choisissez un point de départ et provisionnez le locataire.',
+                signIn: 'Se connecter',
+                signInBody: "L'administrateur du locataire définit son propre mot de passe.",
+            },
+        },
+
+        admin: {
+            title: "Créer l'administrateur",
+            lead: "Cette installation n'a aucun administrateur et personne ne peut encore se connecter.",
+            bootstrap:
+                "L'administrateur est propriétaire de l'installation. Le déploiement quitte le mode amorçage dès que ce compte existe.",
+            username: "Nom d'utilisateur de l'administrateur",
+            email: "Courriel de l'administrateur",
+            password: "Mot de passe de l'administrateur",
+            create: "Créer l'administrateur",
+            partyChoice:
+                "L'administrateur travaille dans plusieurs entités. Connectez-vous et choisissez-en une d'abord.",
+        },
+
+        profile: {
+            title: 'Choisir un point de départ',
+            lead: "Un point de départ est un profil détenu par le serveur. Il indique les paramètres, les étapes et le locataire qu'il crée.",
+            counts: '{settings} paramètres · {steps} étapes',
+        },
+
+        details: {
+            title: 'Décrire le locataire',
+            lead: 'Nommez le locataire et créez son administrateur.',
+            tenant: 'Locataire',
+            name: 'Nom',
+            code: 'Code',
+            codeHint: "Court et unique. Il nomme le locataire dans un nom d'utilisateur.",
+            hostname: "Nom d'hôte",
+            settings: '{profile} paramètres',
+            administrator: 'Administrateur du locataire',
+            username: "Nom d'utilisateur",
+            email: 'Courriel',
+            useMyPassword: 'Utiliser mon mot de passe',
+            adminPassword: "Mot de passe de l'administrateur",
+            passwordForced: 'Il devra le changer à la première connexion.',
+            standard: '{profile} utilise ses paramètres standard.',
+            changeSettings: 'Modifier les paramètres',
+            noCreatingPassword:
+                "L'administrateur qui crée le locataire doit d'abord définir un mot de passe.",
+            rows: {
+                tenant: 'Locataire',
+                hostname: "Nom d'hôte",
+                administrator: 'Administrateur',
+                password: 'Mot de passe',
+            },
+            passwordMine: 'Identique au mien',
+            passwordTyped: 'Défini ici',
+        },
+
+        review: {
+            title: 'Vérification',
+            lead: "Rien n'est créé tant que vous n'avez pas confirmé.",
+            startingPoint: 'Point de départ',
+            tenant: 'Locataire',
+            hostname: "Nom d'hôte",
+            administrator: 'Administrateur',
+            password: 'Mot de passe',
+            passwordMine: 'Le même que le vôtre',
+            passwordSet: 'Celui que vous avez saisi',
+            steps: 'La création du locataire exécute {steps} étapes.',
+            forcedChange: '{principal} définit son propre mot de passe à la première connexion.',
+            noPassword: "L'administrateur du locataire n'a pas encore de mot de passe.",
+            create: 'Créer le locataire',
+            noRun: "Le serveur a créé le locataire mais n'a désigné aucune exécution à suivre.",
+        },
+
+        provisioning: {
+            title: 'Provisionnement',
+            lead: 'Cela s’exécute sur le serveur. Vous pouvez quitter cette page et revenir.',
+            state: "L'exécution est {state}.",
+            readFailed: "La progression n'a pas pu être lue. {message}",
+            retry: "Reprendre à l'étape échouée",
+            retryKeeps: 'Les étapes terminées sont conservées.',
+            retrying: "L'exécution a repris à {step}.",
+        },
+
+        runStatus: {
+            pending: 'en attente de démarrage',
+            in_progress: 'en cours',
+            completed: 'terminée',
+            failed: 'arrêtée sur une étape échouée',
+            compensating: 'annulation en cours',
+            compensated: 'annulée',
+        },
+
+        handOff: {
+            title: 'Passation',
+            lead: 'Le locataire est prêt. Son administrateur se connecte ensuite.',
+            administrator: 'Son administrateur est {principal}.',
+            continue: "Continuer en tant qu'administrateur du locataire",
+            continueHint: 'Connectez-vous en tant que {principal} maintenant.',
+            elsewhere: 'Passer la main à quelqu’un d’autre',
+            elsewhereHint:
+                "Déconnectez-vous et transmettez le nom d'utilisateur et le mot de passe.",
+            elsewhereHintForced:
+                "Déconnectez-vous et transmettez le nom d'utilisateur. La personne définit son propre mot de passe à la première connexion.",
+        },
+
+        signIn: {
+            title: 'Première connexion',
+            lead: "L'administrateur du locataire se connecte pour la première fois.",
+            username: "Nom d'utilisateur",
+            password: 'Mot de passe',
+            submit: 'Se connecter',
+            submitting: 'Connexion...',
+            choosePartyHint: "Choisissez l'entité dans laquelle travailler.",
+            done: 'Connecté en tant que {principal}.',
+        },
+
+        change: {
+            required: 'Ce compte définit son propre mot de passe avant de continuer.',
+            new: 'Nouveau mot de passe',
+            submit: 'Définir le mot de passe',
+            submitting: 'Définition...',
+            done: 'Votre mot de passe est défini et vous êtes connecté en tant que {principal}.',
+        },
+
+        ready: {
+            title: 'Prêt',
+            lead: 'Cette installation est configurée.',
+            done: "L'installation est prête et {principal} est connecté.",
+            next: 'Rendez-vous à l’accueil pour travailler dans le locataire. Un autre locataire est un parcours distinct.',
+            home: "Aller à l'accueil",
+        },
     },
 
     common: {
@@ -471,6 +598,7 @@ const fr: SourceCatalogue = {
         revert: 'Rétablir',
         apply: 'Appliquer',
         back: 'Retour',
+        continue: 'Continuer',
     },
 };
 

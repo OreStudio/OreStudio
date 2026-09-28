@@ -30,12 +30,8 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Field, Input, cx } from './Primitives.js';
-import {
-    PASSWORD_RULES,
-    PASSWORD_SPECIAL_CHARS,
-    MIN_PASSWORD_LENGTH,
-    assessPassword,
-} from './passwordPolicy.js';
+import { assessPassword, passwordRules } from './passwordPolicy.js';
+import type { PasswordPolicy } from '@ores/wire-protocol/browser';
 
 /**
  * A password input with a show/hide toggle. Every password in the app uses it,
@@ -72,13 +68,18 @@ const STRENGTH_TONE = ['bg-line', 'bg-down', 'bg-warn', 'bg-up', 'bg-up'] as con
  * Choosing a new password: the policy's rules ticked off while typing, a
  * strength meter, and a confirmation that must match. `onChange` reports the
  * password and whether it may be submitted, which needs both.
+ *
+ * The policy is the server's record, passed in rather than declared here, so
+ * the rules a screen shows are the rules that deployment enforces.
  */
 export function NewPasswordField({
+    policy,
     label,
     hint,
     value,
     onChange,
 }: {
+    readonly policy: PasswordPolicy;
     readonly label?: string;
     readonly hint?: string;
     readonly value: string;
@@ -87,11 +88,11 @@ export function NewPasswordField({
     const { t } = useTranslation();
     const [confirm, setConfirm] = useState('');
     const rulesId = useId();
-    const assessment = assessPassword(value);
+    const assessment = assessPassword(value, policy);
     const mismatch = confirm.length > 0 && confirm !== value;
 
     const report = (password: string, confirmation: string): void =>
-        onChange(password, assessPassword(password).valid && password === confirmation);
+        onChange(password, assessPassword(password, policy).valid && password === confirmation);
 
     return (
         <div className="space-y-3">
@@ -124,14 +125,14 @@ export function NewPasswordField({
                     </span>
                 </div>
                 <ul className="mt-2 grid gap-x-4 gap-y-0.5 text-xs sm:grid-cols-2">
-                    {PASSWORD_RULES.map((rule) => {
+                    {passwordRules(policy).map((rule) => {
                         const met = assessment.met.has(rule);
                         return (
                             <li key={rule} className={met ? 'text-up' : 'text-ink-faint'}>
                                 <span aria-hidden>{met ? '✓' : '○'}</span>{' '}
                                 {t(`password.rule.${rule}`, {
-                                    min: MIN_PASSWORD_LENGTH,
-                                    chars: PASSWORD_SPECIAL_CHARS,
+                                    min: policy.minLength,
+                                    chars: policy.specialChars,
                                 })}
                                 <span className="sr-only">
                                     {met ? t('password.ruleMet') : t('password.ruleNotMet')}

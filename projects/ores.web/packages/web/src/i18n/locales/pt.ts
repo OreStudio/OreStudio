@@ -443,19 +443,6 @@ const pt: SourceCatalogue = {
         session: '{username} · {tenant}',
     },
 
-    setup: {
-        title: 'Configurar esta instalação',
-        bootstrapMode:
-            'Esta instalação ainda não tem uma conta de administrador e está em modo de arranque. Ninguém pode iniciar sessão enquanto não existir um administrador.',
-        next: 'Crie a primeira conta de administrador para começar.',
-        username: 'Nome de utilizador do administrador',
-        email: 'Email do administrador',
-        password: 'Palavra-passe do administrador',
-        create: 'Criar administrador',
-        creating: 'A criar...',
-        failed: 'O administrador não foi criado:',
-    },
-
     gate: {
         unreachable:
             'O servidor não respondeu, por isso a interface não sabe se esta instalação ainda precisa de ser configurada. {reason}',
@@ -465,6 +452,146 @@ const pt: SourceCatalogue = {
     journey: {
         steps: 'Passos do percurso',
         actionFailed: 'O passo falhou: {message}',
+        policyFailed:
+            'Não foi possível ler as regras da palavra-passe, por isso não é possível definir aqui nenhuma. {message}',
+
+        welcome: {
+            title: 'Bem-vindo ao ORE Studio',
+            lead: 'Esta instalação está vazia. Configure-a em três fases.',
+            start: 'Começar',
+            stage: {
+                admin: 'Criar o administrador',
+                adminBody: 'A conta proprietária desta instalação.',
+                tenant: 'Criar o primeiro inquilino',
+                tenantBody: 'Escolha um ponto de partida e aprovisione o inquilino.',
+                signIn: 'Iniciar sessão',
+                signInBody: 'O administrador do inquilino define a sua própria palavra-passe.',
+            },
+        },
+
+        admin: {
+            title: 'Criar o administrador',
+            lead: 'Esta instalação não tem administrador e ninguém pode iniciar sessão ainda.',
+            bootstrap:
+                'O administrador é proprietário da instalação. A implementação sai do modo de arranque quando esta conta existir.',
+            username: 'Nome de utilizador do administrador',
+            email: 'Email do administrador',
+            password: 'Palavra-passe do administrador',
+            create: 'Criar administrador',
+            partyChoice:
+                'O administrador trabalha em mais do que uma entidade. Inicie sessão e escolha uma primeiro.',
+        },
+
+        profile: {
+            title: 'Escolher um ponto de partida',
+            lead: 'Um ponto de partida é um perfil que o servidor guarda. Indica as definições, os passos e o inquilino que cria.',
+            counts: '{settings} definições · {steps} passos',
+        },
+
+        details: {
+            title: 'Descrever o inquilino',
+            lead: 'Dê um nome ao inquilino e crie o seu administrador.',
+            tenant: 'Inquilino',
+            name: 'Nome',
+            code: 'Código',
+            codeHint: 'Curto e único. Dá nome ao inquilino num nome de utilizador.',
+            hostname: 'Nome do anfitrião',
+            settings: '{profile} definições',
+            administrator: 'Administrador do inquilino',
+            username: 'Nome de utilizador',
+            email: 'Email',
+            useMyPassword: 'Usar a minha palavra-passe',
+            adminPassword: 'Palavra-passe do administrador',
+            passwordForced: 'Terá de a alterar no primeiro início de sessão.',
+            standard: 'O {profile} usa as suas definições padrão.',
+            changeSettings: 'Alterar definições',
+            noCreatingPassword:
+                'O administrador que cria o inquilino tem de definir primeiro uma palavra-passe.',
+            rows: {
+                tenant: 'Inquilino',
+                hostname: 'Nome do anfitrião',
+                administrator: 'Administrador',
+                password: 'Palavra-passe',
+            },
+            passwordMine: 'Igual à minha',
+            passwordTyped: 'Definida aqui',
+        },
+
+        review: {
+            title: 'Revisão',
+            lead: 'Nada é criado antes de confirmar.',
+            startingPoint: 'Ponto de partida',
+            tenant: 'Inquilino',
+            hostname: 'Nome do anfitrião',
+            administrator: 'Administrador',
+            password: 'Palavra-passe',
+            passwordMine: 'A mesma que a sua',
+            passwordSet: 'A que introduziu',
+            steps: 'A criação do inquilino executa {steps} passos.',
+            forcedChange:
+                '{principal} define a sua própria palavra-passe no primeiro início de sessão.',
+            noPassword: 'O administrador do inquilino ainda não tem palavra-passe.',
+            create: 'Criar inquilino',
+            noRun: 'O servidor criou o inquilino mas não indicou nenhuma execução a seguir.',
+        },
+
+        provisioning: {
+            title: 'Aprovisionamento',
+            lead: 'Isto corre no servidor. Pode sair desta página e voltar.',
+            state: 'A execução está {state}.',
+            readFailed: 'Não foi possível ler o progresso. {message}',
+            retry: 'Retomar a partir do passo falhado',
+            retryKeeps: 'Os passos concluídos são mantidos.',
+            retrying: 'A execução retomou em {step}.',
+        },
+
+        runStatus: {
+            pending: 'à espera de começar',
+            in_progress: 'em execução',
+            completed: 'concluída',
+            failed: 'parada num passo falhado',
+            compensating: 'a reverter',
+            compensated: 'revertida',
+        },
+
+        handOff: {
+            title: 'Passagem',
+            lead: 'O inquilino está pronto. O seu administrador inicia sessão a seguir.',
+            administrator: 'O seu administrador é {principal}.',
+            continue: 'Continuar como administrador do inquilino',
+            continueHint: 'Inicie sessão como {principal} agora.',
+            elsewhere: 'Passar a vez a outra pessoa',
+            elsewhereHint: 'Termine a sessão e entregue o nome de utilizador e a palavra-passe.',
+            elsewhereHintForced:
+                'Termine a sessão e entregue o nome de utilizador. A pessoa define a sua própria palavra-passe no primeiro início de sessão.',
+        },
+
+        signIn: {
+            title: 'Primeiro início de sessão',
+            lead: 'O administrador do inquilino inicia sessão pela primeira vez.',
+            username: 'Nome de utilizador',
+            password: 'Palavra-passe',
+            submit: 'Iniciar sessão',
+            submitting: 'A iniciar sessão...',
+            choosePartyHint: 'Escolha a entidade em que quer trabalhar.',
+            done: 'Sessão iniciada como {principal}.',
+        },
+
+        change: {
+            required: 'Esta conta define a sua própria palavra-passe antes de continuar.',
+            new: 'Nova palavra-passe',
+            submit: 'Definir palavra-passe',
+            submitting: 'A definir...',
+            done: 'A sua palavra-passe está definida e tem a sessão iniciada como {principal}.',
+        },
+
+        ready: {
+            title: 'Pronto',
+            lead: 'Esta instalação está configurada.',
+            done: 'A instalação está pronta e {principal} tem a sessão iniciada.',
+            next: 'Vá para o início para trabalhar no inquilino. Outro inquilino é um percurso separado.',
+            home: 'Ir para o início',
+        },
     },
 
     common: {
@@ -475,6 +602,7 @@ const pt: SourceCatalogue = {
         revert: 'Reverter',
         apply: 'Aplicar',
         back: 'Voltar',
+        continue: 'Continuar',
     },
 };
 

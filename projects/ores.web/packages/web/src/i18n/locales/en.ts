@@ -441,19 +441,6 @@ export const en: SourceCatalogue = {
         session: '{username} · {tenant}',
     },
 
-    setup: {
-        title: 'Set up this installation',
-        bootstrapMode:
-            'This installation does not have an administrator account yet and is running in bootstrap mode. No one can sign in until an administrator exists.',
-        next: 'Create the first administrator account to begin.',
-        username: 'Administrator username',
-        email: 'Administrator email',
-        password: 'Administrator password',
-        create: 'Create administrator',
-        creating: 'Creating...',
-        failed: 'The administrator was not created:',
-    },
-
     gate: {
         unreachable:
             'The server did not answer, so the interface cannot tell whether this installation still needs setting up. {reason}',
@@ -463,6 +450,145 @@ export const en: SourceCatalogue = {
     journey: {
         steps: 'Journey steps',
         actionFailed: 'The step failed: {message}',
+        policyFailed:
+            'The password rules could not be read, so no password can be set here. {message}',
+
+        welcome: {
+            title: 'Welcome to ORE Studio',
+            lead: 'This installation is empty. Set it up in three stages.',
+            start: 'Get started',
+            stage: {
+                admin: 'Create the administrator',
+                adminBody: 'The account that owns this installation.',
+                tenant: 'Create the first tenant',
+                tenantBody: 'Choose a starting point and provision the tenant.',
+                signIn: 'Sign in',
+                signInBody: 'The tenant administrator sets a password of their own.',
+            },
+        },
+
+        admin: {
+            title: 'Create the administrator',
+            lead: 'This installation has no administrator, and nobody can sign in yet.',
+            bootstrap:
+                'The administrator owns the installation. The deployment stops being in bootstrap mode when this account exists.',
+            username: 'Administrator username',
+            email: 'Administrator email',
+            password: 'Administrator password',
+            create: 'Create administrator',
+            partyChoice:
+                'The administrator works in more than one party. Sign in and choose one first.',
+        },
+
+        profile: {
+            title: 'Choose a starting point',
+            lead: 'A starting point is a profile the server holds. It states the settings, the steps and the tenant it creates.',
+            counts: '{settings} settings · {steps} steps',
+        },
+
+        details: {
+            title: 'Describe the tenant',
+            lead: 'Name the tenant and create its administrator.',
+            tenant: 'Tenant',
+            name: 'Name',
+            code: 'Code',
+            codeHint: 'Short and unique. It names the tenant in a username.',
+            hostname: 'Hostname',
+            settings: '{profile} settings',
+            administrator: 'Tenant administrator',
+            username: 'Username',
+            email: 'Email',
+            useMyPassword: 'Use my password',
+            adminPassword: 'Administrator password',
+            passwordForced: 'They must change it at first sign-in.',
+            standard: '{profile} uses its standard settings.',
+            changeSettings: 'Change settings',
+            noCreatingPassword:
+                'The administrator who creates the tenant must set a password first.',
+            rows: {
+                tenant: 'Tenant',
+                hostname: 'Hostname',
+                administrator: 'Administrator',
+                password: 'Password',
+            },
+            passwordMine: 'Same as mine',
+            passwordTyped: 'Set here',
+        },
+
+        review: {
+            title: 'Review',
+            lead: 'Nothing is created until you confirm.',
+            startingPoint: 'Starting point',
+            tenant: 'Tenant',
+            hostname: 'Hostname',
+            administrator: 'Administrator',
+            password: 'Password',
+            passwordMine: 'The same as yours',
+            passwordSet: 'The one you typed',
+            steps: 'Creating the tenant runs {steps} steps.',
+            forcedChange: '{principal} sets a password of their own at first sign-in.',
+            noPassword: 'The tenant administrator has no password yet.',
+            create: 'Create tenant',
+            noRun: 'The server created the tenant but named no run to follow.',
+        },
+
+        provisioning: {
+            title: 'Provisioning',
+            lead: 'This runs on the server. You can leave this page and come back.',
+            state: 'The run is {state}.',
+            readFailed: 'The progress could not be read. {message}',
+            retry: 'Retry from the failed step',
+            retryKeeps: 'The steps that completed are kept.',
+            retrying: 'The run resumed at {step}.',
+        },
+
+        runStatus: {
+            pending: 'waiting to start',
+            in_progress: 'running',
+            completed: 'complete',
+            failed: 'stopped on a failed step',
+            compensating: 'rolling back',
+            compensated: 'rolled back',
+        },
+
+        handOff: {
+            title: 'Hand off',
+            lead: 'The tenant is ready. Its administrator signs in next.',
+            administrator: 'Its administrator is {principal}.',
+            continue: 'Continue as tenant admin',
+            continueHint: 'Sign in as {principal} now.',
+            elsewhere: 'Hand off to someone else',
+            elsewhereHint: 'Sign out and pass the username and the password on.',
+            elsewhereHintForced:
+                'Sign out and pass the username on. They set their own password at first sign-in.',
+        },
+
+        signIn: {
+            title: 'First sign-in',
+            lead: 'The tenant administrator signs in for the first time.',
+            username: 'Username',
+            password: 'Password',
+            submit: 'Sign in',
+            submitting: 'Signing in...',
+            choosePartyHint: 'Choose the party to work in.',
+            done: 'Signed in as {principal}.',
+        },
+
+        change: {
+            required: 'This account sets a password of its own before it goes on.',
+            new: 'New password',
+            submit: 'Set password',
+            submitting: 'Setting...',
+            done: 'Your password is set, and you are signed in as {principal}.',
+        },
+
+        ready: {
+            title: 'Ready',
+            lead: 'This installation is set up.',
+            done: 'The installation is ready, and {principal} is signed in.',
+            next: 'Go home to work in the tenant. Another tenant is a separate journey.',
+            home: 'Go home',
+        },
     },
 
     common: {
@@ -473,6 +599,7 @@ export const en: SourceCatalogue = {
         revert: 'Revert',
         apply: 'Apply',
         back: 'Back',
+        continue: 'Continue',
     },
 };
 

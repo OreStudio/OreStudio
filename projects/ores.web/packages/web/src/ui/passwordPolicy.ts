@@ -19,26 +19,43 @@
  *
  */
 
+import type { PasswordPolicy } from '@ores/wire-protocol/browser';
+
 /**
- * The password policy, as the server enforces it.
+ * The password policy, assessed against the record the server answered with.
  *
- * Mirrors ores.security's password_validator: the server is the authority and
- * rejects a password that breaks a rule; this copy lets a person see the rules
- * while typing instead of after submitting. A change to the policy is a change
- * to both.
+ * The rules live in ores.security's validator and reach a screen only through
+ * the policy read, so nothing here is a copy of them: a rule the server changes
+ * changes what this assesses, and a rule the server does not state is not shown
+ * and not required. The server still refuses a password that breaks a rule; this
+ * only says so while the person types instead of after they submit.
  */
-export const MIN_PASSWORD_LENGTH = 12;
-export const PASSWORD_SPECIAL_CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
 export type PasswordRule = 'length' | 'upper' | 'lower' | 'digit' | 'special';
 
-export const PASSWORD_RULES: readonly PasswordRule[] = [
-    'length',
-    'upper',
-    'lower',
-    'digit',
-    'special',
-];
+/**
+ * The rules a policy declares, in the order a screen lists them.
+ *
+ * A rule the policy does not require is absent rather than shown as optional,
+ * because a screen that listed every rule a server could have would describe
+ * deployments other than this one.
+ */
+export function passwordRules(policy: PasswordPolicy): readonly PasswordRule[] {
+    const rules: PasswordRule[] = ['length'];
+    if (policy.requireUppercase) {
+        rules.push('upper');
+    }
+    if (policy.requireLowercase) {
+        rules.push('lower');
+    }
+    if (policy.requireDigit) {
+        rules.push('digit');
+    }
+    if (policy.requireSpecial) {
+        rules.push('special');
+    }
+    return rules;
+}
 
 export interface PasswordAssessment {
     readonly met: ReadonlySet<PasswordRule>;
@@ -47,19 +64,38 @@ export interface PasswordAssessment {
     readonly strength: 0 | 1 | 2 | 3 | 4;
 }
 
-export function assessPassword(password: string): PasswordAssessment {
+export function assessPassword(password: string, policy: PasswordPolicy): PasswordAssessment {
     const met = new Set<PasswordRule>();
-    if (password.length >= MIN_PASSWORD_LENGTH) met.add('length');
-    if (/[A-Z]/.test(password)) met.add('upper');
-    if (/[a-z]/.test(password)) met.add('lower');
-    if (/[0-9]/.test(password)) met.add('digit');
-    if ([...password].some((c) => PASSWORD_SPECIAL_CHARS.includes(c))) met.add('special');
+    if (password.length >= policy.minLength) {
+        met.add('length');
+    }
+    if (policy.requireUppercase && /[A-Z]/.test(password)) {
+        met.add('upper');
+    }
+    if (policy.requireLowercase && /[a-z]/.test(password)) {
+        met.add('lower');
+    }
+    if (policy.requireDigit && /[0-9]/.test(password)) {
+        met.add('digit');
+    }
+    if (
+        policy.requireSpecial &&
+        policy.specialChars !== '' &&
+        [...password].some((character) => policy.specialChars.includes(character))
+    ) {
+        met.add('special');
+    }
 
-    const valid = met.size === PASSWORD_RULES.length;
+    const rules = passwordRules(policy);
+    const valid = rules.every((rule) => met.has(rule));
     let strength: PasswordAssessment['strength'];
-    if (password.length === 0) strength = 0;
-    else if (valid) strength = password.length >= MIN_PASSWORD_LENGTH + 4 ? 4 : 3;
-    else strength = met.size >= 3 ? 2 : 1;
+    if (password.length === 0) {
+        strength = 0;
+    } else if (valid) {
+        strength = password.length >= policy.minLength + 4 ? 4 : 3;
+    } else {
+        strength = met.size >= Math.ceil(rules.length / 2) ? 2 : 1;
+    }
 
     return { met, valid, strength };
 }

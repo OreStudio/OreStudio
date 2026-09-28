@@ -188,16 +188,17 @@ export function Tag({
     );
 }
 
-/** An inline message, for an error or a confirmation. */
+/** An inline message, for an error, a warning or a confirmation. */
 export function Notice({
     children,
     tone = 'info',
 }: {
     readonly children: ReactNode;
-    readonly tone?: 'info' | 'error' | 'success';
+    readonly tone?: 'info' | 'warn' | 'error' | 'success';
 }): ReactNode {
     const tones = {
         info: 'border-accent/40 bg-accent/10 text-ink',
+        warn: 'border-warn/50 bg-warn/10 text-ink',
         error: 'border-down/50 bg-down/10 text-ink',
         success: 'border-up/40 bg-up/10 text-ink',
     } as const;

@@ -1,0 +1,328 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import { describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import type { ReactNode } from 'react';
+import { TranslationProvider } from '../i18n/Provider.js';
+import { FirstSignIn } from './FirstSignIn.js';
+import { ProfileCards, TenantForm, TenantSummary } from './parts.js';
+import type { JourneyServer } from './server.js';
+import { detailsFor } from './state.js';
+import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
+
+function render(node: ReactNode): string {
+    return renderToStaticMarkup(<TranslationProvider>{node}</TranslationProvider>);
+}
+
+const policy: PasswordPolicy = {
+    success: true,
+    message: '',
+    minLength: 12,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireDigit: true,
+    requireSpecial: true,
+    specialChars: '!@#$%^&*()_+-=[]{}|;:,.<>?',
+};
+
+const profile: SeedProfileChoice = {
+    code: 'empty_operational',
+    name: 'Empty operational',
+    summary: 'A production tenant with its own parties.',
+    audience: 'Production',
+    bullets: ['One root legal entity', 'Its counterparties'],
+    tenant: {
+        name: 'Northwind Capital',
+        code: 'northwind',
+        hostname: 'northwind.example.com',
+        adminUsername: 'northwind_admin',
+        adminEmail: 'admin@northwind.example.com',
+    },
+    inheritsAdminPassword: false,
+    forcePasswordChange: true,
+    order: 1,
+    steps: [{ kind: 'provision_party', order: 1 }],
+    parameters: [
+        {
+            name: 'root_lei',
+            label: 'Root LEI',
+            dataType: 'string',
+            choices: [],
+            defaultValue: '9695ACMEGROUP0000030',
+            required: true,
+            hint: '',
+            order: 1,
+        },
+    ],
+};
+
+/** A profile that declares nothing, so the form opens on the person. */
+const blank: SeedProfileChoice = {
+    ...profile,
+    code: 'empty_operational',
+    tenant: { name: '', code: '', hostname: '', adminUsername: '', adminEmail: '' },
+};
+
+function fakeServer(): JourneyServer {
+    return {
+        createAdministrator: vi.fn(async () => undefined),
+        recheckBootstrap: vi.fn(async () => undefined),
+        signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
+        chooseParty: vi.fn(async () => undefined),
+        signOut: vi.fn(async () => undefined),
+        passwordPolicy: vi.fn(async () => policy),
+        seedProfiles: vi.fn(async () => [profile]),
+        provision: vi.fn(async () => ({
+            success: true,
+            message: '',
+            instanceId: '',
+            tenantId: '',
+            accountId: '',
+        })),
+        progress: vi.fn(async () => ({
+            success: true,
+            message: '',
+            status: 'pending',
+            error: '',
+            step_count: 0,
+            current_step_index: 0,
+            steps: [],
+        })),
+        retry: vi.fn(async () => ({
+            success: true,
+            message: '',
+            instanceId: '',
+            stepIndex: 0,
+            stepName: '',
+        })),
+        changePassword: vi.fn(async () => undefined),
+    };
+}
+
+describe('the starting points', () => {
+    it('states what the server said about each profile, and nothing of its own', () => {
+        const html = render(
+            <ProfileCards profiles={[profile]} selected={undefined} onSelect={() => undefined} />,
+        );
+
+        expect(html).toContain('Empty operational');
+        expect(html).toContain('A production tenant with its own parties.');
+        expect(html).toContain('One root legal entity');
+        expect(html).toContain('1 settings · 1 steps');
+    });
+
+    it('marks the profile the person chose', () => {
+        const chosen = render(
+            <ProfileCards
+                profiles={[profile]}
+                selected="empty_operational"
+                onSelect={() => undefined}
+            />,
+        );
+        const unchosen = render(
+            <ProfileCards profiles={[profile]} selected={undefined} onSelect={() => undefined} />,
+        );
+
+        expect(chosen).toContain('aria-checked="true"');
+        expect(unchosen).toContain('aria-checked="false"');
+    });
+});
+
+describe('the tenant form', () => {
+    it('states the settings the profile declares when the person fills it in', () => {
+        const html = render(
+            <TenantForm
+                profile={blank}
+                details={detailsFor(blank)}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Root LEI');
+        expect(html).toContain('value="9695ACMEGROUP0000030"');
+        expect(html).toContain('Name');
+        expect(html).toContain('Hostname');
+    });
+
+    it('opens as a summary, and asks for no settings, when the profile states its own', () => {
+        const html = render(
+            <TenantForm
+                profile={profile}
+                details={detailsFor(profile)}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Empty operational uses its standard settings.');
+        expect(html).toContain('Northwind Capital (northwind)');
+        expect(html).not.toContain('Root LEI');
+    });
+
+    it('states the forced change beside the password it applies to', () => {
+        const html = render(
+            <TenantForm
+                profile={blank}
+                details={detailsFor(blank)}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('They must change it at first sign-in.');
+    });
+
+    it('asks for no rule the deployment does not state', () => {
+        const lengthOnly: PasswordPolicy = {
+            ...policy,
+            requireUppercase: false,
+            requireLowercase: false,
+            requireDigit: false,
+            requireSpecial: false,
+        };
+        const html = render(
+            <TenantForm
+                profile={blank}
+                details={detailsFor(blank)}
+                policy={lengthOnly}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('At least 12 characters');
+        expect(html).not.toContain('special character');
+    });
+});
+
+describe('the review', () => {
+    it('shows what is about to be created, and how much work it is', () => {
+        const html = render(
+            <TenantSummary
+                profile={profile}
+                details={detailsFor(profile)}
+                creatingPassword="Issued-Password-1"
+            />,
+        );
+
+        expect(html).toContain('Empty operational');
+        expect(html).toContain('Northwind Capital');
+        expect(html).toContain('northwind.example.com');
+        expect(html).toContain('Creating the tenant runs 1 steps.');
+        expect(html).toContain('northwind_admin sets a password of their own at first sign-in.');
+    });
+});
+
+describe('the first sign-in', () => {
+    const server = fakeServer();
+
+    it('asks a person who was handed the account for its credentials', () => {
+        const html = render(
+            <FirstSignIn
+                server={server}
+                policy={policy}
+                entry={{
+                    kind: 'sign-in',
+                    principal: 'northwind_admin@northwind.example.com',
+                    password: '',
+                }}
+                onDone={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('current-password');
+        expect(html).toContain('northwind_admin@northwind.example.com');
+    });
+
+    it('offers the parties to work in when the account works in more than one', () => {
+        const html = render(
+            <FirstSignIn
+                server={server}
+                policy={policy}
+                entry={{
+                    kind: 'party',
+                    principal: 'northwind_admin@northwind.example.com',
+                    password: 'Chosen-Password-2',
+                    resetRequired: false,
+                    parties: [
+                        {
+                            id: '22222222-2222-2222-2222-222222222222',
+                            name: 'Northwind Capital',
+                            partyCategory: 'Operational',
+                            businessCenterCode: 'GBLO',
+                        },
+                    ],
+                }}
+                onDone={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Northwind Capital');
+        expect(html).not.toContain('type="password"');
+    });
+
+    it('asks for a password of the person\u2019s own when the account must change it', () => {
+        const html = render(
+            <FirstSignIn
+                server={server}
+                policy={policy}
+                entry={{
+                    kind: 'active',
+                    principal: 'northwind_admin@northwind.example.com',
+                    password: 'Issued-Password-1',
+                    resetRequired: true,
+                }}
+                onDone={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('This account sets a password of its own');
+        expect(html).toContain('new-password');
+    });
+
+    it('shows no password field when no change is outstanding', () => {
+        const html = render(
+            <FirstSignIn
+                server={server}
+                policy={policy}
+                entry={{
+                    kind: 'active',
+                    principal: 'northwind_admin@northwind.example.com',
+                    password: 'Issued-Password-1',
+                    resetRequired: false,
+                }}
+                onDone={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Signed in as northwind_admin@northwind.example.com.');
+        expect(html).not.toContain('type="password"');
+    });
+});

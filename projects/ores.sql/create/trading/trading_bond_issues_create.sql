@@ -27,7 +27,7 @@
  * One row per bond issue (ISIN), the stable row every instrument of the
  * family references. The columns map one to one from bondData
  * (instruments.xsd lines 382-403): security_id, issuer, currency,
- * face_value, coupon_rate, coupon_frequency_code, day_count_code,
+ * face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
  * issue_date and settlement_days. Only SecurityId is required by that
  * schema; every other element is optional, so every other column is
  * nullable and an absent element is stored as NULL rather than as an
@@ -48,7 +48,7 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "face_value" numeric(28, 10) null,
     "coupon_rate" numeric(28, 10) null,
     "coupon_frequency_code" text null,
-    "day_count_code" text null,
+    "day_count_fraction_code" text null,
     "issue_date" date null,
     "settlement_days" integer null,
     "calendar" text null,

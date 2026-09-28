@@ -1104,7 +1104,7 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
                                    static_cast<double>(ld.Notionals->Notional.front()))
                                    .value();
         if (ld.DayCounter)
-            issue.day_count_code = to_string(*ld.DayCounter);
+            issue.day_count_fraction_code = to_string(*ld.DayCounter);
         issue.coupon_frequency_code = first_tenor(ld.ScheduleData);
 
         if (ld.legDataType && ld.legDataType->FixedLegData &&
@@ -1161,9 +1161,9 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
             if (i == 0) {
                 if (!ld.Currency && !issue.currency.empty())
                     ld.Currency = issue.currency;
-                if (!ld.DayCounter && !issue.day_count_code.empty())
+                if (!ld.DayCounter && !issue.day_count_fraction_code.empty())
                     ld.DayCounter =
-                        parse_code(issue.day_count_code, day_counter_count, dayCounter::A360);
+                        parse_code(issue.day_count_fraction_code, day_counter_count, dayCounter::A360);
 
                 if (!ld.Notionals && issue.face_value && !issue.face_value->is_zero()) {
                     legData_Notionals_t n;

@@ -100,6 +100,10 @@ struct equity_asian_option_instrument final {
 
     /**
      * @brief Arithmetic or Geometric.
+     *
+     * Soft FK to ores_trading_average_types_tbl: ORE states no averaging set for
+     * singleUnderlyingAsianOptionData, so this is a trading-local closed set by decision. PR 4
+     * tightens the soft reference into a real foreign key.
      */
     std::string average_type;
 

@@ -58,7 +58,7 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     "tenor" text not null,
     "start_date" date not null,
     "maturity_date" date not null,
-    "day_count_code" text not null,
+    "day_count_fraction_code" text not null,
     "payment_frequency_code" text not null,
     "index_name" text null,
     "index_series" integer null,

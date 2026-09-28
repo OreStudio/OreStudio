@@ -58,7 +58,7 @@ equity_swap_instrument_mapper::map(const equity_swap_instrument_entity& v) {
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
-    r.payment_frequency = v.payment_frequency;
+    r.payment_frequency_code = v.payment_frequency_code;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -92,7 +92,7 @@ equity_swap_instrument_mapper::map(const domain::equity_swap_instrument& v) {
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
-    r.payment_frequency = v.payment_frequency;
+    r.payment_frequency_code = v.payment_frequency_code;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

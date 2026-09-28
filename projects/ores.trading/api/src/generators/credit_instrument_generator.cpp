@@ -56,7 +56,7 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.tenor = std::string("5Y");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2031} / 1 / 15};
-    r.day_count_code = std::string("Actual365Fixed");
+    r.day_count_fraction_code = std::string("Actual365Fixed");
     r.payment_frequency_code = std::string("Quarterly");
     r.option_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.audit.modified_by = modified_by;

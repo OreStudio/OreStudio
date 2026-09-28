@@ -35,6 +35,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:8EF6EE2A-FC4D-48FC-A684-8B8610BA21BD][ores.trading.moment_type]] | Variance or volatility swap moment code. |
 | [[id:91A363AF-2603-47A0-9F56-2EDF6C961ABF][ores.trading.price_type]] | Bond price quotation type (Clean or Dirty). |
 | [[id:7AF13836-60A8-4072-B2F6-A6A06D0FBB36][ores.trading.amortization_type]] | Notional amortization schedule kind. |
+| [[id:EADFEF66-F4AE-4271-B92E-25145818C1CF][ores.trading.average_type]] | Averaging method for an Asian-style option (Arithmetic or Geometric). |
 | [[id:0143968F-0BAF-44A0-A38B-C32146BD46F6][ores.trading.credit_instrument]] | Credit instrument economics for CreditDefaultSwap, CDSIndex, SyntheticCDO and their variants. |
 | [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] | Scripted instrument economics for the AMC script-based product types. |
 | [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] | Vanilla interest rate swap or cross-currency swap instrument. |

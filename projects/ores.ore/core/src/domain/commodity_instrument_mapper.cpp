@@ -362,7 +362,10 @@ commodity_instrument_mapper::forward_commodity_apo(const trade& t) {
     result.maturity_date = first_exercise_date(d.OptionData);
     result.averaging_start_date = to_optional_domain_date(std::string(d.StartDate));
     result.averaging_end_date = to_optional_domain_date(std::string(d.EndDate));
-    result.average_type = to_string(d.PriceType);
+    // ORE states no averaging member on commodityAveragePriceOptionData, so
+    // average_type is left unset rather than filled from an element that means
+    // something else. d.PriceType is ORE's priceType (Spot, FutureSettlement);
+    // writing it here put a value outside the column's Arithmetic/Geometric set.
     return result;
 }
 

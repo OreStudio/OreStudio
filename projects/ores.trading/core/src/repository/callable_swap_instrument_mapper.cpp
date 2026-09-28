@@ -51,7 +51,6 @@ callable_swap_instrument_mapper::map(const callable_swap_instrument_entity& v) {
                               std::nullopt;
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
-    r.call_type = v.call_type.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -79,7 +78,6 @@ callable_swap_instrument_mapper::map(const domain::callable_swap_instrument& v) 
                      std::nullopt;
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
-    r.call_type = v.call_type.empty() ? std::nullopt : std::optional(v.call_type);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

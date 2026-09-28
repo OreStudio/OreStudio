@@ -88,7 +88,6 @@ domain::callable_swap_instrument to_domain(const messaging::callable_swap_instru
     v.identity.trade_id = write.trade_id;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
-    v.call_type = write.call_type;
     v.description = write.description;
     return v;
 }

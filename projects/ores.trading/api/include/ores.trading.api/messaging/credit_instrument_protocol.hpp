@@ -51,7 +51,7 @@ struct credit_instrument_write {
     std::string tenor;
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
-    std::string day_count_code;
+    std::string day_count_fraction_code;
     std::string payment_frequency_code;
     std::string index_name;
     std::optional<int> index_series;

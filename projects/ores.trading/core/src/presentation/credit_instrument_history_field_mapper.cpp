@@ -51,7 +51,7 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
-    fields.push_back({.name = "Day Count Code", .value = v.day_count_code});
+    fields.push_back({.name = "Day Count Fraction Code", .value = v.day_count_fraction_code});
     fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
     fields.push_back({.name = "Index Name", .value = v.index_name});
     fields.push_back({.name = "Index Series",

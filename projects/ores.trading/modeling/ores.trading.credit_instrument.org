@@ -210,7 +210,7 @@ Maturity date (ISO 8601 date string, e.g. 2031-01-15).
 std::chrono::year_month_day{std::chrono::year{2031}/1/15}
 #+end_src
 
-** day_count_code
+** day_count_fraction_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string

@@ -45,7 +45,6 @@ struct callable_swap_instrument_write {
     std::optional<boost::uuids::uuid> trade_id;
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
-    std::string call_type;
     std::string description;
 };
 

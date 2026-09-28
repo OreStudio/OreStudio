@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <trade_type_code> <trade_id> <underlying_name> <basket_json> <currency> <notional>
-     * <return_type> <start_date> <maturity_date> <long_short> <payment_frequency> <description>
-     * <reason> <commentary>
+     * <return_type> <start_date> <maturity_date> <long_short> <payment_frequency_code>
+     * <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,7 +98,7 @@ public:
     /**
      * @brief set <instrument_id> <trade_type_code> <trade_id> <underlying_name> <basket_json>
      * <currency> <notional> <return_type> <start_date> <maturity_date> <long_short>
-     * <payment_frequency> <description> <reason> <commentary> [--version <n>]
+     * <payment_frequency_code> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <underlying_name>
      * <basket_json> <currency> <notional> <return_type> <start_date> <maturity_date> <long_short>
-     * <payment_frequency> <description> <reason> <commentary>
+     * <payment_frequency_code> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -45,7 +45,6 @@ render_callable_swap_instrument_fields(const domain::callable_swap_instrument& v
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
-    fields.push_back({.name = "Call Type", .value = v.call_type});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

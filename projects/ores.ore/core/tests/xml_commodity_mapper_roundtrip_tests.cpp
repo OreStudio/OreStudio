@@ -183,6 +183,10 @@ TEST_CASE("commodity_mapper_roundtrip_apo", tags) {
     CHECK(r.strike_price.has_value());
     CHECK(r.averaging_start_date.has_value());
     CHECK(r.averaging_end_date.has_value());
+    // ORE states no averaging member on commodityAveragePriceOptionData, so the
+    // mapper must not fill average_type from another element. Before the fix it
+    // carried d.PriceType, whose value is Spot or FutureSettlement.
+    CHECK(r.average_type.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_apo(r);
     REQUIRE(rt.CommodityAveragePriceOptionData.operator bool());

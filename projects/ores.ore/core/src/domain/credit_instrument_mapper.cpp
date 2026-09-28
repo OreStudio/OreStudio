@@ -83,7 +83,7 @@ void credit_instrument_mapper::map_cds_leg(const legData& ld, credit_instrument&
     if (ld.Notionals && !ld.Notionals->Notional.empty())
         instr.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(ld.Notionals->Notional.front())).value();
     if (ld.DayCounter)
-        instr.day_count_code = to_string(*ld.DayCounter);
+        instr.day_count_fraction_code = to_string(*ld.DayCounter);
     if (ld.legDataType && ld.legDataType->FixedLegData &&
         !ld.legDataType->FixedLegData->Rates.Rate.empty())
         instr.spread = static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());

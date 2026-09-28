@@ -51,7 +51,7 @@ struct equity_swap_instrument_write {
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::string long_short;
-    std::string payment_frequency;
+    std::string payment_frequency_code;
     std::string description;
 };
 

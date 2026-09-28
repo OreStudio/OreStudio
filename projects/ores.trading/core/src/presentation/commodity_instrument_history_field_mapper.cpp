@@ -88,7 +88,7 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                       .value = v.lower_barrier ? v.lower_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Upper Barrier",
                       .value = v.upper_barrier ? v.upper_barrier->to_string() : std::string{}});
-    fields.push_back({.name = "Day Count Code", .value = v.day_count_code});
+    fields.push_back({.name = "Day Count Fraction Code", .value = v.day_count_fraction_code});
     fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
     fields.push_back(
         {.name = "Swaption Expiry Date",

@@ -143,8 +143,8 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_type_code> <trade_id> <underlying_name> <basket_json> <currency> <notional> "
-        "<return_type> <start_date> <maturity_date> <long_short> <payment_frequency> <description> "
-        "<reason> <commentary>");
+        "<return_type> <start_date> <maturity_date> <long_short> <payment_frequency_code> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +153,7 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "set <instrument_id> <trade_type_code> <trade_id> <underlying_name> <basket_json> "
         "<currency> <notional> <return_type> <start_date> <maturity_date> <long_short> "
-        "<payment_frequency> <description> <reason> <commentary> [--version <n>]");
+        "<payment_frequency_code> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,7 +162,7 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <underlying_name> "
         "<basket_json> <currency> <notional> <return_type> <start_date> <maturity_date> "
-        "<long_short> <payment_frequency> <description> <reason> <commentary>");
+        "<long_short> <payment_frequency_code> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -374,8 +374,9 @@ void equity_swap_instrument_commands::process_add(std::ostream& out,
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
         read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
-        read_token(
-            req.change.write.payment_frequency, parsed->positionals[next++], "payment_frequency");
+        read_token(req.change.write.payment_frequency_code,
+                   parsed->positionals[next++],
+                   "payment_frequency_code");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -437,8 +438,9 @@ void equity_swap_instrument_commands::process_set(std::ostream& out,
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
         read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
-        read_token(
-            req.change.write.payment_frequency, parsed->positionals[next++], "payment_frequency");
+        read_token(req.change.write.payment_frequency_code,
+                   parsed->positionals[next++],
+                   "payment_frequency_code");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -514,8 +516,9 @@ void equity_swap_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.start_date, parsed->positionals[next++], "start_date");
             read_token(change.write.maturity_date, parsed->positionals[next++], "maturity_date");
             read_token(change.write.long_short, parsed->positionals[next++], "long_short");
-            read_token(
-                change.write.payment_frequency, parsed->positionals[next++], "payment_frequency");
+            read_token(change.write.payment_frequency_code,
+                       parsed->positionals[next++],
+                       "payment_frequency_code");
             read_token(change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

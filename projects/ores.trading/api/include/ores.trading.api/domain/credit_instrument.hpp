@@ -112,7 +112,7 @@ struct credit_instrument final {
      * codes (A365F, 30/360), so PR 4 needs a conversion helper in the shape of
      * payment_frequency_conversion.hpp. PR 4 tightens the soft reference into a real foreign key.
      */
-    std::string day_count_code;
+    std::string day_count_fraction_code;
 
     /**
      * @brief Payment frequency code (e.g. Quarterly, SemiAnnual).

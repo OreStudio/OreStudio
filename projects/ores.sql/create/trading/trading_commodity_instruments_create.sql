@@ -67,7 +67,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "barrier_type" text null,
     "lower_barrier" numeric(28, 10) null,
     "upper_barrier" numeric(28, 10) null,
-    "day_count_code" text null,
+    "day_count_fraction_code" text null,
     "payment_frequency_code" text null,
     "swaption_expiry_date" date null,
     "description" text null,

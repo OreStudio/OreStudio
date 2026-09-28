@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <trade_type_code> <trade_id> <reference_entity> <currency> <notional> <spread>
-     * <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_code>
+     * <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_fraction_code>
      * <payment_frequency_code> <index_name> <index_series> <seniority> <restructuring>
      * <description> <option_type> <option_expiry_date> <option_strike> <linked_asset_code>
      * <tranche_attachment> <tranche_detachment> <reason> <commentary>
@@ -99,10 +99,11 @@ public:
 
     /**
      * @brief set <instrument_id> <trade_type_code> <trade_id> <reference_entity> <currency>
-     * <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_code>
-     * <payment_frequency_code> <index_name> <index_series> <seniority> <restructuring>
-     * <description> <option_type> <option_expiry_date> <option_strike> <linked_asset_code>
-     * <tranche_attachment> <tranche_detachment> <reason> <commentary> [--version <n>]
+     * <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date>
+     * <day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> <seniority>
+     * <restructuring> <description> <option_type> <option_expiry_date> <option_strike>
+     * <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -111,7 +112,7 @@ public:
     /**
      * @brief put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <reference_entity>
      * <currency> <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date>
-     * <day_count_code> <payment_frequency_code> <index_name> <index_series> <seniority>
+     * <day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> <seniority>
      * <restructuring> <description> <option_type> <option_expiry_date> <option_strike>
      * <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> <commentary>
      */

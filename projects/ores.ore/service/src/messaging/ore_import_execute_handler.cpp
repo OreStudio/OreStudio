@@ -955,7 +955,7 @@ save_bond_instrument(Nats& nats,
         issue_req.change.write.face_value = issue.face_value;
         issue_req.change.write.coupon_rate = issue.coupon_rate;
         issue_req.change.write.coupon_frequency_code = issue.coupon_frequency_code;
-        issue_req.change.write.day_count_code = issue.day_count_code;
+        issue_req.change.write.day_count_fraction_code = issue.day_count_fraction_code;
         issue_req.change.write.issue_date = issue.issue_date;
         issue_req.change.write.settlement_days = issue.settlement_days;
         issue_req.change.write.calendar = issue.calendar;
@@ -1572,7 +1572,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.trade_id = instr.identity.trade_id;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.call_type = instr.call_type;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 if (!resp ||
@@ -1805,7 +1804,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     req.change.write.tenor = r.tenor;
                     req.change.write.start_date = r.start_date;
                     req.change.write.maturity_date = r.maturity_date;
-                    req.change.write.day_count_code = r.day_count_code;
+                    req.change.write.day_count_fraction_code = r.day_count_fraction_code;
                     req.change.write.payment_frequency_code = r.payment_frequency_code;
                     req.change.write.index_name = r.index_name;
                     req.change.write.index_series = r.index_series;
@@ -1957,7 +1956,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
                                 req.change.write.long_short = instr.long_short;
-                                req.change.write.payment_frequency = instr.payment_frequency;
+                                req.change.write.payment_frequency_code = instr.payment_frequency_code;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
@@ -2057,7 +2056,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     req.change.write.barrier_type = instr.barrier_type;
                     req.change.write.lower_barrier = instr.lower_barrier;
                     req.change.write.upper_barrier = instr.upper_barrier;
-                    req.change.write.day_count_code = instr.day_count_code;
+                    req.change.write.day_count_fraction_code = instr.day_count_fraction_code;
                     req.change.write.payment_frequency_code = instr.payment_frequency_code;
                     req.change.write.swaption_expiry_date = instr.swaption_expiry_date;
                     req.change.write.description = instr.description;

@@ -111,6 +111,19 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Average Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_average_types_tbl enable row level security;
+
+create policy average_types_tenant_isolation_policy on ores_trading_average_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Option Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_option_types_tbl enable row level security;

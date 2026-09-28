@@ -387,7 +387,7 @@ equity_instrument_mapper::forward_equity_swap(const trade& t) {
                 inst.start_date = to_domain_date(std::string(rule.StartDate));
                 if (rule.EndDate)
                     inst.maturity_date = to_domain_date(std::string(*rule.EndDate));
-                inst.payment_frequency = tenor_to_payment_frequency(std::string(rule.Tenor));
+                inst.payment_frequency_code = tenor_to_payment_frequency(std::string(rule.Tenor));
             }
         }
     }

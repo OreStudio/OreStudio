@@ -37,6 +37,7 @@
 \ir ./trading_moment_types_populate.sql
 \ir ./trading_price_types_populate.sql
 \ir ./trading_amortization_types_populate.sql
+\ir ./trading_average_types_populate.sql
 
 \echo ''
 \echo '=== Trade Population Complete ==='

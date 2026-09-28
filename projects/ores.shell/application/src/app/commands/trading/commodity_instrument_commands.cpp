@@ -144,7 +144,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                    std::string fixed_price,
                    std::string start_date,
                    std::string maturity_date,
-                   std::string day_count_code,
+                   std::string day_count_fraction_code,
                    std::string payment_frequency_code,
                    std::string option_type,
                    std::string strike_price,
@@ -176,7 +176,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                                              std::move(fixed_price),
                                              std::move(start_date),
                                              std::move(maturity_date),
-                                             std::move(day_count_code),
+                                             std::move(day_count_fraction_code),
                                              std::move(payment_frequency_code),
                                              std::move(option_type),
                                              std::move(strike_price),
@@ -200,14 +200,14 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
                                              std::move(change_commentary));
         },
         "Add an Commodity instrument (trade_type_code commodity_code currency quantity unit "
-        "[fixed_price] [start_date] [maturity_date] [day_count_code] [payment_frequency_code] "
+        "[fixed_price] [start_date] [maturity_date] [day_count_fraction_code] [payment_frequency_code] "
         "[option_type] [strike_price] [exercise_type] [swaption_expiry_date] [average_type] "
         "[averaging_start_date] [averaging_end_date] [spread_commodity_code] [spread_amount] "
         "[strip_frequency_code] [variance_strike] [accumulation_amount] [knock_out_barrier] "
         "[barrier_type] [lower_barrier] [upper_barrier] [basket] description "
         "change_reason_code \"change_commentary\")",
         {"trade_type_code commodity_code currency quantity unit fixed_price start_date "
-         "maturity_date day_count_code payment_frequency_code option_type strike_price "
+         "maturity_date day_count_fraction_code payment_frequency_code option_type strike_price "
          "exercise_type swaption_expiry_date average_type averaging_start_date averaging_end_date "
          "spread_commodity_code spread_amount strip_frequency_code variance_strike "
          "accumulation_amount knock_out_barrier barrier_type lower_barrier upper_barrier "
@@ -280,7 +280,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     std::string fixed_price,
     std::string start_date,
     std::string maturity_date,
-    std::string day_count_code,
+    std::string day_count_fraction_code,
     std::string payment_frequency_code,
     std::string option_type,
     std::string strike_price,
@@ -330,7 +330,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
         ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(start_date);
     v.maturity_date =
         ores::shell::app::from_token<std::optional<std::chrono::year_month_day>>(maturity_date);
-    v.day_count_code = (day_count_code == "-") ? "" : std::move(day_count_code);
+    v.day_count_fraction_code = (day_count_fraction_code == "-") ? "" : std::move(day_count_fraction_code);
     v.payment_frequency_code =
         (payment_frequency_code == "-") ? "" : std::move(payment_frequency_code);
     v.option_type = (option_type == "-") ? "" : std::move(option_type);
@@ -404,7 +404,7 @@ void commodity_instrument_commands::process_add_commodity_instrument(
                              .barrier_type = v.barrier_type,
                              .lower_barrier = v.lower_barrier,
                              .upper_barrier = v.upper_barrier,
-                             .day_count_code = v.day_count_code,
+                             .day_count_fraction_code = v.day_count_fraction_code,
                              .payment_frequency_code = v.payment_frequency_code,
                              .swaption_expiry_date = v.swaption_expiry_date,
                              .description = v.description}}};

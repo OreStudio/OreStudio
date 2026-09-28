@@ -47,7 +47,7 @@ struct bond_issue_write {
     std::optional<ores::utility::decimal::decimal> face_value;
     double coupon_rate;
     std::string coupon_frequency_code;
-    std::string day_count_code;
+    std::string day_count_fraction_code;
     std::optional<std::chrono::year_month_day> issue_date;
     int settlement_days;
     std::optional<std::string> calendar;

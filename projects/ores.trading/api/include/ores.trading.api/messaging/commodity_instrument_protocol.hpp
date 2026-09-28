@@ -65,7 +65,7 @@ struct commodity_instrument_write {
     std::string barrier_type;
     std::optional<ores::utility::decimal::decimal> lower_barrier;
     std::optional<ores::utility::decimal::decimal> upper_barrier;
-    std::string day_count_code;
+    std::string day_count_fraction_code;
     std::string payment_frequency_code;
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
     std::string description;

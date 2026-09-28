@@ -56,7 +56,7 @@ generate_synthetic_equity_swap_instrument(utility::generation::generation_contex
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.long_short = std::string("Long");
-    r.payment_frequency = std::string("Quarterly");
+    r.payment_frequency_code = std::string("Quarterly");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

@@ -103,7 +103,7 @@ struct equity_swap_instrument final {
      * so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a
      * real foreign key.
      */
-    std::string payment_frequency;
+    std::string payment_frequency_code;
 
     /**
      * @brief Optional free-text description.

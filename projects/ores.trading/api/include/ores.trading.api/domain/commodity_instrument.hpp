@@ -116,6 +116,10 @@ struct commodity_instrument final {
 
     /**
      * @brief Arithmetic or Geometric averaging for Asian options.
+     *
+     * Soft FK to ores_trading_average_types_tbl: ORE states no averaging set for
+     * commodityAveragePriceOptionData, so this is a trading-local closed set by decision. PR 4
+     * tightens the soft reference into a real foreign key.
      */
     std::string average_type;
 
@@ -188,7 +192,7 @@ struct commodity_instrument final {
      * ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft
      * reference into a real foreign key.
      */
-    std::string day_count_code;
+    std::string day_count_fraction_code;
 
     /**
      * @brief Payment frequency code for swap products.

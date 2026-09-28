@@ -51,7 +51,7 @@ render_equity_swap_instrument_fields(const domain::equity_swap_instrument& v) {
     fields.push_back({.name = "Maturity Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
-    fields.push_back({.name = "Payment Frequency", .value = v.payment_frequency});
+    fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

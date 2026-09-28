@@ -57,7 +57,7 @@ struct credit_instrument_entity {
     std::string tenor;
     std::string start_date;
     std::string maturity_date;
-    std::string day_count_code;
+    std::string day_count_fraction_code;
     std::string payment_frequency_code;
     std::optional<std::string> index_name;
     std::optional<int> index_series;

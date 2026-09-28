@@ -55,7 +55,7 @@ equity_swap_instrument make_instrument(database_helper& h) {
     r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-10-16");
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date("2025-12-31");
     r.long_short = "Long";
-    r.payment_frequency = "Monthly";
+    r.payment_frequency_code = "Monthly";
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
@@ -89,7 +89,7 @@ TEST_CASE("equity_swap_instrument_write_and_read_latest", tags) {
     CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-10-16"));
     CHECK(read[0].maturity_date == ores::platform::time::datetime::from_iso8601_date("2025-12-31"));
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].payment_frequency == "Monthly");
+    CHECK(read[0].payment_frequency_code == "Monthly");
     BOOST_LOG_SEV(lg, debug) << "Read equity swap instrument: " << read[0];
 }
 

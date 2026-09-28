@@ -23,6 +23,7 @@ set(files
     "activity_category_eventing_integration_tests.cpp"
     "activity_type_eventing_integration_tests.cpp"
     "amortization_type_eventing_integration_tests.cpp"
+    "average_type_eventing_integration_tests.cpp"
     "barrier_type_eventing_integration_tests.cpp"
     "commodity_instrument_eventing_integration_tests.cpp"
     "composite_instrument_eventing_integration_tests.cpp"

@@ -199,7 +199,7 @@ Long or Short.
 std::string("Long")
 #+end_src
 
-** payment_frequency
+** payment_frequency_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -254,7 +254,7 @@ Optional free-text description.
 
 | column | validation_function |
 |--------+----------------------|
-| payment_frequency | ores_refdata_validate_payment_frequency_fn |
+| payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
 
 * C++
 

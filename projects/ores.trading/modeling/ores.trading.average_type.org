@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: EADFEF66-F4AE-4271-B92E-25145818C1CF
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.average_type
+#+description: Codegen entity model for the trading =average_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Averaging method for an Asian-style option (Arithmetic or Geometric).
+#+entity_singular: average_type
+#+entity_plural: average_types
+#+entity_title: Average Type
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Reference data table defining the averaging method a commodity or equity
+Asian-style option uses: =Arithmetic= or =Geometric=.
+
+*This set is trading-local by decision, and the divergence from ORE is
+deliberate.* ORE states no averaging member and no averaging enumeration
+for either family. =commodityAveragePriceOptionData= carries no average
+member and =singleUnderlyingAsianOptionData= carries none either; there is
+no =averageType= simple type anywhere under =external/ore/xsd/=, and no
+=AverageType= element appears under =external/ore/examples/=. The only
+=Arithmetic= token in ORE is part of the scripted product names
+=EquityAsianOptionArithmeticPrice= and =...ArithmeticStrike=, and ORE never
+states =Geometric= at all. The set is therefore the two values the columns
+already deploy, and it is not derived from an ORE schema.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique average type code.
+
+Examples: 'Arithmetic', 'Geometric'.
+
+#+begin_src cpp :name generator
+std::string("Arithmetic")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the average type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_average_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: average_type
+:entity_plural_short:   average_types
+:entity_singular_words: average type
+:entity_plural_words:   average types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

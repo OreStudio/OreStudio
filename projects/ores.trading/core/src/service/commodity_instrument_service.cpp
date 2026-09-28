@@ -108,7 +108,7 @@ domain::commodity_instrument to_domain(const messaging::commodity_instrument_wri
     v.barrier_type = write.barrier_type;
     v.lower_barrier = write.lower_barrier;
     v.upper_barrier = write.upper_barrier;
-    v.day_count_code = write.day_count_code;
+    v.day_count_fraction_code = write.day_count_fraction_code;
     v.payment_frequency_code = write.payment_frequency_code;
     v.swaption_expiry_date = write.swaption_expiry_date;
     v.description = write.description;

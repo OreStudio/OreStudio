@@ -44,7 +44,7 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     "start_date" date not null,
     "maturity_date" date not null,
     "long_short" text not null,
-    "payment_frequency" text not null,
+    "payment_frequency_code" text not null,
     "description" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -112,8 +112,8 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate payment_frequency
-    NEW.payment_frequency := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency);
+    -- Validate payment_frequency_code
+    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

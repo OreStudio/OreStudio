@@ -57,7 +57,7 @@ domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_
     r.tenor = v.tenor;
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
-    r.day_count_code = v.day_count_code;
+    r.day_count_fraction_code = v.day_count_fraction_code;
     r.payment_frequency_code = v.payment_frequency_code;
     r.index_name = v.index_name.value_or("");
     r.index_series = v.index_series;
@@ -104,7 +104,7 @@ credit_instrument_entity credit_instrument_mapper::map(const domain::credit_inst
     r.tenor = v.tenor;
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
-    r.day_count_code = v.day_count_code;
+    r.day_count_fraction_code = v.day_count_fraction_code;
     r.payment_frequency_code = v.payment_frequency_code;
     r.index_name = v.index_name.empty() ? std::nullopt : std::optional(v.index_name);
     r.index_series = v.index_series;

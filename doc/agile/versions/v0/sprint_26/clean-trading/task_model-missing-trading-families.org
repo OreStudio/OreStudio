@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -36,9 +36,9 @@ to the reference-data work and are out of scope, per decision D5.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | The commodity family is ported and proven end to end, the knock-out date column is deleted with its gap recorded under defect 14, and the equity position's option entries are child rows with the producer wired through the nested sub-trade. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
-| Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
-| Next         | U4, the enumerations: a reference table per closed set, its check out of PL/pgSQL, and the missing reference tables populated from the standard. Then defect 6, defects 14 to 16, the final regeneration pass, the story checklist, and PR 3. |
+| Now          | Every model-side unit of PR 3 is closed on =feature/model-missing-trading-families=. The nine missing families are ported and proven, the M09 fragments are cleared, the M02 survey is complete (fifty-one bindings, twenty-nine recorded no-matches at 2026-09-28, from thirty-one and twenty-six at the 2026-09-26 survey), the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure), and the M04 sweep checked all eighty entity models with no inert assignment. The enumeration sets are closed (defect 4, 5 and 8), the two duplicated names are renamed (defect 6), the average type is a local reference entity with its producer contradiction fixed, and =call_type= is deleted. Defects 14, 15 and 16 are carried to PR 4 by the owner's ruling. The whole-tree build exits 0 with no =error:=, the codegen suite is 806 passed, the component and all-component drift dry runs are empty, the nine owned suites are 9 of 9, and =validate_docs.sh= reports 40 components. |
+| Waiting on   | Nothing. |
+| Next         | Raise PR 3. The full-suite figure is not re-measured here: the five failures the branch records belong to dq, shell.api, refdata and marketdata and none is trading's. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -142,15 +142,18 @@ Two findings from doing it:
 
 ** 1. Bound or recorded: the M02 survey
 
-Thirty-one of the component's sixty-five org files bind a profile today
-(twenty-six trading-instrument, three simple-lookup, one
-workspace-scoped-lookup and one trading-record). The remaining
-thirty-four are the six field-group models, the module, the component
-overview, and twenty-six entity models. Every one of the twenty-six is
-recorded as a no-match, with the features that decide it and the reason.
+Thirty-one of the component's sixty-five org files bound a profile when
+the survey was measured on 2026-09-26 (twenty-six trading-instrument,
+three simple-lookup, one workspace-scoped-lookup and one trading-record).
+The ports and the reference entities added since bind twenty more, so at
+2026-09-28 fifty-one of the eighty entity models bind a profile
+(thirty-two trading-instrument, seventeen simple-lookup, one
+workspace-scoped-lookup and one trading-record). The other twenty-nine
+bind none, and every one of the twenty-nine is recorded as a no-match,
+with the features that decide it and the reason.
 
-Measured 2026-09-26. Every one of the twenty-six carries
-=:has_tenant_id: true= and no =** Presentation= drawer, so the
+Measured 2026-09-26, extended 2026-09-28. Every one of the twenty-nine
+carries =:has_tenant_id: true= and no =** Presentation= drawer, so the
 presentation features (=has_uuid_primary_key=, =has_change_reason_cache=,
 =has_pagination=, =has_explorer_api=, =has_csv_xml_io=,
 =has_version_navigation=) resolve false. None sets =read_only=,
@@ -167,6 +170,9 @@ presentation features (=has_uuid_primary_key=, =has_change_reason_cache=,
 | bond_leg_amortization            | composite | A      |
 | bond_leg_amount                  | composite | A      |
 | bond_leg_rate                    | composite | A      |
+| callable_swap_call_date          | composite | A      |
+| commodity_basket_constituent     | composite | A      |
+| equity_position_option_underlying | composite | A     |
 | instrument_option_exercise_fee   | composite | A      |
 | instrument_option_payment_date   | composite | A      |
 | instrument_option_premium        | composite | A      |
@@ -214,8 +220,8 @@ groups of their own, such as =composite_leg_identity=.
 The bindings were tested against every profile's own assignment table
 rather than against a name:
 
-- No profile declares a composite natural key, and fourteen of the
-  twenty-six key on two or more columns (for example
+- No profile declares a composite natural key, and seventeen of the
+  twenty-nine key on two or more columns (for example
   =instrument_id + leg_role + leg_number=).
 - =uuid-identified-lookup= fixes =has_change_reason_cache= and
   =has_pagination= true, which every one of these entities resolves
@@ -225,13 +231,13 @@ rather than against a name:
   the closest profile and still the wrong one, which is why the task
   forbids a forced bind.
 - =fk-scoped-child= fixes =has_workspace_id=, =has_explorer_api= and a
-  parent, and only two of the twenty-six are workspace-scoped.
+  parent, and only two of the twenty-nine are workspace-scoped.
 - =tenant-scoped-junction= fixes only =has_tenant_id=, but it is anchored
   to the junction metatype, and M07 already records that this component
   has no junction metatype. =trade_party_role= is the entity that would
   open when one is introduced.
 - =readonly-timeseries= describes a TimescaleDB hypertable, and every one
-  of the twenty-six is an ordinary versioned table.
+  of the twenty-nine is an ordinary versioned table.
 
 None of this is recorded as a model property, because the loader does not
 know the names the spec's =RecordNoMatch= rule uses and an unknown
@@ -498,14 +504,14 @@ the order below, because each makes the next smaller.
 | 17 | The trade's declared key is nullable | Closed |
 | 2 | Dates held as text, 58 fields | Closed |
 | 3 | Monetary amounts held as double, 18 fields | Closed: 57 money columns are decimals, 30 non-money columns stay double |
-| 6 | One concept under two names | Pending |
-| 5 | Code fields whose reference table does not exist | Pending |
-| 4 | Enumerations held as free text with no reference table | Pending |
-| 8 | Enumerations enforced in PL/pgSQL, 27 of them | Pending |
+| 6 | One concept under two names | Closed: =day_count_code= renamed to =day_count_fraction_code= in three entities, =payment_frequency= renamed to =payment_frequency_code= in one. Five sibling spellings were measured and judged not renamed, each with its reason in §5g |
+| 5 | Code fields whose reference table does not exist | Closed (Set 1) |
+| 4 | Enumerations held as free text with no reference table | Closed: twelve reference entities. The last, =average_type=, is trading-local by decision because ORE states no averaging set |
+| 8 | Enumerations enforced in PL/pgSQL, 27 of them | Closed (Set 3) |
 | 1 | Schedules and collections held as JSON text | Closed except =equity_swap.basket_json=, which waits for defect 9's product split, and the scripted columns, which defect 1 itself excepts |
-| 14 | Declared coverage is incomplete, and elsewhere undeclared | Pending |
-| 15 | An underlying is an unqualified name | Pending |
-| 16 | No observation schedule | Pending |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | Carried to PR 4, by the owner's ruling |
+| 15 | An underlying is an unqualified name | Carried to PR 4, by the owner's ruling |
+| 16 | No observation schedule | Carried to PR 4, by the owner's ruling |
 
 Defect 17 is closed: the model declares =external_id= not null, its
 generator supplies a =TRD-= key, the shell verb takes the key first, the
@@ -605,6 +611,134 @@ split, because removing it would weaken the guard that tells a
 worst-of-basket swap from a plain swap, and =scripted_instrument='s three
 columns hold a user script whose shape the domain does not fix, which
 defect 1 itself excepts.
+
+** 5g. Defect 6, one concept under two names
+
+Two renames. Both survivors are the name the component and =ores.refdata= agree
+on.
+
+| Concept | Outlier name | Survivor | Entities |
+|---------+--------------+----------+----------|
+| Day count convention | =day_count_code= | =day_count_fraction_code= | =bond_issue=, =commodity_instrument=, =credit_instrument= |
+| Payment frequency | =payment_frequency= | =payment_frequency_code= | =equity_swap_instrument= |
+
+=swap_leg= already spelled the day count =day_count_fraction_code=, and
+=commodity_instrument=, =credit_instrument= and =swap_leg= already spelled the
+payment frequency =payment_frequency_code=, so each rename moves three or one
+outlier onto the majority name. The survivors are also refdata's: the tables are
+=ores_refdata_day_count_fraction_types_tbl= and
+=ores_refdata_payment_frequencies_tbl=, and the validators are
+=ores_refdata_validate_day_count_fraction_type_fn= and
+=ores_refdata_validate_payment_frequency_fn=.
+
+What each rename moved:
+
+- The generated half regenerates: domain, JSON, table I/O, entity, mapper,
+  repository, service, history field mapper, protocol, generator, insert trigger
+  and checks. For =equity_swap_instrument= the model's =** Validations= row also
+  had to move, because it is a second place the column is named. The first
+  regeneration left the generated insert function writing
+  =NEW.payment_frequency=, and the live insert caught it as =record "new" has no
+  field "payment_frequency"=.
+- The hand-written half, by the compiler and the tests: the ORE bond, credit and
+  equity mappers; the ORE import handler; the shell application's bond and
+  commodity commands; and the trading core equity swap repository test.
+
+Five measured cases were judged NOT renamed, each with the reason:
+
+| Spelling | Why it stays |
+|----------+--------------|
+| =coupon_frequency_code= on =bond_issue= | The issue's coupon cadence. =ores.refdata='s own =payment_frequency= model names exactly four trading columns as storing a payment-frequency code (=swap_leg=, =credit_instrument=, =commodity_instrument=, =equity_swap_instrument=), and =bond_issue= is not one of them |
+| =strip_frequency_code=, =cliquet_frequency=, =fixing_frequency=, =frequency= on =bond_leg_amortization= | Role-qualified schedule and observation frequencies, not the payment frequency; each names a different schedule from a different ORE member |
+| =leg_type= on =bond_leg=, =repo_type= on =bond_repo=, =funding_leg_type= on =bond_trs= | The leg type in three different parent tables, already recorded in Set 2 as soft dependencies on =ores_refdata_leg_types_tbl=. =bond_leg= also carries the name in the hand-written =bond_leg_data= message, so renaming the column alone would leave that message and its round-trip tests on the old name |
+| =day_counter= and =last_period_day_counter= on =bond_leg=, =lock_rate_day_counter= on =bond_forward= | The ORE =DayCounter=, =LastPeriodDayCounter= and =LockRateDayCounter= member names, kept as the document spells them; =day_counter= is in =bond_leg_data= too, which is the =leg_type= case again |
+| =trade_type= on =trade= against =trade_type_code= on the 29 instrument models | One concept under two names, but the reference table is trading's own =ores_trading_trade_types_tbl= rather than a refdata lookup, and PR 4's identity collapse reshapes the trade and instrument identities together |
+
+No rate column is a duplicate under this rule. =coupon_rate=, =fixed_rate=,
+=funding_rate=, =repo_rate=, =recovery_rate=, =participation_rate= and
+=lock_rate= each name a different leg's or product's rate, and none points at a
+shared reference table.
+
+** 5h. M04, every feature in the namespace the loader reads
+
+Eighty entity models were checked: every =ores.codegen.entity= model under
+=projects/ores.trading/modeling/=. The other ten org files are eight field
+groups, the module and the component overview, and none is a =domain_entity=.
+The check reads =_FEATURE_NAMESPACE= in =org_loader.py= and compares it with the
+drawer each model writes: the root =* Flags= drawer for the root namespace,
+=* SQL= → =** Flags= for =sql=, and the C++ =** Presentation= drawer for
+=presentation=.
+
+Features stated by trading models, and the generated output that proves each
+bind:
+
+| Feature | Namespace | Where it is written | Stated by | Generated evidence |
+|---------+-----------+---------------------+-----------+--------------------|
+| =has_tenant_id= | root | the entity root =* Flags= | 29 explicit, 51 by profile | ="tenant_id" uuid not null= in every create script |
+| =has_workspace_id= | root | the entity root =* Flags=, or =trading-instrument= | 2 explicit, the instrument profile | ="workspace_id" uuid not null default ores_utility_live_workspace_id_fn()= in =trading_bond_issues_create.sql= line 59, and the member at =bond_issue.hpp= line 71 |
+| =party_id_from_session= | sql | the profiles, merged into the SQL namespace | every =trading-instrument= entity | =NEW.party_id := current_setting('app.current_party_id')::uuid;= in =trading_callable_swap_instruments_create.sql= lines 110 to 111 |
+| =has_change_reason_cache=, =has_pagination=, =has_uuid_primary_key= | presentation | the profiles, or =trade='s =** Presentation= | the lookups and =trade= | the paged =list_trades_request= at =trade_protocol.hpp= line 115 |
+| =system_scope=, =nullable_tenant_id= | sql | the profiles | the simple lookups | the tenant columns of the lookup create scripts |
+| =extra_checks= | sql | the =* SQL ** Checks= table | 58 models | the in-list checks in the create scripts |
+
+No assignment is inert. No model writes a mapped feature in the wrong drawer,
+and every mapped feature reaches its namespace. The column-level keys are read
+too: =supplied_by= at =core.py= line 2948, =default= and =default_value= at
+lines 886 and 899, and =index_prefix= under the SQL namespace at line 3531.
+
+Five features have no bind in trading, so none can be misplaced: =has_parent_id=,
+=read_only=, =client_read_only=, =party_id_is_target= and =current_state= appear
+in zero of the eighty models. The child tables link with an explicit
+=instrument_id= column and a =* Foreign keys= section rather than the generic
+parent feature, and no trading table is a current-state table. The loader's read
+sites are =org_loader.py= line 3044 (=has_parent_id=), line 2253 (=read_only=
+and =client_read_only=) and line 3408 (=current_state=); the namespace rule
+itself is covered by =test_profile_binding.py=, =test_current_state_shape.py=
+and =test_readonly_current_state_profile.py=.
+
+** 5i. The average type, the commodity producer, and the call type
+
+Three units, ruled by the owner.
+
+- *The average type is trading-local, and deliberate.* =ores.trading.average_type=
+  is authored in the simple-lookup shape: a text =code= key, the bitemporal pair,
+  =Arithmetic= and =Geometric= seeded, a row in the module, an RLS policy beside
+  the other lookups, and no validation function.
+  =commodity_instrument.average_type= and
+  =equity_asian_option_instrument.average_type= point at it. ORE states no
+  averaging set: =commodityAveragePriceOptionData= and
+  =singleUnderlyingAsianOptionData= carry no average member, no =averageType=
+  simple type exists under =external/ore/xsd/=, and no =AverageType= element
+  appears under =external/ore/examples/=. It is the one local reference set in
+  the component and the divergence is stated in the model prose.
+- *The commodity producer contradiction is removed, not guessed at.*
+  =commodity_instrument_mapper.cpp= line 365 read
+  =result.average_type = to_string(d.PriceType);= -- ORE's =priceType=, whose
+  values are =Spot= and =FutureSettlement=, written into a column whose set is
+  =Arithmetic= and =Geometric=. ORE states no averaging member for that family,
+  so the honest fix is to write nothing and leave the column null. The assertion
+  that would have caught it was added to the existing
+  =commodity_mapper_roundtrip_apo= case as =CHECK(r.average_type.empty());=,
+  which fails on the old =Spot= value.
+- *=call_type= is deleted.* ORE's only =CallType= element is on
+  =nettingSetDetails= (=external/ore/xsd/instruments.xsd= line 225), a
+  netting-agreement field, and no =<CallType>= element appears under
+  =external/ore/examples/=. Nothing produced the column: the only writer was the
+  import handler copying a domain member no producer ever set. The column and
+  its check leave the model, the shell command loses its argument, and the
+  import handler loses its assignment. The shape is =knock_out_dates_json='s: an
+  XSD location, a corpus search that finds nothing, and no producer.
+
+** 5j. Defects 14, 15 and 16 are carried to PR 4
+
+The owner ruled that the three defects needing a shape the grammar does not
+express are PR 4's. PR 3 claims none of them.
+
+| # | Defect | Evidence already banked |
+|---+--------+-------------------------|
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | =knock_out_swap_instrument= is never produced: =KnockOutSwap= routes to the scripted mapper (=scripted_instrument_mapper::forward_knock_out_swap= writes =script_name = "KnockOutSwap"=), its =knock_out_dates_json= had no payload and is deleted, and that gap is the evidence that declared coverage, underlyings and the schedule need the reshape |
+| 15 | An underlying is an unqualified name | Nine equity tables carry =underlying_name text=, and the two basket products escape through =basket_json=; the oresmd URI and the =instrument_underlyings= table the defect page describes are PR 4's shape |
+| 16 | No observation schedule | The scalar averaging, fixing, cliquet and strip columns remain; the shared schedule table is the same shape as defect 1's child and is authored with the identity reshape |
 
 ** 6. Regenerate and prove
 
@@ -1328,11 +1462,15 @@ is pre-existing and outside this unit; the next =compass db recreate= resolves i
 | The commodity model regenerates with no drift | Met | The dry run is empty after the in-place regeneration, on the rebased tree |
 | The commodity port builds | Met | =cmake --build build/output/linux-clang-debug-make -j 3= exits 0 with no errors for the whole tree |
 | The commodity port's suites pass | Met | =ores.trading.api=, =ores.trading.core=, =ores.trading.service=, =ores.ore.api=, =ores.ore.core=, =ores.ore.service=, =ores.shell.trading= and =ores.shell.application= are green |
-| The database rebuilds from the tree | Met | =compass db recreate -y -k= exits 0 with no local workaround |
+| The database rebuilds from the tree | Not re-measured | =compass db recreate -y -k= exited 0 on 2026-09-27, before the enumeration unit added the ten lookup tables. Their generated create scripts are reachable from no aggregator, so a rebuild is not re-verified here; the finding is recorded below |
 | The fleet starts | Met | 24 of 24 units ready in two seconds, over busctl |
-| The seven remaining ports repeat the method | Not met | Each needs its model, regeneration, consumer migration and proof |
+| The eight ports repeat the method | Met | Every family in §2e is ported, regenerated and proven; the drift dry run is empty with all of them |
 | The knock-out column is deleted, with no source invented | Met | The model, the create script, the shell verb and the import handler lose the field, the database column is dropped, and the gap is recorded under defect 14 |
 | The equity position child lands and its producer is wired | Met | The table is created with its triggers and its policy, =option_data_json= is dropped, the corpus round trip passes, and the eight suites plus the codegen suite are green |
+| Defect 6 renames each duplicate onto one name | Met | =day_count_code= becomes =day_count_fraction_code= in three entities and =payment_frequency= becomes =payment_frequency_code= in one; §5g records the five spellings judged not renamed |
+| M04 finds no inert assignment | Met | Eighty entity models checked against =_FEATURE_NAMESPACE=; zero misplaced features; §5h records the binds and their generated evidence |
+| The average type is a local reference entity | Met | =ores.trading.average_type= is seeded with two rows, points at both =average_type= columns, and the commodity mapper no longer writes ORE's price type into it |
+| =call_type= is deleted | Met | The column and its check are dropped from the model and the database; the shell argument and the import assignment are gone; §5i records the ORE evidence |
 
 * PRs
 
@@ -1418,3 +1556,67 @@ Two findings from the work:
   landed before this unit, so regenerating it would sweep in unrelated
   schema history. It is left as it was found, and the drift gate does not
   cover it.
+
+** PR 3 close-out (measured 2026-09-28)
+
+The four remaining units were applied to one still tree and then every gate was
+run once. The generated half was written by
+=check_component_drift.py --component trading-cpp= in its in-place mode: it
+reported the new =average_type= files as untracked, which is the expected
+failure for a new entity, and the dry run then agreed with the tree.
+
+| Check | Result |
+|-------+--------|
+| =pytest projects/ores.codegen/tests -q= | 806 passed |
+| =check_component_drift.py --component trading-cpp --dry-run= twice | No drift, both runs |
+| =check_component_drift.py --all --dry-run= | No drift |
+| =cmake --build build/output/linux-clang-debug-make -j 3= | Exit 0, zero =error:= |
+| =ctest=, the nine owned suites selected (=ores.trading.*=, =ores.shell.trading.*=, =ores.shell.application.*=, =ores.ore.*= and =ores.utility.*=) | 9 of 9 passed |
+| =validate_docs.sh= | 40 components pass |
+
+Two defects were caught by the gates rather than by the diff, which is the
+reason the build and the suites run after the regeneration:
+
+1. The generated =ores_trading_equity_swap_instruments_insert_fn= still wrote
+   =NEW.payment_frequency= after the first regeneration, because the model's
+   =** Validations= row names the column a second time. The live insert in
+   =ores.trading.core.tests= reported =record "new" has no field
+   "payment_frequency"=. The row is corrected in
+   =ores.trading.equity_swap_instrument.org= and the component regenerates
+   clean.
+2. The shell application's callable swap command, not the generated shell, was
+   the second =call_type= consumer. The whole-tree build named it.
+
+The DDL applied to =ores_dev_merry_newton=:
+
+| Change | Count |
+|--------+-------|
+| Columns renamed: =day_count_code= to =day_count_fraction_code= on =bond_issues=, =commodity_instruments= and =credit_instruments= | 3 |
+| Column renamed: =payment_frequency= to =payment_frequency_code= on =equity_swap_instruments= | 1 |
+| Check and column dropped: =ores_trading_callable_swap_instruments_tbl_call_type_check= and =call_type= | 2 |
+| Table created: =ores_trading_average_types_tbl=, with its two indexes, insert function, insert trigger, delete rule and notify trigger | 1 |
+| RLS policy created and enabled: =average_types_tenant_isolation_policy= | 1 |
+| Privileges granted on the new table: =rw= (select, insert, update, delete, truncate) and =ro= (select) | 2 |
+| Reference rows seeded: =Arithmetic= and =Geometric= | 2 |
+| Generated create and notify-trigger scripts re-applied to resync every trigger function with the renamed columns (=bond_issues=, =commodity_instruments=, =credit_instruments=, =equity_swap_instruments=, =callable_swap_instruments=) | 10 |
+
+One finding is recorded rather than fixed. The ten lookup tables the
+enumeration unit added -- =long_short_types=, =moment_types=, =price_types=,
+=amortization_types=, =average_types=, =option_types=, =exercise_types=,
+=settlement_types=, =barrier_types=, =activity_categories=, =return_types= and
+=payoff_types= -- have generated create scripts that no aggregator includes:
+=projects/ores.sql/create/trading/trading_create.sql= reaches 140 scripts and
+none of them is a lookup. A fresh =compass db recreate= would create the
+reference tables' consumers and then fail on the seeds. The drop side is the
+same: =drop_trading.sql= omits the lookup drops along with 20 pre-existing
+equity instrument drops. Wiring the aggregators is a hand edit that no gate
+measures, and a rebuild is not one of this PR's gates, so it is left to the
+shell-and-verification PR (W04) with the count above so the gap is not
+rediscovered.
+
+Another finding, not fixed: the one-shot
+=trading_bond_instruments_flat_columns_to_relational_rows_migration.sql= still
+names =day_count_code=. It is a historical reshape against a pre-reshape
+database, is referenced by no aggregator, and is neither compiled nor run, so it
+is expected to keep the legacy name on its source side.
+

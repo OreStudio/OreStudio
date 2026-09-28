@@ -141,7 +141,7 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_type_code> <trade_id> <reference_entity> <currency> <notional> <spread> "
-        "<recovery_rate> <tenor> <start_date> <maturity_date> <day_count_code> "
+        "<recovery_rate> <tenor> <start_date> <maturity_date> <day_count_fraction_code> "
         "<payment_frequency_code> <index_name> <index_series> <seniority> <restructuring> "
         "<description> <option_type> <option_expiry_date> <option_strike> <linked_asset_code> "
         "<tranche_attachment> <tranche_detachment> <reason> <commentary>");
@@ -152,7 +152,7 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <instrument_id> <trade_type_code> <trade_id> <reference_entity> <currency> <notional> "
-        "<spread> <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_code> "
+        "<spread> <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_fraction_code> "
         "<payment_frequency_code> <index_name> <index_series> <seniority> <restructuring> "
         "<description> <option_type> <option_expiry_date> <option_strike> <linked_asset_code> "
         "<tranche_attachment> <tranche_detachment> <reason> <commentary> [--version <n>]");
@@ -164,9 +164,10 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <reference_entity> "
         "<currency> <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date> "
-        "<day_count_code> <payment_frequency_code> <index_name> <index_series> <seniority> "
-        "<restructuring> <description> <option_type> <option_expiry_date> <option_strike> "
-        "<linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> <commentary>");
+        "<day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> "
+        "<seniority> <restructuring> <description> <option_type> <option_expiry_date> "
+        "<option_strike> <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -378,7 +379,9 @@ void credit_instrument_commands::process_add(std::ostream& out,
         read_token(req.change.write.tenor, parsed->positionals[next++], "tenor");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.day_count_code, parsed->positionals[next++], "day_count_code");
+        read_token(req.change.write.day_count_fraction_code,
+                   parsed->positionals[next++],
+                   "day_count_fraction_code");
         read_token(req.change.write.payment_frequency_code,
                    parsed->positionals[next++],
                    "payment_frequency_code");
@@ -457,7 +460,9 @@ void credit_instrument_commands::process_set(std::ostream& out,
         read_token(req.change.write.tenor, parsed->positionals[next++], "tenor");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.day_count_code, parsed->positionals[next++], "day_count_code");
+        read_token(req.change.write.day_count_fraction_code,
+                   parsed->positionals[next++],
+                   "day_count_fraction_code");
         read_token(req.change.write.payment_frequency_code,
                    parsed->positionals[next++],
                    "payment_frequency_code");
@@ -550,7 +555,9 @@ void credit_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.tenor, parsed->positionals[next++], "tenor");
             read_token(change.write.start_date, parsed->positionals[next++], "start_date");
             read_token(change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-            read_token(change.write.day_count_code, parsed->positionals[next++], "day_count_code");
+            read_token(change.write.day_count_fraction_code,
+                       parsed->positionals[next++],
+                       "day_count_fraction_code");
             read_token(change.write.payment_frequency_code,
                        parsed->positionals[next++],
                        "payment_frequency_code");

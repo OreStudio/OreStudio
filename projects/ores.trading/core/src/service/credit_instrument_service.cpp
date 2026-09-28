@@ -93,7 +93,7 @@ domain::credit_instrument to_domain(const messaging::credit_instrument_write& wr
     v.tenor = write.tenor;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
-    v.day_count_code = write.day_count_code;
+    v.day_count_fraction_code = write.day_count_fraction_code;
     v.payment_frequency_code = write.payment_frequency_code;
     v.index_name = write.index_name;
     v.index_series = write.index_series;

@@ -42,7 +42,7 @@ namespace ores::trading::domain {
  * One row per bond issue (ISIN), the stable row every instrument of the
  * family references. The columns map one to one from bondData
  * (instruments.xsd lines 382-403): security_id, issuer, currency,
- * face_value, coupon_rate, coupon_frequency_code, day_count_code,
+ * face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
  * issue_date and settlement_days. Only SecurityId is required by that
  * schema; every other element is optional, so every other column is
  * nullable and an absent element is stored as NULL rather than as an
@@ -125,14 +125,10 @@ struct bond_issue final {
      * @brief Day count convention of the bond (30/360, Actual/360, Actual/Actual).
      *
      * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
-     * ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft
-     * reference into a real foreign key.
-     *
-     * Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions belong to
      * ores.refdata, so the dependency is recorded rather than copied. The values are ORE's
      * dayCounter spellings. PR 4 tightens the soft reference into a real foreign key.
      */
-    std::string day_count_code;
+    std::string day_count_fraction_code;
 
     /**
      * @brief Issue date of the bond (ISO 8601 date string).

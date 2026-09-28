@@ -228,6 +228,10 @@ Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerci
 
 Arithmetic or Geometric averaging for Asian options.
 
+Soft FK to ores_trading_average_types_tbl: ORE states no averaging set for
+commodityAveragePriceOptionData, so this is a trading-local closed set by
+decision. PR 4 tightens the soft reference into a real foreign key.
+
 ** averaging_start_date
 :PROPERTIES:
 :type:     date
@@ -340,7 +344,7 @@ Lower barrier level.
 
 Upper barrier level.
 
-** day_count_code
+** day_count_fraction_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string

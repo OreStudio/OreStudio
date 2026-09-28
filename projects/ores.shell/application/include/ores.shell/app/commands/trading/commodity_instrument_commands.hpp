@@ -81,7 +81,7 @@ public:
                                                  std::string fixed_price,
                                                  std::string start_date,
                                                  std::string maturity_date,
-                                                 std::string day_count_code,
+                                                 std::string day_count_fraction_code,
                                                  std::string payment_frequency_code,
                                                  std::string option_type,
                                                  std::string strike_price,

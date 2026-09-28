@@ -612,12 +612,8 @@ public:
                     }
 
                     add_step("acme_group.staff_photos", "starting", 0);
-                    std::vector<std::string> group_staff_photos;
-                    attach_staff_photos(client,
-                                        *ctx_expected,
-                                        tenant_id_str,
-                                        "acme.acme_group.accounts",
-                                        group_staff_photos);
+                    attach_staff_photos_best_effort(
+                        client, *ctx_expected, tenant_id_str, "acme.acme_group.accounts");
                     add_step("acme_group.staff_photos", "completed");
 
                     // Market data for the holding party: only its own CRM
@@ -779,12 +775,8 @@ public:
 
                 const auto photo_label = office.code + ".staff_photos";
                 add_step(photo_label, "starting", 0);
-                std::vector<std::string> office_staff_photos;
-                attach_staff_photos(client,
-                                    *ctx_expected,
-                                    tenant_id_str,
-                                    "acme." + office.code + ".accounts",
-                                    office_staff_photos);
+                attach_staff_photos_best_effort(
+                    client, *ctx_expected, tenant_id_str, "acme." + office.code + ".accounts");
                 add_step(photo_label, "completed");
             }
 
@@ -1051,7 +1043,9 @@ private:
     }
 
     /// Publishes one bundle, follows its nested run, and throws the reason the
-    /// publication was refused or the run did not finish.
+    /// publication was refused or the run did not finish. The label names the
+    /// publication in the progress lines, because a step may publish for more
+    /// than one party and the lines would otherwise not say which.
     void publish_bundle_or_throw(internal_request_client& client,
                                  const std::string& bundle_code,
                                  const std::string& username,
@@ -1222,6 +1216,10 @@ private:
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
             attach_staff_photos(client, tenant_ctx, command.tenant_id, assignment.dataset, images);
 
+            // The party is read here, after any earlier step that wrote it, so
+            // the version the logo's write states is the version the store
+            // holds. Giving the logo its own read is what keeps that true
+            // whatever order the profile states the kinds in.
             if (!arguments.party_logo.empty() && !party->image_id)
                 attach_party_logo(
                     client, tenant_ctx, *party, arguments.party_logo, command.tenant_id, images);
@@ -1254,8 +1252,11 @@ private:
         params.party_id = boost::uuids::to_string(system_party->id);
         const auto params_json = dq::messaging::build_params_json(params);
         for (const auto& bundle_code : arguments.bundles)
-            publish_bundle_or_throw(
-                system_client, bundle_code, actor.username, params_json, bundle_code);
+            publish_bundle_or_throw(system_client,
+                                    bundle_code,
+                                    actor.username,
+                                    params_json,
+                                    system_party->full_name);
 
         // Every party the tenant holds consumes the shared stream through its
         // own bindings, which is how the consistent world reaches each party.
@@ -1522,7 +1523,9 @@ private:
     // @p save_client impersonating the consuming party, because
     // feed-binding saves stamp the binding's party from the authenticated
     // context (a security boundary). Sources already bound for the party
-    // are skipped, so the step is re-runnable. Workspace defaults to the
+    // are skipped, so the step is re-runnable: a party that already holds
+    // every source returns true without writing, and a party that holds
+    // some of them writes only the rest. Workspace defaults to the
     // Live sentinel. IR sources are deliberately not bound: IR producers
     // publish on synthetic.v1.curve_family.<source>, a subject the ingest
     // loop never listens to -- binding them would claim ingestion for a
@@ -1643,7 +1646,9 @@ private:
             // source. A must-not-exist claim therefore refuses the second
             // party's binding for a source the first party already holds.
             // The freshness check above is what keeps this idempotent, and
-            // the natural key's unique index is what keeps it honest.
+            // the natural key's unique index
+            // (feed_bindings_party_id_ore_key_source_name_uniq_idx) is what
+            // keeps it honest.
             req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             req.intent.reason_code = "system.new_record";
             req.intent.commentary =
@@ -1720,6 +1725,24 @@ private:
             return std::nullopt;
         }
         return new_image_id;
+    }
+
+    /// The legacy synchronous handler treats a staff photo as cosmetic: it
+    /// never read the outcome of the work, so a missing dataset or a template
+    /// that would not copy was skipped rather than reported. A step kind
+    /// reports it instead, because it has an instance to report to. This
+    /// wrapper is where that difference lives until the handler retires.
+    void attach_staff_photos_best_effort(internal_request_client& client,
+                                         ores::database::context& ctx,
+                                         const std::string& tenant_id,
+                                         const std::string& dataset_code) {
+        try {
+            std::vector<std::string> images;
+            attach_staff_photos(client, ctx, tenant_id, dataset_code, images);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                << "attach_staff_photos did not complete for " << dataset_code << ": " << e.what();
+        }
     }
 
     // Attaches a profile picture to every staff account the named dataset

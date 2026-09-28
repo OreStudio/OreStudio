@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/execute-the-acme-step-kinds
-#+pr: 2341
+#+pr: 2342
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -26,11 +26,11 @@ iam.v1.tenants.provision drives the ACME demo card end to end: the three step ki
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The three executors, their argument parsers and the ACME demo's rows are in, and the demo card's run completes on the live deployment. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request.                |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -156,6 +156,20 @@ task.
   tenant's bootstrap mode is a create over a row the provisioner seeded.
   The tenant's status is active and its data is in place, so the run is
   accepted; the settings defect is captured for the components that own it.
+- *A rerun after a partial failure.* One was not run, because the retry
+  verb the workflow needs does not exist yet: it is plan step 8, and until
+  it lands a stopped run stays stopped. What makes each kind re-runnable is
+  nevertheless in place, and read from the code rather than assumed. Every
+  bundle publication is an upsert by construction: all thirty-one refdata
+  publish functions, and the iam, assets, synthetic and marketdata ones
+  beside them, call the version-replace helper before they write. A copied
+  image is looked up by code and tenant before it is written, an account
+  save echoes the record it read, a party save states the version it read,
+  the administrator's party association claims nothing, and the feed
+  bindings skip the sources the party already holds and report success for
+  a party that holds them all. So a rerun re-publishes what is already
+  there and writes only what is missing, which is the behaviour the retry
+  verb will rely on.
 
 * Test Scenarios
 
@@ -172,13 +186,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2342][#2342]] | [agile] Close the task that executes the ACME step kinds |
 | [[https://github.com/OreStudio/OreStudio/pull/2341][#2341]] | [iam] Execute the ACME provisioning step kinds |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =attach_staff_photos= now throws, and the legacy synchronous ACME handler still calls it, so one bad photo can abort a run it used to skip past. | =tenant_provisioning_handler.hpp= | Fixed | The legacy handler's two call sites go through =attach_staff_photos_best_effort=, which logs and carries on, the way =finish_party= already does. The step kinds keep the strict behaviour, because a step has an instance to report to. |
+| 2 | =precondition_kind::any= on feed-binding writes leaves the natural key's unique index as the only duplicate guard; confirm it exists and covers the party, the ORE key and the source. | =tenant_provisioning_handler.hpp= | Confirmed | The index is =feed_bindings_party_id_ore_key_source_name_uniq_idx= on =(tenant_id, party_id, ore_key, source_name)= for live rows. The comment now names it, so the claim is checkable where it is made. |
+| 3 | A rerun of =load_staff= and =start_market_feeds= after a partial failure repeats bundle publications and party finishing; and =create_theme_feed_bindings= must return true for a party already bound. | =tenant_provisioning_handler.hpp= | Noted | A rerun was not run, because the retry verb does not exist yet (plan step 8); the notes record what makes each kind re-runnable. Every publish function is an upsert, and a party holding every source returns true without writing. |
+| 4 | The party's version in =attach_photos= depends on the step being read after =load_staff=; and the fifth argument of =publish_bundle_or_throw= reads like a party name at one call site. | =tenant_provisioning_handler.hpp= | Fixed | The read is in this step, after any earlier writer, and a comment says so; the argument is documented as the label the progress lines carry, and the call names the system party. |
 
 * Result
 

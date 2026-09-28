@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 219A14FC-B15E-459F-B654-757B898C6177
+:END:
+#+title: scheduler wakes on a fixed minute grid, not the next due instant
+#+description: The loop arms a timer for the next wall-clock minute boundary and evaluates every job it holds on each wake, so a scheduler with one daily job wakes 1440 times a day and parses every job's cron expression every time. The due instant is known in advance: the loop should sleep until the earliest next occurrence among the jobs it holds, re-arm when the job set changes, and bound the sleep so a wall-clock adjustment cannot strand a firing.
+#+type: capture
+#+level: cross
+#+filetags: :scheduler:performance:engine:bug:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Sleep until the next due instant, instead of waking on the next minute
+boundary. The loop holds each job's next occurrence, sleeps until the
+earliest of them, and on each wake fires the jobs whose occurrence has
+arrived and recomputes theirs. Two requirements belong to the change:
+
+- The change event that already tells the loop to re-read the job set must
+  also re-arm the timer, because a new or edited job may be due sooner than
+  the instant the loop is sleeping towards. Without it, a job registered
+  with an imminent occurrence waits for a sleep it was not part of.
+- The sleep must be bounded and re-derived. A cron expression names
+  wall-clock instants, and a monotonic timer does not follow the wall
+  clock, so an adjustment (an NTP step, a daylight-saving change) moves the
+  due instants while the timer keeps its original duration.
+
+* Why
+
+The loop computes the next wall-clock minute boundary and sleeps until it:
+
+#+begin_src c++
+boost::asio::steady_timer timer(ioc);
+timer.expires_after(next_minute_boundary(now) - now);
+#+end_src
+
+Every wake then evaluates every job the loop holds, and each evaluation asks
+the job's expression for its next occurrence after the job's last recorded
+firing. The due instant is therefore known in advance and nothing uses it:
+
+- A scheduler holding one job that runs daily wakes 1440 times a day to find
+  nothing due.
+- Every wake evaluates every held job, and asking an expression for its next
+  occurrence parses that expression: the parse happens inside the call, so
+  the cost is one parse per job per wake — 1440 parses per job per day for a
+  job that fires once. The live status read pays the same parse per job when
+  it derives each job's next fire time.
+- The rate of the wake is unrelated to the schedules held. The granularity
+  is right (a minute is the shortest interval a cron expression can name),
+  but the loop wakes on a fixed grid rather than at the instants the jobs
+  name.
+
+Correctness is not in question. A job whose occurrence passed while a tick
+was slow or the service was down is still fired once at the next wake,
+because the reference point is the job's last recorded firing and missed
+occurrences are not replayed. The defect is the work done per unit time, and
+that work grows with the number of jobs held, most of which are not due at
+any given wake. The same design also leaves every job's next occurrence
+uncached, so the monitor's status read repeats work the loop has already
+done.
+
+* References
+
+- The loop and its timer:
+  =projects/ores.scheduler/core/src/service/scheduler_loop.cpp= (=run= and
+  =tick=).
+- The due decision and the boundary arithmetic:
+  =projects/ores.scheduler/core/src/service/schedule_decision.cpp=
+  (=is_due=, =next_minute_boundary=).
+- The parse inside the expression:
+  =projects/ores.scheduler/api/src/domain/cron_expression.cpp=
+  (=next_occurrence= builds the parser on each call).
+- The status read that derives a next fire time per job:
+  =projects/ores.scheduler/modeling/ores.scheduler.scheduling_operations.org=.
+- The target-state design this gap is measured against:
+  [[id:172812F0-17F0-47BC-9933-7A70848105BC][the scheduler loop]].
+
+* See also
+
+- =scheduler_instances_filters_one_page_not_the_collection= and
+  =job_instance_summary_name_falls_back_to_the_id= — the sibling captures on
+  the scheduler's operational reads.

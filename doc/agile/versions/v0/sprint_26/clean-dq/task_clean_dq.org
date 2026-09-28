@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean-dq:sprint_26:v0:
 #+owner: marco
-#+branch: feature/dq-m08-flags
-#+pr: 2315
+#+branch: chore/close-dq-clean-task
+#+pr: 2316
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -28,11 +28,11 @@ This is pass 2. Pass 1, [[id:686E9BB0-5A38-4E72-93B8-65CF76B35710][Model the han
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] |
-| Now          | Every one of the 49 items passes. Three defect batches landed as #2286, #2291 and #2296, #2309 verified V03 and V04 against a live fleet rather than excepting them, and the last item, M08, is fixed on this branch: =ores.dq.fsm_state='s two integer flags are boolean, the dq portfolio artefact's =is_virtual= is boolean, and each change carries a one-shot migration. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
-| Next         | Nothing for the standard. Two things this pass deliberately left are recorded under *Open items*: the generator gate that would keep every component diagram current, and pass 1's seven unmodelled artefact tables. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                              |
 
 * Acceptance
@@ -236,6 +236,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2316][#2316]] | [agile] Close the dq clean-standard task |
 | [[https://github.com/OreStudio/OreStudio/pull/2315][#2315]] | [dq] Make the FSM state flags boolean |
 | [[https://github.com/OreStudio/OreStudio/pull/2309][#2309]] | [dq] Verify V03 and V04 against a live fleet |
 | [[https://github.com/OreStudio/OreStudio/pull/2305][#2305]] | [agile] Close the dq V08 item with a reason for every untouched file |

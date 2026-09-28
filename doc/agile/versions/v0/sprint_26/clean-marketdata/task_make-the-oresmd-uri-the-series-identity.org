@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr:
+#+pr: 2358
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -200,7 +200,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2358][#2358]] | [marketdata] Write the market series' oresmd identity |
 
 * Review
 

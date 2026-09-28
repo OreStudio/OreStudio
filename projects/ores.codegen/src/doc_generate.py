@@ -22,6 +22,7 @@ document is expected to follow.
 """
 
 import argparse
+import re
 import sys
 import uuid
 from datetime import date, timedelta
@@ -62,6 +63,7 @@ TYPE_TO_TEMPLATE = {
     "feature": "doc_feature.org.mustache",
     "user_journey": "doc_user_journey.org.mustache",
     "workflow": "doc_workflow.org.mustache",
+    "report": "doc_report.org.mustache",
 }
 
 # entity_org --shape presets: knob bundles sampled from a known-good
@@ -135,6 +137,7 @@ DEFAULT_INITIAL_STATE = {
     "investigation": "",
     "runbook": "",
     "workflow": "",
+    "report": "",
     "entity_org": "",
     "field_group": "",
     "junction": "",
@@ -163,7 +166,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
-    "workflow",
+    "workflow", "report",
     "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
     "facet", "facet_group", "technical_space", "archetype", "profile", "feature",
@@ -401,6 +404,10 @@ def parse_args(argv=None):
                              help=f"For --type entity_org: override the "
                                   f"'{_knob}' knob set by --shape (or its "
                                   f"default of false if no --shape is given).")
+    parser.add_argument("--report-code", dest="report_code", default="",
+                        help="For --type report: the stable code this report is "
+                             "known by, written to #+report_code:. Defaults to "
+                             "the slug.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. acme_corporation). Drives the output path "
@@ -668,6 +675,18 @@ def main(argv=None):
         dataset_type = ""
         source_methodology = ""
 
+    # report carries the stable code its definitions and seeds refer to.
+    if args.type == "report":
+        report_code = args.report_code or args.slug
+        # The code is a key: a seed writes it and a definition refers to it, so
+        # a malformed one is refused here rather than becoming a lookup that
+        # silently never matches.
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", report_code):
+            sys.exit(f"error: the report code must be lower_snake_case: "
+                     f"'{report_code}'")
+    else:
+        report_code = ""
+
     goal_default = {
         "task": "(Describe what user-visible-or-internal change this "
                 "task produces.)",
@@ -742,6 +761,7 @@ def main(argv=None):
         "lookup_has_image_id": args.entity_has_image_id,
         "lookup_has_artefact_insert_fn": args.entity_has_artefact_insert_fn,
         "dataset_name": dataset_name,
+        "report_code": report_code,
         "dataset_version": dataset_version,
         "dataset_type": dataset_type,
         "source_methodology": source_methodology,
@@ -763,6 +783,8 @@ def main(argv=None):
     # - workflow:  <parent-dir>/workflow_<slug>.org  (flat file under
     #              doc/knowledge/workflows, prefixed so the workflow pages
     #              sort together in the shared folder)
+    # - report:    <parent-dir>/report_<slug>.org    (flat file under
+    #              doc/knowledge/reports, prefixed for the same reason)
     # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
@@ -850,6 +872,12 @@ def main(argv=None):
         # Prefixed for the same reason as journey_: every workflow page
         # shares doc/knowledge/workflows, so the prefix groups them.
         leaf = args.slug if args.slug.startswith("workflow_") else f"workflow_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
+    elif args.type == "report":
+        # Every report page shares doc/knowledge/reports, so the prefix groups
+        # them in the folder and makes the type obvious in ls.
+        leaf = args.slug if args.slug.startswith("report_") else f"report_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",

@@ -370,6 +370,32 @@ compass add workflow \
 This writes =doc/knowledge/workflows/workflow_tenant_provisioning.org=. Fill in
 every section, then wire the page into the index that lists the workflows.
 
+** New report
+:PROPERTIES:
+:ID: C3323CE4-705C-44E9-B902-B40B7BA67942
+:END:
+
+[[id:4498456E-71DE-4250-8080-727690FAEFE6][Report pages]] live in
+[[proj:doc/knowledge/reports][=doc/knowledge/reports/=]], one page per report,
+as =report_<slug>.org=. =--parent-dir= is optional and defaults to that folder.
+A report page is written from the report's definition and the ORE document that
+configures it, never from a run of it, and it links the pipeline knowledge in
+[[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] rather than
+restating it. =--report-code= is the stable code a definition or a seed refers
+to, and it defaults to the slug.
+
+#+begin_src sh :results verbatim
+compass add report \
+  --slug headline_position \
+  --title "Headline Position" \
+  --description "The headline Greeks for a book or portfolio: the first risk overview a trading desk and the market risk function read." \
+  --report-code headline_position \
+  --tags "report,market-risk,greeks"
+#+end_src
+
+This writes =doc/knowledge/reports/report_headline_position.org=. Fill in every
+section, then wire the page into the inventory that lists the reports.
+
 ** New capture
 :PROPERTIES:
 :ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9

@@ -21,21 +21,28 @@ title A firing that opens a run: where the schedule's part ends
 
 participant "the scheduler" as scheduler
 database "the firing record" as record
+participant "the run's owner\n(ores.reporting, for a report)" as owner
+database "the owner's rows\n(a report instance)" as domain
 participant "the workflow engine\n(process manager)" as engine
 database "the run state" as run
 participant "the caller" as caller
 
 scheduler -> record : record the firing as starting\n(the job, the point, the moment)
-scheduler -> engine : publish the start message\n(workflow.v1.start; the run's identity\ncomes from the firing; no reply subject)
+scheduler -> owner : publish the trigger\n(the subject the run's owner declares;\nthe firing's identity travels in it)
+activate owner
+owner -> domain : create the row the run acts on
+owner -> engine : publish the start message\n(workflow.v1.start; the run's identity\nis named here; no reply subject)
+owner --> scheduler : answer
+deactivate owner
 
 note right of scheduler
     The job neither waits for the run
-    nor reads its state. The start is
-    fire-and-forget, so the publish
-    returns immediately.
+    nor reads its state. The trigger is
+    a request, and the reply says only
+    that it was accepted.
 end note
 
-scheduler -> record : record the firing succeeded\n(the message was published;\nthe run is not read)
+scheduler -> record : record the firing succeeded\n(the trigger was accepted;\nthe run is not read)
 
 engine -> run : create the run\n(from the definition the start names)
 engine -> engine : dispatch the declared steps,\none at a time
@@ -49,7 +56,7 @@ caller -> run : follow the run through\nthe progress read
 note over engine, run
     The contents of the run, and how it ends,
     belong to the workflow cluster. The firing
-    records only that the start was published.
+    records only that the trigger was accepted.
 end note
 
 @enduml

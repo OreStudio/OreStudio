@@ -7,21 +7,24 @@
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:pipeline:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 
 * Summary
 
-A report run is a sequence of six phases. The first produces the input the
-engine will consume; the last closes the run. Between them the work is handed
-to the compute grid, executed on a worker node, and brought back. No phase calls
-another: each is invoked by the workflow engine, and each is handed the
-identifier or the location of what the previous phase produced rather than its
+A report run is a sequence of phases. Pre-processing produces the input the
+engine will consume; submission turns it into work on the grid; execution runs
+the engine on a worker node; retrieval records where the output is;
+post-processing reads it; and finalisation closes the run. No phase calls
+another: the workflow engine invokes each step, and each step is handed the
+identifier or the location of what the previous step produced rather than its
 contents.
 
-Two phases — pre-processing and post-processing — can be replaced by a prepared
-substitute. This is what allows the pipeline to be exercised, and the workflow
-around it tested, before the trade and market data components can supply what
-pre-processing needs. The mechanism is described in
+The definition's run configuration decides how much of that a run executes.
+Pre-processing and post-processing are each either executed or replaced by a
+prepared substitute, so a run executes the whole pipeline or a shorter chain.
+That is what lets the pipeline, and the workflow around it, be exercised before
+the trade and market data components can supply what pre-processing needs. The
+mechanism is described in
 [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]].
 
 * Detail
@@ -42,7 +45,27 @@ be replaced at all. Submission, execution and retrieval are the same whatever
 produced the input and whatever will be done with the output, so a run that
 substitutes both ends still exercises the whole of the middle.
 
-#+caption: One report run end to end: the schedule firing, the workflow building the phase list from the run configuration, and the six phases with the messages each uses.
+** The phases as the workflow runs them
+
+The pipeline decomposes into six phases; the workflow implements them as steps,
+and the two decompositions do not map one to one. Pre-processing is four steps
+rather than one, and retrieval and post-processing are one step rather than two.
+The steps are what a definition's run configuration actually selects.
+
+#+ATTR_HTML: :class hug-leading
+| Run configuration | Steps that run |
+|-------------------+----------------|
+| =pre_processing= executes, =post_processing= executes | =gather_trades=, =gather_market_data=, =assemble_bundle=, =prepare_ore_package=, =submit_compute=, =collect_compute_results=, =finalise= |
+| =pre_processing= substituted | =resolve_prepared_input=, =submit_compute=, =collect_compute_results=, =finalise= |
+| =post_processing= ignored | As above, with =ignore_compute_results= in place of =collect_compute_results=. |
+
+The chain is a pure function of the run configuration, because the engine
+rebuilds it on every dispatch and again when it recovers an interrupted run.
+A step addresses an earlier step's result by the name of the step that produced
+it, and a builder that cannot find what it consumes stops the run. The workflow
+itself is on [[file:../workflows/workflow_report_execution.org][Report execution]].
+
+#+caption: One report run end to end: the trigger, the chain the workflow builds from the run configuration, and the messages each step uses.
 [[proj:doc/knowledge/architecture/report_processing_pipeline.png]]
 
 Source: [[./report_processing_pipeline.puml][=report_processing_pipeline.puml=]]. Regenerate with

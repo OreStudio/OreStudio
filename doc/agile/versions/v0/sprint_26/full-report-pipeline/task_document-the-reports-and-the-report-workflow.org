@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: FCDE3910-A534-4598-A44D-4FC280DB04B5
+:END:
+#+title: Task: Document the reports and the report workflow
+#+description: Give individual reports their own document type and inventory, document the report execution workflow with the workflow document type, reconcile the reporting architecture pages with the run configuration and the engine guarantees, and record the analysis.
+#+type: task
+#+level: s1
+#+filetags: :documentation:reporting:workflow:codegen:full-report-pipeline:sprint_26:v0:
+#+owner: marco
+#+branch: feature/document-the-reports-and-the-report-workflow
+#+pr: 2344
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader can find one page per report, one page for the report execution workflow, and architecture pages that agree with the code. The report document type carries the sections an individual report needs: purpose, audience, frequency, the ORE XML that configures it, and its inputs and outputs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The report document type is registered in codegen and in compass, with a contract page and a generated scaffold.
+- A report inventory lists the documented reports, and at least one report is documented end to end.
+- The report execution workflow has a workflow page with every required section, an interaction diagram, and a row in the workflow inventory.
+- The reporting architecture pages state the two run chains and name-addressed step results, and the analysis records where reporting does not meet the engine guarantees.
+
+* Plan
+
+1. Read the three clusters and verify the code each page describes, claim by
+   claim. Four read-only surveys ran in parallel, one per cluster plus one for
+   the report enumerations, and then every claim this task acts on was verified
+   directly in the tree.
+2. Add the =report= document type: the template, its registration in codegen and
+   compass, the contract page, the glossary entry, the taxonomy row, the recipe
+   section, the generator document, the regulatory-function row, the regenerated
+   skill table, and a test suite.
+3. Add the report inventory and two report pages, scaffolded through the new
+   verb rather than written by hand.
+4. Add the report execution workflow page, its interaction diagram, and its row
+   in the workflow inventory.
+5. Correct the four places where a page contradicted the code, and re-render the
+   three diagrams that carried the same claims.
+6. Record the analysis as an investigation, and state the idempotency, warning
+   and deadline findings on the pages that own them.
+7. Run the lint, the generator checks and the codegen suite, then open the PR.
+
+The plan is unchanged from what was agreed before work started, except that the
+report pages number two rather than one: the test report the sibling story needs
+is a report page too, and documenting only a production report would have left
+the framework's second use case untested.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Document types registered in the generator | 31, was 30 | =.audit/cgvenv/bin/python -c "import sys; sys.path.insert(0,'projects/ores.codegen/src'); import doc_generate; print(len(doc_generate.TYPE_TO_TEMPLATE))"= | =d3325300d5= |
+| Report pages | 2 | =ls doc/knowledge/reports/report_*.org | wc -l= | =d3325300d5= |
+| Workflow pages | 3, was 2 | =ls doc/knowledge/workflows/workflow_*.org | wc -l= | =d3325300d5= |
+| Pages corrected for contradicting the code | 3, plus 3 diagrams | the =Conclusions= table on [[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][the investigation]] | =d3325300d5= |
+| Generator tests | 12 added | =.audit/cgvenv/bin/python -m pytest projects/ores.codegen/tests/test_doc_report_type.py -q= | =d3325300d5= |
+
+The commit column names the tree the numbers describe, which is the tree the
+branch started from. The suite size in the final run is on the PR.
+
+* Notes
+
+- The analysis is
+  [[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][Does reporting use what the workflow engine guarantees?]].
+  It found that reporting does not use three of the engine's guarantees:
+  the idempotency check, the warning outcome, and a step deadline. The first is
+  a correctness defect that restart recovery creates, and it is recorded on
+  [[id:CA025E1C-CA41-42C1-92BB-F8E723E744E2][Define and enforce the orchestration contract]].
+- The report pages are written from the report's definition and its ORE
+  configuration, not from a run. Neither report has been run yet, and the pages
+  say so where it matters: the smoke test's =* Test coverage= names the four-step
+  chain it will run, and the production report's =* Outputs= states that the
+  result store is not built.
+- The three report enumerations in the tree do not agree: 22 business reports on
+  the risk reporting page, 31 operational definitions in the seed, and 35 ORE
+  analytic types in the schema-derived taxonomy. The inventory states which is
+  which rather than merging them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2344][#2344]] | [reporting] Document the reports, the report workflow, and reconcile the pages |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The report-code expression reads as if the conditional might bind differently | =doc_generate.py= | Accepted | Split into an if/else, so no reader has to parse the precedence. |
+| 2 | =--report-code= is not validated, and it is a stable key | =doc_generate.py= | Accepted | The resolved code must match =[a-z][a-z0-9_]*=; five parametrised cases cover rejection. |
+| 3 | The scaffold helper asserts one file but not which | =test_doc_report_type.py= | Accepted | The helper asserts the exact filename and that nothing else was written; the naming rule keeps a case that discovers the file instead of predicting it. |
+| 4 | The test pins the glossary id | =test_doc_report_type.py= | Accepted | The id is read from =glossary.org=, so a renamed entry fails here as a template that needs updating. |
+| 5 | The template's =GENERATED FILE= header names a source that has to hold the block | =doc_report.org.mustache= | Answered, no change | =projects/ores.codegen/library/templates/doc.org= does not exist, and all 144 =doc_*.org.mustache= templates carry the same boilerplate. Six are tangled from a literate =_org.org= sibling; the rest, the workflow type added earlier and this one among them, are maintained in place. =doc_generator.md= now says so, and the tangle job produces no diff for this file. |
+| 6 | The idempotency gap is only in an investigation, with no follow-up | =task_use-the-idempotency-check.org= | Accepted | A task now carries the code fix, linked from the story's decision 9 and from the investigation's first recommendation. |
+
+* Result
+
+Delivered in [[https://github.com/OreStudio/OreStudio/pull/2344][PR #2344]], all
+checks green.
+
+*The analysis.* Running alongside the documentation work, it answered the story's
+question about whether reporting uses what the workflow engine offers. It does
+not, in three places. No handler uses the engine's idempotency check, so a run
+recovered after a restart repeats the work of every phase it re-dispatches, and
+=assemble_bundle= writes a second bundle row. No handler answers with warnings,
+and adopting them would also change failure behaviour, because the engine does
+not compensate a warned step. And no phase has a deadline, because the engine has
+none, so a silent phase needs a person. The analysis also found that the engine
+has no failure-policy field, so the compensate-or-stop choice the workflow pages
+describe is documentation rather than a mechanism. It is recorded as
+[[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][Does reporting use what the workflow
+engine guarantees?]], and the story now starts the orchestration contract at the
+idempotency check.
+
+*The documents.* The =report= document type exists, with its contract page, its
+registration in codegen and compass, its place in the taxonomy, the glossary and
+the recipe, and twelve generator cases. The report inventory and two report pages
+went in with it: Headline Position as a production report, and the sample bundle
+smoke test as the report the ACME story needs. The report execution workflow now
+has a page with every section its type requires, an interaction diagram, and a
+row in the workflow inventory.
+
+*The correction.* Four statements on three pages described a system the code no
+longer has, and three diagrams carried the same claims. The pipeline page said a
+run is six phases with no chain selection; the orchestration page said the phase
+builder ignores its inputs; the scheduling page said the scheduler publishes the
+workflow start itself and derives the run's identity from a firing. The
+interfaces page named six subjects that do not exist, which is the correction
+that mattered most, because it is the page an implementer works from.
+
+Two findings were recorded rather than fixed, because both are code rather than
+documentation and neither is in this task's scope: the idempotency gap above, and
+that neither bulk read filters by the run's scope beyond the trades call's book
+list, so a report narrower than its tenant exports the tenant's data.
+
+*The review.* Six comments came back, all minor. Five were accepted and fixed:
+the report-code expression is split so its precedence is not something a reader
+has to parse, the code is now validated as a key, the scaffold helper asserts
+exactly which file it wrote, the test reads the glossary id instead of pinning
+it, and the idempotency gap now has a task of its own rather than living only on
+the investigation. The sixth, about the template's =GENERATED FILE= header, is
+answered rather than changed: no such source exists for any of the 144 templates,
+and =doc_generator.md= now states which of them are tangled and which are
+maintained in place. The table above records the decision on each.

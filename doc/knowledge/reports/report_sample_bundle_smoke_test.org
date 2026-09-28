@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: DF1F4A61-319E-475D-B526-5DC6B62DCF3F
+:END:
+#+title: Sample bundle smoke test
+#+description: The test report: an existing ORE example bundle submitted to the compute grid with no pre-processing and no analysis of the result, to prove the report machinery works end to end.
+#+type: report
+#+level: cross
+#+filetags: :report:test:smoke-test:compute:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+report_code: sample_bundle_smoke_test
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+Sample bundle smoke test. It takes an ORE example bundle that already exists,
+submits it to the compute grid, and records where the engine's output landed. It
+proves that a report definition, a report instance and the workflow that carries
+them work end to end, and it deliberately analyses nothing. It runs on demand,
+against a database built from nothing, and it is the first report to run after
+the grid is provisioned.
+
+* Purpose
+
+Proves the report machinery, not a risk number. A green run says the definition
+was read, the instance walked its states, the workflow dispatched its steps in
+the configured order, the grid executed the job, and the output came back to
+storage. Nothing downstream of that is checked here, because the value of the
+report is that a failure of any of those can be attributed without a domain
+calculation in the way.
+
+The decision it feeds is whether to look at any other report yet. While this
+report is red, every other report's failure is ambiguous.
+
+* Audience
+
+#+ATTR_HTML: :class hug-leading
+| Role          | What it takes from the report                                                         |
+|---------------+---------------------------------------------------------------------------------------|
+| engineer      | A single run that isolates the report and compute machinery from the risk analytics.  |
+| release check | A reproduction that starts from a recreated database, so a pass is repeatable.        |
+
+* Frequency
+
+Cycle =intraday= (whenever an engineer asks for it), frequency =on-demand=. It
+is not scheduled and belongs to no batch. It is the report the smoke test of a
+freshly provisioned environment triggers by hand.
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value                          |
+|-----------+--------------------------------|
+| Cycle     | intraday                       |
+| Frequency | on-demand                      |
+| Batch     | none                           |
+| Owner     | reporting                      |
+
+* Inputs
+
+- A prepared input archive, named by the definition's =prepared_input_key=.
+  The run selects pre-processing =substitute=, so it gathers no trades and no
+  market data and assembles no bundle. The archive the repository ships is
+  =external/ore/packages/TA002_IR_Swap.tar.gz=, the =Input/= directory of the
+  Academy's =TA002_IR_Swap= example: one 20Y EUR fixed-versus-float interest
+  rate swap.
+- The engine package the grid runs. The repository ships
+  =ORE 1.8.17.0= for the =x64-linux= triplet; the app version and its platform
+  row are seeded, and the bytes are uploaded to storage per the
+  [[id:CC0A311E-7245-4694-86A1-3170023C385A][compute runbook]].
+- A compute app version visible to the tenant the definition runs in.
+- The input archive must already be in storage when the run starts. With
+  pre-processing substituted, nothing in the run uploads it.
+
+* Outputs
+
+The engine's =Output/= directory, archived per result in storage at the result's
+output URI, holding =npv.csv=, =flows.csv= and =curves.csv=. The repository also
+holds the Academy example's reference output at
+=external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput/=, from which the
+engine packages were verified.
+
+The report rows are the report instance's own record: its state walk and the
+output location. Nothing parses the CSVs, because the report asks no question of
+them.
+
+* Measures
+
+None. This report computes no measure and carries no Greek set; it exists to
+exercise the pipeline. A run of it that produces the three CSV artefacts and a
+completed instance has succeeded.
+
+* ORE configuration
+
+The run document is the one inside the prepared archive, submitted verbatim.
+Nothing in the report authors or rewrites it, which is the point of the
+substitute: the run's input is exactly what a person would hand the engine.
+
+#+begin_src xml
+<Analytics>
+  <Analytic type="npv">
+    <Parameter name="active">Y</Parameter>
+    <Parameter name="baseCurrency">EUR</Parameter>
+    <Parameter name="outputFileName">npv.csv</Parameter>
+  </Analytic>
+  <Analytic type="cashflow">
+    <Parameter name="active">Y</Parameter>
+    <Parameter name="outputFileName">flows.csv</Parameter>
+  </Analytic>
+  <Analytic type="curves">
+    <Parameter name="active">Y</Parameter>
+    <Parameter name="configuration">default</Parameter>
+    <Parameter name="grid">240,1M</Parameter>
+    <Parameter name="outputFileName">curves.csv</Parameter>
+  </Analytic>
+</Analytics>
+#+end_src
+
+* Parameters
+
+The definition states the rows below and nothing else. Every other parameter a
+production report would carry is irrelevant, because the run pre-processes
+nothing and post-processes nothing.
+
+#+ATTR_HTML: :class hug-leading
+| Parameter          | Domain               | Default    | Meaning                                                |
+|--------------------+----------------------+------------+------------------------------------------------------------|
+| pre_processing     | substitute           | substitute | Resolve a prepared archive instead of generating input. |
+| prepared_input_key | a storage object path | none      | The archive the run submits.                            |
+| post_processing    | ignore               | ignore     | Record that the engine produced output; ingest nothing. |
+
+* Test coverage
+
+This report *is* the test coverage. It substitutes pre-processing and ignores
+post-processing, so the chain it runs is four steps rather than seven:
+=resolve_prepared_input=, =submit_compute=, =ignore_compute_results=,
+=finalise=. What it deliberately does not cover is the two substituted phases
+and the parsing of engine results.
+
+The story that owns it is
+[[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]];
+the analysis behind it is
+[[id:A38F01BA-506A-49FD-B520-116F366CE97D][What a no-preprocessing report run requires]].
+
+* Related
+
+- [[file:./reports.org][Reports]] — the inventory this page is listed in.
+- [[file:./report_headline_position.org][Headline Position]] — the report a reader moves to once this one is green.
+- [[file:../workflows/workflow_report_execution.org][Report execution]] — the workflow that runs it.
+- [[file:../architecture/report_execution_substitution.org][Report execution substitution]] — what a substituted run proves and what it leaves untested.
+- [[file:../architecture/report_compute_handoff.org][Report compute handoff]] — the submit contract this report exercises.
+- [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]]
+- [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]]
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]] — the engine that runs the prepared bundle.

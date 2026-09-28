@@ -1681,6 +1681,13 @@ TEST_CASE("reject_commodity_model_when_type_not_vol", tags) {
         oresmd_exception);
 }
 
+TEST_CASE("reject_commodity_delivery_on_a_quote", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(
+                          uri("oresmd://commodity/"
+                              "ice:b?ccy=usd&type=quote&quote=fwd&point=2024-12&delivery=2024-12")),
+                      oresmd_exception);
+}
+
 TEST_CASE("reject_power_uri_with_a_currency", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&ccy=usd")),
                       oresmd_exception);
@@ -1710,6 +1717,12 @@ TEST_CASE("reject_power_uri_with_a_tenor", tags) {
 TEST_CASE("reject_power_uri_with_an_index", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=fixing&index=libor")),
                       oresmd_exception);
+}
+
+TEST_CASE("reject_power_delivery_on_a_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://power/ice:pdq?type=quote&delivery=2021-01-04")),
+        oresmd_exception);
 }
 
 TEST_CASE("reject_generic_uri_with_a_currency", tags) {
@@ -1777,6 +1790,13 @@ TEST_CASE("reject_security_model_query_key", tags) {
         oresmd_exception);
 }
 
+TEST_CASE("reject_security_delivery_on_a_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri(
+            "oresmd://security/isin:ie00bh3sq895?type=quote&quote=bond_price&delivery=2025-08")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_shape_profile_uri_with_ccy", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(
@@ -1836,6 +1856,11 @@ TEST_CASE("reject_inflation_model_when_type_not_vol", tags) {
         oresmd_parser::parse(
             uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y&model=rate_lnvol")),
         oresmd_exception);
+}
+
+TEST_CASE("reject_inflation_fixing_code_the_model_does_not_carry", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://inflation/notacode?type=fixing")),
+                      oresmd_exception);
 }
 
 TEST_CASE("reject_unrecognised_scheme", tags) {
@@ -1931,11 +1956,12 @@ TEST_CASE("reject_fx_source_keys_on_every_other_asset_class", tags) {
 }
 
 TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
-    // A delivery coordinate names a commodity future's contract month, a bond
-    // future's expiry month or an intraday power index's delivery window, and
-    // nothing else: a key accepted and dropped is a key the caller believes was
-    // recorded. Every class but those three refuses it, through its own Reject keys
-    // table or the shared check.
+    // A delivery coordinate is a fixing's: a commodity future's contract month, a
+    // bond future's expiry month or an intraday power index's delivery window. A key
+    // accepted and dropped is a key the caller believes was recorded, so every class
+    // but those three refuses it anywhere, through its own Reject keys table or the
+    // shared check, and those three refuse it off a fixing, which their own Rejection
+    // tables declare.
     for (const auto& rejected :
          {"oresmd://equity/sp5?type=fixing&delivery=2024-12",
           "oresmd://credit/vod?ccy=eur&type=fixing&delivery=2024-12",
@@ -1948,10 +1974,7 @@ TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
           "oresmd://shape_profile/pjm_wh_rt_pk?type=fixing&delivery=2024-12"}) {
         REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
     }
-    // The three classes that name it keep it. They accept it on any type, because
-    // the type gate a Type-gated keys table declares is emitted for the classes
-    // that build a validate_<class>() and not for those that delegate, which is
-    // the codegen gap the model records.
+    // The three classes that name it keep it on a fixing.
     const auto commodity = std::get<commodity_market_data_identifier>(
         oresmd_parser::parse(uri("oresmd://commodity/ice:b?type=fixing&delivery=2024-12")));
     REQUIRE(commodity.delivery.has_value());

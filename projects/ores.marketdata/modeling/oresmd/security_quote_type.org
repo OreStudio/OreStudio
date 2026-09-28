@@ -121,3 +121,4 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | oresmd://security/security_1?ccy=usd&type=quote&quote=bond_price | reject_security_uri_with_ccy |
 | oresmd://security/security_1?type=quote&quote=bond_price&metric=price | reject_security_uri_with_ir_only_metric |
 | oresmd://security/security_1?type=quote&quote=bond_price&model=rate_lnvol | reject_security_model_query_key |
+| oresmd://security/isin:ie00bh3sq895?type=quote&quote=bond_price&delivery=2025-08 | reject_security_delivery_on_a_quote |

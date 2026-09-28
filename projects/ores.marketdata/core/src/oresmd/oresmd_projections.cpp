@@ -1170,6 +1170,52 @@ bool contract_month_is_the_shape(const std::string& delivery) {
 }
 
 /*
+ * The tail a commodity fixing's name and a security fixing's name share: a code,
+ * then optionally a contract month as its last two tokens. One token is the code
+ * alone and three are a code and a month; any other count is refused rather than
+ * split at a guess, so a code that itself carries a dash is refused and the month's
+ * boundary stays where ORE puts it.
+ */
+struct code_and_month {
+    std::string code;
+    std::optional<std::string> month;
+};
+
+std::optional<code_and_month> split_code_and_month(std::string_view name) {
+    const auto parts = split_on_dash(std::string{name});
+    if (parts.empty() || parts[0].empty())
+        return std::nullopt;
+    code_and_month tail;
+    tail.code = to_upper(parts[0]);
+    if (parts.size() == 1)
+        return tail;
+    if (parts.size() != 3)
+        return std::nullopt;
+    const auto month = to_lower(parts[1] + "-" + parts[2]);
+    if (!contract_month_is_the_shape(month))
+        return std::nullopt;
+    tail.month = month;
+    return tail;
+}
+
+/*
+ * PREFIX-<CODE>[-<MONTH>], the name a commodity fixing and a security fixing share:
+ * the code upper-cased, then the contract month when the identifier carries one and
+ * it is the shape a contract month is.
+ */
+std::optional<std::string> index_name_code_and_month(std::string_view prefix,
+                                                     const std::string& code,
+                                                     const std::optional<std::string>& month) {
+    if (code.empty())
+        return std::nullopt;
+    if (!month)
+        return std::format("{}{}", prefix, to_upper(code));
+    if (!contract_month_is_the_shape(*month))
+        return std::nullopt;
+    return std::format("{}{}-{}", prefix, to_upper(code), *month);
+}
+
+/*
  * POWER-<CODE>[-<DELIVERY>], the name ORE gives an intraday power index and
  * nothing else: the class has no quote key, so this is its only projection.
  *
@@ -1215,13 +1261,9 @@ std::optional<std::string> quote_key_power(const power_market_data_identifier&) 
  * here rather than guessed at.
  */
 std::optional<std::string> index_name_commodity(const commodity_market_data_identifier& id) {
-    if (id.type != instrument_type::fixing || id.commodity_code.empty())
+    if (id.type != instrument_type::fixing)
         return std::nullopt;
-    if (!id.delivery)
-        return std::format("COMM-{}", to_upper(id.commodity_code));
-    if (!contract_month_is_the_shape(*id.delivery))
-        return std::nullopt;
-    return std::format("COMM-{}-{}", to_upper(id.commodity_code), *id.delivery);
+    return index_name_code_and_month("COMM-", id.commodity_code, id.delivery);
 }
 
 /*
@@ -1274,14 +1316,19 @@ bool inflation_index_code_is_known(std::string_view name) {
 }
 
 /*
- * The code alone, the one index-name prefix pair that is a bare token. An inflation
- * quote's key is ZC_INFLATIONSWAP/RATE/<CODE>/<POINT> and a fixing's name is the
- * code, so this is the class whose index name is not a prefix and a tail.
+ * The code alone, the class whose index name has no prefix to strip. An inflation
+ * quote's key is ZC_INFLATIONSWAP/RATE/<CODE>/<POINT>, where the code sits in the
+ * middle, and a fixing's name is the code.
+ *
+ * The code is written as it stands and only when the model carries it, so the write
+ * side refuses what the read side refuses: a code in another case, or one the class
+ * does not know, would otherwise be reshaped into a name this library then accepts,
+ * and the two sides would disagree about the same series.
  */
 std::optional<std::string> index_name_inflation(const inflation_market_data_identifier& id) {
-    if (id.type != instrument_type::fixing || id.index_code.empty())
+    if (id.type != instrument_type::fixing || !inflation_index_code_is_known(id.index_code))
         return std::nullopt;
-    return to_upper(id.index_code);
+    return id.index_code;
 }
 
 /*
@@ -1305,13 +1352,9 @@ std::optional<std::string> index_name_equity(const equity_market_data_identifier
  * a contract month.
  */
 std::optional<std::string> index_name_security(const security_market_data_identifier& id) {
-    if (id.type != instrument_type::fixing || id.security_id.empty())
+    if (id.type != instrument_type::fixing)
         return std::nullopt;
-    if (!id.delivery)
-        return std::format("BOND-{}", to_upper(id.security_id));
-    if (!contract_month_is_the_shape(*id.delivery))
-        return std::nullopt;
-    return std::format("BOND-{}-{}", to_upper(id.security_id), *id.delivery);
+    return index_name_code_and_month("BOND-", id.security_id, id.delivery);
 }
 
 template <typename Enum>
@@ -2363,24 +2406,15 @@ oresmd_projections::from_index_name(const std::string& index_name) {
         return id;
     }
 
-    // The reverse of index_name_commodity(): COMM-COMMNAME[-YYYY-MM]. The period
-    // is the last two tokens and the code is the one token before it, so a name
-    // whose code carries a dash is refused rather than split at a guess.
+    // The reverse of index_name_commodity(): COMM-COMMNAME[-YYYY-MM].
     if (index_name.starts_with("COMM-")) {
-        const auto parts = split_on_dash(index_name.substr(5));
-        if (parts.empty() || parts[0].empty())
+        const auto tail = split_code_and_month(index_name.substr(5));
+        if (!tail)
             return std::nullopt;
         commodity_market_data_identifier id;
         id.type = instrument_type::fixing;
-        id.commodity_code = to_upper(parts[0]);
-        if (parts.size() == 1)
-            return id;
-        if (parts.size() != 3)
-            return std::nullopt;
-        const auto tail = to_lower(parts[1] + "-" + parts[2]);
-        if (!contract_month_is_the_shape(tail))
-            return std::nullopt;
-        id.delivery = tail;
+        id.commodity_code = tail->code;
+        id.delivery = tail->month;
         return id;
     }
 
@@ -2420,28 +2454,16 @@ oresmd_projections::from_index_name(const std::string& index_name) {
 
     // The reverse of index_name_security(): BOND-<SECURITY>[-<MONTH>]. The security
     // carries the scheme its quote keys spell, whose separators are colons and dots,
-    // and an ISIN carries no dash, so the last two tokens are the contract month and
-    // everything before them is the security. Any other token count is refused
-    // rather than split at a guess.
+    // so the code and the month split where a commodity's do.
     constexpr std::string_view security_prefix{"BOND-"};
     if (index_name.starts_with(security_prefix)) {
-        const auto rest = index_name.substr(security_prefix.size());
-        const auto parts = split_on_dash(rest);
-        if (parts.empty() || parts[0].empty())
+        const auto tail = split_code_and_month(index_name.substr(security_prefix.size()));
+        if (!tail)
             return std::nullopt;
         security_market_data_identifier id;
         id.type = instrument_type::fixing;
-        if (parts.size() == 1) {
-            id.security_id = to_upper(rest);
-            return id;
-        }
-        if (parts.size() != 3)
-            return std::nullopt;
-        const auto month = to_lower(parts[1] + "-" + parts[2]);
-        if (!contract_month_is_the_shape(month))
-            return std::nullopt;
-        id.security_id = to_upper(parts[0]);
-        id.delivery = month;
+        id.security_id = tail->code;
+        id.delivery = tail->month;
         return id;
     }
 

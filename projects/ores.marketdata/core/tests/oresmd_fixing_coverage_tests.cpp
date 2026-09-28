@@ -89,7 +89,7 @@ struct refused_file {
 
 /// The bucket for a name the corpus puts in a fixing column that is not an index
 /// name at all.
-constexpr std::string_view market_data_key{"market-data-key"};
+constexpr std::string_view market_data_key_class{"market-data-key"};
 
 /// The class an index name belongs to, from the name alone. The corpus does not
 /// label its names, so the shape is the only thing that says which asset class a
@@ -104,8 +104,8 @@ std::string class_of(std::string_view name) {
                                                                       {"EQ-", "equity"},
                                                                       {"COMM-", "commodity"},
                                                                       {"POWER-", "power"},
-                                                                      {"BOND-ISIN:", "security"},
-                                                                      {"GENERIC-MD/", market_data_key},
+                                                                      {"BOND-", "security"},
+                                                                      {"GENERIC-MD/", market_data_key_class},
                                                                       {"GENERIC-", "generic"}};
     for (const auto& [prefix, cls] : prefixed) {
         if (name.starts_with(prefix))
@@ -154,7 +154,7 @@ corpus_survey survey() {
             if (!seen.insert(row.index_name).second)
                 continue;
 
-            if (class_of(row.index_name) == market_data_key) {
+            if (class_of(row.index_name) == market_data_key_class) {
                 result.not_index_names.push_back(row.index_name);
                 continue;
             }
@@ -258,6 +258,11 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
     const std::set<std::string> recorded{};
 
     REQUIRE(classes_with_unnamed_names() == recorded);
+
+    // The population itself is asserted, not only reported: a payload that left
+    // fixing_payloads() would shrink the census silently, and every class would
+    // still read as full. 158 is the count the task records for the corpus.
+    REQUIRE(names + corpus_coverage().not_index_names.size() == 158);
 }
 
 TEST_CASE("the_market_data_keys_the_corpus_misfiles_as_fixings_stay_refused", tags) {

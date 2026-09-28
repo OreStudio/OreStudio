@@ -673,11 +673,12 @@ TEST_CASE("reject_fx_source_keys_on_every_other_asset_class", tags) {
 }
 
 TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
-    // A delivery coordinate names a commodity future's contract month, a bond
-    // future's expiry month or an intraday power index's delivery window, and
-    // nothing else: a key accepted and dropped is a key the caller believes was
-    // recorded. Every class but those three refuses it, through its own Reject keys
-    // table or the shared check.
+    // A delivery coordinate is a fixing's: a commodity future's contract month, a
+    // bond future's expiry month or an intraday power index's delivery window. A key
+    // accepted and dropped is a key the caller believes was recorded, so every class
+    // but those three refuses it anywhere, through its own Reject keys table or the
+    // shared check, and those three refuse it off a fixing, which their own Rejection
+    // tables declare.
     for (const auto& rejected :
          {"oresmd://equity/sp5?type=fixing&delivery=2024-12",
           "oresmd://credit/vod?ccy=eur&type=fixing&delivery=2024-12",
@@ -690,10 +691,7 @@ TEST_CASE("reject_delivery_on_every_class_that_does_not_name_it", tags) {
           "oresmd://shape_profile/pjm_wh_rt_pk?type=fixing&delivery=2024-12"}) {
         REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
     }
-    // The three classes that name it keep it. They accept it on any type, because
-    // the type gate a Type-gated keys table declares is emitted for the classes
-    // that build a validate_<class>() and not for those that delegate, which is
-    // the codegen gap the model records.
+    // The three classes that name it keep it on a fixing.
     const auto commodity = std::get<commodity_market_data_identifier>(
         oresmd_parser::parse(uri("oresmd://commodity/ice:b?type=fixing&delivery=2024-12")));
     REQUIRE(commodity.delivery.has_value());

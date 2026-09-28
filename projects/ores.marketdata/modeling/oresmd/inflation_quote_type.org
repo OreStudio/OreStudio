@@ -124,3 +124,4 @@ refused rather than reshaped on the way back. A code ORE adds is a row here.
 | uri | description |
 |-----+-------------|
 | oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y&model=rate_lnvol | reject_inflation_model_when_type_not_vol |
+| oresmd://inflation/notacode?type=fixing | reject_inflation_fixing_code_the_model_does_not_carry |

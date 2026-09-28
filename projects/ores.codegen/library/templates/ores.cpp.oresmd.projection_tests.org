@@ -977,11 +977,6 @@ TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     // producer's other token has no family to resolve to.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD--3M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("EUR-NOSUCHFAMILY").has_value());
-    // Another class's index name resolves to that class rather than to this one:
-    // UKRPI is an inflation code, and the inflation arm takes it before the
-    // interest-rate fallback is reached.
-    REQUIRE(std::holds_alternative<inflation_market_data_identifier>(
-        *oresmd_projections::from_index_name("UKRPI")));
 }
 
 TEST_CASE("from_index_name_reads_the_fx_fixing_names_the_corpus_carries", tags) {
@@ -1242,6 +1237,10 @@ TEST_CASE("from_index_name_reads_the_inflation_codes_the_corpus_carries", tags) 
         REQUIRE(back.has_value());
         CHECK(*back == name);
     }
+    // A code is taken before the interest-rate fallback is reached, so the two
+    // classes do not compete for a bare token.
+    REQUIRE(std::holds_alternative<inflation_market_data_identifier>(
+        *oresmd_projections::from_index_name("UKRPI")));
 }
 
 TEST_CASE("from_index_name_refuses_a_dash_less_token_that_is_not_an_inflation_code", tags) {
@@ -1253,6 +1252,14 @@ TEST_CASE("from_index_name_refuses_a_dash_less_token_that_is_not_an_inflation_co
     // The match is on the spelling the table carries, so a code written another way
     // is refused rather than reshaped on the way back, as a power delivery date is.
     REQUIRE_FALSE(oresmd_projections::from_index_name("ukrpi").has_value());
+    // The write side refuses what the read side refuses: an identifier holding a
+    // code the class does not carry has no name to write, rather than one reshaped
+    // into a token this library would then accept. The parser refuses such a code as
+    // it arrives, which the model's own rejection row covers.
+    auto unknown = std::get<inflation_market_data_identifier>(
+        parse("oresmd://inflation/ukrpi?type=fixing"));
+    unknown.index_code = "NOTACODE";
+    REQUIRE_FALSE(oresmd_projections::to_index_name(unknown).has_value());
     // The projection emits an index name for a fixing alone.
     REQUIRE_FALSE(oresmd_projections::to_index_name(
                       parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"))

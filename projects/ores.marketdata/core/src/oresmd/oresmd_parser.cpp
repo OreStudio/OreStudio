@@ -244,6 +244,25 @@ std::string first_segment(const boost::urls::url_view& u) {
     BOOST_THROW_EXCEPTION(oresmd_exception("oresmd URI is missing its entity path segment."));
 }
 
+/*
+ * The inflation index codes the model carries. A fixing's name is the code alone,
+ * so a fixing whose code this class does not carry has no index name to write back:
+ * it is refused here rather than accepted and dropped. A quote's key names its code
+ * in the middle of the key, and every code is accepted for one.
+ */
+bool inflation_index_code_is_known(std::string_view name) {
+    static const std::string_view codes[] = {
+        "AUCPI",
+        "EUHICP",
+        "EUHICPXT",
+        "FRHICP",
+        "UKRPI",
+        "USCPI",
+        "ZACPI",
+    };
+    return std::ranges::any_of(codes, [name](std::string_view known) { return known == name; });
+}
+
 market_data_identifier parse_fx(const boost::urls::url_view& u, const query_params& qp) {
     validate_fx(qp);
     fx_market_data_identifier id;
@@ -586,6 +605,11 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    if (id.type == instrument_type::fixing && !inflation_index_code_is_known(id.index_code))
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://inflation/... '{}' is not an index code the model carries, so it has no "
+            "index name to write back.",
+            id.index_code)));
     // An inflation cap/floor's surface point is the maturity, the cap-or-floor
     // flag and the strike. Which surface it is -- a price or a normal vol --
     // arrives as the model, matching the metric segment the projection emits.
@@ -650,8 +674,16 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
-    if (qp.delivery)
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://commodity/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
+    }
     // A commodity option's surface point carries the same coordinates the equity
     // option's does, and the count says which of the three shapes it is:
     // expiry,strike; expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
@@ -716,8 +748,16 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
                 "oresmd://security/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<security_quote_type>("quote", *qp.quote);
     }
-    if (qp.delivery)
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://security/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
+    }
     return id;
 }
 
@@ -819,8 +859,16 @@ market_data_identifier parse_power(const boost::urls::url_view& u, const query_p
     id.commodity_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
     reject_if_present("power", "model", qp.model);
-    if (qp.delivery)
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://power/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
+    }
     return id;
 }
 

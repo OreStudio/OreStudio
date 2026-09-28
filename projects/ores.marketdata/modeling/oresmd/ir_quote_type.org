@@ -152,6 +152,7 @@ arrived is carried beside it, so a name reads back as it came.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * Type-gated keys
 

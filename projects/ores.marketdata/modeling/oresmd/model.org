@@ -38,3 +38,4 @@ interleaved as in the hand-crafted files), which differs from both.
 | shape_profile_quote_type.org | shape_profile | 9 | 9 |
 | rating_quote_type.org | rating | 10 | 10 |
 | power_quote_type.org | power | 11 | 11 |
+| generic_quote_type.org | generic | 12 | 12 |

@@ -67,6 +67,7 @@ A logical, possibly-partial oresmd requirement for an inflation instrument.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * Test cases
 ** Projections

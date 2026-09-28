@@ -285,6 +285,29 @@ struct power_market_data_identifier final {
 };
 
 /**
+ * @brief A fully-resolved oresmd identifier for a generic index (asset_class=generic).
+ *
+ * name is the index name ORE writes after the GENERIC- prefix, upper-cased the
+ * way every other class's entity field is. The character set is ORE's, not this
+ * URI's: PortfolioBasket#1 carries a #, which the URI writes percent-encoded
+ * and the parser decodes, so the name survives the trip through a URI unchanged.
+ *
+ * name_spelling is the token as the corpus wrote it, kept beside the upper-cased
+ * name when the two differ. Neither corpus name arrives upper-cased
+ * (GENERIC-JuniorNote, GENERIC-PortfolioBasket#1), so this field is what lets
+ * the projection write the index name back in the case ORE wrote it. It follows
+ * source_spelling: the identifier holds the normalised token, and the name keeps
+ * the spelling that arrived.
+ */
+struct generic_market_data_identifier final {
+    std::string name;
+    instrument_type type = instrument_type::quote;
+    std::optional<std::string> name_spelling;
+
+    bool operator==(const generic_market_data_identifier&) const = default;
+};
+
+/**
  * @brief Tagged union of the per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
@@ -303,7 +326,8 @@ using market_data_identifier = std::variant<fx_market_data_identifier,
                                             security_market_data_identifier,
                                             shape_profile_market_data_identifier,
                                             rating_market_data_identifier,
-                                            power_market_data_identifier>;
+                                            power_market_data_identifier,
+                                            generic_market_data_identifier>;
 
 }
 

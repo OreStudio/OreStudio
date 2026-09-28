@@ -61,6 +61,7 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * Test cases
 ** Projections

@@ -121,7 +121,8 @@ public:
 
     /**
      * @brief The reverse of to_index_name(): an index-name string (e.g. "USD-LIBOR-3M",
-     * "USD-SOFR") becomes the ir fixing identifier it was projected from.
+     * "FX-ECB-EUR-USD", "POWER-ICE:PDQ-2021-01-04-14400-18000", "GENERIC-JuniorNote")
+     * becomes the fixing identifier it was projected from.
      *
      * The fixing boundary's key space is the index name -- FIXING/RATE/<index-name> --
      * and the registry-backed from_ore_key() does not seed it, so this is the only way
@@ -135,12 +136,11 @@ public:
      * names -- a segment count other than two or three, an empty segment -- yield
      * std::nullopt.
      *
-     * Covers the interest-rate index names the corpus carries, and nothing else: every
-     * one of them resolves. The corpus also carries inflation (UKRPI), equity (EQ-SP5),
-     * FX (FX-ECB-EUR-USD), commodity and power (COMM-NYMEX:CL-2024-12,
-     * POWER-ICE:PDQ-...) and security (BOND-ISIN:...) index names, for which this
-     * returns std::nullopt: they are other asset classes, and no mapping exists for them
-     * yet. The analysis records that as the blocker standing in front of the identity
+     * Covers the index names of every class whose grammar is decided: interest rates,
+     * FX, commodity, power and generic. The corpus also carries inflation (UKRPI),
+     * equity (EQ-SP5) and security (BOND-ISIN:...) index names, for which this returns
+     * std::nullopt: they are other asset classes, and no mapping exists for them yet.
+     * The analysis records that as the blocker standing in front of the identity
      * cutover rather than as a limitation of this function.
      */
     [[nodiscard]] static std::optional<domain::market_data_identifier>

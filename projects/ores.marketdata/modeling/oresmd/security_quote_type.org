@@ -70,6 +70,7 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * URI order
 

@@ -67,6 +67,7 @@ A logical, possibly-partial oresmd requirement for a shape profile.
 | source |
 | source_spelling |
 | delivery |
+| name_spelling |
 
 * URI order
 

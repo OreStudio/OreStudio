@@ -1190,6 +1190,33 @@ std::optional<std::string> index_name_commodity(const commodity_market_data_iden
     return std::format("COMM-{}-{}", to_upper(id.commodity_code), *id.delivery);
 }
 
+/*
+ * GENERIC-<NAME>, the name ORE gives a generic index and nothing else. ORE's own
+ * parser asserts the prefix and builds a GenericIndex from the rest, so the rest
+ * is the whole identity and there is no quote key to project.
+ *
+ * The name is written from the spelling the corpus used when it has one, and from
+ * the upper-cased name otherwise, exactly as an FX source is: two spellings of
+ * one name are one series here, and the name it arrived under is what the fixing
+ * boundary has to write back.
+ */
+std::optional<std::string> index_name_generic(const generic_market_data_identifier& id) {
+    if (id.type != instrument_type::fixing || id.name.empty())
+        return std::nullopt;
+    const auto name = id.name_spelling ? *id.name_spelling : to_upper(id.name);
+    return std::format("GENERIC-{}", name);
+}
+
+/*
+ * The class has no quote key: ORE's generic index is its fixing-only fallback,
+ * and the corpus writes GENERIC-<name> on fixing rows alone. The function exists
+ * because the variant dispatch calls one per class, and it is pinned by the
+ * model's own projection case.
+ */
+std::optional<std::string> quote_key_generic(const generic_market_data_identifier&) {
+    return std::nullopt;
+}
+
 template <typename Enum>
 std::optional<Enum> parse_enum_lower(std::string_view value) {
     return magic_enum::enum_cast<Enum>(to_lower(value));
@@ -2112,6 +2139,8 @@ oresmd_projections::to_index_name(const domain::market_data_identifier& identifi
         return index_name_commodity(*commodity);
     if (const auto* power = std::get_if<power_market_data_identifier>(&identifier))
         return index_name_power(*power);
+    if (const auto* generic = std::get_if<generic_market_data_identifier>(&identifier))
+        return index_name_generic(*generic);
     return std::nullopt;
 }
 
@@ -2237,6 +2266,24 @@ oresmd_projections::from_index_name(const std::string& index_name) {
         if (!commodity_delivery_is_the_shape(tail))
             return std::nullopt;
         id.delivery = tail;
+        return id;
+    }
+
+    // The reverse of index_name_generic(): GENERIC-<NAME>. ORE's generic index is
+    // whatever its producer called it, so the tail is taken whole, and its case is
+    // kept as a spelling: the identifier holds the upper-cased name while the name
+    // reads back as it arrived. A tail carrying a slash is not an index name but a
+    // GENERIC-MD/... market-data key, which Products/Input/fixings.csv misfiles as
+    // a fixing.
+    if (index_name.starts_with("GENERIC-")) {
+        const auto name = index_name.substr(8);
+        if (name.empty() || name.contains('/'))
+            return std::nullopt;
+        generic_market_data_identifier id;
+        id.type = instrument_type::fixing;
+        id.name = to_upper(name);
+        if (name != id.name)
+            id.name_spelling = name;
         return id;
     }
 

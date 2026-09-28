@@ -375,6 +375,36 @@ TEST_CASE("{{description}}", tags) {
 }
 
 {{/rating_projections}}
+/*
+ * The fixing-only classes. A power index and a generic index are named by their
+ * index names and by nothing else: neither has a quote key, so each model's
+ * Projections row is a case here rather than a declaration nothing reads.
+ */
+
+{{#power_projections}}
+TEST_CASE("{{description}}", tags) {
+    const auto id = parse("{{{uri}}}");
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/power_projections}}
+{{#generic_projections}}
+TEST_CASE("{{description}}", tags) {
+    const auto id = parse("{{{uri}}}");
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/generic_projections}}
 TEST_CASE("security_cpr_quote_key", tags) {
     // CPR is security-level, keyed by ISIN inside <Security> blocks in
     // curveconfig.xml. It is modelled in the security class rather than under
@@ -1131,14 +1161,79 @@ TEST_CASE("from_index_name_rejects_commodity_names_that_are_not_the_shape", tags
                       .has_value());
 }
 
+TEST_CASE("from_index_name_reads_the_generic_names_the_corpus_carries", tags) {
+    // The two GENERIC- names in external/ore/examples are both fixings. ORE resolves
+    // the prefix in a parser of its own and builds a GenericIndex from the rest of
+    // the name, so that rest is the whole of the index's identity.
+    for (const auto& name : {"GENERIC-JuniorNote", "GENERIC-PortfolioBasket#1"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        CHECK(std::get<generic_market_data_identifier>(*id).type == instrument_type::fixing);
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+
+        // The whole way through the database: the identifier becomes a URI and the
+        // URI reads back as the name ORE wrote. PortfolioBasket#1 is the case that
+        // needs it -- its # is a fragment delimiter both in the path segment and in
+        // the spelling, so both are percent-encoded on the way out and decoded on
+        // the way back in.
+        const auto reread =
+            oresmd_projections::to_index_name(oresmd_parser::parse(oresmd_parser::to_uri(*id)));
+        REQUIRE(reread.has_value());
+        CHECK(*reread == name);
+    }
+}
+
+TEST_CASE("from_index_name_keeps_a_generic_names_case_as_a_spelling", tags) {
+    // The identifier holds the upper-cased name, which is what the URI's path
+    // segment carries, and the case the corpus used sits beside it. Both are
+    // asserted, because normalising the name without keeping the spelling would pass
+    // a check on the identity and still lose the name.
+    const auto id = oresmd_projections::from_index_name("GENERIC-JuniorNote");
+    REQUIRE(id.has_value());
+    const auto& generic = std::get<generic_market_data_identifier>(*id);
+    CHECK(generic.name == "JUNIORNOTE");
+    REQUIRE(generic.name_spelling.has_value());
+    CHECK(*generic.name_spelling == "JuniorNote");
+
+    // A name already written upper-case carries no spelling: recording it would give
+    // one name two URIs.
+    const auto plain = oresmd_projections::from_index_name("GENERIC-SOMEINDEX");
+    REQUIRE(plain.has_value());
+    CHECK_FALSE(std::get<generic_market_data_identifier>(*plain).name_spelling.has_value());
+    CHECK(oresmd_projections::to_index_name(*plain) == "GENERIC-SOMEINDEX");
+}
+
+TEST_CASE("from_index_name_refuses_the_market_data_keys_the_corpus_misfiles_as_fixings", tags) {
+    // GENERIC-MD/<TYPE>/<METRIC>/... is the market-data key form an oresmd URI
+    // replaces, and Products/Input/fixings.csv puts two of them in a fixing column.
+    // They are SPX call prices, and an index name carries no slash, so both project
+    // to nothing rather than to a generic index named after a whole key.
+    REQUIRE_FALSE(oresmd_projections::from_index_name(
+                      "GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C")
+                      .has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name(
+                      "GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3400/C")
+                      .has_value());
+    // A prefix with nothing after it names nothing.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("GENERIC-").has_value());
+    // The class has no quote key, so a quote projects no name.
+    REQUIRE_FALSE(
+        oresmd_projections::to_index_name(parse("oresmd://generic/juniornote?type=quote"))
+            .has_value());
+}
+
 TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", tags) {
     // A spot quote and a fixing have one point per date, whoever supplies the
-    // name for it. A power or commodity fixing carries its delivery as a field of
-    // its own rather than as a point, so it is one of these.
+    // name for it. A power, commodity or generic fixing carries its coordinate --
+    // a delivery window, a contract month, a name -- as a field of its own rather
+    // than as a point, so it is one of these.
     for (const auto& uri : {"oresmd://fx/eurusd?type=quote&quote=spot",
                             "oresmd://ir/usd?type=fixing&index=libor&tenor=3m",
                             "oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000",
                             "oresmd://commodity/ice:b?type=fixing&delivery=2024-12",
+                            "oresmd://generic/juniornote?type=fixing&name_spelling=JuniorNote",
                             "oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"}) {
         const auto id = oresmd_parser::parse(oresmd_uri{uri});
         CHECK(oresmd_projections::is_scalar(id));

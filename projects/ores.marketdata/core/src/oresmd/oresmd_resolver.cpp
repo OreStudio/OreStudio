@@ -228,6 +228,16 @@ market_data_identifier resolve_power(const power_market_data_requirement& req,
     return id;
 }
 
+market_data_identifier resolve_generic(const generic_market_data_requirement& req,
+                                       const market_data_identifier& defaults) {
+    const auto* d = std::get_if<generic_market_data_identifier>(&defaults);
+    generic_market_data_identifier id;
+    id.name = pick_mandatory_string(req.name, d ? d->name : std::string{}, "name");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.name_spelling = pick_optional(req.name_spelling, d ? d->name_spelling : std::nullopt);
+    return id;
+}
+
 }
 
 namespace ores::marketdata::core {
@@ -260,6 +270,8 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_rating(req, defaults);
             else if constexpr (std::is_same_v<T, power_market_data_requirement>)
                 return resolve_power(req, defaults);
+            else if constexpr (std::is_same_v<T, generic_market_data_requirement>)
+                return resolve_generic(req, defaults);
         },
         requirement);
 }

@@ -28,9 +28,9 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The column is on =market_series= and the import writes it from both key spaces: =from_ore_key()= for a market-data key and =from_index_name()= for a fixing's index name, which now has its first production call site. It is nullable and the registry triple still keys the row. |
+| Now          | =market_series= carries =oresmd_uri= and both import paths write it, from =from_ore_key()= and from =from_index_name()= -- the latter's first production call site. The =feed_binding= column is deferred, with its reason recorded below. The deletion's blast radius is counted. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the column to =feed_binding=, then the deletion of the triple and the natural key's move onto the URI. |
+| Next         | Sequence the deletion against the census: the models and the SQL they generate first, then the C++ consumers, then the docs. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -66,6 +66,39 @@ abandoned branch; the two write paths are the code as it stands.
 the new column needs is in hand on the market-data path and one call away on the
 fixing path, so this task is the cutover and its consumers rather than a new
 projection.
+
+* What the deletion has to carry, counted
+
+Counted at =ce3c6f32bd= on this branch, with member-access and column patterns
+rather than the bare word, because =metric= alone matches 481 files and most of
+them are somebody else's metric:
+
+| What | Count | Pattern |
+|------+-------+---------|
+| C++ files reaching a series' =qualifier= | 21 | =\.qualifier\b= |
+| C++ files reaching a series' =series_type= or =metric= | 32 | =\.(series_type\|metric)\b=, in the three components that hold series |
+| SQL files naming the ="qualifier"= column | 2 | the market series create and populate scripts |
+| SQL files naming the ="ore_key"= column | 2 | the feed binding create and populate scripts |
+| Generated TypeScript carrying the field | 2 | the market series domain and protocol twins |
+| Org documents naming =qualifier= | 80 | models, recipes and manuals |
+
+The organs split by component: =ores.marketdata= 33, =ores.synthetic= 16,
+=ores.ore= 12, then two in the shell and one each in =ores.trading= and
+=ores.testing=. The deletion is therefore a cross-component change, which is why
+the plan kept it as its own acceptance rather than folding it into the column's.
+
+**=feed_binding='s column is deferred, and the reason is structural.** The plan
+gives the binding an =oresmd_uri= beside its =ore_key=, and the column was added and
+regenerated: =ores_marketdata_feed_bindings_tbl= took it and the entity's layers
+followed. It was then taken back out, because nothing can write it today. The row is
+assembled by the generated service -- =feed_binding_service.cpp= carries the
+AUTO-GENERATED banner -- and the service template has no per-column derivation hook;
+the =#+begin_src cpp :name generator= blocks a model can declare feed the test-data
+generators under =api/src/generators/=, not a real write. Every other writer is a
+generated shell command. So the binding's identity arrives with the unit that
+replaces =ore_key=, where the same code that supplies the key today supplies the URI;
+until then the column would be null in every row, which is worse than absent. The
+natural key stays =ore_key= and =source_name= meanwhile.
 
 * Plan
 

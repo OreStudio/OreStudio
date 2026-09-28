@@ -33,6 +33,8 @@
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
+#include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -77,6 +79,17 @@ struct mapped_conventions {
     std::vector<refdata::domain::overnight_index_convention> overnight_index;
     std::vector<mapped_fx> fx;
     std::vector<refdata::domain::cds_convention> cds;
+
+    /**
+     * @brief The categories the mapper read but does not model, and how many
+     * elements each held.
+     *
+     * A skipped category that is counted is a gap a caller can act on. A silent
+     * skip is a document that lost content and said nothing, which is how this
+     * kind went unmeasured for as long as it did: seventy-two files passed a
+     * round-trip test that only compared element counts.
+     */
+    std::map<std::string, std::size_t> unmodelled;
 };
 
 /**

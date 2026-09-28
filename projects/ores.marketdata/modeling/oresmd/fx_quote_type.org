@@ -34,6 +34,20 @@ A fully-resolved oresmd identifier for an FX pair (asset_class=fx).
 query-parameter grammar's own per-asset-class conditionality at the type level -- see
 id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
 
+A fixing also carries the source that published it, because one pair has more than
+one fixing: the corpus writes both =FX-ECB-EUR-USD= and =FX-TR20H-EUR-USD=, which
+are two different rates. `source` is that token lower-cased, and `source_spelling`
+carries the token as ORE wrote it when the two differ, the way `index_spelling`
+carries a family's other spelling. Neither belongs to a quote: ORE's FX quote keys
+carry no source, and the corpus writes the token only in index names -- a fixing
+file, or the qualifier of a correlation key.
+
+The pair is the pair as published, never a canonical order. A fixing's value is
+only meaningful in the direction it was published, and the corpus writes
+=FX-TR20H-EUR-GBP= and =FX-TR20H-GBP-EUR= as one rate both ways: reciprocal on all
+122 dates they share, the product of the two being 0.9997 on the median date and
+0.9964 on the worst. Folding them together would put two values under one date.
+
 * Requirement brief
 
 A logical, possibly-partial oresmd requirement for an FX pair.
@@ -51,6 +65,18 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | quote_type | std::optional<fx_quote_type> | no | quote |                    |
 | point | std::optional<std::string> | no | point     |                        |
 | vol   | std::optional<volatility_surface_point> | no |           |                        |
+| source | std::optional<std::string> | no | source    |                        |
+| source_spelling | std::optional<std::string> | no | source_spelling |              |
+
+* Type-gated keys
+
+Query keys that are only meaningful when =type=fixing=. ORE's FX quote keys carry
+no source, so a source on a quote names nothing.
+
+| key | type |
+|-----+------|
+| source | fixing |
+| source_spelling | fixing |
 
 * Reject keys
 
@@ -80,6 +106,7 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | oresmd://fx/eurusd?type=quote&quote=fwd | nullopt | fx_fwd_requires_point |
 | oresmd://fx/eurusd?type=vol&point=10y,atm | FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM | fx_option_vol_quote_key_matches_the_corpus |
 | oresmd://fx/eurusd?type=vol&point=1d,25rr | FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR | fx_option_vol_quote_key_risk_reversal |
+| oresmd://fx/eurusd?type=fixing&source=ecb | nullopt | fx_fixing_has_no_quote_key |
 
 ** Round-trip
 
@@ -88,6 +115,9 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | oresmd://fx/eurusd?type=quote&quote=spot | round_trip_fx |
 | oresmd://fx/eurusd?type=quote&quote=fwd&point=6m | round_trip_fx_fwd |
 | oresmd://fx/eurusd?type=vol&point=10y,atm | round_trip_fx_option_vol |
+| oresmd://fx/eurusd?type=fixing&source=ecb | round_trip_fx_fixing_source |
+| oresmd://fx/usdeur?type=fixing&source=reuters&source_spelling=Reuters | round_trip_fx_fixing_source_spelling |
+| oresmd://fx/gbpeur?type=fixing&source=tr20h | round_trip_fx_fixing_reversed_pair |
 
 ** Rejection
 

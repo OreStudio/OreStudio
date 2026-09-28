@@ -1352,6 +1352,15 @@ all, which found =CurveBuilding/Input/fixings_bondyieldshifted.csv=: the
 That is fixed too (commit 6fa10a87f4), so the census covers all 66 payloads rather
 than 65.
 
+*Update, 2026-09-28 (task AB2922AA, commit fb3c5a4f31).* The FX class followed,
+and it needed a field rather than data. An FX fixing's identity now carries
+=source= (lower-cased) and =source_spelling= (the token as ORE wrote it), both
+meaningful only when =type=fixing=, and keeps the pair as it was published rather
+than a canonical order: the corpus writes =FX-TR20H-EUR-GBP= and
+=FX-TR20H-GBP-EUR= as one rate both ways on 122 dates, and folding them together
+would put two values under one date. All seven FX names name and round-trip. The
+corpus total is 64 of 158, and six classes remain.
+
 Two of the four =GENERIC= tokens are market-data keys that sit inside a fixings
 file rather than index names, and the reader reads them as fixings because that is
 the file they are in. Whether it should refuse a key that is not an index name is

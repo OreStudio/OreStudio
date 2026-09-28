@@ -186,6 +186,23 @@ std::optional<std::string> index_name_ir(const ir_market_data_identifier& id) {
     return std::format("{}-{}-{}", id.ccy, family, to_upper(*id.tenor));
 }
 
+/*
+ * FX-<SOURCE>-<CCY1>-<CCY2>, the name ORE gives a fixing and nothing else. A
+ * quote has no index name: its key carries no source, and the corpus writes the
+ * token only in index names, a fixing file or a correlation qualifier.
+ *
+ * The pair is emitted as published, never in a canonical order: the two
+ * directions are two published rates, and the corpus carries GBP-EUR and EUR-GBP
+ * under one source as reciprocal series. The source token comes from the spelling
+ * the name arrived under, when it has one.
+ */
+std::optional<std::string> index_name_fx(const fx_market_data_identifier& id) {
+    if (id.type != instrument_type::fixing || !id.source || id.pair.size() != 6)
+        return std::nullopt;
+    const auto source = id.source_spelling ? *id.source_spelling : to_upper(*id.source);
+    return std::format("FX-{}-{}-{}", source, id.pair.substr(0, 3), id.pair.substr(3, 3));
+}
+
 std::optional<std::string> curve_key_ir(const ir_market_data_identifier& id) {
     if (id.type != instrument_type::fixing || !id.tenor)
         return std::nullopt;
@@ -1084,16 +1101,23 @@ std::optional<std::vector<std::string>> split_key(const std::string& key) {
     return parts;
 }
 
-// The index-name key space splits on '-' (e.g. "USD-LIBOR-3M"): exactly two
-// or three segments, all non-empty. It is not the ORE key grammar and shares
-// none of its structure -- a fixing's key names an index, not a series and a
-// point -- so it gets its own splitter rather than a mode of split_key's.
-std::optional<std::vector<std::string>> split_index_name(const std::string& name) {
+// Every dash-separated segment of a name, empty segments included; the callers
+// decide which shapes they admit.
+std::vector<std::string> split_on_dash(const std::string& name) {
     std::vector<std::string> parts;
     std::stringstream ss(name);
     std::string tok;
     while (std::getline(ss, tok, '-'))
         parts.push_back(tok);
+    return parts;
+}
+
+// The index-name key space splits on '-' (e.g. "USD-LIBOR-3M"): exactly two
+// or three segments, all non-empty. It is not the ORE key grammar and shares
+// none of its structure -- a fixing's key names an index, not a series and a
+// point -- so it gets its own splitter rather than a mode of split_key's.
+std::optional<std::vector<std::string>> split_index_name(const std::string& name) {
+    auto parts = split_on_dash(name);
     if (parts.size() < 2 || parts.size() > 3)
         return std::nullopt;
     if (std::ranges::any_of(parts, [](const std::string& p) { return p.empty(); }))
@@ -2008,6 +2032,8 @@ std::optional<std::string>
 oresmd_projections::to_index_name(const domain::market_data_identifier& identifier) {
     if (const auto* ir = std::get_if<ir_market_data_identifier>(&identifier))
         return index_name_ir(*ir);
+    if (const auto* fx = std::get_if<fx_market_data_identifier>(&identifier))
+        return index_name_fx(*fx);
     return std::nullopt;
 }
 
@@ -2085,6 +2111,24 @@ oresmd_projections::from_ore_key(const std::string& key,
 
 std::optional<domain::market_data_identifier>
 oresmd_projections::from_index_name(const std::string& index_name) {
+    // The reverse of index_name_fx(): FX-SOURCE-CCY1-CCY2. The four segments
+    // cannot be read as an interest-rate name, whose split accepts two or three,
+    // so the two never compete for the same string.
+    if (index_name.starts_with("FX-")) {
+        const auto fx_parts = split_on_dash(index_name);
+        if (fx_parts.size() == 4 && !fx_parts[1].empty() && is_currency_code(fx_parts[2]) &&
+            is_currency_code(fx_parts[3])) {
+            fx_market_data_identifier id;
+            id.type = instrument_type::fixing;
+            id.pair = to_upper(fx_parts[2]) + to_upper(fx_parts[3]);
+            id.source = to_lower(fx_parts[1]);
+            if (fx_parts[1] != to_upper(fx_parts[1]))
+                id.source_spelling = fx_parts[1];
+            return id;
+        }
+        return std::nullopt;
+    }
+
     // The reverse of index_name_ir(): CCY-FAMILY (overnight, no tenor) or
     // CCY-FAMILY-TENOR. Segment spelling normalisation mirrors the parser:
     // ccy upper, family and tenor lower.

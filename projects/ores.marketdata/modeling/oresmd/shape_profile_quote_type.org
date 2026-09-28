@@ -64,6 +64,8 @@ A logical, possibly-partial oresmd requirement for a shape profile.
 | strip |
 | role |
 | metric |
+| source |
+| source_spelling |
 
 * URI order
 

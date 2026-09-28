@@ -70,10 +70,26 @@ struct volatility_surface_point final {
  * (e.g. "EURUSD"); there is no `ccy`/`index`/`tenor`/`role` member at all, mirroring the
  * query-parameter grammar's own per-asset-class conditionality at the type level -- see
  * id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
+ *
+ * A fixing also carries the source that published it, because one pair has more than
+ * one fixing: the corpus writes both FX-ECB-EUR-USD and FX-TR20H-EUR-USD, which
+ * are two different rates. `source` is that token lower-cased, and `source_spelling`
+ * carries the token as ORE wrote it when the two differ, the way `index_spelling`
+ * carries a family's other spelling. Neither belongs to a quote: ORE's FX quote keys
+ * carry no source, and the corpus writes the token only in index names -- a fixing
+ * file, or the qualifier of a correlation key.
+ *
+ * The pair is the pair as published, never a canonical order. A fixing's value is
+ * only meaningful in the direction it was published, and the corpus writes
+ * FX-TR20H-EUR-GBP and FX-TR20H-GBP-EUR as one rate both ways: reciprocal on all
+ * 122 dates they share, the product of the two being 0.9997 on the median date and
+ * 0.9964 on the worst. Folding them together would put two values under one date.
  */
 struct fx_market_data_identifier final {
     std::string pair;
     instrument_type type = instrument_type::quote;
+    std::optional<std::string> source;
+    std::optional<std::string> source_spelling;
     std::optional<domain::fx_quote_type> quote_type;
     std::optional<std::string> point;
     std::optional<volatility_surface_point> vol;

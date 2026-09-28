@@ -2219,7 +2219,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if parse_specs:
             data['oresmd_parse_specs'] = parse_specs
         # The validate_<ac>() functions bracket the static
-        # validate_no_ir_only_keys() helper in the hand-crafted file:
+        # validate_no_foreign_keys() helper in the hand-crafted file:
         # the explicit-reject validators (fx, ir) precede it, the
         # delegating validator (equity) follows it.
         if any(s.get('validate') == 'function' for s in parse_specs):

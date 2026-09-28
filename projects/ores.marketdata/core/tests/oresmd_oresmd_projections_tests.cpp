@@ -80,6 +80,11 @@ TEST_CASE("fx_option_vol_quote_key_risk_reversal", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR");
 }
 
+TEST_CASE("fx_fixing_has_no_quote_key", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=fixing&source=ecb");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
 TEST_CASE("ir_usd_libor_3m_index_name_and_curve_key", tags) {
     const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing");
     REQUIRE(oresmd_projections::to_index_name(id) == "USD-LIBOR-3M");
@@ -1203,7 +1208,6 @@ TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     REQUIRE_FALSE(oresmd_projections::from_index_name("DKK-CIBOR").has_value());
     // Segment counts the forward never emits.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-EUR-USD").has_value());
     // Empty segments, and a family the enum does not declare: the enum holds the
     // families the corpus and the synthetic curve configurations use, and a
     // producer's other token has no family to resolve to.
@@ -1215,6 +1219,81 @@ TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     REQUIRE_FALSE(oresmd_projections::from_index_name("UKRPI").has_value());
     REQUIRE_FALSE(
         oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000").has_value());
+}
+
+TEST_CASE("from_index_name_reads_the_fx_fixing_names_the_corpus_carries", tags) {
+    // The seven FX index names in external/ore/examples, all of them fixings.
+    for (const auto& name : {"FX-ECB-EUR-GBP",
+                             "FX-ECB-EUR-USD",
+                             "FX-Reuters-USD-EUR",
+                             "FX-TR20H-EUR-GBP",
+                             "FX-TR20H-EUR-USD",
+                             "FX-TR20H-GBP-EUR",
+                             "FX-TR20H-GBP-USD"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        CHECK(std::get<fx_market_data_identifier>(*id).type == instrument_type::fixing);
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+}
+
+TEST_CASE("from_index_name_keeps_an_fx_fixings_source_and_its_direction", tags) {
+    // The source separates two fixings on one pair. ECB and TR20H both fix
+    // EUR-USD, and they are different rates, so an identity that held only the
+    // pair would put both histories in one series.
+    const auto ecb = oresmd_projections::from_index_name("FX-ECB-EUR-USD");
+    REQUIRE(ecb.has_value());
+    const auto& eur_usd_ecb = std::get<fx_market_data_identifier>(*ecb);
+    CHECK(eur_usd_ecb.pair == "EURUSD");
+    REQUIRE(eur_usd_ecb.source.has_value());
+    CHECK(*eur_usd_ecb.source == "ecb");
+    CHECK_FALSE(eur_usd_ecb.source_spelling.has_value());
+
+    const auto tr20h = oresmd_projections::from_index_name("FX-TR20H-EUR-USD");
+    REQUIRE(tr20h.has_value());
+    const auto& eur_usd_tr20h = std::get<fx_market_data_identifier>(*tr20h);
+    CHECK(eur_usd_tr20h.pair == eur_usd_ecb.pair);
+    REQUIRE(eur_usd_tr20h.source.has_value());
+    CHECK(*eur_usd_tr20h.source == "tr20h");
+
+    // The pair is the pair as published. GBP-EUR and EUR-GBP are one rate written
+    // both ways in the corpus, reciprocal on all 122 dates they share, so folding
+    // them into a canonical order would put two values under one date and invert
+    // neither.
+    const auto reversed = oresmd_projections::from_index_name("FX-TR20H-GBP-EUR");
+    REQUIRE(reversed.has_value());
+    CHECK(std::get<fx_market_data_identifier>(*reversed).pair == "GBPEUR");
+
+    // The token keeps the case ORE wrote it in when that is not the source's own
+    // upper-case name.
+    const auto reuters = oresmd_projections::from_index_name("FX-Reuters-USD-EUR");
+    REQUIRE(reuters.has_value());
+    const auto& usd_eur = std::get<fx_market_data_identifier>(*reuters);
+    REQUIRE(usd_eur.source_spelling.has_value());
+    CHECK(*usd_eur.source_spelling == "Reuters");
+    REQUIRE(usd_eur.source.has_value());
+    CHECK(*usd_eur.source == "reuters");
+
+    // The URI direction emits the same name the name direction reads, pair order
+    // included.
+    const auto reversed_uri = parse("oresmd://fx/gbpeur?type=fixing&source=tr20h");
+    const auto name = oresmd_projections::to_index_name(reversed_uri);
+    REQUIRE(name.has_value());
+    CHECK(*name == "FX-TR20H-GBP-EUR");
+}
+
+TEST_CASE("from_index_name_rejects_fx_names_that_are_not_the_shape", tags) {
+    // FX-SOURCE-CCY1-CCY2: a source is required and both currency segments are
+    // three letters.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("FX--EUR-USD").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-EUR").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-EUR-USDX").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-12-USD").has_value());
+    // A quote has no index name to project, sourced or not.
+    const auto quote = parse("oresmd://fx/eurusd?type=quote");
+    REQUIRE_FALSE(oresmd_projections::to_index_name(quote).has_value());
 }
 
 TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", tags) {

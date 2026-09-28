@@ -5532,10 +5532,12 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
 _ORESMD_GENERATED_FIELDS = ("quote_type", "point", "vol")
 
 # Hand-crafted parse-time case mapping: entity fields and ccy are upper-
-# cased, tenor/point lower-cased, everything else passes through raw.
+# cased, tenor/point lower-cased, everything else passes through raw. A fixing
+# source is a provider token the corpus writes in mixed case, so it is lower-cased
+# like the enum names it stands beside; its spelling passes through raw.
 _ORESMD_UPPER_FIELDS = {"pair", "ccy", "ticker", "reference_entity",
                         "commodity_code", "index_code", "factor_pair"}
-_ORESMD_LOWER_FIELDS = {"tenor", "point"}
+_ORESMD_LOWER_FIELDS = {"tenor", "point", "source"}
 
 
 def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
@@ -5615,8 +5617,8 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     # validate: how the parser rejects an asset class's disallowed query
     # keys -- function (own validate_<ac>() with explicit reject calls, and
     # any type-gated checks), delegate_function (own validate_<ac>() that
-    # delegates to validate_no_ir_only_keys()), inline_delegate (inline
-    # validate_no_ir_only_keys() call inside parse_<ac>()), or inline
+    # delegates to validate_no_foreign_keys()), inline_delegate (inline
+    # validate_no_foreign_keys() call inside parse_<ac>()), or inline
     # (explicit reject calls inside parse_<ac>(), with the rejects emitted
     # from the Reject keys table). quote_type_checked: whether parse_<ac>()
     # enforces "quote only meaningful when type=quote" (false for credit,
@@ -5778,13 +5780,16 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 reject_keys.append(row["key"])
     result["reject_keys"] = reject_keys
 
-    # --- Type-gated keys (ir only): query keys that are only meaningful
-    # when type=quote; the parser's validate_<ac>() emits one check per key
-    # ("'<key>' is only meaningful when type=quote"). ---
+    # --- Type-gated keys: query keys that are only meaningful for one
+    # instrument type; the parser's validate_<ac>() emits one check per key
+    # ("'<key>' is only meaningful when type=<type>"). A row that names no
+    # type is gated on quote. ---
     tgs_section = _section(doc.root, "Type-gated keys")
     if tgs_section:
         result["type_gated_keys"] = [
-            r.get("key", "") for r in _parse_org_table_rows(tgs_section) if r.get("key")
+            {"key": r.get("key", ""), "type": (r.get("type") or "quote").strip()}
+            for r in _parse_org_table_rows(tgs_section)
+            if r.get("key")
         ]
 
     # --- URI order: the to_uri() serialization order of the query keys.

@@ -28,9 +28,9 @@ ores.marketdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | PRs 1 to 4 are merged, the last as #2321 and #2327. The fixing identity task has closed the interest-rate third of the fixing key space: 57 of 57 names resolve, from 34. |
+| Now          | PRs 1 to 4 are merged, the last as #2321 and #2327, and the fixing identity task has closed two of the eight index-name classes: interest rates 57 of 57 and FX 7 of 7, so 64 of the corpus's 158 names resolve. |
 | Waiting on   | A decision on the FX source and on the power contract-hour shape, before PR 5 can start. |
-| Next         | Take the FX-source reading to the owner as a worked example (task AB2922AA). Seven fixing index classes remain: inflation 7 names, equity 8, FX 7, commodity 25, power 48, security 2, =GENERIC= 4. PR 5 is blocked until they are mapped, or the type is refused at the boundary. |
+| Next         | Take the power contract-hour shape to the owner as a worked example (task AB2922AA). Six fixing index classes remain: inflation 7 names, equity 8, commodity 25, power 48, security 2, =GENERIC= 4. PR 5 is blocked until they are mapped, or the type is refused at the boundary. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

@@ -156,7 +156,7 @@ struct put_feed_binding_request {
 
 struct put_feed_binding_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::feed_binding feed_binding;
+    std::optional<ores::marketdata::domain::feed_binding> feed_binding;
 };
 
 struct put_many_feed_bindings_request {
@@ -252,7 +252,7 @@ struct get_feed_binding_version_request {
 
 struct get_feed_binding_version_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::feed_binding version;
+    std::optional<ores::marketdata::domain::feed_binding> version;
 };
 
 /**

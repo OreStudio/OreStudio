@@ -145,7 +145,7 @@ struct put_market_fixing_request {
 
 struct put_market_fixing_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::market_fixing market_fixing;
+    std::optional<ores::marketdata::domain::market_fixing> market_fixing;
 };
 
 struct put_many_market_fixings_request {

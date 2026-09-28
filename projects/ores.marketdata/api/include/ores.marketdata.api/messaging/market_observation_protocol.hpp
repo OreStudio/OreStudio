@@ -152,7 +152,7 @@ struct put_market_observation_request {
 
 struct put_market_observation_response {
     ores::utility::domain::result result;
-    ores::marketdata::domain::market_observation market_observation;
+    std::optional<ores::marketdata::domain::market_observation> market_observation;
 };
 
 struct put_many_market_observations_request {

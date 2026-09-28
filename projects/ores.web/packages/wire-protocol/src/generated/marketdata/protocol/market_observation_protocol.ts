@@ -110,7 +110,7 @@ export interface PutMarketObservationRequest {
 
 export interface PutMarketObservationResponse {
     result: Result;
-    market_observation: MarketObservation;
+    market_observation: MarketObservation | null;
 }
 
 export interface PutManyMarketObservationsRequest {

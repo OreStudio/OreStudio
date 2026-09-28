@@ -172,15 +172,14 @@ public:
             // that replaces it (iam.v1.tenants.provision) cannot drift apart
             // while both are reachable.
             const auto created =
-                service::tenant_provisioning_service(ctx_)
-                    .provision(req->type,
-                               req->code,
-                               req->name,
-                               req->hostname,
-                               req->description,
-                               username_of(req->principal),
-                               req->email,
-                               req->password);
+                service::tenant_provisioning_service(ctx_).provision(req->type,
+                                                                     req->code,
+                                                                     req->name,
+                                                                     req->hostname,
+                                                                     req->description,
+                                                                     username_of(req->principal),
+                                                                     req->email,
+                                                                     req->password);
 
             // Reload the new tenant's party cache: the SQL provisioner created
             // the system party directly, no NATS event is published for it.

@@ -28,11 +28,11 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <filesystem>
-#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 namespace {
@@ -104,7 +104,8 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     CHECK(stored_codes == expected_codes);
 
     const auto matrix_id = mapped.matrices.front().id;
-    const auto rows = row_repo.read_latest_by_transition_matrix_id(h.context(), boost::uuids::to_string(matrix_id), 0, 100);
+    const auto rows = row_repo.read_latest_by_transition_matrix_id(
+        h.context(), boost::uuids::to_string(matrix_id), 0, 100);
     INFO("rows read back: " << rows.size());
     REQUIRE(rows.size() == mapped.rows.size());
 
@@ -120,9 +121,8 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     CHECK(read_ratings == expected_ratings);
 
     const auto matrices = matrix_repo.read_latest(h.context());
-    const auto found = std::find_if(matrices.begin(), matrices.end(), [&](const auto& m) {
-        return m.id == matrix_id;
-    });
+    const auto found = std::find_if(
+        matrices.begin(), matrices.end(), [&](const auto& m) { return m.id == matrix_id; });
     REQUIRE(found != matrices.end());
     CHECK(found->t0 == mapped.matrices.front().t0);
     CHECK(found->t1 == mapped.matrices.front().t1);

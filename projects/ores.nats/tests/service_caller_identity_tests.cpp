@@ -48,8 +48,7 @@ TEST_CASE("the_actor_bearer_prefers_the_delegated_header", "[nats][headers]") {
     CHECK(ores::nats::service::extract_actor_bearer(msg) == "caller");
 }
 
-TEST_CASE("the_actor_bearer_falls_back_to_the_authorization_header",
-          "[nats][headers]") {
+TEST_CASE("the_actor_bearer_falls_back_to_the_authorization_header", "[nats][headers]") {
     const auto msg = with_header(ores::nats::headers::authorization, bearer("caller"));
     CHECK(ores::nats::service::extract_actor_bearer(msg) == "caller");
 }

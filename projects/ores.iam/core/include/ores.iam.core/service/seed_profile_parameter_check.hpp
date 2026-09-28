@@ -54,7 +54,9 @@ struct checked_parameters {
     /// Empty when the values were accepted; otherwise what to show the person.
     std::string refusal;
 
-    [[nodiscard]] bool accepted() const { return refusal.empty(); }
+    [[nodiscard]] bool accepted() const {
+        return refusal.empty();
+    }
 };
 
 namespace detail {
@@ -127,10 +129,8 @@ check_parameters(const std::vector<domain::seed_profile_parameter>& declared,
                 return {{}, "The parameter '" + given[i].name + "' is supplied more than once."};
 
     for (const auto& g : given) {
-        const auto declared_it =
-            std::find_if(declared.begin(), declared.end(), [&](const auto& d) {
-                return d.name == g.name;
-            });
+        const auto declared_it = std::find_if(
+            declared.begin(), declared.end(), [&](const auto& d) { return d.name == g.name; });
         if (declared_it == declared.end())
             return {{}, "The profile does not declare a parameter named '" + g.name + "'."};
     }
@@ -138,9 +138,8 @@ check_parameters(const std::vector<domain::seed_profile_parameter>& declared,
     checked_parameters result;
     result.values.reserve(declared.size());
     for (const auto& d : declared) {
-        const auto given_it = std::find_if(given.begin(), given.end(), [&](const auto& g) {
-            return g.name == d.name;
-        });
+        const auto given_it = std::find_if(
+            given.begin(), given.end(), [&](const auto& g) { return g.name == d.name; });
         // An omitted parameter is the profile's to fill: it declares the value
         // the form starts with, so a caller that leaves the field untouched
         // carries nothing. A parameter the request states as empty is a
@@ -176,20 +175,19 @@ check_parameters(const std::vector<domain::seed_profile_parameter>& declared,
                     allowed += choice;
                 }
                 return {{},
-                        "The value '" + value + "' for '" + d.name +
-                            "' is not one of: " + allowed + "."};
+                        "The value '" + value + "' for '" + d.name + "' is not one of: " + allowed +
+                            "."};
             }
         } else if (d.data_type == "integer") {
             if (!detail::reads_as_integer(value))
                 return {{}, "The value '" + value + "' for '" + d.name + "' is not an integer."};
         } else if (d.data_type == "boolean") {
             if (!detail::reads_as_boolean(value))
-                return {{},
-                        "The value '" + value + "' for '" + d.name + "' is not true or false."};
+                return {{}, "The value '" + value + "' for '" + d.name + "' is not true or false."};
         } else if (d.data_type != "string") {
             return {{},
-                    "The parameter '" + d.name + "' declares the unknown data type '" + d.data_type +
-                        "'."};
+                    "The parameter '" + d.name + "' declares the unknown data type '" +
+                        d.data_type + "'."};
         }
 
         result.values.push_back({d.name, value});

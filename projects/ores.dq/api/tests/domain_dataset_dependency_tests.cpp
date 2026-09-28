@@ -92,4 +92,3 @@ TEST_CASE("dataset_dependency_supports_custom_codes", tags) {
     CHECK(sut.dependency_code == "custom.reference_data");
     CHECK(sut.role == "reference_data");
 }
-

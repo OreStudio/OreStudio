@@ -124,18 +124,17 @@ struct fixture {
         // run's rows are this case's own, in the test tenant.
         instance_states = load_fsm_states(service_context(), "workflow_instance");
         step_states = load_fsm_states(service_context(), "workflow_step");
-        engine = std::make_shared<workflow_engine>(nats,
-                                                   where == engine_tenant::service ?
-                                                       service_context() :
-                                                       h.context(),
-                                                   registry,
-                                                   instance_states,
-                                                   step_states,
-                                                   // No key in a test process, which the
-                                                   // engine documents as "attribute
-                                                   // every record to the service
-                                                   // account".
-                                                   std::nullopt);
+        engine = std::make_shared<workflow_engine>(
+            nats,
+            where == engine_tenant::service ? service_context() : h.context(),
+            registry,
+            instance_states,
+            step_states,
+            // No key in a test process, which the
+            // engine documents as "attribute
+            // every record to the service
+            // account".
+            std::nullopt);
     }
 
     /** @brief The tenant a run started here belongs to. */
@@ -163,26 +162,26 @@ struct fixture {
         workflow_definition def;
         def.type_name = type;
         def.description = "engine fixture";
-        def.build_steps = [names](
-                              const std::string& request, const std::string&, const std::string&) {
-            std::vector<workflow_step_def> steps;
-            steps.reserve(names.size());
-            for (const auto& name : names) {
-                workflow_step_def s;
-                s.name = name;
-                s.description = name;
-                s.command_subject = step_subject;
-                s.compensation_subject = compensation_subject;
-                s.build_command = [request](const std::string&, const workflow_step_results&) {
-                    return request;
-                };
-                s.build_compensation = [](const std::string& command, const std::string&) {
-                    return command;
-                };
-                steps.push_back(std::move(s));
-            }
-            return steps;
-        };
+        def.build_steps =
+            [names](const std::string& request, const std::string&, const std::string&) {
+                std::vector<workflow_step_def> steps;
+                steps.reserve(names.size());
+                for (const auto& name : names) {
+                    workflow_step_def s;
+                    s.name = name;
+                    s.description = name;
+                    s.command_subject = step_subject;
+                    s.compensation_subject = compensation_subject;
+                    s.build_command = [request](const std::string&, const workflow_step_results&) {
+                        return request;
+                    };
+                    s.build_compensation = [](const std::string& command, const std::string&) {
+                        return command;
+                    };
+                    steps.push_back(std::move(s));
+                }
+                return steps;
+            };
         registry->register_definition(std::move(def));
     }
 };
@@ -560,8 +559,7 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names", tags)
         msg.data = ores::nats::default_wire_codec().encode(req);
         msg.reply_subject = reply_subject;
         handler->get_step_result(std::move(msg));
-        return await_reply<get_step_result_response>(
-            replies, before, std::chrono::seconds(5));
+        return await_reply<get_step_result_response>(replies, before, std::chrono::seconds(5));
     };
 
     // The step belongs to the run's tenant, so naming that tenant finds it.
@@ -609,9 +607,8 @@ TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for
 
     const auto has = [](const std::vector<ores::workflow::domain::workflow_instance>& rows,
                         const std::string& id) {
-        return std::ranges::any_of(rows, [&](const auto& row) {
-            return boost::uuids::to_string(row.id) == id;
-        });
+        return std::ranges::any_of(
+            rows, [&](const auto& row) { return boost::uuids::to_string(row.id) == id; });
     };
 
     workflow_instance_repository instances;

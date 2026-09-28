@@ -106,10 +106,9 @@ std::vector<std::filesystem::path> sample_payloads(std::size_t budget) {
         const auto content = ores::platform::filesystem::file::read_content(p);
         sized.emplace_back(lines_of(content).size(), p);
     }
-    std::sort(sized.begin(), sized.end(),
-              [](const auto& a, const auto& b) {
-                  return a.first != b.first ? a.first < b.first : a.second < b.second;
-              });
+    std::sort(sized.begin(), sized.end(), [](const auto& a, const auto& b) {
+        return a.first != b.first ? a.first < b.first : a.second < b.second;
+    });
     std::vector<std::filesystem::path> chosen;
     std::size_t taken = 0;
     for (const auto& [count, path] : sized) {
@@ -133,8 +132,8 @@ std::vector<std::filesystem::path> sample_payloads(std::size_t budget) {
 std::string source_tag_for(const std::filesystem::path& path) {
     auto name = path.filename().string();
     std::replace(name.begin(), name.end(), '.', '_');
-    return "test.corpus." + name + "." + std::to_string(std::hash<std::string>{}(
-                                                          path.string()) % 100000);
+    return "test.corpus." + name + "." +
+           std::to_string(std::hash<std::string>{}(path.string()) % 100000);
 }
 
 /// Imports @p path and asserts the rows it wrote match the file.
@@ -157,7 +156,8 @@ struct corpus_tenant {
     ores::testing::database_helper base;
     ores::database::context ctx;
 
-    corpus_tenant() : ctx(base.context()) {
+    corpus_tenant()
+        : ctx(base.context()) {
         const auto code =
             ores::testing::test_database_manager::generate_test_tenant_code("marketdata.corpus");
         const auto tenant = ores::testing::test_database_manager::provision_test_tenant(

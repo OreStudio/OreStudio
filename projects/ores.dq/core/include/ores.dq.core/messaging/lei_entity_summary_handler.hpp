@@ -57,10 +57,9 @@ inline auto& dq_lei_entity_summary_handler_lg() {
  */
 class lei_entity_summary_handler {
 public:
-    lei_entity_summary_handler(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    lei_entity_summary_handler(ores::nats::service::client& nats,
+                               ores::database::context ctx,
+                               std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}

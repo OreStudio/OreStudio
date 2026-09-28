@@ -46,8 +46,7 @@ namespace ores::platform::numeric {
  * number, holds anything after the number, or names a value outside the
  * range of a @c double.
  */
-[[nodiscard]] ORES_PLATFORM_EXPORT std::optional<double>
-parse_double(std::string_view text);
+[[nodiscard]] ORES_PLATFORM_EXPORT std::optional<double> parse_double(std::string_view text);
 
 }
 

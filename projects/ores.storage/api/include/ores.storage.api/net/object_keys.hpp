@@ -102,9 +102,8 @@ struct object_keys final {
             return false;
 
         for (const char c : segment) {
-            const bool allowed = (c >= 'a' && c <= 'z') ||
-                (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-                c == '_' || c == '-' || c == '.';
+            const bool allowed = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                                 (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.';
             if (!allowed)
                 return false;
         }
@@ -120,15 +119,14 @@ struct object_keys final {
      *         where it is read back.
      */
     [[nodiscard]] static std::string make(std::string_view service,
-        std::string_view purpose, std::string_view id,
-        std::string_view name = {}) {
+                                          std::string_view purpose,
+                                          std::string_view id,
+                                          std::string_view name = {}) {
         if (!is_valid_segment(service))
-            throw std::invalid_argument(
-                "object key has an invalid service segment");
+            throw std::invalid_argument("object key has an invalid service segment");
 
         if (!is_valid_segment(purpose))
-            throw std::invalid_argument(
-                "object key has an invalid purpose segment");
+            throw std::invalid_argument("object key has an invalid purpose segment");
 
         if (!is_valid_segment(id))
             throw std::invalid_argument("object key has an invalid id segment");
@@ -137,8 +135,7 @@ struct object_keys final {
             throw std::invalid_argument("object key has an invalid name segment");
 
         std::string key;
-        key.reserve(service.size() + purpose.size() + id.size() +
-            name.size() + 4);
+        key.reserve(service.size() + purpose.size() + id.size() + name.size() + 4);
         key.append(service).append(1, '/');
         key.append(purpose).append(1, '/');
         key.append(id);
@@ -163,8 +160,8 @@ struct object_keys final {
         std::size_t start = 0;
         while (true) {
             const auto end = key.find('/', start);
-            const auto segment = (end == std::string_view::npos) ?
-                key.substr(start) : key.substr(start, end - start);
+            const auto segment = (end == std::string_view::npos) ? key.substr(start) :
+                                                                   key.substr(start, end - start);
             if (!is_valid_segment(segment))
                 return std::nullopt;
             segments.push_back(segment);

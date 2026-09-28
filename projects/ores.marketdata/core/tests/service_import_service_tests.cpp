@@ -221,7 +221,8 @@ TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) 
 
     CHECK(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/2D/3M").empty());
     CHECK(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "GBP/2D/3M").empty());
-    REQUIRE(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/0D/3M").size() == 1);
+    REQUIRE(series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "USD/0D/3M").size() ==
+            1);
     REQUIRE(
         series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "GBP/20220922/3M").size() ==
         1);

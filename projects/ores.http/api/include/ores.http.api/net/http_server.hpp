@@ -65,8 +65,7 @@ public:
      * HTTP surface. A session is built with whatever stands here, so it is
      * set before the server starts accepting.
      */
-    void set_verifier(
-        std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier) {
+    void set_verifier(std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier) {
         verifier_ = std::move(verifier);
     }
 

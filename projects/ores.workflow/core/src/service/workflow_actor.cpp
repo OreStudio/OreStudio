@@ -34,9 +34,10 @@ inline auto& workflow_actor_lg() {
 
 using namespace ores::logging;
 
-std::string actor_from_message(const ores::nats::message& msg,
-                               const std::optional<ores::security::jwt::jwt_authenticator>& verifier,
-                               const std::string& fallback) {
+std::string
+actor_from_message(const ores::nats::message& msg,
+                   const std::optional<ores::security::jwt::jwt_authenticator>& verifier,
+                   const std::string& fallback) {
 
     if (!verifier)
         return fallback;

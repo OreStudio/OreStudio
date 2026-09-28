@@ -37,8 +37,7 @@ using namespace ores::reporting::messaging;
 
 namespace {
 
-constexpr std::string_view platform_bucket =
-    ores::storage::api::object_keys::ores_bucket;
+constexpr std::string_view platform_bucket = ores::storage::api::object_keys::ores_bucket;
 
 std::string tarball_storage_key(const std::string& instance_id) {
     return ores::storage::api::object_keys::make(

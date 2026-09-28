@@ -52,9 +52,8 @@ namespace {
  * caller that must not accept an ambiguous local time requires it; a caller
  * reading a column cannot.
  */
-std::chrono::system_clock::time_point parse_utc_timestamp(const std::string& str,
-                                                          const bool designator_required,
-                                                          const char* const who) {
+std::chrono::system_clock::time_point
+parse_utc_timestamp(const std::string& str, const bool designator_required, const char* const who) {
     if (str.empty())
         throw std::invalid_argument(std::string(who) + ": empty string");
 

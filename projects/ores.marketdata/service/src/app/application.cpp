@@ -140,8 +140,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // the channel carries a second subscriber rather than a second mapping.
     // Every action refreshes: a bind that is created, retargeted or removed
     // all change which series the loop is entitled to ingest.
-    auto feed_binding_refresh_sub = event_bus.subscribe<mdm::feed_binding_event>(
-        [ingest](const mdm::feed_binding_event&) {
+    auto feed_binding_refresh_sub =
+        event_bus.subscribe<mdm::feed_binding_event>([ingest](const mdm::feed_binding_event&) {
             BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
             ingest->refresh();
         });

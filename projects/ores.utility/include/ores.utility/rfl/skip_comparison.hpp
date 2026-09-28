@@ -39,16 +39,14 @@ namespace rfl::internal {
  * this shim if a later reflect-cpp defines the comparison itself.
  */
 template <class T, bool SkipSerialization, bool SkipDeserialization>
-constexpr bool
-operator==(const Skip<T, SkipSerialization, SkipDeserialization>& lhs,
-           const Skip<T, SkipSerialization, SkipDeserialization>& rhs) {
+constexpr bool operator==(const Skip<T, SkipSerialization, SkipDeserialization>& lhs,
+                          const Skip<T, SkipSerialization, SkipDeserialization>& rhs) {
     return lhs.get() == rhs.get();
 }
 
 template <class T, bool SkipSerialization, bool SkipDeserialization>
-constexpr bool
-operator!=(const Skip<T, SkipSerialization, SkipDeserialization>& lhs,
-           const Skip<T, SkipSerialization, SkipDeserialization>& rhs) {
+constexpr bool operator!=(const Skip<T, SkipSerialization, SkipDeserialization>& lhs,
+                          const Skip<T, SkipSerialization, SkipDeserialization>& rhs) {
     return !(lhs == rhs);
 }
 

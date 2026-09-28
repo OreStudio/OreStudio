@@ -65,8 +65,7 @@ inline constexpr std::string_view tenant_admin_role = "TenantAdmin";
  */
 class ORES_IAM_CORE_EXPORT tenant_provisioning_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.tenant_provisioning_service";
+    inline static std::string_view logger_name = "ores.iam.service.tenant_provisioning_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -131,14 +130,14 @@ public:
 
         const auto& tenant_id = *rows[0][0];
         const auto& system_party_id = *rows[0][1];
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Provisioned tenant " << code << " (id: " << tenant_id
-                                  << ", system party: " << system_party_id << ")";
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "Provisioned tenant " << code << " (id: " << tenant_id
+            << ", system party: " << system_party_id << ")";
 
         auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id);
         account_operations_service accounts(tenant_ctx);
-        auto account =
-            accounts.create_account(admin_username, admin_email, admin_password,
-                                    ctx_.service_account());
+        auto account = accounts.create_account(
+            admin_username, admin_email, admin_password, ctx_.service_account());
 
         domain::account_party link;
         link.account_id = account.id;
@@ -150,18 +149,18 @@ public:
         link.change_commentary = "Provision tenant: associate admin with system party";
         account_party_service parties(tenant_ctx);
         parties.save_account_party(link);
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Associated " << admin_username << " with system party "
-                                  << system_party_id;
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "Associated " << admin_username << " with system party " << system_party_id;
 
         authorization_service authorization(tenant_ctx);
         if (auto role = authorization.find_role_by_name(std::string(tenant_admin_role))) {
             authorization.assign_role(account.id, role->id, ctx_.service_account());
-            BOOST_LOG_SEV(lg(), ores::logging::info) << "Assigned " << tenant_admin_role << " to "
-                                      << admin_username;
+            BOOST_LOG_SEV(lg(), ores::logging::info)
+                << "Assigned " << tenant_admin_role << " to " << admin_username;
         } else {
-            BOOST_LOG_SEV(lg(), ores::logging::error) << "Tenant " << code << " has no " << tenant_admin_role
-                                       << " role, so " << admin_username
-                                       << " was created without one and holds no permissions";
+            BOOST_LOG_SEV(lg(), ores::logging::error)
+                << "Tenant " << code << " has no " << tenant_admin_role << " role, so "
+                << admin_username << " was created without one and holds no permissions";
         }
 
         return {tenant_id, boost::uuids::to_string(account.id)};

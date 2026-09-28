@@ -155,7 +155,6 @@ public:
     resolve_publication_order(const std::vector<boost::uuids::uuid>& dataset_ids);
 
 
-
 private:
     /**
      * @brief Builds a cache of artefact types for the given datasets.

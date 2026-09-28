@@ -20,9 +20,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <array>
+#include <catch2/catch_test_macros.hpp>
 #include <charconv>
 #include <string>
-#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -81,12 +81,11 @@ TEST_CASE("every_formatted_double_parses_back_to_itself", tags) {
     // The estate formats doubles with the floating-point to_chars, which
     // libc++ does implement, and reads them back with this parser. The pair
     // has to round trip.
-    constexpr std::array values{0.0, 1.0, -1.0, 0.1, 1.0 / 3.0, 123456.789,
-                                -6.02e-2, 1e300, 4.9e-324};
+    constexpr std::array values{
+        0.0, 1.0, -1.0, 0.1, 1.0 / 3.0, 123456.789, -6.02e-2, 1e300, 4.9e-324};
     for (const auto value : values) {
         std::array<char, 64> buffer{};
-        const auto written = std::to_chars(buffer.data(),
-                                           buffer.data() + buffer.size(), value);
+        const auto written = std::to_chars(buffer.data(), buffer.data() + buffer.size(), value);
         REQUIRE(written.ec == std::errc{});
         const std::string text(buffer.data(), written.ptr);
         const auto parsed = parse_double(text);

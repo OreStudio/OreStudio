@@ -20,11 +20,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
 #include <atomic>
+#include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
-#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -112,15 +112,13 @@ TEST_CASE("readers_never_see_a_half_published_snapshot", tags) {
     }
 
     for (int i = 1; i <= revisions; ++i) {
-        published.store(
-            std::make_shared<const snapshot>(snapshot{"rev-" + std::to_string(i), i}));
+        published.store(std::make_shared<const snapshot>(snapshot{"rev-" + std::to_string(i), i}));
     }
     stop.store(true, std::memory_order_relaxed);
     for (auto& t : readers)
         t.join();
 
-    BOOST_LOG_SEV(lg, info) << "Torn reads over " << revisions << " revisions: "
-                            << torn.load();
+    BOOST_LOG_SEV(lg, info) << "Torn reads over " << revisions << " revisions: " << torn.load();
     CHECK(torn.load() == 0);
     CHECK(published.load()->revision == revisions);
 }

@@ -163,14 +163,11 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     // X-Error header on the reply -- so the test answers with one rather than
     // requiring the fleet to be up. Before this change the header was ignored
     // and the job was recorded as succeeded while no report instance existed.
-    auto responder = nats.subscribe(
-        trigger_subject,
-        [&nats](ores::nats::message msg) {
-            nats.publish(
-                msg.reply_subject,
-                {},
-                {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
-        });
+    auto responder = nats.subscribe(trigger_subject, [&nats](ores::nats::message msg) {
+        nats.publish(msg.reply_subject,
+                     {},
+                     {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
+    });
 
     auto svc_nats = make_unauthenticated_client(nats);
     nats_publish_action_handler handler(nats, svc_nats);

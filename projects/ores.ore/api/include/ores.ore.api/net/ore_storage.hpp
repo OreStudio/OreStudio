@@ -38,8 +38,7 @@ struct ore_storage {
     /**
      * @brief The platform bucket every service writes to.
      */
-    static constexpr std::string_view bucket =
-        ores::storage::api::object_keys::ores_bucket;
+    static constexpr std::string_view bucket = ores::storage::api::object_keys::ores_bucket;
 
     /**
      * @brief Object key for an ORE import tarball.
@@ -59,8 +58,7 @@ struct ore_storage {
      * @return            e.g. "/api/v1/storage/ores/ore/imports/{id}.tar.gz"
      */
     static std::string import_path(std::string_view request_id) {
-        return ores::storage::net::storage_paths::make_object_path(bucket,
-                                                                   import_key(request_id));
+        return ores::storage::net::storage_paths::make_object_path(bucket, import_key(request_id));
     }
 
 private:

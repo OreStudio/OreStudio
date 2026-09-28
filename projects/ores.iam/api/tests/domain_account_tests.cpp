@@ -53,7 +53,8 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
     CHECK(sut.username == "john.doe");
-    CHECK(sut.password_hash.value() == "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+    CHECK(sut.password_hash.value() ==
+          "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
     CHECK(sut.password_salt.value() == "randomly_generated_salt_value");
     CHECK(sut.totp_secret.value() == "JBSWY3DPEHPK3PXP");
     CHECK(sut.email == "john.doe@example.com");

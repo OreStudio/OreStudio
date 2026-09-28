@@ -113,6 +113,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/2307][#2307]] | [reporting] Model the report configuration registry and round trip a credit simulation document |
+| [[https://github.com/OreStudio/OreStudio/pull/2307][#2307]] | [reporting] Model the report configuration registry and round trip a credit simulation document |
 
 * Review
 

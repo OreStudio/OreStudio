@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B44CE2C4-D503-45FE-9470-1A8C7A861580
+:END:
+#+title: Pass --task to compass pr create on a shared branch
+#+description: compass pr create matches the task by branch when --task is omitted, so a story that shares one branch across its tasks mis-records the pull request.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :compass:pr:agile:memory:feedback:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Pass --task to 'compass pr create' when the story shares one branch across its tasks. The verb matches the task by branch when --task is omitted, so a shared branch records the pull request on whichever task it finds first and overwrites the PR number that task already carried.
+
+*Why:* On PR #2347 the record landed on the report-configuration registry task and replaced its #2307 with #2347, because every task in the ore-report-configuration story carries #+branch: feature/ore-report-configuration. The mistake was silent: the command reported success and named the wrong task in its output.
+
+*How to apply:* Before running 'compass pr create', read the task's branch. If more than one task in the story carries the same #+branch:, pass --task with the task's UUID or slug. Check the line of the command's output that names the task it recorded against, not only the PR URL.

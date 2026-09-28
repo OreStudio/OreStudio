@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :reporting:ore:model:sprint_26:v0:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-28
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,10 @@ A report definition's configuration is a set of strongly typed entities rather t
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The reporting registry and the credit simulation round trip are delivered. The harness every later document type registers with has its design settled. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-27                               |
+| Next          | Register credit simulation through the harness, then take the remaining document kinds in ascending corpus size. |
+| Last touched  | 2026-09-28                               |
 
 * Acceptance
 
@@ -49,7 +49,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]] | BACKLOG | | | Build the ORE run document and the configuration documents it names from the entities, replacing the current package step that emits trades.msgpack and market_data.msgpack. |
 | [[id:D7968725-7267-44B7-A423-7E3AD5BC06A5][Implement the report configuration registry]] | DONE | | 2026-09-28 | The reporting half as real tables: the definition, its slots, the configuration sets, the parameters and the value domains, with every discriminator a foreign key to a seeded lookup. |
 | [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]] | BACKLOG | | | The domain vocabularies every configuration file discriminates on: configuration and report kinds, analytic types, value domains, shift families, shift types and shift schemes, risk classes, and the ORE element each maps to. |
-| [[id:30240D14-4488-4BE8-A386-BAB3D4018C49][Build the round-trip harness]] | BACKLOG | | | One test rig that takes an ORE configuration file of a given type, imports it into the entities, exports it back, and reports the diff, so each file type can be proven as soon as its mapper lands. |
+| [[id:30240D14-4488-4BE8-A386-BAB3D4018C49][Build the round-trip harness]] | DONE | 2026-09-28 | 2026-09-28 | One test rig that takes an ORE configuration file of a given type, imports it into the entities, exports it back, and reports the diff, so each file type can be proven as soon as its mapper lands. |
 | [[id:69EC520A-4DC8-4FCA-AB34-4EA2233E72CA][Round trip the ORE run document]] | BACKLOG | | | ore.xml end to end: the Setup parameters, the Markets bindings and the ordered analytic list as entities, with an import mapper, an export mapper and a round trip over every ore.xml in the corpus. |
 | [[id:C7D9DDD4-CE84-4D3E-8645-1B8DFFB02B76][Round trip the stress test configuration]] | BACKLOG | | | stresstest.xml end to end: the named stress library, its scenarios, and the shift families each scenario applies, with both mappers and a round trip over every file in the corpus. |
 | [[id:190620B4-2F86-44C0-B4B7-31EE2C07D3F9][Round trip the sensitivity configuration]] | BACKLOG | | | sensitivity.xml end to end: the twenty-six shift families, the par conversion conventions and the shift grids, with both mappers and a round trip over every file in the corpus. |
@@ -140,6 +140,21 @@ A report definition's configuration is a set of strongly typed entities rather t
   and the registry. =ores.ore= holds the mappers and no state. A configuration
   is a header row in =reporting.configurations= and its content is in the
   owning component, joined by =configuration_id=.
+- **The harness takes a per-kind comparison, because parsed equality is not
+  text equality.** The binding holds some numeric attributes as text and the
+  mapper writes them back in its own spelling: ORE's =t0="0.0"= and our
+  =t0="0"= are the same bound, and the netting set list is indented differently
+  although its codes are the same. A generic text comparison fails a faithful
+  round trip; a rule that ignores text hides a lost value. So a kind supplies
+  its comparison beside its mappers and the harness owns the walk, the count and
+  the failure list. The credit simulation comparison moved out of its test into
+  =credit_simulation_diff.cpp= for this reason, so the test and the harness
+  share one implementation rather than drifting apart.
+- **The harness walks a corpus by file prefix, which is what the census globs.**
+  A kind's files are the ones whose stem starts with the kind's prefix, so
+  =creditsimulation*= finds the 14 credit simulation documents including
+  =creditsimulation3_ts.xml=. Counting files named exactly after the kind
+  undercounts, which the census already recorded.
 
 * Out of scope
 

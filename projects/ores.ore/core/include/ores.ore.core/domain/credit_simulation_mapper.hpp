@@ -102,6 +102,23 @@ public:
     static creditsimulation reverse(const mapped_credit_simulation& v);
 };
 
+/**
+ * @brief The first difference between an imported and an exported document, or
+ * empty when the two agree as parsed documents.
+ *
+ * The binding holds some numbers as text, and ORE writes them differently from
+ * the way the mapper writes them back: ORE's =t0="0.0"= and our =t0="0"= are
+ * the same bound. Only this component knows which fields may be normalised and
+ * which may not, so the comparison lives beside the mappers rather than in a
+ * walker that would either fail on that pair or hide a real loss behind a rule
+ * that ignores text.
+ *
+ * @param path Prefixed to the message, so a caller walking a corpus can say
+ * which file disagreed
+ */
+ORES_ORE_CORE_EXPORT std::string credit_simulation_difference(
+    const creditsimulation& original, const creditsimulation& exported, const std::string& path);
+
 }
 
 #endif

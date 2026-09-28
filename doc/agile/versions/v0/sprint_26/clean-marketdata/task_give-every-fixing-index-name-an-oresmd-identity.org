@@ -460,6 +460,7 @@ task and name that file in the Command column.
 | codegen suite, after the last three classes | 992 passed | =pytest projects/ores.codegen/tests= | =48eb0e27aa= |
 | Component file lists, the marketdata parts and codegen | up to date, rc 0 for each | =regenerate_cmake_component_files.py --component <name> --check= | =48eb0e27aa= |
 | =ores.marketdata.core= suite, after the review fixes | 1770 assertions in 398 cases | =ores.marketdata.core.tests= | =509bb244d7= |
+| =ores.marketdata.core= suite, after the pull request review | 1771 assertions in 398 cases | same | =a4fb8923f8= |
 | Corpus names, after the review fixes | 156 of 156 index names, 2 keys pinned apart | =ores.marketdata.core.tests "[fixing]"= | =509bb244d7= |
 
 The test binaries are under
@@ -667,6 +668,11 @@ via its "Verifies task" field.
 | 77 | The census reports its population without asserting it | the coverage test | accept | It now asserts that the classes and the pinned keys add up to the corpus's 158 names, so a payload that leaves the walk fails instead of shrinking the total quietly. |
 | 78 | The acceptance cites the wrong review rows | this task | accept | Row 11 alone records the import gap; row 10 records the allowlist, which is met. |
 | 79 | The classifier is narrower than the projection for a security name | the coverage test | accept | It matches any =BOND-= tail, as the projection accepts one. |
+| 80 | The emitters write names the reader would refuse, a code carrying a dash and a ticker carrying a slash | the projections template | accept | Both are refused now, which is the rule this round applied to inflation: the write side refuses what the read side refuses. |
+| 81 | The parser is stricter than before about a delivery on a non-fixing URI | the parser template | no action | Intended. Every delivery URI the models and the tests carry is a fixing, and no oresmd URI is stored yet, so nothing depends on the old behaviour. |
+| 82 | The inflation code list is emitted in two translation units | the parser and projections templates | decline | One model table, two generated arrays. They cannot drift, and a shared header for one list is more machinery than the list holds. |
+| 83 | The delivery refusal is emitted once per class | the parser template | decline | The template holds the check once; what repeats is generated output, and a runtime helper for three generated lines adds indirection rather than removing it. |
+| 84 | No case covers a delivery month the parser accepted and the writer refuses | the projections tests | accept | The security shape case now pins that a month which is not a contract month projects no name; the lower-case inflation code was already pinned by the dash-less case. |
 
 * Result
 

@@ -1603,6 +1603,12 @@ TEST_CASE("from_index_name_refuses_security_names_that_are_not_the_shape", tags)
     REQUIRE_FALSE(oresmd_projections::to_index_name(
                       parse("oresmd://security/isin:ie00bh3sq895?type=quote&quote=bond_price"))
                       .has_value());
+    // The parser reads a delivery without judging its shape, so a month that is not
+    // a contract month arrives and projects no name: the write side is what refuses
+    // it, and the two sides stay in step that way.
+    REQUIRE_FALSE(oresmd_projections::to_index_name(
+                      parse("oresmd://security/isin:ie00bh3sq895?type=fixing&delivery=2025-13x"))
+                      .has_value());
 }
 
 TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", tags) {

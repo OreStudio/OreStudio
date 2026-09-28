@@ -1203,11 +1203,15 @@ std::optional<code_and_month> split_code_and_month(std::string_view name) {
  * PREFIX-<CODE>[-<MONTH>], the name a commodity fixing and a security fixing share:
  * the code upper-cased, then the contract month when the identifier carries one and
  * it is the shape a contract month is.
+ *
+ * A code carrying a dash is refused rather than written, because the reader takes
+ * the last two tokens as the month and could not read the name back: the write side
+ * refuses what the read side refuses.
  */
 std::optional<std::string> index_name_code_and_month(std::string_view prefix,
                                                      const std::string& code,
                                                      const std::optional<std::string>& month) {
-    if (code.empty())
+    if (code.empty() || code.contains('-'))
         return std::nullopt;
     if (!month)
         return std::format("{}{}", prefix, to_upper(code));
@@ -1340,7 +1344,9 @@ std::optional<std::string> index_name_inflation(const inflation_market_data_iden
  * instrument. A fixing carries no currency, and the parser requires none for one.
  */
 std::optional<std::string> index_name_equity(const equity_market_data_identifier& id) {
-    if (id.type != instrument_type::fixing || id.ticker.empty())
+    // A ticker carrying a slash is refused rather than written: the reader refuses
+    // one, so the name could not be read back.
+    if (id.type != instrument_type::fixing || id.ticker.empty() || id.ticker.contains('/'))
         return std::nullopt;
     return std::format("EQ-{}", to_upper(id.ticker));
 }

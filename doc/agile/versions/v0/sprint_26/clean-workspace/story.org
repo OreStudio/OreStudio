@@ -21,11 +21,11 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Every checklist item is recorded on the task. The component is generated, builds, tests and recreates its schema from scratch. |
+| Now           | Nothing. The component is generated, builds, tests, recreates its schema from scratch, and is listed in =COMPONENTS_UNDER_TEST=. |
 | Waiting on    | Nothing.                               |
-| Next          | The review round, then the shell part and the namespace headers the task records as open. |
+| Next          | Nothing. The shell part and the namespace documentation headers the task records as open are a separate task. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][Bring ores.workspace to the clean standard]] | STARTED | 2026-09-28 | | Work ores.workspace through the Component Clean Standard in order and record each item. |
+| [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][Bring ores.workspace to the clean standard]] | DONE | 2026-09-28 | 2026-09-28 | Work ores.workspace through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -77,6 +77,14 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
   tenant-independent; the schema has always carried =tenant_id=, a
   version and RLS. The inert entries are removed and the comment now
   describes the two tables.
+- *List the component with one accepted exception rather than keep it
+  out.* S01 applies -- the component has entity verbs -- and it does not
+  pass, because the shell composite carries no workspace part for the
+  generated units to land in. The two honest alternatives were to build
+  the part now or to hold the component out of the registry until it
+  exists; the exception names the gap with its reason and its acceptor,
+  which is what the standard prefers over withholding every gate from
+  the component in the meantime.
 
 * Out of scope
 

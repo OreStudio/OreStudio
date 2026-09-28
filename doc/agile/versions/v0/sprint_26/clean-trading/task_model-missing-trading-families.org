@@ -638,10 +638,10 @@ the deployed database agrees with the models on all eight.
 | Column                              | Instrument                | Producer                                  | Judgement |
 |-------------------------------------+---------------------------+-------------------------------------------+-----------|
 | =call_dates_json=                     | =callable_swap_instrument=  | =swap_instrument_mapper= (forward only)     | Migrated: child =callable_swap_call_date= |
-| =knock_out_dates_json=                | =knock_out_swap_instrument= | none                                      | Collection; no ORE producer exists, so the payload shape is ungrounded. Remaining |
-| =basket_json=                         | =commodity_instrument=      | none                                      | Collection; no producer. Remaining |
+| =knock_out_dates_json=                | =knock_out_swap_instrument= | none                                      | No ORE source: =knockOutSwapData= states =BarrierData= (a =Levels= float list), one =BarrierStartDate= and two legs, and no date list anywhere in the schema. Reported, not invented |
+| =basket_json=                         | =commodity_instrument=      | none                                      | Migrated: child =commodity_basket_constituent=, producer added for =CommodityBasketOption= |
 | =basket_json=                         | =equity_swap_instrument=    | =equity_instrument_mapper= (both ways)      | Collection with a real payload. Remaining, see below |
-| =option_data_json=                    | =equity_position_instrument= | none                                     | Collection; =equityOptionPositionData= declares only =Quantity= and =Underlying=, so the column has no source field. Remaining |
+| =option_data_json=                    | =equity_position_instrument= | none                                     | =equityOptionPositionData= declares a =Quantity= and an =Underlying= list, so the shape is grounded; the producer is not wired. Remaining, see below |
 | =events_json=, =underlyings_json=, =parameters_json= | =scripted_instrument= | =scripted_instrument_mapper= | Not a collection: the payload is a user script whose shape the domain does not fix. This is defect 1's stated exception. Left as =text= |
 
 Two further checks found no other collection: no trading model declares a
@@ -677,6 +677,54 @@ which this task does not own. The child entity is the minimal migration
 that satisfies D12; folding it into the shared schedule is recorded as
 remaining work.
 
+** The child that landed: =commodity_basket_constituent=
+
+The ORE schema states a commodity basket's members in
+=CommodityBasketOptionData.Underlyings.Underlying=, an unbounded list of
+the shared =underlying= type whose =Name= is the commodity code and whose
+=Weight= is an optional float (=external/ore/xsd/instruments.xsd=,
+=complexType basketOptionData= and =complexType underlying=). The column
+claimed the same shape as ={code, weight}= but nothing wrote it: no
+commodity basket product was dispatched, so =basket_json= was always
+null. The producer is now added, so the payload's shape comes from the
+document rather than from the column's own description.
+
+| Decision      | Value |
+|---------------+-------|
+| Table         | =ores_trading_commodity_basket_constituents_tbl= |
+| Key           | =(tenant_id, instrument_id, sequence_number, valid_from, valid_to)= — the parent id plus the constituent's ordinal, the shape =callable_swap_call_date= uses |
+| Parent        | =instrument_id= references the commodity basket instrument. The component declares no SQL foreign key yet (defect 7), so the reference is the column and its prose, as in =bond_leg= |
+| Scope         | =has_tenant_id: true= only. The child rides the instrument's tenant, workspace and party, so no workspace column rides it |
+| Natural key   | none; the ordinal is the identity |
+| Audit/validity| the template's audit columns and the bitemporal =valid_from=/=valid_to= pair with the exclusion constraint |
+| Columns       | =sequence_number integer not null=, =underlying_code text not null=, =weight numeric(28, 10) null= |
+| Weight type   | =std::optional<ores::utility::decimal::decimal>= — a weight is money-role (D11), and the ORE element is optional, so an absent weight stays null rather than becoming a zero the document never wrote |
+| Checks        | ="sequence_number" > 0=, ="underlying_code" <> ''=, and the generated nil-uuid check |
+| Payload losses| none. A repeated code stays two rows because the code is not part of the key; the document's order is the ordinal, and an absent weight is preserved as null |
+
+The producer is =commodity_instrument_mapper::forward_commodity_basket_option=,
+dispatched from =trade_mapper::map_commodity_instrument= for
+=CommodityBasketOption=. It reads every =Underlying= in document order
+and emits one constituent per entry. The reverse,
+=reverse_commodity_basket_option=, rebuilds =Underlyings= from the rows.
+=reverse_commodity_basket_option= is the only reverse that takes the
+child rows; the other seven commodity reverse mappers keep their existing
+signature.
+
+=CommodityWorstOfBasketSwap= (=worstOfBasketSwapData2=) and
+=CommodityBasketVarianceSwap= (=basketVarianceSwapData2=) state basket
+underlyings too, and are not yet dispatched. They are recorded as
+remaining work below; the child shape they need is the same one.
+
+The corpus states no commodity basket document (the =Commodity_*= files
+are forward, option, swap, swaption, variance, average-price and strip
+products), so no golden file exercises the producer and no value was lost
+in the corpus. The producer is proven instead by
+=xml_commodity_mapper_roundtrip_tests.cpp=, which maps a document built
+from the schema's =basketOptionData= shape and asserts the two
+constituents' codes, ordinals and weights, then rebuilds the document and
+asserts them again.
+
 ** What the other collections need
 
 - =equity_swap_instrument.basket_json= has a real payload (the
@@ -687,11 +735,32 @@ remaining work.
   split is defect 9, which this task does not own. The child is an
   =equity_swap_basket_underlying= row keyed like this one, and it lands
   with the product split.
-- =commodity_instrument.basket_json=, =equity_position_instrument.option_data_json=
-  and =knock_out_swap_instrument.knock_out_dates_json= have no mapper
-  that writes them. Their child shape cannot come from real data, and
-  inventing one would be a guess. They stay as columns until a producer
-  exists or their product is modelled.
+- =knock_out_swap_instrument.knock_out_dates_json= has no ORE source.
+  =knockOutSwapData= (=external/ore/xsd/instruments.xsd=) states exactly
+  three members: =BarrierData= (whose only list is =Levels=, a
+  =xsd::vector<float>= of barrier levels), one =BarrierStartDate= and
+  =LegData= (minOccurs 2, maxOccurs 2). No date list exists in the
+  document, so no child can be drawn from the payload. The column and
+  the instrument are also unproduced: =KnockOutSwap= trades route to
+  =scripted_instrument_mapper::forward_knock_out_swap=, which writes the
+  scripted instrument's =parameters_json= and never a
+  =knock_out_swap_instrument=. The column is left as =text= and the
+  no-source finding is recorded; it is not invented.
+- =equity_position_instrument.option_data_json= has a grounded shape but
+  no producer. =equityOptionPositionData= (=xsd=; =domain.hpp=) states a
+  required =Quantity= (=xs:float=) and an unbounded =Underlying= list of
+  =equityOptionUnderlyingData=, each of which is an =underlying=, an
+  =optionData= and a =Strike=. The real document is
+  =Hybrid_GenericTRS_with_EquityOptionPosition.xml= (a
+  =TotalReturnSwap= whose =SubTradeType= is =EquityOptionPosition=, with
+  =Quantity= 1000 and two =.SPX= entries). The parent instrument already
+  carries =quantity= (a =double=, which stays a =double= because it is
+  not money) and =underlying_name=, so the child that remains to be
+  drawn is one row per =Underlying= entry; the producer must be added,
+  most likely by dispatching =EquityPosition= and =EquityOptionPosition=
+  through =equity_instrument_mapper= and by carrying the rows in a new
+  equity family carrier, since =equity_instrument_variant= is today a
+  direct element of =trade_instrument=. This is the next unit.
 - =scripted_instrument='s three columns are the defect's stated
   exception. The repair the defect names is =jsonb= rather than =text=,
   which is a type change with no collection and no child table; it is not
@@ -699,17 +768,37 @@ remaining work.
 
 ** Files changed
 
-Codegen source: the new =ores.trading.callable_swap_call_date= model; the
-parent model loses the column and names the child; =trade.org= reads the
-child beside the legs. Generated: 33 files for the child, the parent's
-regenerated set, and the trade handler. Hand-written: =instrument.hpp=
-(the rates carrier gains the schedule), =instrument_payload.cpp= (the
-wire shape), =swap_instrument_mapper.{hpp,cpp}=, =exporter.cpp=,
+The callable swap unit. Codegen source: the new
+=ores.trading.callable_swap_call_date= model; the parent model loses the
+column and names the child; =trade.org= reads the child beside the legs.
+Generated: 33 files for the child, the parent's regenerated set, and the
+trade handler. Hand-written: =instrument.hpp= (the rates carrier gains
+the schedule), =instrument_payload.cpp= (the wire shape),
+=swap_instrument_mapper.{hpp,cpp}=, =exporter.cpp=,
 =ore_import_execute_handler.cpp=, the callable swap shell verb, and the
 swaption mapper test. SQL: the child's create, notify trigger, drop and
 RLS policy, and the three aggregate scripts. Database: the table, its
-notify trigger and its RLS policy were created, and
-=call_dates_json= was dropped; both tables held no rows, so no value was
+notify trigger and its RLS policy were created, and =call_dates_json= was
+dropped; both tables held no rows, so no value was lost.
+
+The commodity basket unit. Codegen source: the new
+=ores.trading.commodity_basket_constituent= model; the parent model loses
+=basket_json= and names the child; =trade.org= reads the constituents
+beside the instrument. Generated: the child's 33-file set, the parent's
+regenerated set, the trade handler, and the cmake lists. Hand-written:
+=instrument.hpp= (a =commodity_instrument_data= carrier with
+=stamp_ids=), =trade_instrument.hpp= (the variant element is the
+carrier), =instrument_payload.cpp= (the wire shape, with a fallback that
+reads a pre-child body as an empty basket), =commodity_instrument_mapper.{hpp,cpp}=
+(the =CommodityBasketOption= forward and reverse),
+=trade_mapper.{hpp,cpp}=, =exporter.cpp=, =importer.cpp=,
+=ore_import_execute_handler.cpp=, the commodity shell verb in
+=ores.shell/application=, the generated commodity shell in
+=ores.shell/trading=, and the commodity and planner tests. SQL: the
+child's create, notify trigger, drop and RLS policy, and the three
+aggregate scripts. Database: the table, its notify trigger and its RLS
+policy were created, and =basket_json= was dropped; 28
+=commodity_instruments= rows held 0 non-null baskets, so no value was
 lost.
 
 ** Judgement calls
@@ -718,8 +807,17 @@ lost.
   page's shared schedule table is recorded as the later generalisation.
 - A column with no producer gets no invented child. The task requires the
   payload's shape to come from the real data.
-- =basket_json= waits for defect 9 so that its removal cannot weaken the
-  XOR assertion.
+- =basket_json= on =equity_swap_instrument= waits for defect 9 so that
+  its removal cannot weaken the XOR assertion.
+- =knock_out_dates_json= gets no child because the ORE schema states no
+  knock-out date list; the finding is recorded instead of invented.
+- The commodity producer is written for =CommodityBasketOption=, the
+  first basket product dispatched. The other two basket products are
+  recorded as remaining rather than half-wired.
+- =commodity_instrument_data= is a new carrier struct rather than a reuse
+  of =with_legs<>=, because a constituent's parent reference is a direct
+  =instrument_id= column (the callable child's shape) and not a grouped
+  =identity.instrument_id=, so =with_legs='s =stamp_ids= does not apply.
 
 * Test Scenarios
 

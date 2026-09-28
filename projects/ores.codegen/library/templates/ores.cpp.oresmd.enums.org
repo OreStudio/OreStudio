@@ -76,6 +76,7 @@ enum class metric {
 {{/first_asset_class}}
 {{/oresmd_quote_type}}
 {{#oresmd_quote_types}}
+{{#has_quote_type}}
 
 /**
  * @brief {{{enum_brief}}}
@@ -85,6 +86,7 @@ enum class {{asset_class}}_quote_type {
     {{enum_name}}{{^last}},{{/last}} ///< {{{comment}}}
 {{/quote_types}}{{#enum_footer}}{{{enum_footer}}}
 {{/enum_footer}}};
+{{/has_quote_type}}
 {{#first_asset_class}}
 
 /**

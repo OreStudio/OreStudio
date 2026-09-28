@@ -5531,13 +5531,19 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
 # (has_quote_type/has_point/has_vol) rather than the verbatim field loop.
 _ORESMD_GENERATED_FIELDS = ("quote_type", "point", "vol")
 
+# Fields the parser assigns from a guard slot of their own, the way the header
+# templates emit the generated fields above from theirs. They carry a query key
+# nothing else uses, so the parser template needs a boolean to branch on, but
+# their declaration stays in the header's verbatim field loop.
+_ORESMD_PARSER_FIELDS = ("delivery",)
+
 # Hand-crafted parse-time case mapping: entity fields and ccy are upper-
 # cased, tenor/point lower-cased, everything else passes through raw. A fixing
 # source is a provider token the corpus writes in mixed case, so it is lower-cased
 # like the enum names it stands beside; its spelling passes through raw.
 _ORESMD_UPPER_FIELDS = {"pair", "ccy", "ticker", "reference_entity",
                         "commodity_code", "index_code", "factor_pair"}
-_ORESMD_LOWER_FIELDS = {"tenor", "point", "source"}
+_ORESMD_LOWER_FIELDS = {"tenor", "point", "delivery", "source"}
 
 
 def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
@@ -5680,6 +5686,8 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
             field["cpp_type_inner"] = re.sub(r"^std::optional<", "", field["cpp_type"]).removesuffix(">")
             if name in _ORESMD_GENERATED_FIELDS:
                 field["generated"] = True
+                result[f"has_{name}"] = True
+            if name in _ORESMD_PARSER_FIELDS:
                 result[f"has_{name}"] = True
             if name == "quote_type":
                 result["quote_type_cpp"] = field["cpp_type"]

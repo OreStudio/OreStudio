@@ -1126,6 +1126,98 @@ std::optional<std::vector<std::string>> split_index_name(const std::string& name
     return parts;
 }
 
+bool is_digits(std::string_view x) {
+    return !x.empty() &&
+           std::ranges::all_of(x, [](unsigned char c) { return std::isdigit(c) != 0; });
+}
+
+/*
+ * A delivery coordinate, the part of a commodity fixing's and an intraday power
+ * index's name that says which contract the series is. The two classes read it
+ * differently because ORE writes it differently: a commodity future's period is
+ * a contract month, and an intraday power index's is a date, then optionally a
+ * half-open window in seconds from midnight, then optionally the DST flag, each
+ * level available only under the one before it.
+ *
+ * Both checks are shape checks. Whether the date is a real calendar date, and
+ * whether the window lies inside one day, are left to the migration that gives
+ * this library a calendar, the way the FX pair's currencies are left to the one
+ * that gives it a currency list.
+ */
+bool power_delivery_is_the_shape(const std::string& delivery) {
+    const auto parts = split_on_dash(delivery);
+    if (parts.size() < 3 || parts.size() > 6)
+        return false;
+    if (parts[0].size() != 4 || parts[1].size() != 2 || parts[2].size() != 2 ||
+        !is_digits(parts[0]) || !is_digits(parts[1]) || !is_digits(parts[2]))
+        return false;
+    if (parts.size() > 3 && (parts.size() < 5 || !is_digits(parts[3]) || !is_digits(parts[4])))
+        return false;
+    if (parts.size() == 5)
+        return true;
+    return parts.size() == 3 || parts[5] == "dst";
+}
+
+bool commodity_delivery_is_the_shape(const std::string& delivery) {
+    const auto parts = split_on_dash(delivery);
+    return parts.size() == 2 && parts[0].size() == 4 && parts[1].size() == 2 &&
+           is_digits(parts[0]) && is_digits(parts[1]);
+}
+
+/*
+ * POWER-<CODE>[-<DELIVERY>], the name ORE gives an intraday power index and
+ * nothing else: the class has no quote key, so this is its only projection.
+ *
+ * The delivery is carried as the name's whole tail because ORE's own grammar
+ * nests it that way. The DST flag is the one segment ORE spells upper-case, and
+ * the field is lower-cased on the way in like every other query key, so the name
+ * restores it.
+ */
+std::optional<std::string> index_name_power(const power_market_data_identifier& id) {
+    if (id.type != instrument_type::fixing || id.commodity_code.empty())
+        return std::nullopt;
+    if (!id.delivery)
+        return std::format("POWER-{}", to_upper(id.commodity_code));
+    if (!power_delivery_is_the_shape(*id.delivery))
+        return std::nullopt;
+    auto delivery = *id.delivery;
+    if (delivery.ends_with("-dst"))
+        delivery.replace(delivery.size() - 3, 3, "DST");
+    return std::format("POWER-{}-{}", to_upper(id.commodity_code), delivery);
+}
+
+/*
+ * The class has no quote key. ORE quotes an intraday power price's two factors
+ * under other classes -- the shape as SHAPE_PROFILE/SHAPE_FACTOR/... and the
+ * daily average as COMMODITY_FWD/PRICE/... -- and the corpus writes no POWER/...
+ * key at all. The function exists because the variant dispatch calls one per
+ * class, and it is pinned by the model's own projection case.
+ */
+std::optional<std::string> quote_key_power(const power_market_data_identifier&) {
+    return std::nullopt;
+}
+
+/*
+ * COMM-<CODE>[-<MONTH>], the name ORE gives a commodity future index. A * commodity *quote* carries its delivery period as the last segment of
+ * COMMODITY_FWD/PRICE/<CODE>/<CCY>/<PERIOD>, which is `point`; a fixing carries
+ * it in the index name, which is `delivery`. They are two fields because a
+ * quote's observations each name their own period and a fixing's do not.
+ *
+ * Only the contract month is read, which is the only period the corpus carries.
+ * ORE's commodity parser also reads a full delivery date, and a commodity code
+ * that itself contains a dash; neither is in the corpus, so neither is admitted
+ * here rather than guessed at.
+ */
+std::optional<std::string> index_name_commodity(const commodity_market_data_identifier& id) {
+    if (id.type != instrument_type::fixing || id.commodity_code.empty())
+        return std::nullopt;
+    if (!id.delivery)
+        return std::format("COMM-{}", to_upper(id.commodity_code));
+    if (!commodity_delivery_is_the_shape(*id.delivery))
+        return std::nullopt;
+    return std::format("COMM-{}-{}", to_upper(id.commodity_code), *id.delivery);
+}
+
 template <typename Enum>
 std::optional<Enum> parse_enum_lower(std::string_view value) {
     return magic_enum::enum_cast<Enum>(to_lower(value));
@@ -2044,6 +2136,10 @@ oresmd_projections::to_index_name(const domain::market_data_identifier& identifi
         return index_name_ir(*ir);
     if (const auto* fx = std::get_if<fx_market_data_identifier>(&identifier))
         return index_name_fx(*fx);
+    if (const auto* commodity = std::get_if<commodity_market_data_identifier>(&identifier))
+        return index_name_commodity(*commodity);
+    if (const auto* power = std::get_if<power_market_data_identifier>(&identifier))
+        return index_name_power(*power);
     return std::nullopt;
 }
 
@@ -2120,6 +2216,53 @@ oresmd_projections::from_index_name(const std::string& index_name) {
             return id;
         }
         return std::nullopt;
+    }
+
+    // The reverse of index_name_power(): POWER-COMMNAME[-DATE[-START-END[-DST]]].
+    // ORE's own parser reads the first dash-delimited token as the commodity name
+    // and admits three token counts, so the name's boundary is the first dash and
+    // a colon inside that token is free. The DST flag is required as ORE spells
+    // it: a flag written any other way could not be read back as it arrived.
+    if (index_name.starts_with("POWER-")) {
+        const auto parts = split_on_dash(index_name.substr(6));
+        if (parts.empty() || parts[0].empty())
+            return std::nullopt;
+        power_market_data_identifier id;
+        id.type = instrument_type::fixing;
+        id.commodity_code = to_upper(parts[0]);
+        if (parts.size() == 1)
+            return id;
+        if (parts.size() == 7 && parts[6] != "DST")
+            return std::nullopt;
+        std::string tail = parts[1];
+        for (std::size_t i = 2; i < parts.size(); ++i)
+            tail += "-" + parts[i];
+        tail = to_lower(tail);
+        if (!power_delivery_is_the_shape(tail))
+            return std::nullopt;
+        id.delivery = tail;
+        return id;
+    }
+
+    // The reverse of index_name_commodity(): COMM-COMMNAME[-YYYY-MM]. The period
+    // is the last two tokens and the code is the one token before it, so a name
+    // whose code carries a dash is refused rather than split at a guess.
+    if (index_name.starts_with("COMM-")) {
+        const auto parts = split_on_dash(index_name.substr(5));
+        if (parts.empty() || parts[0].empty())
+            return std::nullopt;
+        commodity_market_data_identifier id;
+        id.type = instrument_type::fixing;
+        id.commodity_code = to_upper(parts[0]);
+        if (parts.size() == 1)
+            return id;
+        if (parts.size() != 3)
+            return std::nullopt;
+        const auto tail = to_lower(parts[1] + "-" + parts[2]);
+        if (!commodity_delivery_is_the_shape(tail))
+            return std::nullopt;
+        id.delivery = tail;
+        return id;
     }
 
     // The reverse of index_name_ir(): CCY-FAMILY (overnight, no tenor) or

@@ -31,6 +31,20 @@ only meaningful when `type=quote`.
 
 A fully-resolved oresmd identifier for a commodity instrument (asset_class=commodity).
 
+=delivery= is the contract period a *fixing* is specific to: the corpus writes
+=COMM-NYMEX:CL-2025-04=, observed on 2024-12-02, so the period in the name is the
+delivery period and not the observation date. It holds the contract month as the
+index name writes it (=2025-04=). ORE's commodity parser also reads a contract
+code that itself contains a dash and a full delivery date; neither is in the
+corpus, so neither is admitted here rather than guessed at.
+
+A quote carries its own period in =point= instead, because a quote's observations
+each name the period they are for and a fixing's do not. This class's validation
+is the shared one that the three delegating classes use, and it gates no query key
+by type, so a delivery on a quote is accepted and projects no index name, the way
+a point on a fixing is. Closing that gate for equity, credit and commodity is the
+codegen gap recorded in the fixing-identity task.
+
 * Requirement brief
 
 A logical, possibly-partial oresmd requirement for a commodity instrument.
@@ -44,6 +58,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<commodity_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |
+| delivery | std::optional<std::string> | no | delivery | |
 | vol | std::optional<volatility_surface_point> | no | | |
 
 * Reject keys
@@ -82,6 +97,7 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | round_trip_commodity |
 | oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | round_trip_commodity_fwd |
 | oresmd://commodity/ice:b?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=10m,del,fwd,call,0.10 | round_trip_commodity_option_delta_vol |
+| oresmd://commodity/ice:b?type=fixing&delivery=2024-12 | round_trip_commodity_fixing_delivery |
 
 ** Rejection
 

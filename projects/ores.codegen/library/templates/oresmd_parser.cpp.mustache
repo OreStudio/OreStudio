@@ -46,6 +46,7 @@ struct query_params final {
     std::optional<std::string> quote;
     std::optional<std::string> model;
     std::optional<std::string> point;
+    std::optional<std::string> delivery;
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
 
@@ -92,6 +93,8 @@ struct query_params final {
                 qp.model = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
+            else if (p.key == "delivery")
+                qp.delivery = p.value;
             else if (p.key == "source")
                 qp.source = p.value;
             else if (p.key == "source_spelling")
@@ -377,6 +380,10 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     if (qp.point)
         id.point = to_lower(*qp.point);
 {{/has_point}}
+{{#has_delivery}}
+    if (qp.delivery)
+        id.delivery = to_lower(*qp.delivery);
+{{/has_delivery}}
 {{#fx}}
     // A fixing carries the source that published it, lower-cased the way the
     // index families are, with the token as ORE wrote it kept beside it when the

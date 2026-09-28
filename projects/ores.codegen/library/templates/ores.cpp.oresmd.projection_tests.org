@@ -946,8 +946,6 @@ TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     // projection is the interest-rate one; naming it is its own asset class's
     // work, recorded in the analysis.
     REQUIRE_FALSE(oresmd_projections::from_index_name("UKRPI").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000")
-                      .has_value());
 }
 
 TEST_CASE("from_index_name_reads_the_fx_fixing_names_the_corpus_carries", tags) {
@@ -1025,11 +1023,117 @@ TEST_CASE("from_index_name_rejects_fx_names_that_are_not_the_shape", tags) {
     REQUIRE_FALSE(oresmd_projections::to_index_name(quote).has_value());
 }
 
+TEST_CASE("from_index_name_reads_the_power_names_the_corpus_carries", tags) {
+    // The 48 intraday power index names in external/ore/examples are all on one
+    // commodity code, and all but one carry a delivery window. ORE's own parser
+    // states the grammar: POWER-COMMNAME[-YYYY-MM-DD[-START-END[-DST]]], read by
+    // a parser of its own rather than through the commodity one.
+    for (const auto& name : {"POWER-ICE:PDQ",
+                             "POWER-ICE:PDQ-2021-01-04",
+                             "POWER-ICE:PDQ-2021-01-04-3600-7200",
+                             "POWER-ICE:PDQ-2021-01-04-14400-18000",
+                             "POWER-ICE:PDQ-2021-01-04-82800-86400"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        CHECK(std::get<power_market_data_identifier>(*id).type == instrument_type::fixing);
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+}
+
+TEST_CASE("from_index_name_keeps_a_power_fixings_delivery_window", tags) {
+    // The window is seconds from midnight and half-open, so the two numbers are
+    // part of the identity rather than an hour index: the example's own forward
+    // carries 2700 to 4500 for the window it calls "0.45am to 1.15am".
+    const auto id = oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000");
+    REQUIRE(id.has_value());
+    const auto& power = std::get<power_market_data_identifier>(*id);
+    CHECK(power.commodity_code == "ICE:PDQ");
+    REQUIRE(power.delivery.has_value());
+    CHECK(*power.delivery == "2021-01-04-14400-18000");
+
+    // The flag is the one segment ORE spells upper-case, and the field holds it
+    // lower-cased like every other query key, so the name restores it.
+    const auto dst = oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000-DST");
+    REQUIRE(dst.has_value());
+    const auto& flagged = std::get<power_market_data_identifier>(*dst);
+    REQUIRE(flagged.delivery.has_value());
+    CHECK(*flagged.delivery == "2021-01-04-14400-18000-dst");
+    CHECK(oresmd_projections::to_index_name(*dst) == "POWER-ICE:PDQ-2021-01-04-14400-18000-DST");
+
+    // The URI direction emits the same name the name direction reads.
+    const auto uri = parse("oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000");
+    const auto name = oresmd_projections::to_index_name(uri);
+    REQUIRE(name.has_value());
+    CHECK(*name == "POWER-ICE:PDQ-2021-01-04-14400-18000");
+}
+
+TEST_CASE("from_index_name_rejects_power_names_that_are_not_the_shape", tags) {
+    // The commodity name is the first dash-delimited token, so an empty one
+    // leaves the name with nothing to carry.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-").has_value());
+    // A window needs a date under it and is two whole numbers of seconds.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-a-b").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-DST").has_value());
+    // The date is read in the one canonical form the projection writes, so a name
+    // that would not read back as it arrived is refused rather than reshaped.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-1-4").has_value());
+    // The flag is DST as ORE spells it; another spelling could not read back.
+    REQUIRE_FALSE(
+        oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000-dst").has_value());
+    REQUIRE_FALSE(
+        oresmd_projections::from_index_name("POWER-ICE:PDQ-2021-01-04-14400-18000-GMT").has_value());
+    // The class has no quote key at all, so a quote projects no name.
+    REQUIRE_FALSE(
+        oresmd_projections::to_index_name(parse("oresmd://power/ice:pdq?type=quote")).has_value());
+}
+
+TEST_CASE("from_index_name_reads_the_commodity_names_the_corpus_carries", tags) {
+    // The 25 commodity index names in external/ore/examples, on five codes, all
+    // carrying the contract month they are specific to.
+    for (const auto& name : {"COMM-ICE:B-2024-12",
+                             "COMM-ICE:B-2025-01",
+                             "COMM-NYMEX:A7Q-2025-04",
+                             "COMM-NYMEX:CL-2024-12",
+                             "COMM-NYMEX:CSX-2025-02",
+                             "COMM-NYMEX:NG-2025-03"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        const auto& commodity = std::get<commodity_market_data_identifier>(*id);
+        CHECK(commodity.type == instrument_type::fixing);
+        REQUIRE(commodity.delivery.has_value());
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+}
+
+TEST_CASE("from_index_name_rejects_commodity_names_that_are_not_the_shape", tags) {
+    REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-").has_value());
+    // A period is a contract month. A single number, a full date and a code that
+    // itself carries a dash are all refused rather than split at a guess.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-ICE:B-2024").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-ICE:B-2024-12-15").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-SOME-B-2024-12").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-ICE:B-20-12").has_value());
+    // A delivery names the series, so it is a fixing's field: a quote names its
+    // own period in `point` and projects no index name.
+    REQUIRE_FALSE(oresmd_projections::to_index_name(
+                      parse("oresmd://commodity/ice:b?ccy=usd&type=quote&quote=fwd&point=2024-12"))
+                      .has_value());
+}
+
 TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", tags) {
     // A spot quote and a fixing have one point per date, whoever supplies the
-    // name for it.
+    // name for it. A power or commodity fixing carries its delivery as a field of
+    // its own rather than as a point, so it is one of these.
     for (const auto& uri : {"oresmd://fx/eurusd?type=quote&quote=spot",
                             "oresmd://ir/usd?type=fixing&index=libor&tenor=3m",
+                            "oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000",
+                            "oresmd://commodity/ice:b?type=fixing&delivery=2024-12",
                             "oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"}) {
         const auto id = oresmd_parser::parse(oresmd_uri{uri});
         CHECK(oresmd_projections::is_scalar(id));

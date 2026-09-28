@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 81AB7883-4E9E-44AE-ACAB-674DFACE3D4F
+:END:
+#+title: Power oresmd quote type family
+#+description: oresmd specification for the intraday power index namespace: the delivery window ORE writes into the index name, and no quote key at all.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: power
+#+validate: inline
+#+authority: power
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:power:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+* No quote types
+
+This class carries no quote type, and therefore no quote key, so no
+=* Quote types= table follows and no =quote_type= field is generated.
+
+An intraday power price is not quoted under a key of its own. ORE quotes its two
+factors separately: the intraday shape as
+=SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/UNIT=, which the =shape_profile=
+class owns, and the daily average price as =COMMODITY_FWD/PRICE/<CODE>/<CCY>/<PERIOD>=,
+which the =commodity= class owns. Both appear in the corpus, on 171 and 2803 rows.
+The string =POWER= appears on the 48 fixing rows and nowhere else, so the index
+name is the only key this class has.
+
+ORE states that name's grammar in its own parser, =parseIntradayPowerIndex()= in
+=OREData/ored/utilities/indexparser.cpp=, whose failure message is
+=POWER-COMMNAME[-YYYY-MM-DD[-DELIVERYSTART-DELIVERYEND[-DST]]]=. That parser is a
+separate one, standing beside =parseCommodityIndex()= rather than inside it, and
+it builds a =QuantExt::IntradayPowerIndex=, a type of its own. The prefix is
+therefore an asset class here rather than a spelling of =COMM-.
+
+** The prefix cannot be derived, so =power= is a class
+
+ORE's power parser accepts a bare =POWER-ICE:PDQ= and its commodity parser accepts
+a bare =COMM-ICE:PDQ=. Under one class both would be the identifier
+=commodity/ice:pdq?type=fixing= with no delivery, and one of the two names could
+not be written back. The URI's class tag is the discriminator that keeps them
+apart.
+
+** The delivery coordinate is a field, not =point=
+
+=point= is the coordinate a quote or a vol URI names, and =is_scalar()= encodes
+that: a fixing whose coordinate is a field of its own is scalar, as
+=type=fixing&index=libor&tenor=3m= is, while an identifier carrying a =point= is
+not. The delivery window is the coordinate that says *which* index a fixing is,
+so it follows =tenor= and =source= rather than =point=. It is not a
+per-observation coordinate either: every observation of
+=POWER-ICE:PDQ-2021-01-04-14400-18000= carries the same window.
+
+* Enum brief
+
+* Identifier brief
+
+A fully-resolved oresmd identifier for an intraday power index (asset_class=power).
+
+=commodity_code= is the ORE commodity name the index is written against --
+=ICE:PDQ= for the intraday power example, which is also the commodity code its
+daily average price curve is quoted under. It may contain a colon and carries no
+dash, because ORE reads the name up to the first dash as the commodity and the
+rest as the delivery coordinate.
+
+=delivery= is that coordinate, as ORE writes it: a delivery date, then
+optionally a half-open window in seconds from midnight, then optionally the =DST=
+flag marking a daylight-saving hour. The corpus carries the window on 47 of 48
+names and the date alone on one, and never the flag. The window is not an hour by
+rule -- the example's own forward carries =DeliveryStart= 2700 and
+=DeliveryEnd= 4500 for a window it calls "0.45am to 1.15am" -- so both numbers
+are kept, not the window's index. The field is lower-cased on parse the way the
+other keys are, and the projection writes the flag back as =DST=.
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for an intraday power index.
+
+* Fields
+
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| commodity_code | std::string | yes | | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| delivery | std::optional<std::string> | no | delivery | |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| index_spelling |
+| tenor |
+| second_tenor |
+| second_ccy |
+| contract_month |
+| contract_code |
+| second_factor |
+| curve_id |
+| day_count |
+| settle |
+| shift |
+| strip |
+| role |
+| metric |
+| quote |
+| point |
+| source |
+| source_spelling |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000 | nullopt | power_has_no_quote_key |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://power/ice:pdq?type=fixing | round_trip_power |
+| oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04 | round_trip_power_delivery_date |
+| oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000 | round_trip_power_delivery_window |
+| oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000-dst | round_trip_power_delivery_window_dst |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://power/ice:pdq?type=fixing&ccy=usd | reject_power_uri_with_a_currency |
+| oresmd://power/ice:pdq?type=fixing&point=2021-01-04 | reject_power_uri_with_a_point |
+| oresmd://power/ice:pdq?type=fixing&quote=spot | reject_power_uri_with_a_quote_type |
+| oresmd://power/ice:pdq?type=fixing&source=ecb | reject_power_uri_with_a_source |
+| oresmd://power/ice:pdq?type=fixing&tenor=3m | reject_power_uri_with_a_tenor |
+| oresmd://power/ice:pdq?type=fixing&index=libor | reject_power_uri_with_an_index |

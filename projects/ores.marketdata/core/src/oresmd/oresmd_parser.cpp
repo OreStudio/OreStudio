@@ -68,6 +68,7 @@ struct query_params final {
     std::optional<std::string> quote;
     std::optional<std::string> model;
     std::optional<std::string> point;
+    std::optional<std::string> delivery;
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
 
@@ -114,6 +115,8 @@ struct query_params final {
                 qp.model = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
+            else if (p.key == "delivery")
+                qp.delivery = p.value;
             else if (p.key == "source")
                 qp.source = p.value;
             else if (p.key == "source_spelling")
@@ -619,6 +622,8 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    if (qp.delivery)
+        id.delivery = to_lower(*qp.delivery);
     // A commodity option's surface point carries the same coordinates the equity
     // option's does, and the count says which of the three shapes it is:
     // expiry,strike; expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
@@ -753,6 +758,36 @@ market_data_identifier parse_rating(const boost::urls::url_view& u, const query_
     return id;
 }
 
+market_data_identifier parse_power(const boost::urls::url_view& u, const query_params& qp) {
+    reject_if_present("power", "ccy", qp.ccy);
+    reject_if_present("power", "index", qp.index);
+    reject_if_present("power", "index_spelling", qp.index_spelling);
+    reject_if_present("power", "tenor", qp.tenor);
+    reject_if_present("power", "second_tenor", qp.second_tenor);
+    reject_if_present("power", "second_ccy", qp.second_ccy);
+    reject_if_present("power", "contract_month", qp.contract_month);
+    reject_if_present("power", "contract_code", qp.contract_code);
+    reject_if_present("power", "second_factor", qp.second_factor);
+    reject_if_present("power", "curve_id", qp.curve_id);
+    reject_if_present("power", "day_count", qp.day_count);
+    reject_if_present("power", "settle", qp.settle);
+    reject_if_present("power", "shift", qp.shift);
+    reject_if_present("power", "strip", qp.strip);
+    reject_if_present("power", "role", qp.role);
+    reject_if_present("power", "metric", qp.metric);
+    reject_if_present("power", "quote", qp.quote);
+    reject_if_present("power", "point", qp.point);
+    reject_if_present("power", "source", qp.source);
+    reject_if_present("power", "source_spelling", qp.source_spelling);
+    power_market_data_identifier id;
+    id.commodity_code = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    reject_if_present("power", "model", qp.model);
+    if (qp.delivery)
+        id.delivery = to_lower(*qp.delivery);
+    return id;
+}
+
 void append_if(boost::urls::url& u, std::string_view key, const std::optional<std::string>& v) {
     if (v)
         u.params().append({key, *v});
@@ -839,6 +874,8 @@ market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
         return parse_shape_profile(u, qp);
     if (asset_token == "rating")
         return parse_rating(u, qp);
+    if (asset_token == "power")
+        return parse_power(u, qp);
 
     BOOST_THROW_EXCEPTION(
         oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
@@ -930,6 +967,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
+                append_if(u, "delivery", id.delivery);
                 // The surface's model is the ORE metric of the projected key, and no
                 // field carries it, so the uri_order loop above cannot emit it. A
                 // non-default model is emitted here or the round trip loses which
@@ -974,6 +1012,11 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
+            } else if constexpr (std::is_same_v<T, power_market_data_identifier>) {
+                u.set_host("power");
+                u.segments().push_back(to_lower(id.commodity_code));
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_if(u, "delivery", id.delivery);
             }
         },
         identifier);

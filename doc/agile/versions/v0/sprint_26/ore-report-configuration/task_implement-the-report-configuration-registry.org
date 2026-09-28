@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-report-configuration
-#+pr: 2307
+#+pr: 2347
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -112,6 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2347][#2347]] | [ore] Build the round-trip harness |
 | [[https://github.com/OreStudio/OreStudio/pull/2307][#2307]] | [reporting] Model the report configuration registry and round trip a credit simulation document |
 
 * Review

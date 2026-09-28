@@ -214,9 +214,7 @@ describe('POST /api/provision-tenant/:instanceId/retry', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(retries).toEqual([
-            { workflowInstanceId: instanceId, stepName: 'provision_party' },
-        ]);
+        expect(retries).toEqual([{ workflowInstanceId: instanceId, stepName: 'provision_party' }]);
 
         await server.close();
     });

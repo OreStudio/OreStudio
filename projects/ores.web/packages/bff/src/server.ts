@@ -524,9 +524,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.post('/api/provision-tenant/:instanceId/retry', async (request) => {
         const session = requireSession(request);
         const { instanceId } = request.params as { instanceId: string };
-        const body = z
-            .object({ stepName: z.string().default('') })
-            .parse(request.body ?? {});
+        const body = z.object({ stepName: z.string().default('') }).parse(request.body ?? {});
         return retryWorkflowInstanceResultSchema.parse(
             await session.client.retryWorkflowInstance({
                 workflowInstanceId: instanceId,

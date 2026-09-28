@@ -26,11 +26,11 @@ Every other document references these by key, so proving them removes a source o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Measured. Calendar adjustments round trip; currencies and conventions do not, each for a stated reason. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Model ORE's currency type on the refdata currency, then the convention categories the mapper skips. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -99,3 +99,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Measured in [[https://github.com/OreStudio/OreStudio/pull/2350][PR #2350]], which
+closes this task as far as the corpus allows it today. Two of the three kinds
+need work that is larger than a comparison, so the task's acceptance is met for
+one kind and recorded as a measurement for the other two, which is what its
+third acceptance bullet asks for.
+
+*Calendar adjustments round trip, five of five.* The kind is registered with the
+harness and asserts it. Its comparison declares the one normalisation the mapper
+makes: ORE writes a date list it has no dates for as an empty element and the
+reverse omits it. An empty list is the same list either way, and a list with
+dates is compared date by date, so the rule cannot hide a dropped date. The
+story records where the line is between a normalisation that carries the same
+information and a comparison widened to hide a loss.
+
+*Currencies do not, twelve of thirteen.* The only file in the corpus that sets
+=CurrencyType= fails on it. The mapper translates ORE's type into the refdata
+=monetary_nature=, and =Major= and =Minor= both become =fiat=, so the export
+cannot recover which one the document held. They are different axes as well:
+=monetary_nature= says what a currency is, =CurrencyType= says how important it
+is, and =market_tier= is a foreign key to a lookup whose values are =g10= and
+=emerging=. The fix is a column carrying ORE's type, seeded as a lookup and
+mapped one to one. That is a refdata model change with the usual blast radius,
+and it is the next step rather than part of this measurement.
+
+*Conventions do not, none of seventy-two.* The mapper models nine categories and
+skips the rest silently, which its own header states. The corpus needs at least
+the Zero convention's =TenorBased=, which the export drops, and the categories
+the header names: AverageOIS, TenorBasisSwap, CrossCurrencyBasis and
+InflationSwap. The mapper must also stop skipping silently, because a silent skip
+is why seventy-two files went unmeasured for as long as they did.
+
+The two failing kinds are measured by a hidden test rather than asserted green.
+A test that passes while a document loses a field is worse than a measurement a
+person reads, and the evidence file names the byte and the line of each first
+difference. The reasoning and the required fixes are in
+=evidence/round_trip_reference_kinds.md=.

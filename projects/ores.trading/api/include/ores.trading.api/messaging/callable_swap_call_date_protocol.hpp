@@ -22,10 +22,10 @@
  * Template: cpp_protocol.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_API_MESSAGING_CALLABLE_SWAP_INSTRUMENT_PROTOCOL_HPP
-#define ORES_TRADING_API_MESSAGING_CALLABLE_SWAP_INSTRUMENT_PROTOCOL_HPP
+#ifndef ORES_TRADING_API_MESSAGING_CALLABLE_SWAP_CALL_DATE_PROTOCOL_HPP
+#define ORES_TRADING_API_MESSAGING_CALLABLE_SWAP_CALL_DATE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/callable_swap_instrument.hpp"
+#include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -35,58 +35,55 @@
 
 namespace ores::trading::messaging {
 
-struct callable_swap_instrument_key {
+struct callable_swap_call_date_key {
     boost::uuids::uuid instrument_id;
+    int sequence_number;
 };
 
-struct callable_swap_instrument_write {
+struct callable_swap_call_date_write {
     boost::uuids::uuid instrument_id;
-    std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    std::string call_type;
-    std::string description;
+    int sequence_number;
+    std::chrono::year_month_day call_date;
 };
 
-struct callable_swap_instrument_change {
-    callable_swap_instrument_write write;
+struct callable_swap_call_date_change {
+    callable_swap_call_date_write write;
     ores::utility::domain::precondition precondition;
 };
 
-struct callable_swap_instrument_removal {
-    callable_swap_instrument_key key;
+struct callable_swap_call_date_removal {
+    callable_swap_call_date_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
 };
 
-struct callable_swap_instrument_lookup {
-    callable_swap_instrument_key key;
-    std::optional<ores::trading::domain::callable_swap_instrument> callable_swap_instrument;
+struct callable_swap_call_date_lookup {
+    callable_swap_call_date_key key;
+    std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
 };
 
-struct callable_swap_instrument_event {
+struct callable_swap_call_date_event {
     boost::uuids::uuid event_id;
-    callable_swap_instrument_key key;
+    callable_swap_call_date_key key;
     std::string action;
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 };
 
-struct callable_swap_instrument_version_key {
-    callable_swap_instrument_key callable_swap_instrument;
+struct callable_swap_call_date_version_key {
+    callable_swap_call_date_key callable_swap_call_date;
     std::uint32_t version;
 };
 
-struct callable_swap_instrument_versions_filter {
+struct callable_swap_call_date_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
 };
 
-struct list_callable_swap_instruments_request {
-    using response_type = struct list_callable_swap_instruments_response;
-    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.list";
+struct list_callable_swap_call_dates_request {
+    using response_type = struct list_callable_swap_call_dates_response;
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_call_dates.list";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -99,15 +96,15 @@ struct list_callable_swap_instruments_request {
     ores::utility::domain::order order;
 };
 
-struct list_callable_swap_instruments_response {
+struct list_callable_swap_call_dates_response {
     ores::utility::domain::result result;
-    std::vector<ores::trading::domain::callable_swap_instrument> callable_swap_instruments;
+    std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
     std::uint64_t total;
 };
 
-struct get_callable_swap_instrument_request {
-    using response_type = struct get_callable_swap_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.get";
+struct get_callable_swap_call_date_request {
+    using response_type = struct get_callable_swap_call_date_response;
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_call_dates.get";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -115,18 +112,17 @@ struct get_callable_swap_instrument_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    callable_swap_instrument_key key;
+    callable_swap_call_date_key key;
 };
 
-struct get_callable_swap_instrument_response {
+struct get_callable_swap_call_date_response {
     ores::utility::domain::result result;
-    std::optional<ores::trading::domain::callable_swap_instrument> callable_swap_instrument;
+    std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
 };
 
-struct get_many_callable_swap_instruments_request {
-    using response_type = struct get_many_callable_swap_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.get_many";
+struct get_many_callable_swap_call_dates_request {
+    using response_type = struct get_many_callable_swap_call_dates_response;
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_call_dates.get_many";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -134,17 +130,17 @@ struct get_many_callable_swap_instruments_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::vector<callable_swap_instrument_key> keys;
+    std::vector<callable_swap_call_date_key> keys;
 };
 
-struct get_many_callable_swap_instruments_response {
+struct get_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
-    std::vector<callable_swap_instrument_lookup> entries;
+    std::vector<callable_swap_call_date_lookup> entries;
 };
 
-struct put_callable_swap_instrument_request {
-    using response_type = struct put_callable_swap_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.put";
+struct put_callable_swap_call_date_request {
+    using response_type = struct put_callable_swap_call_date_response;
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_call_dates.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -152,19 +148,18 @@ struct put_callable_swap_instrument_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    callable_swap_instrument_change change;
+    callable_swap_call_date_change change;
     ores::utility::domain::change_intent intent;
 };
 
-struct put_callable_swap_instrument_response {
+struct put_callable_swap_call_date_response {
     ores::utility::domain::result result;
-    ores::trading::domain::callable_swap_instrument callable_swap_instrument;
+    ores::trading::domain::callable_swap_call_date callable_swap_call_date;
 };
 
-struct put_many_callable_swap_instruments_request {
-    using response_type = struct put_many_callable_swap_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.put_many";
+struct put_many_callable_swap_call_dates_request {
+    using response_type = struct put_many_callable_swap_call_dates_response;
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_call_dates.put_many";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -172,18 +167,18 @@ struct put_many_callable_swap_instruments_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::vector<callable_swap_instrument_change> changes;
+    std::vector<callable_swap_call_date_change> changes;
     ores::utility::domain::change_intent intent;
 };
 
-struct put_many_callable_swap_instruments_response {
+struct put_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
-    std::vector<ores::trading::domain::callable_swap_instrument> callable_swap_instruments;
+    std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
 };
 
-struct delete_callable_swap_instrument_request {
-    using response_type = struct delete_callable_swap_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.delete";
+struct delete_callable_swap_call_date_request {
+    using response_type = struct delete_callable_swap_call_date_response;
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_call_dates.delete";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -191,18 +186,18 @@ struct delete_callable_swap_instrument_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    callable_swap_instrument_removal removal;
+    callable_swap_call_date_removal removal;
     ores::utility::domain::change_intent intent;
 };
 
-struct delete_callable_swap_instrument_response {
+struct delete_callable_swap_call_date_response {
     ores::utility::domain::result result;
 };
 
-struct delete_many_callable_swap_instruments_request {
-    using response_type = struct delete_many_callable_swap_instruments_response;
+struct delete_many_callable_swap_call_dates_request {
+    using response_type = struct delete_many_callable_swap_call_dates_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.delete_many";
+        "trading.v1.callable_swap_call_dates.delete_many";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -210,18 +205,18 @@ struct delete_many_callable_swap_instruments_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::vector<callable_swap_instrument_removal> removals;
+    std::vector<callable_swap_call_date_removal> removals;
     ores::utility::domain::change_intent intent;
 };
 
-struct delete_many_callable_swap_instruments_response {
+struct delete_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
 };
 
-struct list_callable_swap_instrument_versions_request {
-    using response_type = struct list_callable_swap_instrument_versions_response;
+struct list_callable_swap_call_date_versions_request {
+    using response_type = struct list_callable_swap_call_date_versions_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments_versions.list";
+        "trading.v1.callable_swap_call_dates_versions.list";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -229,23 +224,23 @@ struct list_callable_swap_instrument_versions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    callable_swap_instrument_key key;
+    callable_swap_call_date_key key;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
-    std::optional<callable_swap_instrument_versions_filter> filter;
+    std::optional<callable_swap_call_date_versions_filter> filter;
 };
 
-struct list_callable_swap_instrument_versions_response {
+struct list_callable_swap_call_date_versions_response {
     ores::utility::domain::result result;
-    std::vector<ores::trading::domain::callable_swap_instrument> versions;
+    std::vector<ores::trading::domain::callable_swap_call_date> versions;
     std::uint64_t total;
 };
 
-struct get_callable_swap_instrument_version_request {
-    using response_type = struct get_callable_swap_instrument_version_response;
+struct get_callable_swap_call_date_version_request {
+    using response_type = struct get_callable_swap_call_date_version_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments_versions.get";
+        "trading.v1.callable_swap_call_dates_versions.get";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -253,12 +248,12 @@ struct get_callable_swap_instrument_version_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    callable_swap_instrument_version_key key;
+    callable_swap_call_date_version_key key;
 };
 
-struct get_callable_swap_instrument_version_response {
+struct get_callable_swap_call_date_version_response {
     ores::utility::domain::result result;
-    ores::trading::domain::callable_swap_instrument version;
+    ores::trading::domain::callable_swap_call_date version;
 };
 
 /**
@@ -269,10 +264,10 @@ struct get_callable_swap_instrument_version_response {
  * by three subjects, and a subscriber that wants one action subscribes to one
  * of them.
  */
-namespace callable_swap_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.callable_swap_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.callable_swap_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.callable_swap_instruments_events.deleted";
+namespace callable_swap_call_date_event_subjects {
+inline constexpr std::string_view created = "trading.v1.callable_swap_call_dates_events.created";
+inline constexpr std::string_view updated = "trading.v1.callable_swap_call_dates_events.updated";
+inline constexpr std::string_view deleted = "trading.v1.callable_swap_call_dates_events.deleted";
 }
 
 }

@@ -22,8 +22,8 @@
  * Template: cpp_domain_type_entity.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_CORE_REPOSITORY_CALLABLE_SWAP_INSTRUMENT_ENTITY_HPP
-#define ORES_TRADING_CORE_REPOSITORY_CALLABLE_SWAP_INSTRUMENT_ENTITY_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_CALLABLE_SWAP_CALL_DATE_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_CALLABLE_SWAP_CALL_DATE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -36,23 +36,17 @@ namespace ores::trading::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a callable swap instrument in the database.
+ * @brief Represents a callable swap call date in the database.
  */
-struct callable_swap_instrument_entity {
+struct callable_swap_call_date_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_trading_callable_swap_instruments_tbl";
+    constexpr static const char* tablename = "ores_trading_callable_swap_call_dates_tbl";
 
     sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
-    std::string trade_type_code;
-    std::string party_id;
-    std::optional<std::string> trade_id;
-    std::string start_date;
-    std::string maturity_date;
-    std::optional<std::string> call_type;
-    std::optional<std::string> description;
+    std::string call_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -61,7 +55,7 @@ struct callable_swap_instrument_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const callable_swap_instrument_entity& v);
+std::ostream& operator<<(std::ostream& s, const callable_swap_call_date_entity& v);
 
 }
 

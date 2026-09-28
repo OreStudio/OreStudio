@@ -102,11 +102,33 @@ void encode_leaf_with_legs(const Leaf& leaf,
     out.body = rfl::json::write(with_legs<Leaf, Leg>{leaf, legs});
 }
 
-template <typename Variant, typename Leg>
-void encode_with_legs(const Variant& variant,
-                      const std::vector<Leg>& legs,
+/**
+ * The wire shape of a rates leaf: the leaf, its legs and its call date
+ * schedule. It is the family struct with the variant removed, so a reader
+ * rebuilds the family carrier from it without knowing the leaf's type.
+ */
+template <typename Leaf>
+struct swap_leaf_payload {
+    Leaf instrument;
+    std::vector<swap_leg> legs;
+    std::vector<callable_swap_call_date> call_dates;
+};
+
+template <typename Leaf>
+void encode_swap_leaf(const Leaf& leaf,
+                      const std::vector<swap_leg>& legs,
+                      const std::vector<callable_swap_call_date>& call_dates,
                       instrument_payload& out) {
-    std::visit([&](const auto& leaf) { encode_leaf_with_legs(leaf, legs, out); }, variant);
+    out.type = std::string(leaf_name<Leaf>());
+    out.body = rfl::json::write(swap_leaf_payload<Leaf>{leaf, legs, call_dates});
+}
+
+template <typename Variant>
+void encode_swap(const Variant& variant,
+                 const std::vector<swap_leg>& legs,
+                 const std::vector<callable_swap_call_date>& call_dates,
+                 instrument_payload& out) {
+    std::visit([&](const auto& leaf) { encode_swap_leaf(leaf, legs, call_dates, out); }, variant);
 }
 
 template <typename T>
@@ -140,41 +162,42 @@ std::optional<Variant> decode_flat(const instrument_payload& payload) {
     return found;
 }
 
-/**
- * The generic-lambda fold expression this replaces segfaults clang 19 and
- * AppleClang 16 inside TransformCXXFoldExpr, so the trial is spelled as the
- * same recursive helper pair decode_flat uses.
- */
-template <typename Variant, typename Leg, std::size_t I>
-void try_one_with_legs(const instrument_payload& payload,
-                       std::optional<with_legs<Variant, Leg>>& found) {
-    using Leaf = std::variant_alternative_t<I, Variant>;
-    if (found || payload.type != leaf_name<Leaf>())
-        return;
-    if (auto r = read_as<with_legs<Leaf, Leg>>(payload))
-        found = with_legs<Variant, Leg>{Variant(std::move(r->instrument)), std::move(r->legs)};
-}
-
-template <typename Variant, typename Leg, std::size_t... Is>
-void try_each_with_legs(const instrument_payload& payload,
-                        std::optional<with_legs<Variant, Leg>>& found,
-                        std::index_sequence<Is...>) {
-    (try_one_with_legs<Variant, Leg, Is>(payload, found), ...);
-}
-
-template <typename Variant, typename Leg>
-std::optional<with_legs<Variant, Leg>> decode_with_legs(const instrument_payload& payload) {
-    std::optional<with_legs<Variant, Leg>> found;
-    try_each_with_legs<Variant, Leg>(
-        payload, found, std::make_index_sequence<std::variant_size_v<Variant>>{});
-    return found;
-}
-
 template <typename Leaf, typename Leg>
 std::optional<with_legs<Leaf, Leg>> decode_leaf_with_legs(const instrument_payload& payload) {
     if (payload.type != leaf_name<Leaf>())
         return std::nullopt;
     return read_as<with_legs<Leaf, Leg>>(payload);
+}
+
+/**
+ * The generic-lambda fold expression this replaces segfaults clang 19 and
+ * AppleClang 16 inside TransformCXXFoldExpr, so the trial is spelled as the
+ * same recursive helper pair decode_flat uses.
+ */
+template <typename Variant, std::size_t I>
+void try_one_swap(const instrument_payload& payload,
+                  std::optional<swap_instrument_data>& found) {
+    using Leaf = std::variant_alternative_t<I, Variant>;
+    if (found || payload.type != leaf_name<Leaf>())
+        return;
+    if (auto r = read_as<swap_leaf_payload<Leaf>>(payload))
+        found = swap_instrument_data{Variant(std::move(r->instrument)),
+                                     std::move(r->legs),
+                                     std::move(r->call_dates)};
+}
+
+template <typename Variant, std::size_t... Is>
+void try_each_swap(const instrument_payload& payload,
+                   std::optional<swap_instrument_data>& found,
+                   std::index_sequence<Is...>) {
+    (try_one_swap<Variant, Is>(payload, found), ...);
+}
+
+template <typename Variant>
+std::optional<swap_instrument_data> decode_swap(const instrument_payload& payload) {
+    std::optional<swap_instrument_data> found;
+    try_each_swap<Variant>(payload, found, std::make_index_sequence<std::variant_size_v<Variant>>{});
+    return found;
 }
 
 template <typename Leaf>
@@ -194,7 +217,7 @@ instrument_payload encode_instrument(const trade_instrument& instrument) {
             if constexpr (std::is_same_v<T, std::monostate>) {
                 return;
             } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                encode_with_legs(leaf.instrument, leaf.legs, out);
+                encode_swap(leaf.instrument, leaf.legs, leaf.call_dates, out);
             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 encode_leaf_with_legs(leaf.instrument, leaf.legs, out);
             } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
@@ -212,7 +235,7 @@ trade_instrument decode_instrument(const instrument_payload& payload) {
     if (payload.type.empty())
         return trade_instrument{std::monostate{}};
 
-    if (auto v = decode_with_legs<rates_instrument_variant, swap_leg>(payload))
+    if (auto v = decode_swap<rates_instrument_variant>(payload))
         return trade_instrument{std::move(*v)};
     if (auto v = decode_flat<fx_instrument_variant>(payload))
         return trade_instrument{std::move(*v)};

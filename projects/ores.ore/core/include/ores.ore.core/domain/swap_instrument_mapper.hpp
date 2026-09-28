@@ -135,17 +135,22 @@ public:
      * @brief Forward-maps a CallableSwap trade (CallableSwapData) to ORES
      * domain types, producing a callable_swap_instrument.
      *
-     * Exercise dates are serialised as a JSON array in
-     * instrument.call_dates_json.
+     * Each exercise date becomes one callable_swap_call_date row on the
+     * carrier's call_dates, in the order the document stated them.
      */
     static trading::domain::swap_instrument_data forward_callable_swap(const trade& t);
 
     /**
      * @brief Reverse-maps ORES domain types back to a CallableSwap ORE XSD
      * trade.
+     *
+     * The call dates rebuild the option block's exerciseDatesGroup in the
+     * carrier's order, so a document's schedule survives the round trip.
      */
-    static trade reverse_callable_swap(const ores::trading::domain::callable_swap_instrument& instr,
-                                       const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade reverse_callable_swap(
+        const ores::trading::domain::callable_swap_instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs,
+        const std::vector<ores::trading::domain::callable_swap_call_date>& call_dates);
 
     /**
      * @brief Forward-maps a FlexiSwap trade (FlexiSwapData) to ORES domain

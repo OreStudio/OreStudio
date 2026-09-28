@@ -46,6 +46,7 @@
 #include "ores.trading.service/messaging/bond_option_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_repo_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_trs_event_registrar.hpp"
+#include "ores.trading.service/messaging/callable_swap_call_date_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
@@ -218,6 +219,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         register_balance_guaranteed_swap_instrument_event_mapping(event_source, event_bus, nats);
     auto callable_swap_instrument_sub =
         ores::trading::service::messaging::register_callable_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto callable_swap_call_date_sub =
+        ores::trading::service::messaging::register_callable_swap_call_date_event_mapping(
             event_source, event_bus, nats);
     auto cap_floor_instrument_sub =
         ores::trading::service::messaging::register_cap_floor_instrument_event_mapping(

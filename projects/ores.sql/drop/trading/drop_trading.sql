@@ -49,6 +49,8 @@
 \ir ./trading_balance_guaranteed_swap_instruments_drop.sql
 \ir ./trading_callable_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_callable_swap_instruments_drop.sql
+\ir ./trading_callable_swap_call_dates_notify_trigger_drop.sql
+\ir ./trading_callable_swap_call_dates_drop.sql
 \ir ./trading_knock_out_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_knock_out_swap_instruments_drop.sql
 \ir ./trading_inflation_swap_instruments_notify_trigger_drop.sql

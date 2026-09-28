@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.core/messaging/balance_guaranteed_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/callable_swap_call_date_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/cap_floor_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
@@ -69,6 +70,12 @@ register_rates_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(callable_swap_instrument_subs.begin()),
                 std::make_move_iterator(callable_swap_instrument_subs.end()));
+
+    auto callable_swap_call_date_subs =
+        register_callable_swap_call_date_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(callable_swap_call_date_subs.begin()),
+                std::make_move_iterator(callable_swap_call_date_subs.end()));
 
     auto knock_out_swap_instrument_subs =
         register_knock_out_swap_instrument_handlers(nats, ctx, verifier);

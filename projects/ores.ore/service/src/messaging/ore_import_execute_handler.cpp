@@ -46,6 +46,7 @@
 #include "ores.trading.api/messaging/bond_option_protocol.hpp"
 #include "ores.trading.api/messaging/bond_repo_protocol.hpp"
 #include "ores.trading.api/messaging/bond_trs_protocol.hpp"
+#include "ores.trading.api/messaging/callable_swap_call_date_protocol.hpp"
 #include "ores.trading.api/messaging/callable_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/commodity_instrument_protocol.hpp"
@@ -1569,12 +1570,27 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.trade_id = instr.identity.trade_id;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.call_dates_json = instr.call_dates_json;
                                 req.change.write.call_type = instr.call_type;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
+                                if (!resp ||
+                                    resp->result.outcome != ores::utility::domain::outcome::ok)
+                                    return false;
+                                int sequence_number = 0;
+                                for (const auto& call_date : r.call_dates) {
+                                    put_callable_swap_call_date_request date_req;
+                                    date_req.change.write.instrument_id =
+                                        instr.identity.instrument_id;
+                                    date_req.change.write.sequence_number = ++sequence_number;
+                                    date_req.change.write.call_date = call_date.call_date;
+                                    auto date_resp =
+                                        nats_call(delegated_nats, date_req, instr_error);
+                                    if (!date_resp ||
+                                        date_resp->result.outcome !=
+                                            ores::utility::domain::outcome::ok)
+                                        return false;
+                                }
+                                return true;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 knock_out_swap_instrument>) {
                                 put_knock_out_swap_instrument_request req;

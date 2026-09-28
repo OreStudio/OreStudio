@@ -110,17 +110,6 @@ Must be after start_date.
 std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 #+end_src
 
-** call_dates_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Optional JSON array of call dates.
-
-ISO 8601 date strings when the party may exercise the call option.
-
 ** call_type
 :PROPERTIES:
 :type:     text
@@ -131,6 +120,12 @@ ISO 8601 date strings when the party may exercise the call option.
 Optional call type: Bermudan or One-Time.
 
 Bermudan allows multiple call dates; One-Time allows exactly one.
+
+The dates themselves are not a column: each is a row of
+=ores.trading.callable_swap_call_date=, keyed to this instrument and its
+ordinal in the schedule. A text column held the list as a JSON array and
+could not be typed, indexed or questioned, so the collection is a child
+table now.
 
 ** description
 :PROPERTIES:
@@ -232,3 +227,4 @@ repository profiles regenerate correctly.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:323AB81A-5B70-4905-AE8F-F1B3AFC2EC72][ores.trading.callable_swap_call_date]] — the instrument's exercise schedule, one row per call date.

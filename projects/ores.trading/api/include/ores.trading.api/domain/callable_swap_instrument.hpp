@@ -57,16 +57,14 @@ struct callable_swap_instrument final {
     std::chrono::year_month_day maturity_date;
 
     /**
-     * @brief Optional JSON array of call dates.
-     *
-     * ISO 8601 date strings when the party may exercise the call option.
-     */
-    std::string call_dates_json;
-
-    /**
      * @brief Optional call type: Bermudan or One-Time.
      *
      * Bermudan allows multiple call dates; One-Time allows exactly one.
+     *
+     * The dates themselves are not a column: each is a row of ores.trading.callable_swap_call_date,
+     * keyed to this instrument and its ordinal in the schedule. A text column held the list as a
+     * JSON array and could not be typed, indexed or questioned, so the collection is a child table
+     * now.
      */
     std::string call_type;
 

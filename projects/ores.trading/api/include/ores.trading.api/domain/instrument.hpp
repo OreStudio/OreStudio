@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
+#include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/rates_instrument_variant.hpp"
@@ -51,7 +52,18 @@ struct with_legs {
     std::vector<Leg> legs;
 };
 
-using swap_instrument_data = with_legs<rates_instrument_variant, swap_leg>;
+// The rates family states a leg collection and, for a callable swap, the
+// schedule of dates its owner may exercise the call on. Both are
+// collections that belong to the instrument, so the family carrier holds
+// them beside each other and each call date travels with the instrument
+// it belongs to. A leaf that states no schedule leaves the collection
+// empty.
+struct swap_instrument_data {
+    rates_instrument_variant instrument;
+    std::vector<swap_leg> legs;
+    std::vector<callable_swap_call_date> call_dates;
+};
+
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
 
 template <Instrument T>
@@ -75,6 +87,16 @@ void stamp_ids(with_legs<T, Leg>& data,
     stamp_ids(data.instrument, instrument_id, trade_id);
     for (auto& leg : data.legs)
         leg.identity.instrument_id = instrument_id;
+}
+
+inline void stamp_ids(swap_instrument_data& data,
+                      boost::uuids::uuid instrument_id,
+                      boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, instrument_id, trade_id);
+    for (auto& leg : data.legs)
+        leg.identity.instrument_id = instrument_id;
+    for (auto& call_date : data.call_dates)
+        call_date.instrument_id = instrument_id;
 }
 
 } // namespace ores::trading::domain

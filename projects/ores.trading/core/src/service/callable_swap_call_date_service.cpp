@@ -22,7 +22,7 @@
  * Template: cpp_service.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.core/service/callable_swap_instrument_service.hpp"
+#include "ores.trading.core/service/callable_swap_call_date_service.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
@@ -40,7 +40,7 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-callable_swap_instrument_service::callable_swap_instrument_service(context ctx)
+callable_swap_call_date_service::callable_swap_call_date_service(context ctx)
     : ctx_(std::move(ctx)) {}
 namespace {
 
@@ -55,11 +55,12 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::callable_swap_instrument>
-read_one(repository::callable_swap_instrument_repository& repo,
+std::vector<domain::callable_swap_call_date>
+read_one(repository::callable_swap_call_date_repository& repo,
          const ores::database::context& ctx,
-         const messaging::callable_swap_instrument_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.instrument_id));
+         const messaging::callable_swap_call_date_key& key) {
+    return repo.read_latest(
+        ctx, boost::uuids::to_string(key.instrument_id), std::to_string(key.sequence_number));
 }
 
 /**
@@ -68,9 +69,10 @@ read_one(repository::callable_swap_instrument_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::callable_swap_instrument_key key_from(const domain::callable_swap_instrument& v) {
-    messaging::callable_swap_instrument_key key;
-    key.instrument_id = v.identity.instrument_id;
+messaging::callable_swap_call_date_key key_from(const domain::callable_swap_call_date& v) {
+    messaging::callable_swap_call_date_key key;
+    key.instrument_id = v.instrument_id;
+    key.sequence_number = v.sequence_number;
     return key;
 }
 
@@ -81,24 +83,20 @@ messaging::callable_swap_instrument_key key_from(const domain::callable_swap_ins
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::callable_swap_instrument to_domain(const messaging::callable_swap_instrument_write& write) {
-    domain::callable_swap_instrument v;
-    v.identity.instrument_id = write.instrument_id;
-    v.identity.trade_type_code = write.trade_type_code;
-    v.identity.trade_id = write.trade_id;
-    v.start_date = write.start_date;
-    v.maturity_date = write.maturity_date;
-    v.call_type = write.call_type;
-    v.description = write.description;
+domain::callable_swap_call_date to_domain(const messaging::callable_swap_call_date_write& write) {
+    domain::callable_swap_call_date v;
+    v.instrument_id = write.instrument_id;
+    v.sequence_number = write.sequence_number;
+    v.call_date = write.call_date;
     return v;
 }
 
 } // namespace
 
-messaging::list_callable_swap_instruments_response
-callable_swap_instrument_service::list_callable_swap_instruments(
-    const messaging::list_callable_swap_instruments_request& request) {
-    messaging::list_callable_swap_instruments_response response;
+messaging::list_callable_swap_call_dates_response
+callable_swap_call_date_service::list_callable_swap_call_dates(
+    const messaging::list_callable_swap_call_dates_request& request) {
+    messaging::list_callable_swap_call_dates_response response;
     if (!request.order.field.empty() || request.order.descending) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
@@ -106,67 +104,67 @@ callable_swap_instrument_service::list_callable_swap_instruments(
             "This store pages in key order and cannot order by a stated field.";
         return response;
     }
-    response.callable_swap_instruments = repo_.read_latest(ctx_, request.offset, request.limit);
-    response.total = repo_.get_total_callable_swap_instrument_count(ctx_);
+    response.callable_swap_call_dates = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.total = repo_.get_total_callable_swap_call_date_count(ctx_);
     return response;
 }
 
-messaging::get_callable_swap_instrument_response
-callable_swap_instrument_service::get_callable_swap_instrument(
-    const messaging::get_callable_swap_instrument_request& request) {
-    messaging::get_callable_swap_instrument_response response;
+messaging::get_callable_swap_call_date_response
+callable_swap_call_date_service::get_callable_swap_call_date(
+    const messaging::get_callable_swap_call_date_request& request) {
+    messaging::get_callable_swap_call_date_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
         return response;
     }
-    response.callable_swap_instrument = std::move(found.front());
+    response.callable_swap_call_date = std::move(found.front());
     return response;
 }
 
-messaging::get_many_callable_swap_instruments_response
-callable_swap_instrument_service::get_many_callable_swap_instruments(
-    const messaging::get_many_callable_swap_instruments_request& request) {
-    messaging::get_many_callable_swap_instruments_response response;
+messaging::get_many_callable_swap_call_dates_response
+callable_swap_call_date_service::get_many_callable_swap_call_dates(
+    const messaging::get_many_callable_swap_call_dates_request& request) {
+    messaging::get_many_callable_swap_call_dates_response response;
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
     for (const auto& k : request.keys) {
-        messaging::callable_swap_instrument_lookup entry;
+        messaging::callable_swap_call_date_lookup entry;
         entry.key = k;
         auto found = read_one(repo_, ctx_, k);
         if (!found.empty())
-            entry.callable_swap_instrument = std::move(found.front());
+            entry.callable_swap_call_date = std::move(found.front());
         response.entries.push_back(std::move(entry));
     }
     return response;
 }
 
-messaging::put_callable_swap_instrument_response
-callable_swap_instrument_service::put_callable_swap_instrument(
-    const messaging::put_callable_swap_instrument_request& request) {
-    messaging::put_callable_swap_instrument_response response;
-    domain::callable_swap_instrument value;
+messaging::put_callable_swap_call_date_response
+callable_swap_call_date_service::put_callable_swap_call_date(
+    const messaging::put_callable_swap_call_date_request& request) {
+    messaging::put_callable_swap_call_date_response response;
+    domain::callable_swap_call_date value;
     response.result = prepare_change(request.change, request.intent, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
     auto written = read_one(repo_, ctx_, key_from(value));
     if (!written.empty())
-        response.callable_swap_instrument = std::move(written.front());
+        response.callable_swap_call_date = std::move(written.front());
     return response;
 }
 
-messaging::put_many_callable_swap_instruments_response
-callable_swap_instrument_service::put_many_callable_swap_instruments(
-    const messaging::put_many_callable_swap_instruments_request& request) {
-    messaging::put_many_callable_swap_instruments_response response;
-    std::vector<domain::callable_swap_instrument> batch;
+messaging::put_many_callable_swap_call_dates_response
+callable_swap_call_date_service::put_many_callable_swap_call_dates(
+    const messaging::put_many_callable_swap_call_dates_request& request) {
+    messaging::put_many_callable_swap_call_dates_response response;
+    std::vector<domain::callable_swap_call_date> batch;
     batch.reserve(request.changes.size());
     for (const auto& change : request.changes) {
-        domain::callable_swap_instrument value;
+        domain::callable_swap_call_date value;
         const auto result = prepare_change(change, request.intent, value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
@@ -184,19 +182,19 @@ callable_swap_instrument_service::put_many_callable_swap_instruments(
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
-    response.callable_swap_instruments.reserve(batch.size());
+    response.callable_swap_call_dates.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
-        response.callable_swap_instruments.push_back(written.empty() ? value :
-                                                                       std::move(written.front()));
+        response.callable_swap_call_dates.push_back(written.empty() ? value :
+                                                                      std::move(written.front()));
     }
     return response;
 }
 
-messaging::delete_callable_swap_instrument_response
-callable_swap_instrument_service::delete_callable_swap_instrument(
-    const messaging::delete_callable_swap_instrument_request& request) {
-    messaging::delete_callable_swap_instrument_response response;
+messaging::delete_callable_swap_call_date_response
+callable_swap_call_date_service::delete_callable_swap_call_date(
+    const messaging::delete_callable_swap_call_date_request& request) {
+    messaging::delete_callable_swap_call_date_response response;
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
@@ -215,19 +213,21 @@ callable_swap_instrument_service::delete_callable_swap_instrument(
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.instrument_id), expected)) {
-        case repository::callable_swap_instrument_repository::remove_status::removed:
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         std::to_string(request.removal.key.sequence_number),
+                         expected)) {
+        case repository::callable_swap_call_date_repository::remove_status::removed:
             break;
-        case repository::callable_swap_instrument_repository::remove_status::missing:
+        case repository::callable_swap_call_date_repository::remove_status::missing:
             response.result.outcome = outcome::missing;
             response.result.code = "not_found";
             break;
-        case repository::callable_swap_instrument_repository::remove_status::conflicting:
+        case repository::callable_swap_call_date_repository::remove_status::conflicting:
             response.result.outcome = outcome::conflict;
             response.result.code = "version_conflict";
             break;
-        case repository::callable_swap_instrument_repository::remove_status::unsupported:
+        case repository::callable_swap_call_date_repository::remove_status::unsupported:
             response.result.outcome = outcome::invalid;
             response.result.code = "precondition_not_supported";
             response.result.message = "This resource keeps no version to match.";
@@ -236,10 +236,10 @@ callable_swap_instrument_service::delete_callable_swap_instrument(
     return response;
 }
 
-messaging::delete_many_callable_swap_instruments_response
-callable_swap_instrument_service::delete_many_callable_swap_instruments(
-    const messaging::delete_many_callable_swap_instruments_request& request) {
-    messaging::delete_many_callable_swap_instruments_response response;
+messaging::delete_many_callable_swap_call_dates_response
+callable_swap_call_date_service::delete_many_callable_swap_call_dates(
+    const messaging::delete_many_callable_swap_call_dates_request& request) {
+    messaging::delete_many_callable_swap_call_dates_response response;
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     for (const auto& removal : request.removals) {
@@ -262,14 +262,18 @@ callable_swap_instrument_service::delete_many_callable_swap_instruments(
     instrument_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
-    repo_.remove(ctx_, instrument_id_keys);
+    std::vector<std::string> sequence_number_keys;
+    sequence_number_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
+    repo_.remove(ctx_, instrument_id_keys, sequence_number_keys);
     return response;
 }
 
-messaging::list_callable_swap_instrument_versions_response
-callable_swap_instrument_service::list_callable_swap_instrument_versions(
-    const messaging::list_callable_swap_instrument_versions_request& request) {
-    messaging::list_callable_swap_instrument_versions_response response;
+messaging::list_callable_swap_call_date_versions_response
+callable_swap_call_date_service::list_callable_swap_call_date_versions(
+    const messaging::list_callable_swap_call_date_versions_request& request) {
+    messaging::list_callable_swap_call_date_versions_response response;
     if (!request.order.field.empty() || request.order.descending) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
@@ -283,7 +287,9 @@ callable_swap_instrument_service::list_callable_swap_instrument_versions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.instrument_id));
+    auto all = repo_.read_all(ctx_,
+                              boost::uuids::to_string(request.key.instrument_id),
+                              std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -295,13 +301,14 @@ callable_swap_instrument_service::list_callable_swap_instrument_versions(
     return response;
 }
 
-messaging::get_callable_swap_instrument_version_response
-callable_swap_instrument_service::get_callable_swap_instrument_version(
-    const messaging::get_callable_swap_instrument_version_request& request) {
-    messaging::get_callable_swap_instrument_version_response response;
+messaging::get_callable_swap_call_date_version_response
+callable_swap_call_date_service::get_callable_swap_call_date_version(
+    const messaging::get_callable_swap_call_date_version_request& request) {
+    messaging::get_callable_swap_call_date_version_response response;
     auto found = repo_.read_at_version(
         ctx_,
-        boost::uuids::to_string(request.key.callable_swap_instrument.instrument_id),
+        boost::uuids::to_string(request.key.callable_swap_call_date.instrument_id),
+        std::to_string(request.key.callable_swap_call_date.sequence_number),
         request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
@@ -312,10 +319,10 @@ callable_swap_instrument_service::get_callable_swap_instrument_version(
     return response;
 }
 
-ores::utility::domain::result callable_swap_instrument_service::prepare_change(
-    const messaging::callable_swap_instrument_change& change,
+ores::utility::domain::result callable_swap_call_date_service::prepare_change(
+    const messaging::callable_swap_call_date_change& change,
     const ores::utility::domain::change_intent& intent,
-    domain::callable_swap_instrument& out) {
+    domain::callable_swap_call_date& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
@@ -338,7 +345,7 @@ ores::utility::domain::result callable_swap_instrument_service::prepare_change(
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().identity.version) !=
+                static_cast<std::uint32_t>(current.front().version) !=
                     *change.precondition.version) {
                 result.outcome = outcome::conflict;
                 result.code = "version_conflict";
@@ -356,97 +363,107 @@ ores::utility::domain::result callable_swap_instrument_service::prepare_change(
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.audit.change_commentary = intent.commentary;
+    out.change_commentary = intent.commentary;
     return result;
 }
 
 
-std::vector<domain::callable_swap_instrument>
-callable_swap_instrument_service::list_callable_swap_instruments(std::uint32_t offset,
-                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all callable swap instruments";
+std::vector<domain::callable_swap_call_date>
+callable_swap_call_date_service::list_callable_swap_call_dates(std::uint32_t offset,
+                                                               std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all callable swap call dates";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t callable_swap_instrument_service::count_callable_swap_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total callable swap instruments count";
-    return repo_.get_total_callable_swap_instrument_count(ctx_);
+std::uint32_t callable_swap_call_date_service::count_callable_swap_call_dates() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total callable swap call dates count";
+    return repo_.get_total_callable_swap_call_date_count(ctx_);
 }
 
 
-std::optional<domain::callable_swap_instrument>
-callable_swap_instrument_service::get_callable_swap_instrument_at_version(
-    const boost::uuids::uuid& instrument_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting callable swap instrument at version. "
-                               << "instrument_id: " << instrument_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(instrument_id), version);
+std::optional<domain::callable_swap_call_date>
+callable_swap_call_date_service::get_callable_swap_call_date_at_version(
+    const std::string& instrument_id, const std::string& sequence_number, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting callable swap call date at version. "
+                               << "instrument_id: " << instrument_id
+                               << " sequence_number: " << sequence_number
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, instrument_id, sequence_number, version);
 }
 
-std::optional<domain::callable_swap_instrument>
-callable_swap_instrument_service::get_callable_swap_instrument(
-    const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting callable swap instrument. "
-                               << "instrument_id: " << instrument_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(instrument_id));
+std::optional<domain::callable_swap_call_date>
+callable_swap_call_date_service::get_callable_swap_call_date(const std::string& instrument_id,
+                                                             const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting callable swap call date. "
+                               << "instrument_id: " << instrument_id
+                               << " sequence_number: " << sequence_number;
+    auto results = repo_.read_latest(ctx_, instrument_id, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-std::vector<domain::callable_swap_instrument>
-callable_swap_instrument_service::get_callable_swap_instruments(
-    const std::vector<std::string>& instrument_ids) {
-    return repo_.read_latest(ctx_, instrument_ids);
+std::vector<domain::callable_swap_call_date>
+callable_swap_call_date_service::get_callable_swap_call_dates(
+    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, instrument_ids, sequence_numbers);
 }
 
-void callable_swap_instrument_service::save_callable_swap_instrument(
-    const domain::callable_swap_instrument& v) {
-    if (v.identity.instrument_id.is_nil())
-        throw std::invalid_argument("Callable Swap Instrument instrument_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving callable swap instrument. "
-                               << "instrument_id: " << v.identity.instrument_id;
+void callable_swap_call_date_service::save_callable_swap_call_date(
+    const domain::callable_swap_call_date& v) {
+    if (v.instrument_id.is_nil())
+        throw std::invalid_argument("Callable Swap Call Date instrument_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving callable swap call date. "
+                               << "instrument_id: " << v.instrument_id
+                               << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved callable swap instrument. "
-                              << "instrument_id: " << v.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved callable swap call date. "
+                              << "instrument_id: " << v.instrument_id
+                              << " sequence_number: " << v.sequence_number;
 }
 
-void callable_swap_instrument_service::save_callable_swap_instruments(
-    const std::vector<domain::callable_swap_instrument>& callable_swap_instruments) {
-    for (const auto& e : callable_swap_instruments) {
-        if (e.identity.instrument_id.is_nil())
-            throw std::invalid_argument("Callable Swap Instrument instrument_id cannot be empty.");
+void callable_swap_call_date_service::save_callable_swap_call_dates(
+    const std::vector<domain::callable_swap_call_date>& callable_swap_call_dates) {
+    for (const auto& e : callable_swap_call_dates) {
+        if (e.instrument_id.is_nil())
+            throw std::invalid_argument("Callable Swap Call Date instrument_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << callable_swap_instruments.size()
-                               << " callable swap instruments";
-    auto ts = callable_swap_instruments;
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << callable_swap_call_dates.size()
+                               << " callable swap call dates";
+    auto ts = callable_swap_call_dates;
     for (auto& e : ts) {
         stamp(e, ctx_);
     }
     repo_.write(ctx_, ts);
 }
 
-void callable_swap_instrument_service::delete_callable_swap_instrument(
-    const boost::uuids::uuid& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing callable swap instrument. "
-                               << "instrument_id: " << instrument_id;
-    repo_.remove(ctx_, boost::uuids::to_string(instrument_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed callable swap instrument. "
-                              << "instrument_id: " << instrument_id;
+void callable_swap_call_date_service::delete_callable_swap_call_date(
+    const std::string& instrument_id, const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing callable swap call date. "
+                               << "instrument_id: " << instrument_id
+                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, instrument_id, sequence_number);
+    BOOST_LOG_SEV(lg(), info) << "Removed callable swap call date. "
+                              << "instrument_id: " << instrument_id
+                              << " sequence_number: " << sequence_number;
 }
 
-void callable_swap_instrument_service::delete_callable_swap_instruments(
-    const std::vector<std::string>& instrument_ids) {
-    repo_.remove(ctx_, instrument_ids);
+void callable_swap_call_date_service::delete_callable_swap_call_dates(
+    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, instrument_ids, sequence_numbers);
 }
 
-std::vector<domain::callable_swap_instrument>
-callable_swap_instrument_service::get_callable_swap_instrument_history(
-    const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for callable swap instrument. "
-                               << "instrument_id: " << instrument_id;
-    return repo_.read_all(ctx_, instrument_id);
+std::vector<domain::callable_swap_call_date>
+callable_swap_call_date_service::get_callable_swap_call_date_history(
+    const std::string& instrument_id, const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for callable swap call date. "
+                               << "instrument_id: " << instrument_id
+                               << " sequence_number: " << sequence_number;
+    return repo_.read_all(ctx_, instrument_id, sequence_number);
 }
 
 }

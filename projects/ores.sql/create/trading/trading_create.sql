@@ -73,6 +73,9 @@
 \ir ./trading_callable_swap_instruments_create.sql
 \ir ./trading_callable_swap_instruments_notify_trigger_create.sql
 
+\ir ./trading_callable_swap_call_dates_create.sql
+\ir ./trading_callable_swap_call_dates_notify_trigger_create.sql
+
 \ir ./trading_knock_out_swap_instruments_create.sql
 \ir ./trading_knock_out_swap_instruments_notify_trigger_create.sql
 

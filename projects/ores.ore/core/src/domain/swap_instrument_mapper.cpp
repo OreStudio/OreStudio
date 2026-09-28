@@ -890,20 +890,17 @@ swap_instrument_mapper::forward_callable_swap(const trade& t) {
 
     if (cd.OptionData && cd.OptionData->exerciseDatesGroup &&
         cd.OptionData->exerciseDatesGroup->ExerciseDates) {
-        // Manual JSON array construction is intentional: exercise dates are
-        // ISO-8601 strings (YYYY-MM-DD) containing only ASCII alphanumerics
-        // and hyphens, so no escaping is ever needed. Adding a JSON library
-        // dependency to ores.ore purely for this would be disproportionate.
-        std::string json = "[";
-        bool first = true;
+        int sequence_number = 1;
         for (const auto& d : cd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate) {
-            if (!first)
-                json += ",";
-            json += "\"" + std::string(d) + "\"";
-            first = false;
+            trading::domain::callable_swap_call_date call_date;
+            call_date.sequence_number = sequence_number++;
+            call_date.call_date = to_domain_date(std::string(d));
+            call_date.modified_by = "ores";
+            call_date.performed_by = "ores";
+            call_date.change_reason_code = "system.external_data_import";
+            call_date.change_commentary = "Imported from ORE XML";
+            result.call_dates.push_back(std::move(call_date));
         }
-        json += "]";
-        ci.call_dates_json = std::move(json);
     }
 
     int leg_num = 1;
@@ -922,8 +919,10 @@ swap_instrument_mapper::forward_callable_swap(const trade& t) {
 // Reverse: CallableSwap
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_callable_swap(const callable_swap_instrument& instr,
-                                                    const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_callable_swap(
+    const callable_swap_instrument& instr,
+    const std::vector<swap_leg>& legs,
+    const std::vector<trading::domain::callable_swap_call_date>& call_dates) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CallableSwap";
 
     trade t;
@@ -931,11 +930,19 @@ trade swap_instrument_mapper::reverse_callable_swap(const callable_swap_instrume
 
     callableSwapData cd;
 
-    if (!instr.call_dates_json.empty()) {
-        // Minimal reconstruction: set an empty OptionData to mark the presence
-        // of the option. Full exercise dates parsing from JSON is a gap.
+    if (!call_dates.empty()) {
         optionData od;
         static_cast<std::string&>(od.LongShort) = "Long";
+        _ExerciseDates_t ed;
+        for (const auto& call_date : call_dates) {
+            domain::date d;
+            static_cast<std::string&>(d) =
+                ores::platform::time::datetime::to_iso8601_date(call_date.call_date);
+            ed.ExerciseDate.push_back(d);
+        }
+        exerciseDatesGroup_group_t edg;
+        edg.ExerciseDates = std::move(ed);
+        od.exerciseDatesGroup = std::move(edg);
         cd.OptionData = std::move(od);
     }
 

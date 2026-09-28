@@ -38,6 +38,7 @@
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
@@ -768,6 +769,18 @@ private:
             }
         }
 
+        // The callable swap's exercise schedule is a collection of its own,
+        // so it is fetched beside the legs and only for the instruments
+        // that state one.
+        std::unordered_map<std::string, std::vector<ores::trading::domain::callable_swap_call_date>>
+            call_dates_map;
+        if (!callable_ids.empty()) {
+            repository::callable_swap_call_date_repository call_date_repo;
+            for (auto& call_date : call_date_repo.read_by_instruments_batch(ctx, callable_ids))
+                call_dates_map[boost::uuids::to_string(call_date.instrument_id)].push_back(
+                    std::move(call_date));
+        }
+
         // Phase 3: batch-fetch instruments, build lookup map
         std::unordered_map<std::string, trade_instrument> imap;
 
@@ -775,6 +788,13 @@ private:
             auto it = legs_map.find(id);
             return it != legs_map.end() ? std::move(it->second) :
                                           std::vector<ores::trading::domain::swap_leg>{};
+        };
+
+        auto take_call_dates = [&](const std::string& id) {
+            auto it = call_dates_map.find(id);
+            return it != call_dates_map.end() ?
+                       std::move(it->second) :
+                       std::vector<ores::trading::domain::callable_swap_call_date>{};
         };
 
         // Single-table types (credit, commodity, scripted).
@@ -820,6 +840,7 @@ private:
                 swap_instrument_data data;
                 data.instrument = std::move(v);
                 data.legs = take_legs(id);
+                data.call_dates = take_call_dates(id);
                 imap[id] = std::move(data);
             }
         };

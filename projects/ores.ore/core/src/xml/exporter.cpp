@@ -151,7 +151,8 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                     else if (tt == "CallableSwap")
                         xsd_t = swap_instrument_mapper::reverse_callable_swap(
                             std::get<trading::domain::callable_swap_instrument>(r.instrument),
-                            r.legs);
+                            r.legs,
+                            r.call_dates);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for swap type: " << tt;
                         return;

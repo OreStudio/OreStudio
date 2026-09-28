@@ -152,16 +152,20 @@ TEST_CASE("mapper_roundtrip_callable_swap_forward", tags) {
     const auto t = load_trade("IR_Callable_Swap_Bermudan.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
-    const auto& instr =
-        std::get<ores::trading::domain::callable_swap_instrument>(result.instrument);
 
-    // Exercise dates captured as JSON array
-    CHECK(!instr.call_dates_json.empty());
-    CHECK(instr.call_dates_json.front() == '[');
-    CHECK(instr.call_dates_json.back() == ']');
+    // Each exercise date is one call date row, in the document's order.
+    REQUIRE(result.call_dates.size() == 6u);
+    CHECK(ore_iso(result.call_dates[0].call_date) == "2035-09-30");
+    CHECK(ore_iso(result.call_dates[1].call_date) == "2036-09-29");
+    CHECK(ore_iso(result.call_dates[2].call_date) == "2037-09-29");
+    CHECK(ore_iso(result.call_dates[3].call_date) == "2038-09-29");
+    CHECK(ore_iso(result.call_dates[4].call_date) == "2039-09-30");
+    CHECK(ore_iso(result.call_dates[5].call_date) == "2040-09-29");
+    for (std::size_t i = 0; i < result.call_dates.size(); ++i)
+        CHECK(result.call_dates[i].sequence_number == static_cast<int>(i) + 1);
     CHECK(!result.legs.empty());
-    BOOST_LOG_SEV(lg, info) << "CallableSwap forward-mapper test passed, "
-                            << " dates=" << instr.call_dates_json;
+    BOOST_LOG_SEV(lg, info) << "CallableSwap forward-mapper test passed, dates="
+                            << result.call_dates.size();
 }
 
 TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
@@ -170,13 +174,20 @@ TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_callable_swap(
-        std::get<ores::trading::domain::callable_swap_instrument>(result.instrument), result.legs);
+        std::get<ores::trading::domain::callable_swap_instrument>(result.instrument),
+        result.legs,
+        result.call_dates);
 
     REQUIRE(reconstructed.CallableSwapData.operator bool());
     const auto& cd = *reconstructed.CallableSwapData;
 
-    // OptionData present (callable dates were non-empty)
+    // The schedule rebuilds from the child rows, date for date and in order.
     REQUIRE(cd.OptionData.operator bool());
+    REQUIRE(cd.OptionData->exerciseDatesGroup.operator bool());
+    const auto& dates = cd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate;
+    REQUIRE(dates.size() == result.call_dates.size());
+    for (std::size_t i = 0; i < dates.size(); ++i)
+        CHECK(std::string(dates[i]) == ore_iso(result.call_dates[i].call_date));
 
     // Legs round-trip
     CHECK(!cd.LegData.empty());

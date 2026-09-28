@@ -22,69 +22,66 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- * Callable Swap Instrument Table
+ * Callable Swap Call Date Table
  *
- * Represents a callable interest rate swap where one party has the right
- * to terminate the swap early on specified call dates.
+ * One row per date the callable swap's exercise schedule names, keyed to
+ * the instrument and the date's ordinal within the schedule.
+ *
+ * The ORE schema states the callable swap's exercise dates as an unbounded
+ * list of ISO 8601 dates on the option block. The list order is the
+ * document's order and the ordinal preserves it, so export re-emits the
+ * dates as the document held them.
+ *
+ * A date list states no rule, no calendar and no convention: the document
+ * writes out every date it means. The columns here are therefore the
+ * date's own ordinal and the date itself, and nothing else. A malformed
+ * date is refused by the column's type rather than by a convention the
+ * readers must share, and a repeated date stays two rows because the
+ * ordinal, not the date, is part of the key.
+ *
+ * The instrument row carries the trade, the workspace and the party. The
+ * call date rows are family-owned and ride the instrument's scope, so no
+ * workspace column rides them.
  */
 
-create table if not exists "ores_trading_callable_swap_instruments_tbl" (
+create table if not exists "ores_trading_callable_swap_call_dates_tbl" (
     "instrument_id" uuid not null,
+    "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "trade_type_code" text not null,
-    "party_id" uuid not null,
-    "trade_id" uuid null,
-    "start_date" date not null,
-    "maturity_date" date not null,
-    "call_type" text null,
-    "description" text null,
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
+    "call_date" date not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, instrument_id, valid_from, valid_to),
+    primary key (tenant_id, instrument_id, sequence_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         instrument_id WITH =,
+        sequence_number WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
-    check ("maturity_date" > "start_date"),
-    check ("call_type" is null or "call_type" in ('Bermudan', 'One-Time'))
+    check ("sequence_number" > 0)
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists callable_swap_instruments_version_uniq_idx
-on "ores_trading_callable_swap_instruments_tbl" (tenant_id, instrument_id, version)
+create unique index if not exists callable_swap_call_dates_version_uniq_idx
+on "ores_trading_callable_swap_call_dates_tbl" (tenant_id, instrument_id, sequence_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists callable_swap_instruments_id_uniq_idx
-on "ores_trading_callable_swap_instruments_tbl" (tenant_id, instrument_id)
+create unique index if not exists callable_swap_call_dates_id_uniq_idx
+on "ores_trading_callable_swap_call_dates_tbl" (tenant_id, instrument_id, sequence_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists callable_swap_instruments_tenant_idx
-on "ores_trading_callable_swap_instruments_tbl" (tenant_id)
+create index if not exists callable_swap_call_dates_tenant_idx
+on "ores_trading_callable_swap_call_dates_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists callable_swap_instruments_party_idx
-on "ores_trading_callable_swap_instruments_tbl" (tenant_id, party_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create unique index if not exists callable_swap_instruments_trade_id_idx
-on "ores_trading_callable_swap_instruments_tbl" (tenant_id, trade_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and trade_id is not null;
-
-create index if not exists callable_swap_instruments_workspace_idx
-on "ores_trading_callable_swap_instruments_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create or replace function ores_trading_callable_swap_instruments_insert_fn()
+create or replace function ores_trading_callable_swap_call_dates_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -92,23 +89,14 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
-
-    -- Set party_id from session context
-    NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
-
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
-    from "ores_trading_callable_swap_instruments_tbl"
+    from "ores_trading_callable_swap_call_dates_tbl"
     where tenant_id = NEW.tenant_id
-      and instrument_id = NEW.instrument_id
+      and instrument_id = NEW.instrument_id and sequence_number = NEW.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -134,10 +122,10 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_trading_callable_swap_instruments_tbl"
+        update "ores_trading_callable_swap_call_dates_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id
+          and instrument_id = NEW.instrument_id and sequence_number = NEW.sequence_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -153,15 +141,15 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_trading_callable_swap_instruments_insert_trg
-before insert on "ores_trading_callable_swap_instruments_tbl"
-for each row execute function ores_trading_callable_swap_instruments_insert_fn();
+create or replace trigger ores_trading_callable_swap_call_dates_insert_trg
+before insert on "ores_trading_callable_swap_call_dates_tbl"
+for each row execute function ores_trading_callable_swap_call_dates_insert_fn();
 
-create or replace rule ores_trading_callable_swap_instruments_delete_rule as
-on delete to "ores_trading_callable_swap_instruments_tbl" do instead (
-    update "ores_trading_callable_swap_instruments_tbl"
+create or replace rule ores_trading_callable_swap_call_dates_delete_rule as
+on delete to "ores_trading_callable_swap_call_dates_tbl" do instead (
+    update "ores_trading_callable_swap_call_dates_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and instrument_id = OLD.instrument_id
+      and instrument_id = OLD.instrument_id and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

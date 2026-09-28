@@ -38,7 +38,7 @@ to the reference-data work and are out of scope, per decision D5.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | The commodity family is ported and proven end to end. M09 is done, the M02 survey is complete (thirty-one bindings, twenty-six recorded no-matches), and the M05 classification is complete (five field groups, nine models, ten messages, no infrastructure). The whole-tree build is green, the database rebuilds with no workaround, the fleet reaches twenty-four units in two seconds, and eighty-one of eighty-six suites pass. The five that fail belong to dq, shell.api, refdata and marketdata. |
 | Waiting on   | Nothing from another component. The seven remaining table-backed ports are this task's own work. |
-| Next         | U2, the decimal amount type, then U3 the collections and U4 the enumerations; then regenerate and prove the component once more, update the story's checklist rows, and raise PR 3. |
+| Next         | U3, the four JSON collection columns become child tables with foreign keys, then U4 the enumerations; then regenerate and prove the component once more, update the story's checklist rows, and raise PR 3. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -497,7 +497,7 @@ the order below, because each makes the next smaller.
 |---+--------+-------|
 | 17 | The trade's declared key is nullable | Closed |
 | 2 | Dates held as text, 58 fields | Closed |
-| 3 | Monetary amounts held as double, 18 fields | Capability done, 86 columns pending |
+| 3 | Monetary amounts held as double, 18 fields | Closed: 57 money columns are decimals, 30 non-money columns stay double |
 | 6 | One concept under two names | Pending |
 | 5 | Code fields whose reference table does not exist | Pending |
 | 4 | Enumerations held as free text with no reference table | Pending |
@@ -528,7 +528,7 @@ and D13.
 | Unit | Defect | What it delivers |
 |------+--------+------------------|
 | U1, dates | 2 | Closed. The generator expresses a plain date column, the 64 columns across 36 models carry typed members, and the 49 hand-written consumers convert at each boundary. |
-| U2, decimal | 3 | The type, the reflector and the generator projection are done and proven on =bond_leg_amount.value=. The 86 remaining =double= money columns move next; rates, volatilities and correlations stay double. |
+| U2, decimal | 3 | Closed. The type, the reflector and the generator projection, proven on =bond_leg_amount.value=, then the bulk migration: 57 money columns became decimals and 30 non-money columns stayed double. |
 | U3, collections | 1 | The four JSON columns become child tables with foreign keys: =callable_swap_instrument.call_dates_json=, =commodity_instrument.basket_json=, =equity_swap_instrument.basket_json= and =equity_position_instrument.option_data_json=, plus anything else the census finds. |
 | U4, enumerations | 4, 5, 8 | A reference table and a foreign key per closed set, the checks move from PL/pgSQL to the schema, and the missing reference tables are populated from FpML or ORE. |
 
@@ -570,6 +570,26 @@ source with a test rather than worked around:
   statement about a column's role, not about a column, and this table
   cannot honour it without normalisation. The model records the finding,
   and D12 and D13 own the shape that would fix it.
+
+** 5e. The money columns, and the calls worth challenging
+
+Of the 87 =numeric= columns declared =double=, 57 are money and became
+decimals: 14 amounts, 13 notionals, 8 strikes, 7 prices, 7 barrier
+levels, 3 payouts, a premium, a fee, a face value, a price-difference
+amount and a sensitivity. The 30 that stay =double= are not money: rates,
+rate-shaped strikes and barriers, FX rates, volatilities and variances, a
+conversion ratio, quantities, an index level and a yield.
+
+Four judgement calls are recorded so a reviewer can challenge them: the
+bond forward's =dv01= moved as a money sensitivity; the equity and
+commodity barrier levels moved as prices of the underlying, while the FX
+barriers stayed rates; =commodity_instrument.spread_amount= moved as a
+price difference, while =swap_leg.spread= stayed a rate; and the three
+=quantity= columns stayed =double= as counts. Two of these are the most
+arguable: =credit_instrument.option_strike= stayed =double= although its
+name says strike, because the model describes it as a spread in basis
+points, and a quantity that is not a whole number would lose precision as
+a =double=.
 
 ** 6. Regenerate and prove
 

@@ -77,6 +77,12 @@ def test_the_models_declare_cases_to_check():
 
 def test_every_declared_case_reaches_a_generated_test():
     generated = _generated_text()
+    # The match is on the declaration as the templates write it: the description
+    # is the first and only argument of TEST_CASE, and the closing quote makes it
+    # exact, so a description that is a prefix of another cannot satisfy it. A
+    # template that reformats the call -- a tag argument before the name, say --
+    # breaks this check rather than silently passing it, which is the right way
+    # round for a gate.
     missing = [
         f"{asset_class} {table}: {description}"
         for asset_class, table, description in _declared_cases()

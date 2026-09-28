@@ -1678,6 +1678,12 @@ TEST_CASE("reject_generic_uri_with_a_source", tags) {
         oresmd_exception);
 }
 
+TEST_CASE("reject_generic_uri_whose_spelling_is_not_a_case_of_the_name", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri(
+                          "oresmd://generic/juniornote?type=fixing&name_spelling=NotJuniorNote")),
+                      oresmd_exception);
+}
+
 TEST_CASE("reject_security_uri_with_ccy", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(
                           uri("oresmd://security/security_1?ccy=usd&type=quote&quote=bond_price")),

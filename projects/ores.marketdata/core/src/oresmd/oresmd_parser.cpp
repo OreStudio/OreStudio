@@ -849,10 +849,20 @@ market_data_identifier parse_generic(const boost::urls::url_view& u, const query
     id.name = to_upper(first_segment(u));
     id.type = parse_type(qp);
     reject_if_present("generic", "model", qp.model);
-    // The spelling is the token as ORE wrote it, so it is carried raw rather
-    // than case-normalised with the name it sits beside.
-    if (qp.name_spelling)
+    // The spelling is the token as ORE wrote it, so it is carried raw rather than
+    // case-normalised with the name it sits beside. It has to be that name in
+    // another case: a spelling that is not would leave the identifier holding two
+    // identities, the one its entity names and the one its index name reads back
+    // as.
+    if (qp.name_spelling) {
+        if (to_upper(*qp.name_spelling) != id.name)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                std::format("oresmd://generic/... name_spelling '{}' is not the name '{}' in "
+                            "another case.",
+                            *qp.name_spelling,
+                            id.name)));
         id.name_spelling = *qp.name_spelling;
+    }
     return id;
 }
 

@@ -117,3 +117,4 @@ A logical, possibly-partial oresmd requirement for a generic index.
 | oresmd://generic/juniornote?type=fixing&quote=spot | reject_generic_uri_with_a_quote_type |
 | oresmd://generic/juniornote?type=fixing&point=2025-10-03 | reject_generic_uri_with_a_point |
 | oresmd://generic/juniornote?type=fixing&source=ecb | reject_generic_uri_with_a_source |
+| oresmd://generic/juniornote?type=fixing&name_spelling=NotJuniorNote | reject_generic_uri_whose_spelling_is_not_a_case_of_the_name |

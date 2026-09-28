@@ -30,7 +30,7 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | Five classes are closed: interest rates 57 of 57, FX 7 of 7, commodity 25 of 25, intraday power 48 of 48 and generic 2 of 2, so 139 of the corpus's 158 names resolve. The two market-data keys the corpus misfiles as fixings are counted as a class of their own and refused. |
 | Waiting on   | The three classes left: inflation 7 names, equity 8 and security 2. |
-| Next         | Raise the PR for the generic class, then take the three remaining classes. |
+| Next         | Merge pull request #2353, then take the three remaining classes: inflation 7, equity 8 and security 2. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -588,6 +588,11 @@ via its "Verifies task" field.
 | 60 | The census table's "seven shapes" and "(unclassified) 4" contradict the new section | this task, =oresmd_fixing_coverage_tests.cpp= | accept | The table is marked as the first reading and its last row points at the split. The coverage test no longer states a shape count, so it cannot go stale again. |
 | 61 | Acceptance 1 (an empty allowlist) and 3 (the import creates a series) remain unmet | this task | no action | Acknowledged and unchanged: the Status stays STARTED, rows 10 and 11 record both, and the three remaining classes are the next step. |
 | 62 | The diff also emits power's eleven declared cases and adds the cross-model check | the branch | no action | Disclosed in the commit bodies and the pull request's changes. The check is what keeps the repair from being undone. |
+| 63 | =name_spelling= is accepted with a value that is not a case variant of the name | the parser template | accept | The parser refuses it now: the identifier would otherwise hold two identities, the one its entity names and the one its index name reads back as. A case covers the refusal. FX's =source_spelling= is not checked and is left as merged, so the two differ until the cutover. |
+| 64 | =type=quote= is accepted on a generic URI and projects nothing | the parser template | decline | The same property =power= has, and the same one the previous review declined in row 46: a class with no quote key names nothing, and rejecting the type would need a gate no class has. The codegen gap is recorded in the Notes. |
+| 65 | =from_index_name= hard-codes =substr(8)= for the prefix length | the projections template | accept | A named =generic_prefix= carries the prefix, and the test and the offset both read from it. |
+| 66 | =to_upper= on a non-ASCII name depends on the shared helper's behaviour | the projections template | recorded as a limit | =detail::to_upper= is the helper every class's entity already passes through, and the corpus is ASCII. Widening the input belongs to the cutover. |
+| 67 | The check matches the literal =TEST_CASE("<description>"= | =test_oresmd_spec_test_cases.py= | accept | A comment states the coupling: a template that reformats the call breaks the check rather than passing it. |
 
 * Result
 

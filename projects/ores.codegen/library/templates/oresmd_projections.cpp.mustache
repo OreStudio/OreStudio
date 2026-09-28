@@ -2276,8 +2276,9 @@ oresmd_projections::from_index_name(const std::string& index_name) {
     // reads back as it arrived. A tail carrying a slash is not an index name but a
     // GENERIC-MD/... market-data key, which Products/Input/fixings.csv misfiles as
     // a fixing.
-    if (index_name.starts_with("GENERIC-")) {
-        const auto name = index_name.substr(8);
+    constexpr std::string_view generic_prefix{"GENERIC-"};
+    if (index_name.starts_with(generic_prefix)) {
+        const auto name = index_name.substr(generic_prefix.size());
         if (name.empty() || name.contains('/'))
             return std::nullopt;
         generic_market_data_identifier id;

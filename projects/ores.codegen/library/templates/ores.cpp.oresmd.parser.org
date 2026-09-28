@@ -415,10 +415,20 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
         id.delivery = to_lower(*qp.delivery);
 {{/has_delivery}}
 {{#has_name_spelling}}
-    // The spelling is the token as ORE wrote it, so it is carried raw rather
-    // than case-normalised with the name it sits beside.
-    if (qp.name_spelling)
+    // The spelling is the token as ORE wrote it, so it is carried raw rather than
+    // case-normalised with the name it sits beside. It has to be that name in
+    // another case: a spelling that is not would leave the identifier holding two
+    // identities, the one its entity names and the one its index name reads back
+    // as.
+    if (qp.name_spelling) {
+        if (to_upper(*qp.name_spelling) != id.name)
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "oresmd://{{asset_class}}/... name_spelling '{}' is not the name '{}' in "
+                "another case.",
+                *qp.name_spelling,
+                id.name)));
         id.name_spelling = *qp.name_spelling;
+    }
 {{/has_name_spelling}}
 {{#fx}}
     // A fixing carries the source that published it, lower-cased the way the

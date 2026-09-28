@@ -224,7 +224,11 @@ closure of defects 7, 9, 10 and 13.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The population loader is broken by the collapse | =scripts/load_trade_population.py= | Accepted | It loads the trades first and couples every trade-keyed table to them; the fact rows keep their alignment. Verified statically, not by a live load |
+| 2 | Twenty-one fact and child tables carry no trade check | 21 models | Accepted | They now declare the mandatory =trade_id= foreign key and the generated trigger checks it |
+| 3 | A key column that is also a foreign key gets no member prefix | =core.py=, eventing template | Accepted | A key entry keeps its name under =column=; the read now accepts either. Latent, and the sibling template branch ignored the prefix it had been given |
+| 4 | The redundant unique index is still generated | 29 instrument models | Accepted | The codemod's pattern never matched the row; the rows are gone and the duplicate index with them. The commit message that claimed it was wrong |
+| 5 | Stale prose and three unmanaged diagrams | 4 models, 3 =puml= | Accepted in part | The prose is fixed; the diagrams carry no sentinel and no gate reads them, so the shell-and-verification PR reissues them |
 
 * Result
 
@@ -324,6 +328,20 @@ rather than the branch alone.
 | Docs | =validate_docs.sh= reports 40 components passing |
 | Recipes | =regenerate_shell_recipe_inventory.py --check= exits 0 |
 | PR | Raised as described in the delivery plan |
+
+** The review round (2026-09-28)
+
+An independent review of the diff found five issues; the table above
+records the decisions. Four were defects and were fixed at their source,
+including two the suite could not see: the loader that introspects the
+schema and would have loaded no instrument row, and the duplicate unique
+index the collapse claimed to have removed. The prose is fixed and the
+three unmanaged component diagrams are recorded for the hygiene PR.
+
+Verified again on the fixed tree: the whole-tree build exits 0 with zero
+=error:=; =compass db recreate -y -k= exits 0; =ctest= is 89 of 89 on the
+recreated database; the codegen suite is 995 passed; component drift and
+the sweep are clean; =validate_docs.sh= reports 40 components.
 
 ** PR 4 (raised 2026-09-28)
 

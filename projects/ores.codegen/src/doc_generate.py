@@ -61,6 +61,7 @@ TYPE_TO_TEMPLATE = {
     "profile": "doc_profile.org.mustache",
     "feature": "doc_feature.org.mustache",
     "user_journey": "doc_user_journey.org.mustache",
+    "workflow": "doc_workflow.org.mustache",
 }
 
 # entity_org --shape presets: knob bundles sampled from a known-good
@@ -133,6 +134,7 @@ DEFAULT_INITIAL_STATE = {
     "memory": "",
     "investigation": "",
     "runbook": "",
+    "workflow": "",
     "entity_org": "",
     "field_group": "",
     "junction": "",
@@ -161,6 +163,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
+    "workflow",
     "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
     "facet", "facet_group", "technical_space", "archetype", "profile", "feature",
@@ -757,6 +760,9 @@ def main(argv=None):
     # - component: <parent-dir>/<slug>.org        (existing modeling convention)
     # - recipe:    <parent-dir>/<slug>.org        (slug typically how_do_i_*)
     # - knowledge: <parent-dir>/<slug>.org
+    # - workflow:  <parent-dir>/workflow_<slug>.org  (flat file under
+    #              doc/knowledge/workflows, prefixed so the workflow pages
+    #              sort together in the shared folder)
     # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
@@ -838,6 +844,12 @@ def main(argv=None):
         # Prefixed so the journey docs sort together beneath their topic hub:
         # the hub is <topic>.org, so plain slugs would interleave with it.
         leaf = args.slug if args.slug.startswith("journey_") else f"journey_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
+    elif args.type == "workflow":
+        # Prefixed for the same reason as journey_: every workflow page
+        # shares doc/knowledge/workflows, so the prefix groups them.
+        leaf = args.slug if args.slug.startswith("workflow_") else f"workflow_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:templates:agile:recipe:
 #+created: 2026-05-18
-#+updated: 2026-09-26
+#+updated: 2026-09-28
 
 For the contract every generated document follows (frontmatter, sections, TODO
 vocabulary), see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. For background on the generator itself, see
@@ -346,6 +346,29 @@ compass add user_journey \
 
 This writes =doc/knowledge/journeys/profile/journey_present_myself.org=. Wire it
 into the group hub's journey table.
+
+** New workflow
+:PROPERTIES:
+:ID: 6E3B4E5F-1F62-4F1C-8C4E-8A3D2B1C0F91
+:END:
+
+[[id:C4F7114C-B454-4B07-A804-64442D989FD4][Workflow pages]] live in
+[[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]], one page per named server-side
+process, as =workflow_<slug>.org=. =--parent-dir= is optional and defaults to
+that folder. A workflow page is written from the definition a service
+registers, never from a run of it, and it links the engine knowledge in
+[[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] rather than restating it.
+
+#+begin_src sh :results verbatim
+compass add workflow \
+  --slug tenant_provisioning \
+  --title "Tenant provisioning" \
+  --description "Stand up a tenant: its party, its reference bundles and its administrator." \
+  --tags "workflow,tenancy,provisioning"
+#+end_src
+
+This writes =doc/knowledge/workflows/workflow_tenant_provisioning.org=. Fill in
+every section, then wire the page into the index that lists the workflows.
 
 ** New capture
 :PROPERTIES:

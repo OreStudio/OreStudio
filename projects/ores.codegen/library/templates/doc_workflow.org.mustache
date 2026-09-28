@@ -1,0 +1,122 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: workflow
+#+level: cross
+#+filetags: {{filetags}}
+#+created: {{date}}
+#+updated: {{date}}
+#+startup: inlineimages
+
+This page defines the [[id:902A5312-B3A2-4C66-8017-34F0F26658C6][workflow]]
+{{title}}: the durable record of what the process is for and what it leaves
+behind. (Second sentence: the business outcome it achieves, and who or what
+starts it.) (Third sentence: what is true when it finishes — name the
+artefacts it produces and where they are left.) (Fourth sentence: how a
+failure of a step is handled, and what a person does to recover.) (Keep the
+whole blurb to three to five sentences. It is the summary; the page carries
+no =* Summary= heading.)
+
+* Purpose
+
+(What business outcome does this workflow achieve? What is true when it
+finishes — which artefacts exist, which records changed, and who can
+observe the result? Say what the workflow is /for/, not how it runs.)
+
+* Participants
+
+(The components and the roles that take part, and what each one is
+responsible for. Name the caller that starts the run, the service that
+owns the definition and drives the steps, each service a step calls, and
+the reader that follows progress.)
+
+#+ATTR_HTML: :class hug-leading
+| Participant | Kind | Responsibility |
+|-------------+------+----------------|
+|             |      |                |
+
+* Messages
+
+(Every message the workflow exchanges, in the order it is sent. Each
+entry names the message and its objective. Link the class diagram that
+shows a message's key fields: the fields are drawn, not listed in prose,
+so this section stays a list of names and objectives.)
+
+#+ATTR_HTML: :class hug-leading
+| Message | Subject | Objective |
+|---------+---------+-----------|
+|         |         |           |
+
+The key fields of each message are shown by a class diagram beside this
+page. Embed each diagram with a =#+caption:= line and a
+=[[proj:...png]]= image, in the form the =* Interaction= section below
+uses.
+
+* Steps
+
+(The steps the workflow runs, in order. Name the operation each step
+performs, the artefact or record it produces, and how a failure of it is
+handled: the failure policy the workflow declares, and what a retry of
+that step resumes from. A step that produces nothing says so.)
+
+#+ATTR_HTML: :class hug-leading
+| Operation | Produces | On failure |
+|-----------+----------+------------|
+|           |          |            |
+
+* Interaction
+
+(The interaction diagram for the whole workflow. Sketch it with PlantUML,
+export it to PNG beside this page, then embed it here. See
+[[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]].
+A workflow page carries one interaction diagram, so it shows the
+participants and the messages between them on one page.)
+
+#+begin_example
+#+caption: One sentence saying what the interaction shows.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/workflows/interaction_{{slug}}.png]]
+#+end_example
+
+Source: =[[./interaction_{{slug}}.puml][interaction_{{slug}}.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/workflows/interaction_{{slug}}.puml=.
+
+* Failure and recovery
+
+(State the failure policy this workflow declares — compensate or
+stop-and-retry — and why that policy fits what a completed step is
+worth. Say what a retry resumes from: the run's persisted record of the
+completed steps, and the failed step it re-dispatches. Say what
+cancelling the workflow does: which completed steps it leaves in place,
+which it rolls back, and what a person must decide afterwards. The engine
+policies themselves live in
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][failure, compensation and retry]].)
+
+* Progress
+
+(The read a client follows to render progress, named with its NATS
+subject, and the states it exposes. Say what one line of the rendering
+shows, and which states a client must be ready to display. The read and
+its fields are the platform's contract; see
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]].)
+
+* Related
+
+(Every page that bears on this workflow. Use =[[file:...]]= links for
+pages in the documentation and =id:= links for the agile artefacts that
+built it — its story, its task, and any investigation it produced. Delete
+the entries that do not apply.)
+
+- [[file:./workflow_<related>.org][<related workflow page>]] — how it bears on this workflow.
+- [[id:<story-id>][<the story that commissioned this workflow>]]
+- [[id:<task-id>][<the task that built it>]]
+
+* See also
+
+(External references only: vendor documentation, standards, and essays
+that live outside =doc/=. An internal link belongs in =* Related= or in
+the body above, never here. Delete the section when there is nothing
+external to cite.)

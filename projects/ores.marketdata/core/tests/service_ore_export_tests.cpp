@@ -34,10 +34,10 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/uuid_generators.hpp>
-#include <chrono>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -65,7 +65,8 @@ struct export_tenant {
     ores::testing::database_helper base;
     ores::database::context ctx;
 
-    export_tenant() : ctx(base.context()) {
+    export_tenant()
+        : ctx(base.context()) {
         const auto code =
             ores::testing::test_database_manager::generate_test_tenant_code("marketdata.export");
         const auto tenant = ores::testing::test_database_manager::provision_test_tenant(
@@ -117,7 +118,8 @@ std::vector<std::string> body_keys(const std::string& text) {
 
 /// The same file put through the parser and the serializer with no database in
 /// the way, as the content the round trip has to return.
-std::string serialize_without_the_database(const std::string& content, ores::database::context ctx) {
+std::string serialize_without_the_database(const std::string& content,
+                                           ores::database::context ctx) {
     const ores::ore::market::series_key_registry registry{
         ores::ore::repository::series_key_shape_repository{}.read_latest(ctx)};
     std::istringstream in(content);
@@ -253,29 +255,28 @@ TEST_CASE("export_drops_the_point_the_store_invented_for_a_point_free_series", t
     ores::marketdata::repository::market_observations_repository obs_repo;
     boost::uuids::random_generator gen;
 
-    const auto add_series = [&](const std::string& type,
-                                const std::string& metric,
-                                const std::string& qualifier) {
-        ores::marketdata::domain::market_series s;
-        s.id = gen();
-        s.tenant_id = t.ctx.tenant_id();
-        s.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
-        s.series_type = type;
-        s.metric = metric;
-        s.qualifier = qualifier;
-        // The insert trigger validates this against ores.refdata's codes, so
-        // it has to be a real one rather than the empty default. Which
-        // subclass a series belongs to is the classifier's business and not
-        // this test's -- the export reads the type, metric and qualifier.
-        s.series_subclass = "spot";
-        s.modified_by = t.ctx.actor();
-        s.performed_by = t.ctx.service_account();
-        s.change_reason_code =
-            std::string(ores::dq::domain::change_reason_constants::codes::external_data_import);
-        s.change_commentary = "ore_export test";
-        series_repo.write(t.ctx, s);
-        return s.id;
-    };
+    const auto add_series =
+        [&](const std::string& type, const std::string& metric, const std::string& qualifier) {
+            ores::marketdata::domain::market_series s;
+            s.id = gen();
+            s.tenant_id = t.ctx.tenant_id();
+            s.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
+            s.series_type = type;
+            s.metric = metric;
+            s.qualifier = qualifier;
+            // The insert trigger validates this against ores.refdata's codes, so
+            // it has to be a real one rather than the empty default. Which
+            // subclass a series belongs to is the classifier's business and not
+            // this test's -- the export reads the type, metric and qualifier.
+            s.series_subclass = "spot";
+            s.modified_by = t.ctx.actor();
+            s.performed_by = t.ctx.service_account();
+            s.change_reason_code =
+                std::string(ores::dq::domain::change_reason_constants::codes::external_data_import);
+            s.change_commentary = "ore_export test";
+            series_repo.write(t.ctx, s);
+            return s.id;
+        };
 
     const auto add_observation = [&](const boost::uuids::uuid& series_id,
                                      const std::string& point,

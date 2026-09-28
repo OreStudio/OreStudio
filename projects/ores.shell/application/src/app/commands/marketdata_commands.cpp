@@ -187,11 +187,10 @@ void marketdata_commands::process_import(std::ostream& out,
 void marketdata_commands::process_export(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
-    auto parsed = parse_args(args,
-                             {{.name = "market-data",
-                               .requires_value = true,
-                               .default_value = "market.txt"},
-                              {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"}});
+    auto parsed =
+        parse_args(args,
+                   {{.name = "market-data", .requires_value = true, .default_value = "market.txt"},
+                    {.name = "fixings", .requires_value = true, .default_value = "fixings.txt"}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -233,8 +232,8 @@ void marketdata_commands::process_export(std::ostream& out,
     }
 
     out << "✓ Exported " << result->series_count << " series, " << result->observation_count
-        << " observation(s), " << result->fixing_count << " fixing(s) to " << market_path
-        << " and " << fixings_path << std::endl;
+        << " observation(s), " << result->fixing_count << " fixing(s) to " << market_path << " and "
+        << fixings_path << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Export succeeded: " << result->series_count << " series, "
                               << result->observation_count << " observations, "
                               << result->fixing_count << " fixings.";

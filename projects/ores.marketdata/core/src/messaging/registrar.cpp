@@ -116,13 +116,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              }));
 
     // Export
-    subs.push_back(
-        nats.queue_subscribe(std::string(export_market_data_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 ore_export_handler h(nats, ctx, verifier);
-                                 h.write_all(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(std::string(export_market_data_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            ore_export_handler h(nats, ctx, verifier);
+                                            h.write_all(std::move(msg));
+                                        }));
 
     // Publish-from-DQ workflow step handler
     {

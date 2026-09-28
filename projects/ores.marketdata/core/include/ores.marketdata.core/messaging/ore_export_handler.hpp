@@ -36,7 +36,8 @@ namespace ores::marketdata::messaging {
 
 namespace {
 inline auto& ore_export_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.marketdata.messaging.ore_export_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.marketdata.messaging.ore_export_handler");
     return instance;
 }
 } // namespace
@@ -58,7 +59,8 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void write_all(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(ore_export_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(ore_export_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());

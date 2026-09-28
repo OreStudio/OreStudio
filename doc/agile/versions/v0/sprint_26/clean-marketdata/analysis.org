@@ -1361,6 +1361,21 @@ than a canonical order: the corpus writes =FX-TR20H-EUR-GBP= and
 would put two values under one date. All seven FX names name and round-trip. The
 corpus total is 64 of 158, and six classes remain.
 
+*Update, 2026-09-28 (task AB2922AA, commit 995efd81e2).* The power and commodity
+halves are closed. ORE states the intraday power index grammar in its own parser,
+=POWER-COMMNAME[-YYYY-MM-DD[-START-END[-DST]]]=, and its commodity parser reads a
+contract month the same way, so a fixing's delivery period is a =delivery= field of
+its own rather than a =point=: =point= is what a quote or a vol names, and a fixing
+whose coordinate is a field stays scalar, as the interest-rate tenor already does.
+Power is a class of its own because ORE accepts a bare =POWER-ICE:PDQ= beside a bare
+=COMM-ICE:PDQ=, and one class could not write both names back. Power is 48 of 48 and
+commodity 25 of 25, all round-tripped, so the corpus total is **137 of 158** and
+four classes remain: equity (8), inflation (7), security (2) and the four =GENERIC=
+tokens, of which two are market-data keys inside a fixings file rather than index
+names. The =FIXING= exemption in the oresmd coverage gate still stands: an index
+name is a key space of its own rather than a quote key, and the boundary that
+consumes it is the cutover this section describes.
+
 Two of the four =GENERIC= tokens are market-data keys that sit inside a fixings
 file rather than index names, and the reader reads them as fixings because that is
 the file they are in. Whether it should refuse a key that is not an index name is

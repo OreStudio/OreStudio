@@ -170,11 +170,26 @@ struct credit_market_data_identifier final {
 
 /**
  * @brief A fully-resolved oresmd identifier for a commodity instrument (asset_class=commodity).
+ *
+ * delivery is the contract period a *fixing* is specific to: the corpus writes
+ * COMM-NYMEX:CL-2025-04, observed on 2024-12-02, so the period in the name is the
+ * delivery period and not the observation date. It holds the contract month as the
+ * index name writes it (2025-04). ORE's commodity parser also reads a contract
+ * code that itself contains a dash and a full delivery date; neither is in the
+ * corpus, so neither is admitted here rather than guessed at.
+ *
+ * A quote carries its own period in point instead, because a quote's observations
+ * each name the period they are for and a fixing's do not. This class's validation
+ * is the shared one that the three delegating classes use, and it gates no query key
+ * by type, so a delivery on a quote is accepted and projects no index name, the way
+ * a point on a fixing is. Closing that gate for equity, credit and commodity is the
+ * codegen gap recorded in the fixing-identity task.
  */
 struct commodity_market_data_identifier final {
     std::string commodity_code;
     std::optional<std::string> ccy;
     instrument_type type = instrument_type::quote;
+    std::optional<std::string> delivery;
     std::optional<domain::commodity_quote_type> quote_type;
     std::optional<std::string> point;
     std::optional<volatility_surface_point> vol;
@@ -244,7 +259,33 @@ struct rating_market_data_identifier final {
 };
 
 /**
- * @brief Tagged union of the seven per-asset-class identifier structs.
+ * @brief A fully-resolved oresmd identifier for an intraday power index (asset_class=power).
+ *
+ * commodity_code is the ORE commodity name the index is written against --
+ * ICE:PDQ for the intraday power example, which is also the commodity code its
+ * daily average price curve is quoted under. It may contain a colon and carries no
+ * dash, because ORE reads the name up to the first dash as the commodity and the
+ * rest as the delivery coordinate.
+ *
+ * delivery is that coordinate, as ORE writes it: a delivery date, then
+ * optionally a half-open window in seconds from midnight, then optionally the DST
+ * flag marking a daylight-saving hour. The corpus carries the window on 47 of 48
+ * names and the date alone on one, and never the flag. The window is not an hour by
+ * rule -- the example's own forward carries DeliveryStart 2700 and
+ * DeliveryEnd 4500 for a window it calls "0.45am to 1.15am" -- so both numbers
+ * are kept, not the window's index. The field is lower-cased on parse the way the
+ * other keys are, and the projection writes the flag back as DST.
+ */
+struct power_market_data_identifier final {
+    std::string commodity_code;
+    instrument_type type = instrument_type::quote;
+    std::optional<std::string> delivery;
+
+    bool operator==(const power_market_data_identifier&) const = default;
+};
+
+/**
+ * @brief Tagged union of the per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
  * authority component already tells a consumer which concrete struct applies, and
@@ -261,7 +302,8 @@ using market_data_identifier = std::variant<fx_market_data_identifier,
                                             correlation_market_data_identifier,
                                             security_market_data_identifier,
                                             shape_profile_market_data_identifier,
-                                            rating_market_data_identifier>;
+                                            rating_market_data_identifier,
+                                            power_market_data_identifier>;
 
 }
 

@@ -69,6 +69,7 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | metric |
 | source |
 | source_spelling |
+| delivery |
 
 * URI order
 

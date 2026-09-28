@@ -171,6 +171,7 @@ market_data_identifier resolve_commodity(const commodity_market_data_requirement
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.delivery = pick_optional(req.delivery, d ? d->delivery : std::nullopt);
     // Requiredness follows the entity kind here as well as in the parser. A
     // requirement resolved without a currency would otherwise produce an
     // identifier the parser refuses and no quote key can be built from, which
@@ -216,6 +217,17 @@ market_data_identifier resolve_rating(const rating_market_data_requirement& req,
     return id;
 }
 
+market_data_identifier resolve_power(const power_market_data_requirement& req,
+                                     const market_data_identifier& defaults) {
+    const auto* d = std::get_if<power_market_data_identifier>(&defaults);
+    power_market_data_identifier id;
+    id.commodity_code = pick_mandatory_string(
+        req.commodity_code, d ? d->commodity_code : std::string{}, "commodity_code");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.delivery = pick_optional(req.delivery, d ? d->delivery : std::nullopt);
+    return id;
+}
+
 }
 
 namespace ores::marketdata::core {
@@ -246,6 +258,8 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_shape_profile(req, defaults);
             else if constexpr (std::is_same_v<T, rating_market_data_requirement>)
                 return resolve_rating(req, defaults);
+            else if constexpr (std::is_same_v<T, power_market_data_requirement>)
+                return resolve_power(req, defaults);
         },
         requirement);
 }

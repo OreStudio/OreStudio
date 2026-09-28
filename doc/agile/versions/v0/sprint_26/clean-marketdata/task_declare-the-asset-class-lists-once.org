@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: E205D30E-3DD3-4E04-BC27-424C3376550B
+:END:
+#+title: Task: Declare the asset class lists once
+#+description: The refdata product taxonomy and the oresmd market-data namespace are two different lists that overlap, and each is hand-copied in dozens of places. Declare both once in a codegen model, generate the seed SQL, the DQ badges, the briefs and the docs from it, and validate the oresmd authorities against it.
+#+type: task
+#+level: s1
+#+filetags: :asset-class:taxonomy:codegen:refdata:clean-marketdata:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One hand-written list per asset-class axis, and a build that fails when any
+derived copy drifts from it. The refdata product taxonomy and the oresmd
+market-data namespace stop being two sets of hand-copied prose and numbers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
+| Now          | Not yet started. The census is done and the decision is taken; see below. |
+| Waiting on   | The fixing-identity task, which adds the =power= authority this task must then validate. |
+| Next         | Declare both lists and the mapping in one codegen model, then generate the seed SQL from it. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- One org model declares the refdata product taxonomy, the oresmd market-data
+  namespace, and the mapping between them. No other file in the repository
+  holds a hand-written copy of either list.
+- The refdata seed SQL, the DQ badge definitions and mappings, the code-domain
+  description, the model briefs and the documentation list are generated from
+  that model.
+- A codegen run fails when an oresmd model file names an authority the
+  namespace list does not hold.
+- A test fails when the seeded asset-class rows differ from the model.
+- Every drift the census found is fixed, or its deferral is recorded here with
+  a reason.
+
+* Decided
+
+**The two lists are two axes, not one list copied twice.** Captured at
+[[id:B9B8E238-F32B-40AC-88F2-6C210879B67A][An asset class is two lists, not one]],
+because the two share enough spellings to be mistaken for each other. The refdata
+product taxonomy answers what a trade or a market series *is*, and it is
+FK-validated: =ores_refdata_validate_asset_class_code_fn= rejects any code absent
+from =ores_refdata_asset_class_codes_tbl=, and =market_series_asset_classes=,
+=feed_bindings=, =series_classification_rules= and =instrument_codes= all call
+it. The oresmd namespace answers which key grammar a market data item is written
+in, and it is what an =oresmd_uri='s authority carries.
+
+They overlap on five spellings and diverge on five names. =ir= and
+=interest_rates= are one concept under two spellings, as are =security= and
+=bond=. =correlation=, =shape_profile= and =rating= exist only in the namespace,
+because a correlation between two assets and a shape profile are market data
+rather than products. The classification rules already say so: =SHAPE_PROFILE=
+is classed =commodity= and =RATING= is classed =credit=.
+
+**Power joins the namespace only.** A power fixing series is classed =commodity=
+and its =oresmd_uri= authority carries =power=. The refdata taxonomy is
+unchanged; the classification rules gain the power-to-commodity mapping. This
+keeps the product taxonomy answering the product question, and leaves "show me
+the power series" as a query on the URI authority.
+
+**One codegen model, everything else generated.** The project already generates
+populate scripts from models and mustache templates, so the taxonomy gets the
+same treatment rather than a fourth hand-written copy.
+
+* The duplication, as measured
+
+This census was taken at =2868477485= by a read-only walk of the repository, and
+it found the two lists written in more than forty places. They fall into four
+groups.
+
+| group | what it holds | written how |
+|-------+---------------+-------------|
+| the refdata list | the seed SQL, the model brief, the generated header brief, and the DQ badge definitions, mappings and code-domain description | by hand, in six files, three of them staging mirrors |
+| the namespace list | =modeling/oresmd/model.org= and the ten =*_quote_type.org= files | by hand once, then regenerated into the identifier variant, the requirement variant, the parser dispatch, the resolver, the enums and the tests |
+| the mapping | nothing declares it | the nearest thing is the ORE-series-type-keyed classification rules, which never name an authority |
+| third vocabularies | FpML's six-code codelist, the legacy ORE eight (=rates=, =cross_asset=), =product_type=, and the series-subclass axis | separate subjects that only overlap |
+
+The namespace list is already in good shape: it is authored once in
+=model.org= and regenerated everywhere. The refdata list is not, and the
+aliasing between the two is not written down at all.
+
+* Notes
+
+**The blanket fixing rule is the defect that makes this urgent.** The single
+=FIXING= row classifies every index fixing as =interest_rates=, and its
+description reads "The index belongs to the rates class". That is true of the
+interest-rate names and false of every other class: the corpus carries FX,
+equity, inflation, commodity, power and security fixings. Until a fixing takes
+its class from its index name, a power fixing series is mis-classed even after
+the =power= authority exists.
+
+**The copies have already drifted.** These are the defects the census found, and
+each is a place where a hand-kept copy stopped agreeing with its original.
+
+- =ores.marketdata.puml= still declares =enum asset_class { rates, ... }= and
+  the =bond_market_data_identifier= and =rates_market_data_identifier= structs,
+  all of which the code deleted.
+- =market_data_requirement.hpp='s doc comment says "seven" while the variant
+  beneath it lists ten classes.
+- =dq_badge_definitions_artefact_populate.sql= says 56 rows in its header and
+  holds 107; =dq_badge_mappings_artefact_populate.sql= says 108 and holds 161.
+  The mappings have drifted by five rows in both directions since the one-off
+  extraction. The asset-class subsets are still exact duplicates.
+- =fpml_asset_class_artefact_populate.sql= carries a generated banner but was
+  hand-extended with Inflation and Bond, so regenerating it from the vendored
+  codelist would drop two rows.
+- =ore_asset_class_artefact_populate.sql= uses the pre-rename spellings =rates=
+  and =cross_asset=.
+- =series_subclass= is a three-way mismatch: the seed SQL holds 18 codes, the
+  org model and the C++ sampler hold 15, and the classification rules use three
+  the model omits (=prepayment=, =transition_probability=, =index_fixing=).
+- =series_classification_rule.org= and =feed_binding.org= hold byte-identical
+  seven-element arrays for their test-data samplers.
+- The oresmd reject-URI list is hand-written in the template, in the tangle
+  source beside it, and in the generated test.
+
+**The DQ artefact files are publish staging, not dead copies.**
+=dq_badge_system_populate.sql= seeds the system tenant's own tables and is
+executed by =dq_populate.sql=. The =*_artefact_populate.sql= files populate the
+staging tables the publish pipeline copies into another tenant, and their
+headers say they were extracted programmatically from the system file when
+first written and have been kept in sync by hand since. No generator exists in
+the tree, which is why they drifted.
+
+**A correction to the premise that started this.** =market_series_asset_classes=
+does not declare a SQL foreign key to the taxonomy. There is no =references=
+clause; the model calls it a soft FK and the insert trigger is what enforces it.
+That matters because it means the enforcement point is one function, and a
+generated catalogue satisfies it without a schema change.
+
+* Plan
+
+1. **Declare the taxonomy.** A model file holding each asset class once: code,
+   name, description, display order, and the oresmd authority it answers to
+   where it has one.
+2. **Generate the seed SQL** from it, replacing
+   =refdata_asset_class_codes_populate.sql='s hand-written values block.
+3. **Generate the DQ rows**: the =asset_class_*= badge definitions, the badge
+   mappings, and the code-domain description, into both the system seed and the
+   staging mirrors, so the hand sync ends.
+4. **Derive the briefs and the documentation list** from the model, so the
+   prose copy in =asset_class_code.org=, the generated header and the knowledge
+   docs cannot drift.
+5. **Validate the namespace.** The loader reads the model and fails when an
+   oresmd model file names an authority it does not hold, naming the file and
+   the authority.
+6. **Make a fixing's class follow its index name.** Add an index-name source to
+   =series_classification_rules= alongside =literal= and
+   =correlation_operands=, so =FIXING= stops being a blanket =interest_rates=.
+7. **Fix the drift**, or record here why a case is deferred.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Places either list is written | 73 findings across five vocabularies | a read-only walk of the repository, reported in full in the session record | =2868477485= |
+| refdata list copies | 6 files hold the values; 36 findings name refdata codes | the same walk | =2868477485= |
+| namespace list copies | authored in =model.org=; 8 findings are its regenerated output | the same walk | =2868477485= |
+| Declared oresmd-to-refdata mapping | none | the same walk | =2868477485= |
+| DQ badge rows, header claim vs actual | definitions 56 vs 107; mappings 108 vs 161 | =wc -l= and a row count of the two populate scripts | =2868477485= |
+| DQ mapping rows drifted | 5, in both directions | a diff of the system seed against the staging mirror | =2868477485= |
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

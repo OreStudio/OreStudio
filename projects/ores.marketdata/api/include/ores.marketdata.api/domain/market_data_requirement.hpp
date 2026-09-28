@@ -101,6 +101,7 @@ struct commodity_market_data_requirement final {
     std::optional<std::string> commodity_code;
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
+    std::optional<std::string> delivery;
     std::optional<commodity_quote_type> quote_type;
     std::optional<std::string> point;
 
@@ -157,8 +158,17 @@ struct rating_market_data_requirement final {
     bool operator==(const rating_market_data_requirement&) const = default;
 };
 
+/** @brief A logical, possibly-partial oresmd requirement for an intraday power index. */
+struct power_market_data_requirement final {
+    std::optional<std::string> commodity_code;
+    std::optional<instrument_type> type;
+    std::optional<std::string> delivery;
+
+    bool operator==(const power_market_data_requirement&) const = default;
+};
+
 /**
- * @brief Tagged union of the seven per-asset-class requirement structs -- see
+ * @brief Tagged union of the per-asset-class requirement structs -- see
  * market_data_identifier.hpp for the rationale against a common base class.
  */
 using market_data_requirement = std::variant<fx_market_data_requirement,
@@ -170,7 +180,8 @@ using market_data_requirement = std::variant<fx_market_data_requirement,
                                              correlation_market_data_requirement,
                                              security_market_data_requirement,
                                              shape_profile_market_data_requirement,
-                                             rating_market_data_requirement>;
+                                             rating_market_data_requirement,
+                                             power_market_data_requirement>;
 
 }
 

@@ -66,6 +66,7 @@ A logical, possibly-partial oresmd requirement for a rating provider.
 | metric |
 | source |
 | source_spelling |
+| delivery |
 
 * URI order
 

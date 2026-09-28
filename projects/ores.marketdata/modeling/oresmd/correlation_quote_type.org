@@ -60,6 +60,7 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | metric |
 | source |
 | source_spelling |
+| delivery |
 
 * Test cases
 ** Projections

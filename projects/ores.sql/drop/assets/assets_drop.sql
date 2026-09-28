@@ -18,6 +18,9 @@
  *
  */
 
+-- Drop the hand-written accessor before the table it reads.
+\ir ./assets_template_image_fn_drop.sql
+
 -- Drop the notify triggers before the tables they watch.
 -- The image_tag junction carries no notify trigger, so it has none to drop.
 \ir ./assets_tags_notify_trigger_drop.sql

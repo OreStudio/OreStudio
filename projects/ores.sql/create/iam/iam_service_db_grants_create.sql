@@ -154,6 +154,7 @@ select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_variability_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_assets_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
+select _ores_grant_execute_fn('ores_assets_get_template_image_', :'refdata_service_user');
 
 -- ---------------------------------------------------------------------------
 -- workspace_service: Workspace domain service

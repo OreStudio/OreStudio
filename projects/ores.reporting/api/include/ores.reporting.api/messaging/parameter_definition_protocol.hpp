@@ -162,7 +162,7 @@ struct put_parameter_definition_request {
 
 struct put_parameter_definition_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::parameter_definition parameter_definition;
+    std::optional<ores::reporting::domain::parameter_definition> parameter_definition;
 };
 
 struct put_many_parameter_definitions_request {
@@ -286,7 +286,7 @@ struct get_parameter_definition_version_request {
 
 struct get_parameter_definition_version_response {
     ores::utility::domain::result result;
-    ores::reporting::domain::parameter_definition version;
+    std::optional<ores::reporting::domain::parameter_definition> version;
 };
 
 /**

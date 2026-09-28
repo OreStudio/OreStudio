@@ -120,7 +120,7 @@ export interface PutCreditSimulationEntityConfigRequest {
 
 export interface PutCreditSimulationEntityConfigResponse {
     result: Result;
-    credit_simulation_entity_config: CreditSimulationEntityConfig;
+    credit_simulation_entity_config: CreditSimulationEntityConfig | null;
 }
 
 export interface PutManyCreditSimulationEntityConfigsRequest {
@@ -201,7 +201,7 @@ export interface GetCreditSimulationEntityConfigVersionRequest {
 
 export interface GetCreditSimulationEntityConfigVersionResponse {
     result: Result;
-    version: CreditSimulationEntityConfig;
+    version: CreditSimulationEntityConfig | null;
 }
 
 export const subjects = {

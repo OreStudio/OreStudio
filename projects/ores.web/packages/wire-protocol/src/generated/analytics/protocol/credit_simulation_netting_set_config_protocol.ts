@@ -117,7 +117,7 @@ export interface PutCreditSimulationNettingSetConfigRequest {
 
 export interface PutCreditSimulationNettingSetConfigResponse {
     result: Result;
-    credit_simulation_netting_set_config: CreditSimulationNettingSetConfig;
+    credit_simulation_netting_set_config: CreditSimulationNettingSetConfig | null;
 }
 
 export interface PutManyCreditSimulationNettingSetConfigsRequest {
@@ -183,7 +183,7 @@ export interface GetCreditSimulationNettingSetConfigVersionRequest {
 
 export interface GetCreditSimulationNettingSetConfigVersionResponse {
     result: Result;
-    version: CreditSimulationNettingSetConfig;
+    version: CreditSimulationNettingSetConfig | null;
 }
 
 export const subjects = {

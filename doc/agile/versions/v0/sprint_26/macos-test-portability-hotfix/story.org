@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 3C45191D-D558-4AAE-8EA6-5BB51A3866D8
+:END:
+#+title: Story: Hotfix: two macOS test failures that assert Linux-only facts
+#+description: The macOS test phase fails twice on this tree: two assertions compare the system temp directory with the parent of a temp file as strings, and macOS spells that directory with a trailing separator; and a systemd notify test binds an abstract unix socket, which macOS has no namespace for. Both are test defects, not product ones, and both are fixed so the macOS suite can pass.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:osx:tests:platform:service:sprint_26:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+With the macOS build compiling again, its test phase runs and fails in
+two places, both of them facts about Linux that the tests assert rather
+than defects in the product:
+
+- =filesystem_scoped_temp_file_tests.cpp= compares
+  =sut.path().parent_path()= with =std::filesystem::temp_directory_path()=
+  as strings. macOS returns the system temp directory with a trailing
+  separator -- ~confstr~'s ~_CS_DARWIN_USER_TEMP_DIR~ ends in one -- so
+  the same directory has two spellings and the comparison fails:
+  ~"/var/folders/.../T" == "/var/folders/.../T/"~.
+- =systemd_notify_tests.cpp= binds an abstract unix datagram socket, whose
+  name begins with a NUL byte, to prove that systemd's leading =@= is not
+  a literal file name. The abstraction is a Linux extension; macOS has
+  pathname sockets only, so =bind= fails with =No such file or directory=
+  and takes the whole =ores.service.tests= binary with it.
+
+Neither failure can be fixed by changing the product: the temp file is
+already created in the directory the platform names, and systemd is
+Linux-only. The assertions are what move.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-28                               |
+
+* Acceptance
+
+- The two temp-directory assertions pass for both spellings of the temp
+  directory, and still assert that the file and the directory are the
+  platform's temp directory.
+- The abstract-socket case is skipped on platforms without an abstract
+  namespace, with a message that says why, and still runs on Linux.
+- =ores.platform.tests= and =ores.service.tests= pass on Linux, and the
+  macOS job's test phase gets past both.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1AB4F1E5-E059-4A9F-B7BA-49EE19C356C1][Implement Hotfix: two macOS test failures that assert Linux-only facts]] | DONE | 2026-09-28 | 2026-09-28 | Compare the temp directory as a directory, make the abstract-socket case Linux-only, reproduce the macOS condition locally to prove the first, and scan the tests for any other Linux-only assumption. |
+
+* Decisions
+
+- The temp assertions compare directories rather than strings
+  (=std::filesystem::equivalent=), not normalised spellings.
+  =lexically_normal()= was tried first and does not strip a trailing
+  separator -- =path("/tmp/").lexically_normal()= is still ="/tmp/"= --
+  so the assertion now states what it means: the file landed in the system
+  temp directory, however the platform spells it. It also survives macOS
+  resolving =/var= through =/private/var=, which a string comparison would
+  not.
+- The abstract-socket case is skipped, not rewritten to a pathname socket.
+  The case exists to pin the =@= to NUL translation, which only systemd
+  needs and only Linux can express; a pathname socket would test a
+  different thing and pass while proving nothing.
+- Both fixes are in tests. Nothing in the product reads a path as a string
+  or assumes an abstract namespace, and the scan recorded on the task found
+  no other test that does either.
+
+* Out of scope
+
+- The remaining macOS-only facilities the tests skip by design (the
+  =/sys/class/net= cross-checks, for instance). They already skip with a
+  message.

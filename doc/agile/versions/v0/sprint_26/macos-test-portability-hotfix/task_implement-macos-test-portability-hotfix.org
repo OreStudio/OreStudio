@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 1AB4F1E5-E059-4A9F-B7BA-49EE19C356C1
+:END:
+#+title: Task: Implement Hotfix: two macOS test failures that assert Linux-only facts
+#+description: Compare the temp directory as a directory rather than as a string in the two platform assertions, make the abstract-socket notify case Linux-only with a skip, prove both against a reproduced macOS condition on Linux, and scan the test tree for any other Linux-only assumption.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:osx:tests:platform:service:sprint_26:v0:macos-test-portability-hotfix:
+#+owner: marco
+#+branch: hotfix/macos-test-portability
+#+pr: 2322
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3C45191D-D558-4AAE-8EA6-5BB51A3866D8][Hotfix: two macOS test failures that assert Linux-only facts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the two macOS test failures pass by fixing what they assert rather
+than the product, and leave evidence that the fix holds for the macOS
+spelling of the temp directory.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3C45191D-D558-4AAE-8EA6-5BB51A3866D8][Hotfix: two macOS test failures that assert Linux-only facts]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The two temp-directory assertions pass when the temp directory is
+  spelled with a trailing separator, and they still fail if the file were
+  created somewhere else.
+- The abstract-socket case skips on a platform without an abstract
+  namespace, and runs on Linux.
+- =ores.platform.tests= and =ores.service.tests= pass on Linux.
+
+* Plan
+
+1. Reproduce the macOS spelling on Linux. =temp_directory_path()= honours
+   ~TMPDIR~, so ~TMPDIR=/tmp/= makes it return a path with a trailing
+   separator, which is the macOS condition.
+2. Fix the assertion to compare the two paths as directories, and re-run
+   under the reproduced spelling.
+3. Make the abstract-socket case Linux-only with a skip that says why,
+   mirroring the =/sys/class/net= skips next to it.
+4. Scan the test tree for other Linux-only assumptions, and run both
+   suites.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The failure, reproduced on Linux | 1 case, 1 assertion failed, ~"/tmp" == "/tmp/"~ | =TMPDIR=/tmp/ ores.platform.tests "place_temp_file_under_system_temp_directory"= | before the fix |
+| The same case after the fix | 2 cases, 2 assertions pass, both spellings | =TMPDIR=/tmp/ ores.platform.tests "place_temp_*"= | this branch |
+| Platform filesystem suite | 44 assertions, 27 cases, all pass | =ores.platform.tests "[filesystem]"= | this branch |
+| Service suite, abstract case running | 118 assertions, 42 cases, all pass | =ores.service.tests= | this branch |
+| Test files using unix sockets | 1, the one fixed | =grep -rln "datagram_protocol\|stream_protocol" projects/*/tests/*.cpp projects/*/*/tests/*.cpp= | this branch |
+| Test files reading ~/sys/~ or ~/proc/~ | 1, already guarded | =grep -rln "/sys/\|/proc/" projects/*/tests/*.cpp projects/*/*/tests/*.cpp= | this branch |
+
+* Notes
+
+- The first attempt used =lexically_normal()= on both paths and did not
+  fix it: =path("/tmp/").lexically_normal()= is still ="/tmp/"=, measured
+  with a three-line program. The assertion now compares the directories
+  with =std::filesystem::equivalent=, which is what it always meant and
+  which also survives macOS resolving =/var= through =/private/var=.
+- The abstract socket is a Linux extension, not a boost one: the test's
+  guard was =BOOST_ASIO_HAS_LOCAL_SOCKETS=, which macOS satisfies, so the
+  case ran and =bind= failed with =No such file or directory=. The guard
+  is now Linux-only with a skip message, the shape the platform net tests
+  already use for =/sys/class/net=.
+- The scan for other Linux-only assumptions in tests found two more
+  patterns worth naming and no further fixes: the =/sys/class/net=
+  cross-checks in =net_network_info_tests.cpp=, which already skip with a
+  message, and =unistd.h= includes, which macOS provides.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both macOS test failures are fixed in the tests.
+
+The temp-directory assertions compare the two paths with
+=std::filesystem::equivalent=, so the platform's spelling of its own temp
+directory no longer matters. Proved against the reproduced condition:
+with ~TMPDIR=/tmp/= the case failed before the change (~"/tmp" ==
+"/tmp/"~) and passes after it; without it, the filesystem suite passes 44
+assertions in 27 cases.
+
+The abstract-socket case is skipped with =abstract unix sockets are a
+Linux facility= where there is no abstract namespace, and still runs on
+Linux, where the service suite passes 118 assertions in 42 cases.
+
+The scan for the same class of assumption found the =/sys/class/net=
+cross-checks, already guarded, and =unistd.h= includes, which macOS
+provides; no further change was needed.

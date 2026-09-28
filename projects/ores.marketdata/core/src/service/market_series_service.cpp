@@ -87,6 +87,7 @@ domain::market_series to_domain(const messaging::market_series_write& write) {
     v.series_type = write.series_type;
     v.metric = write.metric;
     v.qualifier = write.qualifier;
+    v.oresmd_uri = write.oresmd_uri;
     v.series_subclass = write.series_subclass;
     v.derivation_kind = write.derivation_kind;
     v.derivation_config_id = write.derivation_config_id;

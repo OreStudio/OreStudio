@@ -69,6 +69,8 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | strip |
 | role |
 | metric |
+| source |
+| source_spelling |
 
 * Test cases
 ** Projections

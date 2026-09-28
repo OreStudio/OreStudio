@@ -67,6 +67,8 @@ A logical, possibly-partial oresmd requirement for a security instrument.
 | strip |
 | role |
 | metric |
+| source |
+| source_spelling |
 
 * URI order
 

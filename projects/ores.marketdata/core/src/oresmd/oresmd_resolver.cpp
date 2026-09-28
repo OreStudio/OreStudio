@@ -74,6 +74,8 @@ market_data_identifier resolve_fx(const fx_market_data_requirement& req,
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.source = pick_optional(req.source, d ? d->source : std::nullopt);
+    id.source_spelling = pick_optional(req.source_spelling, d ? d->source_spelling : std::nullopt);
     return id;
 }
 

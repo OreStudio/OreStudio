@@ -68,6 +68,8 @@ struct query_params final {
     std::optional<std::string> quote;
     std::optional<std::string> model;
     std::optional<std::string> point;
+    std::optional<std::string> source;
+    std::optional<std::string> source_spelling;
 
     static query_params from(const boost::urls::url_view& u) {
         query_params qp;
@@ -112,6 +114,10 @@ struct query_params final {
                 qp.model = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
+            else if (p.key == "source")
+                qp.source = p.value;
+            else if (p.key == "source_spelling")
+                qp.source_spelling = p.value;
             else
                 BOOST_THROW_EXCEPTION(
                     oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
@@ -180,24 +186,41 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "strip", qp.strip);
     reject_if_present("fx", "role", qp.role);
     reject_if_present("fx", "metric", qp.metric);
+    if (qp.source && parse_type(qp) != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://fx/... 'source' is only meaningful when type=fixing."));
+    if (qp.source_spelling && parse_type(qp) != instrument_type::fixing)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            "oresmd://fx/... 'source_spelling' is only meaningful when type=fixing."));
 }
 
 void validate_ir(const query_params& qp) {
     reject_if_present("ir", "ccy", qp.ccy);
+    reject_if_present("ir", "source", qp.source);
+    reject_if_present("ir", "source_spelling", qp.source_spelling);
     if (qp.metric && parse_type(qp) != instrument_type::quote)
         BOOST_THROW_EXCEPTION(
             oresmd_exception("oresmd://ir/... 'metric' is only meaningful when type=quote."));
 }
 
-void validate_no_ir_only_keys(std::string_view asset_class, const query_params& qp) {
+/*
+ * The query keys one asset class owns and the others refuse. It is the whole of
+ * what equity, credit and commodity validate: those three delegate their query
+ * validation here rather than emitting the Reject keys table their models carry,
+ * so a key that must be refused everywhere but its owner belongs here, and not
+ * only in those models' tables.
+ */
+void validate_no_foreign_keys(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "index", qp.index);
     reject_if_present(asset_class, "tenor", qp.tenor);
     reject_if_present(asset_class, "role", qp.role);
     reject_if_present(asset_class, "metric", qp.metric);
+    reject_if_present(asset_class, "source", qp.source);
+    reject_if_present(asset_class, "source_spelling", qp.source_spelling);
 }
 
 void validate_equity(const query_params& qp) {
-    validate_no_ir_only_keys("equity", qp);
+    validate_no_foreign_keys("equity", qp);
 }
 
 std::string first_segment(const boost::urls::url_view& u) {
@@ -229,6 +252,13 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    // A fixing carries the source that published it, lower-cased the way the
+    // index families are, with the token as ORE wrote it kept beside it when the
+    // two differ. A quote carries neither; validate_fx() refuses them.
+    if (qp.source)
+        id.source = to_lower(*qp.source);
+    if (qp.source_spelling)
+        id.source_spelling = *qp.source_spelling;
     // A vol surface point carries the FX option's expiry and strike, and the
     // pair already carries the two currencies: type=vol&point=10y,atm.
     if (qp.point && id.type == instrument_type::vol) {
@@ -421,7 +451,7 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
 }
 
 market_data_identifier parse_credit(const boost::urls::url_view& u, const query_params& qp) {
-    validate_no_ir_only_keys("credit", qp);
+    validate_no_foreign_keys("credit", qp);
     credit_market_data_identifier id;
     id.reference_entity = to_upper(first_segment(u));
     if (!qp.ccy)
@@ -483,6 +513,8 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     reject_if_present("correlation", "strip", qp.strip);
     reject_if_present("correlation", "role", qp.role);
     reject_if_present("correlation", "metric", qp.metric);
+    reject_if_present("correlation", "source", qp.source);
+    reject_if_present("correlation", "source_spelling", qp.source_spelling);
     correlation_market_data_identifier id;
     id.factor_pair = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -520,6 +552,8 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     reject_if_present("inflation", "strip", qp.strip);
     reject_if_present("inflation", "role", qp.role);
     reject_if_present("inflation", "metric", qp.metric);
+    reject_if_present("inflation", "source", qp.source);
+    reject_if_present("inflation", "source_spelling", qp.source_spelling);
     inflation_market_data_identifier id;
     id.index_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -561,7 +595,7 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
 }
 
 market_data_identifier parse_commodity(const boost::urls::url_view& u, const query_params& qp) {
-    validate_no_ir_only_keys("commodity", qp);
+    validate_no_foreign_keys("commodity", qp);
     commodity_market_data_identifier id;
     id.commodity_code = to_upper(first_segment(u));
     // A fixing's key is an index name, and an index name does not carry the
@@ -633,6 +667,8 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
     reject_if_present("security", "strip", qp.strip);
     reject_if_present("security", "role", qp.role);
     reject_if_present("security", "metric", qp.metric);
+    reject_if_present("security", "source", qp.source);
+    reject_if_present("security", "source_spelling", qp.source_spelling);
     security_market_data_identifier id;
     id.security_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -663,6 +699,8 @@ market_data_identifier parse_shape_profile(const boost::urls::url_view& u, const
     reject_if_present("shape_profile", "strip", qp.strip);
     reject_if_present("shape_profile", "role", qp.role);
     reject_if_present("shape_profile", "metric", qp.metric);
+    reject_if_present("shape_profile", "source", qp.source);
+    reject_if_present("shape_profile", "source_spelling", qp.source_spelling);
     shape_profile_market_data_identifier id;
     id.profile_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -695,6 +733,8 @@ market_data_identifier parse_rating(const boost::urls::url_view& u, const query_
     reject_if_present("rating", "strip", qp.strip);
     reject_if_present("rating", "role", qp.role);
     reject_if_present("rating", "metric", qp.metric);
+    reject_if_present("rating", "source", qp.source);
+    reject_if_present("rating", "source_spelling", qp.source_spelling);
     rating_market_data_identifier id;
     id.provider_id = to_upper(first_segment(u));
     id.type = parse_type(qp);
@@ -817,6 +857,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
+                append_if(u, "source", id.source);
+                append_if(u, "source_spelling", id.source_spelling);
                 // The surface's model is the ORE metric of the projected key, and no
                 // field carries it, so the uri_order loop above cannot emit it. A
                 // non-default model is emitted here or the round trip loses which

@@ -46,6 +46,8 @@ struct query_params final {
     std::optional<std::string> quote;
     std::optional<std::string> model;
     std::optional<std::string> point;
+    std::optional<std::string> source;
+    std::optional<std::string> source_spelling;
 
     static query_params from(const boost::urls::url_view& u) {
         query_params qp;
@@ -90,6 +92,10 @@ struct query_params final {
                 qp.model = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
+            else if (p.key == "source")
+                qp.source = p.value;
+            else if (p.key == "source_spelling")
+                qp.source_spelling = p.value;
             else
                 BOOST_THROW_EXCEPTION(
                     oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
@@ -150,23 +156,32 @@ void validate_{{asset_class}}(const query_params& qp) {
     reject_if_present("{{asset_class}}", "{{.}}", qp.{{.}});
 {{/reject_keys}}
 {{#type_gated_keys}}
-    if (qp.{{.}} && parse_type(qp) != instrument_type::quote)
+    if (qp.{{key}} && parse_type(qp) != instrument_type::{{type}})
         BOOST_THROW_EXCEPTION(
-            oresmd_exception("oresmd://{{asset_class}}/... '{{.}}' is only meaningful when type=quote."));
+            oresmd_exception("oresmd://{{asset_class}}/... '{{key}}' is only meaningful when type={{type}}."));
 {{/type_gated_keys}}
 }
 
 {{/oresmd_validate_pre}}
-void validate_no_ir_only_keys(std::string_view asset_class, const query_params& qp) {
+/*
+ * The query keys one asset class owns and the others refuse. It is the whole of
+ * what equity, credit and commodity validate: those three delegate their query
+ * validation here rather than emitting the Reject keys table their models carry,
+ * so a key that must be refused everywhere but its owner belongs here, and not
+ * only in those models' tables.
+ */
+void validate_no_foreign_keys(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "index", qp.index);
     reject_if_present(asset_class, "tenor", qp.tenor);
     reject_if_present(asset_class, "role", qp.role);
     reject_if_present(asset_class, "metric", qp.metric);
+    reject_if_present(asset_class, "source", qp.source);
+    reject_if_present(asset_class, "source_spelling", qp.source_spelling);
 }
 
 {{#oresmd_validate_post}}
 void validate_{{asset_class}}(const query_params& qp) {
-    validate_no_ir_only_keys("{{asset_class}}", qp);
+    validate_no_foreign_keys("{{asset_class}}", qp);
 }
 
 {{/oresmd_validate_post}}
@@ -298,7 +313,7 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     validate_{{asset_class}}(qp);
 {{/validate_function_call}}
 {{#validate_inline_delegate}}
-    validate_no_ir_only_keys("{{asset_class}}", qp);
+    validate_no_foreign_keys("{{asset_class}}", qp);
 {{/validate_inline_delegate}}
 {{#validate_inline}}
 {{#inflation}}
@@ -363,6 +378,13 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
         id.point = to_lower(*qp.point);
 {{/has_point}}
 {{#fx}}
+    // A fixing carries the source that published it, lower-cased the way the
+    // index families are, with the token as ORE wrote it kept beside it when the
+    // two differ. A quote carries neither; validate_fx() refuses them.
+    if (qp.source)
+        id.source = to_lower(*qp.source);
+    if (qp.source_spelling)
+        id.source_spelling = *qp.source_spelling;
     // A vol surface point carries the FX option's expiry and strike, and the
     // pair already carries the two currencies: type=vol&point=10y,atm.
     if (qp.point && id.type == instrument_type::vol) {

@@ -149,6 +149,8 @@ arrived is carried beside it, so a name reads back as it came.
 | key |
 |-----|
 | ccy |
+| source |
+| source_spelling |
 
 * Type-gated keys
 

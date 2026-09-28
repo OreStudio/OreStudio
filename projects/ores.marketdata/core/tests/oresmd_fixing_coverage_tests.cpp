@@ -235,10 +235,10 @@ TEST_CASE("no_fixing_index_class_has_gone_unrecorded", tags) {
     // measured half of the same claim. It fails when one is closed without the
     // record being updated, and when a change breaks a class that worked.
     //
-    // Interest rates are absent because every one of their names is named, and
-    // the assertion below fails if they come back.
+    // Interest rates and FX are absent because every name of theirs is named, and
+    // the assertion below fails if either comes back.
     const std::set<std::string> recorded{
-        "commodity", "equity", "fx", "inflation", "power", "security", "unclassified"};
+        "commodity", "equity", "inflation", "power", "security", "unclassified"};
 
     REQUIRE(classes_with_unnamed_names() == recorded);
 }
@@ -253,11 +253,14 @@ TEST_CASE("no_fixing_index_class_loses_names_on_the_way_back", tags) {
     REQUIRE(classes_with_round_trip_gaps() == recorded);
 }
 
-TEST_CASE("the_interest_rate_fixing_names_all_reach_an_identifier", tags) {
-    // Every interest-rate name the corpus carries, rather than a sample, so a
-    // family that regresses in one variant fails here.
-    const auto& ir = corpus_coverage().classes.at("ir");
+TEST_CASE("the_closed_classes_name_every_fixing_name_the_corpus_carries", tags) {
+    // The classes whose grammar is decided, pinned at every name the corpus
+    // carries rather than at a sample, so a family or a source that regresses in
+    // one variant fails here.
+    for (const auto& cls : {"ir", "fx"}) {
+        const auto& c = corpus_coverage().classes.at(cls);
 
-    CHECK(ir.named == ir.names);
-    CHECK(ir.round_tripped == ir.names);
+        CHECK(c.named == c.names);
+        CHECK(c.round_tripped == c.names);
+    }
 }

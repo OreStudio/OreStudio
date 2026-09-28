@@ -58,6 +58,8 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | strip |
 | role |
 | metric |
+| source |
+| source_spelling |
 
 * Test cases
 ** Projections

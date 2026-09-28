@@ -42,6 +42,8 @@ namespace ores::marketdata::domain {
 struct fx_market_data_requirement final {
     std::optional<std::string> pair;
     std::optional<instrument_type> type;
+    std::optional<std::string> source;
+    std::optional<std::string> source_spelling;
     std::optional<fx_quote_type> quote_type;
     std::optional<std::string> point;
 

@@ -283,6 +283,55 @@ TEST_CASE("round_trip_fx_option_vol", tags) {
              oresmd_projections::to_curve_key(original).has_value()));
 }
 
+TEST_CASE("round_trip_fx_fixing_source", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&source=ecb"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_fx_fixing_source_spelling", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://fx/usdeur?type=fixing&source=reuters&source_spelling=Reuters"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
+TEST_CASE("round_trip_fx_fixing_reversed_pair", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/gbpeur?type=fixing&source=tr20h"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+    // The URI must also name a real ORE artefact. A documented example that
+    // parses and round-trips while projecting to nothing is the defect this case
+    // exists to catch, and the stability check above passes for it either way.
+    // Deliberately no key-readback comparison: a URI may legitimately carry
+    // context the key does not encode (a quote's curve index and role), and the
+    // key-to-URI direction normalises the entity's case, which the corpus-driven
+    // coverage tests own.
+    REQUIRE((oresmd_projections::to_quote_key(original).has_value() ||
+             oresmd_projections::to_index_name(original).has_value() ||
+             oresmd_projections::to_curve_key(original).has_value()));
+}
+
 TEST_CASE("round_trip_ir_quote", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
@@ -1016,6 +1065,17 @@ TEST_CASE("reject_fx_model_when_type_not_vol", tags) {
                       oresmd_exception);
 }
 
+TEST_CASE("reject_fx_source_on_a_quote", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&source=ecb")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_fx_source_spelling_on_a_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&source_spelling=ECB")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?type=fixing&index=sofr&ccy=usd")),
                       oresmd_exception);
@@ -1531,6 +1591,58 @@ TEST_CASE("reject_fx_quote_when_type_not_quote", tags) {
 
 TEST_CASE("reject_fx_entity_that_is_not_a_six_letter_pair", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eur?type=quote")), oresmd_exception);
+}
+
+TEST_CASE("parse_fx_fixing_carries_the_source_it_was_published_by", tags) {
+    // A fixing's source is part of its identity: ECB and TR20H both fix EUR-USD
+    // and they are different rates, so one pair is not one series.
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&source=ecb&source_spelling=ECB"));
+    const auto& fx = std::get<fx_market_data_identifier>(id);
+    REQUIRE(fx.type == instrument_type::fixing);
+    REQUIRE(fx.source.has_value());
+    CHECK(*fx.source == "ecb");
+    REQUIRE(fx.source_spelling.has_value());
+    CHECK(*fx.source_spelling == "ECB");
+    // The pair is the pair as published, never a canonical order.
+    CHECK(fx.pair == "EURUSD");
+}
+
+TEST_CASE("parse_fx_lower_cases_the_source_but_not_its_spelling", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://fx/usdeur?type=fixing&source=Reuters"));
+    const auto& fx = std::get<fx_market_data_identifier>(id);
+    REQUIRE(fx.source.has_value());
+    CHECK(*fx.source == "reuters");
+    CHECK(fx.pair == "USDEUR");
+}
+
+TEST_CASE("reject_fx_source_when_type_is_not_fixing", tags) {
+    // ORE's FX quote keys carry no source at all: the token appears in index
+    // names alone, so a sourced quote names nothing the corpus writes.
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&source=ecb")),
+                      oresmd_exception);
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&source_spelling=ECB")),
+        oresmd_exception);
+    // A fixing that names no source is still a fixing; the field is optional.
+    const auto id = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing"));
+    CHECK_FALSE(std::get<fx_market_data_identifier>(id).source.has_value());
+}
+
+TEST_CASE("reject_fx_source_keys_on_every_other_asset_class", tags) {
+    // The source keys name an FX fixing and nothing else. correlation, inflation,
+    // ir, rating, security and shape_profile refuse them through the Reject keys
+    // table their model carries; equity, credit and commodity carry such a table
+    // too but generate only the shared check, so the shared check is what refuses
+    // them there.
+    for (const auto& rejected : {"oresmd://equity/sp5?type=fixing&source=ecb",
+                                 "oresmd://credit/vod?ccy=eur&type=fixing&source=ecb",
+                                 "oresmd://commodity/gold?ccy=usd&type=fixing&source=ecb",
+                                 "oresmd://inflation/ukrpi?type=fixing&source=ecb",
+                                 "oresmd://ir/usd?type=fixing&index=sofr&source=ecb",
+                                 "oresmd://equity/sp5?type=fixing&source_spelling=ECB"}) {
+        REQUIRE_THROWS_AS(oresmd_parser::parse(uri(rejected)), oresmd_exception);
+    }
 }
 
 TEST_CASE("reject_ir_term_index_fixing_without_a_tenor", tags) {

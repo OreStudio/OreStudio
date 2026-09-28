@@ -29,6 +29,7 @@
         "boost-beast",
         "boost-json",
         "boost-url",
+        "boost-multiprecision",
         "jwt-cpp",
         "cli",
         "eigen3",

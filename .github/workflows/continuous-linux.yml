@@ -158,6 +158,14 @@ jobs:
           pip install --quiet pystache
           ./projects/ores.sql/utility/validate_schemas.sh
 
+      - name: Check every Boost header has a vcpkg port behind it
+        # Boost arrives as per-library ports, so a new library compiles for
+        # whoever added it and fails on a clean install with a missing header.
+        # That turned every continuous build red at one translation unit on
+        # 2026-09-28. This runs before the build so the failure names the port
+        # in seconds instead of after twenty minutes of compiling.
+        run: python3 build/scripts/check_boost_dependencies.py
+
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2
         if: ${{ matrix.compiler == 'clang' }}

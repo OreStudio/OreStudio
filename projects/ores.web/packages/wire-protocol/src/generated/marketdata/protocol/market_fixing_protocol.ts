@@ -102,7 +102,7 @@ export interface PutMarketFixingRequest {
 
 export interface PutMarketFixingResponse {
     result: Result;
-    market_fixing: MarketFixing;
+    market_fixing: MarketFixing | null;
 }
 
 export interface PutManyMarketFixingsRequest {

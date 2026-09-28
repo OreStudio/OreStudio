@@ -113,7 +113,7 @@ export interface PutFeedBindingRequest {
 
 export interface PutFeedBindingResponse {
     result: Result;
-    feed_binding: FeedBinding;
+    feed_binding: FeedBinding | null;
 }
 
 export interface PutManyFeedBindingsRequest {
@@ -164,7 +164,7 @@ export interface GetFeedBindingVersionRequest {
 
 export interface GetFeedBindingVersionResponse {
     result: Result;
-    version: FeedBinding;
+    version: FeedBinding | null;
 }
 
 export const subjects = {

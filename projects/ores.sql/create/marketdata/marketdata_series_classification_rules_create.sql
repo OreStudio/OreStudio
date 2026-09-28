@@ -57,7 +57,7 @@
 
 create table if not exists "ores_marketdata_series_classification_rules_tbl" (
     "series_type" text not null,
-    "metric" text not null,
+    "metric" text not null default '',
     "tenant_id" uuid not null,
     "version" integer not null,
     "asset_class_source" text not null default 'literal',

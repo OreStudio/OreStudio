@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 434EA111-9922-5BAF-BEB2-13EBA07733DE
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the market_series commands from the shell?
+#+description: Every command the market_series submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_series:
+
+This file documents the market_series resource at the shell, one section per command. Every command is a subcommand of =market_series=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7589C2D2-F679-57B9-AC7A-C04EA54D7859
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.list=.
+
+#+name: market_series-list
+#+begin_src ores-shell :tangle market_series-list.ores :exports none
+market_series list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6AC11852-5D00-58F1-AF1F-3CB51EA3FFA2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.get=.
+
+#+name: market_series-get
+#+begin_src ores-shell :tangle market_series-get.ores :exports none
+market_series get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 43324D91-DA4E-5390-A4DF-60A3D488D878
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.get_many=.
+
+#+name: market_series-get-many
+#+begin_src ores-shell :tangle market_series-get-many.ores :exports none
+market_series get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B9930C37-179B-5BE2-B02C-6384E2AE218C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series add <party_id> <series_type> <metric> <qualifier> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.put=.
+
+#+name: market_series-add
+#+begin_src ores-shell :tangle market_series-add.ores :exports none
+market_series add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 23C0F901-5FFE-537C-AA12-ADD8E68A5B5E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series set <id> <party_id> <series_type> <metric> <qualifier> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.put=.
+
+#+name: market_series-set
+#+begin_src ores-shell :tangle market_series-set.ores :exports none
+market_series set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2A4F4BDD-B328-5AA4-B2A2-7D26F48ED64B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series put-many --count <n> <id> <party_id> <series_type> <metric> <qualifier> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.put_many=.
+
+#+name: market_series-put-many
+#+begin_src ores-shell :tangle market_series-put-many.ores :exports none
+market_series put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 296D16E5-6ECF-53E2-BBB0-3B74861648F8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.delete=.
+
+#+name: market_series-delete
+#+begin_src ores-shell :tangle market_series-delete.ores :exports none
+market_series delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 90C79E62-6FC1-5AC6-A295-23FB904F708C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series.delete_many=.
+
+#+name: market_series-delete-many
+#+begin_src ores-shell :tangle market_series-delete-many.ores :exports none
+market_series delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 7918A8F8-592D-5A81-8A96-63C3418FDB35
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_versions.list=.
+
+#+name: market_series-versions
+#+begin_src ores-shell :tangle market_series-versions.ores :exports none
+market_series versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A37C9BCC-FF38-5BD1-9468-2FEA349D9C56
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_versions.get=.
+
+#+name: market_series-version
+#+begin_src ores-shell :tangle market_series-version.ores :exports none
+market_series version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

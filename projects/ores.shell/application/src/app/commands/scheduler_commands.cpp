@@ -287,9 +287,14 @@ void scheduler_commands::process_schedule(std::ostream& out,
         return;
 
     const auto& created = response->job_definition;
-    out << "Scheduled '" << created.job_name << "' as " << boost::uuids::to_string(created.id)
-        << " on '" << created.schedule_expression.to_string() << "'"
-        << (created.is_active ? "." : ", paused.") << std::endl;
+    if (!created) {
+        out << "Scheduled '" << job_name << "'." << std::endl;
+        out << "The server returned no definition to display." << std::endl;
+        return;
+    }
+    out << "Scheduled '" << created->job_name << "' as " << boost::uuids::to_string(created->id)
+        << " on '" << created->schedule_expression.to_string() << "'"
+        << (created->is_active ? "." : ", paused.") << std::endl;
     out << "Run 'scheduler watch' to see it fire." << std::endl;
 }
 

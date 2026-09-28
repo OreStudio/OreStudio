@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 61DD9492-DF2D-5C21-878D-852640284689
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the objects commands from the shell?
+#+description: Every command the objects submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:objects:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =objects=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =put-objects=
+:PROPERTIES:
+:ID: 7F4DD689-6D29-5A00-BE1F-0D5D847BDCB7
+:END:
+
+Sends =put_objects_request= and prints =put_objects_response=, so the shape is the protocol's and the meaning is the service's. It reads =bucket=, =key=, =content=, =content_encoding=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+objects put-objects <bucket> <key> <content> <content_encoding>
+#+end_example
+
+It is addressed at =storage.v1.objects.put=.
+
+#+name: objects-put-objects
+#+begin_src ores-shell :tangle objects-put-objects.ores :exports none
+objects put-objects __none__ __none__ __none__ __none__
+#+end_src
+
+** =get-objects=
+:PROPERTIES:
+:ID: 163FBE9E-8B55-50BB-B03D-7244498A71ED
+:END:
+
+Sends =get_objects_request= and prints =get_objects_response=, so the shape is the protocol's and the meaning is the service's. It reads =bucket=, =key=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+objects get-objects <bucket> <key> [--include_content <v>]
+#+end_example
+
+It is addressed at =storage.v1.objects.get=.
+
+#+name: objects-get-objects
+#+begin_src ores-shell :tangle objects-get-objects.ores :exports none
+objects get-objects __none__ __none__
+#+end_src
+
+** =delete-objects=
+:PROPERTIES:
+:ID: 2B1CF4DA-6D20-5DB2-BFDF-144F9EF61C65
+:END:
+
+Sends =delete_objects_request= and prints =delete_objects_response=, so the shape is the protocol's and the meaning is the service's. It reads =bucket=, =key=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+objects delete-objects <bucket> <key>
+#+end_example
+
+It is addressed at =storage.v1.objects.delete=.
+
+#+name: objects-delete-objects
+#+begin_src ores-shell :tangle objects-delete-objects.ores :exports none
+objects delete-objects __none__ __none__
+#+end_src
+
+** =list-objects=
+:PROPERTIES:
+:ID: 5CC8A96E-66A2-5BC6-8ACA-0F89D3D7384C
+:END:
+
+Sends =list_objects_request= and prints =list_objects_response=, so the shape is the protocol's and the meaning is the service's. It reads =bucket=, =prefix=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+objects list-objects <bucket> <prefix> [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =storage.v1.objects.list=.
+
+#+name: objects-list-objects
+#+begin_src ores-shell :tangle objects-list-objects.ores :exports none
+objects list-objects __none__ __none__
+#+end_src
+

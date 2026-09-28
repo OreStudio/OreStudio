@@ -31,7 +31,7 @@
  * Every entry is modelled as a genuine [start, end) period rather than
  * a single maturity label: start_tenor_code/end_tenor_code are both
  * ordinary tenor references resolved through the same
- * ores::refdata::domain::resolve_window/resolve_end_date machinery
+ * ores::refdata::domain::resolve_end_date machinery
  * (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments
  * (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine
  * zero-duration PERIOD/DAY tenor already in the catalog, resolving

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6908EF29-1263-578C-9E12-9575B80C9EDD
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the observation_lineages commands from the shell?
+#+description: Every command the observation_lineages submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:observation_lineages:
+
+This file documents the observation_lineages resource at the shell, one section per command. Every command is a subcommand of =observation_lineages=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 452C658A-B8E0-55C9-9F80-8E99914FBA67
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.list=.
+
+#+name: observation_lineages-list
+#+begin_src ores-shell :tangle observation_lineages-list.ores :exports none
+observation_lineages list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 71BE144C-C331-533F-9A32-490F54A87B3A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.get=.
+
+#+name: observation_lineages-get
+#+begin_src ores-shell :tangle observation_lineages-get.ores :exports none
+observation_lineages get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F6FA520F-18E7-5B2E-ADBC-40D92329D651
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.get_many=.
+
+#+name: observation_lineages-get-many
+#+begin_src ores-shell :tangle observation_lineages-get-many.ores :exports none
+observation_lineages get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5FDD86B9-3E90-5EA4-9014-79665BC6C4C4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages add <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.put=.
+
+#+name: observation_lineages-add
+#+begin_src ores-shell :tangle observation_lineages-add.ores :exports none
+observation_lineages add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ 00000000-0000-0000-0000-000000000000 0 1970-01-01T00:00:00Z __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 509AA298-7273-5051-BF7B-A4886218EFCC
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages set <id> <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.put=.
+
+#+name: observation_lineages-set
+#+begin_src ores-shell :tangle observation_lineages-set.ores :exports none
+observation_lineages set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ 00000000-0000-0000-0000-000000000000 0 1970-01-01T00:00:00Z __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0DB39261-36BC-5356-B08F-E019E3046ACE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.put_many=.
+
+#+name: observation_lineages-put-many
+#+begin_src ores-shell :tangle observation_lineages-put-many.ores :exports none
+observation_lineages put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ 00000000-0000-0000-0000-000000000000 0 1970-01-01T00:00:00Z __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 39FC4C2E-BCF4-5B4A-9B3A-67B5182B3CEA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.delete=.
+
+#+name: observation_lineages-delete
+#+begin_src ores-shell :tangle observation_lineages-delete.ores :exports none
+observation_lineages delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 3275BAF9-7F19-5BF5-A45A-ED697BA6D7EB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages.delete_many=.
+
+#+name: observation_lineages-delete-many
+#+begin_src ores-shell :tangle observation_lineages-delete-many.ores :exports none
+observation_lineages delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 5E716F0E-C541-5C70-830C-FBF18099C2CB
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages_versions.list=.
+
+#+name: observation_lineages-versions
+#+begin_src ores-shell :tangle observation_lineages-versions.ores :exports none
+observation_lineages versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 956CF285-E1BE-56AE-A5F4-ADE3DB8DF413
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+observation_lineages version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.observation_lineages_versions.get=.
+
+#+name: observation_lineages-version
+#+begin_src ores-shell :tangle observation_lineages-version.ores :exports none
+observation_lineages version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

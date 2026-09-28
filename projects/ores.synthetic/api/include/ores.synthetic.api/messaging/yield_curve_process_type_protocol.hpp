@@ -155,7 +155,7 @@ struct put_yield_curve_process_type_request {
 
 struct put_yield_curve_process_type_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::yield_curve_process_type yield_curve_process_type;
+    std::optional<ores::synthetic::domain::yield_curve_process_type> yield_curve_process_type;
 };
 
 struct put_many_yield_curve_process_types_request {
@@ -256,7 +256,7 @@ struct get_yield_curve_process_type_version_request {
 
 struct get_yield_curve_process_type_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::yield_curve_process_type version;
+    std::optional<ores::synthetic::domain::yield_curve_process_type> version;
 };
 
 /**

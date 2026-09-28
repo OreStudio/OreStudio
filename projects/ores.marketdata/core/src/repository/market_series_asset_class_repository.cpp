@@ -28,6 +28,7 @@
 #include "ores.marketdata.api/domain/market_series_asset_class_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/market_series_asset_class_entity.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
 #include <optional>
@@ -165,6 +166,7 @@ market_series_asset_class_repository::read_latest(const boost::uuids::uuid& mark
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
+    const auto asset_class_code_str = asset_class_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<market_series_asset_class_entity>> |
@@ -324,6 +326,7 @@ market_series_asset_class_repository::remove(const boost::uuids::uuid& market_se
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
+    const auto asset_class_code_str = asset_class_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<market_series_asset_class_entity> |
                        where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&

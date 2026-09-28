@@ -41,6 +41,7 @@ struct ir_curve_template_entry_key {
 
 struct ir_curve_template_entry_write {
     boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
     boost::uuids::uuid ir_curve_config_id;
     int sequence_index;
     std::string start_tenor_code;
@@ -157,7 +158,7 @@ struct put_ir_curve_template_entry_request {
 
 struct put_ir_curve_template_entry_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::ir_curve_template_entry ir_curve_template_entry;
+    std::optional<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entry;
 };
 
 struct put_many_ir_curve_template_entries_request {
@@ -258,7 +259,7 @@ struct get_ir_curve_template_entry_version_request {
 
 struct get_ir_curve_template_entry_version_response {
     ores::utility::domain::result result;
-    ores::synthetic::domain::ir_curve_template_entry version;
+    std::optional<ores::synthetic::domain::ir_curve_template_entry> version;
 };
 
 /**

@@ -1146,7 +1146,7 @@ than per model.
 
 No create script gained a table or a check, so no DDL was applied for Set 1.
 
-** Set 2, defect 4: done, nine reference entities
+** Set 2, defect 4: done, eleven reference entities
 
 Each new entity binds =simple-lookup=, keys on a text =code=, carries the four
 audit columns and the bitemporal pair, and states its values in the ORE XSD
@@ -1156,25 +1156,30 @@ Checks instead, and the real foreign key is PR 4's.
 
 | Entity | Table | Rows | Row source | Referencing columns |
 |--------+-------+------+------------+---------------------|
-| =long_short_type= | =ores_trading_long_short_types_tbl= | 2 | ORE =longShort= | =long_short= in 7 models |
-| =moment_type= | =ores_trading_moment_types_tbl= | 2 | ORE =momentType= | =fx_variance_swap_instrument.moment_type= |
-| =price_type= | =ores_trading_price_types_tbl= | 2 | ORE =bondPriceType= | =bond_option.price_type=, =bond_trs.price_type= |
-| =amortization_type= | =ores_trading_amortization_types_tbl= | 5 | ORE =amortizationType= | =bond_leg_amortization.amortization_type= |
-| =option_type= | =ores_trading_option_types_tbl= | 2 | ORE =optionType= | =option_type= in 12 models plus =ascot.ascot_option_type= |
-| =exercise_type= | =ores_trading_exercise_types_tbl= | 3 | ORE =exerciseStyle= | =exercise_type= in 6 models plus =fx_vanilla_option_instrument.exercise_style= |
-| =settlement_type= | =ores_trading_settlement_types_tbl= | 2 | ORE =settlementType= | =settlement_type= in 4 models |
-| =barrier_type= | =ores_trading_barrier_types_tbl= | 10 | ORE =barrierType= | =barrier_type= in 5 models plus the two barrier halves on =equity_barrier_option_instrument= |
+| =long_short_type= | =ores_trading_long_short_types_tbl= | 2 | ORE =longShort= simple type | =long_short= in 7 models |
+| =moment_type= | =ores_trading_moment_types_tbl= | 2 | ORE =momentType= simple type | =fx_variance_swap_instrument.moment_type= |
+| =price_type= | =ores_trading_price_types_tbl= | 2 | ORE =bondPriceType= simple type | =bond_option.price_type=, =bond_trs.price_type= |
+| =amortization_type= | =ores_trading_amortization_types_tbl= | 5 | ORE =amortizationType= simple type | =bond_leg_amortization.amortization_type= |
+| =option_type= | =ores_trading_option_types_tbl= | 2 | ORE =optionType= simple type | =option_type= in 12 models plus =ascot.ascot_option_type= |
+| =exercise_type= | =ores_trading_exercise_types_tbl= | 3 | ORE =exerciseStyle= simple type | =exercise_type= in 6 models plus =fx_vanilla_option_instrument.exercise_style= |
+| =settlement_type= | =ores_trading_settlement_types_tbl= | 2 | ORE =settlementType= simple type | =settlement_type= in 4 models |
+| =barrier_type= | =ores_trading_barrier_types_tbl= | 10 | ORE =barrierType= simple type | =barrier_type= in 5 models plus the two barrier halves on =equity_barrier_option_instrument= |
 | =activity_category= | =ores_trading_activity_categories_tbl= | 5 | the trading activity seed | =activity_type.category= |
+| =return_type= | =ores_trading_return_types_tbl= | 2 | ORE =EquityLegData.ReturnType=, corpus values | =bond_trs.return_type=, =equity_swap_instrument.return_type= |
+| =payoff_type= | =ores_trading_payoff_types_tbl= | 7 | ORE =optionData.PayoffType=, corpus values | =instrument_option.payoff_type=, =instrument_option.payoff_type_2=, =equity_accumulator_instrument.payoff_type=, =equity_accumulator_instrument.target_type= |
 
-=ascot_option_type= is the same set as =option_type=, so it references the one
-table rather than a second copy. Each entity has a seed under
-=projects/ores.sql/populate/trading/= wired into =populate_trading.sql=, a row in
-=ores.trading.module.org=, and an RLS policy beside the other lookups.
+=ascot_option_type= is the same set as =option_type=, and
+=equity_accumulator_instrument.target_type= holds two of the =payoff_type=
+values, so both point at an existing table rather than a second copy. Each
+entity has a seed under =projects/ores.sql/populate/trading/= wired into
+=populate_trading.sql=, a row in =ores.trading.module.org=, and an RLS policy
+beside the other lookups.
 
 The checks that entered the schema with this set: the option right on 10
 models, the exercise style on 4, the settlement form on 3, the barrier set on 4
 columns (and =fx_barrier_option_instrument='s =<> ''= check was replaced by the
-in-list), the price type on 2, the amortization type on 1.
+in-list), the price type on 2, the amortization type on 1, the return type on 2,
+and the payoff type on 4 columns.
 
 *** The sets that belong to another component
 
@@ -1191,20 +1196,54 @@ treatment applies to =bond_trs.funding_leg_type=, =bond_repo.repo_type= and
 =in ('Fixed', 'Floating')= checks stay, because they are a product gate and were
 already there.
 
-*** The sets whose rows are not in this tree
+*** Set R, =return_type=: realigned from the corpus
 
-Five columns state a closed set in the model and in a schema check, and their
-values are in neither the ORE XSD nor the FpML schema nor a seed. D13 says the
-rows are populated from the standard and never invented, so no table is created
-for them; the finding is recorded instead.
+ORE states =EquityLegData.ReturnType= as a bare =xs:string=
+(=external/ore/xsd/instruments.xsd=, lines 856 and 1127), so there is no XSD
+enum. The corpus settles it: every =ReturnType= element under
+=external/ore/examples/= is =Total= (15 documents) or =Price= (2), and nothing
+else. The model said =TotalReturn= and =PriceReturn=, neither of which any ORE
+document states. Realigned: the check on =bond_trs.return_type= became
+=in ('Total', 'Price')=, the same check was added to
+=equity_swap_instrument.return_type=, the =equity_swap_instrument= fixture
+generator moved from =TotalReturn= to =Total=, and the bond TRS mapper's
+hardcoded default moved from =TotalReturn= to =Total=
+(=bond_instrument_mapper.cpp=, the =BondTRS= branch). The reference entity
+=ores.trading.return_type= carries the two rows. Two hand-written round-trip
+assertions and two repository/reader fixtures that expected =TotalReturn= moved
+with it. Live data: 30 =bond_trs= rows and 120 =equity_swap_instruments= rows
+held =TotalReturn=; all 150 were updated to =Total=.
 
-| Column | Model's stated set | What the standard holds |
-|--------+--------------------+-------------------------|
-| =commodity_instrument.average_type=, =equity_asian_option_instrument.average_type= | Arithmetic, Geometric | no =averageType= simple type. FpML's nearest, =FxAveragingMethodEnum=, is Arithmetic/Harmonic. The commodity mappers set it from =PriceType= (Spot/FutureSettlement), which the model's own check would reject |
-| =bond_trs.return_type=, =equity_swap_instrument.return_type= | TotalReturn, PriceReturn | ORE states =ReturnType= as a free =xs:string=; the bond total return mapper hard-sets =TotalReturn= |
-| =equity_accumulator_instrument.payoff_type=, =instrument_option.payoff_type= | Accumulator, Decumulator, TaRF | ORE states =PayoffType= as a free =xs:string= |
-| =equity_accumulator_instrument.target_type= | TargetFull, TargetExact | not in the ORE XSD; no mapper writes it |
-| =callable_swap_instrument.call_type= | Bermudan, One-Time | not in the ORE XSD; no mapper writes it |
+*** Set P, =payoff_type= and =target_type=: realigned from the corpus
+
+ORE states =optionData.PayoffType= and =PayoffType2= as bare =xs:string=
+(=external/ore/xsd/instruments.xsd=, lines 337 and 338), so the corpus settles
+the set: every =PayoffType= element under =external/ore/examples/= is one of
+Accumulator (6), Asian (3), AverageStrike (1), Decumulator (2), TargetExact (6),
+TargetFull (2) or Vanilla (3). Realigned: the seven-value check was added to
+=instrument_option.payoff_type=, =instrument_option.payoff_type_2= and
+=equity_accumulator_instrument.payoff_type=, the model's own "Accumulator,
+Decumulator, or TaRF" wording was replaced, and the reference entity
+=ores.trading.payoff_type= carries the seven rows.
+
+=equity_accumulator_instrument.target_type= is not a separate ORE set.
+=TargetFull= and =TargetExact= are two of the =PayoffType= values, and ORE's own
+=tarfData.TargetType= is an =stFreeStyleNumber= scripted value that no corpus
+document states (no =<TargetType>= element appears anywhere under
+=external/ore/examples/=). The column therefore points at
+=ores_trading_payoff_types_tbl= and keeps a narrower check over the two target
+values. Live data needed no correction: =instrument_option= held null in all 64
+rows for both payoff columns, =equity_accumulator_instrument.payoff_type= held
+=Decumulator= in all 128 rows, and =target_type= was null in all 128.
+
+*** Two sets ORE genuinely does not state
+
+| Column | Model's stated set | Why no table | Exact place |
+|--------+--------------------+--------------+-------------|
+| =commodity_instrument.average_type=, =equity_asian_option_instrument.average_type= | Arithmetic, Geometric | ORE states no average-type element or enum for either family. =commodityAveragePriceOptionData= has no average member, =singleUnderlyingAsianOptionData= has none either, and no =averageType= simple type exists; the only =Arithmetic= in ORE is part of the scripted product names =EquityAsianOptionArithmeticPrice= and =...ArithmeticStrike=, and ORE never states =Geometric= at all. The set is the model's own, so no reference table is created | =commodity_instrument_mapper.cpp= line 365, =result.average_type = to_string(d.PriceType);=, writes ORE's =priceType= (Spot, FutureSettlement) into a column whose schema check is =in ('Arithmetic', 'Geometric')=. The mapper cannot produce a realigned value without guessing, because ORE states none, so the set is left as it is and the mapper is reported rather than patched |
+| =callable_swap_instrument.call_type= | Bermudan, One-Time | ORE has no call type on a callable swap. The one =CallType= element in the schema is on =nettingSetDetails= (=instruments.xsd= line 225), a netting-agreement field, and no =<CallType>= element appears under =external/ore/examples/=. Nothing produces the value: the only writers are the trading repository, service and history mappers, which copy the domain member | =callable_swap_instrument= has no ORE mapper at all, so there is no producer to realign; the column keeps its check and its fixture generator |
+
+Neither set is invented, and neither is seeded from the model's own list.
 
 =rate_kind= and =schedule_kind= are the two remaining closed sets. They are
 storage-shape discriminators rather than domain enumerations: =rate_kind= names
@@ -1254,14 +1293,18 @@ moved to =Clean= with the DDL user.
 
 | Change | Count |
 |--------+-------|
-| New tables created (9 lookups) with their indexes, insert fn, insert trigger and delete rule | 9 |
-| Notify trigger functions and triggers created | 9 |
-| RLS policies created | 9 |
-| Reference rows seeded | 31 across 9 tables |
-| =alter table ... add check (...)= for the checks the create scripts could not add, because =create table if not exists= skips an existing table | 43 |
+| New tables created (11 lookups) with their indexes, insert fn, insert trigger and delete rule | 11 |
+| Notify trigger functions and triggers created | 11 |
+| RLS policies created | 11 |
+| Reference rows seeded | 40 across 11 tables |
+| =alter table ... add check (...)= for the checks the create scripts could not add, because =create table if not exists= skips an existing table | 49 |
 | Trading validate functions dropped | 5 |
 | Generated create scripts re-applied to resync every insert trigger (159 files; 16 =must be owner of table= errors, all on =ores_trading_commodity_basket_constituents_tbl=, which the postgres role owns and which no retired function touched) | 159 |
 | Stale =price_type='Price'= rows updated to =Clean= | 52 |
+| =bond_trs= and =equity_swap_instruments= rows realigned from =TotalReturn= to =Total= | 150 |
+
+The check count splits as 43 for Sets 1 to 3 and 6 for Sets R and P, and the
+seed count as 31 for Sets 1 to 3 plus 2 return types and 7 payoff types.
 
 =ores_trading_commodity_basket_constituents_tbl= is owned by the =postgres= role
 rather than the DDL user, so the DDL user cannot re-apply its create script. It
@@ -1269,14 +1312,14 @@ is pre-existing and outside this unit; the next =compass db recreate= resolves i
 
 ** Gates after each set
 
-| Gate | Set 1 | Set 2 | Set 3 |
-|------+-------+-------+-------|
-| =pytest projects/ores.codegen/tests -q= | 806 | 806 | 806 |
-| =check_component_drift.py --component trading-cpp --dry-run= twice | No drift | No drift | No drift |
-| =check_component_drift.py --all --dry-run= | No drift | No drift | No drift |
-| =cmake --build build/output/linux-clang-debug-make -j 3= | 0, zero =error:= | 0, zero =error:= | 0, zero =error:= |
-| =ctest= the nine owned suites | 9 of 9 | 9 of 9 | 9 of 9 |
-| =validate_docs.sh= | 40 components | 40 components | 40 components |
+| Gate | Set 1 | Set 2 | Set 3 | Set R | Set P |
+|------+-------+-------+-------+-------+-------|
+| =pytest projects/ores.codegen/tests -q= | 806 | 806 | 806 | 806 | 806 |
+| =check_component_drift.py --component trading-cpp --dry-run= twice | No drift | No drift | No drift | No drift | No drift |
+| =check_component_drift.py --all --dry-run= | No drift | No drift | No drift | No drift | No drift |
+| =cmake --build build/output/linux-clang-debug-make -j 3= | 0, zero =error:= | 0, zero =error:= | 0, zero =error:= | 0, zero =error:= | 0, zero =error:= |
+| =ctest= the nine owned suites | 9 of 9 | 9 of 9 | 9 of 9 | 9 of 9 | 9 of 9 |
+| =validate_docs.sh= | 40 components | 40 components | 40 components | 40 components | 40 components |
 
 * Test Scenarios
 

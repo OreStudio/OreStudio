@@ -51,7 +51,7 @@ equity_swap_instrument make_instrument(database_helper& h) {
     r.basket_json = "";
     r.currency = "USD";
     r.notional = ores::utility::decimal::decimal::from_string("2000000").value();
-    r.return_type = "TotalReturn";
+    r.return_type = "Total";
     r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-10-16");
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date("2025-12-31");
     r.long_short = "Long";
@@ -85,7 +85,7 @@ TEST_CASE("equity_swap_instrument_write_and_read_latest", tags) {
     CHECK(read[0].underlying_name == ".SPX");
     CHECK(read[0].currency == "USD");
     CHECK(read[0].notional.to_double() == 2000000.0);
-    CHECK(read[0].return_type == "TotalReturn");
+    CHECK(read[0].return_type == "Total");
     CHECK(read[0].start_date == ores::platform::time::datetime::from_iso8601_date("2025-10-16"));
     CHECK(read[0].maturity_date == ores::platform::time::datetime::from_iso8601_date("2025-12-31"));
     CHECK(read[0].long_short == "Long");

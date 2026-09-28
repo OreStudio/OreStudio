@@ -45,3 +45,5 @@
 \ir ./trading_settlement_types_populate.sql
 \ir ./trading_barrier_types_populate.sql
 \ir ./trading_activity_categories_populate.sql
+\ir ./trading_return_types_populate.sql
+\ir ./trading_payoff_types_populate.sql

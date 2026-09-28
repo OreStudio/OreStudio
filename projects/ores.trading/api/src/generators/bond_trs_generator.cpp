@@ -44,7 +44,7 @@ domain::bond_trs generate_synthetic_bond_trs(utility::generation::generation_con
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
-    r.return_type = std::string("TotalReturn");
+    r.return_type = std::string("Total");
     r.funding_leg_type = std::string("Floating");
     r.funding_rate = 0.045;
     r.funding_index = std::string("SOFR");

@@ -52,7 +52,7 @@ generate_synthetic_equity_swap_instrument(utility::generation::generation_contex
     r.basket_json = std::string("");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
-    r.return_type = std::string("TotalReturn");
+    r.return_type = std::string("Total");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.long_short = std::string("Long");

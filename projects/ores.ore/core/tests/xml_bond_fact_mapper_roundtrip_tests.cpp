@@ -801,10 +801,10 @@ TEST_CASE("bond_trs_carries_the_price_type_and_the_funding_schedule", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondTRS");
     REQUIRE(r.trs);
 
-    // No schema field selects a return type, so TotalReturn is the model
+    // No schema field selects a return type, so Total is the model
     // default the column check admits rather than a value read from the
     // document.
-    CHECK(r.trs->return_type == "TotalReturn");
+    CHECK(r.trs->return_type == "Total");
     CHECK(r.trs->funding_leg_type == "Fixed");
     CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
 

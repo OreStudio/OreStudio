@@ -76,10 +76,15 @@ struct bond_trs final {
     boost::uuids::uuid instrument_id;
 
     /**
-     * @brief Return type of the total return side (TotalReturn, PriceReturn).
+     * @brief Return type of the total return side (Total, Price).
      *
-     * The flattening mapper hardcodes this value today; the reworked mapper must read it from
-     * TotalReturnData.PriceType.
+     * Soft FK to ores_trading_return_types_tbl: ORE states EquityLegData.ReturnType as a bare
+     * xs:string, so the set is the one the ORE example corpus uses (Total, Price). PR 4 tightens
+     * the soft reference into a real foreign key.
+     *
+     * The mapper hardcodes Total: an ORE BondTRS is a total return swap by construction, and ORE's
+     * own EquityLegData.ReturnType set is Total or Price. TotalReturnData.PriceType names a
+     * price-quoting convention (Clean or Dirty), not a return type, so it is not the source.
      */
     std::string return_type;
 

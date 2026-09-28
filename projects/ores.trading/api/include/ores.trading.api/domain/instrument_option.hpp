@@ -98,12 +98,20 @@ struct instrument_option final {
     std::optional<std::string> option_type;
 
     /**
-     * @brief The payoff the option settles to.
+     * @brief The payoff the option settles to (ORE optionData.PayoffType).
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: the values are the ORE optionData.PayoffType set
+     * the corpus uses (Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull,
+     * Vanilla). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> payoff_type;
 
     /**
-     * @brief The second payoff, for the products that state two.
+     * @brief The second payoff, for the products that state two (ORE optionData.PayoffType2).
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: the values are the ORE optionData.PayoffType set
+     * the corpus uses (Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull,
+     * Vanilla). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> payoff_type_2;
 

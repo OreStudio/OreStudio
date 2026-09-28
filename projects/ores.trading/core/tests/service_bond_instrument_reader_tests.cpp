@@ -255,7 +255,7 @@ bond_trs make_trs(const stamps& s, const boost::uuids::uuid& instrument_id) {
     bond_trs r;
     stamp(r, s);
     r.instrument_id = instrument_id;
-    r.return_type = "TotalReturn";
+    r.return_type = "Total";
     r.funding_leg_type = "Fixed";
     r.funding_rate = 3.0;
     r.funding_index = "EURIBOR-6M";
@@ -926,7 +926,7 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     REQUIRE(instruments.size() == 1);
     const auto& rebuilt = instruments.at(id);
     REQUIRE(rebuilt.trs.has_value());
-    CHECK(rebuilt.trs->return_type == "TotalReturn");
+    CHECK(rebuilt.trs->return_type == "Total");
 
     // The three members ride on the fact row because no other row holds
     // them, and the schedule rides on the shared schedule tables under the

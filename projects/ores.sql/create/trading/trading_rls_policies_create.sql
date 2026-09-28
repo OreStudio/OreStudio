@@ -176,6 +176,32 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Return Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_return_types_tbl enable row level security;
+
+create policy return_types_tenant_isolation_policy on ores_trading_return_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Payoff Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_payoff_types_tbl enable row level security;
+
+create policy payoff_types_tenant_isolation_policy on ores_trading_payoff_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Long Short Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_long_short_types_tbl enable row level security;

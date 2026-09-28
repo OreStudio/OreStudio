@@ -73,7 +73,11 @@ struct equity_swap_instrument final {
     ores::utility::decimal::decimal notional;
 
     /**
-     * @brief TotalReturn or PriceReturn.
+     * @brief Total or Price.
+     *
+     * Soft FK to ores_trading_return_types_tbl: ORE states EquityLegData.ReturnType as a bare
+     * xs:string, so the set is the one the ORE example corpus uses (Total, Price). PR 4 tightens
+     * the soft reference into a real foreign key.
      */
     std::string return_type;
 

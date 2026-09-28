@@ -119,7 +119,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondTRS");
     CHECK(!r.issue.security_id.empty());
     REQUIRE(r.trs.has_value());
-    CHECK(r.trs->return_type == "TotalReturn");
+    CHECK(r.trs->return_type == "Total");
     CHECK(r.trs->funding_leg_type == "Fixed");
     CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
 

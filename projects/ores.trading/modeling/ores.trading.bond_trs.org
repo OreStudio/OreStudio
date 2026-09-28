@@ -61,13 +61,19 @@ rides the fact tables.
 :nullable: false
 :END:
 
-Return type of the total return side (TotalReturn, PriceReturn).
+Return type of the total return side (Total, Price).
 
-The flattening mapper hardcodes this value today; the reworked mapper
-must read it from =TotalReturnData.PriceType=.
+Soft FK to ores_trading_return_types_tbl: ORE states =EquityLegData.ReturnType=
+as a bare =xs:string=, so the set is the one the ORE example corpus uses
+(Total, Price). PR 4 tightens the soft reference into a real foreign key.
+
+The mapper hardcodes =Total=: an ORE =BondTRS= is a total return swap by
+construction, and ORE's own =EquityLegData.ReturnType= set is =Total= or
+=Price=. =TotalReturnData.PriceType= names a price-quoting convention
+(Clean or Dirty), not a return type, so it is not the source.
 
 #+begin_src cpp :name generator
-std::string("TotalReturn")
+std::string("Total")
 #+end_src
 
 ** funding_leg_type
@@ -176,7 +182,7 @@ std::make_optional(ores::utility::decimal::decimal::from_string("109.712").value
 
 | expression                             |
 |----------------------------------------|
-| "return_type" in ('TotalReturn', 'PriceReturn') |
+| "return_type" in ('Total', 'Price') |
 | "funding_leg_type" in ('Fixed', 'Floating') |
 | "price_type" is null or "price_type" in ('Clean', 'Dirty') |
 

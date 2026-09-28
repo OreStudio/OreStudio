@@ -104,12 +104,22 @@ struct equity_accumulator_instrument final {
     std::optional<ores::utility::decimal::decimal> target_amount;
 
     /**
-     * @brief TaRF: TargetFull or TargetExact; empty for accumulator.
+     * @brief TaRF: TargetFull or TargetExact, the ORE optionData.PayoffType values the target
+     * variant states; null for an accumulator.
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: TargetFull and TargetExact are two of the ORE
+     * optionData.PayoffType values, not a separate ORE set, so the column points at that table. PR
+     * 4 tightens the soft reference into a real foreign key.
      */
     std::string target_type;
 
     /**
-     * @brief Accumulator, Decumulator, or TaRF.
+     * @brief One of the ORE optionData.PayoffType values; an accumulator or TaRF states Accumulator
+     * or Decumulator, and a TaRF's target variant states TargetFull or TargetExact as well.
+     *
+     * Soft FK to ores_trading_payoff_types_tbl: the values are the ORE optionData.PayoffType set
+     * the corpus uses (Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull,
+     * Vanilla). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string payoff_type;
 

@@ -1394,10 +1394,10 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     bond_trs trs;
     // An ORE BondTRS is a total return swap by construction: no field of
     // the schema selects a return type, and PriceType names a
-    // price-quoting convention rather than a return type. TotalReturn is
-    // the model default the column check admits, with the ORE User Guide
-    // as the evidence.
-    trs.return_type = "TotalReturn";
+    // price-quoting convention rather than a return type. "Total" is the
+    // value ORE's own EquityLegData.ReturnType uses, and the set the
+    // example corpus writes is Total or Price.
+    trs.return_type = "Total";
     const auto& ld = d.FundingData.LegData;
     if (ld.legDataType) {
         if (ld.legDataType->FloatingLegData) {

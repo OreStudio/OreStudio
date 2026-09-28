@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 1C68526F-83B7-4371-B17C-FE0621618FA7
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.payoff_type
+#+description: Codegen entity model for the trading =payoff_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Option payoff type from the ORE optionData PayoffType.
+#+entity_singular: payoff_type
+#+entity_plural: payoff_types
+#+entity_title: Payoff Type
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+Reference data table defining the closed payoff set ORE states on
+=optionData.PayoffType= and =optionData.PayoffType2=
+(=external/ore/xsd/instruments.xsd=, lines 337 and 338).
+
+ORE declares those elements as bare =xs:string= with no enum, so there is no
+XSD enumeration to read. The set is the one the ORE example corpus actually
+uses: every =PayoffType= element across =external/ore/examples/= is one of
+Accumulator, Asian, AverageStrike, Decumulator, TargetExact, TargetFull or
+Vanilla, and nothing else. The list is the corpus's, not the model's own; the
+model previously stated "Accumulator, Decumulator, or TaRF" and never wrote it.
+
+TargetFull and TargetExact are two of these seven, not a separate ORE set:
+=equity_accumulator_instrument.target_type= holds one of them, and the ORE
+=tarfData.TargetType= element is a scripted free-style number that no corpus
+document states.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique payoff type code.
+
+Examples: 'Accumulator', 'Decumulator', 'TargetFull'.
+
+#+begin_src cpp :name generator
+std::string("Decumulator")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Detailed description of the payoff type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_payoff_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_payoff_type_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: payoff_type
+:entity_plural_short:   payoff_types
+:entity_singular_words: payoff type
+:entity_plural_words:   payoff types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pof
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

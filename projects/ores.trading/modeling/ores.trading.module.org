@@ -25,6 +25,8 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][ores.trading.activity_type]] | Internal trade activity classification (e.g. new_booking, amendment, novation). |
 | [[id:F0F5580D-B2BD-48BE-9ADA-1F21A311326C][ores.trading.fpml_event_type]] | Standard FpML lc_EventType_Type coding scheme (New, Amendment, Novation, PartialTermination, FullTermination). |
 | [[id:BAC3E39A-8EE6-4114-A69D-E83487939887][ores.trading.long_short_type]] | Position direction code (Long or Short). |
+| [[id:1C68526F-83B7-4371-B17C-FE0621618FA7][ores.trading.payoff_type]] | Option payoff type from the ORE optionData PayoffType. |
+| [[id:A09F91EA-DF8C-41EE-853E-3F62274B3ED9][ores.trading.return_type]] | Equity leg return type (Total or Price). |
 | [[id:8818F9D5-C62F-40A4-9053-755C2674039B][ores.trading.option_type]] | Option exercise right (Call or Put). |
 | [[id:025B0A54-9622-4966-9B1D-C5CD074DD31C][ores.trading.exercise_type]] | Exercise style (European, Bermudan or American). |
 | [[id:AAB9DE66-3641-4EDE-980F-621D83DACB6D][ores.trading.settlement_type]] | Option settlement form (Cash or Physical). |

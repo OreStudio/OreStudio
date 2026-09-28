@@ -1,0 +1,102 @@
+Live run of a provisioning run that stops on its failed step and is retried to
+completion, 2026-09-28, environment eager_maxwell, branch
+feature/follow-the-progress-and-retry-the-failed-step.
+
+The database and the NATS store were recreated, the fleet started on the
+branch's binaries, and the initial administrator bootstrapped. The failure was
+made by retiring one dataset the photo step reads, so the step fails for a
+reason a person can fix; nothing else in the deployment was disturbed:
+
+  update ores_dq_datasets_tbl set valid_to = clock_timestamp()
+   where code = 'acme.acme_hk.accounts'
+     and valid_to = ores_utility_infinity_timestamp_fn();
+  -- UPDATE 1
+
+Then the ACME demo card was provisioned through the browser's own route, with
+the system administrator's session, so the run belongs to the tenant that asked
+for it:
+
+  POST /api/session          → 200 (super_admin@localhost)
+  POST /api/provision-tenant → {"success":true,
+                                "instanceId":"ae5b2b6e-011a-483c-8bbb-4750e5dc3773",
+                                "tenantId":"e67b85ae-a3a0-4abc-b42e-867593bcd0fb",
+                                "accountId":"01a0ea05-0a0b-7c50-a138-1c5e08aebead"}
+
+The journey's progress read, followed while the run was open:
+
+  GET /api/provision-tenant/ae5b2b6e-011a-483c-8bbb-4750e5dc3773
+
+  status  failed          current step 4 of 7
+  error   The dataset 'acme.acme_hk.accounts' does not exist, so its staff
+          photos cannot be attached.
+    0 publish_bundle        completed
+    1 import_lei_hierarchy  completed
+    2 provision_party       completed
+    3 load_staff            completed
+    4 attach_photos         failed   (the error above)
+
+The run stopped where it failed, with the error standing against the step and
+every completed step kept. Nothing was rolled back: the state is failed, not
+compensated, which is the stop-and-retry policy this unit landed.
+
+The cause was then removed, and the retry asked for through the same route:
+
+  update ores_dq_datasets_tbl set valid_to = ores_utility_infinity_timestamp_fn()
+   where code = 'acme.acme_hk.accounts'
+     and valid_to <> ores_utility_infinity_timestamp_fn();
+  -- UPDATE 1
+
+  POST /api/provision-tenant/ae5b2b6e-.../retry  {"stepName":""}
+
+  {"success":true,"message":"","instanceId":"ae5b2b6e-011a-483c-8bbb-4750e5dc3773",
+   "stepIndex":4,"stepName":"attach_photos"}
+
+The progress read after the retry:
+
+  status  completed       current step 6 of 7
+    0 publish_bundle        completed
+    1 import_lei_hierarchy  completed
+    2 provision_party       completed
+    3 load_staff            completed
+    4 attach_photos         completed
+    5 start_market_feeds    completed
+    6 complete_provisioning completed_with_warnings
+
+The engine re-ran the step that failed and nothing else. Each step's current row
+says so — a step's row is versioned on every transition, and only the retried
+step moved:
+
+  step  name                   version  current row written
+  0     publish_bundle         3        22:56:45   (the original run)
+  1     import_lei_hierarchy   3        22:56:46
+  2     provision_party        3        22:56:49
+  3     load_staff             3        22:56:52
+  4     attach_photos          5        22:58:13   (the retry)
+  5     start_market_feeds     3        22:58:16
+  6     complete_provisioning  3        22:58:16
+
+The tenant the run produced, read from the database:
+
+  parties      = 5        accounts = 40       photographed = 39
+  bindings     = 65       (13 for each of the five parties)
+
+What this proves, against the task's acceptance:
+
+- the read the page follows answers the run's status, its error, the step it is
+  executing, and one summary per step naming the step, its state and its error;
+- a step that fails stops the run, which is the policy the definition declares
+  and the engine now reads;
+- the retry resumes the run from the step that failed, under that step's own
+  identity, clears the run's error, and leaves every completed step and its
+  result alone;
+- the run completes after a retry, and the browser reaches both the read and the
+  retry through its own routes;
+- the run belongs to the tenant that asked for it, so the person who provisioned
+  the tenant is the person who can watch and resume it.
+
+One defect this unit surfaced, captured for the component that owns it: a step
+command is published fire-and-forget, so a command whose service is stopped at
+that instant is lost, and the run waits for ever on a step that will never
+answer. Stopping the marketdata and assets services to provoke a failure
+produced exactly that — stalled runs, no error and no failed step — and only a
+workflow-service restart moved them.

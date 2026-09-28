@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: 60455F05-F8BA-4F64-89EF-A3AD920F4915
+:END:
+#+title: Task: Follow the progress and retry the failed step
+#+description: The read the journey's page follows, the retry verb that resumes a stopped run from its failed step, and the decision that settles the mismatch between what the engine publishes and what the browser decodes.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/follow-the-progress-and-retry-the-failed-step
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person watching a provisioning run can follow it, and a run that fails can be retried from the step that failed with every completed step kept. The progress read returns the instance's status and one summary per step, the retry verb resumes a stopped instance from the step that failed, and the mismatch between the engine's change payload and the browser's schema has an owner.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | The failure policy, the retry verb, the browser's reach to the read and the retry, and the recorded decision on the change payload are in, and a run that failed in a step was retried to completion on the live deployment. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The progress read returns the instance's status, its declared step count, the step it is executing, and one summary per step naming the operation, the step's state and its error.
+- The retry verb resumes a stopped instance from its failed step, under that step's stable identity, clears the instance's error, and re-dispatches the step.
+- A retry keeps every completed step and its result, and reads the persisted record rather than the caller's memory.
+- The mismatch between what the engine publishes and what the browser decodes is settled by a decision recorded with its owner, and the page follows the run through the read.
+- A live run that fails in a step is retried and completes without repeating the work of the steps that succeeded.
+
+* Plan
+
+The unit is the run's progress contract and the verb that resumes a stopped
+run. Three things land, and the reconnaissance below decides the shape of
+each.
+
+*The read the page follows.* A run's progress is read, not pushed. The
+engine already answers a read that returns the instance's status, its error,
+the number of steps it declares, the index of the step it is executing, and
+one summary per step naming the step, its state, its error and its log. A
+stopped run keeps that shape: the failed step is present with its error and
+every completed step keeps its result. So the page can render the rail from
+one read and ask again while the run is open, and no new server read is
+needed. What is missing is the browser's reach: a BFF route for the read and
+a wire-client method behind it, which is how the journey's screen will follow
+a run without holding any state of its own.
+
+*Who the read answers.* The read admits the run's own tenant and nobody
+else, and that decides whose run a provisioning run is. A run started by the
+provision request belonged to the tenant it creates, so the read refused the
+person who asked for it: the system administrator's session is in another
+tenant, and the page they are looking at could never render the run it had
+just started. The run now belongs to the tenant that asked for it, and the
+tenant being provisioned travels in the request beside it, which is where
+every step command reads the tenant it acts on. The read and the retry then
+answer the starter, and no tenant gains a view of another tenant's runs. This
+is also what the query protocol's contract already states: an instance is
+readable by the tenant that owns it. The two tenants are stated apart on
+purpose, because the run's tenant scopes its rows while the provisioned
+tenant is what the work acts on, and a run that named only one of them would
+have to guess the other.
+
+*The premise the retry needs, and does not have.* A retry resumes a run the
+engine has stopped, and today no run ever stops that way: a failed step
+always begins compensation, and a definition whose steps declare no
+compensation at all lands in =compensated= — a run that undid nothing
+reported as one that undid everything. The failure and recovery page already
+decides what should happen instead: the failure policy belongs to the
+definition, its default is compensate, provisioning declares stop, and a
+definition that declares stop leaves the run in =failed= with its error
+intact and every completed step untouched. The policy is written nowhere in
+code. So the unit lands it: the definition declares the policy, the engine
+reads it, and provisioning declares stop. Without it the retry verb would
+have nothing to resume and the page would have no stopped run to offer one
+for.
+
+*The retry verb.* Resuming is the engine's work, so the verb joins the
+engine's own surface rather than the query handler's: it re-dispatches a step
+under the identity that step already has, and only the engine holds the
+dispatch path, the state maps and the lock that serialises a run's writers.
+The contract the verb honours, read from the failure and recovery page:
+
+- It resumes a run the engine has stopped: the instance must be failed.
+- It resumes from the step that failed. A caller may name the step, and the
+  name must resolve to a step the run has not completed; when the caller
+  names none the step that failed is the one.
+- It keeps every completed step and its result. The steps before the target
+  must all be completed, so a caller cannot resume past work that never
+  finished.
+- It re-dispatches the target under the step id it already has, and clears
+  the target's error and the instance's error. The step's id is its
+  idempotency key, so a service that answers twice is caught by the engine's
+  own guard rather than by the retry.
+- It reads the persisted record: the target step, its command and its index
+  all come from the store, so a retry after a service restart behaves the
+  same as one during the run.
+- It publishes the instance's status event, so a watcher that is on the
+  change channel learns the run moved.
+
+The verb refuses a run that is not failed, a step name the run does not
+hold, and a target whose predecessors have not all completed, each with a
+message that names what it refused. A refusal is a reply, never a mutation.
+
+The state machine the run occupies carries the edges a retry crosses: the
+step machine's =failed= to =in_progress= edge is declared and its seed was
+missing it, and the instance machine has no retry edge at all. Both are
+added, so the run's declared contract and the engine agree.
+
+*The change payload.* The page does not follow the run on the change
+channel, and the mismatch is not this unit's to repair. The subject the
+engine publishes on matches the channel convention, but its payload is the
+platform's generic change notification while the browser's shared decoder
+reads the country event's field name; worse, every entity's own event names
+its identifiers differently, so no one schema can read them all. The choice
+between aligning the payload and giving a workflow its own subject and
+schema belongs to whoever owns the event contract, and the backlog already
+holds that capture. This unit records the decision — the read is the progress
+contract — and leaves the channel with its owner.
+
+*Delivery.* The verb, the BFF reach and the recorded decision land together,
+and a live run that fails in a step is retried to completion, which is the
+acceptance that none of the three can be proved without.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Transitions each workflow machine declares | 7 (instance) and 6 (step), the retry edge included | =./compass.sh sql= over =ores_dq_fsm_transitions_tbl= | the branch's head |
+| Engine tests over the retry and the failure policy | 6 cases, 23 in the suite, all passing | =./compass.sh test run -- -R ores.workflow.core.tests= | the branch's head |
+| BFF route tests over the read and the retry | 6 cases, 44 in the suite, all passing | =npm test= in =projects/ores.web/packages/bff= | the branch's head |
+| Steps the retried run took, and the step it resumed from | 7, resumed from step 4 | =evidence/workflow_retry_run_completed.txt= | ae5b2b6e-011a-483c-8bbb-4750e5dc3773 |
+| Versions the failed step's row went through, against 3 for every other step | 5, against 3 | =evidence/workflow_retry_run_completed.txt= (read over =ores_workflow_workflow_steps_tbl=) | ae5b2b6e-011a-483c-8bbb-4750e5dc3773 |
+| Data the tenant holds after the retry | 5 parties, 40 accounts, 39 photographed, 65 bindings | =evidence/workflow_retry_run_completed.txt= | e67b85ae-a3a0-4abc-b42e-867593bcd0fb |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The failure policy, the retry verb and the browser's reach to both the progress
+read and the retry are in, and a run that stopped on its failed step was retried
+to completion on the live deployment. The run is recorded beside this task in
+=evidence/workflow_retry_run_completed.txt=: the progress read answered the
+run's status and one summary per step while it was open, the run rested in
+=failed= with the failing step's error and every completed step kept, the retry
+answered with the step it re-dispatched, and the run then completed — with only
+the failed step's row moving, which is what says the completed work was not
+repeated.
+
+Three premises had to be landed before the retry could do anything, and each is
+now the engine's behaviour rather than a note: the definition declares its
+failure policy and a definition that declares stop leaves its run in =failed=
+instead of compensating; a run belongs to the tenant that asked for it, so the
+person who started a provisioning run can follow and resume it; and the two
+state machines declare the retry edges their seeds were missing.
+
+The change payload is settled as a decision rather than a patch: a journey
+follows its run through the read, and the event channel keeps its owner. The
+capture that owns it now records why no one schema can read every entity's own
+event, and the browser's decoder is left alone because it is right for the
+subjects the entity screens watch.
+
+What this task does not fix, and captured instead: a step command is published
+fire-and-forget, so a command whose service is stopped at that instant is lost
+and its run waits for ever with no error and no failed step to show.
+

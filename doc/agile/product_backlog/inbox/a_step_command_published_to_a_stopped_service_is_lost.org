@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: AD2AB0B8-B506-4497-8A33-F847C58D429A
+:END:
+#+title: A step command published while its service is stopped is lost
+#+description: The engine publishes a step command fire-and-forget to the subject its definition names. If the service that serves that subject is not subscribed at that instant, the command is gone: nothing retries it, nothing reports it, and the run waits for ever on a step that will never answer. Recovery re-dispatches an in-progress step, but only when the workflow service restarts, so the run needs an operator to notice and restart the engine. A step's command must be held until the far end acknowledges it, or a step whose handler has not answered within its budget must be re-dispatched.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:engine:correctness:bug:reliability:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Hold a step command until the far end has answered for it, or re-dispatch a
+step whose handler has not answered within the step's budget. The engine
+publishes a step command fire-and-forget to the subject its definition names.
+A subject with no subscriber at that instant is a command that is gone:
+nothing retries it, nothing reports it, and the run waits for ever on a step
+that will never answer.
+
+* Why
+
+Found on 2026-09-28 while proving the retry verb on the live deployment. Two
+services were stopped in turn to make a provisioning step fail, and neither
+stopping produced the clean failure it was meant to:
+
+- With the marketdata service stopped, a run's =provision_party= step
+  dispatched the CRM-topology dataset to a service that was not there. The run
+  rested in =in_progress= with that step =in_progress= for ten minutes, and
+  the engine never re-dispatched it. What moved it was restarting the
+  workflow service, whose recovery pass re-dispatches the in-progress steps of
+  in-progress runs.
+- With the assets service stopped, the base bundle's country-flags step was
+  lost the same way, and the run stalled on its *first* step.
+
+The recovery pass runs once, at service start. So a lost command leaves a run
+that stops making progress with no error, no timeout and no step the progress
+read can show as failed — the read shows a step that is still running. The
+only actor who can end it is an operator who notices and restarts the engine.
+
+The engine's own waiting contract already argues where a step's budget
+belongs: a step that takes minutes is a step with a deadline, and a deadline
+that expires is a failure the run records. A command acknowledged by its
+handler, or a step re-dispatched when its deadline passes, closes this without
+inventing a second recovery path — the retry verb re-dispatches a step under
+its own identity, and a timeout could use the same machinery.
+
+* References
+
+- [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][The step protocol]] — what the engine publishes and what a handler reports.
+- [[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Waiting, deadlines and cancellation]] — where a step's budget belongs.
+- [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — the retry that re-dispatches a step under its own identity.
+- [[id:60455F05-F8BA-4F64-89EF-A3AD920F4915][Task: Follow the progress and retry the failed step]] — the unit that found it.
+
+* See also
+
+-

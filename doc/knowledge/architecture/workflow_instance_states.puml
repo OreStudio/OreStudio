@@ -48,6 +48,7 @@ i_prog --> i_fail : fail
 i_prog --> i_comp : begin_compensation
 i_comp --> i_compd : finish_compensation
 i_comp --> i_fail : fail_during_compensation
+i_fail --> i_prog : retry
 
 s_start --> s_pend : initial_start
 s_pend --> s_prog : initial_start
@@ -82,6 +83,12 @@ note bottom of s_fail
     =failed= carries the step's error and log.
     =retry= resumes the step from it, and
     =compensate= rolls it back.
+end note
+
+note bottom of i_fail
+    =failed= carries the run's error and keeps
+    every completed step. =retry= resumes the
+    run from the step that failed.
 end note
 
 note bottom of i_done

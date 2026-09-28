@@ -48,9 +48,9 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. |
+| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. A stopped run can be followed through the progress read and retried from the step that failed. |
 | Waiting on    | Nothing. |
-| Next          | Plan step 8: follow the progress, retry from the failed step, and settle the event payload. |
+| Next          | Plan step 9: carry the forced password change and read the password policy. |
 | Last touched  | 2026-09-28                               |
 
 * Acceptance
@@ -101,6 +101,7 @@ state and the progress are real.
 | [[id:B03D4339-FECB-4A9E-B5A1-1CA23FB2BF17][Add the generic provision request]] | DONE | 2026-09-28 | 2026-09-28 | Provisioning a tenant is one request for every tenant, the first one included, instead of a bootstrap-specific request and an ACME-specific one. The request names the seed profile and the values its parameters take, and answers with a workflow instance id at once. |
 | [[id:1516C4BD-65A6-4A5D-A2AD-A1F358D14050][Define the tenant provisioning workflow]] | DONE | 2026-09-28 | 2026-09-28 | The provision-tenant definition over the fixed step kinds, in the shape workflow.v1.parties.provision already uses, running provision party once per party. |
 | [[id:F62FC7AD-DE81-43FB-93D5-65BD5AA1F2D6][Execute the ACME provisioning step kinds]] | DONE | 2026-09-28 | 2026-09-28 | The three step kinds only the ACME demo card declares — load_staff, attach_photos and start_market_feeds — so the demo card's run creates the tenant's staff and their parties, attaches the images its records display, and starts its market feeds. |
+| [[id:60455F05-F8BA-4F64-89EF-A3AD920F4915][Follow the progress and retry the failed step]] | STARTED | 2026-09-28 | | The read the journey's page follows, the retry verb that resumes a stopped run from its failed step, and the decision that settles the mismatch between what the engine publishes and what the browser decodes. |
 
 * Plan
 
@@ -154,6 +155,8 @@ none of them depends on it and all of them are permanent.
   with.* A party's external identifier is guarded by party isolation,
   which a step's own context does not carry, so the name is the handle the
   profile can state and the deployment's party read answers.
+- *A run belongs to the tenant that asked for it.* The progress read answers the tenant that owns a run and nobody else, so a provisioning run owned by the tenant it creates could not be followed by the person who asked for it: their session is in another tenant. The run's tenant scopes its rows and the tenant it provisions travels in the request, so the starter can watch and resume their own work and no tenant gains a view of another's runs.
+- *The failure policy belongs to the definition.* A definition declares whether a failed step rolls its completed work back or stops the run on that step. Provisioning declares stop, because its completed work is published data a person expects to keep; the default stays compensate for a short saga of writes. A stopped run keeps every completed step and waits for a retry.
 - *Every kind fails its step rather than half-finishing it.* The engine
   keeps the steps that completed and stops the run on the one that failed.
   The synchronous ACME handler the work was lifted from is not the model:

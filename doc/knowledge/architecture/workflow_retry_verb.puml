@@ -25,12 +25,27 @@ class "retry verb" as retry <<message>> #E1F5FF {
     +from step : text
 }
 
+class "retry answer" as answer <<message>> #E8F5E9 {
+    +run : instance id
+    +step index : number
+    +step : text
+    +refusal : text
+}
+
+retry --> answer : answers
+
 note top of retry
 Resumes a stopped run: the caller asks for the failed step again.
 - tenant: the tenant the run belongs to.
 - run: the run to resume.
 - from step: the step to resume from; absent when the
   run resumes from the step that failed.
+end note
+
+note bottom of answer
+The answer names the step the engine re-dispatched, or why it
+refused: a run that has not stopped, a step the run does not
+hold, or a step whose predecessors have not all completed.
 end note
 
 @enduml

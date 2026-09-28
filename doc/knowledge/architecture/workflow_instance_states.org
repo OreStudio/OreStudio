@@ -15,9 +15,9 @@ Two state machines define the contract that a run of the workflow engine and eac
 
 ** The two machines and the contract they declare
 
-The workflow instance machine governs the run as a whole, from its creation to its final outcome. Its contract declares six states and six transitions. =pending= is the initial state, =in_progress= is the state of a run that executes, and =completed=, =failed=, =compensating= and =compensated= are the states a run can end in; of those four, =completed=, =failed= and =compensated= are terminal.
+The workflow instance machine governs the run as a whole, from its creation to its final outcome. Its contract declares six states and seven transitions. =pending= is the initial state, =in_progress= is the state of a run that executes, and =completed=, =failed=, =compensating= and =compensated= are the states a run can end in; of those four, =completed=, =failed= and =compensated= are terminal.
 
-Each transition names one move between those states. =initial_start= carries a newly created run into =in_progress=. =complete= records that every step succeeded and leaves the run in =completed=. =fail= records that the engine could not continue and leaves the run in =failed=. =begin_compensation= opens the saga rollback by moving the run to =compensating=. =finish_compensation= closes a rollback that succeeded and leaves the run in =compensated=. =fail_during_compensation= closes a rollback that itself threw and leaves the run in =failed=.
+Each transition names one move between those states. =initial_start= carries a newly created run into =in_progress=. =complete= records that every step succeeded and leaves the run in =completed=. =fail= records that the engine could not continue and leaves the run in =failed=. =begin_compensation= opens the saga rollback by moving the run to =compensating=. =finish_compensation= closes a rollback that succeeded and leaves the run in =compensated=. =fail_during_compensation= closes a rollback that itself threw and leaves the run in =failed=. =retry= resumes a run that stopped on its failed step by moving it from =failed= back to =in_progress=, where it keeps every step that completed and re-runs the one that did not.
 
 ** The step contract
 

@@ -75,6 +75,21 @@ schema should not default the identifier list to empty without the
 subscriber being able to tell a real empty list from an unreadable
 payload.
 
+*What was decided, and by whom.* The task that followed a run's progress
+and added the retry verb settled the consumer's half on 2026-09-28: a
+journey follows its run through the progress read, and this channel keeps
+its owner here. The read answers what the rail renders, and the browser
+reaches it through its own route, so nothing waits on this payload.
+
+The decision rests on the payload being per-entity rather than merely
+mismatched. A country event names its identifiers =alpha2_codes=, a party
+event =party_ids=, a currency event =iso_codes=; each is generated from its
+own model and none follows a shared shape, so no one browser schema can read
+them all and "name the field for what it is" is not sufficient on its own.
+The choice between aligning every event's payload and giving each entity its
+own subject and schema is a change to the event contract, which is why it
+belongs here rather than to the screen that first wanted to watch a run.
+
 * References
 
 - [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] — the channel,

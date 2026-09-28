@@ -52,11 +52,11 @@ collapse first, because the reverse reshapes the same tables twice.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | The collapse is implemented on =feature/collapse-instrument-identity=. =instrument_id= is gone from the identity field group and from all 58 models that carried it, every instrument table is keyed by a non-null =trade_id=, the 28 tables that named an instrument name that same trade, =trade.instrument_id= is deleted, and the component regenerates with no drift. The whole-tree build exits 0 with zero =error:=, the database recreates from the tree, and the codegen suite is 983 passed. The bond security split moved to a task of its own, =task_split-bond-security-from-trade.org=, because it is the largest part of the diff and the component must not sit mid-reshape; the plan below records the change. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Run the suites on the recreated database, record the result, and raise PR 4. |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

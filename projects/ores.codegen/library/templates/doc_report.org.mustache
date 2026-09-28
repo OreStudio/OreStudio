@@ -1,0 +1,128 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: report
+#+level: cross
+#+filetags: {{filetags}}
+#+created: {{date}}
+#+updated: {{date}}
+#+report_code: {{report_code}}
+#+startup: inlineimages
+
+This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
+{{title}}. (Second sentence: what decision the report supports and who makes
+that decision.) (Third sentence: how often it runs, and what starts it — a
+person, the schedule, or both.) (Fourth sentence: the artefact it produces and
+where it is left.) (Keep the whole blurb to three to five sentences. It is the
+summary; the page carries no =* Summary= heading.)
+
+* Purpose
+
+(What question does this report answer, and what decision does the answer
+feed? Name the decision, not the calculation. A report that answers no
+decision is a data export; say so, and say who consumes it.)
+
+* Audience
+
+(Who reads the report, and what they do with it. Name the role, not a person
+or a team, so the section outlives a reorganisation. A report with more than
+one audience says what each one takes from it.)
+
+#+ATTR_HTML: :class hug-leading
+| Role | What it takes from the report |
+|------+-------------------------------|
+|      |                               |
+
+* Frequency
+
+(When the report runs, and what starts it. State the cycle the report belongs
+to — intraday or end of day — and the frequency: on demand, scheduled, or
+event driven. The values are defined by the classification taxonomy on
+[[file:../domain/risk_reporting.org][Risk reporting]]. A report that runs in an
+ordered batch names the batch.)
+
+#+ATTR_HTML: :class hug-leading
+| Field     | Value |
+|-----------+-------|
+| Cycle     |       |
+| Frequency |       |
+| Batch     |       |
+| Owner     |       |
+
+* Inputs
+
+(What the run reads: the trades and the scope it selects them by, the market
+data, and the analytics configuration. Name the scope shape — trade, book,
+portfolio or firm — and the configuration the report binds. A report that
+needs no market data says so.)
+
+* Outputs
+
+(What the run produces, and where it is left. Name the artefact and its
+storage kind, and the tables its rows land in. A report that produces only
+files, or only rows, says which.)
+
+* Measures
+
+(The measures the report carries, and what each one means. List them rather
+than describing the calculation; the formula belongs to the component that
+computes it. Link the measures catalogue on
+[[file:../domain/risk_reporting.org][Risk reporting]] rather than repeating a
+definition that already exists.)
+
+#+ATTR_HTML: :class hug-leading
+| Measure | Meaning |
+|---------+---------|
+|         |         |
+
+* ORE configuration
+
+(The ORE XML that configures this report, as a worked example a reader can
+run. Show the smallest document that produces the report: the =Analytic=
+elements, their parameters, and the outputs they request. Use a
+=#+begin_src xml= block, and name the example under =external/ore/examples/=
+the fragment comes from. A report that has no ORE configuration of its own —
+one computed inside ORE Studio — says so, and links the component that
+computes it.)
+
+* Parameters
+
+(The parameters a definition of this report states, and the value domain each
+one accepts. These are the rows a configuration carries. A parameter is
+declared with its domain on
+[[proj:projects/ores.reporting/modeling/ores.reporting.parameter_definition.org][parameter definition]],
+and a configuration binds it on
+[[proj:projects/ores.reporting/modeling/ores.reporting.configuration_parameter.org][configuration parameter]].)
+
+#+ATTR_HTML: :class hug-leading
+| Parameter | Domain | Default | Meaning |
+|-----------+--------+---------+---------|
+|           |        |         |         |
+
+* Test coverage
+
+(How this report is exercised before it is trusted, and which phases a test run
+replaces with a substitute. A report used as a smoke test says what it proves
+and what it deliberately does not analyse. Name the substitute archive, the
+compute package or the fixture the test run consumes, and link the task or the
+scenario that performs it.)
+
+* Related
+
+(Every page that bears on this report. Use =[[file:...]]= links for pages in
+the documentation and =id:= links for the agile artefacts. Delete the entries
+that do not apply.)
+
+- [[file:./reports.org][Reports]] — the inventory this page is listed in.
+- [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] — the phases every run goes through.
+- [[file:../architecture/report_compute_handoff.org][Report compute handoff]] — how the run reaches the grid.
+- [[id:<story-id>][<the story that commissioned this report>]]
+
+* See also
+
+(External references only: vendor documentation, standards and essays that
+live outside =doc/=. An internal link belongs in =* Related= or in the body
+above, never here. Delete the section when there is nothing external to cite.)

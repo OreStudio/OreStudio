@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 4498456E-71DE-4250-8080-727690FAEFE6
+:END:
+#+title: Document type: report
+#+description: The contract for the report document type: folder, frontmatter, sections, and the rule that a report page is written from the report's definition.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:report:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+
+This page defines the =report= document type, one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The
+general contract every document follows (frontmatter, state, linking, tags)
+lives on the taxonomy page; this page carries only what is specific to
+=report=.
+
+* Contract
+
+- Implements :: declaration and recording. A report page declares what one
+  report is for and records the configuration that produces it. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
+- Folder :: [[proj:doc/knowledge/reports][=doc/knowledge/reports/=]], one page
+  per report, as =report_<slug>.org=. The folder sits beside
+  [[proj:doc/knowledge/workflows][=doc/knowledge/workflows/=]] and
+  [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] for the
+  same reason: a report page is a durable description of a thing the platform
+  supports, not a record of one story's work.
+- Scope :: the page owns *one report*. What decision the report feeds, who
+  reads it, how often it runs, what it reads and produces, the measures it
+  carries, the ORE XML that configures it, and the parameters a definition of
+  it states. The pipeline that runs it is not this page's subject; that is
+  [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]] under
+  =doc/knowledge/architecture/=, and a report page links it rather than
+  restating it.
+- Level :: =cross=.
+- Filename :: =report_<slug>.org=. The =report_= prefix sorts the pages
+  together in the folder and makes the type obvious in =ls=.
+- Title :: free-form; the codegen adds no prefix. Write the report's name as a
+  reader would say it, for example =Headline Position=.
+- Frontmatter :: the standard set plus =#+report_code:=, the stable code the
+  report's definitions and seeds refer to. It defaults to the slug.
+- Not stateful — no TODO, no =* Status= table. A report page describes a report
+  the platform can produce, not one run of it. The run is a report instance and
+  its state is read, not written down here.
+- How to create :: =compass add report=. =--parent-dir= is optional and
+  defaults to [[proj:doc/knowledge/reports][=doc/knowledge/reports/=]]. See
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] for
+  the flags, and
+  [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]
+  for the verb.
+- Required sections (in this order) ::
+  - /Blurb/ — three to five sentences between the frontmatter and the first
+    =*= heading. It states what the report is for, who reads it, how often it
+    runs, and what it leaves behind. A report page carries no =* Summary=
+    heading; the blurb is the summary.
+  - =* Purpose= — the question the report answers and the decision it feeds.
+  - =* Audience= — a table of the roles that read it and what each takes from
+    it.
+  - =* Frequency= — a table of cycle, frequency, batch and owner, with the
+    prose that says when the report runs and what starts it.
+  - =* Inputs= — the trades and their scope, the market data, the analytics
+    configuration, and anything the run reads from storage.
+  - =* Outputs= — the artefacts the run produces and where they are left.
+  - =* Measures= — a table of the measures the report carries, with a one-line
+    meaning each, linking the measures catalogue rather than copying it.
+  - =* ORE configuration= — the ORE XML that configures the report, as a
+    worked =#+begin_src xml= example naming the file it came from.
+  - =* Parameters= — a table of the parameters a definition states, with the
+    domain each accepts.
+  - =* Test coverage= — how the report is exercised, and which phases a test
+    run substitutes.
+  - =* Related= — links to every page that bears on the report, plus the agile
+    artefacts that built it.
+  - =* See also= — external references only. An internal link belongs in
+    =* Related= or in the body, never here.
+
+* Where the durable half goes
+
+A report page outlives the sprint that wrote it, so two rules follow.
+
+- /The page is written from the definition and the configuration, not from a
+  run./ Read the definition the seed writes and the ORE document the report
+  submits, then write the page from them. Where a run got to belongs on a task
+  or an investigation.
+- /The page owns the report, not the pipeline./ A fact about how a report is
+  scheduled, prepared, packaged, submitted or ingested belongs to
+  [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report Processing]]. When a
+  report needs a rule the pipeline already states, link the rule; do not copy
+  it.
+
+* Relation to the business catalogue
+
+The classification axes, the measure definitions and the report families live
+on [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]]. A report page
+cites them. It exists because the catalogue states what a family of reports has
+in common, and a reader who is about to run or change one report needs its
+purpose, its audience, its frequency and its ORE configuration in one place.
+
+* See also
+
+- [[id:645A06C7-D9D5-4ED1-969B-B6366D122BC9][Workflow pages]] — the same
+  one-page-per-thing pattern for server-side processes.

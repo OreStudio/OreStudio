@@ -334,6 +334,7 @@ Each type's contract lives on its own page:
   Scaffold: =compass add investigation --parent-dir <story folder>=.
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey]]
 - [[id:C4F7114C-B454-4B07-A804-64442D989FD4][workflow]]
+- [[id:4498456E-71DE-4250-8080-727690FAEFE6][report]]
 - [[id:973591F1-F2B5-40FF-9B2D-A198D4BB4903][meta]]
 - =test_scenario= — a manual test checklist tied to a task, verified in
   the Qt QA Validation Runner and rewritten in place with results on

@@ -19,6 +19,7 @@ file that already follows the contract in
 | skill | `<parent-dir>/<slug>/SKILL.org` (slug becomes both the folder name and the Claude Code skill `name:`) |
 | investigation | `<parent-dir>/investigation_<slug>.org` (flat file under the story folder that commissioned it; `--parent-dir` is required — an investigation belongs to a story, not to a fixed directory). See `doc/meta/document_type_investigation.org`: it is a point-in-time record, and its durable conclusions are promoted to the page that owns the subject. |
 | workflow | `<parent-dir>/workflow_<slug>.org` (flat file, prefixed so the workflow pages sort together; `--parent-dir` defaults to `doc/knowledge/workflows`). See `doc/meta/document_type_workflow.org`: the page is written from the definition a service registers, and the engine mechanics stay in `doc/knowledge/architecture/`. |
+| report | `<parent-dir>/report_<slug>.org` (flat file, prefixed so the report pages sort together; `--parent-dir` defaults to `doc/knowledge/reports`). See `doc/meta/document_type_report.org`: the page is written from the report's definition and its ORE configuration, and the pipeline stays in `doc/knowledge/architecture/`. |
 
 Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
 `--id` — see below), today's date in `#+created` and `#+updated`, the
@@ -124,6 +125,17 @@ compass add workflow \
   --title "Tenant provisioning" \
   --description "Stand up a tenant: its party, its reference bundles and its administrator." \
   --tags "workflow,tenancy,provisioning"
+```
+
+## Example — add a report
+
+```sh
+compass add report \
+  --slug headline_position \
+  --title "Headline Position" \
+  --description "The headline Greeks for a book or portfolio: the first risk overview a trading desk and the market risk function read." \
+  --report-code headline_position \
+  --tags "report,market-risk,greeks"
 ```
 
 ## Example — add a skill

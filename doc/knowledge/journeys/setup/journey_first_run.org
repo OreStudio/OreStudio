@@ -220,20 +220,15 @@ profile-driven request =iam.v1.tenants.provision= does not exist yet.
    operational/ forces a change at first sign-in. The provision request has no
    flag for either. The candidates are a =use_caller_password= field on the
    provision request and a =force_password_change= field on the seed profile.
-7. *The forced change never fires.* =login_info.password_reset_required= exists
-   as a column and =login_response.password_reset_required= is declared, but the
-   login handler never copies the flag into the reply. So the first sign-in step
-   cannot force a new password, and the /Empty operational/ profile cannot
-   enforce its change. The candidate is for the login handler to copy the flag,
-   as [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] also records.
-8. *No password policy read.* The server enforces the policy in
-   =password_validator=: at least 12 characters, an uppercase letter, a
-   lowercase letter, a digit and a special symbol. No subject returns the
-   policy, so no client can state it from the server. The shared
-   =NewPasswordField=, in =packages/web/src/ui/PasswordField.tsx=, carries its
-   own copy of the rules and a strength hint; that file survives only on
-   =prototype/first-run-journey= today. The candidate is a read that returns the
-   policy the server enforces.
+7. *The forced change fires.* The starting point's =force_password_change=
+   reaches the account the provisioner creates, and the login answer carries
+   the account record's flag, so the /Empty operational/ profile's administrator
+   is answered with =passwordResetRequired: true= at first sign-in and sets a
+   password only they know.
+8. *The policy is read, not copied.* The validator states its rules once as a
+   record and enforces that record, and a read answers with it before anybody
+   has signed in, so the sign-in screen shows the server's rules. A client that
+   showed its own copy could state rules the server does not apply.
 
 * Related journeys
 

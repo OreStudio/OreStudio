@@ -26,11 +26,11 @@ A person watching a provisioning run can follow it, and a run that fails can be 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The failure policy, the retry verb, the browser's reach to the read and the retry, and the recorded decision on the change payload are in, and a run that failed in a step was retried to completion on the live deployment. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request.                |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

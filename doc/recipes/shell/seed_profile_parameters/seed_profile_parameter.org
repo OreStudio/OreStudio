@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-seed_profile_parameters add <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> <display_order> <reason> <commentary>
+seed_profile_parameters add <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value> <is_required> <description> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.seed_profile_parameters.put=.
 
 #+name: seed_profile_parameters-add
 #+begin_src ores-shell :tangle seed_profile_parameters-add.ores :exports none
-seed_profile_parameters add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
+seed_profile_parameters add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-seed_profile_parameters set <id> <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> <display_order> <reason> <commentary> [--version <n>]
+seed_profile_parameters set <id> <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value> <is_required> <description> <display_order> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.seed_profile_parameters.put=.
 
 #+name: seed_profile_parameters-set
 #+begin_src ores-shell :tangle seed_profile_parameters-set.ores :exports none
-seed_profile_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
+seed_profile_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-seed_profile_parameters put-many --count <n> <id> <seed_profile_id> <name> <data_type> <default_value> <is_required> <description> <display_order> <reason> <commentary>
+seed_profile_parameters put-many --count <n> <id> <seed_profile_id> <name> <label> <data_type> <choices_json> <default_value> <is_required> <description> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.seed_profile_parameters.put_many=.
 
 #+name: seed_profile_parameters-put-many
 #+begin_src ores-shell :tangle seed_profile_parameters-put-many.ores :exports none
-seed_profile_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
+seed_profile_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

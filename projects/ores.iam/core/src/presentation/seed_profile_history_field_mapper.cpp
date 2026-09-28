@@ -37,8 +37,9 @@ render_seed_profile_fields(const domain::seed_profile& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Name", .value = v.name});
-    fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Summary", .value = v.summary});
     fields.push_back({.name = "Audience", .value = v.audience});
+    fields.push_back({.name = "Bullets Json", .value = v.bullets_json});
     fields.push_back({.name = "Tenant Name", .value = v.tenant_name});
     fields.push_back({.name = "Tenant Code", .value = v.tenant_code});
     fields.push_back({.name = "Tenant Hostname", .value = v.tenant_hostname});

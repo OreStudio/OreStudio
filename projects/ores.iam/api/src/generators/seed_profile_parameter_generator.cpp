@@ -49,7 +49,9 @@ generate_synthetic_seed_profile_parameter(utility::generation::generation_contex
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.seed_profile_id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.label = faker::word::noun();
     r.data_type = std::string("string");
+    r.choices_json = std::string("[]");
     r.default_value = std::string("50");
     r.is_required = faker::datatype::boolean();
     r.description = std::string(faker::lorem::sentence());

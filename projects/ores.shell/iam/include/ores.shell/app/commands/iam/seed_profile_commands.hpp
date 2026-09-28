@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <description> <audience> <tenant_name> <tenant_code>
+     * @brief add <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code>
      * <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
      * <force_password_change> <display_order> <reason> <commentary>
      */
@@ -96,7 +96,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <code> <name> <description> <audience> <tenant_name> <tenant_code>
+     * @brief set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code>
      * <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
      * <force_password_change> <display_order> <reason> <commentary> [--version <n>]
      */
@@ -105,9 +105,9 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <code> <name> <description> <audience> <tenant_name>
-     * <tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password>
-     * <force_password_change> <display_order> <reason> <commentary>
+     * @brief put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json>
+     * <tenant_name> <tenant_code> <tenant_hostname> <admin_username> <admin_email>
+     * <inherits_admin_password> <force_password_change> <display_order> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

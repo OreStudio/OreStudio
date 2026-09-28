@@ -26,7 +26,8 @@
  *
  * A seed profile is the data set that provisioning gives a new tenant. One
  * row orders step kinds from the catalogue in code, declares the parameters
- * its form takes, and carries the tenant details it prefills.
+ * its form takes, carries the tenant details it prefills, and carries the card
+ * the person choosing a starting point reads.
  *
  * A new profile is a row, so an operator adds one with no code change. A new
  * step kind is code. The accepted seed profile contract fixes both lists,
@@ -59,8 +60,9 @@ create table if not exists "ores_iam_seed_profiles_tbl" (
     "version" integer not null,
     "code" text not null,
     "name" text not null,
-    "description" text not null,
+    "summary" text not null,
     "audience" text not null,
+    "bullets_json" jsonb not null default '[]'::jsonb,
     "tenant_name" text not null default '',
     "tenant_code" text not null default '',
     "tenant_hostname" text null,

@@ -49,8 +49,9 @@ struct seed_profile_entity {
     std::string code;
 
     std::string name;
-    std::string description;
+    std::string summary;
     std::string audience;
+    std::string bullets_json;
     std::string tenant_name;
     std::string tenant_code;
     std::optional<std::string> tenant_hostname;

@@ -86,7 +86,9 @@ domain::seed_profile_parameter to_domain(const messaging::seed_profile_parameter
     v.id = write.id;
     v.seed_profile_id = write.seed_profile_id;
     v.name = write.name;
+    v.label = write.label;
     v.data_type = write.data_type;
+    v.choices_json = write.choices_json;
     v.default_value = write.default_value;
     v.is_required = write.is_required;
     v.description = write.description;

@@ -85,8 +85,9 @@ domain::seed_profile to_domain(const messaging::seed_profile_write& write) {
     v.id = write.id;
     v.code = write.code;
     v.name = write.name;
-    v.description = write.description;
+    v.summary = write.summary;
     v.audience = write.audience;
+    v.bullets_json = write.bullets_json;
     v.tenant_name = write.tenant_name;
     v.tenant_code = write.tenant_code;
     v.tenant_hostname = write.tenant_hostname;

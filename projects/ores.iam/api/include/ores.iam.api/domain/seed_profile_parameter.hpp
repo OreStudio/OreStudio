@@ -37,13 +37,18 @@ namespace ores::iam::domain {
  * @brief One input a seed profile's form declares.
  *
  * The schema of the form that a seed profile presents: one row per
- * parameter, stating its name, its type, its default and whether a value is
- * required. The web builds the tenant form from these rows. The shell takes
- * the same values as =--param key=value=.
+ * parameter, stating the label the form shows, the key a shell command types,
+ * the type, the default and whether a value is required. The web builds the
+ * tenant form from these rows. The shell takes the same values as
+ * =--param key=value=.
  *
  * The declared shape is deliberately small. A profile decides how many
  * counterparties to create and which GLEIF root LEI to import; it does not
  * decide what a step kind does, because that is code.
+ *
+ * A parameter whose type is choice names the values it accepts, in the order
+ * the form offers them. A choice is declared rather than left to free text so
+ * that a value the run cannot use is not typeable at all.
  *
  * A profile with no parameters states that its form asks for nothing. The
  * demonstration profile is one: it carries every value it needs, so its
@@ -74,15 +79,29 @@ struct seed_profile_parameter final {
 
     /**
      * @brief Parameter name, as the form's field key and as the shell's --param key. For example
-     * counterparty_count or gleif_root_lei.
+     * root_lei or counterparty_size.
      */
     std::string name;
 
     /**
-     * @brief How to read the value: string, integer or boolean. Stored beside the value because one
-     * table carries every type, and the form picks its widget from it.
+     * @brief Label the form puts above the field, for example "Counterparty set". It is data rather
+     * than a function of the name, because the name is a key a shell command types and the label is
+     * a sentence a person reads.
+     */
+    std::string label;
+
+    /**
+     * @brief How to read the value: string, integer, boolean or choice. Stored beside the value
+     * because one table carries every type, and the form picks its widget from it. A choice takes
+     * one of the values in choices_json.
      */
     std::string data_type;
+
+    /**
+     * @brief Values a choice parameter accepts, in the order the form offers them, as a serialised
+     * JSON array of strings. Null when the type offers no choice.
+     */
+    std::string choices_json;
 
     /**
      * @brief Value the form starts with, as text and read according to data_type. Null states that

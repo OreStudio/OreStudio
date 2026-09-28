@@ -48,8 +48,9 @@ domain::seed_profile generate_synthetic_seed_profile(utility::generation::genera
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "_profile" + "-" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " Profile";
-    r.description = std::string(faker::lorem::sentence());
+    r.summary = std::string(faker::lorem::sentence());
     r.audience = std::string("For ") + std::string(faker::word::noun());
+    r.bullets_json = std::string("[]");
     r.tenant_name = std::string(faker::company::companyName());
     r.tenant_code = faker::word::noun();
     r.tenant_hostname = faker::internet::domainName();

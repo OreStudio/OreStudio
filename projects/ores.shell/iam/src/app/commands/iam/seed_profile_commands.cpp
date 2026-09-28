@@ -141,16 +141,16 @@ void seed_profile_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <description> <audience> <tenant_name> <tenant_code> <tenant_hostname> "
-        "<admin_username> <admin_email> <inherits_admin_password> <force_password_change> "
-        "<display_order> <reason> <commentary>");
+        "add <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> "
+        "<tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
+        "<force_password_change> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <code> <name> <description> <audience> <tenant_name> <tenant_code> "
+        "set <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> <tenant_code> "
         "<tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
         "<force_password_change> <display_order> <reason> <commentary> [--version <n>]");
 
@@ -159,7 +159,7 @@ void seed_profile_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <code> <name> <description> <audience> <tenant_name> "
+        "put-many --count <n> <id> <code> <name> <summary> <audience> <bullets_json> <tenant_name> "
         "<tenant_code> <tenant_hostname> <admin_username> <admin_email> <inherits_admin_password> "
         "<force_password_change> <display_order> <reason> <commentary>");
 
@@ -355,16 +355,17 @@ void seed_profile_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
         read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.summary, parsed->positionals[next++], "summary");
         read_token(req.change.write.audience, parsed->positionals[next++], "audience");
+        read_token(req.change.write.bullets_json, parsed->positionals[next++], "bullets_json");
         read_token(req.change.write.tenant_name, parsed->positionals[next++], "tenant_name");
         read_token(req.change.write.tenant_code, parsed->positionals[next++], "tenant_code");
         read_token(
@@ -420,16 +421,17 @@ void seed_profile_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.summary, parsed->positionals[next++], "summary");
         read_token(req.change.write.audience, parsed->positionals[next++], "audience");
+        read_token(req.change.write.bullets_json, parsed->positionals[next++], "bullets_json");
         read_token(req.change.write.tenant_name, parsed->positionals[next++], "tenant_name");
         read_token(req.change.write.tenant_code, parsed->positionals[next++], "tenant_code");
         read_token(
@@ -497,8 +499,8 @@ void seed_profile_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 13 + 2) {
-            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -507,8 +509,9 @@ void seed_profile_commands::process_put_many(std::ostream& out,
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.code, parsed->positionals[next++], "code");
             read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.description, parsed->positionals[next++], "description");
+            read_token(change.write.summary, parsed->positionals[next++], "summary");
             read_token(change.write.audience, parsed->positionals[next++], "audience");
+            read_token(change.write.bullets_json, parsed->positionals[next++], "bullets_json");
             read_token(change.write.tenant_name, parsed->positionals[next++], "tenant_name");
             read_token(change.write.tenant_code, parsed->positionals[next++], "tenant_code");
             read_token(

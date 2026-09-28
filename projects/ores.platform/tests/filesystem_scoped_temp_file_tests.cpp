@@ -76,11 +76,16 @@ TEST_CASE("place_temp_file_under_system_temp_directory", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;
+    // Compared as directories, not as strings: macOS reports the system temp
+    // directory with a trailing separator (confstr's
+    // _CS_DARWIN_USER_TEMP_DIR ends in one), so the two spellings of the same
+    // directory differ textually. The assertion is about which directory the
+    // file landed in.
     const auto temp_dir = std::filesystem::temp_directory_path();
     const auto parent = sut.path().parent_path();
 
     BOOST_LOG_SEV(lg, info) << "Temp file parent: " << parent;
-    CHECK(parent == temp_dir);
+    CHECK(std::filesystem::equivalent(parent, temp_dir));
 }
 
 TEST_CASE("create_temp_directory_at_path_that_exists", tags) {
@@ -112,11 +117,13 @@ TEST_CASE("place_temp_directory_under_system_temp_directory", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory sut;
+    // Compared as directories for the same reason as the temp file above:
+    // macOS spells the system temp directory with a trailing separator.
     const auto temp_dir = std::filesystem::temp_directory_path();
     const auto parent = sut.path().parent_path();
 
     BOOST_LOG_SEV(lg, info) << "Temp directory parent: " << parent;
-    CHECK(parent == temp_dir);
+    CHECK(std::filesystem::equivalent(parent, temp_dir));
 }
 
 TEST_CASE("create_distinct_paths_for_consecutive_temp_files", tags) {

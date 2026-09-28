@@ -96,7 +96,15 @@ TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", t
 // leading NUL byte, and the notification must not go to a literal file named
 // "@...".
 TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading at", tags) {
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if !defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+    SKIP("boost::asio local sockets are unavailable on this platform");
+#elif !defined(__linux__)
+    // The abstract namespace is a Linux extension. macOS and the BSDs have
+    // AF_UNIX pathname sockets only, and bind refuses a leading NUL, which is
+    // the same reason the product never sees that spelling: systemd is the
+    // only caller and it only runs on Linux.
+    SKIP("abstract unix sockets are a Linux facility");
+#else
     const std::string abstract_name(1, '\0');
     const std::string socket_name("ores.service.notify." + std::to_string(::getpid()));
     const std::string path = abstract_name + socket_name;
@@ -114,8 +122,6 @@ TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading
 
     REQUIRE(received == ready_message.size());
     REQUIRE(std::string(buffer, received) == ready_message);
-#else
-    SKIP("boost::asio local sockets are unavailable on this platform");
 #endif
 }
 

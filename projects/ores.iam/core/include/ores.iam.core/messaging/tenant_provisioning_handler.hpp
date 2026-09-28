@@ -180,10 +180,11 @@ public:
                 const auto& codec = ores::nats::default_wire_codec();
                 const auto bytes = codec.encode(req);
 
-                const auto resp_msg = nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
-                                                         bytes,
-                                                         ores::nats::service::forwarded_caller_headers(msg),
-                                                         std::chrono::seconds(5));
+                const auto resp_msg =
+                    nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
+                                       bytes,
+                                       ores::nats::service::forwarded_caller_headers(msg),
+                                       std::chrono::seconds(5));
                 const auto resp = codec.decode<clear_bootstrap_mode_response>(resp_msg.data);
                 if (resp && resp->result.outcome == ores::utility::domain::outcome::ok) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
@@ -239,7 +240,7 @@ public:
             reply(nats_,
                   msg,
                   provision_tenant_command_response{.success = false,
-                                            .message = "Invalid request payload."});
+                                                    .message = "Invalid request payload."});
             return;
         }
 
@@ -265,35 +266,35 @@ public:
             if (profile == profiles.end()) {
                 reply(nats_,
                       msg,
-                      provision_tenant_command_response{
-                          .success = false,
-                          .message =
-                              "The seed profile '" + req->profile_code + "' does not exist."});
+                      provision_tenant_command_response{.success = false,
+                                                        .message = "The seed profile '" +
+                                                                   req->profile_code +
+                                                                   "' does not exist."});
                 return;
             }
 
             const auto profile_id = boost::uuids::to_string(profile->id);
-            const auto declared = ores::iam::service::seed_profile_parameter_service(sys_ctx)
-                                      .list_seed_profile_parameters_by_seed_profile_id(
-                                          profile_id, 0, 1000);
+            const auto declared =
+                ores::iam::service::seed_profile_parameter_service(sys_ctx)
+                    .list_seed_profile_parameters_by_seed_profile_id(profile_id, 0, 1000);
             const auto checked = ores::iam::service::check_parameters(declared, req->parameters);
             if (!checked.accepted()) {
                 reply(nats_,
                       msg,
-                      provision_tenant_command_response{.success = false, .message = checked.refusal});
+                      provision_tenant_command_response{.success = false,
+                                                        .message = checked.refusal});
                 return;
             }
 
-            const auto created =
-                ores::iam::service::tenant_provisioning_service(sys_ctx)
-                    .provision(profile->tenant_type,
-                               req->tenant_code,
-                               req->tenant_name,
-                               req->tenant_hostname,
-                               req->tenant_description,
-                               req->admin_username,
-                               req->admin_email,
-                               req->admin_password);
+            const auto created = ores::iam::service::tenant_provisioning_service(sys_ctx).provision(
+                profile->tenant_type,
+                req->tenant_code,
+                req->tenant_name,
+                req->tenant_hostname,
+                req->tenant_description,
+                req->admin_username,
+                req->admin_email,
+                req->admin_password);
 
             const auto declared_steps =
                 ores::iam::service::seed_profile_step_service(sys_ctx)
@@ -332,13 +333,15 @@ public:
             reply(nats_,
                   msg,
                   provision_tenant_command_response{.success = true,
-                                            .instance_id = instance_id,
-                                            .tenant_id = created.tenant_id,
-                                            .account_id = created.account_id});
+                                                    .instance_id = instance_id,
+                                                    .tenant_id = created.tenant_id,
+                                                    .account_id = created.account_id});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, provision_tenant_command_response{.success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  provision_tenant_command_response{.success = false, .message = e.what()});
         }
     }
 
@@ -940,8 +943,7 @@ private:
             auto resp = client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: list datasets failed: "
-                    << resp.result.message;
+                    << "start_synthetic_theme_feeds: list datasets failed: " << resp.result.message;
                 return false;
             }
             for (auto& d : resp.datasets)
@@ -1064,8 +1066,7 @@ private:
             auto resp = resolve_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list datasets failed: "
-                    << resp.result.message;
+                    << "create_theme_feed_bindings: list datasets failed: " << resp.result.message;
                 return false;
             }
             for (auto& d : resp.datasets)

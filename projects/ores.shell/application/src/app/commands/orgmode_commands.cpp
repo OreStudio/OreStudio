@@ -18,9 +18,9 @@
  *
  */
 #include "ores.shell/app/commands/orgmode_commands.hpp"
-#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <filesystem>
 #include <ostream>

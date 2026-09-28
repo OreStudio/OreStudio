@@ -85,11 +85,11 @@ mismatch compare_matrices(const creditsimulation& original,
             return {false,
                     describe(path,
                              "matrix " + std::to_string(i) + " name differs: original '" +
-                                 std::string(l.Name) + "', exported '" + std::string(r.Name) + "'")};
+                                 std::string(l.Name) + "', exported '" + std::string(r.Name) +
+                                 "'")};
 
         if (!same_bound(l.Data.t0, r.Data.t0) || !same_bound(l.Data.t1, r.Data.t1))
-            return {false,
-                    describe(path, "matrix '" + std::string(l.Name) + "' bounds differ")};
+            return {false, describe(path, "matrix '" + std::string(l.Name) + "' bounds differ")};
 
         const auto original_grid = parse_credit_simulation_grid(l.Data);
         const auto exported_grid = parse_credit_simulation_grid(r.Data);
@@ -103,7 +103,8 @@ mismatch compare_matrices(const creditsimulation& original,
             return {false,
                     describe(path,
                              "matrix '" + std::string(l.Name) + "' exported a state comment of " +
-                                 std::to_string(exported_grid.labels.size()) + " labels, expected none")};
+                                 std::to_string(exported_grid.labels.size()) +
+                                 " labels, expected none")};
 
         if (original_grid.values.size() != exported_grid.values.size())
             return {false,
@@ -148,7 +149,8 @@ mismatch compare_entities(const creditsimulation& original,
             return {false,
                     describe(path,
                              "entity " + std::to_string(i) + " name differs: original '" +
-                                 std::string(l.Name) + "', exported '" + std::string(r.Name) + "'")};
+                                 std::string(l.Name) + "', exported '" + std::string(r.Name) +
+                                 "'")};
         if (std::string(l.FactorLoadings) != std::string(r.FactorLoadings))
             return {false, describe(path, "entity '" + std::string(l.Name) + "' loadings differ")};
         if (std::string(l.TransitionMatrix) != std::string(r.TransitionMatrix))
@@ -186,7 +188,8 @@ mismatch compare(const creditsimulation& original,
         }
         return codes;
     };
-    if (codes_of(std::string(original.NettingSetIds)) != codes_of(std::string(exported.NettingSetIds)))
+    if (codes_of(std::string(original.NettingSetIds)) !=
+        codes_of(std::string(exported.NettingSetIds)))
         return {false, describe(path, "netting set ids differ")};
 
     const auto& l = original.Risk;
@@ -245,9 +248,8 @@ mismatch compare_mapped_rows(const creditsimulation& original,
         if (rows.size() != side)
             return {false,
                     describe(path,
-                             "matrix '" + mapped_matrix.name +
-                                 "' mapped row count differs: grid " + std::to_string(side) +
-                                 ", mapped " + std::to_string(rows.size()))};
+                             "matrix '" + mapped_matrix.name + "' mapped row count differs: grid " +
+                                 std::to_string(side) + ", mapped " + std::to_string(rows.size()))};
 
         for (std::size_t r = 0; r < side; ++r) {
             if (rows[r].from_rating != credit_rating_scale[r])
@@ -258,9 +260,14 @@ mismatch compare_mapped_rows(const creditsimulation& original,
                                      std::string(credit_rating_scale[r]) + "', mapped '" +
                                      rows[r].from_rating + "'")};
 
-            const double probabilities[] = {rows[r].p_aaa, rows[r].p_aa,  rows[r].p_a,
-                                            rows[r].p_baa, rows[r].p_ba,  rows[r].p_b,
-                                            rows[r].p_c,   rows[r].p_default};
+            const double probabilities[] = {rows[r].p_aaa,
+                                            rows[r].p_aa,
+                                            rows[r].p_a,
+                                            rows[r].p_baa,
+                                            rows[r].p_ba,
+                                            rows[r].p_b,
+                                            rows[r].p_c,
+                                            rows[r].p_default};
             for (std::size_t c = 0; c < 8; ++c) {
                 if (probabilities[c] != grid.values[r * side + c])
                     return {false,
@@ -305,14 +312,13 @@ void require_in_memory_roundtrip(const std::string& relative_path) {
 
 }
 
-#define CREDIT_SIMULATION_MAPPER_ROUNDTRIP(name, path)                                             \
-    TEST_CASE("creditsimulation_mapper_roundtrip_" name, tags) {                                   \
-        require_in_memory_roundtrip(path);                                                         \
+#define CREDIT_SIMULATION_MAPPER_ROUNDTRIP(name, path)           \
+    TEST_CASE("creditsimulation_mapper_roundtrip_" name, tags) { \
+        require_in_memory_roundtrip(path);                       \
     }
 
 CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "credit_portfolio_model",
-    "examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")
+    "credit_portfolio_model", "examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")
 CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
     "credit_portfolio_model_1",
     "examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation1.xml")
@@ -332,24 +338,17 @@ CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
     "credit_portfolio_model_100",
     "examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation100.xml")
 
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43",
-    "examples/Legacy/Example_43/Input/creditsimulation.xml")
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43_1",
-    "examples/Legacy/Example_43/Input/creditsimulation1.xml")
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43_2",
-    "examples/Legacy/Example_43/Input/creditsimulation2.xml")
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43_3",
-    "examples/Legacy/Example_43/Input/creditsimulation3.xml")
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43_3_ts",
-    "examples/Legacy/Example_43/Input/creditsimulation3_ts.xml")
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43_4",
-    "examples/Legacy/Example_43/Input/creditsimulation4.xml")
-CREDIT_SIMULATION_MAPPER_ROUNDTRIP(
-    "legacy_example_43_100",
-    "examples/Legacy/Example_43/Input/creditsimulation100.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43",
+                                   "examples/Legacy/Example_43/Input/creditsimulation.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43_1",
+                                   "examples/Legacy/Example_43/Input/creditsimulation1.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43_2",
+                                   "examples/Legacy/Example_43/Input/creditsimulation2.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43_3",
+                                   "examples/Legacy/Example_43/Input/creditsimulation3.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43_3_ts",
+                                   "examples/Legacy/Example_43/Input/creditsimulation3_ts.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43_4",
+                                   "examples/Legacy/Example_43/Input/creditsimulation4.xml")
+CREDIT_SIMULATION_MAPPER_ROUNDTRIP("legacy_example_43_100",
+                                   "examples/Legacy/Example_43/Input/creditsimulation100.xml")

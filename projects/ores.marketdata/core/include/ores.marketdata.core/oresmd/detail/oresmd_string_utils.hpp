@@ -50,8 +50,7 @@ inline std::string to_lower(std::string_view s) {
  * not this library's.
  */
 inline bool is_currency_code(std::string_view s) {
-    return s.size() == 3 &&
-           std::ranges::all_of(s, [](unsigned char c) { return std::isalpha(c); });
+    return s.size() == 3 && std::ranges::all_of(s, [](unsigned char c) { return std::isalpha(c); });
 }
 
 }

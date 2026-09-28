@@ -155,9 +155,8 @@ std::optional<named_key>
 canonical_key(const std::string& key,
               const ores::ore::market::series_key_registry& registry,
               const ores::ore::market::fx_quote_convention_checker* fx_checker) {
-    const auto identifier = fx_checker ?
-                                core::oresmd_projections::from_ore_key(key, *fx_checker) :
-                                core::oresmd_projections::from_ore_key(key);
+    const auto identifier = fx_checker ? core::oresmd_projections::from_ore_key(key, *fx_checker) :
+                                         core::oresmd_projections::from_ore_key(key);
     if (!identifier)
         return std::nullopt;
     auto canonical = core::oresmd_projections::to_quote_key(*identifier);
@@ -299,8 +298,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 // A key oresmd cannot name keeps the registry's own
                 // decomposition; one it can name is taken from the
                 // identifier, canonical spelling and all.
-                const auto series_type =
-                    named ? named->decomposition.series_type : d.series_type;
+                const auto series_type = named ? named->decomposition.series_type : d.series_type;
                 const auto metric = named ? named->decomposition.metric : d.metric;
                 const auto qualifier = named ? named->decomposition.qualifier : d.qualifier;
                 const auto point = (named && named->decomposition.point_id) ?

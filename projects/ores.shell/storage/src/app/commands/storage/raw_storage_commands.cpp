@@ -21,8 +21,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.shell/app/http_base_url.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -46,8 +46,7 @@ namespace {
 
 namespace fs = std::filesystem;
 
-inline static std::string_view logger_name =
-    "ores.shell.app.commands.storage.raw_storage_commands";
+inline static std::string_view logger_name = "ores.shell.app.commands.storage.raw_storage_commands";
 
 auto& lg() {
     static auto instance = make_logger(logger_name);
@@ -153,8 +152,7 @@ void process_delete(std::ostream& out, nats_client& session, const std::vector<s
         return;
     }
 
-    const auto result =
-        rfl::json::read<ores::storage::messaging::delete_objects_response>(body);
+    const auto result = rfl::json::read<ores::storage::messaging::delete_objects_response>(body);
     if (!result) {
         fail(out) << "Cannot read the server's answer: " << body << std::endl;
         return;

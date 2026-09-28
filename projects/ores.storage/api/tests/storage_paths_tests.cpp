@@ -63,8 +63,7 @@ TEST_CASE("key_with_slashes_survives_unchanged", tags) {
 
     const std::string key("releases/1.2.3/oscar-1.2.3.tar.gz");
     const auto path = storage_paths::make_object_path("ores", key);
-    const auto url =
-        storage_paths::make_object_url("http://localhost:51000", "ores", key);
+    const auto url = storage_paths::make_object_url("http://localhost:51000", "ores", key);
 
     BOOST_LOG_SEV(lg, info) << "Hierarchical key path: " << path;
     CHECK(path == "/api/v1/storage/ores/releases/1.2.3/oscar-1.2.3.tar.gz");

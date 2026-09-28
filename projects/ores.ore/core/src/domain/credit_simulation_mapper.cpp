@@ -106,12 +106,18 @@ domain::bool_ credit_simulation_mapper::make_bool(bool v) {
  */
 domain::bool_ to_bool_enum(const std::string& v) {
     using b = domain::bool_;
-    if (v == "Y") return b::Y;
-    if (v == "YES") return b::YES;
-    if (v == "TRUE") return b::TRUE_;
-    if (v == "True") return b::True;
-    if (v == "true") return b::true_;
-    if (v == "1") return b::_1;
+    if (v == "Y")
+        return b::Y;
+    if (v == "YES")
+        return b::YES;
+    if (v == "TRUE")
+        return b::TRUE_;
+    if (v == "True")
+        return b::True;
+    if (v == "true")
+        return b::true_;
+    if (v == "1")
+        return b::_1;
     return b::N;
 }
 
@@ -222,14 +228,18 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
 
         const std::size_t side = rows.size();
         if (side != rating_count)
-            throw std::runtime_error("A transition matrix needs eight rating rows: " +
-                                     matrix.name);
+            throw std::runtime_error("A transition matrix needs eight rating rows: " + matrix.name);
         credit_simulation_grid grid;
         grid.values.assign(side * side, 0.0);
         for (std::size_t r = 0; r < side; ++r) {
-            const double probabilities[rating_count] = {
-                rows[r].p_aaa, rows[r].p_aa,  rows[r].p_a, rows[r].p_baa,
-                rows[r].p_ba,  rows[r].p_b,   rows[r].p_c, rows[r].p_default};
+            const double probabilities[rating_count] = {rows[r].p_aaa,
+                                                        rows[r].p_aa,
+                                                        rows[r].p_a,
+                                                        rows[r].p_baa,
+                                                        rows[r].p_ba,
+                                                        rows[r].p_b,
+                                                        rows[r].p_c,
+                                                        rows[r].p_default};
             for (std::size_t c = 0; c < rating_count; ++c)
                 grid.values[r * side + c] = probabilities[c];
         }

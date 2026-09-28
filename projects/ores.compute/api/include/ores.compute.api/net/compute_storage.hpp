@@ -49,8 +49,7 @@ struct compute_storage {
     /**
      * @brief The platform bucket every service writes to.
      */
-    static constexpr std::string_view bucket =
-        ores::storage::api::object_keys::ores_bucket;
+    static constexpr std::string_view bucket = ores::storage::api::object_keys::ores_bucket;
 
     /**
      * @brief Key for an application package binary.
@@ -79,11 +78,9 @@ struct compute_storage {
                                    std::string_view version,
                                    std::string_view platform_code,
                                    std::string_view ext) {
-        const std::string id =
-            std::string(app_name) + "-" + std::string(version);
+        const std::string id = std::string(app_name) + "-" + std::string(version);
         return ores::storage::api::object_keys::make(
-            service, "packages", id, id + "-" + std::string(platform_code) +
-                std::string(ext));
+            service, "packages", id, id + "-" + std::string(platform_code) + std::string(ext));
     }
 
     /**

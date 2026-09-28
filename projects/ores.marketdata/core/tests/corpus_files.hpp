@@ -57,8 +57,7 @@ inline bool is_market_payload(const std::string& path) {
 /**
  * @brief Every market payload under @p root, sorted, for a deterministic walk.
  */
-inline std::vector<std::filesystem::path>
-market_payloads(const std::filesystem::path& root) {
+inline std::vector<std::filesystem::path> market_payloads(const std::filesystem::path& root) {
     std::vector<std::filesystem::path> found;
     for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
         if (entry.is_regular_file() && is_market_payload(entry.path().string()))

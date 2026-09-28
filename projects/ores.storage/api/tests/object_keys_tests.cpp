@@ -55,8 +55,7 @@ TEST_CASE("make_builds_a_key_from_service_purpose_and_id", tags) {
 TEST_CASE("make_appends_the_file_name_when_one_is_given", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto key =
-        object_keys::make("reporting", "runs", run_id, "trades.msgpack");
+    const auto key = object_keys::make("reporting", "runs", run_id, "trades.msgpack");
 
     BOOST_LOG_SEV(lg, info) << "Key: " << key;
     CHECK(key == "reporting/runs/0b6f1b2c-3d4e-5f60-7182-93a4b5c6d7e8/"
@@ -66,15 +65,12 @@ TEST_CASE("make_appends_the_file_name_when_one_is_given", tags) {
 TEST_CASE("parse_is_the_inverse_of_make", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto key =
-        object_keys::make("ore", "imports", run_id, "ore_package.tar.gz");
+    const auto key = object_keys::make("ore", "imports", run_id, "ore_package.tar.gz");
     const auto parsed = object_keys::parse(key);
 
     REQUIRE(parsed.has_value());
-    BOOST_LOG_SEV(lg, info) << "Service: " << parsed->service
-                            << " purpose: " << parsed->purpose
-                            << " id: " << parsed->id
-                            << " name: " << parsed->name;
+    BOOST_LOG_SEV(lg, info) << "Service: " << parsed->service << " purpose: " << parsed->purpose
+                            << " id: " << parsed->id << " name: " << parsed->name;
     CHECK(parsed->service == "ore");
     CHECK(parsed->purpose == "imports");
     CHECK(parsed->id == run_id);
@@ -112,8 +108,7 @@ TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", tags) {
     // Too few segments, too many, an empty segment, a segment that walks up
     // the tree, and one that carries a space.
     CHECK_FALSE(object_keys::parse("compute/packages").has_value());
-    CHECK_FALSE(object_keys::parse("compute/packages/" + run_id + "/a/b")
-                    .has_value());
+    CHECK_FALSE(object_keys::parse("compute/packages/" + run_id + "/a/b").has_value());
     CHECK_FALSE(object_keys::parse("compute//" + run_id).has_value());
     CHECK_FALSE(object_keys::parse("compute/packages/../etc").has_value());
     CHECK_FALSE(object_keys::parse("compute/pack ages/" + run_id).has_value());
@@ -126,13 +121,10 @@ TEST_CASE("make_refuses_a_part_that_is_not_a_valid_segment", tags) {
 
     CHECK_THROWS_AS(object_keys::make("compute service", "packages", run_id),
                     std::invalid_argument);
-    CHECK_THROWS_AS(object_keys::make("compute", "pack ages", run_id),
+    CHECK_THROWS_AS(object_keys::make("compute", "pack ages", run_id), std::invalid_argument);
+    CHECK_THROWS_AS(object_keys::make("compute", "packages", "../etc"), std::invalid_argument);
+    CHECK_THROWS_AS(object_keys::make("compute", "packages", run_id, "../escape"),
                     std::invalid_argument);
-    CHECK_THROWS_AS(object_keys::make("compute", "packages", "../etc"),
-                    std::invalid_argument);
-    CHECK_THROWS_AS(
-        object_keys::make("compute", "packages", run_id, "../escape"),
-        std::invalid_argument);
 
     BOOST_LOG_SEV(lg, info) << "Malformed parts refused";
 }

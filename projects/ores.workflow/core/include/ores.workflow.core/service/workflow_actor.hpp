@@ -42,10 +42,10 @@ namespace ores::workflow::service {
  * the service account is the truth there. A record that names nobody is not
  * an option either way, because the store refuses an empty actor.
  */
-[[nodiscard]] ORES_WORKFLOW_CORE_EXPORT std::string actor_from_message(
-    const ores::nats::message& msg,
-    const std::optional<ores::security::jwt::jwt_authenticator>& verifier,
-    const std::string& fallback);
+[[nodiscard]] ORES_WORKFLOW_CORE_EXPORT std::string
+actor_from_message(const ores::nats::message& msg,
+                   const std::optional<ores::security::jwt::jwt_authenticator>& verifier,
+                   const std::string& fallback);
 
 }
 

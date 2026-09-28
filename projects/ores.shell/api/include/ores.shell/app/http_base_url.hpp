@@ -34,8 +34,8 @@ namespace ores::shell::app {
  * because every byte-moving command needs it.
  */
 inline std::string default_http_base_url() {
-    return "http://localhost:" +
-           ores::platform::environment::environment::get_value_or_default("ORES_HTTP_PORT", "20600");
+    return "http://localhost:" + ores::platform::environment::environment::get_value_or_default(
+                                     "ORES_HTTP_PORT", "20600");
 }
 
 }

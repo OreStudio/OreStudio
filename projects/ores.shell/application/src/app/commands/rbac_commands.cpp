@@ -47,9 +47,7 @@ void rbac_commands::register_commands(cli::Menu& root_menu,
     // the one verb the model cannot express, so both live at one address and
     // the menu's help lists both.
     ores::shell::app::extend_menu(
-        root_menu,
-        "permissions",
-        [&session](cli::Menu& permissions_menu) {
+        root_menu, "permissions", [&session](cli::Menu& permissions_menu) {
             permissions_menu.Insert(
                 "suggest",
                 [&session](std::ostream& out, std::string username, std::string identifier) {
@@ -61,9 +59,6 @@ void rbac_commands::register_commands(cli::Menu& root_menu,
                 "Generate role assignment commands (username hostname_or_tenant_id)");
         });
 }
-
-
-
 
 
 void rbac_commands::process_suggest_role_commands(std::ostream& out,

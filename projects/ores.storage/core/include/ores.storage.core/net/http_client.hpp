@@ -94,8 +94,7 @@ public:
      * @return              The response body.
      * @throws std::runtime_error on connection, HTTP, or I/O failure
      */
-    static std::string get_returning_body(const std::string& url,
-                                         const std::string& bearer_token);
+    static std::string get_returning_body(const std::string& url, const std::string& bearer_token);
 
     /**
      * @brief Deletes a remote resource via HTTP DELETE, returning the response

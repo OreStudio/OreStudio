@@ -69,8 +69,7 @@ std::string actor_for(const ores::nats::message& msg,
 
 TEST_CASE("a_forwarded_caller_token_names_the_actor", "[workflow][actor]") {
     const auto verifier = jwt_authenticator::create_hs256(actor_secret);
-    const auto msg = message_with(ores::nats::headers::delegated_authorization,
-                                  token_for("alice"));
+    const auto msg = message_with(ores::nats::headers::delegated_authorization, token_for("alice"));
     CHECK(actor_for(msg, verifier) == "alice");
 }
 
@@ -84,23 +83,20 @@ TEST_CASE("the_delegated_token_wins_over_the_last_hop", "[workflow][actor]") {
     CHECK(actor_for(msg, jwt_authenticator::create_hs256(actor_secret)) == "alice");
 }
 
-TEST_CASE("the_authorization_header_is_used_when_nothing_is_forwarded",
-          "[workflow][actor]") {
+TEST_CASE("the_authorization_header_is_used_when_nothing_is_forwarded", "[workflow][actor]") {
     const auto msg = message_with(ores::nats::headers::authorization, token_for("bob"));
     CHECK(actor_for(msg, jwt_authenticator::create_hs256(actor_secret)) == "bob");
 }
 
-TEST_CASE("a_message_with_no_token_falls_back_to_the_service_account",
-          "[workflow][actor]") {
-    CHECK(actor_for(ores::nats::message{},
-                    jwt_authenticator::create_hs256(actor_secret)) == fallback);
+TEST_CASE("a_message_with_no_token_falls_back_to_the_service_account", "[workflow][actor]") {
+    CHECK(actor_for(ores::nats::message{}, jwt_authenticator::create_hs256(actor_secret)) ==
+          fallback);
 }
 
-TEST_CASE("a_token_that_names_nobody_falls_back_to_the_service_account",
-          "[workflow][actor]") {
+TEST_CASE("a_token_that_names_nobody_falls_back_to_the_service_account", "[workflow][actor]") {
     // The store refuses an empty actor, so this must not reach it.
-    const auto msg = message_with(ores::nats::headers::delegated_authorization,
-                                  token_for(std::nullopt));
+    const auto msg =
+        message_with(ores::nats::headers::delegated_authorization, token_for(std::nullopt));
     CHECK(actor_for(msg, jwt_authenticator::create_hs256(actor_secret)) == fallback);
 }
 
@@ -111,9 +107,7 @@ TEST_CASE("a_token_this_service_cannot_verify_falls_back_to_the_service_account"
     CHECK(actor_for(msg, jwt_authenticator::create_hs256(actor_secret)) == fallback);
 }
 
-TEST_CASE("a_service_with_no_verifier_attributes_everything_to_itself",
-          "[workflow][actor]") {
-    const auto msg = message_with(ores::nats::headers::delegated_authorization,
-                                  token_for("alice"));
+TEST_CASE("a_service_with_no_verifier_attributes_everything_to_itself", "[workflow][actor]") {
+    const auto msg = message_with(ores::nats::headers::delegated_authorization, token_for("alice"));
     CHECK(actor_for(msg, std::nullopt) == fallback);
 }

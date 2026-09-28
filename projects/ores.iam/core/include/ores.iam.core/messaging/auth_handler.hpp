@@ -707,8 +707,8 @@ private:
     // reader sees one whole settings object rather than a half-written one.
     // Initialised rather than left empty, because the reload can fail and a
     // handler that reads it anyway must find the defaults, not a null pointer.
-    platform::concurrency::atomic_shared_ptr<const domain::token_settings>
-        token_settings_{std::make_shared<const domain::token_settings>()};
+    platform::concurrency::atomic_shared_ptr<const domain::token_settings> token_settings_{
+        std::make_shared<const domain::token_settings>()};
 };
 
 } // namespace ores::iam::messaging

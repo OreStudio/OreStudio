@@ -223,10 +223,9 @@ struct cached_step_result {
  *                  other tenant as not found.
  * @return Cached result if the step already completed; std::nullopt otherwise.
  */
-inline std::optional<cached_step_result>
-check_step_idempotency(ores::nats::service::client& nats,
-                       const std::string& step_id,
-                       const std::string& tenant_id) {
+inline std::optional<cached_step_result> check_step_idempotency(ores::nats::service::client& nats,
+                                                                const std::string& step_id,
+                                                                const std::string& tenant_id) {
 
     using namespace ores::workflow::messaging;
 

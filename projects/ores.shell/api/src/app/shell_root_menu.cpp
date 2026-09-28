@@ -23,7 +23,8 @@
 
 namespace ores::shell::app {
 
-shell_root_menu::shell_root_menu() : cli::Menu("ores-shell") {}
+shell_root_menu::shell_root_menu()
+    : cli::Menu("ores-shell") {}
 
 void shell_root_menu::take(const std::string& name) {
     if (!names_.insert(name).second)
@@ -77,8 +78,7 @@ void claim_name(cli::Menu& root, const std::string& name) {
         owned->claim(name);
 }
 
-void extend_menu(cli::Menu& root, const std::string& name,
-                 std::function<void(cli::Menu&)> extend) {
+void extend_menu(cli::Menu& root, const std::string& name, std::function<void(cli::Menu&)> extend) {
     if (auto* const owned = dynamic_cast<shell_root_menu*>(&root)) {
         owned->add_extension(name, std::move(extend));
         return;

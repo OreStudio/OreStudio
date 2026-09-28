@@ -237,8 +237,7 @@ domain::account account_operations_service::login(const std::string& username,
     // account's own tenant, not the caller context's: the account read matches
     // a username across tenants, and a login with no resolvable hostname stays
     // on the handler's system-tenant context, which is always active.
-    const auto tenants =
-        repository::read_active_tenant_by_id(ctx_, account.tenant_id.to_uuid());
+    const auto tenants = repository::read_active_tenant_by_id(ctx_, account.tenant_id.to_uuid());
     if (tenants.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Login failed: tenant not found for username: " << username;
         throw std::runtime_error("Invalid username or password");
@@ -493,14 +492,14 @@ bool account_operations_service::set_password_reset_required(const boost::uuids:
     return true;
 }
 
-std::string account_operations_service::change_password(
-    const boost::uuids::uuid& account_id,
-    const std::string& current_password,
-    const std::string& new_password) {
+std::string account_operations_service::change_password(const boost::uuids::uuid& account_id,
+                                                        const std::string& current_password,
+                                                        const std::string& new_password) {
 
     if (current_password.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Password change refused: no current password supplied for account: "
-                                  << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), warn)
+            << "Password change refused: no current password supplied for account: "
+            << boost::uuids::to_string(account_id);
         return "Current password is required";
     }
 

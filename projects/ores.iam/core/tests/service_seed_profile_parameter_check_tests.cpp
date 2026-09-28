@@ -63,21 +63,20 @@ TEST_CASE("check_parameters_fills_the_default_of_a_parameter_the_request_omits",
 }
 
 TEST_CASE("check_parameters_accepts_a_declared_choice", tags) {
-    const auto checked = check_parameters(declared_parameters(),
-                                          {"root_lei=9695ACMEGROUP0000030",
-                                           "counterparty_size=large"});
+    const auto checked = check_parameters(
+        declared_parameters(), {"root_lei=9695ACMEGROUP0000030", "counterparty_size=large"});
 
     REQUIRE(checked.accepted());
     CHECK(checked.values[1].value == "large");
 }
 
 TEST_CASE("check_parameters_refuses_a_parameter_the_profile_does_not_declare", tags) {
-    const auto checked = check_parameters(declared_parameters(),
-                                          {"root_lei=9695ACMEGROUP0000030",
-                                           "counterparty_count=100"});
+    const auto checked = check_parameters(
+        declared_parameters(), {"root_lei=9695ACMEGROUP0000030", "counterparty_count=100"});
 
     CHECK_FALSE(checked.accepted());
-    CHECK(checked.refusal == "The profile does not declare a parameter named 'counterparty_count'.");
+    CHECK(checked.refusal ==
+          "The profile does not declare a parameter named 'counterparty_count'.");
 }
 
 TEST_CASE("check_parameters_refuses_a_missing_required_parameter", tags) {
@@ -98,8 +97,7 @@ TEST_CASE("check_parameters_refuses_a_required_parameter_stated_as_empty_rather_
           "replacing_it_with_its_default",
           tags) {
     const auto checked = check_parameters(declared_parameters(),
-                                          {"root_lei=9695ACMEGROUP0000030",
-                                           "counterparty_size="});
+                                          {"root_lei=9695ACMEGROUP0000030", "counterparty_size="});
 
     CHECK_FALSE(checked.accepted());
     CHECK(checked.refusal == "The parameter 'counterparty_size' is required and has no value.");
@@ -156,8 +154,8 @@ TEST_CASE("check_parameters_refuses_an_entry_that_is_not_a_name_value_pair", tag
 }
 
 TEST_CASE("check_parameters_refuses_a_parameter_supplied_more_than_once", tags) {
-    const auto checked = check_parameters(
-        declared_parameters(), {"root_lei=9695ACMEGROUP0000030", "root_lei=9695OTHER"});
+    const auto checked = check_parameters(declared_parameters(),
+                                          {"root_lei=9695ACMEGROUP0000030", "root_lei=9695OTHER"});
 
     CHECK_FALSE(checked.accepted());
     CHECK(checked.refusal == "The parameter 'root_lei' is supplied more than once.");

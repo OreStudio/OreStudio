@@ -52,24 +52,21 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
     // The generated tenant unit owns the tenants menu. The two verbs below are
     // provisioning steps the model cannot express, so they join it rather than
     // registering a second tenants menu beside it.
-    ores::shell::app::extend_menu(
-        root_menu,
-        "tenants",
-        [&session](cli::Menu& tenants_menu) {
-            tenants_menu.Insert(
-                "history",
-                [&session](std::ostream& out, std::string tenant_id) {
-                    process_tenant_history(std::ref(out), std::ref(session), std::move(tenant_id));
-                },
-                "Show history for a tenant (tenant_code)");
+    ores::shell::app::extend_menu(root_menu, "tenants", [&session](cli::Menu& tenants_menu) {
+        tenants_menu.Insert(
+            "history",
+            [&session](std::ostream& out, std::string tenant_id) {
+                process_tenant_history(std::ref(out), std::ref(session), std::move(tenant_id));
+            },
+            "Show history for a tenant (tenant_code)");
 
-            tenants_menu.Insert(
-                "complete-provisioning",
-                [&session](std::ostream& out) {
-                    process_complete_provisioning(std::ref(out), std::ref(session));
-                },
-                "Mark the logged-in tenant's provisioning as complete (clears bootstrap state)");
-        });
+        tenants_menu.Insert(
+            "complete-provisioning",
+            [&session](std::ostream& out) {
+                process_complete_provisioning(std::ref(out), std::ref(session));
+            },
+            "Mark the logged-in tenant's provisioning as complete (clears bootstrap state)");
+    });
 }
 
 void tenants_commands::process_tenant_history(std::ostream& out,

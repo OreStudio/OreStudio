@@ -123,8 +123,8 @@ ORES_SHELL_EXPORT void claim_name(cli::Menu& root, const std::string& name);
  * is not the shell's has no generated unit to extend and no other unit to
  * collide with, so the verbs get a menu of their own.
  */
-ORES_SHELL_EXPORT void extend_menu(cli::Menu& root, const std::string& name,
-                                   std::function<void(cli::Menu&)> extend);
+ORES_SHELL_EXPORT void
+extend_menu(cli::Menu& root, const std::string& name, std::function<void(cli::Menu&)> extend);
 
 }
 

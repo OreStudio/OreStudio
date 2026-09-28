@@ -20,9 +20,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include <algorithm>
-#include <cstddef>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
+#include <cstddef>
 #include <memory>
 #include <ostream>
 #include <stdexcept>
@@ -34,8 +34,7 @@ namespace {
 const std::string_view test_suite("ores.shell.tests");
 const std::string tags("[shell_root_menu]");
 
-std::unique_ptr<cli::Menu> menu_named(const std::string& name,
-                                      const std::string& verb) {
+std::unique_ptr<cli::Menu> menu_named(const std::string& name, const std::string& verb) {
     auto menu = std::make_unique<cli::Menu>(name);
     menu->Insert(verb, [](std::ostream&) {}, verb);
     return menu;

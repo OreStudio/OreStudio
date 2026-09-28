@@ -21,8 +21,8 @@
 #include "ores.shell/app/commands/dq/nature_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/origin_dimension_commands.hpp"
 #include "ores.shell/app/commands/dq/publication_commands.hpp"
-#include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
 #include "ores.shell/app/commands/dq/subject_area_commands.hpp"
+#include "ores.shell/app/commands/dq/synthetic_fx_spot_config_commands.hpp"
 #include "ores.shell/app/commands/dq/treatment_dimension_commands.hpp"
 
 namespace ores::shell::app::commands {

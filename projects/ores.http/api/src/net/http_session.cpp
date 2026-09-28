@@ -155,9 +155,9 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
         // second verifier to fall back to: one way of being believed.
         auto* effective = verifier_.get();
         if (effective == nullptr || !effective->is_configured()) {
-            BOOST_LOG_SEV(lg(), error) << "Route requires authentication but no JWT verifier is "
-                                       << "configured; refusing " << matched->pattern << " from "
-                                       << remote_address_;
+            BOOST_LOG_SEV(lg(), error)
+                << "Route requires authentication but no JWT verifier is "
+                << "configured; refusing " << matched->pattern << " from " << remote_address_;
             auto unauthorized = domain::http_response::unauthorized(
                 "Authentication is not configured on this server");
             auto beast_resp = convert_response(unauthorized, req.version(), req.keep_alive());

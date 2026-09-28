@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/make-the-seed-profile-rows-match-the-prototype-cards
-#+pr:
+#+pr: 2312
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2312][#2312]] | [iam] Make the seed profile rows match the prototype's cards |
 
 * Review
 

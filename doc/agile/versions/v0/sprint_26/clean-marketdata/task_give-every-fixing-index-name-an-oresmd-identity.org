@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/inflation-equity-security-fixings
-#+pr:
+#+pr: 2355
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -576,6 +576,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2355][#2355]] | [marketdata,codegen] Name the last three fixing classes |
 | [[https://github.com/OreStudio/OreStudio/pull/2353][#2353]] | [marketdata,codegen] Name the generic fixing index names |
 | [[https://github.com/OreStudio/OreStudio/pull/2346][#2346]] | [marketdata,codegen] Name the power and commodity fixings |
 | [[https://github.com/OreStudio/OreStudio/pull/2340][#2340]] | [marketdata] Carry an FX fixing's source and the pair as quoted |

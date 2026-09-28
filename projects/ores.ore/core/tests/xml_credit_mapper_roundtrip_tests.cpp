@@ -185,3 +185,31 @@ TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
 
     BOOST_LOG_SEV(lg, info) << "RPA roundtrip passed. Reference: " << r.reference_entity;
 }
+
+TEST_CASE("credit_mapper_leaves_expiry_unset_without_exercise_dates", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The XSD makes exerciseDatesGroup optional, so an option with no
+    // ExerciseDates is legal. The expiry must stay unset rather than carry an
+    // invalid date that exports as a spurious empty ExerciseDate element.
+    using ores::platform::filesystem::file;
+    std::string content = file::read_content(example_path("Credit_Index_CDS_Option.xml"));
+    const std::string open_tag = "<ExerciseDates>";
+    const std::string close_tag = "</ExerciseDates>";
+    const auto begin = content.find(open_tag);
+    REQUIRE(begin != std::string::npos);
+    const auto end = content.find(close_tag, begin);
+    REQUIRE(end != std::string::npos);
+    content.erase(begin, end + close_tag.size() - begin);
+
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(!p.Trade.empty());
+    const auto r = ores::ore::domain::trade_mapper::map_credit_instrument(p.Trade.front());
+    REQUIRE(r.has_value());
+    CHECK(!r->option_expiry_date.has_value());
+
+    const auto rt = credit_instrument_mapper::reverse_index_cds_option(*r);
+    REQUIRE(rt.IndexCreditDefaultSwapOptionData);
+    CHECK(!rt.IndexCreditDefaultSwapOptionData->OptionData.exerciseDatesGroup);
+}

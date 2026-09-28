@@ -164,6 +164,12 @@ def _render_history(tmp_path):
     )
 
 
+def _render_generator(tmp_path):
+    return _render(
+        tmp_path, "cpp_domain_type_generator.cpp.mustache", "decimal_probe_generator.cpp"
+    )
+
+
 def test_a_money_column_is_a_decimal_in_the_domain_struct(tmp_path):
     """The domain member is the exact decimal, both plain and optional."""
     domain = _render_domain(tmp_path)
@@ -211,6 +217,14 @@ def test_the_history_field_mapper_renders_a_money_column(tmp_path):
     history = _render_history(tmp_path)
     assert '{.name = "Amount", .value = v.amount.to_string()}' in history
     assert ".value = v.optional_amount ? v.optional_amount->to_string() : std::string{}" in history
+
+
+def test_the_synthetic_generator_fills_a_money_column(tmp_path):
+    """A decimal with no generator branch was left at the default zero."""
+    generator = _render_generator(tmp_path)
+    assert f"r.amount = {DECIMAL}::from_string(" in generator
+    assert f"r.optional_amount = {DECIMAL}::from_string(" in generator
+    assert '#include "ores.utility/decimal/decimal.hpp"' in generator
 
 
 def test_a_double_numeric_column_needs_no_conversion(tmp_path):

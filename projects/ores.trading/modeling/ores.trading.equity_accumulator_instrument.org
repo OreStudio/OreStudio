@@ -212,6 +212,10 @@ Knock-out barrier; absent when not specified.
 
 TaRF only: target profit level.
 
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** target_type
 :PROPERTIES:
 :type:     text

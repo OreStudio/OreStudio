@@ -118,6 +118,10 @@ struct equity_position_option_underlying final {
      * @brief Position direction of this entry's option: Long or Short.
      *
      * The ORE OptionData/LongShort element is required, so the column is not null.
+     *
+     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
+     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
+     * reference into a real foreign key.
      */
     std::string long_short;
 

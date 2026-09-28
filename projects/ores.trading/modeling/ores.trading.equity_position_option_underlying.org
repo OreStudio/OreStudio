@@ -126,6 +126,8 @@ Position direction of this entry's option: Long or Short.
 The ORE =OptionData/LongShort= element is required, so the column is
 not null.
 
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+
 ** option_type
 :PROPERTIES:
 :type:     text
@@ -179,6 +181,7 @@ Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE sett
 |-------------------------|
 | "sequence_number" > 0   |
 | "underlying_name" <> '' |
+| "long_short" in ('Long', 'Short') |
 | "option_type" is null or "option_type" in ('Call', 'Put') |
 | "exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American') |
 | "settlement_type" is null or "settlement_type" in ('Physical', 'Cash') |

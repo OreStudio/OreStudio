@@ -38,9 +38,6 @@
 \ir ./trading_price_types_populate.sql
 \ir ./trading_amortization_types_populate.sql
 \ir ./trading_average_types_populate.sql
-
-\echo ''
-\echo '=== Trade Population Complete ==='
 \ir ./trading_option_types_populate.sql
 \ir ./trading_exercise_types_populate.sql
 \ir ./trading_settlement_types_populate.sql
@@ -48,3 +45,6 @@
 \ir ./trading_activity_categories_populate.sql
 \ir ./trading_return_types_populate.sql
 \ir ./trading_payoff_types_populate.sql
+
+\echo ''
+\echo '=== Trade Population Complete ==='

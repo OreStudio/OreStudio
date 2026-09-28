@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/fx_asian_forward_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -55,6 +56,12 @@ generate_synthetic_fx_asian_forward_instrument(utility::generation::generation_c
     r.settlement_notional = ores::utility::decimal::decimal::from_string("10000").value();
     r.payment_date = std::chrono::year_month_day{std::chrono::year{2025} / 9 / 30};
     r.long_short = std::string("Long");
+    r.fixing_amount = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
+    r.target_amount = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

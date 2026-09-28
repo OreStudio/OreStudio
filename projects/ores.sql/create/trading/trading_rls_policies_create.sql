@@ -76,6 +76,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_moment_types_tbl enable row level security;
 
+drop policy if exists moment_types_tenant_isolation_policy
+    on ores_trading_moment_types_tbl;
+
 create policy moment_types_tenant_isolation_policy on ores_trading_moment_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -88,6 +91,9 @@ with check (
 -- Price Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_price_types_tbl enable row level security;
+
+drop policy if exists price_types_tenant_isolation_policy
+    on ores_trading_price_types_tbl;
 
 create policy price_types_tenant_isolation_policy on ores_trading_price_types_tbl
 for all using (
@@ -102,6 +108,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_amortization_types_tbl enable row level security;
 
+drop policy if exists amortization_types_tenant_isolation_policy
+    on ores_trading_amortization_types_tbl;
+
 create policy amortization_types_tenant_isolation_policy on ores_trading_amortization_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -114,6 +123,9 @@ with check (
 -- Average Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_average_types_tbl enable row level security;
+
+drop policy if exists average_types_tenant_isolation_policy
+    on ores_trading_average_types_tbl;
 
 create policy average_types_tenant_isolation_policy on ores_trading_average_types_tbl
 for all using (
@@ -128,6 +140,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_option_types_tbl enable row level security;
 
+drop policy if exists option_types_tenant_isolation_policy
+    on ores_trading_option_types_tbl;
+
 create policy option_types_tenant_isolation_policy on ores_trading_option_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -140,6 +155,9 @@ with check (
 -- Exercise Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_exercise_types_tbl enable row level security;
+
+drop policy if exists exercise_types_tenant_isolation_policy
+    on ores_trading_exercise_types_tbl;
 
 create policy exercise_types_tenant_isolation_policy on ores_trading_exercise_types_tbl
 for all using (
@@ -154,6 +172,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_settlement_types_tbl enable row level security;
 
+drop policy if exists settlement_types_tenant_isolation_policy
+    on ores_trading_settlement_types_tbl;
+
 create policy settlement_types_tenant_isolation_policy on ores_trading_settlement_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -166,6 +187,9 @@ with check (
 -- Barrier Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_barrier_types_tbl enable row level security;
+
+drop policy if exists barrier_types_tenant_isolation_policy
+    on ores_trading_barrier_types_tbl;
 
 create policy barrier_types_tenant_isolation_policy on ores_trading_barrier_types_tbl
 for all using (
@@ -180,6 +204,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_activity_categories_tbl enable row level security;
 
+drop policy if exists activity_categories_tenant_isolation_policy
+    on ores_trading_activity_categories_tbl;
+
 create policy activity_categories_tenant_isolation_policy on ores_trading_activity_categories_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -192,6 +219,9 @@ with check (
 -- Return Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_return_types_tbl enable row level security;
+
+drop policy if exists return_types_tenant_isolation_policy
+    on ores_trading_return_types_tbl;
 
 create policy return_types_tenant_isolation_policy on ores_trading_return_types_tbl
 for all using (
@@ -206,6 +236,9 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_trading_payoff_types_tbl enable row level security;
 
+drop policy if exists payoff_types_tenant_isolation_policy
+    on ores_trading_payoff_types_tbl;
+
 create policy payoff_types_tenant_isolation_policy on ores_trading_payoff_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -218,6 +251,9 @@ with check (
 -- Long Short Types
 -- -----------------------------------------------------------------------------
 alter table ores_trading_long_short_types_tbl enable row level security;
+
+drop policy if exists long_short_types_tenant_isolation_policy
+    on ores_trading_long_short_types_tbl;
 
 create policy long_short_types_tenant_isolation_policy on ores_trading_long_short_types_tbl
 for all using (
@@ -734,6 +770,9 @@ for select using (
 -- Commodity Basket Constituents
 alter table ores_trading_commodity_basket_constituents_tbl enable row level security;
 
+drop policy if exists commodity_basket_constituents_tenant_isolation_policy
+    on ores_trading_commodity_basket_constituents_tbl;
+
 create policy commodity_basket_constituents_tenant_isolation_policy on ores_trading_commodity_basket_constituents_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -980,6 +1019,9 @@ for select using (
 -- Equity Position Option Underlyings
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_position_option_underlyings_tbl enable row level security;
+
+drop policy if exists equity_position_option_underlyings_tenant_isolation_policy
+    on ores_trading_equity_position_option_underlyings_tbl;
 
 create policy equity_position_option_underlyings_tenant_isolation_policy on ores_trading_equity_position_option_underlyings_tbl
 for all using (
@@ -1281,6 +1323,9 @@ for select using (
 
 -- Callable Swap Call Dates
 alter table ores_trading_callable_swap_call_dates_tbl enable row level security;
+
+drop policy if exists callable_swap_call_dates_tenant_isolation_policy
+    on ores_trading_callable_swap_call_dates_tbl;
 
 create policy callable_swap_call_dates_tenant_isolation_policy on ores_trading_callable_swap_call_dates_tbl
 for all using (

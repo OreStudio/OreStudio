@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/instrument_strike_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -45,6 +46,12 @@ generate_synthetic_instrument_strike(utility::generation::generation_context& ct
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
+    r.price_value = ores::utility::decimal::decimal::from_string(
+                        std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                        .value();
+    r.bare_value = ores::utility::decimal::decimal::from_string(
+                       std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                       .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

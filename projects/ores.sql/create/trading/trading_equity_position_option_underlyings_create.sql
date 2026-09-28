@@ -83,6 +83,7 @@ create table if not exists "ores_trading_equity_position_option_underlyings_tbl"
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("sequence_number" > 0),
     check ("underlying_name" <> ''),
+    check ("long_short" in ('Long', 'Short')),
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
     check ("exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American')),
     check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))

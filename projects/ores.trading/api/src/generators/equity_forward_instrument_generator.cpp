@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_forward_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -51,6 +52,9 @@ generate_synthetic_equity_forward_instrument(utility::generation::generation_con
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.quantity = 100.0;
+    r.forward_price = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.long_short = std::string("Long");
     r.audit.modified_by = modified_by;

@@ -20,8 +20,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <rfl/json.hpp>
 #include <string>
 #include <variant>
 
@@ -31,7 +33,11 @@ using ores::trading::domain::bond_instrument_data;
 using ores::trading::domain::decode_instrument;
 using ores::trading::domain::encode_instrument;
 using ores::trading::domain::instrument_payload;
+using ores::trading::domain::swap_instrument_data;
+using ores::trading::domain::swap_leg;
 using ores::trading::domain::trade_instrument;
+using ores::trading::domain::vanilla_swap_instrument;
+using ores::trading::domain::with_legs;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
@@ -113,4 +119,32 @@ TEST_CASE("instrument_payload_refuses_a_body_that_does_not_parse", tags) {
     const auto decoded =
         decode_instrument(instrument_payload{.type = "bond_instrument_data", .body = "not json"});
     CHECK(std::holds_alternative<std::monostate>(decoded));
+}
+
+/**
+ * A rates payload written before the call dates became child rows carries the
+ * leaf and its legs only, with no call_dates member. It must still decode to
+ * the swap carrier, with the schedule left empty, rather than fall through to
+ * monostate and lose the data.
+ */
+TEST_CASE("instrument_payload_reads_a_bare_swap_body", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const auto instrument_id = boost::uuids::random_generator()();
+
+    vanilla_swap_instrument swap;
+    swap.identity.instrument_id = instrument_id;
+    swap.identity.trade_type_code = "Swap";
+
+    const with_legs<vanilla_swap_instrument, swap_leg> bare{swap, {swap_leg{}}};
+    const instrument_payload payload{.type = "vanilla_swap_instrument",
+                                     .body = rfl::json::write(bare)};
+
+    const auto decoded = decode_instrument(payload);
+    REQUIRE(std::holds_alternative<swap_instrument_data>(decoded));
+    const auto& data = std::get<swap_instrument_data>(decoded);
+    CHECK(std::get<vanilla_swap_instrument>(data.instrument).identity.instrument_id ==
+          instrument_id);
+    CHECK(data.legs.size() == 1u);
+    CHECK(data.call_dates.empty());
 }

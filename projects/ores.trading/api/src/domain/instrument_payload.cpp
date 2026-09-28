@@ -180,10 +180,18 @@ void try_one_swap(const instrument_payload& payload,
     using Leaf = std::variant_alternative_t<I, Variant>;
     if (found || payload.type != leaf_name<Leaf>())
         return;
-    if (auto r = read_as<swap_leaf_payload<Leaf>>(payload))
+    if (auto r = read_as<swap_leaf_payload<Leaf>>(payload)) {
         found = swap_instrument_data{Variant(std::move(r->instrument)),
                                      std::move(r->legs),
                                      std::move(r->call_dates)};
+        return;
+    }
+    // A payload written before the call dates became child rows carries the
+    // leaf and its legs only, so read it and leave the schedule empty.
+    if (auto r = read_as<with_legs<Leaf, swap_leg>>(payload))
+        found = swap_instrument_data{Variant(std::move(r->instrument)),
+                                     std::move(r->legs),
+                                     {}};
 }
 
 template <typename Variant, std::size_t... Is>

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_digital_option_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -53,8 +54,12 @@ generate_synthetic_equity_digital_option_instrument(utility::generation::generat
     r.notional = ores::utility::decimal::decimal::from_string("1000").value();
     r.option_type = std::string("Call");
     r.strike = std::make_optional(ores::utility::decimal::decimal::from_string("3300").value());
+    r.barrier_level = std::nullopt;
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 7 / 17};
     r.long_short = std::string("Long");
+    r.payout_amount = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

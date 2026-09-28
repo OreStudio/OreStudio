@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/commodity_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -54,8 +55,29 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
     r.unit = std::string("MMBTU");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
+    r.fixed_price = ores::utility::decimal::decimal::from_string(
+                        std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                        .value();
+    r.strike_price = ores::utility::decimal::decimal::from_string(
+                         std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                         .value();
     r.averaging_start_date = std::chrono::year_month_day{std::chrono::year{2024} / 6 / 15};
     r.averaging_end_date = std::chrono::year_month_day{std::chrono::year{2025} / 6 / 15};
+    r.spread_amount = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
+    r.accumulation_amount = ores::utility::decimal::decimal::from_string(
+                                std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                .value();
+    r.knock_out_barrier = ores::utility::decimal::decimal::from_string(
+                              std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                              .value();
+    r.lower_barrier = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
+    r.upper_barrier = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.swaption_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

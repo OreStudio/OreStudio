@@ -21,6 +21,7 @@
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <chrono>
+#include <optional>
 
 namespace ores::ore::domain {
 
@@ -60,13 +61,13 @@ credit_instrument make_base(const std::string& trade_type_code) {
     return r;
 }
 
-std::chrono::year_month_day first_exercise_date(const optionData& opt) {
+std::optional<std::chrono::year_month_day> first_exercise_date(const optionData& opt) {
     if (!opt.exerciseDatesGroup)
-        return {};
+        return std::nullopt;
     if (!opt.exerciseDatesGroup->ExerciseDates)
-        return {};
+        return std::nullopt;
     if (opt.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        return {};
+        return std::nullopt;
     return ores::platform::time::datetime::from_iso8601_date(
         std::string(opt.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()));
 }

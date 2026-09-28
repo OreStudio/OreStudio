@@ -816,10 +816,16 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
         result.legs.push_back(map_leg(ld, leg_num++));
 
     if (!result.legs.empty()) {
-        if (!si.maturity_date)
-            si.maturity_date = end_date_from_schedule(sd.LegData.front().ScheduleData);
-        if (!si.start_date)
-            si.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
+        if (!si.maturity_date) {
+            const auto maturity = end_date_from_schedule(sd.LegData.front().ScheduleData);
+            if (maturity.ok())
+                si.maturity_date = maturity;
+        }
+        if (!si.start_date) {
+            const auto start = start_date_from_schedule(sd.LegData.front().ScheduleData);
+            if (start.ok())
+                si.start_date = start;
+        }
     }
 
     return result;

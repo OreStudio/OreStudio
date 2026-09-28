@@ -895,3 +895,123 @@ tangled into the runnable script library
 * Workspaces
 
 - [[id:6B3B2660-726F-5EAC-961A-B845325D21D6][How do I run the workspaces commands from the shell?]]
+
+* Activity Categories
+
+- [[id:1CEF23DD-6FD5-59E9-B27B-0458F17BA001][How do I run the activity_categories commands from the shell?]]
+
+* Activity Types
+
+- [[id:A167B13C-D185-58FD-BFB4-CD4AC34F7869][How do I run the activity_types commands from the shell?]]
+
+* Amortization Types
+
+- [[id:F1FE6AF8-B0A8-5818-B942-B85056DBA9EB][How do I run the amortization_types commands from the shell?]]
+
+* Average Types
+
+- [[id:A881603D-B0AB-599A-96B9-5DB4B2BABEC4][How do I run the average_types commands from the shell?]]
+
+* Balance Guaranteed Swap Instruments
+
+- [[id:259D76EB-8AA2-558D-9E03-CA90A586C307][How do I run the balance_guaranteed_swap_instruments commands from the shell?]]
+
+* Barrier Types
+
+- [[id:85C109F3-D838-55E5-AE48-9E78DCF68487][How do I run the barrier_types commands from the shell?]]
+
+* Bond Instruments
+
+- [[id:8DA3A628-333F-516B-BEA4-B21F43883A66][How do I run the bond_instruments commands from the shell?]]
+
+* Callable Swap Instruments
+
+- [[id:B5323709-759D-5A35-A536-64E569B6A339][How do I run the callable_swap_instruments commands from the shell?]]
+
+* Cap Floor Instruments
+
+- [[id:AC8053D3-F49F-5061-9CB7-DAEADAB5822F][How do I run the cap_floor_instruments commands from the shell?]]
+
+* Composite Instruments
+
+- [[id:372A2957-3399-5E89-866D-6E51C93CC646][How do I run the composite_instruments commands from the shell?]]
+
+* Composite Legs
+
+- [[id:C4F89F5E-7468-55B5-A457-A745AE2A906B][How do I run the composite_legs commands from the shell?]]
+
+* Credit Instruments
+
+- [[id:70382560-BA44-5150-82D8-BD9140638714][How do I run the credit_instruments commands from the shell?]]
+
+* Exercise Types
+
+- [[id:12673543-DDB2-5823-9293-9DF57D0F3E90][How do I run the exercise_types commands from the shell?]]
+
+* Fpml Event Types
+
+- [[id:A2FFD92D-2082-5A1B-909C-B093982A6E4D][How do I run the fpml_event_types commands from the shell?]]
+
+* Fra Instruments
+
+- [[id:DA335FA5-B61A-5F56-8531-779FA5E03A1E][How do I run the fra_instruments commands from the shell?]]
+
+* Inflation Swap Instruments
+
+- [[id:384A967C-42A1-59F9-B2CA-C8F15907F91C][How do I run the inflation_swap_instruments commands from the shell?]]
+
+* Knock Out Swap Instruments
+
+- [[id:3C2189F1-D1DA-5C13-A366-A434CE150D8D][How do I run the knock_out_swap_instruments commands from the shell?]]
+
+* Long Short Types
+
+- [[id:360C5CEE-E873-54AA-BFF3-90CD3058E5F6][How do I run the long_short_types commands from the shell?]]
+
+* Moment Types
+
+- [[id:3C269A9A-867E-520B-BF5E-C66C3D470425][How do I run the moment_types commands from the shell?]]
+
+* Option Types
+
+- [[id:802DA905-E8F4-5149-B085-5D8DAEF8EB2B][How do I run the option_types commands from the shell?]]
+
+* Payoff Types
+
+- [[id:FAABFC08-8EB6-5564-A307-7983AE180D65][How do I run the payoff_types commands from the shell?]]
+
+* Price Types
+
+- [[id:DD849CF9-8FCD-5471-92BB-A9C31D70B53B][How do I run the price_types commands from the shell?]]
+
+* Return Types
+
+- [[id:AAD5792B-CBF7-5035-A89C-718E2D7777CA][How do I run the return_types commands from the shell?]]
+
+* Rpa Instruments
+
+- [[id:20EC5312-E6EE-553A-B109-28A2015725A5][How do I run the rpa_instruments commands from the shell?]]
+
+* Scripted Instruments
+
+- [[id:AD0972FC-35E6-5CC4-960E-297D125C8A17][How do I run the scripted_instruments commands from the shell?]]
+
+* Settlement Types
+
+- [[id:C148DFC9-A88B-54AC-A091-82B5737FE34A][How do I run the settlement_types commands from the shell?]]
+
+* Swap Legs
+
+- [[id:0B261F3E-C437-58E6-A17B-70E767B55E8D][How do I run the swap_legs commands from the shell?]]
+
+* Swaption Instruments
+
+- [[id:69B14EAF-F811-5183-B39B-40EC96303100][How do I run the swaption_instruments commands from the shell?]]
+
+* Trades
+
+- [[id:6C5A66CC-E129-5ED2-B4E2-87399C7EE885][How do I run the trades commands from the shell?]]
+
+* Vanilla Swap Instruments
+
+- [[id:9F8435B5-AB4E-59E1-B85A-AB212F3E9A52][How do I run the vanilla_swap_instruments commands from the shell?]]

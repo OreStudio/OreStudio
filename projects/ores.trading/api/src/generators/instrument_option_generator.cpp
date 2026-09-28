@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/instrument_option_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -48,6 +49,9 @@ generate_synthetic_instrument_option(utility::generation::generation_context& ct
     r.long_short = std::string("Long");
     r.has_exercise_data = true;
     r.exercise_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
+    r.exercise_price = ores::utility::decimal::decimal::from_string(
+                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                           .value();
     r.has_payment_data = true;
     r.has_settlement_data = true;
     r.modified_by = modified_by;

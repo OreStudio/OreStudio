@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_accumulator_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -56,6 +57,10 @@ generate_synthetic_equity_accumulator_instrument(utility::generation::generation
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2026} / 2 / 5};
     r.fixing_frequency = std::string("Monthly");
     r.long_short = std::string("Long");
+    r.knock_out_level = ores::utility::decimal::decimal::from_string(
+                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                            .value();
+    r.target_amount = std::nullopt;
     r.payoff_type = std::string("Decumulator");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

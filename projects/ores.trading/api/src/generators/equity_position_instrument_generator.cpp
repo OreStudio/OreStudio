@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_position_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -51,6 +52,9 @@ generate_synthetic_equity_position_instrument(utility::generation::generation_co
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.quantity = 100.0;
+    r.price = ores::utility::decimal::decimal::from_string(
+                  std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                  .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

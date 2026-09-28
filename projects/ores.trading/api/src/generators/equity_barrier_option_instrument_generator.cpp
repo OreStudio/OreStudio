@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/equity_barrier_option_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -58,6 +59,12 @@ generate_synthetic_equity_barrier_option_instrument(utility::generation::generat
     r.long_short = std::string("Long");
     r.lower_barrier = ores::utility::decimal::decimal::from_string("3500").value();
     r.lower_barrier_type = std::string("UpAndOut");
+    r.upper_barrier = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
+    r.rebate = ores::utility::decimal::decimal::from_string(
+                   std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                   .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

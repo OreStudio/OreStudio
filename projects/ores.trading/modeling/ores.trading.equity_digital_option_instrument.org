@@ -166,6 +166,10 @@ std::make_optional(ores::utility::decimal::decimal::from_string("3300").value())
 
 Touch only; absent for digital.
 
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** barrier_type
 :PROPERTIES:
 :type:     text

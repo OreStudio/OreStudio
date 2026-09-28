@@ -461,7 +461,12 @@ void commodity_instrument_commands::process_delete_commodity_instrument(std::ost
     }
 
     trading::messaging::delete_commodity_instrument_request req;
-    req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+    try {
+        req.removal.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+    } catch (const std::exception&) {
+        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
+        return;
+    }
 
     auto result = do_auth_request<trading::messaging::delete_commodity_instrument_response>(
         out, session, std::string(req.nats_subject), req);
@@ -490,7 +495,12 @@ void commodity_instrument_commands::process_get_commodity_instrument_history(
     }
 
     trading::messaging::list_commodity_instrument_versions_request req;
-    req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+    try {
+        req.key.instrument_id = boost::uuids::string_generator()(instrument_id);
+    } catch (const std::exception&) {
+        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
+        return;
+    }
 
     auto result = do_auth_request<trading::messaging::list_commodity_instrument_versions_response>(
         out, session, std::string(req.nats_subject), req);

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/bond_leg_amortization_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -49,6 +50,9 @@ generate_synthetic_bond_leg_amortization(utility::generation::generation_context
     r.leg_number = 0;
     r.sequence_number = 0;
     r.amortization_type = std::string("FixedAmount");
+    r.value = ores::utility::decimal::decimal::from_string(
+                  std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                  .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -143,6 +143,36 @@ TEST_CASE("mapper_roundtrip_swaption_bermudan_forward", tags) {
     BOOST_LOG_SEV(lg, info) << "Swaption Bermudan forward-mapper test passed";
 }
 
+TEST_CASE("forward_swaption_leaves_dates_unset_without_a_schedule", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The XSD makes ScheduleData optional, so a leg with no schedule is legal.
+    // The instrument then records no dates rather than an invalid date that
+    // renders as an empty element.
+    using ores::platform::filesystem::file;
+    std::string content = file::read_content(example_path("IR_Swaption_European.xml"));
+    const std::string open_tag = "<ScheduleData>";
+    const std::string close_tag = "</ScheduleData>";
+    for (auto begin = content.find(open_tag); begin != std::string::npos;
+         begin = content.find(open_tag)) {
+        const auto end = content.find(close_tag, begin);
+        REQUIRE(end != std::string::npos);
+        content.erase(begin, end + close_tag.size() - begin);
+    }
+    REQUIRE(content.find(open_tag) == std::string::npos);
+
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(!p.Trade.empty());
+
+    const auto result = swap_instrument_mapper::forward_swaption(p.Trade.front());
+    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
+
+    CHECK(!instr.start_date.has_value());
+    CHECK(!instr.maturity_date.has_value());
+    REQUIRE(!result.legs.empty());
+}
+
 // =============================================================================
 // CallableSwap mapper tests
 // =============================================================================

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/bond_forward_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -44,6 +45,12 @@ domain::bond_forward generate_synthetic_bond_forward(utility::generation::genera
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
+    r.amount = ores::utility::decimal::decimal::from_string(
+                   std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                   .value();
+    r.dv01 = ores::utility::decimal::decimal::from_string(
+                 std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                 .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

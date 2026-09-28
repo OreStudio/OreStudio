@@ -118,6 +118,41 @@ public:
     [[nodiscard]] static std::optional<domain::market_data_identifier>
     from_ore_key(const std::string& key,
                  const ores::ore::market::fx_quote_convention_checker& checker);
+
+    /**
+     * @brief The reverse of to_index_name(): an index-name string (e.g. "USD-LIBOR-3M",
+     * "USD-SOFR") becomes the ir fixing identifier it was projected from.
+     *
+     * The fixing boundary's key space is the index name -- FIXING/RATE/<index-name> --
+     * and the registry-backed from_ore_key() does not seed it, so this is the only way
+     * back for a row that arrived as a fixing.
+     *
+     * Mirrors the parser's tenor rule: the two-segment form (ccy-family) is accepted
+     * only for overnight families, because a term family without a tenor could not have
+     * come from a forward projection and the parser rejects it. Malformed names -- a
+     * segment count other than two or three, an empty segment -- yield std::nullopt.
+     *
+     * Covers the interest-rate index-name space the index_family enum declares, and
+     * nothing else. The corpus also carries inflation (UKRPI), equity (EQ-SP5), FX
+     * (FX-ECB-EUR-USD), power (POWER-ICE:PDQ-...) and credit (GENERIC-JuniorNote) index
+     * names, for which this returns std::nullopt: they are other asset classes, and no
+     * mapping exists for them yet. The analysis records that as the blocker standing in
+     * front of the identity cutover rather than as a limitation of this function.
+     */
+    [[nodiscard]] static std::optional<domain::market_data_identifier>
+    from_index_name(const std::string& index_name);
+
+    /**
+     * @brief Whether observations of @p identifier carry a point coordinate of their own.
+     *
+     * True for a quote or a fixing that names no point and no volatility surface: an FX
+     * spot, an equity spot, a commodity spot, a credit recovery, a fixing. Those series
+     * have one point per date, and a consumer supplies the name for it.
+     *
+     * False for a curve, a volatility surface, and any quote that carries a point -- an
+     * FX forward, an IR swap quote -- whose observations name their own coordinate.
+     */
+    [[nodiscard]] static bool is_scalar(const domain::market_data_identifier& identifier);
 };
 
 }

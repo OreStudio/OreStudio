@@ -30,6 +30,7 @@
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <sstream>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -1051,6 +1052,23 @@ std::optional<std::vector<std::string>> split_key(const std::string& key) {
     return parts;
 }
 
+// The index-name key space splits on '-' (e.g. "USD-LIBOR-3M"): exactly two
+// or three segments, all non-empty. It is not the ORE key grammar and shares
+// none of its structure -- a fixing's key names an index, not a series and a
+// point -- so it gets its own splitter rather than a mode of split_key's.
+std::optional<std::vector<std::string>> split_index_name(const std::string& name) {
+    std::vector<std::string> parts;
+    std::stringstream ss(name);
+    std::string tok;
+    while (std::getline(ss, tok, '-'))
+        parts.push_back(tok);
+    if (parts.size() < 2 || parts.size() > 3)
+        return std::nullopt;
+    if (std::ranges::any_of(parts, [](const std::string& p) { return p.empty(); }))
+        return std::nullopt;
+    return parts;
+}
+
 template <typename Enum>
 std::optional<Enum> parse_enum_lower(std::string_view value) {
     return magic_enum::enum_cast<Enum>(to_lower(value));
@@ -2023,6 +2041,51 @@ oresmd_projections::from_ore_key(const std::string& key,
     if (!parts)
         return std::nullopt;
     return inverse_projection(*parts, &checker);
+}
+
+std::optional<domain::market_data_identifier>
+oresmd_projections::from_index_name(const std::string& index_name) {
+    // The reverse of index_name_ir(): CCY-FAMILY (overnight, no tenor) or
+    // CCY-FAMILY-TENOR. Segment spelling normalisation mirrors the parser:
+    // ccy upper, family and tenor lower.
+    const auto parts = split_index_name(index_name);
+    if (!parts)
+        return std::nullopt;
+    const auto idx = parse_index((*parts)[1]);
+    if (!idx)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper((*parts)[0]);
+    id.type = instrument_type::fixing;
+    id.index = *idx;
+    if (parts->size() == 3) {
+        id.tenor = to_lower((*parts)[2]);
+    } else if (!is_overnight(*idx)) {
+        // A term family without a tenor could not have come from the forward
+        // projection, which emits the two-segment form for overnight families
+        // alone, and the parser rejects it. Mirror both rather than accept a
+        // name the URI it produces could not be read back from.
+        return std::nullopt;
+    }
+    return id;
+}
+
+bool oresmd_projections::is_scalar(const domain::market_data_identifier& identifier) {
+    return std::visit(
+        [](const auto& id) {
+            if (id.type != instrument_type::quote && id.type != instrument_type::fixing)
+                return false;
+            if constexpr (requires { id.point; }) {
+                if (id.point)
+                    return false;
+            }
+            if constexpr (requires { id.vol; }) {
+                if (id.vol)
+                    return false;
+            }
+            return true;
+        },
+        identifier);
 }
 
 }

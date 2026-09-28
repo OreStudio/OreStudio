@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 4050BF6C-DBC3-4E75-A204-A75CE4AFA323
+:END:
+#+title: Task: Make the oresmd URI the series identity
+#+description: Cut the market series identity over to the oresmd URI: the column on market_series and feed_binding, the import writing it, and the registry triple gone.
+#+type: task
+#+level: s1
+#+filetags: :clean-marketdata:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every identity-bearing market-data row carries the oresmd_uri that its key or its index name projects to, so the series identity is the URI rather than the registry's (series_type, metric, qualifier) triple, and the import creates a series for every row ORE's own examples carry -- the fixing half included.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
+| Now          | Scoped, and the blocker the story's analysis recorded is cleared: =from_ore_key()= names 485,606 of 485,606 corpus instrument keys and =from_index_name()= names 156 of 156 fixing index names, so no identity-bearing row in the corpus lacks a way back. Both import write paths are read and measured. |
+| Waiting on   | Nothing.                               |
+| Next         | Add the column to =market_series= and =feed_binding= with the natural key on it, write it from both import paths, then delete the triple. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- market_series and feed_binding carry oresmd_uri, and it is the natural key for a series and for a feed binding.
+- import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
+- The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
+- series_type, metric, qualifier, ore_key and the import classification table are deleted, and every consumer reads the URI.
+
+* Scope, measured before the column
+
+Read at =00c9cdd711= on the merged trunk. Nothing here is a claim about the
+abandoned branch; the two write paths are the code as it stands.
+
+**Neither import path stores an identity today.**
+
+- *Market data.* =import_service.cpp='s =canonical_key()= already computes the
+  identifier: it calls =from_ore_key()=, projects it back with =to_quote_key()=, and
+  returns the canonical spelling and the registry's decomposition of it. The
+  identifier itself is **discarded**. The series is found or created on
+  =(series_type, metric, qualifier)=, and the observation keeps the file's own text
+  in =obs.key=, because the rows above hold the canonical spelling rather than it.
+- *Fixings.* The series is created as
+  =find_or_create_series("FIXING", "RATE", f.qualifier)=, where the qualifier **is**
+  the index name. =from_index_name()= has no production call site at all: zero
+  outside the projections and their tests. A fixing series therefore has no
+  identifier to store, and the index name is the whole of its identity.
+
+**Both identity-bearing tables are known, and the blast radius is measured.**
+=market_series= keys on the triple; =feed_binding= keys on =ore_key= and
+=source_name=. 63 files across =ores.marketdata=, =ores.synthetic=, =ores.shell= and
+=ores.ore= name =qualifier=, which is the set the deletion has to carry. The value
+the new column needs is in hand on the market-data path and one call away on the
+fixing path, so this task is the cutover and its consumers rather than a new
+projection.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Corpus instrument keys that name | 485606 of 485606 | =ores.marketdata.core.tests "[oresmd]"= | =00c9cdd711= |
+| Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
+| =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
+| Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

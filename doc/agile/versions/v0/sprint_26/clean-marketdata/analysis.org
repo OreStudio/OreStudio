@@ -1408,6 +1408,40 @@ own, so the census is whole without an exception standing in for a class. What
 remains is the cutover itself: the import still writes the index name into the
 series qualifier.
 
+*Update, 2026-09-29 (PR 5's scoping round).* The blocker this section records is
+cleared, and the claim above is now false: the fixing half names, so the cutover's
+premise -- every identity-bearing row can be given an =oresmd_uri= -- holds over the
+whole corpus. Measured on the merged trunk: =from_ore_key()= names **485,606 of
+485,606** corpus instrument keys, which the ORESMD coverage gate asserts, and
+=from_index_name()= names **156 of 156** fixing index names, with the two
+=GENERIC-MD/EQUITY_OPTION/...= rows refused as market-data keys in a fixing column
+rather than as fixings. No identity-bearing row in the corpus has no way back.
+
+**What the import writes today.** Two write paths, and neither stores an identity:
+
+- *Market data.* =import_service.cpp= computes the identifier already --
+=canonical_key()= calls =from_ore_key()=, projects it with =to_quote_key()=, and
+returns the canonical spelling plus the registry's decomposition -- and then
+**discards the identifier**. The series is found or created on
+=(series_type, metric, qualifier)=, and the observation keeps the file's own text in
+=obs.key=, because the rows above hold the canonical spelling rather than it.
+- *Fixings.* The series is created as
+=find_or_create_series("FIXING", "RATE", f.qualifier)=, where the qualifier *is* the
+index name. =from_index_name()= has **no production call site at all**: 0 outside
+the projections and the tests. So a fixing series has no identifier to store and the
+index name is its whole identity.
+
+**Where the =oresmd_uri= column belongs, and what it costs.** =market_series= and
+=feed_binding= are both identity-bearing: the series on its
+=(series_type, metric, qualifier)= triple, the binding on =ore_key= and
+=source_name=. The cutover adds the column to both, moves the natural key onto it,
+repurposes =point_id=, then deletes =series_type=, =metric=, =qualifier=, =ore_key=
+and the import classification table. The blast radius of deleting the triple is 63
+files across =ores.marketdata=, =ores.synthetic=, =ores.shell= and =ores.ore= that
+name =qualifier=. The value the column needs is in hand on the market-data path
+already and one call away on the fixing path, so the work is the cutover and its
+consumers rather than a new projection.
+
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 
 *Scope.* Add =marketdata= to =component_registry.py= and run every gate:

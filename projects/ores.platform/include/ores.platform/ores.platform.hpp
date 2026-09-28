@@ -31,13 +31,15 @@
  * - Environment: access to environment variables and system information
  * - Filesystem: file operations, path handling, and I/O error types
  * - Network: network interface information and utilities
+ * - Numeric: conversions standing in for a standard facility a supported
+ *   library does not implement
  * - Process: process identity, executable location, and shutdown signals
  * - Time: datetime utilities, time point parsing, and relative time formatting
  *
- * The module is organized into namespaces: concurrency (portability shims),
- * environment (system environment), filesystem (file operations), net (network
- * utilities), process (process identity and signals), and time (datetime
- * handling).
+ * The module is organized into namespaces: concurrency and numeric
+ * (portability shims), environment (system environment), filesystem (file
+ * operations), net (network utilities), process (process identity and
+ * signals), and time (datetime handling).
  */
 namespace ores::platform {}
 

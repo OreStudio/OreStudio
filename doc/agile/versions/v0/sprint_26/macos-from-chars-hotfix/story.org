@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 2824C99D-D151-4530-A998-352A6DB253B6
+:END:
+#+title: Story: Hotfix: macOS cannot parse a floating point with std::from_chars
+#+description: The macOS debug job fails compiling the credit simulation mapper: libc++ on Apple platforms declares the floating-point std::from_chars as a deleted function, so the one site in the estate that parses a double with it compiles on Linux and MSVC and stops the macOS build. ores.platform gains a locale-independent, whole-input parse that stands in for it, and the mapper uses it.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:osx:cpp23:platform:ore:sprint_26:v0:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The macOS build stops on the credit simulation mapper:
+
+#+begin_src text
+projects/ores.ore/core/src/domain/credit_simulation_mapper.cpp:63:9: error:
+  call to deleted function 'from_chars'
+   63 |         std::from_chars(text.data(), text.data() + text.size(), value);
+#+end_src
+
+libc++ on Apple platforms does not implement the floating-point overload
+of =std::from_chars=. It declares it deleted rather than absent, so the
+call compiles under libstdc++ and MSVC and fails on macOS, and nothing in
+a Linux or Windows build reports it. The estate parses one floating point
+that way -- the transition-matrix bounds of a credit simulation, read from
+ORES's own XML -- while the format side uses =std::to_chars=, which libc++
+does implement.
+
+=ores.platform= gains =numeric::parse_double=, and the mapper moves onto
+it. The shim is the same shape as =concurrency::atomic_shared_ptr=: a
+standard facility a supported library does not provide lives in one place
+with the reason written down, instead of a call site discovering it when
+the macOS job runs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-28                               |
+
+* Acceptance
+
+- No floating-point =std::from_chars= remains in the estate, and the two
+  integer uses stay as they are.
+- The shim's contract is tested: a complete number parses, anything
+  around it is refused, and every double the estate formats with
+  =to_chars= parses back to itself.
+- The credit simulation mapper keeps its behaviour, including its error
+  message for a bound that is not a number.
+- The affected suites pass, and the macOS job gets past the mapper.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5B2A72C4-9214-4C28-A715-55DB91DF7559][Implement Hotfix: macOS cannot parse a floating point with std::from_chars]] | DONE | 2026-09-28 | 2026-09-28 | Add the shim and its test, move the mapper onto it, scan for other floating-point from_chars, run the affected suites, and raise the pull request. |
+
+* Decisions
+
+- The shim lives in =ores.platform=, not =ores.utility=. What it encodes
+  is a standard-library gap on a supported platform, which is what
+  =concurrency/atomic_shared_ptr.hpp= in the same component exists for,
+  and the component that needs it already links =ores.platform=.
+- The implementation is Boost's lexical cast, not =strtod=. =strtod=
+  follows the program's =LC_NUMERIC=, so a comma would parse as a decimal
+  point in some locales and not others, and it skips leading whitespace
+  where the standard overload does not. The shim's tests pin both
+  differences.
+- The floating-point =to_chars= calls stay. libc++ implements them, and
+  the macOS compiler reported no error on the one in the same translation
+  unit; replacing a working call would change the text the estate writes
+  for no gain.
+
+* Out of scope
+
+- Any other library gap that only macOS sees. This story fixes the one
+  that stops the current build; the shim is where the next one of the same
+  family goes.

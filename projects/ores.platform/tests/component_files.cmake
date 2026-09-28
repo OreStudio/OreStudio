@@ -26,6 +26,7 @@ set(files
     "filesystem_scoped_temp_file_tests.cpp"
     "main.cpp"
     "net_network_info_tests.cpp"
+    "numeric_floating_point_tests.cpp"
     "process_executable_tests.cpp"
     "process_pid_tests.cpp"
     "time_datetime_tests.cpp"

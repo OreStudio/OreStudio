@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2374
+#+pr: 2375
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -354,6 +354,7 @@ which is the same reason the identity lookups fall back to the triple.
 | Where the bootstrap's tenor convention comes from | the source series' qualifier, through =tenor_convention_code_for()= | =grep -n "tenor_convention_code_for" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =07d9052523= |
 | Pillars the feed keys | nine per FOMC config, one series each: =IR_SWAP/RATE/<CCY>/<start>/1D= | =ores.synthetic.api.tests "a_pillar_key_names_the_instrument_the_feed_simulates"= | =ff3b5a9e2c= |
 | Where the reader would get the pillar's currency | nowhere: the config has no currency column and a pillar carries none | =grep -in currency projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_config.org= | =3767255a5b= |
+| Bootstrap configs that name their currency | 1 of 1: =USD=, the only curve seeded | =select id, currency_code from ores_refdata_ir_curve_bootstrap_configs_tbl= | =dbaa00c52b= |
 | =ores.synthetic.api= suite, with the pillar key | 109 assertions in 30 cases | =ores.synthetic.api.tests= | =ff3b5a9e2c= |
 | Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
@@ -395,6 +396,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2375][#2375]] | [refdata] Let the config name the currency its pillars are quoted in |
 | [[https://github.com/OreStudio/OreStudio/pull/2374][#2374]] | [agile] Record that the reader has no currency to key with |
 | [[https://github.com/OreStudio/OreStudio/pull/2373][#2373]] | [synthetic] Key every pillar as the OIS quote it simulates |
 | [[https://github.com/OreStudio/OreStudio/pull/2372][#2372]] | [agile] Write the re-key's plan |
@@ -456,6 +458,11 @@ via its "Verifies task" field.
 | 40 | =std::format= with a chrono calendar needs C++20 chrono formatting | =ir_curve_template_resolver.cpp= | answered | The same call is already in =ir_curve_feed.cpp= for its schedule, so the toolchain's support is what the component already builds on. |
 | 41 | The new case's name does not match the file's own style | =feed_factory_tests.cpp= | recorded | The case reads as a sentence because it asserts a rule rather than a factory dispatch; renaming it is cosmetic and belongs with the next touch. |
 | 42 | Nothing tests the whole feed path, so no tick is shown landing in a per-pillar series | the feed | recorded | The reader step is where that path is exercised end to end, and the record says so in the plan. |
+| 43 | =currency_code= is free text, so a typo fails only when the reader builds a key | the model | recorded | The reader step owns the validation, as it does for the convention code; the model already says the field references =currency.iso_code=. |
+| 44 | The migration's backfill is USD for every row | the migration | answered | The migration's own comment says so, and the seeded config is the only row a database built here carries. |
+| 45 | The generator's fixed =USD= gives no variety | the model's generator | recorded | Generated configs are not data; a currency that varies would need the generator to read the currency table. |
+| 46 | Other consumers of the config need no change | =curve_republish_service.cpp= | confirmed | They read it rather than write it, and the reader that uses the column lands next. |
+| 47 | The shell tests' arity change deserves a comment | =ir_curve_bootstrap_config_commands_tests.cpp= | recorded | Cosmetic; the assertion's order is what the test file's own convention carries. |
 
 * Result
 

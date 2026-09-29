@@ -129,6 +129,14 @@ struct ir_curve_bootstrap_config final {
     boost::uuids::uuid party_id;
 
     /**
+     * @brief References currency.iso_code -- the currency this curve's pillars are quoted in, and
+     * the one segment of a pillar's ORE key the pillar itself cannot supply: a pillar carries tenor
+     * codes and a role, so a reader resolving a pillar to its series has to be told the currency
+     * the key is written in.
+     */
+    std::string currency_code;
+
+    /**
      * @brief Soft reference to the raw RATES/YIELD market_series (in ores.marketdata) this config
      * bootstraps.
      */

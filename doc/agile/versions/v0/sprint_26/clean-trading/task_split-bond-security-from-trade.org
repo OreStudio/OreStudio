@@ -216,6 +216,28 @@ Early detection, in this order: a reader test holding two BondTRS trades on
 one ISIN and asserting each container keeps its own funding leg; the bond
 leg's schedules surviving the move; then the corpus round trip.
 
+** Decision (D20): the bond leg's schedules get their own table
+   (2026-09-29)
+
+Unit 2's inventory recorded that the bond leg's schedules must move with
+the leg or the round trip loses them. The existing =instrument_schedule=
+keys on the trade: its primary key is =(tenant_id, trade_id, owner_role,
+owner_number, schedule_role, sequence_number, valid_from, valid_to)=, and
+a bitemporal primary key admits no null. An either/or parent would
+therefore need a surrogate key and a check constraint, which is the shape
+D19 rejected for the legs.
+
+So the schedules split the way the legs did. =bond_issue_leg_schedule=
+and =bond_issue_leg_schedule_date= key on the issue, drop =owner_role=
+(the issue owns the row, so its role is always the bond) and rename
+=owner_number= to =leg_number=. =instrument_schedule= keeps the
+schedules of the trade's own owners -- the three product legs, the option
+block and the return block -- and its =owner_role= check narrows to
+=trs_funding=, =repo=, =ascot_swap=, =option= and =trs=.
+
+The cost is the one D19 already accepted: the schedule shape exists once
+per parent rather than once in total.
+
 ** Unit 2a delivered (2026-09-29)
 
 The security-keyed leg family exists: =bond_issue_leg=, =bond_issue_leg_rate=,
@@ -235,6 +257,58 @@ command does not regenerate the per-directory CMake file lists -- a
 separate script does, and without it new sources never compile -- and the
 create and drop aggregates and the RLS policy file are hand-maintained, so
 a new table is invisible to =db recreate= and un-policed until wired.
+
+** Unit 2b delivered (2026-09-29)
+
+The move. Every caller now reads and writes the security-keyed family.
+The trade-keyed =leg_role= and =owner_role= checks narrow to
+=trs_funding=, =repo= and =ascot_swap= (=option= and =trs= for the
+schedule), and the bond role is gone from both, so no table alternates
+between two parents.
+
+The bond leg's schedules could not stay in =instrument_schedule=: its
+primary key leads with =trade_id= and a bitemporal primary key admits no
+null, so an either/or parent would need a surrogate key and a check --
+the shape D19 rejected. Decision D20 gives them their own issue-keyed
+pair, =bond_issue_leg_schedule= and =bond_issue_leg_schedule_date=.
+
+The reader reads the issue's rows once per ISIN and every instrument of
+that security copies them, so two BondTRS trades on one ISIN share the
+security's legs instead of writing a copy each. One =build_leg= serves
+both families, templated on the row set, with =leg_role_of= and
+=owner_matches= supplying the two differences: the trade-keyed family
+states its role and its owner on every row, the issue-keyed family's
+tables already say whose rows these are.
+
+The import handler writes the new family through =save_issue_leg=,
+=save_issue_leg_amounts= and =save_issue_schedule=, with the issue
+already written first.
+
+Wiring the replacement exposed what unit 2a left unregistered: the new
+entities had no NATS handlers, no event mapping and no history provider,
+so nothing would have answered a put. All three sites are wired here.
+
+Tests: the collision test holds two BondTRS trades on one ISIN and
+asserts each keeps its own funding leg while both read the security's
+two; the fixed and floating leg tests pin the schedules surviving the
+move; the decimal repository test uses a product role, which is what its
+table now holds.
+
+Measured on =447e85f592=: build exit 0 with zero =error:=;
+=check_component_drift.py --all --dry-run= no drift; =compass db
+recreate -y -k= exit 0 with the two new tables, their triggers and their
+policies; the fleet restarts to 25 of 25; =ctest -j 1= 89 of 89 on the
+recreated database; =pytest projects/ores.codegen/tests -q= 997 passed;
+=check_sql_hygiene.py= 1733 files, 0 problems; =validate_docs.sh= 40
+components; the protocol-twin, handler-permission, registry-exception,
+test-reachability, shell-recipe and populate-reference checks clean.
+Committed as =447e85f592=, with the ER diagram in =413f377c6d=.
+
+One measurement defect worth recording: =ores.iam.core.tests= and
+=ores.reporting.core.tests= pass on a fresh database and fail on a
+re-run of the same database, on leftover rows of their own. A green
+suite therefore needs the recreation as part of the run, which is how
+every earlier gate measured it.
 
 ** Branch
 

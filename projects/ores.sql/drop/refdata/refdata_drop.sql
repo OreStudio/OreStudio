@@ -79,6 +79,8 @@
 \ir ./refdata_fx_option_conventions_drop.sql
 \ir ./refdata_average_ois_conventions_notify_trigger_drop.sql
 \ir ./refdata_average_ois_conventions_drop.sql
+\ir ./refdata_cross_currency_basis_conventions_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_basis_conventions_drop.sql
 \ir ./refdata_zero_conventions_notify_trigger_drop.sql
 \ir ./refdata_zero_conventions_drop.sql
 \ir ./refdata_deposit_conventions_notify_trigger_drop.sql

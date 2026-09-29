@@ -1,0 +1,485 @@
+:PROPERTIES:
+:ID: 88382103-22A1-4B77-A76E-AF20076F6E1C
+:END:
+#+title: ores.refdata.cross_currency_basis_convention
+#+description: Codegen entity model for the refdata =cross_currency_basis_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a cross-currency basis swap, whose two legs each carry their own index, tenor and fixings.
+#+entity_singular: cross_currency_basis_convention
+#+entity_plural: cross_currency_basis_conventions
+#+entity_title: Cross-Currency Basis Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds both legs of a cross-currency basis swap: the two
+indices, their tenors, their payment lags and their fixing and cutoff rules, and
+whether the spread is included in a leg's coupons. Corresponds to the
+<CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
+key (ORE <Id> element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique cross-currency basis swap identifier.
+
+#+begin_src cpp :name generator
+std::string("EUR-USD-XCCY-BASIS")
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:END:
+
+Business days from trade date to settlement.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** settlement_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the settlement date rolls on (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** roll_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention the schedule rolls on, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** flat_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the flat leg pays.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-6M")
+#+end_src
+
+** spread_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the spread leg pays.
+
+#+begin_src cpp :name generator
+std::string("USD-LIBOR-3M")
+#+end_src
+
+** eom
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the end-of-month convention applies.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** is_resettable
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the swap resets.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_index_is_resettable
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the flat leg's index resets.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Tenor of the flat leg.
+
+#+begin_src cpp :name generator
+std::string("6M")
+#+end_src
+
+** spread_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Tenor of the spread leg.
+
+#+begin_src cpp :name generator
+std::string("3M")
+#+end_src
+
+** spread_payment_lag
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days between the spread leg's period end and payment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_payment_lag
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days between the flat leg's period end and payment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_include_spread
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread is included in the spread leg's coupons.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_lookback
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Lookback applied to the spread leg's fixings.
+
+#+begin_src cpp :name generator
+std::string("0D")
+#+end_src
+
+** spread_fixing_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days before the period start at which the spread leg fixes.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_rate_cutoff
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days before the period end at which the spread leg's rate is cut off.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_is_averaged
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread leg averages its fixings.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_observation_shift
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread leg shifts its observation dates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_include_spread
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread is included in the flat leg's coupons.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_lookback
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Lookback applied to the flat leg's fixings.
+
+#+begin_src cpp :name generator
+std::string("0D")
+#+end_src
+
+** flat_fixing_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days before the period start at which the flat leg fixes.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_rate_cutoff
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days before the period end at which the flat leg's rate is cut off.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_is_averaged
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the flat leg averages its fixings.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_observation_shift
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the flat leg shifts its observation dates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cross_currency_basis_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cross_currency_basis_convention
+:entity_plural_short:   cross_currency_basis_conventions
+:entity_singular_words: cross-currency basis convention
+:entity_plural_words:   cross-currency basis conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ccbc
+:END:
+
+** Table display
+
+| column            | header            |
+|-------------------+-------------------|
+| id                | Id                |
+| flat_index        | Flat Index        |
+| spread_index      | Spread Index      |
+| modified_by       | Modified By       |
+| version           | Version           |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           cross_currency_basis_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   cross_currency_basis_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter cross-currency basis id |
+| settlement_days | Settlement Days | settlementDaysEdit | spin_box |  | true | e.g. 2 |
+| settlement_calendar | Settlement Calendar | settlementCalendarEdit | line_edit |  |  | e.g. TARGET |
+| roll_convention | Roll Convention | rollConventionEdit | line_edit |  | true | e.g. ModifiedFollowing |
+| flat_index | Flat Index | flatIndexEdit | line_edit |  | true | e.g. EUR-EURIBOR-6M |
+| spread_index | Spread Index | spreadIndexEdit | line_edit |  | true | e.g. USD-LIBOR-3M |
+| eom | EOM | eomEdit | checkbox |  |  |  |
+| is_resettable | Is Resettable | isResettableEdit | checkbox |  |  |  |
+| flat_index_is_resettable | Flat Resettable | flatIndexIsResettableEdit | checkbox |  |  |  |
+| flat_tenor | Flat Tenor | flatTenorEdit | line_edit |  |  | e.g. 6M |
+| spread_tenor | Spread Tenor | spreadTenorEdit | line_edit |  |  | e.g. 3M |
+| spread_payment_lag | Spread Lag | spreadPaymentLagEdit | spin_box |  |  | e.g. 2 |
+| flat_payment_lag | Flat Lag | flatPaymentLagEdit | spin_box |  |  | e.g. 2 |
+| spread_include_spread | Spread Included | spreadIncludeSpreadEdit | checkbox |  |  |  |
+| spread_lookback | Spread Lookback | spreadLookbackEdit | line_edit |  |  | e.g. 0D |
+| spread_fixing_days | Spread Fixing Days | spreadFixingDaysEdit | spin_box |  |  | e.g. 2 |
+| spread_rate_cutoff | Spread Cutoff | spreadRateCutoffEdit | spin_box |  |  | e.g. 0 |
+| spread_is_averaged | Spread Averaged | spreadIsAveragedEdit | checkbox |  |  |  |
+| spread_observation_shift | Spread Shift | spreadObservationShiftEdit | checkbox |  |  |  |
+| flat_include_spread | Flat Included | flatIncludeSpreadEdit | checkbox |  |  |  |
+| flat_lookback | Flat Lookback | flatLookbackEdit | line_edit |  |  | e.g. 0D |
+| flat_fixing_days | Flat Fixing Days | flatFixingDaysEdit | spin_box |  |  | e.g. 2 |
+| flat_rate_cutoff | Flat Cutoff | flatRateCutoffEdit | spin_box |  |  | e.g. 0 |
+| flat_is_averaged | Flat Averaged | flatIsAveragedEdit | checkbox |  |  |  |
+| flat_observation_shift | Flat Shift | flatObservationShiftEdit | checkbox |  |  |  |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 200 |
+| SettlementDays | settlement_days | Settlement Days | int | 100 |
+| SettlementCalendar | settlement_calendar | Settlement Calendar | string | 200 |
+| RollConvention | roll_convention | Roll Convention | string | 200 |
+| FlatIndex | flat_index | Flat Index | string | 200 |
+| SpreadIndex | spread_index | Spread Index | string | 200 |
+| Eom | eom | EOM | bool | 80 |
+| IsResettable | is_resettable | Is Resettable | bool | 80 |
+| FlatIndexIsResettable | flat_index_is_resettable | Flat Resettable | bool | 80 |
+| FlatTenor | flat_tenor | Flat Tenor | string | 200 |
+| SpreadTenor | spread_tenor | Spread Tenor | string | 200 |
+| SpreadPaymentLag | spread_payment_lag | Spread Lag | int | 100 |
+| FlatPaymentLag | flat_payment_lag | Flat Lag | int | 100 |
+| SpreadIncludeSpread | spread_include_spread | Spread Included | bool | 80 |
+| SpreadLookback | spread_lookback | Spread Lookback | string | 200 |
+| SpreadFixingDays | spread_fixing_days | Spread Fixing Days | int | 100 |
+| SpreadRateCutoff | spread_rate_cutoff | Spread Cutoff | int | 100 |
+| SpreadIsAveraged | spread_is_averaged | Spread Averaged | bool | 80 |
+| SpreadObservationShift | spread_observation_shift | Spread Shift | bool | 80 |
+| FlatIncludeSpread | flat_include_spread | Flat Included | bool | 80 |
+| FlatLookback | flat_lookback | Flat Lookback | string | 200 |
+| FlatFixingDays | flat_fixing_days | Flat Fixing Days | int | 100 |
+| FlatRateCutoff | flat_rate_cutoff | Flat Cutoff | int | 100 |
+| FlatIsAveraged | flat_is_averaged | Flat Averaged | bool | 80 |
+| FlatObservationShift | flat_observation_shift | Flat Shift | bool | 80 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

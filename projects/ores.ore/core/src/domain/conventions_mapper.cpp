@@ -411,6 +411,72 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
+crossCurrencyBasisType reverse_cross_currency_basis(
+    const refdata::domain::cross_currency_basis_convention& v) {
+    crossCurrencyBasisType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
+    if (v.settlement_calendar) {
+        crossCurrencyBasisType_SettlementCalendar_t value;
+        static_cast<std::string&>(value) = *v.settlement_calendar;
+        r.SettlementCalendar = value;
+    }
+    r.RollConvention = parse_bdc(v.roll_convention);
+    static_cast<std::string&>(r.FlatIndex) = v.flat_index;
+    static_cast<std::string&>(r.SpreadIndex) = v.spread_index;
+    if (v.eom)
+        r.EOM = make_bool(*v.eom);
+    if (v.is_resettable)
+        r.IsResettable = make_bool(*v.is_resettable);
+    if (v.flat_index_is_resettable)
+        r.FlatIndexIsResettable = make_bool(*v.flat_index_is_resettable);
+    if (v.flat_tenor) {
+        crossCurrencyBasisType_FlatTenor_t value;
+        static_cast<std::string&>(value) = *v.flat_tenor;
+        r.FlatTenor = value;
+    }
+    if (v.spread_tenor) {
+        crossCurrencyBasisType_SpreadTenor_t value;
+        static_cast<std::string&>(value) = *v.spread_tenor;
+        r.SpreadTenor = value;
+    }
+    if (v.spread_payment_lag)
+        r.SpreadPaymentLag = static_cast<int64_t>(*v.spread_payment_lag);
+    if (v.flat_payment_lag)
+        r.FlatPaymentLag = static_cast<int64_t>(*v.flat_payment_lag);
+    if (v.spread_include_spread)
+        r.SpreadIncludeSpread = make_bool(*v.spread_include_spread);
+    if (v.spread_lookback) {
+        crossCurrencyBasisType_SpreadLookback_t value;
+        static_cast<std::string&>(value) = *v.spread_lookback;
+        r.SpreadLookback = value;
+    }
+    if (v.spread_fixing_days)
+        r.SpreadFixingDays = static_cast<int64_t>(*v.spread_fixing_days);
+    if (v.spread_rate_cutoff)
+        r.SpreadRateCutoff = static_cast<int64_t>(*v.spread_rate_cutoff);
+    if (v.spread_is_averaged)
+        r.SpreadIsAveraged = make_bool(*v.spread_is_averaged);
+    if (v.spread_observation_shift)
+        r.SpreadObservationShift = make_bool(*v.spread_observation_shift);
+    if (v.flat_include_spread)
+        r.FlatIncludeSpread = make_bool(*v.flat_include_spread);
+    if (v.flat_lookback) {
+        crossCurrencyBasisType_FlatLookback_t value;
+        static_cast<std::string&>(value) = *v.flat_lookback;
+        r.FlatLookback = value;
+    }
+    if (v.flat_fixing_days)
+        r.FlatFixingDays = static_cast<int64_t>(*v.flat_fixing_days);
+    if (v.flat_rate_cutoff)
+        r.FlatRateCutoff = static_cast<int64_t>(*v.flat_rate_cutoff);
+    if (v.flat_is_averaged)
+        r.FlatIsAveraged = make_bool(*v.flat_is_averaged);
+    if (v.flat_observation_shift)
+        r.FlatObservationShift = make_bool(*v.flat_observation_shift);
+    return r;
+}
+
 averageOISType reverse_average_ois(const refdata::domain::average_ois_convention& v) {
     averageOISType r;
     static_cast<std::string&>(r.Id) = v.id;
@@ -948,6 +1014,60 @@ refdata::domain::future_convention conventions_mapper::map_future(const futureTy
     return r;
 }
 
+refdata::domain::cross_currency_basis_convention
+conventions_mapper::map_cross_currency_basis(const crossCurrencyBasisType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << std::string(v.Id);
+
+    refdata::domain::cross_currency_basis_convention r;
+    r.id = std::string(v.Id);
+    r.settlement_days = static_cast<int>(v.SettlementDays);
+    if (v.SettlementCalendar)
+        r.settlement_calendar = std::string(*v.SettlementCalendar);
+    r.roll_convention = normalize_bdc(v.RollConvention);
+    r.flat_index = std::string(v.FlatIndex);
+    r.spread_index = std::string(v.SpreadIndex);
+    if (v.EOM)
+        r.eom = parse_bool(*v.EOM);
+    if (v.IsResettable)
+        r.is_resettable = parse_bool(*v.IsResettable);
+    if (v.FlatIndexIsResettable)
+        r.flat_index_is_resettable = parse_bool(*v.FlatIndexIsResettable);
+    if (v.FlatTenor)
+        r.flat_tenor = std::string(*v.FlatTenor);
+    if (v.SpreadTenor)
+        r.spread_tenor = std::string(*v.SpreadTenor);
+    if (v.SpreadPaymentLag)
+        r.spread_payment_lag = static_cast<int>(*v.SpreadPaymentLag);
+    if (v.FlatPaymentLag)
+        r.flat_payment_lag = static_cast<int>(*v.FlatPaymentLag);
+    if (v.SpreadIncludeSpread)
+        r.spread_include_spread = parse_bool(*v.SpreadIncludeSpread);
+    if (v.SpreadLookback)
+        r.spread_lookback = std::string(*v.SpreadLookback);
+    if (v.SpreadFixingDays)
+        r.spread_fixing_days = static_cast<int>(*v.SpreadFixingDays);
+    if (v.SpreadRateCutoff)
+        r.spread_rate_cutoff = static_cast<int>(*v.SpreadRateCutoff);
+    if (v.SpreadIsAveraged)
+        r.spread_is_averaged = parse_bool(*v.SpreadIsAveraged);
+    if (v.SpreadObservationShift)
+        r.spread_observation_shift = parse_bool(*v.SpreadObservationShift);
+    if (v.FlatIncludeSpread)
+        r.flat_include_spread = parse_bool(*v.FlatIncludeSpread);
+    if (v.FlatLookback)
+        r.flat_lookback = std::string(*v.FlatLookback);
+    if (v.FlatFixingDays)
+        r.flat_fixing_days = static_cast<int>(*v.FlatFixingDays);
+    if (v.FlatRateCutoff)
+        r.flat_rate_cutoff = static_cast<int>(*v.FlatRateCutoff);
+    if (v.FlatIsAveraged)
+        r.flat_is_averaged = parse_bool(*v.FlatIsAveraged);
+    if (v.FlatObservationShift)
+        r.flat_observation_shift = parse_bool(*v.FlatObservationShift);
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::average_ois_convention
 conventions_mapper::map_average_ois(const averageOISType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping averaging OIS convention: " << std::string(v.Id);
@@ -1200,6 +1320,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.cross_currency_basis.reserve(v.CrossCurrencyBasis.size());
+    std::ranges::transform(v.CrossCurrencyBasis,
+                           std::back_inserter(r.cross_currency_basis),
+                           [](const auto& x) { return map_cross_currency_basis(x); });
+
     r.average_ois.reserve(v.AverageOIS.size());
     std::ranges::transform(v.AverageOIS, std::back_inserter(r.average_ois), [](const auto& x) {
         return map_average_ois(x);
@@ -1231,7 +1356,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     count_unmodelled("TenorBasisSwap", v.TenorBasisSwap.size());
     count_unmodelled("TenorBasisTwoSwap", v.TenorBasisTwoSwap.size());
     count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
-    count_unmodelled("CrossCurrencyBasis", v.CrossCurrencyBasis.size());
     count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
     count_unmodelled("InflationSwap", v.InflationSwap.size());
     count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
@@ -1307,6 +1431,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.CrossCurrencyBasis.reserve(v.cross_currency_basis.size());
+    for (const auto& x : v.cross_currency_basis)
+        r.CrossCurrencyBasis.push_back(reverse_cross_currency_basis(x));
 
     r.AverageOIS.reserve(v.average_ois.size());
     for (const auto& x : v.average_ois)

@@ -57,16 +57,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 12 after four | =ores.ore.core.tests "[.][conventions]" -s= | =8632aaf543= |
-| Files carrying an unmodelled category | 63 at the start, 53 after four | the same | =8632aaf543= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 19 after four | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =8632aaf543= |
-| Files a single category would clear, before AverageOIS | AverageOIS 7, CrossCurrencyBasis 3, and one each for CommodityFuture, InflationSwap and TenorBasisTwoSwap | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =8632aaf543= |
+| Categories the mapper does not model | 16 at the start, 11 after five | =ores.ore.core.tests "[.][conventions]" -s= | =6ceed07fc8= |
+| Files carrying an unmodelled category | 63 at the start, 50 after five | the same | =6ceed07fc8= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 22 after five | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =6ceed07fc8= |
+| Files a single category would clear, now | TenorBasisTwoSwap 12, and one each for CommodityFuture, InflationSwap and TenorBasisSwap | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =6ceed07fc8= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
 
 - =SwapIndex= is modelled: three fields, and it appears in forty-seven files.
   Its case asserts 1451 times over that corpus.
+- =CrossCurrencyBasis= is modelled: twenty-five fields across forty-nine files,
+  the largest category in the document, and it clears three files. Every field
+  is a text, an integer, a boolean or a business day convention, so it needed no
+  new kind of mapping; the size was the only thing that made it look expensive.
+  It went in before smaller categories because the clearing measurement named it
+  as the second-best win, and because leaving the largest one until last is how
+  a plan runs out of room.
 - =AverageOIS= is modelled: eleven fields across thirty-six files. It went in
   before the cheaper categories because it is the one that clears files: seven of
   the thirteen files with exactly one unmodelled category name it, so modelling

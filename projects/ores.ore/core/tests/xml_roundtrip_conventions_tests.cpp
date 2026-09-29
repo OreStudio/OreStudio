@@ -212,6 +212,44 @@ TEST_CASE("conventions_average_ois_round_trips", tags) {
     CHECK(files_with_average_ois == 36);
 }
 
+TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
+    int files_with_basis = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CrossCurrencyBasis.empty())
+            continue;
+
+        ++files_with_basis;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.cross_currency_basis.size() == document.CrossCurrencyBasis.size());
+
+        for (std::size_t i = 0; i < document.CrossCurrencyBasis.size(); ++i) {
+            const auto& in = document.CrossCurrencyBasis[i];
+            const auto& out = mapped.cross_currency_basis[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.flat_index == std::string(in.FlatIndex));
+            CHECK(out.spread_index == std::string(in.SpreadIndex));
+            CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
+            if (in.SpreadFixingDays)
+                CHECK(out.spread_fixing_days == static_cast<int>(*in.SpreadFixingDays));
+            if (in.FlatRateCutoff)
+                CHECK(out.flat_rate_cutoff == static_cast<int>(*in.FlatRateCutoff));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CrossCurrencyBasis");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CrossCurrencyBasis.size()) +
+             " CrossCurrencyBasis element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CrossCurrencyBasis.size()));
+    }
+
+    // Forty-nine of the seventy-two at the commit this was written at. It is the
+    // largest category in the document, and three files carried nothing else.
+    CHECK(files_with_basis == 49);
+}
+
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
     const auto kind = conventions_kind();
     int walked = 0;
@@ -229,10 +267,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Nineteen of the seventy-two once AverageOIS joined SwapIndex, Future and
-    // FxOption, twelve before it and nine before those. The count is asserted
-    // so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 19);
+    // Twenty-two of the seventy-two once CrossCurrencyBasis landed, nineteen
+    // before it, twelve before AverageOIS and nine before those. The count is
+    // asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 22);
 }
 
 // Hidden by default, and run on demand:

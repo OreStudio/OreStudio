@@ -433,6 +433,14 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:read',             'View averaging OIS conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:write',            'Create and modify averaging OIS conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:delete',           'Delete averaging OIS conventions');
+
+    -- Cross-currency basis conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:read',    'View cross-currency basis conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:write',   'Create and modify cross-currency basis conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_basis_conventions:delete',  'Delete cross-currency basis conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:read',             'View averaging OIS conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:write',            'Create and modify averaging OIS conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::average_ois_conventions:delete',           'Delete averaging OIS conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:read',               'View FX option conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:write',              'Create and modify FX option conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:delete',             'Delete FX option conventions');

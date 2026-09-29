@@ -1031,3 +1031,7 @@ tangled into the runnable script library
 * Average Ois Conventions
 
 - [[id:D7E6C28D-4DD4-5CF8-9682-B19E2DFE97F9][How do I run the average_ois_conventions commands from the shell?]]
+
+* Cross Currency Basis Conventions
+
+- [[id:15F5D765-33EA-5B26-8005-D711223E6A18][How do I run the cross_currency_basis_conventions commands from the shell?]]

@@ -224,7 +224,7 @@ plan itself stays — it is the historical record of what we did.)
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
-| =ores.marketdata.core= suite, with the series projection | 1793 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
+| =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -274,6 +274,11 @@ via its "Verifies task" field.
 | 8 | The census row cites =664cae095d= while the review rows cite =1cfba6cc49= and =d0d56cfc4e=, and the reviewer could not resolve them | the measurements and review tables | answered | All three resolve. =664cae095d= is the tip of the branch that merged as =0989e6f243=, and =1cfba6cc49= is on the trunk; =d0d56cfc4e= is the formatting commit on this branch, which the merge brings in. |
 | 9 | =#+pr:= names 2359 while =#+branch:= still names the branch of #2358 | this task | answered | The task spans two units and each has its own branch, so the field can only name one; it keeps the branch its first unit was built on, and the =* PRs= table carries both, newest first. |
 | 10 | The row about the model's doc sentence cannot be checked from this diff | the market series model | answered | The model is in the merged tree rather than in this diff. The sentence it names is the column's description, which qualifies "every row the corpus import writes" in the same breath. |
+| 11 | The ingest loop's key building is untested, so the format it builds must match the grammar for every class with a point | =feed_ingest_loop.cpp= | recorded, no change | The projection cases now carry both shapes the loop builds -- a six-segment swap key and a six-segment vol key -- and the corpus coverage test already names every per-class key the corpus carries. A helper would move four lines into one caller and would not exercise the loop, which has no harness; the loop's construction is recorded as a limit of the unit. |
+| 12 | Dropping the point and the surface may merge series that should stay apart | =oresmd_parser.cpp= | answered, pinned | The series row keeps the underlying and the point keeps the coordinates: the live table's CHF swaption series carries =10Y/10Y/ATM= as one of its points, and =Lufthansa/EUR= carries =10Y/11.47=. So dropping the surface merges nothing the registry keeps apart, and the case now pins that two swaption strikes project to one surface identity with no point in it. |
+| 13 | Rows the import wrote earlier hold a datum identity, which the series lookup will not find | =import_service.cpp= | answered | The import asks by identity and falls back to the triple, the same order the ingest loop uses, so an older row is still reachable; it keeps the identity it has. The schema is applied by recreation, so a rebuilt database holds no such row, and a backfill is a recorded prerequisite of the not-null unit rather than of this one. |
+| 14 | The import case's qualifier assertion depends on the first point | =service_import_service_tests.cpp= | answered | The qualifier is the registry's decomposition of the canonical key, and the unit changes only the identity the series stores. The assertion pins that both points land in one row under the series' own qualifier, which is what the case is for. |
+| 15 | The key is concatenated on every tick | =feed_ingest_loop.cpp= | recorded, no change | Negligible beside the database round trips the same function makes, as the reviewer notes. |
 
 * Result
 
@@ -299,7 +304,7 @@ triple alone, so a series' identity carried whichever of its points arrived firs
 a swap series got none from a live tick at all. =to_series_uri()= projects the
 identifier with its point dropped, both writers call it, and the ingest loop builds
 the datum's full key before falling back to the triple. Measured on the rebuilt tree:
-1793 assertions in 402 cases.
+1798 assertions in 402 cases.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

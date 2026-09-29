@@ -1390,5 +1390,17 @@ TEST_CASE("a_keys_points_project_to_one_series_identity", tags) {
     // found by it needs.
     CHECK(oresmd_parser::to_uri(oresmd_parser::parse(oresmd_uri{five_series})).value ==
           five_series);
+
+    // A volatility surface is one series per underlying, and the coordinates it is
+    // sampled at are its points, so dropping them merges no surface with another:
+    // the corpus carries one CHF swaption series whose points are expiry/tenor/strike.
+    const auto atm = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
+    const auto strike = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/0.02");
+    REQUIRE(atm);
+    REQUIRE(strike);
+    const auto surface = oresmd_parser::to_series_uri(*atm).value;
+    CHECK(surface == oresmd_parser::to_series_uri(*strike).value);
+    CHECK(surface.find("point=") == std::string::npos);
+    CHECK(oresmd_parser::to_uri(*atm).value != oresmd_parser::to_uri(*strike).value);
 }
 #+end_src
